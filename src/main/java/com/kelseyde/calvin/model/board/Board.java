@@ -1,13 +1,9 @@
 package com.kelseyde.calvin.model.board;
 
-import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.piece.Piece;
-import com.kelseyde.calvin.model.piece.PieceType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 

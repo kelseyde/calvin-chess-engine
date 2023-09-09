@@ -4,7 +4,7 @@ import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.board.Board;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.piece.Piece;
-import com.kelseyde.calvin.service.generator.*;
+import com.kelseyde.calvin.service.generator.LegalMoveGenerator;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

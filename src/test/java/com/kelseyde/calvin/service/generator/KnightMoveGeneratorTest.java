@@ -20,7 +20,6 @@ public class KnightMoveGeneratorTest {
 
     private Board board;
 
-
     @BeforeEach
     public void beforeEach() {
         board = Board.empty();
@@ -118,7 +117,7 @@ public class KnightMoveGeneratorTest {
     }
 
     @Test
-    public void canCaptureSameColourPieces() {
+    public void cannotCaptureSameColourPieces() {
 
         board.setPiece(43, knight);
         board.setPiece(26, new Piece(Colour.WHITE, PieceType.PAWN));

@@ -19,7 +19,7 @@ public class KnightMoveGeneratorTest {
 
     @BeforeEach
     public void beforeEach() {
-        board = Board.empty();
+        board = Board.emptyBoard();
     }
 
     @Test

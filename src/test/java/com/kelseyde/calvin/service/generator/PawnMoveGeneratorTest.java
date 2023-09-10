@@ -22,7 +22,7 @@ public class PawnMoveGeneratorTest {
 
     @BeforeEach
     public void beforeEach() {
-        board = Board.empty();
+        board = Board.emptyBoard();
     }
 
     @Test

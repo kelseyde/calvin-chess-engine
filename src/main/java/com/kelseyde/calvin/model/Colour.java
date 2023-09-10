@@ -13,4 +13,8 @@ public enum Colour {
         return !this.equals(colour);
     }
 
+    public Colour oppositeColour() {
+        return this.equals(WHITE) ? BLACK : WHITE;
+    }
+
 }

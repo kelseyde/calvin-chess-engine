@@ -24,4 +24,12 @@ public class BoardUtils {
         return Set.of(7, 15, 23, 31, 39, 47, 55, 63).contains(square);
     }
 
+    public static boolean isSecondRank(int square) {
+        return Set.of(8, 9, 10, 11, 12, 13, 14, 15).contains(square);
+    }
+
+    public static boolean isSeventhRank(int square) {
+        return Set.of(48, 49, 50, 51, 52, 53, 54, 55).contains(square);
+    }
+
 }

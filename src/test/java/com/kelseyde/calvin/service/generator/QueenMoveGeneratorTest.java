@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class QueenMoveGeneratorTest {
 
     private final QueenMoveGenerator generator = new QueenMoveGenerator();

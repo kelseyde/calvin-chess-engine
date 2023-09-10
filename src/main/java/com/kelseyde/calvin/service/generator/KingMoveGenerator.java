@@ -34,7 +34,7 @@ public class KingMoveGenerator implements LegalMoveGenerator {
 
         Piece king = board.pieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.KING))
-                .orElseThrow(() -> new NoSuchElementException(String.format("There is no knight on square %s!", startSquare)));
+                .orElseThrow(() -> new NoSuchElementException(String.format("There is no king on square %s!", startSquare)));
 
         Set<Integer> legalOffsets = CANDIDATE_MOVE_OFFSETS.stream()
                 .filter(offset -> isLegalOffset(board, king, startSquare, offset))

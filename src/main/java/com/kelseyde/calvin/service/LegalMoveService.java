@@ -1,6 +1,10 @@
 package com.kelseyde.calvin.service;
 
-import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.Colour;
+import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.generator.*;
 import lombok.extern.slf4j.Slf4j;
 

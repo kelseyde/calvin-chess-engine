@@ -7,9 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CastlingRights {
 
-    private boolean whiteKingSide = true;
-    private boolean whiteQueenSide = true;
-    private boolean blackKingSide = true;
-    private boolean blackQueenSide = true;
+    private boolean kingSide = true;
+    private boolean queenSide = true;
 
 }

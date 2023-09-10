@@ -1,6 +1,9 @@
 package com.kelseyde.calvin.service.generator;
 
 import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.model.move.config.EnPassantConfig;
+import com.kelseyde.calvin.model.move.config.PromotionConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -71,7 +74,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 Optional<Piece> pieceOnDoubleMoveSquare = board.pieceAt(doubleMoveSquare);
                 if (pieceOnStandardMoveSquare.isEmpty() && pieceOnDoubleMoveSquare.isEmpty()) {
                     Move move = Move.builder().startSquare(startSquare).endSquare(doubleMoveSquare).build();
-                    move.setEnPassantTargetSquare(standardMoveSquare);
+                    move.setEnPassantConfig(EnPassantConfig.builder().enPassantTargetSquare(standardMoveSquare).build());
                     return Optional.of(move);
                 }
             }
@@ -108,7 +111,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             // Covering en passant
             if (pieceOnTargetSquare.isEmpty() && game.getEnPassantTargetSquare() == targetCaptureSquare) {
                 Move move = Move.builder().startSquare(startSquare).endSquare(targetCaptureSquare).build();
-                move.setEnPassantCapture(true);
+                move.setType(MoveType.EN_PASSANT);
                 legalCaptures.add(move);
             }
         }
@@ -124,10 +127,14 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
     private Set<Move> getPromotionMoves(int startSquare, int targetSquare) {
         return Set.of(
-                Move.builder().startSquare(startSquare).endSquare(targetSquare).promotionPieceType(PieceType.QUEEN).build(),
-                Move.builder().startSquare(startSquare).endSquare(targetSquare).promotionPieceType(PieceType.ROOK).build(),
-                Move.builder().startSquare(startSquare).endSquare(targetSquare).promotionPieceType(PieceType.BISHOP).build(),
-                Move.builder().startSquare(startSquare).endSquare(targetSquare).promotionPieceType(PieceType.KNIGHT).build()
+                Move.builder().startSquare(startSquare).endSquare(targetSquare)
+                        .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
+                Move.builder().startSquare(startSquare).endSquare(targetSquare)
+                        .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
+                Move.builder().startSquare(startSquare).endSquare(targetSquare)
+                        .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
+                Move.builder().startSquare(startSquare).endSquare(targetSquare)
+                        .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build()
         );
     }
 

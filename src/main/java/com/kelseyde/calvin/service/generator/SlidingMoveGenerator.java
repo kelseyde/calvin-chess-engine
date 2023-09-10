@@ -2,8 +2,8 @@ package com.kelseyde.calvin.service.generator;
 
 import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Game;
-import com.kelseyde.calvin.model.Move;
 import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.HashSet;
@@ -26,6 +26,8 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     private static final Set<Integer> H_FILE_OFFSET_EXCEPTIONS = Set.of(-7, 1, 9);
 
     protected abstract Set<Integer> getMoveVectors();
+
+    protected abstract void applyPostGenerationConfig(Piece piece, Set<Move> legalMoves);
 
     @Override
     public Set<Move> generateLegalMoves(Game game, int startSquare) {

@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.service.generator;
 
 import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.model.move.config.CastlingConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -38,7 +40,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
                 .collect(Collectors.toSet());
 
         Set<Move> legalMoves = legalOffsets.stream()
-                .map(offset -> Move.builder().startSquare(startSquare).endSquare(startSquare + offset).build())
+                .map(offset -> createKingMove(startSquare, startSquare + offset))
                 .collect(Collectors.toSet());
 
         return legalMoves;
@@ -57,6 +59,18 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         }
         Optional<Piece> pieceOnTargetSquare = board.pieceAt(targetSquare);
         return pieceOnTargetSquare.isEmpty() || pieceOnTargetSquare.get().getColour().isOppositeColour(colour);
+    }
+
+    private Move createKingMove(int startSquare, int endSquare) {
+        return Move.builder()
+                .startSquare(startSquare)
+                .endSquare(endSquare)
+                // Any king move (including castling) precludes castling rights for the remainder of the game.
+                .castlingConfig(CastlingConfig.builder()
+                        .negatesKingsideCastling(true)
+                        .negatesQueensideCastling(true)
+                        .build())
+                .build();
     }
 
 }

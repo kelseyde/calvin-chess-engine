@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.model.piece;
+package com.kelseyde.calvin.model;
 
 public enum PieceType {
     PAWN,

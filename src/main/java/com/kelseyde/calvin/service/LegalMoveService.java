@@ -1,15 +1,9 @@
 package com.kelseyde.calvin.service;
 
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.board.Board;
-import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.piece.Piece;
-import com.kelseyde.calvin.service.generator.LegalMoveGenerator;
-import jakarta.annotation.Resource;
+import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.service.generator.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -17,36 +11,45 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
-@Service
 public class LegalMoveService {
 
-    @Resource
-    private List<LegalMoveGenerator> moveGenerators;
+    private final List<PseudoLegalMoveGenerator> moveGenerators = List.of(
+            new PawnMoveGenerator(), new KnightMoveGenerator(), new BishopMoveGenerator(),
+            new RookMoveGenerator(), new QueenMoveGenerator(), new KingMoveGenerator()
+    );
 
-    public Set<Move> generateAllLegalMoves(Board board, Colour colour) {
+    public Set<Move> generateAllLegalMoves(Game game, Colour colour) {
+        Board board = game.getBoard();
         return IntStream.range(0, 64)
-                .mapToObj(square -> generateLegalMovesForSquare(board, colour, square))
+                .filter(square -> board.pieceAt(square).isPresent() || !board.pieceAt(square).get().getColour().isSameColour(colour))
+                .mapToObj(square -> generateLegalMovesForSquare(game, colour, square))
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
     }
 
-    private Set<Move> generateLegalMovesForSquare(Board board, Colour colour, int square) {
+    public boolean isLegalMove(Game game, Move move) {
 
-        if (board.pieceAt(square).isEmpty() || !board.pieceAt(square).get().getColour().equals(colour)) {
-            return Collections.emptySet();
-        }
-
-        Piece piece = board.pieceAt(square).get();
-
-        LegalMoveGenerator moveGenerator = moveGenerators.stream()
-                .filter(generator -> piece.getType().equals(generator.getPieceType()))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException(
-                        String.format("No move generator found for piece type %s", piece.getType())));
-
-        return moveGenerator.generateLegalMoves(board, square);
+        Colour turn = game.getTurn();
+        int startSquare = move.getStartSquare();
+        return generateLegalMovesForSquare(game, turn, startSquare).contains(move);
 
     }
 
+    private Set<Move> generateLegalMovesForSquare(Game game, Colour colour, int square) {
+
+        Piece piece = game.getBoard().pieceAt(square)
+                .filter(p -> p.getColour().isSameColour(colour))
+                .orElseThrow(() -> new NoSuchElementException(
+                        String.format("No piece of colour %s on square %s!", colour, square)));
+
+        PseudoLegalMoveGenerator pseudoLegalMoveGenerator = moveGenerators.stream()
+                .filter(generator -> piece.getType().equals(generator.getPieceType()))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException(
+                        String.format("No move generator found for piece type %s!", piece.getType())));
+
+        return pseudoLegalMoveGenerator.generateLegalMoves(game, square);
+
+    }
 
 }

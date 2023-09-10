@@ -1,10 +1,6 @@
 package com.kelseyde.calvin.service.generator;
 
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.board.Board;
-import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.piece.Piece;
-import com.kelseyde.calvin.model.piece.PieceType;
+import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -16,35 +12,29 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class PawnMoveGenerator implements LegalMoveGenerator {
+public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
     @Getter
     private final PieceType pieceType = PieceType.PAWN;
 
     @Override
-    public Set<Move> generateLegalMoves(Board board, int startSquare) {
+    public Set<Move> generateLegalMoves(Game game, int startSquare) {
 
+        Board board = game.getBoard();
         Piece pawn = board.pieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.PAWN))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no pawn on square %s!", startSquare)));
 
-        return generateLegalOffsets(board, pawn, startSquare).stream()
-                .map(offset -> new Move(startSquare, startSquare + offset))
-                .collect(Collectors.toSet());
+        Set<Move> legalMoves = new HashSet<>();
+        checkStandardMove(board, pawn, startSquare).ifPresent(legalMoves::add);
+        checkDoubleMove(board, pawn, startSquare).ifPresent(legalMoves::add);
+        legalMoves.addAll(checkCaptures(game, pawn, startSquare));
+
+        return legalMoves;
 
     }
 
-    private Set<Integer> generateLegalOffsets(Board board, Piece piece, int startSquare) {
-
-        Set<Integer> legalOffsets = new HashSet<>();
-        checkStandardMove(board, piece, startSquare).ifPresent(legalOffsets::add);
-        checkDoubleMove(board, piece, startSquare).ifPresent(legalOffsets::add);
-        legalOffsets.addAll(checkCaptures(board, piece, startSquare));
-        return legalOffsets;
-
-    }
-
-    private Optional<Integer> checkStandardMove(Board board, Piece piece, int startSquare) {
+    private Optional<Move> checkStandardMove(Board board, Piece piece, int startSquare) {
 
         int standardMoveOffset = getStandardMoveOffset(piece.getColour());
         int standardMoveSquare = startSquare + standardMoveOffset;
@@ -52,14 +42,14 @@ public class PawnMoveGenerator implements LegalMoveGenerator {
         if (BoardUtils.isValidSquareCoordinate(standardMoveSquare)) {
             Optional<Piece> pieceOnStandardMoveSquare = board.pieceAt(standardMoveSquare);
             if (pieceOnStandardMoveSquare.isEmpty()) {
-                return Optional.of(standardMoveOffset);
+                return Optional.of(new Move(startSquare, standardMoveSquare));
             }
         }
         return Optional.empty();
 
     }
 
-    private Optional<Integer> checkDoubleMove(Board board, Piece piece, int startSquare) {
+    private Optional<Move> checkDoubleMove(Board board, Piece piece, int startSquare) {
 
         if ((Colour.WHITE.equals(piece.getColour()) && BoardUtils.isSecondRank(startSquare)) ||
             (Colour.BLACK.equals(piece.getColour()) && BoardUtils.isSeventhRank(startSquare))) {
@@ -74,7 +64,9 @@ public class PawnMoveGenerator implements LegalMoveGenerator {
                 Optional<Piece> pieceOnStandardMoveSquare = board.pieceAt(standardMoveSquare);
                 Optional<Piece> pieceOnDoubleMoveSquare = board.pieceAt(doubleMoveSquare);
                 if (pieceOnStandardMoveSquare.isEmpty() && pieceOnDoubleMoveSquare.isEmpty()) {
-                    return Optional.of(doubleMoveOffset);
+                    Move move = new Move(startSquare, doubleMoveSquare);
+                    move.setEnPassantTargetSquare(standardMoveSquare);
+                    return Optional.of(move);
                 }
             }
 
@@ -83,17 +75,33 @@ public class PawnMoveGenerator implements LegalMoveGenerator {
 
     }
 
-    private Set<Integer> checkCaptures(Board board, Piece piece, int startSquare) {
-        return getCaptureOffsets(piece.getColour()).stream()
-                .filter(offset ->
-                        !(BoardUtils.isAFile(startSquare) && offset == getAFileCaptureOffsetException(piece.getColour())) &&
-                        !(BoardUtils.isHFile(startSquare) && offset == getHFileCaptureOffsetException(piece.getColour())))
-                .filter(offset ->
-                        BoardUtils.isValidSquareCoordinate(startSquare + offset) &&
-                        board.pieceAt(startSquare + offset)
-                        .filter(capturePiece -> capturePiece.getColour().isOppositeColour(piece.getColour()))
-                        .isPresent())
-                .collect(Collectors.toSet());
+    private Set<Move> checkCaptures(Game game, Piece piece, int startSquare) {
+
+        Set<Move> legalCaptures = new HashSet<>();
+
+        for (int offset : getCaptureOffsets(piece.getColour())) {
+            if ((BoardUtils.isAFile(startSquare) && offset == getAFileCaptureOffsetException(piece.getColour())) ||
+                (BoardUtils.isHFile(startSquare) && offset == getHFileCaptureOffsetException(piece.getColour()))) {
+                continue;
+            }
+
+            // Covering standard capture offset
+            int targetCaptureSquare = startSquare + offset;
+            Optional<Piece> pieceOnTargetSquare = game.getBoard().pieceAt(targetCaptureSquare);
+            if (pieceOnTargetSquare.isPresent() && pieceOnTargetSquare.get().getColour().isOppositeColour(piece.getColour())) {
+                legalCaptures.add(new Move(startSquare, targetCaptureSquare));
+            }
+
+            // Covering en passant
+            if (pieceOnTargetSquare.isEmpty() && game.getEnPassantTargetSquare() == targetCaptureSquare) {
+                Move move = new Move(startSquare, targetCaptureSquare);
+                move.setEnPassantCapture(true);
+                legalCaptures.add(move);
+            }
+        }
+
+        return legalCaptures;
+
     }
 
     private int getStandardMoveOffset(Colour colour) {

@@ -1,10 +1,6 @@
 package com.kelseyde.calvin.service.generator;
 
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.board.Board;
-import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.piece.Piece;
-import com.kelseyde.calvin.model.piece.PieceType;
+import com.kelseyde.calvin.model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -109,7 +105,7 @@ public class KnightMoveGeneratorTest {
         board.setPiece(60, new Piece(Colour.BLACK, PieceType.QUEEN));
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
-        Set<Integer> legalSquares = generator.generateLegalMoves(board, 43).stream()
+        Set<Integer> legalSquares = generator.generateLegalMoves(Game.fromPosition(board), 43).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
@@ -129,7 +125,7 @@ public class KnightMoveGeneratorTest {
         board.setPiece(58, new Piece(Colour.WHITE, PieceType.QUEEN));
         board.setPiece(60, new Piece(Colour.WHITE, PieceType.QUEEN));
 
-        Set<Integer> legalSquares = generator.generateLegalMoves(board, 43).stream()
+        Set<Integer> legalSquares = generator.generateLegalMoves(Game.fromPosition(board), 43).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertTrue(legalSquares.isEmpty());
@@ -138,7 +134,7 @@ public class KnightMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.setPiece(startSquare, knight);
-        Set<Integer> legalSquares = generator.generateLegalMoves(board, startSquare).stream()
+        Set<Integer> legalSquares = generator.generateLegalMoves(Game.fromPosition(board), startSquare).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);

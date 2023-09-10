@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.service.generator;
 
 import com.google.common.collect.Sets;
-import com.kelseyde.calvin.model.piece.PieceType;
+import com.kelseyde.calvin.model.PieceType;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 

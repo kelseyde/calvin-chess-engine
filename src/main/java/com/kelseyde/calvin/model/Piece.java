@@ -1,6 +1,5 @@
-package com.kelseyde.calvin.model.piece;
+package com.kelseyde.calvin.model;
 
-import com.kelseyde.calvin.model.Colour;
 import lombok.Data;
 
 import java.util.Set;

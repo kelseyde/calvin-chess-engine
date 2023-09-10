@@ -1,10 +1,6 @@
 package com.kelseyde.calvin.service.generator;
 
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.board.Board;
-import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.piece.Piece;
-import com.kelseyde.calvin.model.piece.PieceType;
+import com.kelseyde.calvin.model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -136,9 +132,179 @@ public class PawnMoveGeneratorTest {
 
     }
 
+    @Test
+    public void testWhiteEnPassant() {
+
+        board.setPiece(35, whitePawn);
+        board.setPiece(50, blackPawn);
+        Game game = Game.fromPosition(board);
+        game.setTurn(Colour.BLACK);
+
+        Move blackDoubleMove = generator.generateLegalMoves(game, 50).stream()
+                .filter(move -> move.getEndSquare() == 34)
+                .findFirst().orElseThrow();
+        game.makeMove(blackDoubleMove);
+
+        Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
+
+        Move standardMove = new Move(35, 43);
+        Move enPassantCapture = new Move(35, 42);
+        enPassantCapture.setEnPassantCapture(true);
+
+        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalWhiteMoves);
+
+    }
+
+    @Test
+    public void testWhiteEnPassantWithOtherCapture() {
+
+        board.setPiece(35, whitePawn);
+        board.setPiece(52, blackPawn);
+        board.setPiece(42, new Piece(Colour.BLACK, PieceType.QUEEN));
+        Game game = Game.fromPosition(board);
+        game.setTurn(Colour.BLACK);
+
+        Move blackDoubleMove = generator.generateLegalMoves(game, 52).stream()
+                .filter(move -> move.getEndSquare() == 36)
+                .findFirst().orElseThrow();
+        game.makeMove(blackDoubleMove);
+
+        Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
+
+        Move standardMove = new Move(35, 43);
+        Move standardCapture = new Move(35, 42);
+        Move enPassantCapture = new Move(35, 44);
+        enPassantCapture.setEnPassantCapture(true);
+
+        Assertions.assertEquals(Set.of(standardMove, standardCapture, enPassantCapture), legalWhiteMoves);
+
+    }
+
+    @Test
+    public void testWhiteDoubleEnPassantIsImpossible() {
+
+        board.setPiece(35, whitePawn);
+        // we need another white piece to spend a move in between black's pawn moves
+        board.setPiece(0, new Piece(Colour.WHITE, PieceType.ROOK));
+        // two black pawns on starting positions
+        board.setPiece(50, new Piece(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(52, new Piece(Colour.BLACK, PieceType.PAWN));
+        Game game = Game.fromPosition(board);
+        game.setTurn(Colour.BLACK);
+
+        // first double pawn move from black
+        Move blackDoubleMove = generator.generateLegalMoves(game, 50).stream()
+                .filter(move -> move.getEndSquare() == 34)
+                .findFirst().orElseThrow();
+        game.makeMove(blackDoubleMove);
+
+        Move whiteRookMove = new Move(0, 8);
+        game.makeMove(whiteRookMove);
+
+        // second double pawn move from black, should make the first en-passant capture impossible
+        blackDoubleMove = generator.generateLegalMoves(game, 52).stream()
+                .filter(move -> move.getEndSquare() == 36)
+                .findFirst().orElseThrow();
+        game.makeMove(blackDoubleMove); // first double pawn move from black
+
+        Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
+
+        Move standardMove = new Move(35, 43);
+        Move enPassantCapture = new Move(35, 44);
+        enPassantCapture.setEnPassantCapture(true);
+
+        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalWhiteMoves);
+
+    }
+
+    @Test
+    public void testBlackEnPassant() {
+
+        board.setPiece(29, blackPawn);
+        board.setPiece(14, whitePawn);
+        Game game = Game.fromPosition(board);
+        game.setTurn(Colour.WHITE);
+
+        Move whiteDoubleMove = generator.generateLegalMoves(game, 14).stream()
+                .filter(move -> move.getEndSquare() == 30)
+                .findFirst().orElseThrow();
+        game.makeMove(whiteDoubleMove);
+
+        Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 29);
+
+        Move standardMove = new Move(29, 21);
+        Move enPassantCapture = new Move(29, 22);
+        enPassantCapture.setEnPassantCapture(true);
+
+        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
+
+    }
+
+    @Test
+    public void testBlackEnPassantWithOtherCapture() {
+
+        board.setPiece(29, blackPawn);
+        board.setPiece(12, whitePawn);
+        board.setPiece(22, new Piece(Colour.WHITE, PieceType.ROOK));
+        Game game = Game.fromPosition(board);
+        game.setTurn(Colour.WHITE);
+
+        Move whiteDoubleMove = generator.generateLegalMoves(game, 12).stream()
+                .filter(move -> move.getEndSquare() == 28)
+                .findFirst().orElseThrow();
+        game.makeMove(whiteDoubleMove);
+
+        Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 29);
+
+        Move standardMove = new Move(29, 21);
+        Move standardCapture = new Move(29, 22);
+        Move enPassantCapture = new Move(29, 20);
+        enPassantCapture.setEnPassantCapture(true);
+
+        Assertions.assertEquals(Set.of(standardMove, standardCapture, enPassantCapture), legalBlackMoves);
+
+    }
+
+    @Test
+    public void testBlackDoubleEnPassantIsImpossible() {
+
+        board.setPiece(25, blackPawn);
+        // we need another black piece to spend a move in between black's pawn moves
+        board.setPiece(63, new Piece(Colour.BLACK, PieceType.ROOK));
+        // two black pawns on starting positions
+        board.setPiece(8, new Piece(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(10, new Piece(Colour.WHITE, PieceType.PAWN));
+        Game game = Game.fromPosition(board);
+        game.setTurn(Colour.WHITE);
+
+        // first double pawn move from white
+        Move whiteDoubleMove = generator.generateLegalMoves(game, 10).stream()
+                .filter(move -> move.getEndSquare() == 26)
+                .findFirst().orElseThrow();
+        game.makeMove(whiteDoubleMove);
+
+        Move blackRookMove = new Move(63, 62);
+        game.makeMove(blackRookMove);
+
+        // second double pawn move from black, should make the first en-passant capture impossible
+        whiteDoubleMove = generator.generateLegalMoves(game, 8).stream()
+                .filter(move -> move.getEndSquare() == 24)
+                .findFirst().orElseThrow();
+        game.makeMove(whiteDoubleMove); // first double pawn move from black
+
+        Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 25);
+
+        Move standardMove = new Move(25, 17);
+        Move enPassantCapture = new Move(25, 16);
+        enPassantCapture.setEnPassantCapture(true);
+
+        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
+
+    }
+
     private void assertLegalSquares(int startSquare, Piece pawn, Set<Integer> expectedLegalSquares) {
         board.setPiece(startSquare, pawn);
-        Set<Integer> legalSquares = generator.generateLegalMoves(board, startSquare).stream()
+        Set<Integer> legalSquares = generator.generateLegalMoves(Game.fromPosition(board), startSquare).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);

@@ -1,8 +1,9 @@
 package com.kelseyde.calvin.service.generator;
 
-import com.kelseyde.calvin.model.board.Board;
-import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.piece.Piece;
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.Move;
+import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.HashSet;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class SlidingMoveGenerator implements LegalMoveGenerator {
+public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
 
     // All the possible move 'vectors' for a sliding piece, i.e., the offsets for the directions in which a sliding
     // piece is permitted to move. Bishops will use only the diagonal vectors, rooks only the orthogonal vectors, while
@@ -27,8 +28,9 @@ public abstract class SlidingMoveGenerator implements LegalMoveGenerator {
     protected abstract Set<Integer> getMoveVectors();
 
     @Override
-    public Set<Move> generateLegalMoves(Board board, int startSquare) {
+    public Set<Move> generateLegalMoves(Game game, int startSquare) {
 
+        Board board = game.getBoard();
         Piece piece = board.pieceAt(startSquare)
                 .filter(p -> p.getType().equals(getPieceType()))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no %s on square %s!", getPieceType(), startSquare)));

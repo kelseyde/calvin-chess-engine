@@ -1,10 +1,6 @@
 package com.kelseyde.calvin.service.generator;
 
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.board.Board;
-import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.piece.Piece;
-import com.kelseyde.calvin.model.piece.PieceType;
+import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -15,7 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class KingMoveGenerator implements LegalMoveGenerator {
+public class KingMoveGenerator implements PseudoLegalMoveGenerator {
 
     // All the possible candidate move offsets for a knight on a 1-dimensional board array, i.e., a knight in the middle
     // of an empty board can move to the squares indicated by these offsets.
@@ -30,8 +26,9 @@ public class KingMoveGenerator implements LegalMoveGenerator {
     private final PieceType pieceType = PieceType.KING;
 
     @Override
-    public Set<Move> generateLegalMoves(Board board, int startSquare) {
+    public Set<Move> generateLegalMoves(Game game, int startSquare) {
 
+        Board board = game.getBoard();
         Piece king = board.pieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.KING))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no king on square %s!", startSquare)));

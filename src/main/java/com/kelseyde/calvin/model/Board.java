@@ -1,12 +1,16 @@
-package com.kelseyde.calvin.model.board;
+package com.kelseyde.calvin.model;
 
-import com.kelseyde.calvin.model.piece.Piece;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Does not know anything
+ * about the game state (move number, whose turn, en-passant captures etc.) - it only stores the current position of the
+ * pieces.
+ */
 @Data
 @AllArgsConstructor
 public class Board {
@@ -27,6 +31,10 @@ public class Board {
 
     public void setPiece(int square, Piece piece) {
         squares[square] = piece;
+    }
+
+    public void unsetPiece(int square) {
+        squares[square] = null;
     }
 
     public Optional<Piece> pieceAt(int i) {

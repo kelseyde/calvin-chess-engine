@@ -1,10 +1,10 @@
 package com.kelseyde.calvin.model;
 
+import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Does not know anything
@@ -15,7 +15,17 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class Board {
 
-    private static final Piece[] STARTING_POSITION = Stream.of(
+    private static final Character[] EMPTY_BOARD = new Character[]{
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
+            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'};
+
+    private static final Character[] STARTING_POSITION = new Character[]{
             'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R',
             'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
             'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -23,9 +33,7 @@ public class Board {
             'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
             'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
             'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
-            'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r')
-            .map(Piece::fromChar)
-            .toArray(Piece[]::new);
+            'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'};
 
     private Piece[] squares;
 
@@ -41,16 +49,26 @@ public class Board {
         return Optional.ofNullable(squares[i]);
     }
 
+    public boolean pieceIs(int i, Colour colour, PieceType type) {
+        return pieceAt(i)
+                .filter(piece -> piece.getColour().equals(colour) && piece.getType().equals(type))
+                .isPresent();
+    }
+
+    public boolean isSquareEmpty(int i) {
+        return pieceAt(i).isEmpty();
+    }
+
     public void clear() {
         this.squares = new Piece[64];
     }
 
     public static Board empty() {
-        return new Board(new Piece[64]);
+        return BoardUtils.fromCharArray(EMPTY_BOARD);
     }
 
     public static Board startingPosition() {
-        return new Board(STARTING_POSITION);
+        return BoardUtils.fromCharArray(STARTING_POSITION);
     }
 
 }

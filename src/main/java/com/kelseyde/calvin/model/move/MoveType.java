@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.model;
+package com.kelseyde.calvin.model.move;
 
 public enum MoveType {
 

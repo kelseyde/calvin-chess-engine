@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -31,11 +32,16 @@ public class LegalMoveService {
                 .collect(Collectors.toSet());
     }
 
-    public boolean isLegalMove(Game game, Move move) {
+    public Optional<Move> getLegalMove(Game game, Move move) {
 
         Colour turn = game.getTurn();
         int startSquare = move.getStartSquare();
-        return generateLegalMovesForSquare(game, turn, startSquare).contains(move);
+        Set<Move> legalMoves = generateLegalMovesForSquare(game, turn, startSquare);
+        return legalMoves.stream()
+                .filter(legalMove ->
+                        legalMove.getStartSquare() == move.getStartSquare() &&
+                        legalMove.getEndSquare() == move.getEndSquare())
+                .findFirst();
 
     }
 

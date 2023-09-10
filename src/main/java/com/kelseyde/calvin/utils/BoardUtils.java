@@ -1,11 +1,21 @@
 package com.kelseyde.calvin.utils;
 
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.Piece;
+
+import java.util.Arrays;
 import java.util.Set;
 
 public class BoardUtils {
 
+    public static Board fromCharArray(Character[] chars) {
+        return new Board(Arrays.stream(chars)
+                .map(Piece::fromChar)
+                .toArray(Piece[]::new));
+    }
+
     public static boolean isValidSquareCoordinate(int square) {
-        return square >=0 && square < 64;
+        return square >= 0 && square < 64;
     }
 
     public static boolean isAFile(int square) {

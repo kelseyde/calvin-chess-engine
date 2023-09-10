@@ -37,10 +37,13 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
                 .filter(p -> p.getType().equals(getPieceType()))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no %s on square %s!", getPieceType(), startSquare)));
 
-        return getMoveVectors().stream()
+        Set<Move> legalMoves = getMoveVectors().stream()
                 .flatMap(vectorOffset -> generateLegalMovesForVector(board, piece, startSquare, vectorOffset).stream())
                 .map(targetSquare -> Move.builder().startSquare(startSquare).endSquare(targetSquare).build())
                 .collect(Collectors.toSet());
+        applyPostGenerationConfig(piece, legalMoves);
+
+        return legalMoves;
 
     }
 

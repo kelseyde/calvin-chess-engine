@@ -147,8 +147,8 @@ public class PawnMoveGeneratorTest {
 
         Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
 
-        Move standardMove = new Move(35, 43);
-        Move enPassantCapture = new Move(35, 42);
+        Move standardMove = Move.builder().startSquare(35).endSquare(43).build();
+        Move enPassantCapture = Move.builder().startSquare(35).endSquare(42).build();
         enPassantCapture.setEnPassantCapture(true);
 
         Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalWhiteMoves);
@@ -171,10 +171,9 @@ public class PawnMoveGeneratorTest {
 
         Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
 
-        Move standardMove = new Move(35, 43);
-        Move standardCapture = new Move(35, 42);
-        Move enPassantCapture = new Move(35, 44);
-        enPassantCapture.setEnPassantCapture(true);
+        Move standardMove = Move.builder().startSquare(35).endSquare(43).build();
+        Move standardCapture = Move.builder().startSquare(35).endSquare(42).build();
+        Move enPassantCapture = Move.builder().startSquare(35).endSquare(44).isEnPassantCapture(true).build();
 
         Assertions.assertEquals(Set.of(standardMove, standardCapture, enPassantCapture), legalWhiteMoves);
 
@@ -198,7 +197,7 @@ public class PawnMoveGeneratorTest {
                 .findFirst().orElseThrow();
         game.makeMove(blackDoubleMove);
 
-        Move whiteRookMove = new Move(0, 8);
+        Move whiteRookMove = Move.builder().startSquare(0).endSquare(8).build();
         game.makeMove(whiteRookMove);
 
         // second double pawn move from black, should make the first en-passant capture impossible
@@ -209,8 +208,8 @@ public class PawnMoveGeneratorTest {
 
         Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
 
-        Move standardMove = new Move(35, 43);
-        Move enPassantCapture = new Move(35, 44);
+        Move standardMove = Move.builder().startSquare(35).endSquare(43).build();
+        Move enPassantCapture = Move.builder().startSquare(35).endSquare(44).build();
         enPassantCapture.setEnPassantCapture(true);
 
         Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalWhiteMoves);
@@ -232,8 +231,8 @@ public class PawnMoveGeneratorTest {
 
         Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 29);
 
-        Move standardMove = new Move(29, 21);
-        Move enPassantCapture = new Move(29, 22);
+        Move standardMove = Move.builder().startSquare(29).endSquare(21).build();
+        Move enPassantCapture = Move.builder().startSquare(29).endSquare(22).build();
         enPassantCapture.setEnPassantCapture(true);
 
         Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
@@ -256,9 +255,9 @@ public class PawnMoveGeneratorTest {
 
         Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 29);
 
-        Move standardMove = new Move(29, 21);
-        Move standardCapture = new Move(29, 22);
-        Move enPassantCapture = new Move(29, 20);
+        Move standardMove = Move.builder().startSquare(29).endSquare(21).build();
+        Move standardCapture = Move.builder().startSquare(29).endSquare(22).build();
+        Move enPassantCapture = Move.builder().startSquare(29).endSquare(20).build();
         enPassantCapture.setEnPassantCapture(true);
 
         Assertions.assertEquals(Set.of(standardMove, standardCapture, enPassantCapture), legalBlackMoves);
@@ -283,7 +282,7 @@ public class PawnMoveGeneratorTest {
                 .findFirst().orElseThrow();
         game.makeMove(whiteDoubleMove);
 
-        Move blackRookMove = new Move(63, 62);
+        Move blackRookMove = Move.builder().startSquare(63).endSquare(62).build();
         game.makeMove(blackRookMove);
 
         // second double pawn move from black, should make the first en-passant capture impossible
@@ -294,12 +293,74 @@ public class PawnMoveGeneratorTest {
 
         Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 25);
 
-        Move standardMove = new Move(25, 17);
-        Move enPassantCapture = new Move(25, 16);
+        Move standardMove = Move.builder().startSquare(25).endSquare(17).build();
+        Move enPassantCapture = Move.builder().startSquare(25).endSquare(16).build();
         enPassantCapture.setEnPassantCapture(true);
 
         Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
 
+    }
+
+    @Test
+    public void testWhiteStandardPromotion() {
+        board.setPiece(51, whitePawn);
+        Set<Move> legalMoves = generator.generateLegalMoves(Game.fromPosition(board), 51);
+        Assertions.assertEquals(
+                Set.of(Move.builder().startSquare(51).endSquare(59).promotionPieceType(PieceType.QUEEN).build(),
+                        Move.builder().startSquare(51).endSquare(59).promotionPieceType(PieceType.ROOK).build(),
+                        Move.builder().startSquare(51).endSquare(59).promotionPieceType(PieceType.BISHOP).build(),
+                        Move.builder().startSquare(51).endSquare(59).promotionPieceType(PieceType.KNIGHT).build()),
+                legalMoves
+        );
+    }
+
+    @Test
+    public void testBlackStandardPromotion() {
+        board.setPiece(8, blackPawn);
+        Set<Move> legalMoves = generator.generateLegalMoves(Game.fromPosition(board), 8);
+        Assertions.assertEquals(
+                Set.of(Move.builder().startSquare(8).endSquare(0).promotionPieceType(PieceType.QUEEN).build(),
+                        Move.builder().startSquare(8).endSquare(0).promotionPieceType(PieceType.ROOK).build(),
+                        Move.builder().startSquare(8).endSquare(0).promotionPieceType(PieceType.BISHOP).build(),
+                        Move.builder().startSquare(8).endSquare(0).promotionPieceType(PieceType.KNIGHT).build()),
+                legalMoves
+        );
+    }
+
+    @Test
+    public void testWhiteCapturePromotion() {
+        board.setPiece(51, whitePawn);
+        board.setPiece(58, new Piece(Colour.BLACK, PieceType.QUEEN));
+        Set<Move> legalMoves = generator.generateLegalMoves(Game.fromPosition(board), 51);
+        Assertions.assertEquals(
+                Set.of(Move.builder().startSquare(51).endSquare(59).promotionPieceType(PieceType.QUEEN).build(),
+                        Move.builder().startSquare(51).endSquare(59).promotionPieceType(PieceType.ROOK).build(),
+                        Move.builder().startSquare(51).endSquare(59).promotionPieceType(PieceType.BISHOP).build(),
+                        Move.builder().startSquare(51).endSquare(59).promotionPieceType(PieceType.KNIGHT).build(),
+                        Move.builder().startSquare(51).endSquare(58).promotionPieceType(PieceType.QUEEN).build(),
+                        Move.builder().startSquare(51).endSquare(58).promotionPieceType(PieceType.ROOK).build(),
+                        Move.builder().startSquare(51).endSquare(58).promotionPieceType(PieceType.BISHOP).build(),
+                        Move.builder().startSquare(51).endSquare(58).promotionPieceType(PieceType.KNIGHT).build()),
+                legalMoves
+        );
+    }
+
+    @Test
+    public void testBlackCapturePromotion() {
+        board.setPiece(15, blackPawn);
+        board.setPiece(6, new Piece(Colour.WHITE, PieceType.BISHOP));
+        Set<Move> legalMoves = generator.generateLegalMoves(Game.fromPosition(board), 15);
+        Assertions.assertEquals(
+                Set.of(Move.builder().startSquare(15).endSquare(7).promotionPieceType(PieceType.QUEEN).build(),
+                        Move.builder().startSquare(15).endSquare(7).promotionPieceType(PieceType.ROOK).build(),
+                        Move.builder().startSquare(15).endSquare(7).promotionPieceType(PieceType.BISHOP).build(),
+                        Move.builder().startSquare(15).endSquare(7).promotionPieceType(PieceType.KNIGHT).build(),
+                        Move.builder().startSquare(15).endSquare(6).promotionPieceType(PieceType.QUEEN).build(),
+                        Move.builder().startSquare(15).endSquare(6).promotionPieceType(PieceType.ROOK).build(),
+                        Move.builder().startSquare(15).endSquare(6).promotionPieceType(PieceType.BISHOP).build(),
+                        Move.builder().startSquare(15).endSquare(6).promotionPieceType(PieceType.KNIGHT).build()),
+                legalMoves
+        );
     }
 
     private void assertLegalSquares(int startSquare, Piece pawn, Set<Integer> expectedLegalSquares) {

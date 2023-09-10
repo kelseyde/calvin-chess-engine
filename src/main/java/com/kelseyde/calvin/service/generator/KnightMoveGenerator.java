@@ -40,7 +40,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
                 .collect(Collectors.toSet());
 
         Set<Move> legalMoves = legalOffsets.stream()
-                .map(offset -> new Move(startSquare, startSquare + offset))
+                .map(offset -> Move.builder().startSquare(startSquare).endSquare(startSquare + offset).build())
                 .collect(Collectors.toSet());
 
         return legalMoves;

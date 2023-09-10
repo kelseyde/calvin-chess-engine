@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
@@ -26,30 +25,37 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no pawn on square %s!", startSquare)));
 
         Set<Move> legalMoves = new HashSet<>();
-        checkStandardMove(board, pawn, startSquare).ifPresent(legalMoves::add);
-        checkDoubleMove(board, pawn, startSquare).ifPresent(legalMoves::add);
-        legalMoves.addAll(checkCaptures(game, pawn, startSquare));
+        legalMoves.addAll(getLegalStandardMoves(board, pawn, startSquare));
+        getLegalDoubleMove(board, pawn, startSquare).ifPresent(legalMoves::add);
+        legalMoves.addAll(getLegalCaptures(game, pawn, startSquare));
 
         return legalMoves;
 
     }
 
-    private Optional<Move> checkStandardMove(Board board, Piece piece, int startSquare) {
+    private Set<Move> getLegalStandardMoves(Board board, Piece piece, int startSquare) {
 
+        Set<Move> legalMoves = new HashSet<>();
         int standardMoveOffset = getStandardMoveOffset(piece.getColour());
         int standardMoveSquare = startSquare + standardMoveOffset;
 
         if (BoardUtils.isValidSquareCoordinate(standardMoveSquare)) {
             Optional<Piece> pieceOnStandardMoveSquare = board.pieceAt(standardMoveSquare);
             if (pieceOnStandardMoveSquare.isEmpty()) {
-                return Optional.of(new Move(startSquare, standardMoveSquare));
+                if (isPromotingMove(piece, startSquare)) {
+                    // Covering piece promotion
+                    legalMoves.addAll(getPromotionMoves(startSquare, standardMoveSquare));
+                } else {
+                    // Covering standard move
+                    legalMoves.add(Move.builder().startSquare(startSquare).endSquare(standardMoveSquare).build());
+                }
             }
         }
-        return Optional.empty();
+        return legalMoves;
 
     }
 
-    private Optional<Move> checkDoubleMove(Board board, Piece piece, int startSquare) {
+    private Optional<Move> getLegalDoubleMove(Board board, Piece piece, int startSquare) {
 
         if ((Colour.WHITE.equals(piece.getColour()) && BoardUtils.isSecondRank(startSquare)) ||
             (Colour.BLACK.equals(piece.getColour()) && BoardUtils.isSeventhRank(startSquare))) {
@@ -64,7 +70,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 Optional<Piece> pieceOnStandardMoveSquare = board.pieceAt(standardMoveSquare);
                 Optional<Piece> pieceOnDoubleMoveSquare = board.pieceAt(doubleMoveSquare);
                 if (pieceOnStandardMoveSquare.isEmpty() && pieceOnDoubleMoveSquare.isEmpty()) {
-                    Move move = new Move(startSquare, doubleMoveSquare);
+                    Move move = Move.builder().startSquare(startSquare).endSquare(doubleMoveSquare).build();
                     move.setEnPassantTargetSquare(standardMoveSquare);
                     return Optional.of(move);
                 }
@@ -75,7 +81,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
     }
 
-    private Set<Move> checkCaptures(Game game, Piece piece, int startSquare) {
+    private Set<Move> getLegalCaptures(Game game, Piece piece, int startSquare) {
 
         Set<Move> legalCaptures = new HashSet<>();
 
@@ -89,12 +95,19 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             int targetCaptureSquare = startSquare + offset;
             Optional<Piece> pieceOnTargetSquare = game.getBoard().pieceAt(targetCaptureSquare);
             if (pieceOnTargetSquare.isPresent() && pieceOnTargetSquare.get().getColour().isOppositeColour(piece.getColour())) {
-                legalCaptures.add(new Move(startSquare, targetCaptureSquare));
+                if (isPromotingMove(piece, startSquare)) {
+                    // Covering capturing + piece promotion
+                   legalCaptures.addAll(getPromotionMoves(startSquare, targetCaptureSquare));
+                } else {
+                    // Covering standard capture
+                    legalCaptures.add(Move.builder().startSquare(startSquare).endSquare(targetCaptureSquare).build());
+                }
+
             }
 
             // Covering en passant
             if (pieceOnTargetSquare.isEmpty() && game.getEnPassantTargetSquare() == targetCaptureSquare) {
-                Move move = new Move(startSquare, targetCaptureSquare);
+                Move move = Move.builder().startSquare(startSquare).endSquare(targetCaptureSquare).build();
                 move.setEnPassantCapture(true);
                 legalCaptures.add(move);
             }
@@ -102,6 +115,20 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
         return legalCaptures;
 
+    }
+
+    private boolean isPromotingMove(Piece piece, int startSquare) {
+        return (Colour.WHITE.equals(piece.getColour()) && BoardUtils.isSeventhRank(startSquare)) ||
+                (Colour.BLACK.equals(piece.getColour()) && BoardUtils.isSecondRank(startSquare));
+    }
+
+    private Set<Move> getPromotionMoves(int startSquare, int targetSquare) {
+        return Set.of(
+                Move.builder().startSquare(startSquare).endSquare(targetSquare).promotionPieceType(PieceType.QUEEN).build(),
+                Move.builder().startSquare(startSquare).endSquare(targetSquare).promotionPieceType(PieceType.ROOK).build(),
+                Move.builder().startSquare(startSquare).endSquare(targetSquare).promotionPieceType(PieceType.BISHOP).build(),
+                Move.builder().startSquare(startSquare).endSquare(targetSquare).promotionPieceType(PieceType.KNIGHT).build()
+        );
     }
 
     private int getStandardMoveOffset(Colour colour) {

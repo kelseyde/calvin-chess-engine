@@ -37,7 +37,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
 
         return getMoveVectors().stream()
                 .flatMap(vectorOffset -> generateLegalMovesForVector(board, piece, startSquare, vectorOffset).stream())
-                .map(targetSquare -> new Move(startSquare, targetSquare))
+                .map(targetSquare -> Move.builder().startSquare(startSquare).endSquare(targetSquare).build())
                 .collect(Collectors.toSet());
 
     }

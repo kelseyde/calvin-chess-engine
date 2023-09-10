@@ -8,7 +8,10 @@ import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.generator.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -31,20 +34,7 @@ public class LegalMoveService {
             return Optional.empty();
         }
         return pseudoLegalMove
-                .filter(m -> isKingInCheck(game, m));
-    }
-
-    public Optional<Move> getLegalMove(Game game, Move move) {
-
-        Colour turn = game.getTurn();
-        int startSquare = move.getStartSquare();
-        Set<Move> legalMoves = generatePseudoLegalMoves(game, turn, startSquare);
-        return legalMoves.stream()
-                .filter(legalMove ->
-                        legalMove.getStartSquare() == move.getStartSquare() &&
-                        legalMove.getEndSquare() == move.getEndSquare())
-                .findFirst();
-
+                .filter(m -> !isKingInCheck(game, m));
     }
 
     private boolean isKingInCheck(Game game, Move move) {
@@ -60,7 +50,7 @@ public class LegalMoveService {
     public Set<Move> generateAllPseudoLegalMoves(Game game, Colour colour) {
         Board board = game.getBoard();
         return IntStream.range(0, 64)
-                .filter(square -> board.pieceAt(square).isPresent() || !board.pieceAt(square).get().getColour().isSameColour(colour))
+                .filter(square -> board.pieceAt(square).isPresent() && board.pieceAt(square).get().getColour().isSameColour(colour))
                 .mapToObj(square -> generatePseudoLegalMoves(game, colour, square))
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());

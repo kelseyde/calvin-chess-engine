@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.model;
 
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.service.LegalMoveService;
 import lombok.Data;
 

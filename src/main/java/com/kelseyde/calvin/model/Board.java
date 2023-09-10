@@ -69,7 +69,7 @@ public class Board {
     }
 
     public void unapplyMove(Move move) {
-        Piece piece = this.pieceAt(move.getStartSquare()).orElseThrow();
+        Piece piece = this.pieceAt(move.getEndSquare()).orElseThrow();
         this.unsetPiece(move.getEndSquare());
         this.setPiece(move.getStartSquare(), piece);
 

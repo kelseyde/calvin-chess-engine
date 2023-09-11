@@ -32,4 +32,10 @@ public class Move {
     @Builder.Default
     private PromotionConfig promotionConfig = PromotionConfig.builder().build();
 
+    public boolean moveMatches(Move move) {
+        return startSquare == move.getStartSquare()
+                && endSquare == move.getEndSquare()
+                && promotionConfig.getPromotionPieceType() == move.getPromotionConfig().getPromotionPieceType();
+    }
+
 }

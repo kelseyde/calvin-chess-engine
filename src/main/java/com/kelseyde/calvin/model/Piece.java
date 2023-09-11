@@ -22,6 +22,10 @@ public class Piece {
         return this.type.equals(type);
     }
 
+    public Piece copy() {
+        return new Piece(colour, type);
+    }
+
     public static Piece fromChar(char pieceChar) {
         if (!PIECE_CHARS.contains(pieceChar)) {
             return null;

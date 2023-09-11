@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.service.generator;
 
-import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.PieceType;
+import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 
 import java.util.Set;

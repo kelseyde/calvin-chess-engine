@@ -1,47 +1,39 @@
 package com.kelseyde.calvin.service;
 
-import com.google.common.collect.Sets;
 import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.service.generator.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Evaluates the effect of a {@link Move} on a game. First checks if the move is legal. Then, checks if executing the
+ * move results in the game ending, either due to checkmate or one of the draw conditions.
+ */
 @Slf4j
-public class LegalMoveService {
+public class MoveService {
 
     private final List<PseudoLegalMoveGenerator> pseudoLegalMoveGenerators = List.of(
             new PawnMoveGenerator(), new KnightMoveGenerator(), new BishopMoveGenerator(),
             new RookMoveGenerator(), new QueenMoveGenerator(), new KingMoveGenerator()
     );
 
-    public Optional<Move> isLegalMove(Game game, Move move) {
-        Colour turn = game.getTurn();
-        int startSquare = move.getStartSquare();
-        Set<Move> pseudoLegalMoves = generatePseudoLegalMoves(game, turn, startSquare);
-        Optional<Move> pseudoLegalMove = pseudoLegalMoves.stream()
-                .filter(pseudoLegal -> moveMatches(move, pseudoLegal))
-                .findFirst();
-        if (pseudoLegalMove.isEmpty()) {
-            return Optional.empty();
-        }
-        return pseudoLegalMove
-                .filter(m -> !isKingCapturable(game, m));
-    }
-
-    public Set<Integer> getAttackedSquares(Game game, Colour attackingColour) {
-        return generateAllPseudoLegalMoves(game, attackingColour).stream()
-                .map(Move::getEndSquare)
+    public Set<Move> generateLegalMoves(Game game) {
+        Colour colour = game.getTurn();
+        Set<Integer> pieceSquares = game.getBoard().getPiecePositions(colour);
+        return pieceSquares.stream()
+                .flatMap(square -> generatePseudoLegalMoves(game, colour, square).stream())
+                .filter(pseudoLegalMove -> !isKingCapturable(game, pseudoLegalMove))
                 .collect(Collectors.toSet());
     }
 
@@ -49,14 +41,22 @@ public class LegalMoveService {
         Board board = game.getBoard();
         Colour colour = game.getTurn();
 
-        board.applyMove(move);
+        game.applyMove(move);
+
         Set<Integer> checkableSquares = MoveType.CASTLE.equals(move.getType()) ?
                 move.getCastlingConfig().getKingTravelSquares() : Set.of(board.getKingSquare(colour));
-        Set<Integer> attackedSquares = getAttackedSquares(game, colour.oppositeColour());
-        boolean isKingCapturableOnNextMove = !Sets.intersection(checkableSquares, attackedSquares).isEmpty();
-        board.unapplyMove(move);
 
-        return isKingCapturableOnNextMove;
+        Set<Integer> attackedSquares = generateAllPseudoLegalMoves(game, colour.oppositeColour()).stream()
+                .map(Move::getEndSquare)
+                .collect(Collectors.toSet());
+
+        Set<Integer> intersection = new HashSet<>(checkableSquares);
+        intersection.retainAll(attackedSquares);
+        boolean isKingCapturable = !intersection.isEmpty();
+
+        game.unapplyLastMove();
+
+        return isKingCapturable;
     }
 
     public Set<Move> generateAllPseudoLegalMoves(Game game, Colour colour) {
@@ -83,12 +83,6 @@ public class LegalMoveService {
 
         return pseudoLegalMoveGenerator.generateLegalMoves(game, square);
 
-    }
-
-    private boolean moveMatches(Move a, Move b) {
-        return a.getStartSquare() == b.getStartSquare()
-                && a.getEndSquare() == b.getEndSquare()
-                && a.getPromotionConfig().getPromotionPieceType() == b.getPromotionConfig().getPromotionPieceType();
     }
 
 }

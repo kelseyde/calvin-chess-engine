@@ -1,6 +1,9 @@
 package com.kelseyde.calvin.service.generator;
 
-import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.Colour;
+import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import org.junit.jupiter.api.Assertions;

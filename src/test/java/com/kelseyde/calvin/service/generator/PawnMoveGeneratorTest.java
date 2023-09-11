@@ -1,6 +1,9 @@
 package com.kelseyde.calvin.service.generator;
 
-import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.Colour;
+import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
@@ -149,7 +152,7 @@ public class PawnMoveGeneratorTest {
         Move blackDoubleMove = generator.generateLegalMoves(game, 50).stream()
                 .filter(move -> move.getEndSquare() == 34)
                 .findFirst().orElseThrow();
-        game.makeMove(blackDoubleMove);
+        game.handleMove(blackDoubleMove);
 
         Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
 
@@ -176,7 +179,7 @@ public class PawnMoveGeneratorTest {
         Move blackDoubleMove = generator.generateLegalMoves(game, 52).stream()
                 .filter(move -> move.getEndSquare() == 36)
                 .findFirst().orElseThrow();
-        game.makeMove(blackDoubleMove);
+        game.handleMove(blackDoubleMove);
 
         Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
 
@@ -209,16 +212,16 @@ public class PawnMoveGeneratorTest {
         Move blackDoubleMove = generator.generateLegalMoves(game, 50).stream()
                 .filter(move -> move.getEndSquare() == 34)
                 .findFirst().orElseThrow();
-        game.makeMove(blackDoubleMove);
+        game.handleMove(blackDoubleMove);
 
         Move whiteRookMove = Move.builder().startSquare(0).endSquare(8).build();
-        game.makeMove(whiteRookMove);
+        game.handleMove(whiteRookMove);
 
         // second double pawn move from black, should make the first en-passant capture impossible
         blackDoubleMove = generator.generateLegalMoves(game, 52).stream()
                 .filter(move -> move.getEndSquare() == 36)
                 .findFirst().orElseThrow();
-        game.makeMove(blackDoubleMove); // first double pawn move from black
+        game.handleMove(blackDoubleMove); // first double pawn move from black
 
         Set<Move> legalWhiteMoves = generator.generateLegalMoves(game, 35);
 
@@ -245,7 +248,7 @@ public class PawnMoveGeneratorTest {
         Move whiteDoubleMove = generator.generateLegalMoves(game, 14).stream()
                 .filter(move -> move.getEndSquare() == 30)
                 .findFirst().orElseThrow();
-        game.makeMove(whiteDoubleMove);
+        game.handleMove(whiteDoubleMove);
 
         Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 29);
 
@@ -272,7 +275,7 @@ public class PawnMoveGeneratorTest {
         Move whiteDoubleMove = generator.generateLegalMoves(game, 12).stream()
                 .filter(move -> move.getEndSquare() == 28)
                 .findFirst().orElseThrow();
-        game.makeMove(whiteDoubleMove);
+        game.handleMove(whiteDoubleMove);
 
         Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 29);
 
@@ -305,16 +308,16 @@ public class PawnMoveGeneratorTest {
         Move whiteDoubleMove = generator.generateLegalMoves(game, 10).stream()
                 .filter(move -> move.getEndSquare() == 26)
                 .findFirst().orElseThrow();
-        game.makeMove(whiteDoubleMove);
+        game.handleMove(whiteDoubleMove);
 
         Move blackRookMove = Move.builder().startSquare(63).endSquare(62).build();
-        game.makeMove(blackRookMove);
+        game.handleMove(blackRookMove);
 
         // second double pawn move from black, should make the first en-passant capture impossible
         whiteDoubleMove = generator.generateLegalMoves(game, 8).stream()
                 .filter(move -> move.getEndSquare() == 24)
                 .findFirst().orElseThrow();
-        game.makeMove(whiteDoubleMove); // first double pawn move from black
+        game.handleMove(whiteDoubleMove); // first double pawn move from black
 
         Set<Move> legalBlackMoves = generator.generateLegalMoves(game, 25);
 
@@ -334,12 +337,12 @@ public class PawnMoveGeneratorTest {
     public void testEnPassantRemovesCapturedPawn() {
 
         Game game = new Game();
-        game.makeMove(MoveUtils.fromNotation("e2", "e4"));
-        game.makeMove(MoveUtils.fromNotation("g8", "f6"));
-        game.makeMove(MoveUtils.fromNotation("e4", "e5"));
-        game.makeMove(MoveUtils.fromNotation("d7", "d5"));
+        game.handleMove(MoveUtils.fromNotation("e2", "e4"));
+        game.handleMove(MoveUtils.fromNotation("g8", "f6"));
+        game.handleMove(MoveUtils.fromNotation("e4", "e5"));
+        game.handleMove(MoveUtils.fromNotation("d7", "d5"));
         //en passant
-        game.makeMove(MoveUtils.fromNotation("e5", "d6"));
+        game.handleMove(MoveUtils.fromNotation("e5", "d6"));
 
         Assertions.assertTrue(game.getBoard().pieceAt(MoveUtils.fromNotation("d5")).isEmpty());
 

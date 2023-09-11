@@ -1,12 +1,14 @@
 package com.kelseyde.calvin.model;
 
-import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Does not know anything
@@ -47,47 +49,6 @@ public class Board {
 
     private Piece[] squares;
 
-    public void applyMove(Move move) {
-        Piece piece = this.pieceAt(move.getStartSquare()).orElseThrow();
-        this.unsetPiece(move.getStartSquare());
-        this.setPiece(move.getEndSquare(), piece);
-
-        switch (move.getType()) {
-            case EN_PASSANT -> {
-                this.unsetPiece(move.getEnPassantConfig().getEnPassantCapturedSquare());
-            }
-            case PROMOTION -> {
-                Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionConfig().getPromotionPieceType());
-                this.setPiece(move.getEndSquare(), promotedPiece);
-            }
-            case CASTLE -> {
-                Piece rook = this.pieceAt(move.getCastlingConfig().getRookStartSquare()).orElseThrow();
-                this.unsetPiece(move.getCastlingConfig().getRookStartSquare());
-                this.setPiece(move.getCastlingConfig().getRookEndSquare(), rook);
-            }
-        }
-    }
-
-    public void unapplyMove(Move move) {
-        Piece piece = this.pieceAt(move.getEndSquare()).orElseThrow();
-        this.unsetPiece(move.getEndSquare());
-        this.setPiece(move.getStartSquare(), piece);
-
-        switch (move.getType()) {
-            case EN_PASSANT -> {
-                this.setPiece(move.getEnPassantConfig().getEnPassantCapturedSquare(), new Piece(piece.getColour().oppositeColour(), PieceType.PAWN));
-            }
-            case PROMOTION -> {
-                this.setPiece(move.getStartSquare(), new Piece(piece.getColour(), PieceType.PAWN));
-            }
-            case CASTLE -> {
-                Piece rook = this.pieceAt(move.getCastlingConfig().getRookEndSquare()).orElseThrow();
-                this.unsetPiece(move.getCastlingConfig().getRookEndSquare());
-                this.setPiece(move.getCastlingConfig().getRookStartSquare(), rook);
-            }
-        }
-    }
-
     public void setPiece(int square, Piece piece) {
         squares[square] = piece;
     }
@@ -96,22 +57,38 @@ public class Board {
         squares[square] = null;
     }
 
-    public Optional<Piece> pieceAt(int i) {
-        return Optional.ofNullable(squares[i]);
+    public Optional<Piece> pieceAt(int square) {
+        return Optional.ofNullable(squares[square]);
     }
 
-    public boolean pieceIs(int i, Colour colour, PieceType type) {
-        return pieceAt(i)
+    public boolean pieceIs(int square, Colour colour, PieceType type) {
+        return pieceAt(square)
                 .filter(piece -> piece.getColour().equals(colour) && piece.getType().equals(type))
                 .isPresent();
+    }
+
+    public Set<Integer> getPiecePositions(Colour colour) {
+        return IntStream.range(0, 64)
+                .filter(square -> pieceAt(square).filter(piece -> colour.equals(piece.getColour())).isPresent())
+                .boxed()
+                .collect(Collectors.toSet());
     }
 
     public Integer getKingSquare(Colour colour) {
         return Arrays.asList(squares).indexOf(new Piece(colour, PieceType.KING));
     }
 
-    public boolean isSquareEmpty(int i) {
-        return pieceAt(i).isEmpty();
+    public boolean isSquareEmpty(int square) {
+        return pieceAt(square).isEmpty();
+    }
+
+    public Board copy() {
+        Piece[] squaresCopy = new Piece[64];
+        IntStream.range(0, 64)
+                .forEach(square -> squaresCopy[square] = pieceAt(square)
+                        .map(Piece::copy)
+                        .orElse(null));
+        return new Board(squaresCopy);
     }
 
     public void clear() {

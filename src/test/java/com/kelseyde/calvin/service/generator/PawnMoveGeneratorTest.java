@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.service.generator;
 
 import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.model.move.config.PromotionConfig;

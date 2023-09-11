@@ -1,5 +1,8 @@
-package com.kelseyde.calvin.model;
+package com.kelseyde.calvin.model.game;
 
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.CastlingRights;
+import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.LegalMoveService;
 import lombok.Data;

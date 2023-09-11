@@ -1,10 +1,12 @@
 package com.kelseyde.calvin.service;
 
+import com.google.common.collect.Sets;
 import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.service.generator.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,22 +30,32 @@ public class LegalMoveService {
         int startSquare = move.getStartSquare();
         Set<Move> pseudoLegalMoves = generatePseudoLegalMoves(game, turn, startSquare);
         Optional<Move> pseudoLegalMove = pseudoLegalMoves.stream()
-                .filter(legalMove -> legalMove.getStartSquare() == move.getStartSquare() && legalMove.getEndSquare() == move.getEndSquare())
+                .filter(pseudoLegal -> moveMatches(move, pseudoLegal))
                 .findFirst();
         if (pseudoLegalMove.isEmpty()) {
             return Optional.empty();
         }
         return pseudoLegalMove
-                .filter(m -> !isKingInCheck(game, m));
+                .filter(m -> !isKingCapturable(game, m));
     }
 
-    private boolean isKingInCheck(Game game, Move move) {
+    public Set<Integer> getAttackedSquares(Game game, Colour attackingColour) {
+        return generateAllPseudoLegalMoves(game, attackingColour).stream()
+                .map(Move::getEndSquare)
+                .collect(Collectors.toSet());
+    }
+
+    private boolean isKingCapturable(Game game, Move move) {
         Board board = game.getBoard();
+        Colour colour = game.getTurn();
+
         board.applyMove(move);
-        int kingSquare = board.getKingSquare(game.getTurn());
-        Set<Move> opponentMoves = generateAllPseudoLegalMoves(game, game.getTurn().oppositeColour());
-        boolean isKingCapturableOnNextMove = opponentMoves.stream().anyMatch(opponentMove -> opponentMove.getEndSquare() == kingSquare);
+        Set<Integer> checkableSquares = MoveType.CASTLE.equals(move.getType()) ?
+                move.getCastlingConfig().getKingTravelSquares() : Set.of(board.getKingSquare(colour));
+        Set<Integer> attackedSquares = getAttackedSquares(game, colour.oppositeColour());
+        boolean isKingCapturableOnNextMove = !Sets.intersection(checkableSquares, attackedSquares).isEmpty();
         board.unapplyMove(move);
+
         return isKingCapturableOnNextMove;
     }
 
@@ -71,6 +83,12 @@ public class LegalMoveService {
 
         return pseudoLegalMoveGenerator.generateLegalMoves(game, square);
 
+    }
+
+    private boolean moveMatches(Move a, Move b) {
+        return a.getStartSquare() == b.getStartSquare()
+                && a.getEndSquare() == b.getEndSquare()
+                && a.getPromotionConfig().getPromotionPieceType() == b.getPromotionConfig().getPromotionPieceType();
     }
 
 }

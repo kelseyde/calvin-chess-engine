@@ -81,7 +81,7 @@ public class Board {
                 this.setPiece(move.getStartSquare(), new Piece(piece.getColour(), PieceType.PAWN));
             }
             case CASTLE -> {
-                Piece rook = this.pieceAt(move.getCastlingConfig().getRookStartSquare()).orElseThrow();
+                Piece rook = this.pieceAt(move.getCastlingConfig().getRookEndSquare()).orElseThrow();
                 this.unsetPiece(move.getCastlingConfig().getRookEndSquare());
                 this.setPiece(move.getCastlingConfig().getRookStartSquare(), rook);
             }

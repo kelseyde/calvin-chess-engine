@@ -1,7 +1,9 @@
 package com.kelseyde.calvin.service.generator;
 
 import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.model.move.config.CastlingConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
@@ -58,7 +60,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             return false;
         }
         if ((BoardUtils.isAFile(startSquare) && A_FILE_OFFSET_EXCEPTIONS.contains(offset)) ||
-                (BoardUtils.isHFile(startSquare) && H_FILE_OFFSET_EXCEPTIONS.contains(offset))) {
+            (BoardUtils.isHFile(startSquare) && H_FILE_OFFSET_EXCEPTIONS.contains(offset))) {
             return false;
         }
         Optional<Piece> pieceOnTargetSquare = board.pieceAt(targetSquare);
@@ -69,16 +71,25 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         Colour colour = king.getColour();
         Board board = game.getBoard();
 
-        boolean isKingsideCastlingLegal = game.getCastlingRights().get(colour).isKingSide();
-        boolean isKingOnStartSquare = startSquare == getKingStartingSquare(colour);
-        boolean isRookOnStartSquare = board.pieceIs(getKingsideRookStartingSquare(colour), colour, PieceType.ROOK);
-        boolean travelSquaresEmpty = getKingsideCastlingTravelSquares(colour).stream().allMatch(board::isSquareEmpty);
+        int kingStartingSquare = getKingStartingSquare(colour);
+        int kingTargetSquare = getKingsideCastlingKingSquare(colour);
+        Set<Integer> kingTravelSquares = getKingsideCastlingTravelSquares(colour);
 
-        if (isKingsideCastlingLegal && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
-            return Optional.of(createKingMove(startSquare, getKingsideCastlingKingSquare(colour))
+        int rookStartingSqure = getKingsideRookStartingSquare(colour);
+        Set<Integer> rookTravelSquares = getKingsideCastlingRookTravelSquares(colour);
+
+        boolean isKingsideCastlingDisallowed = game.getCastlingRights().get(colour).isKingSide();
+        boolean isKingOnStartSquare = startSquare == kingStartingSquare;
+        boolean isRookOnStartSquare = board.pieceIs(rookStartingSqure, colour, PieceType.ROOK);
+        boolean travelSquaresEmpty = rookTravelSquares.stream().allMatch(board::isSquareEmpty);
+
+        if (isKingsideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
+            return Optional.of(createKingMove(startSquare, kingTargetSquare)
+                    .type(MoveType.CASTLE)
                     .castlingConfig(CastlingConfig.builder()
                             .rookStartSquare(getKingsideRookStartingSquare(colour))
                             .rookEndSquare(getKingsideRookCastlingSquare(colour))
+                            .kingTravelSquares(kingTravelSquares)
                             .build())
                     .build());
         }
@@ -89,16 +100,25 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         Colour colour = king.getColour();
         Board board = game.getBoard();
 
-        boolean isQueensideCastlingLegal = game.getCastlingRights().get(colour).isQueenSide();
-        boolean isKingOnStartSquare = startSquare == getKingStartingSquare(colour);
-        boolean isRookOnStartSquare = board.pieceIs(getQueensideRookStartingSquare(colour), colour, PieceType.ROOK);
-        boolean travelSquaresEmpty = getQueensideCastlingTravelSquares(colour).stream().allMatch(board::isSquareEmpty);
+        int kingStartingSquare = getKingStartingSquare(colour);
+        int kingTargetSquare = getQueensideCastlingKingSquare(colour);
+        Set<Integer> kingTravelSquares = getQueensideCastlingTravelSquares(colour);
 
-        if (isQueensideCastlingLegal && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
-            return Optional.of(createKingMove(startSquare, getQueensideCastlingKingSquare(colour))
+        int rookStartingSquare = getQueensideRookStartingSquare(colour);
+        Set<Integer> rookTravelSquares = getQueensideCastlingRookTravelSquares(colour);
+
+        boolean isQueensideCastlingDisallowed = game.getCastlingRights().get(colour).isQueenSide();
+        boolean isKingOnStartSquare = startSquare == kingStartingSquare;
+        boolean isRookOnStartSquare = board.pieceIs(rookStartingSquare, colour, PieceType.ROOK);
+        boolean travelSquaresEmpty = rookTravelSquares.stream().allMatch(board::isSquareEmpty);
+
+        if (isQueensideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
+            return Optional.of(createKingMove(startSquare, kingTargetSquare)
+                    .type(MoveType.CASTLE)
                     .castlingConfig(CastlingConfig.builder()
                             .rookStartSquare(getQueensideRookStartingSquare(colour))
                             .rookEndSquare(getQueensideRookCastlingSquare(colour))
+                            .kingTravelSquares(kingTravelSquares)
                             .build())
                     .build());
         }
@@ -144,12 +164,20 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         return Colour.WHITE.equals(colour) ? 3 : 59;
     }
 
-    private Set<Integer> getKingsideCastlingTravelSquares(Colour colour) {
+    private Set<Integer> getKingsideCastlingRookTravelSquares(Colour colour) {
         return Colour.WHITE.equals(colour) ? Set.of(5, 6) : Set.of(61, 62);
     }
 
-    private Set<Integer> getQueensideCastlingTravelSquares(Colour colour) {
+    private Set<Integer> getQueensideCastlingRookTravelSquares(Colour colour) {
         return Colour.WHITE.equals(colour) ? Set.of(1, 2, 3) : Set.of(57, 58, 59);
+    }
+
+    private Set<Integer> getKingsideCastlingTravelSquares(Colour colour) {
+        return Colour.WHITE.equals(colour) ? Set.of(4, 5, 6) : Set.of(60, 61, 62);
+    }
+
+    private Set<Integer> getQueensideCastlingTravelSquares(Colour colour) {
+        return Colour.WHITE.equals(colour) ? Set.of(2, 3, 4) : Set.of(58, 59, 60);
     }
 
 }

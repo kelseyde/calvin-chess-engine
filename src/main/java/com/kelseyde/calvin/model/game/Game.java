@@ -21,7 +21,7 @@ public class Game {
 
     private Board board;
     private Colour turn;
-    private Stack<Board> boardHistory;
+    private Stack<BoardMetadata> boardHistory;
     private Stack<Move> moveHistory;
     private Map<Colour, CastlingRights> castlingRights;
     private int enPassantTargetSquare;
@@ -98,11 +98,15 @@ public class Game {
             }
         }
 
-
     }
 
     public void applyMove(Move move) {
-        boardHistory.push(board.copy());
+        boardHistory.push(BoardMetadata.builder()
+                .board(board.copy())
+                .turn(turn)
+                .castlingRights(castlingRights)
+                .enPassantTargetSquare(enPassantTargetSquare)
+                .build());
         Piece piece = board.pieceAt(move.getStartSquare()).orElseThrow();
         board.unsetPiece(move.getStartSquare());
         board.setPiece(move.getEndSquare(), piece);
@@ -124,7 +128,7 @@ public class Game {
     }
 
     public void unapplyLastMove() {
-        board = boardHistory.pop();
+        board = boardHistory.pop().getBoard();
     }
 
     private ActionResult handleResignation(Player player) {

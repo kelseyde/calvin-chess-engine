@@ -59,27 +59,35 @@ public class PawnMoveGeneratorTest {
 
         board.setPiece(16, new Piece(Colour.WHITE, PieceType.ROOK));
         assertLegalSquares(8, whitePawn, Set.of());
+        board.unsetPiece(16);
 
         board.setPiece(17, new Piece(Colour.BLACK, PieceType.PAWN));
         assertLegalSquares(9, whitePawn, Set.of());
+        board.unsetPiece(17);
 
         board.setPiece(18, new Piece(Colour.WHITE, PieceType.KING));
         assertLegalSquares(10, whitePawn, Set.of());
+        board.unsetPiece(18);
 
         board.setPiece(19, new Piece(Colour.BLACK, PieceType.QUEEN));
         assertLegalSquares(11, whitePawn, Set.of());
+        board.unsetPiece(19);
 
         board.setPiece(44, new Piece(Colour.BLACK, PieceType.BISHOP));
         assertLegalSquares(52, blackPawn, Set.of());
+        board.unsetPiece(44);
 
         board.setPiece(45, new Piece(Colour.BLACK, PieceType.PAWN));
         assertLegalSquares(53, blackPawn, Set.of());
+        board.unsetPiece(45);
 
         board.setPiece(46, new Piece(Colour.BLACK, PieceType.KNIGHT));
         assertLegalSquares(54, blackPawn, Set.of());
+        board.unsetPiece(46);
 
         board.setPiece(47, new Piece(Colour.BLACK, PieceType.ROOK));
         assertLegalSquares(55, blackPawn, Set.of());
+        board.unsetPiece(47);
 
     }
 
@@ -440,7 +448,7 @@ public class PawnMoveGeneratorTest {
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.clear();
+        board.unsetPiece(startSquare);
     }
 
 }

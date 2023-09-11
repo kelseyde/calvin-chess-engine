@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,6 +75,11 @@ public class Board {
                 .collect(Collectors.toSet());
     }
 
+    public Map<Integer, Piece> getPieces(Colour colour) {
+        return getPiecePositions(colour).stream()
+                .collect(Collectors.toMap(square -> square, square -> pieceAt(square).orElseThrow()));
+    }
+
     public Integer getKingSquare(Colour colour) {
         return Arrays.asList(squares).indexOf(new Piece(colour, PieceType.KING));
     }
@@ -91,8 +97,5 @@ public class Board {
         return new Board(squaresCopy);
     }
 
-    public void clear() {
-        this.squares = new Piece[64];
-    }
 
 }

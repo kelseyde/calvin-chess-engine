@@ -33,7 +33,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
     private final PieceType pieceType = PieceType.KNIGHT;
 
     @Override
-    public Set<Move> generateLegalMoves(Game game, int startSquare) {
+    public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
 
         Board board = game.getBoard();
         Piece knight = board.pieceAt(startSquare)

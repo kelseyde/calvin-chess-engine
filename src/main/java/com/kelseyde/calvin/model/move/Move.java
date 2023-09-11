@@ -14,11 +14,11 @@ import lombok.Data;
 @Builder
 public class Move {
 
-    @NotNull
     private final int startSquare;
 
-    @NotNull
     private final int endSquare;
+
+    private boolean isCheck;
 
     @Builder.Default
     private MoveType type = MoveType.STANDARD;

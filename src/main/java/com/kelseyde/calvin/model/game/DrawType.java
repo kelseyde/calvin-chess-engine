@@ -3,7 +3,7 @@ package com.kelseyde.calvin.model.game;
 public enum DrawType {
 
     STALEMATE,
-    REPETITION,
+    THREEFOLD_REPETITION,
     INSUFFICIENT_MATERIAL,
     FIFTY_MOVE_RULE
 

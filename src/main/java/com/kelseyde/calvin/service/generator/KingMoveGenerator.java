@@ -34,7 +34,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
     private final PieceType pieceType = PieceType.KING;
 
     @Override
-    public Set<Move> generateLegalMoves(Game game, int startSquare) {
+    public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
 
         Board board = game.getBoard();
         Piece king = board.pieceAt(startSquare)

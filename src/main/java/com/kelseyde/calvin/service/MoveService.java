@@ -31,39 +31,19 @@ public class MoveService {
     public Set<Move> generateLegalMoves(Game game) {
         Colour colour = game.getTurn();
         Set<Integer> pieceSquares = game.getBoard().getPiecePositions(colour);
+        int opponentKingSquare = game.getBoard().getKingSquare(colour.oppositeColour());
+
         return pieceSquares.stream()
                 .flatMap(square -> generatePseudoLegalMoves(game, colour, square).stream())
                 .filter(pseudoLegalMove -> !isKingCapturable(game, pseudoLegalMove))
+                .map(legalMove -> calculateCheck(game, legalMove))
                 .collect(Collectors.toSet());
-    }
-
-    private boolean isKingCapturable(Game game, Move move) {
-        Board board = game.getBoard();
-        Colour colour = game.getTurn();
-
-        game.applyMove(move);
-
-        Set<Integer> checkableSquares = MoveType.CASTLE.equals(move.getType()) ?
-                move.getCastlingConfig().getKingTravelSquares() : Set.of(board.getKingSquare(colour));
-
-        Set<Integer> attackedSquares = generateAllPseudoLegalMoves(game, colour.oppositeColour()).stream()
-                .map(Move::getEndSquare)
-                .collect(Collectors.toSet());
-
-        Set<Integer> intersection = new HashSet<>(checkableSquares);
-        intersection.retainAll(attackedSquares);
-        boolean isKingCapturable = !intersection.isEmpty();
-
-        game.unapplyLastMove();
-
-        return isKingCapturable;
     }
 
     public Set<Move> generateAllPseudoLegalMoves(Game game, Colour colour) {
-        Board board = game.getBoard();
-        return IntStream.range(0, 64)
-                .filter(square -> board.pieceAt(square).isPresent() && board.pieceAt(square).get().getColour().isSameColour(colour))
-                .mapToObj(square -> generatePseudoLegalMoves(game, colour, square))
+        Set<Integer> pieceSquares = game.getBoard().getPiecePositions(colour);
+        return pieceSquares.stream()
+                .map(square -> generatePseudoLegalMoves(game, colour, square))
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
     }
@@ -81,8 +61,46 @@ public class MoveService {
                 .orElseThrow(() -> new NoSuchElementException(
                         String.format("No move generator found for piece type %s!", piece.getType())));
 
-        return pseudoLegalMoveGenerator.generateLegalMoves(game, square);
+        return pseudoLegalMoveGenerator.generatePseudoLegalMoves(game, square);
 
+    }
+
+    private boolean isKingCapturable(Game game, Move move) {
+        Board board = game.getBoard();
+        Colour colour = game.getTurn();
+
+        game.applyMove(move);
+
+        Set<Integer> checkableSquares = MoveType.CASTLE.equals(move.getType()) ?
+                move.getCastlingConfig().getKingTravelSquares() : Set.of(board.getKingSquare(colour));
+        Set<Integer> attackedSquares = generateAllPseudoLegalMoves(game, colour.oppositeColour()).stream()
+                .map(Move::getEndSquare)
+                .collect(Collectors.toSet());
+
+        Set<Integer> intersection = new HashSet<>(checkableSquares);
+        intersection.retainAll(attackedSquares);
+        boolean isKingCapturable = !intersection.isEmpty();
+
+        game.unapplyLastMove();
+
+        return isKingCapturable;
+    }
+
+    private Move calculateCheck(Game game, Move move) {
+        Board board = game.getBoard();
+        Colour colour = game.getTurn();
+
+        game.applyMove(move);
+
+        int opponentKingSquare = board.getKingSquare(colour.oppositeColour());
+        Set<Integer> attackingSquares = generateAllPseudoLegalMoves(game, colour).stream()
+                .map(Move::getEndSquare)
+                .collect(Collectors.toSet());
+        boolean isCheck = attackingSquares.contains(opponentKingSquare);
+        move.setCheck(isCheck);
+
+        game.unapplyLastMove();
+        return move;
     }
 
 }

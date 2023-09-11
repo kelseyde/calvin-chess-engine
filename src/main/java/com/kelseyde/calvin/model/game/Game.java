@@ -2,10 +2,12 @@ package com.kelseyde.calvin.model.game;
 
 import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.service.DrawService;
 import com.kelseyde.calvin.service.MoveService;
 import lombok.Data;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
@@ -27,6 +29,7 @@ public class Game {
     private int fullMoveCounter;
 
     private MoveService moveService;
+    private DrawService drawService;
     private Set<Move> legalMoves;
 
     public Game() {
@@ -40,6 +43,7 @@ public class Game {
         this.fullMoveCounter = 1;
 
         this.moveService = new MoveService();
+        this.drawService = new DrawService();
         this.legalMoves = moveService.generateLegalMoves(this);
     }
 
@@ -70,13 +74,30 @@ public class Game {
         if (Colour.BLACK.equals(turn)) {
             fullMoveCounter++;
         }
-        turn = turn.oppositeColour();
         moveHistory.push(legalMove);
+        turn = turn.oppositeColour();
         legalMoves = moveService.generateLegalMoves(this);
 
-        return ActionResult.builder()
-                .sideToPlay(turn)
-                .build();
+        if (legalMove.isCheck() && legalMoves.isEmpty()) {
+            return ActionResult.builder()
+                    .isWin(true)
+                    .winningColour(turn.oppositeColour())
+                    .winType(WinType.CHECKMATE)
+                    .build();
+        } else {
+            Optional<DrawType> drawType = drawService.calculateDraw(this);
+            if (drawType.isPresent()) {
+                return ActionResult.builder()
+                        .isDraw(true)
+                        .drawType(drawType.get())
+                        .build();
+            } else {
+                return ActionResult.builder()
+                        .sideToPlay(turn)
+                        .build();
+            }
+        }
+
 
     }
 

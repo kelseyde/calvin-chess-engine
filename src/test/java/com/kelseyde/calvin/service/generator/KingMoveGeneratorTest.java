@@ -56,7 +56,7 @@ public class KingMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.setPiece(startSquare, king);
-        Set<Integer> legalSquares = generator.generateLegalMoves(Game.fromPosition(board), startSquare).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(Game.fromPosition(board), startSquare).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);

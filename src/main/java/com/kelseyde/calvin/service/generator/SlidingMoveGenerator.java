@@ -30,7 +30,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     protected abstract void applyPostGenerationConfig(Piece piece, Set<Move> legalMoves);
 
     @Override
-    public Set<Move> generateLegalMoves(Game game, int startSquare) {
+    public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
 
         Board board = game.getBoard();
         Piece piece = board.pieceAt(startSquare)

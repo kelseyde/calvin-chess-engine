@@ -10,6 +10,6 @@ public interface PseudoLegalMoveGenerator {
 
     PieceType getPieceType();
 
-    Set<Move> generateLegalMoves(Game game, int startSquare);
+    Set<Move> generatePseudoLegalMoves(Game game, int startSquare);
 
 }

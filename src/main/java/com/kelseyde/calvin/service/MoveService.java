@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Evaluates the effect of a {@link Move} on a game. First checks if the move is legal. Then, checks if executing the

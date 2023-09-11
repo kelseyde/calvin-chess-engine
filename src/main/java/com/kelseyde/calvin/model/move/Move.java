@@ -3,7 +3,6 @@ package com.kelseyde.calvin.model.move;
 import com.kelseyde.calvin.model.move.config.CastlingConfig;
 import com.kelseyde.calvin.model.move.config.EnPassantConfig;
 import com.kelseyde.calvin.model.move.config.PromotionConfig;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 

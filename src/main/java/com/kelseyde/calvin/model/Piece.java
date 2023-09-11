@@ -26,29 +26,22 @@ public class Piece {
         return new Piece(colour, type);
     }
 
+    private static Colour getColour(char pieceChar) {
+        return Character.isUpperCase(pieceChar) ? Colour.WHITE : Colour.BLACK;
+    }
+
     public static Piece fromChar(char pieceChar) {
         if (!PIECE_CHARS.contains(pieceChar)) {
             return null;
         }
         Colour colour = getColour(pieceChar);
-        PieceType type = getPieceType(pieceChar);
+        PieceType type = PieceType.fromChar(pieceChar);
         return new Piece(colour, type);
     }
 
-    private static Colour getColour(char pieceChar) {
-        return Character.isUpperCase(pieceChar) ? Colour.WHITE : Colour.BLACK;
-    }
-
-    private static PieceType getPieceType(char pieceChar) {
-        return switch (Character.toUpperCase(pieceChar)) {
-            case 'K' -> PieceType.KING;
-            case 'Q' -> PieceType.QUEEN;
-            case 'R' -> PieceType.ROOK;
-            case 'B' -> PieceType.BISHOP;
-            case 'N' -> PieceType.KNIGHT;
-            case 'P' -> PieceType.PAWN;
-            default -> throw new IllegalArgumentException(String.format("%s is not a valid piece character!", pieceChar));
-        };
+    public char toChar() {
+        char pieceTypeChar = type.toChar();
+        return Colour.WHITE.equals(colour) ? pieceTypeChar : Character.toLowerCase(pieceTypeChar);
     }
 
 }

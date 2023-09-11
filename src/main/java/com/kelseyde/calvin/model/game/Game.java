@@ -144,6 +144,11 @@ public class Game {
         this.legalMoves = moveService.generateLegalMoves(this);
     }
 
+    public void setBoard(Board board) {
+        this.board = board;
+        this.legalMoves = moveService.generateLegalMoves(this);
+    }
+
     public static Game fromPosition(Board board) {
         Game game = new Game();
         game.setBoard(board);

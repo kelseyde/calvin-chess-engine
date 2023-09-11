@@ -4,14 +4,41 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Piece;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 public class BoardUtils {
+
+    private static final String BOLD = "\033[0;1m";
 
     public static Board fromCharArray(Character[] chars) {
         return new Board(Arrays.stream(chars)
                 .map(Piece::fromChar)
                 .toArray(Piece[]::new));
+    }
+
+    public static Character[] toCharArray(Board board) {
+        return Arrays.stream(board.getSquares())
+                .map(Optional::ofNullable)
+                .map(piece -> piece.map(Piece::toChar).orElse('x'))
+                .toArray(Character[]::new);
+    }
+
+    public static String toFormattedBoardString(Board board) {
+        Character[] pieceCharArray = toCharArray(board);
+        StringBuilder sb = new StringBuilder();
+        IntStream.range(0, 64)
+                .boxed()
+                .sorted(Collections.reverseOrder())
+                .forEach(square -> {
+                    sb.append(" ").append(pieceCharArray[square]).append(" ");
+                    if (isAFile(square)) {
+                        sb.append("\n");
+                    }
+        });
+        return sb.toString();
     }
 
     public static boolean isValidSquareCoordinate(int square) {

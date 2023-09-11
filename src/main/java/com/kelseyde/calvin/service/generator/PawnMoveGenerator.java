@@ -101,6 +101,9 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
             // Covering standard capture offset
             int targetCaptureSquare = startSquare + offset;
+            if (!BoardUtils.isValidSquareCoordinate(targetCaptureSquare)) {
+                continue;
+            }
             Optional<Piece> pieceOnTargetSquare = game.getBoard().pieceAt(targetCaptureSquare);
             if (pieceOnTargetSquare.isPresent() && pieceOnTargetSquare.get().getColour().isOppositeColour(piece.getColour())) {
                 if (isPromotingMove(piece, startSquare)) {
@@ -140,12 +143,16 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
     private Set<Move> getPromotionMoves(int startSquare, int targetSquare) {
         return Set.of(
                 Move.builder().startSquare(startSquare).endSquare(targetSquare)
+                        .type(MoveType.PROMOTION)
                         .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
                 Move.builder().startSquare(startSquare).endSquare(targetSquare)
+                        .type(MoveType.PROMOTION)
                         .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
                 Move.builder().startSquare(startSquare).endSquare(targetSquare)
+                        .type(MoveType.PROMOTION)
                         .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
                 Move.builder().startSquare(startSquare).endSquare(targetSquare)
+                        .type(MoveType.PROMOTION)
                         .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build()
         );
     }

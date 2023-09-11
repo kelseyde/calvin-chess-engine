@@ -54,7 +54,7 @@ public class Board {
 
         switch (move.getType()) {
             case EN_PASSANT -> {
-                this.unsetPiece(move.getEnPassantConfig().getEnPassantTargetSquare());
+                this.unsetPiece(move.getEnPassantConfig().getEnPassantCapturedSquare());
             }
             case PROMOTION -> {
                 Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionConfig().getPromotionPieceType());
@@ -75,7 +75,7 @@ public class Board {
 
         switch (move.getType()) {
             case EN_PASSANT -> {
-                this.setPiece(move.getEnPassantConfig().getEnPassantTargetSquare(), new Piece(piece.getColour().oppositeColour(), PieceType.PAWN));
+                this.setPiece(move.getEnPassantConfig().getEnPassantCapturedSquare(), new Piece(piece.getColour().oppositeColour(), PieceType.PAWN));
             }
             case PROMOTION -> {
                 this.setPiece(move.getStartSquare(), new Piece(piece.getColour(), PieceType.PAWN));

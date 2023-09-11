@@ -40,6 +40,25 @@ public class CheckTest {
     }
 
     @Test
+    public void cannotEnPassantWithPinnedPawn() {
+
+        Game game = new Game();
+        game.makeMove(MoveUtils.fromNotation("e2", "e4"));
+        game.makeMove(MoveUtils.fromNotation("e7", "e5"));
+        game.makeMove(MoveUtils.fromNotation("d2", "d4"));
+        game.makeMove(MoveUtils.fromNotation("e5", "d4"));
+        game.makeMove(MoveUtils.fromNotation("e4", "e5"));
+        game.makeMove(MoveUtils.fromNotation("d8", "e7"));
+        game.makeMove(MoveUtils.fromNotation("g1", "f3"));
+        game.makeMove(MoveUtils.fromNotation("d7", "d5"));
+
+        // black tries to en-passant with pinned e-pawn
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                game.makeMove(MoveUtils.fromNotation("e5", "d6")));
+
+    }
+
+    @Test
     public void cannotMovePinnedKnight() {
         Game game = new Game();
         game.makeMove(MoveUtils.fromNotation("e2", "e4"));

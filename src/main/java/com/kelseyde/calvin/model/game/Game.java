@@ -37,7 +37,7 @@ public class Game {
         Move legalMove = legalMoveService.isLegalMove(this, move)
                 .orElseThrow(() -> new IllegalArgumentException("Illegal move! " + move));
 
-        board.applyMove(move);
+        board.applyMove(legalMove);
 
         enPassantTargetSquare = legalMove.getEnPassantConfig().getEnPassantTargetSquare();
         if (legalMove.getCastlingConfig().isNegatesKingsideCastling()) {

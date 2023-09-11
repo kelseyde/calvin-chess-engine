@@ -112,7 +112,14 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
             // Covering en passant
             if (pieceOnTargetSquare.isEmpty() && game.getEnPassantTargetSquare() == targetCaptureSquare) {
-                Move move = Move.builder().startSquare(startSquare).endSquare(targetCaptureSquare).build();
+                Move move = Move.builder()
+                        .type(MoveType.EN_PASSANT)
+                        .startSquare(startSquare)
+                        .endSquare(targetCaptureSquare)
+                        .enPassantConfig(EnPassantConfig.builder()
+                                .enPassantCapturedSquare(getCapturedEnPassantPawnSquare(piece.getColour(), targetCaptureSquare))
+                                .build())
+                        .build();
                 move.setType(MoveType.EN_PASSANT);
                 legalCaptures.add(move);
             }
@@ -150,6 +157,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
     private Set<Integer> getCaptureOffsets(Colour colour) {
         return Colour.WHITE.equals(colour) ? Set.of(7, 9) : Set.of(-7, -9);
+    }
+
+    private int getCapturedEnPassantPawnSquare(Colour colour, int enPassantTargetSquare) {
+        return Colour.WHITE.equals(colour) ? enPassantTargetSquare - 8 : enPassantTargetSquare + 8;
     }
 
     private int getAFileCaptureOffsetException(Colour colour) {

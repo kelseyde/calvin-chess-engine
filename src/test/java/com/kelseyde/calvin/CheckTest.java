@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.service.generator;
+package com.kelseyde.calvin;
 
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.utils.MoveUtils;

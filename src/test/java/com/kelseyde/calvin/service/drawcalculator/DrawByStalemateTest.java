@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.service.generator;
+package com.kelseyde.calvin.service.drawcalculator;
 
 import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;

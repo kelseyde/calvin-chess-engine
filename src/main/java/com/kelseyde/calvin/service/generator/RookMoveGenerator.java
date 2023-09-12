@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.move.config.CastlingConfig;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +25,8 @@ public class RookMoveGenerator extends SlidingMoveGenerator {
         legalMoves.forEach(legalMove -> {
             boolean negatesKingsideCastling = legalMove.getStartSquare() == getKingsideRookStartingSquare(piece.getColour());
             boolean negatesQueensideCastling = legalMove.getStartSquare() == getQueensideRookStartingSquare(piece.getColour());
-            legalMove.setCastlingConfig(CastlingConfig.builder()
-                    .negatesKingsideCastling(negatesKingsideCastling)
-                    .negatesQueensideCastling(negatesQueensideCastling)
-                    .build());
+            legalMove.setNegatesKingsideCastling(negatesKingsideCastling);
+            legalMove.setNegatesQueensideCastling(negatesQueensideCastling);
         });
     }
 

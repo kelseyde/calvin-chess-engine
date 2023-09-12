@@ -78,7 +78,7 @@ public class MoveService {
         game.applyMove(move);
 
         Set<Integer> checkableSquares = MoveType.CASTLE.equals(move.getType()) ?
-                move.getCastlingConfig().getKingTravelSquares() : Set.of(board.getKingSquare(colour));
+                move.getKingTravelSquares() : Set.of(board.getKingSquare(colour));
         Set<Integer> attackedSquares = generateAllPseudoLegalMoves(game, colour.oppositeColour()).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

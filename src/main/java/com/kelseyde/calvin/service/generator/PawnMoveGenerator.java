@@ -7,8 +7,6 @@ import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
-import com.kelseyde.calvin.model.move.config.EnPassantConfig;
-import com.kelseyde.calvin.model.move.config.PromotionConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -78,8 +76,9 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 Optional<Piece> pieceOnStandardMoveSquare = board.pieceAt(standardMoveSquare);
                 Optional<Piece> pieceOnDoubleMoveSquare = board.pieceAt(doubleMoveSquare);
                 if (pieceOnStandardMoveSquare.isEmpty() && pieceOnDoubleMoveSquare.isEmpty()) {
-                    Move move = Move.builder().startSquare(startSquare).endSquare(doubleMoveSquare).build();
-                    move.setEnPassantConfig(EnPassantConfig.builder().enPassantTargetSquare(standardMoveSquare).build());
+                    Move move = Move.builder().startSquare(startSquare).endSquare(doubleMoveSquare)
+                            .enPassantTargetSquare(standardMoveSquare)
+                            .build();
                     return Optional.of(move);
                 }
             }
@@ -122,9 +121,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                         .type(MoveType.EN_PASSANT)
                         .startSquare(startSquare)
                         .endSquare(targetCaptureSquare)
-                        .enPassantConfig(EnPassantConfig.builder()
-                                .enPassantCapturedSquare(getCapturedEnPassantPawnSquare(piece.getColour(), targetCaptureSquare))
-                                .build())
+                        .enPassantCapturedSquare(getCapturedEnPassantPawnSquare(piece.getColour(), targetCaptureSquare))
                         .build();
                 move.setType(MoveType.EN_PASSANT);
                 legalCaptures.add(move);
@@ -144,16 +141,16 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         return Set.of(
                 Move.builder().startSquare(startSquare).endSquare(targetSquare)
                         .type(MoveType.PROMOTION)
-                        .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
+                        .promotionPieceType(PieceType.QUEEN).build(),
                 Move.builder().startSquare(startSquare).endSquare(targetSquare)
                         .type(MoveType.PROMOTION)
-                        .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
+                        .promotionPieceType(PieceType.ROOK).build(),
                 Move.builder().startSquare(startSquare).endSquare(targetSquare)
                         .type(MoveType.PROMOTION)
-                        .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
+                        .promotionPieceType(PieceType.BISHOP).build(),
                 Move.builder().startSquare(startSquare).endSquare(targetSquare)
                         .type(MoveType.PROMOTION)
-                        .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build()
+                        .promotionPieceType(PieceType.KNIGHT).build()
         );
     }
 

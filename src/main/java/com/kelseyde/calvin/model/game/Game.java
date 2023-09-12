@@ -78,11 +78,11 @@ public class Game {
 
         applyMove(legalMove);
 
-        enPassantTargetSquare = legalMove.getEnPassantConfig().getEnPassantTargetSquare();
-        if (legalMove.getCastlingConfig().isNegatesKingsideCastling()) {
+        enPassantTargetSquare = legalMove.getEnPassantTargetSquare();
+        if (legalMove.isNegatesKingsideCastling()) {
             castlingRights.get(turn).setKingSide(false);
         }
-        if (legalMove.getCastlingConfig().isNegatesQueensideCastling()) {
+        if (legalMove.isNegatesQueensideCastling()) {
             castlingRights.get(turn).setQueenSide(false);
         }
 
@@ -128,16 +128,16 @@ public class Game {
 
         switch (move.getType()) {
             case EN_PASSANT -> {
-                board.unsetPiece(move.getEnPassantConfig().getEnPassantCapturedSquare());
+                board.unsetPiece(move.getEnPassantCapturedSquare());
             }
             case PROMOTION -> {
-                Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionConfig().getPromotionPieceType());
+                Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionPieceType());
                 board.setPiece(move.getEndSquare(), promotedPiece);
             }
             case CASTLE -> {
-                Piece rook = board.pieceAt(move.getCastlingConfig().getRookStartSquare()).orElseThrow();
-                board.unsetPiece(move.getCastlingConfig().getRookStartSquare());
-                board.setPiece(move.getCastlingConfig().getRookEndSquare(), rook);
+                Piece rook = board.pieceAt(move.getRookStartSquare()).orElseThrow();
+                board.unsetPiece(move.getRookStartSquare());
+                board.setPiece(move.getRookEndSquare(), rook);
             }
         }
     }

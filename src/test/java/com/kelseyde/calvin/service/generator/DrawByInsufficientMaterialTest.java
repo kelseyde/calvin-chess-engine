@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 public class DrawByInsufficientMaterialTest {
 
     @Test
-    public void testKingvsKing() {
+    public void testKingVersusKing() {
 
         Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
@@ -30,7 +30,7 @@ public class DrawByInsufficientMaterialTest {
     }
 
     @Test
-    public void testKingvsKingBishop() {
+    public void testKingVersusKingBishop() {
 
         Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
@@ -49,7 +49,7 @@ public class DrawByInsufficientMaterialTest {
     }
 
     @Test
-    public void testKingvsKingKnight() {
+    public void testKingVersusKingKnight() {
 
         Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
@@ -68,7 +68,7 @@ public class DrawByInsufficientMaterialTest {
     }
 
     @Test
-    public void testKingBishopvsKingBishop() {
+    public void testKingBishopVersusKingBishop() {
 
         Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
@@ -88,7 +88,7 @@ public class DrawByInsufficientMaterialTest {
     }
 
     @Test
-    public void testKingKnightvsKingKnight() {
+    public void testKingKnightVersusKingKnight() {
 
         Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));

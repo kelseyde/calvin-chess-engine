@@ -7,8 +7,6 @@ import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
-import com.kelseyde.calvin.model.move.config.EnPassantConfig;
-import com.kelseyde.calvin.model.move.config.PromotionConfig;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -166,9 +164,7 @@ public class PawnMoveGeneratorTest {
 
         Move standardMove = Move.builder().startSquare(35).endSquare(43).build();
         Move enPassantCapture = Move.builder().startSquare(35).endSquare(42).type(MoveType.EN_PASSANT)
-                .enPassantConfig(EnPassantConfig.builder()
-                        .enPassantCapturedSquare(34)
-                        .build())
+                .enPassantCapturedSquare(34)
                 .build();
 
         Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalWhiteMoves);
@@ -194,9 +190,7 @@ public class PawnMoveGeneratorTest {
         Move standardCapture = Move.builder().startSquare(35).endSquare(42).build();
         Move enPassantCapture = Move.builder().startSquare(35).endSquare(44)
                 .type(MoveType.EN_PASSANT)
-                .enPassantConfig(EnPassantConfig.builder()
-                        .enPassantCapturedSquare(36)
-                        .build())
+                .enPassantCapturedSquare(36)
                 .build();
 
         Assertions.assertEquals(Set.of(standardMove, standardCapture, enPassantCapture), legalWhiteMoves);
@@ -233,9 +227,7 @@ public class PawnMoveGeneratorTest {
 
         Move standardMove = Move.builder().startSquare(35).endSquare(43).build();
         Move enPassantCapture = Move.builder().startSquare(35).endSquare(44)
-                .enPassantConfig(EnPassantConfig.builder()
-                        .enPassantCapturedSquare(36)
-                        .build())
+                .enPassantCapturedSquare(36)
                 .type(MoveType.EN_PASSANT)
                 .build();
 
@@ -259,9 +251,7 @@ public class PawnMoveGeneratorTest {
 
         Move standardMove = Move.builder().startSquare(29).endSquare(21).build();
         Move enPassantCapture = Move.builder().startSquare(29).endSquare(22).type(MoveType.EN_PASSANT)
-                .enPassantConfig(EnPassantConfig.builder()
-                        .enPassantCapturedSquare(30)
-                        .build())
+                .enPassantCapturedSquare(30)
                 .build();
 
         Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
@@ -286,9 +276,7 @@ public class PawnMoveGeneratorTest {
         Move standardMove = Move.builder().startSquare(29).endSquare(21).build();
         Move standardCapture = Move.builder().startSquare(29).endSquare(22).build();
         Move enPassantCapture = Move.builder().startSquare(29).endSquare(20)
-                .enPassantConfig(EnPassantConfig.builder()
-                        .enPassantCapturedSquare(28)
-                        .build())
+                .enPassantCapturedSquare(28)
                 .type(MoveType.EN_PASSANT)
                 .build();
 
@@ -326,9 +314,7 @@ public class PawnMoveGeneratorTest {
 
         Move standardMove = Move.builder().startSquare(25).endSquare(17).build();
         Move enPassantCapture = Move.builder().startSquare(25).endSquare(16)
-                .enPassantConfig(EnPassantConfig.builder()
-                        .enPassantCapturedSquare(24)
-                        .build())
+                .enPassantCapturedSquare(24)
                 .type(MoveType.EN_PASSANT)
                 .build();
 
@@ -358,16 +344,16 @@ public class PawnMoveGeneratorTest {
         Assertions.assertEquals(
                 Set.of(Move.builder().startSquare(51).endSquare(59)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
+                                .promotionPieceType(PieceType.QUEEN).build(),
                         Move.builder().startSquare(51).endSquare(59)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
+                                .promotionPieceType(PieceType.ROOK).build(),
                         Move.builder().startSquare(51).endSquare(59)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
+                                .promotionPieceType(PieceType.BISHOP).build(),
                         Move.builder().startSquare(51).endSquare(59)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build()),
+                                .promotionPieceType(PieceType.KNIGHT).build()),
                 legalMoves
         );
     }
@@ -379,16 +365,16 @@ public class PawnMoveGeneratorTest {
         Assertions.assertEquals(
                 Set.of(Move.builder().startSquare(8).endSquare(0)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
+                                .promotionPieceType(PieceType.QUEEN).build(),
                         Move.builder().startSquare(8).endSquare(0)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
+                                .promotionPieceType(PieceType.ROOK).build(),
                         Move.builder().startSquare(8).endSquare(0)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
+                                .promotionPieceType(PieceType.BISHOP).build(),
                         Move.builder().startSquare(8).endSquare(0)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build()),
+                                .promotionPieceType(PieceType.KNIGHT).build()),
                 legalMoves
         );
     }
@@ -401,28 +387,28 @@ public class PawnMoveGeneratorTest {
         Assertions.assertEquals(
                 Set.of(Move.builder().startSquare(51).endSquare(59)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
+                                .promotionPieceType(PieceType.QUEEN).build(),
                         Move.builder().startSquare(51).endSquare(59)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
+                                .promotionPieceType(PieceType.ROOK).build(),
                         Move.builder().startSquare(51).endSquare(59)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
+                                .promotionPieceType(PieceType.BISHOP).build(),
                         Move.builder().startSquare(51).endSquare(59)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build(),
+                                .promotionPieceType(PieceType.KNIGHT).build(),
                         Move.builder().startSquare(51).endSquare(58)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
+                                .promotionPieceType(PieceType.QUEEN).build(),
                         Move.builder().startSquare(51).endSquare(58)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
+                                .promotionPieceType(PieceType.ROOK).build(),
                         Move.builder().startSquare(51).endSquare(58)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
+                                .promotionPieceType(PieceType.BISHOP).build(),
                         Move.builder().startSquare(51).endSquare(58)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build()),
+                                .promotionPieceType(PieceType.KNIGHT).build()),
                 legalMoves
         );
     }
@@ -435,28 +421,28 @@ public class PawnMoveGeneratorTest {
         Assertions.assertEquals(
                 Set.of(Move.builder().startSquare(15).endSquare(7)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
+                                .promotionPieceType(PieceType.QUEEN).build(),
                         Move.builder().startSquare(15).endSquare(7)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
+                                .promotionPieceType(PieceType.ROOK).build(),
                         Move.builder().startSquare(15).endSquare(7)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
+                                .promotionPieceType(PieceType.BISHOP).build(),
                         Move.builder().startSquare(15).endSquare(7)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build(),
+                                .promotionPieceType(PieceType.KNIGHT).build(),
                         Move.builder().startSquare(15).endSquare(6)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.QUEEN).build()).build(),
+                                .promotionPieceType(PieceType.QUEEN).build(),
                         Move.builder().startSquare(15).endSquare(6)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.ROOK).build()).build(),
+                                .promotionPieceType(PieceType.ROOK).build(),
                         Move.builder().startSquare(15).endSquare(6)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.BISHOP).build()).build(),
+                                .promotionPieceType(PieceType.BISHOP).build(),
                         Move.builder().startSquare(15).endSquare(6)
                                 .type(MoveType.PROMOTION)
-                                .promotionConfig(PromotionConfig.builder().promotionPieceType(PieceType.KNIGHT).build()).build()),
+                                .promotionPieceType(PieceType.KNIGHT).build()),
                 legalMoves
         );
     }

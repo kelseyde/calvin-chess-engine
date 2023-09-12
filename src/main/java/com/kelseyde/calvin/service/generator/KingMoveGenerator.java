@@ -7,7 +7,6 @@ import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
-import com.kelseyde.calvin.model.move.config.CastlingConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
@@ -89,11 +88,9 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         if (isKingsideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
             return Optional.of(createKingMove(startSquare, kingTargetSquare)
                     .type(MoveType.CASTLE)
-                    .castlingConfig(CastlingConfig.builder()
-                            .rookStartSquare(getKingsideRookStartingSquare(colour))
-                            .rookEndSquare(getKingsideRookCastlingSquare(colour))
-                            .kingTravelSquares(kingTravelSquares)
-                            .build())
+                    .rookStartSquare(getKingsideRookStartingSquare(colour))
+                    .rookEndSquare(getKingsideRookCastlingSquare(colour))
+                    .kingTravelSquares(kingTravelSquares)
                     .build());
         }
         return Optional.empty();
@@ -118,11 +115,9 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         if (isQueensideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
             return Optional.of(createKingMove(startSquare, kingTargetSquare)
                     .type(MoveType.CASTLE)
-                    .castlingConfig(CastlingConfig.builder()
-                            .rookStartSquare(getQueensideRookStartingSquare(colour))
-                            .rookEndSquare(getQueensideRookCastlingSquare(colour))
-                            .kingTravelSquares(kingTravelSquares)
-                            .build())
+                    .rookStartSquare(getQueensideRookStartingSquare(colour))
+                    .rookEndSquare(getQueensideRookCastlingSquare(colour))
+                    .kingTravelSquares(kingTravelSquares)
                     .build());
         }
         return Optional.empty();
@@ -133,10 +128,8 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
                 .startSquare(startSquare)
                 .endSquare(endSquare)
                 // Any king move (including castling) precludes castling rights for the remainder of the game.
-                .castlingConfig(CastlingConfig.builder()
-                        .negatesKingsideCastling(true)
-                        .negatesQueensideCastling(true)
-                        .build());
+                .negatesKingsideCastling(true)
+                .negatesQueensideCastling(true);
     }
 
     private int getKingStartingSquare(Colour colour) {

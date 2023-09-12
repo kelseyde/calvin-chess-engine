@@ -7,15 +7,15 @@ import com.kelseyde.calvin.model.game.DrawType;
 import com.kelseyde.calvin.model.game.Game;
 import lombok.Getter;
 
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class InsufficientMaterialCalculator implements DrawCalculator {
 
-    private static final Set<Set<PieceType>> INSUFFICIENT_MATERIAL_PIECE_SETS = Set.of(
-            Set.of(PieceType.KING),
-            Set.of(PieceType.KING, PieceType.BISHOP),
-            Set.of(PieceType.KING, PieceType.KNIGHT)
+    private static final Set<List<PieceType>> INSUFFICIENT_MATERIAL_PIECE_SETS = Set.of(
+            List.of(PieceType.KING),
+            List.of(PieceType.KING, PieceType.BISHOP),
+            List.of(PieceType.KING, PieceType.KNIGHT)
     );
 
     @Getter
@@ -24,15 +24,15 @@ public class InsufficientMaterialCalculator implements DrawCalculator {
     @Override
     public boolean isDraw(Game game) {
 
-        Set<PieceType> whitePieceTypes = game.getBoard().getPieces(Colour.WHITE)
+        List<PieceType> whitePieceTypes = game.getBoard().getPieces(Colour.WHITE)
                 .values().stream()
                 .map(Piece::getType)
-                .collect(Collectors.toSet());
+                .toList();
 
-        Set<PieceType> blackPieceTypes = game.getBoard().getPieces(Colour.BLACK)
+        List<PieceType> blackPieceTypes = game.getBoard().getPieces(Colour.BLACK)
                 .values().stream()
                 .map(Piece::getType)
-                .collect(Collectors.toSet());
+                .toList();
 
         return INSUFFICIENT_MATERIAL_PIECE_SETS.contains(whitePieceTypes)
                 && INSUFFICIENT_MATERIAL_PIECE_SETS.contains(blackPieceTypes);

@@ -107,6 +107,27 @@ public class DrawByInsufficientMaterialTest {
 
     }
 
+    @Test
+    public void testKingKnightKnightVersusKingKnightIsNotInsufficientMaterial() {
+
+        Board board = Board.emptyBoard();
+        board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
+        board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
+
+        board.setPiece(44, new Piece(Colour.BLACK, PieceType.KING));
+        board.setPiece(43, new Piece(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(52, new Piece(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(0, new Piece(Colour.BLACK, PieceType.KNIGHT));
+
+        Game game = Game.fromPosition(board);
+        ActionResult result = game.executeAction(move("c4", "d6"));
+
+        // bishop captures queen -> KB vs KB
+        Assertions.assertTrue(result.isDraw());
+        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, result.getDrawType());
+
+    }
+
     private GameAction move(String startSquare, String endSquare) {
         return GameAction.builder()
                 .actionType(ActionType.MOVE)

@@ -89,6 +89,8 @@ public class Game {
         if (Colour.BLACK.equals(turn)) {
             fullMoveCounter++;
         }
+        boolean resetFiftyMoveCounter = legalMove.isCapture() || PieceType.PAWN.equals(legalMove.getPieceType());
+        halfMoveClock = resetFiftyMoveCounter ? 0 : ++halfMoveClock;
         moveHistory.push(legalMove);
         turn = turn.oppositeColour();
         legalMoves = moveService.generateLegalMoves(this);

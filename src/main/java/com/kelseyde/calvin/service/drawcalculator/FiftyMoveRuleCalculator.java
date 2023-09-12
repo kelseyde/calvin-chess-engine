@@ -11,7 +11,7 @@ public class FiftyMoveRuleCalculator implements DrawCalculator {
 
     @Override
     public boolean isDraw(Game game) {
-        return false;
+        return game.getHalfMoveClock() >= 100;
     }
 
 }

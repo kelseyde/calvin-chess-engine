@@ -19,11 +19,12 @@ public class BishopMoveGeneratorTest {
 
     private final Piece bishop = new Piece(Colour.WHITE, PieceType.BISHOP);
 
-    private Board board;
+    private Game game;
 
     @BeforeEach
     public void beforeEach() {
-        board = Board.emptyBoard();
+        Board board = Board.emptyBoard();
+        game = Game.fromPosition(board);
     }
 
     @Test
@@ -62,10 +63,10 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(10, new Piece(Colour.BLACK, PieceType.PAWN));
-        board.setPiece(14, new Piece(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(42, new Piece(Colour.BLACK, PieceType.BISHOP));
-        board.setPiece(46, new Piece(Colour.BLACK, PieceType.ROOK));
+        game.getBoard().setPiece(10, new Piece(Colour.BLACK, PieceType.PAWN));
+        game.getBoard().setPiece(14, new Piece(Colour.BLACK, PieceType.KNIGHT));
+        game.getBoard().setPiece(42, new Piece(Colour.BLACK, PieceType.BISHOP));
+        game.getBoard().setPiece(46, new Piece(Colour.BLACK, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
 
@@ -76,22 +77,22 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(10, new Piece(Colour.WHITE, PieceType.PAWN));
-        board.setPiece(14, new Piece(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(42, new Piece(Colour.WHITE, PieceType.BISHOP));
-        board.setPiece(46, new Piece(Colour.WHITE, PieceType.ROOK));
+        game.getBoard().setPiece(10, new Piece(Colour.WHITE, PieceType.PAWN));
+        game.getBoard().setPiece(14, new Piece(Colour.WHITE, PieceType.KNIGHT));
+        game.getBoard().setPiece(42, new Piece(Colour.WHITE, PieceType.BISHOP));
+        game.getBoard().setPiece(46, new Piece(Colour.WHITE, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37));
 
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.setPiece(startSquare, bishop);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(Game.fromPosition(board), startSquare).stream()
+        game.getBoard().setPiece(startSquare, bishop);
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(game, startSquare).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.unsetPiece(startSquare);
+        game.getBoard().unsetPiece(startSquare);
     }
 
 }

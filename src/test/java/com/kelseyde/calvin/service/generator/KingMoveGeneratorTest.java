@@ -19,11 +19,12 @@ public class KingMoveGeneratorTest {
 
     private final Piece king = new Piece(Colour.WHITE, PieceType.KING);
 
-    private Board board;
+    private Game game;
 
     @BeforeEach
     public void beforeEach() {
-        board = Board.emptyBoard();
+        Board board = Board.emptyBoard();
+        game = Game.fromPosition(board);
     }
 
     @Test
@@ -55,12 +56,12 @@ public class KingMoveGeneratorTest {
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.setPiece(startSquare, king);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(Game.fromPosition(board), startSquare).stream()
+        game.getBoard().setPiece(startSquare, king);
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(game, startSquare).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.unsetPiece(startSquare);
+        game.getBoard().unsetPiece(startSquare);
     }
 
 }

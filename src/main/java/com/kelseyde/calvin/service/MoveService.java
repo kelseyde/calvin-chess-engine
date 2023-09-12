@@ -30,13 +30,20 @@ public class MoveService {
     public Set<Move> generateLegalMoves(Game game) {
         Colour colour = game.getTurn();
         Set<Integer> pieceSquares = game.getBoard().getPiecePositions(colour);
-        int opponentKingSquare = game.getBoard().getKingSquare(colour.oppositeColour());
 
-        return pieceSquares.stream()
+        Set<Move> pseudoLegal = pieceSquares.stream()
                 .flatMap(square -> generatePseudoLegalMoves(game, colour, square).stream())
+                .collect(Collectors.toSet());
+
+        Set<Move> legal = pseudoLegal.stream()
                 .filter(pseudoLegalMove -> !isKingCapturable(game, pseudoLegalMove))
+                .collect(Collectors.toSet());
+
+        Set<Move> checkApplied = legal.stream()
                 .map(legalMove -> calculateCheck(game, legalMove))
                 .collect(Collectors.toSet());
+
+        return checkApplied;
     }
 
     public Set<Move> generateAllPseudoLegalMoves(Game game, Colour colour) {

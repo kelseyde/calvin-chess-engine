@@ -47,6 +47,21 @@ public class Game {
         this.legalMoves = moveService.generateLegalMoves(this);
     }
 
+    public Game(Board board) {
+        this.board = board;
+        this.turn = Colour.WHITE;
+        this.boardHistory = new Stack<>();
+        this.moveHistory = new Stack<>();
+        this.castlingRights = Map.of(Colour.WHITE, new CastlingRights(), Colour.BLACK, new CastlingRights());
+        this.enPassantTargetSquare = -1;
+        this.halfMoveClock = 0;
+        this.fullMoveCounter = 1;
+
+        this.moveService = new MoveService();
+        this.drawService = new DrawService();
+        this.legalMoves = moveService.generateLegalMoves(this);
+    }
+
     public ActionResult executeAction(GameAction action) {
         return switch (action.getActionType()) {
             case MOVE -> handleMove(action.getMove());
@@ -150,9 +165,7 @@ public class Game {
     }
 
     public static Game fromPosition(Board board) {
-        Game game = new Game();
-        game.setBoard(board);
-        return game;
+        return new Game(board);
     }
 
 }

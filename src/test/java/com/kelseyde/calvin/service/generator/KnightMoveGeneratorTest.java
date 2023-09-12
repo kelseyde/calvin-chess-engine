@@ -143,7 +143,7 @@ public class KnightMoveGeneratorTest {
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.unsetPiece(startSquare);
+        board = Board.emptyBoard();
     }
 
 }

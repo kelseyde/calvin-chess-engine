@@ -2,8 +2,8 @@ package com.kelseyde.calvin.model.game;
 
 import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.service.DrawService;
-import com.kelseyde.calvin.service.MoveService;
+import com.kelseyde.calvin.service.game.DrawService;
+import com.kelseyde.calvin.service.game.LegalMoveService;
 import lombok.Data;
 
 import java.util.Map;
@@ -28,7 +28,7 @@ public class Game {
     private int halfMoveClock;
     private int fullMoveCounter;
 
-    private MoveService moveService;
+    private LegalMoveService moveService;
     private DrawService drawService;
     private Set<Move> legalMoves;
 
@@ -42,7 +42,7 @@ public class Game {
         this.halfMoveClock = 0;
         this.fullMoveCounter = 1;
 
-        this.moveService = new MoveService();
+        this.moveService = new LegalMoveService();
         this.drawService = new DrawService();
         this.legalMoves = moveService.generateLegalMoves(this);
     }
@@ -57,7 +57,7 @@ public class Game {
         this.halfMoveClock = 0;
         this.fullMoveCounter = 1;
 
-        this.moveService = new MoveService();
+        this.moveService = new LegalMoveService();
         this.drawService = new DrawService();
         this.legalMoves = moveService.generateLegalMoves(this);
     }

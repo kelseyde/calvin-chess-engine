@@ -38,8 +38,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no %s on square %s!", getPieceType(), startSquare)));
 
         Set<Move> legalMoves = getMoveVectors().stream()
-                .flatMap(vectorOffset -> generateLegalMovesForVector(board, piece, startSquare, vectorOffset).stream())
-                .map(targetSquare -> Move.builder().startSquare(startSquare).endSquare(targetSquare).build())
+                .flatMap(vectorOffset -> generatePseudoLegalMovesForVector(board, piece, startSquare, vectorOffset).stream())
                 .collect(Collectors.toSet());
 
         applyPostGenerationConfig(piece, legalMoves);
@@ -48,9 +47,9 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
 
     }
 
-    private Set<Integer> generateLegalMovesForVector(Board board, Piece piece, int startSquare, int vectorOffset) {
+    private Set<Move> generatePseudoLegalMovesForVector(Board board, Piece piece, int startSquare, int vectorOffset) {
 
-        Set<Integer> legalMoves = new HashSet<>();
+        Set<Move> pseudoLegalMoves = new HashSet<>();
         int targetSquare = startSquare;
 
         // Limiting the vector iterations will prevent an orthogonal vector from sliding to the other side of the board
@@ -77,17 +76,24 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
             }
             Optional<Piece> pieceOnTargetSquare = board.pieceAt(targetSquare);
             if (pieceOnTargetSquare.isEmpty()) {
-                legalMoves.add(targetSquare);
+                pseudoLegalMoves.add(moveBuilder()
+                        .startSquare(startSquare)
+                        .endSquare(targetSquare)
+                        .build());
             }
             else if (pieceOnTargetSquare.get().getColour().isOppositeColour(piece.getColour())) {
-                legalMoves.add(targetSquare);
+                pseudoLegalMoves.add(moveBuilder()
+                        .startSquare(startSquare)
+                        .endSquare(targetSquare)
+                        .isCapture(true)
+                        .build());
                 endVector = true;
             }
             else if (pieceOnTargetSquare.get().getColour().isSameColour(piece.getColour())) {
                 endVector = true;
             }
         }
-        return legalMoves;
+        return pseudoLegalMoves;
     }
 
 }

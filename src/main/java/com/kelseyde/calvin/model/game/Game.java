@@ -116,17 +116,12 @@ public class Game {
     }
 
     public void applyMove(Move move) {
-        boardHistory.push(BoardMetadata.builder()
-                .board(board.copy())
-                .turn(turn)
-                .castlingRights(castlingRights)
-                .enPassantTargetSquare(enPassantTargetSquare)
-                .build());
+        boardHistory.push(BoardMetadata.fromGame(this));
         Piece piece = board.pieceAt(move.getStartSquare()).orElseThrow();
         board.unsetPiece(move.getStartSquare());
         board.setPiece(move.getEndSquare(), piece);
 
-        switch (move.getType()) {
+        switch (move.getMoveType()) {
             case EN_PASSANT -> {
                 board.unsetPiece(move.getEnPassantCapturedSquare());
             }

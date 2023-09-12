@@ -12,4 +12,9 @@ public interface PseudoLegalMoveGenerator {
 
     Set<Move> generatePseudoLegalMoves(Game game, int startSquare);
 
+    default Move.MoveBuilder moveBuilder() {
+        return Move.builder()
+                .pieceType(getPieceType());
+    }
+
 }

@@ -19,15 +19,25 @@ public class Move {
     private final int endSquare;
 
     /**
-     * What kind of move this is (standard, en passant, castling or promotion).
+     * The type of piece making the move.
+     */
+    private PieceType pieceType;
+
+    /**
+     * The type of move this is (standard, en passant, castling or promotion).
      */
     @Builder.Default
-    private MoveType type = MoveType.STANDARD;
+    private MoveType moveType = MoveType.STANDARD;
 
     /**
      * Whether this move comes with check.
      */
     private boolean isCheck;
+
+    /**
+     * Whether this move captures an opponent piece.
+     */
+    private boolean isCapture;
 
     /**
      * Whether this move negates kingside castling for the remainder of the game.

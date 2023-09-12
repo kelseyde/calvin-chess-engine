@@ -11,7 +11,6 @@ import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -40,13 +39,9 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
                 .filter(piece -> piece.isType(PieceType.KING))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no king on square %s!", startSquare)));
 
-        Set<Move> legalMoves = new HashSet<>();
-
-        Set<Move> legalStandardMoves = CANDIDATE_MOVE_OFFSETS.stream()
-                .filter(offset -> isLegalOffset(board, king, startSquare, offset))
-                .map(offset -> createKingMove(startSquare, startSquare + offset).build())
-                .collect(Collectors.toSet());
-        legalMoves.addAll(legalStandardMoves);
+        Set<Move> legalMoves = CANDIDATE_MOVE_OFFSETS.stream()
+                .map(offset -> getLegalMoveForOffset(board, king, startSquare, offset))
+                .flatMap(Optional::stream).collect(Collectors.toSet());
 
         checkKingsideCastling(game, king, startSquare).ifPresent(legalMoves::add);
         checkQueensideCastling(game, king, startSquare).ifPresent(legalMoves::add);
@@ -55,18 +50,24 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
 
     }
 
-    private boolean isLegalOffset(Board board, Piece king, int startSquare, int offset) {
+    private Optional<Move> getLegalMoveForOffset(Board board, Piece king, int startSquare, int offset) {
         Colour colour = king.getColour();
         int targetSquare = startSquare + offset;
         if (!BoardUtils.isValidSquareCoordinate(targetSquare)) {
-            return false;
+            return Optional.empty();
         }
         if ((BoardUtils.isAFile(startSquare) && A_FILE_OFFSET_EXCEPTIONS.contains(offset)) ||
             (BoardUtils.isHFile(startSquare) && H_FILE_OFFSET_EXCEPTIONS.contains(offset))) {
-            return false;
+            return Optional.empty();
         }
         Optional<Piece> pieceOnTargetSquare = board.pieceAt(targetSquare);
-        return pieceOnTargetSquare.isEmpty() || pieceOnTargetSquare.get().getColour().isOppositeColour(colour);
+        if (pieceOnTargetSquare.isEmpty()) {
+            return Optional.of(createKingMove(startSquare, targetSquare).build());
+        } else if (pieceOnTargetSquare.get().getColour().isOppositeColour(colour)) {
+            return Optional.of(createKingMove(startSquare, targetSquare).isCapture(true).build());
+        } else {
+            return Optional.empty();
+        }
     }
 
     private Optional<Move> checkKingsideCastling(Game game, Piece king, int startSquare) {
@@ -87,7 +88,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
 
         if (isKingsideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
             return Optional.of(createKingMove(startSquare, kingTargetSquare)
-                    .type(MoveType.CASTLE)
+                    .moveType(MoveType.CASTLE)
                     .rookStartSquare(getKingsideRookStartingSquare(colour))
                     .rookEndSquare(getKingsideRookCastlingSquare(colour))
                     .kingTravelSquares(kingTravelSquares)
@@ -114,7 +115,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
 
         if (isQueensideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
             return Optional.of(createKingMove(startSquare, kingTargetSquare)
-                    .type(MoveType.CASTLE)
+                    .moveType(MoveType.CASTLE)
                     .rookStartSquare(getQueensideRookStartingSquare(colour))
                     .rookEndSquare(getQueensideRookCastlingSquare(colour))
                     .kingTravelSquares(kingTravelSquares)
@@ -124,7 +125,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
     }
 
     private Move.MoveBuilder createKingMove(int startSquare, int endSquare) {
-        return Move.builder()
+        return moveBuilder()
                 .startSquare(startSquare)
                 .endSquare(endSquare)
                 // Any king move (including castling) precludes castling rights for the remainder of the game.

@@ -40,32 +40,40 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
                 .filter(piece -> piece.isType(PieceType.KNIGHT))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no knight on square %s!", startSquare)));
 
-        Set<Integer> legalOffsets = CANDIDATE_MOVE_OFFSETS.stream()
-                .filter(offset -> isLegalOffset(board, knight, startSquare, offset))
+        return CANDIDATE_MOVE_OFFSETS.stream()
+                .map(offset -> getLegalMoveForOffset(board, knight, startSquare, offset))
+                .flatMap(Optional::stream)
                 .collect(Collectors.toSet());
-
-        Set<Move> legalMoves = legalOffsets.stream()
-                .map(offset -> Move.builder().startSquare(startSquare).endSquare(startSquare + offset).build())
-                .collect(Collectors.toSet());
-
-        return legalMoves;
 
     }
 
-    private boolean isLegalOffset(Board board, Piece knight, int startSquare, int offset) {
+    private Optional<Move> getLegalMoveForOffset(Board board, Piece knight, int startSquare, int offset) {
         Colour colour = knight.getColour();
         int targetSquare = startSquare + offset;
         if (!BoardUtils.isValidSquareCoordinate(targetSquare)) {
-            return false;
+            return Optional.empty();
         }
         if ((BoardUtils.isAFile(startSquare) && A_FILE_OFFSET_EXCEPTIONS.contains(offset)) ||
             (BoardUtils.isBFile(startSquare) && B_FILE_OFFSET_EXCEPTIONS.contains(offset)) ||
             (BoardUtils.isGFile(startSquare) && G_FILE_OFFSET_EXCEPTIONS.contains(offset)) ||
             (BoardUtils.isHFile(startSquare) && H_FILE_OFFSET_EXCEPTIONS.contains(offset))) {
-            return false;
+            return Optional.empty();
         }
         Optional<Piece> pieceOnTargetSquare = board.pieceAt(targetSquare);
-        return pieceOnTargetSquare.isEmpty() || pieceOnTargetSquare.get().getColour().isOppositeColour(colour);
+        if (pieceOnTargetSquare.isEmpty()) {
+            return Optional.of(moveBuilder()
+                    .startSquare(startSquare)
+                    .endSquare(targetSquare)
+                    .build());
+        } else if (pieceOnTargetSquare.get().getColour().isOppositeColour(colour)) {
+            return Optional.of(moveBuilder()
+                    .startSquare(startSquare)
+                    .endSquare(targetSquare)
+                    .isCapture(true)
+                    .build());
+        } else {
+            return Optional.empty();
+        }
     }
 
 }

@@ -50,10 +50,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             if (pieceOnStandardMoveSquare.isEmpty()) {
                 if (isPromotingMove(piece, startSquare)) {
                     // Covering piece promotion
-                    legalMoves.addAll(getPromotionMoves(startSquare, standardMoveSquare));
+                    legalMoves.addAll(getPromotionMoves(startSquare, standardMoveSquare, false));
                 } else {
                     // Covering standard move
-                    legalMoves.add(Move.builder().startSquare(startSquare).endSquare(standardMoveSquare).build());
+                    legalMoves.add(moveBuilder().startSquare(startSquare).endSquare(standardMoveSquare).build());
                 }
             }
         }
@@ -76,10 +76,9 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 Optional<Piece> pieceOnStandardMoveSquare = board.pieceAt(standardMoveSquare);
                 Optional<Piece> pieceOnDoubleMoveSquare = board.pieceAt(doubleMoveSquare);
                 if (pieceOnStandardMoveSquare.isEmpty() && pieceOnDoubleMoveSquare.isEmpty()) {
-                    Move move = Move.builder().startSquare(startSquare).endSquare(doubleMoveSquare)
+                    return Optional.of( moveBuilder().startSquare(startSquare).endSquare(doubleMoveSquare)
                             .enPassantTargetSquare(standardMoveSquare)
-                            .build();
-                    return Optional.of(move);
+                            .build());
                 }
             }
 
@@ -107,24 +106,23 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             if (pieceOnTargetSquare.isPresent() && pieceOnTargetSquare.get().getColour().isOppositeColour(piece.getColour())) {
                 if (isPromotingMove(piece, startSquare)) {
                     // Covering capturing + piece promotion
-                   legalCaptures.addAll(getPromotionMoves(startSquare, targetCaptureSquare));
+                   legalCaptures.addAll(getPromotionMoves(startSquare, targetCaptureSquare, true));
                 } else {
                     // Covering standard capture
-                    legalCaptures.add(Move.builder().startSquare(startSquare).endSquare(targetCaptureSquare).build());
+                    legalCaptures.add(moveBuilder().startSquare(startSquare).endSquare(targetCaptureSquare).isCapture(true).build());
                 }
 
             }
 
             // Covering en passant
             if (pieceOnTargetSquare.isEmpty() && game.getEnPassantTargetSquare() == targetCaptureSquare) {
-                Move move = Move.builder()
-                        .type(MoveType.EN_PASSANT)
+                legalCaptures.add(moveBuilder()
+                        .moveType(MoveType.EN_PASSANT)
+                        .isCapture(true)
                         .startSquare(startSquare)
                         .endSquare(targetCaptureSquare)
                         .enPassantCapturedSquare(getCapturedEnPassantPawnSquare(piece.getColour(), targetCaptureSquare))
-                        .build();
-                move.setType(MoveType.EN_PASSANT);
-                legalCaptures.add(move);
+                        .build());
             }
         }
 
@@ -137,20 +135,28 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 (Colour.BLACK.equals(piece.getColour()) && BoardUtils.isSecondRank(startSquare));
     }
 
-    private Set<Move> getPromotionMoves(int startSquare, int targetSquare) {
+    private Set<Move> getPromotionMoves(int startSquare, int targetSquare, boolean isCapture) {
         return Set.of(
-                Move.builder().startSquare(startSquare).endSquare(targetSquare)
-                        .type(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.QUEEN).build(),
-                Move.builder().startSquare(startSquare).endSquare(targetSquare)
-                        .type(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.ROOK).build(),
-                Move.builder().startSquare(startSquare).endSquare(targetSquare)
-                        .type(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.BISHOP).build(),
-                Move.builder().startSquare(startSquare).endSquare(targetSquare)
-                        .type(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.KNIGHT).build()
+                moveBuilder().startSquare(startSquare).endSquare(targetSquare)
+                        .moveType(MoveType.PROMOTION)
+                        .promotionPieceType(PieceType.QUEEN)
+                        .isCapture(isCapture)
+                        .build(),
+                moveBuilder().startSquare(startSquare).endSquare(targetSquare)
+                        .moveType(MoveType.PROMOTION)
+                        .promotionPieceType(PieceType.ROOK)
+                        .isCapture(isCapture)
+                        .build(),
+                moveBuilder().startSquare(startSquare).endSquare(targetSquare)
+                        .moveType(MoveType.PROMOTION)
+                        .promotionPieceType(PieceType.BISHOP)
+                        .isCapture(isCapture)
+                        .build(),
+                moveBuilder().startSquare(startSquare).endSquare(targetSquare)
+                        .moveType(MoveType.PROMOTION)
+                        .promotionPieceType(PieceType.KNIGHT)
+                        .isCapture(isCapture)
+                        .build()
         );
     }
 

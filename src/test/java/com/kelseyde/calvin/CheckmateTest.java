@@ -176,7 +176,6 @@ public class CheckmateTest {
         game.executeAction(move("d3", "e2"));
         game.executeAction(move("c3", "b2"));
 
-        System.out.println(BoardUtils.toFormattedBoardString(game.getBoard()));
         Move move = Move.builder()
                 .startSquare(MoveUtils.fromNotation("e2"))
                 .endSquare(MoveUtils.fromNotation("d1"))

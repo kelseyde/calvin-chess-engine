@@ -101,7 +101,7 @@ public class DrawByInsufficientMaterialTest {
         Game game = Game.fromPosition(board);
         ActionResult result = game.executeAction(move("c4", "d6"));
 
-        // bishop captures queen -> KB vs KB
+        // knight captures queen -> KN vs KN
         Assertions.assertTrue(result.isDraw());
         Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, result.getDrawType());
 
@@ -122,9 +122,8 @@ public class DrawByInsufficientMaterialTest {
         Game game = Game.fromPosition(board);
         ActionResult result = game.executeAction(move("c4", "d6"));
 
-        // bishop captures queen -> KB vs KB
-        Assertions.assertTrue(result.isDraw());
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, result.getDrawType());
+        // knight captures queen -> KNN vs KN
+        Assertions.assertFalse(result.isDraw());
 
     }
 

@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class InsufficientMaterialCalculator implements DrawCalculator {
 
-    private static final Set<List<PieceType>> INSUFFICIENT_MATERIAL_PIECE_SETS = Set.of(
+    private static final Set<List<PieceType>> INSUFFICIENT_MATERIAL_PIECE_COMBINATIONS = Set.of(
             List.of(PieceType.KING),
             List.of(PieceType.KING, PieceType.BISHOP),
             List.of(PieceType.KING, PieceType.KNIGHT)
@@ -34,8 +34,13 @@ public class InsufficientMaterialCalculator implements DrawCalculator {
                 .map(Piece::getType)
                 .toList();
 
-        return INSUFFICIENT_MATERIAL_PIECE_SETS.contains(whitePieceTypes)
-                && INSUFFICIENT_MATERIAL_PIECE_SETS.contains(blackPieceTypes);
+        return INSUFFICIENT_MATERIAL_PIECE_COMBINATIONS.stream().anyMatch(list -> isSamePieceList(whitePieceTypes, list))
+                && INSUFFICIENT_MATERIAL_PIECE_COMBINATIONS.stream().anyMatch(list -> isSamePieceList(list, blackPieceTypes));
+    }
+
+    private boolean isSamePieceList(List<PieceType> list1, List<PieceType> list2) {
+        return list1.size() == list2.size()
+                && list1.containsAll(list2);
     }
 
 }

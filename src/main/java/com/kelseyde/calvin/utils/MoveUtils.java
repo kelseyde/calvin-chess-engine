@@ -25,4 +25,8 @@ public class MoveUtils {
         return yAxis + xOffset;
     }
 
+    public static String toNotation(int square) {
+        return BoardUtils.getFile(square) + BoardUtils.getRank(square);
+    }
+
 }

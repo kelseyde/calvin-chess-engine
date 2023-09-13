@@ -44,4 +44,10 @@ public class Piece {
         return Colour.WHITE.equals(colour) ? pieceTypeChar : Character.toLowerCase(pieceTypeChar);
     }
 
+    public String toPieceCode() {
+        String colourCode = Colour.WHITE.equals(colour) ? "w" : "b";
+        String pieceCode = type.pieceCode;
+        return colourCode + pieceCode;
+    }
+
 }

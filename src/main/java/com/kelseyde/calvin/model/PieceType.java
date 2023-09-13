@@ -1,12 +1,17 @@
 package com.kelseyde.calvin.model;
 
 public enum PieceType {
-    PAWN,
-    KNIGHT,
-    BISHOP,
-    ROOK,
-    QUEEN,
-    KING;
+    PAWN("P"),
+    KNIGHT("N"),
+    BISHOP("B"),
+    ROOK("R"),
+    QUEEN("Q"),
+    KING("K");
+
+    final String pieceCode;
+    PieceType(String pieceCode) {
+        this.pieceCode = pieceCode;
+    }
 
     public static PieceType fromChar(char pieceChar) {
         return switch (Character.toUpperCase(pieceChar)) {

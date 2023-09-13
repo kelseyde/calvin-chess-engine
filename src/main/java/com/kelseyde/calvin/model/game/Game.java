@@ -1,15 +1,13 @@
 package com.kelseyde.calvin.model.game;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.game.DrawService;
 import com.kelseyde.calvin.service.game.LegalMoveService;
 import lombok.Data;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Represents a full game of chess, capturing the current and previous board state, as well as all other metadata required
@@ -19,18 +17,21 @@ import java.util.Stack;
 @Data
 public class Game {
 
+    private String id = UUID.randomUUID().toString();
     private Board board;
     private Colour turn;
-    private Stack<BoardMetadata> boardHistory;
-    private Stack<Move> moveHistory;
     private Map<Colour, CastlingRights> castlingRights;
     private int enPassantTargetSquare;
     private int halfMoveClock;
     private int fullMoveCounter;
-
-    private LegalMoveService moveService;
-    private DrawService drawService;
+    private Stack<BoardMetadata> boardHistory;
+    private Stack<Move> moveHistory;
     private Set<Move> legalMoves;
+
+    @JsonIgnore
+    private LegalMoveService moveService;
+    @JsonIgnore
+    private DrawService drawService;
 
     public Game() {
         this.board = Board.startingPosition();

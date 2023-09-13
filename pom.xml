@@ -7,7 +7,7 @@
     <artifactId>calvin</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>calvin</name>
+    <name>calvin-chess-engine</name>
 
     <description>A chess engine written in Java.</description>
 

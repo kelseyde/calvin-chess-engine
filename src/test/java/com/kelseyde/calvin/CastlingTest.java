@@ -1,5 +1,6 @@
 package com.kelseyde.calvin;
 
+import com.kelseyde.calvin.model.game.ActionResult;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
@@ -53,29 +54,25 @@ public class CastlingTest {
         Game game = new Game();
 
         // white tries to kingside castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "g1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "g1")));
 
         // white makes legal move instead
         game.handleMove(MoveUtils.fromNotation("e2", "e4"));
 
         // black tries to kingside castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "g8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "g8")));
 
         // black makes legal move instead
         game.handleMove(MoveUtils.fromNotation("e7", "e5"));
 
         // white tries to queenside castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "c1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "c1")));
 
         // white makes legal move instead
         game.handleMove(MoveUtils.fromNotation("d2", "d4"));
 
         // black tries to queenside castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "c8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "c8")));
     }
 
     @Test
@@ -95,15 +92,13 @@ public class CastlingTest {
         game.handleMove(MoveUtils.fromNotation("e8", "f8"));
 
         // white tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "g1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "g1")));
 
         // white makes a legal move instead
         game.handleMove(MoveUtils.fromNotation("a2", "a3"));
 
         // black tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "g8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "g8")));
     }
 
     @Test
@@ -125,15 +120,13 @@ public class CastlingTest {
         game.handleMove(MoveUtils.fromNotation("e8", "d8"));
 
         // white tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "c1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "c1")));
 
         // white makes a legal move instead
         game.handleMove(MoveUtils.fromNotation("a2", "a3"));
 
         // black tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "c8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "c8")));
 
     }
 
@@ -159,15 +152,13 @@ public class CastlingTest {
         game.handleMove(MoveUtils.fromNotation("f8", "e8"));
 
         // white tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "g1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "g1")));
 
         // white makes a legal move instead
         game.handleMove(MoveUtils.fromNotation("a2", "a3"));
 
         // black tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "g8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "g8")));
     }
 
     @Test
@@ -194,15 +185,13 @@ public class CastlingTest {
         game.handleMove(MoveUtils.fromNotation("d8", "e8"));
 
         // white tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "c1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "c1")));
 
         // white makes a legal move instead
         game.handleMove(MoveUtils.fromNotation("a2", "a3"));
 
         // black tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "c8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "c8")));
 
     }
 
@@ -228,15 +217,13 @@ public class CastlingTest {
         game.handleMove(MoveUtils.fromNotation("g8", "h8"));
 
         // white tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "g1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "g1")));
 
         // white makes a legal move instead
         game.handleMove(MoveUtils.fromNotation("a2", "a3"));
 
         // black tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "g8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "g8")));
     }
 
     @Test
@@ -263,16 +250,18 @@ public class CastlingTest {
         game.handleMove(MoveUtils.fromNotation("b8", "a8"));
 
         // white tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "c1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "c1")));
 
         // white makes a legal move instead
         game.handleMove(MoveUtils.fromNotation("a2", "a3"));
 
         // black tries to castle
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "c8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "c8")));
 
+    }
+
+    private void assertIllegalMove(ActionResult result) {
+        Assertions.assertFalse(result.isValidMove());
     }
 
 }

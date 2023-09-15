@@ -1,11 +1,13 @@
 package com.kelseyde.calvin.model.game;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kelseyde.calvin.exception.InvalidMoveException;
 import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.game.DrawService;
 import com.kelseyde.calvin.service.game.LegalMoveService;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
@@ -15,6 +17,7 @@ import java.util.*;
  * first move to the end result.
  */
 @Data
+@Slf4j
 public class Game {
 
     private String id = UUID.randomUUID().toString();
@@ -72,10 +75,18 @@ public class Game {
 
     public ActionResult handleMove(Move move) {
 
-        Move legalMove = legalMoves.stream()
+        log.info("Move: {}", move);
+        log.info("Legal moves: {}", legalMoves);
+        Optional<Move> legalMoveOpt = legalMoves.stream()
                 .filter(move::moveMatches)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Illegal move! " + move));
+                .findFirst();
+
+        if (legalMoveOpt.isEmpty()) {
+            return ActionResult.builder()
+                    .isValidMove(false)
+                    .build();
+        }
+        Move legalMove = legalMoveOpt.get();
 
         applyMove(legalMove);
 

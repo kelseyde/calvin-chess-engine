@@ -1,8 +1,9 @@
 package com.kelseyde.calvin.controller;
 
-import com.kelseyde.calvin.model.api.MoveRequest;
-import com.kelseyde.calvin.model.api.MoveResponse;
+import com.kelseyde.calvin.model.api.PlayRequest;
+import com.kelseyde.calvin.model.api.PlayResponse;
 import com.kelseyde.calvin.model.api.NewGameResponse;
+import com.kelseyde.calvin.model.game.ActionResult;
 import com.kelseyde.calvin.model.game.ActionType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.game.GameAction;
@@ -41,7 +42,7 @@ public class GameController {
     }
 
     @RequestMapping(value = "/play", method = RequestMethod.POST)
-    public ResponseEntity<MoveResponse> playMove(@RequestBody MoveRequest moveRequest) {
+    public ResponseEntity<PlayResponse> playMove(@RequestBody PlayRequest moveRequest) {
         log.info("POST /game/play");
         log.info("Received move request {}", moveRequest);
 
@@ -53,21 +54,27 @@ public class GameController {
                 .move(Move.builder()
                         .startSquare(MoveUtils.fromNotation(moveRequest.getStartSquare()))
                         .endSquare(MoveUtils.fromNotation(moveRequest.getEndSquare()))
+                        .promotionPieceType(moveRequest.getPromotionPieceType())
                         .build())
                 .build();
         log.info("Player selects action {}", playerAction);
-        game.executeAction(playerAction);
+        ActionResult playerResult = game.executeAction(playerAction);
+        if (playerResult.isWin() || playerResult.isDraw() || !playerResult.isValidMove()) {
+            return ResponseEntity.ok(PlayResponse.fromBoard(game.getBoard())
+                    .result(playerResult)
+                    .build());
+        }
 
         GameAction engineAction = GameAction.builder()
                 .actionType(ActionType.MOVE)
                 .move(engine.selectMove(game))
                 .build();
         log.info("Engine selects action {}", engineAction);
-        game.executeAction(engineAction);
+        ActionResult engineResult = game.executeAction(engineAction);
 
-        MoveResponse response = MoveResponse.fromBoard(game.getBoard());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(PlayResponse.fromBoard(game.getBoard())
+                .result(engineResult)
+                .build());
     }
 
 }

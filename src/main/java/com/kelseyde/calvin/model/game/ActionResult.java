@@ -8,6 +8,9 @@ import lombok.Data;
 @Builder
 public class ActionResult {
 
+    @Builder.Default
+    boolean isValidMove = true;
+
     // The relevant fields if the game is ongoing.
     Colour sideToPlay;
 

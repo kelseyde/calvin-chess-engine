@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MoveRequest {
+public class PlayRequest {
 
     private String gameId;
     private String startSquare;

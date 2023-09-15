@@ -1,5 +1,6 @@
 package com.kelseyde.calvin;
 
+import com.kelseyde.calvin.model.game.ActionResult;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
@@ -20,8 +21,7 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("h5", "f7"));
 
         // try to ignore check with other moves
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                game.handleMove(MoveUtils.fromNotation("a7", "a6")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("a7", "a6")));
 
     }
 
@@ -34,8 +34,7 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("d1", "h5"));
 
         // black tries to move pinned f-pawn
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                game.handleMove(MoveUtils.fromNotation("f7", "f6")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("f7", "f6")));
 
     }
 
@@ -53,8 +52,7 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("d7", "d5"));
 
         // black tries to en-passant with pinned e-pawn
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                game.handleMove(MoveUtils.fromNotation("e5", "d6")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e5", "d6")));
 
     }
 
@@ -72,8 +70,7 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("g8", "e7"));
         game.handleMove(MoveUtils.fromNotation("a2", "a4"));
         //try moving pinned knight
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                game.handleMove(MoveUtils.fromNotation("e7", "g8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e7", "g8")));
     }
 
     @Test
@@ -90,8 +87,7 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("f8", "e7"));
         game.handleMove(MoveUtils.fromNotation("a2", "a4"));
         //try moving pinned bishop
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                game.handleMove(MoveUtils.fromNotation("e7", "f8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e7", "f8")));
     }
 
     @Test
@@ -108,8 +104,7 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("d8", "e7"));
         game.handleMove(MoveUtils.fromNotation("a2", "a4"));
         //try moving pinned queen
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                game.handleMove(MoveUtils.fromNotation("e7", "d8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e7", "d8")));
     }
 
     @Test
@@ -125,8 +120,7 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("h5", "f7"));
 
         // try to move to another checked square
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                game.handleMove(MoveUtils.fromNotation("e8", "e7")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "e7")));
 
     }
 
@@ -161,8 +155,7 @@ public class CheckTest {
         // check
         game.handleMove(MoveUtils.fromNotation("h5", "f7"));
         // try capturing checking queen with king
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "f7")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "f7")));
 
     }
 
@@ -204,8 +197,7 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("d1", "e2"));
 
         // try to castle out of check
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e8", "g8")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e8", "g8")));
 
     }
 
@@ -223,9 +215,12 @@ public class CheckTest {
         game.handleMove(MoveUtils.fromNotation("d7", "d6"));
 
         // try to castle through the bishop check
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> game.handleMove(MoveUtils.fromNotation("e1", "g1")));
+        assertIllegalMove(game.handleMove(MoveUtils.fromNotation("e1", "g1")));
 
+    }
+
+    private void assertIllegalMove(ActionResult result) {
+        Assertions.assertFalse(result.isValidMove());
     }
 
 }

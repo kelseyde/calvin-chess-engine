@@ -1,6 +1,6 @@
-package com.kelseyde.calvin.model.game.result;
+package com.kelseyde.calvin.model.result;
 
-import com.kelseyde.calvin.model.game.DrawType;
+import com.kelseyde.calvin.model.DrawType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

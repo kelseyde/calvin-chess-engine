@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.service.engine.evaluator;
 
-import com.kelseyde.calvin.model.game.Game;
+import com.kelseyde.calvin.model.Game;
 
 /**
  * Assigns the current position a numeric value based on some consideration.

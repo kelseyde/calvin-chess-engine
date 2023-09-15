@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.model.game;
+package com.kelseyde.calvin.model;
 
 public enum DrawType {
 

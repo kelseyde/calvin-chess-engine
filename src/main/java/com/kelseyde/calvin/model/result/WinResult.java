@@ -1,7 +1,7 @@
-package com.kelseyde.calvin.model.game.result;
+package com.kelseyde.calvin.model.result;
 
 import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.game.WinType;
+import com.kelseyde.calvin.model.WinType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

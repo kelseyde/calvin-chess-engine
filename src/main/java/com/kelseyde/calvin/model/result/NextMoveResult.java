@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.model.game.result;
+package com.kelseyde.calvin.model.result;
 
 import com.kelseyde.calvin.model.Colour;
 import lombok.Data;

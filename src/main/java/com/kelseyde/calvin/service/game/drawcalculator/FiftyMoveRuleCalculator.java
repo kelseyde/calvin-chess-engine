@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.service.game.drawcalculator;
 
-import com.kelseyde.calvin.model.game.DrawType;
-import com.kelseyde.calvin.model.game.Game;
+import com.kelseyde.calvin.model.DrawType;
+import com.kelseyde.calvin.model.Game;
 import lombok.Getter;
 
 public class FiftyMoveRuleCalculator implements DrawCalculator {

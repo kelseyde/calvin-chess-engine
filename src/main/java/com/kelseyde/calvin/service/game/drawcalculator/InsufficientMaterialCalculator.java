@@ -3,8 +3,8 @@ package com.kelseyde.calvin.service.game.drawcalculator;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.game.DrawType;
-import com.kelseyde.calvin.model.game.Game;
+import com.kelseyde.calvin.model.DrawType;
+import com.kelseyde.calvin.model.Game;
 import lombok.Getter;
 
 import java.util.List;

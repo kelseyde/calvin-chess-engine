@@ -1,9 +1,8 @@
-package com.kelseyde.calvin.model.game;
+package com.kelseyde.calvin.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.kelseyde.calvin.model.*;
-import com.kelseyde.calvin.model.game.result.*;
 import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.model.result.*;
 import com.kelseyde.calvin.service.game.DrawService;
 import com.kelseyde.calvin.service.game.LegalMoveService;
 import com.kelseyde.calvin.utils.BoardUtils;
@@ -146,14 +145,5 @@ public class Game {
     private boolean isCheckmate(Move move) {
         return move.isCheck() && legalMoves.isEmpty();
     }
-
-    private ActionResult handleResignation(Player player) {
-        return ActionResult.builder()
-                .isWin(true)
-                .winningColour(player.getColour().oppositeColour())
-                .winType(WinType.RESIGNATION)
-                .build();
-    }
-
 
 }

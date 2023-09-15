@@ -1,9 +1,9 @@
 package com.kelseyde.calvin.service.game.drawcalculator;
 
-import com.kelseyde.calvin.model.game.DrawType;
-import com.kelseyde.calvin.model.game.Game;
-import com.kelseyde.calvin.model.game.result.DrawResult;
-import com.kelseyde.calvin.model.game.result.GameResult;
+import com.kelseyde.calvin.model.DrawType;
+import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.result.DrawResult;
+import com.kelseyde.calvin.model.result.GameResult;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;

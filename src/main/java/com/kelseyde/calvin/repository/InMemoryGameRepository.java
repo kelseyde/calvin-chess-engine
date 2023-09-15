@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.repository;
 
-import com.kelseyde.calvin.model.game.Game;
+import com.kelseyde.calvin.model.Game;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;

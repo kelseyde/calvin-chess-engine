@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.model.api;
 
 import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.game.ActionResult;
+import com.kelseyde.calvin.model.game.result.GameResult;
 import com.kelseyde.calvin.utils.MoveUtils;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 @Builder
 public class PlayResponse {
 
-    ActionResult result;
+    GameResult result;
 
     Map<String, String> position;
 

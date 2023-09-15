@@ -2,6 +2,7 @@ package com.kelseyde.calvin.model.game;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.game.result.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.game.DrawService;
 import com.kelseyde.calvin.service.game.LegalMoveService;
@@ -30,6 +31,7 @@ public class Game {
 
     @JsonIgnore
     private LegalMoveService legalMoveService = new LegalMoveService();
+
     @JsonIgnore
     private DrawService drawService = new DrawService();
 
@@ -43,20 +45,11 @@ public class Game {
         this.legalMoves = legalMoveService.generateLegalMoves(this);
     }
 
-    public ActionResult executeAction(GameAction action) {
-        return switch (action.getActionType()) {
-            case MOVE -> handleMove(action.getMove());
-            case RESIGN -> handleResignation(action.getPlayer());
-        };
-    }
-
-    public ActionResult handleMove(Move move) {
+    public GameResult playMove(Move move) {
 
         Optional<Move> legalMove = legalMoves.stream().filter(move::moveMatches).findAny();
         if (legalMove.isEmpty()) {
-            return ActionResult.builder()
-                    .isValidMove(false)
-                    .build();
+            return new InvalidMoveResult(move);
         }
 
         move = legalMove.get();
@@ -71,24 +64,16 @@ public class Game {
         board.setTurn(board.getTurn().oppositeColour());
         legalMoves = legalMoveService.generateLegalMoves(this);
 
-        if (move.isCheck() && legalMoves.isEmpty()) {
-            return ActionResult.builder()
-                    .isWin(true)
-                    .winningColour(board.getTurn().oppositeColour())
-                    .winType(WinType.CHECKMATE)
-                    .build();
+        if (isCheckmate(move)) {
+            Colour winner = board.getTurn().oppositeColour();
+            return new WinResult(winner, WinType.CHECKMATE);
+        }
+        Optional<DrawType> drawType = drawService.calculateDraw(this);
+        if (drawType.isPresent()) {
+            return new DrawResult(drawType.get());
         } else {
-            Optional<DrawType> drawType = drawService.calculateDraw(this);
-            if (drawType.isPresent()) {
-                return ActionResult.builder()
-                        .isDraw(true)
-                        .drawType(drawType.get())
-                        .build();
-            } else {
-                return ActionResult.builder()
-                        .sideToPlay(board.getTurn())
-                        .build();
-            }
+            Colour sideToMove = board.getTurn();
+            return new NextMoveResult(sideToMove);
         }
 
     }
@@ -156,6 +141,10 @@ public class Game {
         } else {
             board.incrementHalfMoveCounter();
         }
+    }
+
+    private boolean isCheckmate(Move move) {
+        return move.isCheck() && legalMoves.isEmpty();
     }
 
     private ActionResult handleResignation(Player player) {

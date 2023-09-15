@@ -4,7 +4,11 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.game.*;
+import com.kelseyde.calvin.model.game.DrawType;
+import com.kelseyde.calvin.model.game.Game;
+import com.kelseyde.calvin.model.game.result.DrawResult;
+import com.kelseyde.calvin.model.game.result.GameResult;
+import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
@@ -22,11 +26,12 @@ public class DrawByInsufficientMaterialTest {
         board.setPiece(27, new Piece(Colour.BLACK, PieceType.QUEEN));
 
         Game game = new Game(board);
-        ActionResult result = game.executeAction(move("e4", "d4"));
+        GameResult result = game.playMove(move("e4", "d4"));
 
         // king captures queen -> K vs K
-        Assertions.assertTrue(result.isDraw());
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, result.getDrawType());
+        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
+        DrawResult drawResult = (DrawResult) result;
+        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
 
     }
 
@@ -41,11 +46,12 @@ public class DrawByInsufficientMaterialTest {
         board.setPiece(43, new Piece(Colour.BLACK, PieceType.QUEEN));
 
         Game game = new Game(board);
-        ActionResult result = game.executeAction(move("b4", "d6"));
+        GameResult result = game.playMove(move("b4", "d6"));
 
         // bishop captures queen -> K vs KB
-        Assertions.assertTrue(result.isDraw());
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, result.getDrawType());
+        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
+        DrawResult drawResult = (DrawResult) result;
+        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
 
     }
 
@@ -60,11 +66,12 @@ public class DrawByInsufficientMaterialTest {
         board.setPiece(43, new Piece(Colour.BLACK, PieceType.QUEEN));
 
         Game game = new Game(board);
-        ActionResult result = game.executeAction(move("c4", "d6"));
+        GameResult result = game.playMove(move("c4", "d6"));
 
         // knight captures queen -> K vs KN
-        Assertions.assertTrue(result.isDraw());
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, result.getDrawType());
+        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
+        DrawResult drawResult = (DrawResult) result;
+        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
 
     }
 
@@ -80,11 +87,12 @@ public class DrawByInsufficientMaterialTest {
         board.setPiece(52, new Piece(Colour.BLACK, PieceType.BISHOP));
 
         Game game = new Game(board);
-        ActionResult result = game.executeAction(move("b4", "d6"));
+        GameResult result = game.playMove(move("b4", "d6"));
 
         // bishop captures queen -> KB vs KB
-        Assertions.assertTrue(result.isDraw());
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, result.getDrawType());
+        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
+        DrawResult drawResult = (DrawResult) result;
+        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
 
     }
 
@@ -100,11 +108,12 @@ public class DrawByInsufficientMaterialTest {
         board.setPiece(52, new Piece(Colour.BLACK, PieceType.KNIGHT));
 
         Game game = new Game(board);
-        ActionResult result = game.executeAction(move("c4", "d6"));
+        GameResult result = game.playMove(move("c4", "d6"));
 
         // knight captures queen -> KN vs KN
-        Assertions.assertTrue(result.isDraw());
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, result.getDrawType());
+        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
+        DrawResult drawResult = (DrawResult) result;
+        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
 
     }
 
@@ -121,18 +130,15 @@ public class DrawByInsufficientMaterialTest {
         board.setPiece(0, new Piece(Colour.BLACK, PieceType.KNIGHT));
 
         Game game = new Game(board);
-        ActionResult result = game.executeAction(move("c4", "d6"));
+        GameResult result = game.playMove(move("c4", "d6"));
 
         // knight captures queen -> KNN vs KN
-        Assertions.assertFalse(result.isDraw());
+        Assertions.assertNotEquals(GameResult.ResultType.DRAW, result.getResultType());
 
     }
 
-    private GameAction move(String startSquare, String endSquare) {
-        return GameAction.builder()
-                .actionType(ActionType.MOVE)
-                .move(MoveUtils.fromNotation(startSquare, endSquare))
-                .build();
+    private Move move(String startSquare, String endSquare) {
+        return MoveUtils.fromNotation(startSquare, endSquare);
     }
 
 }

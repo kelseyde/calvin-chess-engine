@@ -3,10 +3,9 @@ package com.kelseyde.calvin.controller;
 import com.kelseyde.calvin.model.api.NewGameResponse;
 import com.kelseyde.calvin.model.api.PlayRequest;
 import com.kelseyde.calvin.model.api.PlayResponse;
-import com.kelseyde.calvin.model.game.ActionResult;
-import com.kelseyde.calvin.model.game.ActionType;
 import com.kelseyde.calvin.model.game.Game;
-import com.kelseyde.calvin.model.game.GameAction;
+import com.kelseyde.calvin.model.game.result.GameResult;
+import com.kelseyde.calvin.model.game.result.GameResult.ResultType;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.repository.GameRepository;
 import com.kelseyde.calvin.service.engine.Engine;
@@ -49,29 +48,23 @@ public class GameController {
         Game game = gameRepository.getGame(moveRequest.getGameId())
                 .orElseThrow(() -> new NoSuchElementException(String.format("Invalid game id %s!", moveRequest.getGameId())));
 
-        GameAction playerAction = GameAction.builder()
-                .actionType(ActionType.MOVE)
-                .move(Move.builder()
-                        .startSquare(MoveUtils.fromNotation(moveRequest.getStartSquare()))
-                        .endSquare(MoveUtils.fromNotation(moveRequest.getEndSquare()))
-                        .promotionPieceType(moveRequest.getPromotionPieceType())
-                        .build())
+        Move playerMove = Move.builder()
+                .startSquare(MoveUtils.fromNotation(moveRequest.getStartSquare()))
+                .endSquare(MoveUtils.fromNotation(moveRequest.getEndSquare()))
+                .promotionPieceType(moveRequest.getPromotionPieceType())
                 .build();
-        log.info("Player selects action {}", playerAction);
-        ActionResult playerResult = game.executeAction(playerAction);
-        if (playerResult.isWin() || playerResult.isDraw() || !playerResult.isValidMove()) {
+        log.info("Player selects move {}", playerMove);
+        GameResult playerResult = game.playMove(playerMove);
+        ResultType resultType = playerResult.getResultType();
+        if (ResultType.WIN.equals(resultType) || ResultType.DRAW.equals(resultType) || ResultType.ILLEGAL_MOVE.equals(resultType)) {
             return ResponseEntity.ok(PlayResponse.fromBoard(game.getBoard())
                     .result(playerResult)
                     .build());
         }
 
-        GameAction engineAction = GameAction.builder()
-                .actionType(ActionType.MOVE)
-                .move(engine.selectMove(game))
-                .build();
-        log.info("Engine selects action {}", engineAction);
-        ActionResult engineResult = game.executeAction(engineAction);
-
+        Move engineMove = engine.selectMove(game);
+        log.info("Engine selects move {}", engineMove);
+        GameResult engineResult = game.playMove(engineMove);
         return ResponseEntity.ok(PlayResponse.fromBoard(game.getBoard())
                 .result(engineResult)
                 .build());

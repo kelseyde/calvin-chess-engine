@@ -4,9 +4,8 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.game.ActionType;
 import com.kelseyde.calvin.model.game.Game;
-import com.kelseyde.calvin.model.game.GameAction;
+import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
@@ -52,51 +51,51 @@ public class GameTest {
         Game game = new Game();
         Assertions.assertEquals(1, game.getBoard().getFullMoveCounter());
 
-        game.executeAction(move("e2", "e3"));
+        game.playMove(move("e2", "e3"));
         Assertions.assertEquals(1, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(1, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("e7", "e6"));
+        game.playMove(move("e7", "e6"));
         Assertions.assertEquals(2, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(1, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("d2", "d3"));
+        game.playMove(move("d2", "d3"));
         Assertions.assertEquals(2, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(2, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("d7", "d6"));
+        game.playMove(move("d7", "d6"));
         Assertions.assertEquals(3, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(2, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("c2", "c3"));
+        game.playMove(move("c2", "c3"));
         Assertions.assertEquals(3, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(3, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("c7", "c6"));
+        game.playMove(move("c7", "c6"));
         Assertions.assertEquals(4, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(3, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("b2", "b3"));
+        game.playMove(move("b2", "b3"));
         Assertions.assertEquals(4, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(4, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("b7", "b6"));
+        game.playMove(move("b7", "b6"));
         Assertions.assertEquals(5, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(4, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("a2", "a3"));
+        game.playMove(move("a2", "a3"));
         Assertions.assertEquals(5, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(5, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("a7", "a6"));
+        game.playMove(move("a7", "a6"));
         Assertions.assertEquals(6, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(5, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("h2", "h3"));
+        game.playMove(move("h2", "h3"));
         Assertions.assertEquals(6, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(6, game.getBoardHistory().peek().getFullMoveCounter());
 
-        game.executeAction(move("h7", "h6"));
+        game.playMove(move("h7", "h6"));
         Assertions.assertEquals(7, game.getBoard().getFullMoveCounter());
         Assertions.assertEquals(6, game.getBoardHistory().peek().getFullMoveCounter());
     }
@@ -110,15 +109,15 @@ public class GameTest {
         Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isKingSide());
         Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isQueenSide());
 
-        game.executeAction(move("e2", "e3"));
-        game.executeAction(move("e7", "e6"));
+        game.playMove(move("e2", "e3"));
+        game.playMove(move("e7", "e6"));
 
         Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
         Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
         Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isKingSide());
         Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isQueenSide());
 
-        game.executeAction(move("e1", "e2"));
+        game.playMove(move("e1", "e2"));
 
         Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
         Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
@@ -130,7 +129,7 @@ public class GameTest {
         Assertions.assertTrue(game.getBoardHistory().peek().getCastlingRights().get(Colour.BLACK).isKingSide());
         Assertions.assertTrue(game.getBoardHistory().peek().getCastlingRights().get(Colour.BLACK).isQueenSide());
 
-        game.executeAction(move("f7", "f6"));
+        game.playMove(move("f7", "f6"));
 
         Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
         Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
@@ -144,11 +143,8 @@ public class GameTest {
 
     }
 
-    private GameAction move(String startSquare, String endSquare) {
-        return GameAction.builder()
-                .actionType(ActionType.MOVE)
-                .move(MoveUtils.fromNotation(startSquare, endSquare))
-                .build();
+    private Move move(String startSquare, String endSquare) {
+        return MoveUtils.fromNotation(startSquare, endSquare);
     }
 
     private void assertSinglePieceBoard(int startSquare) {

@@ -159,7 +159,7 @@ public class PawnMoveGeneratorTest {
         Move blackDoubleMove = generator.generatePseudoLegalMoves(game, 50).stream()
                 .filter(move -> move.getEndSquare() == 34)
                 .findFirst().orElseThrow();
-        game.handleMove(blackDoubleMove);
+        game.playMove(blackDoubleMove);
 
         Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(game, 35);
 
@@ -184,7 +184,7 @@ public class PawnMoveGeneratorTest {
         Move blackDoubleMove = generator.generatePseudoLegalMoves(game, 52).stream()
                 .filter(move -> move.getEndSquare() == 36)
                 .findFirst().orElseThrow();
-        game.handleMove(blackDoubleMove);
+        game.playMove(blackDoubleMove);
 
         Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(game, 35);
 
@@ -215,16 +215,16 @@ public class PawnMoveGeneratorTest {
         Move blackDoubleMove = generator.generatePseudoLegalMoves(game, 50).stream()
                 .filter(move -> move.getEndSquare() == 34)
                 .findFirst().orElseThrow();
-        game.handleMove(blackDoubleMove);
+        game.playMove(blackDoubleMove);
 
         Move whiteRookMove = moveBuilder().startSquare(0).endSquare(8).build();
-        game.handleMove(whiteRookMove);
+        game.playMove(whiteRookMove);
 
         // second double pawn move from black, should make the first en-passant capture impossible
         blackDoubleMove = generator.generatePseudoLegalMoves(game, 52).stream()
                 .filter(move -> move.getEndSquare() == 36)
                 .findFirst().orElseThrow();
-        game.handleMove(blackDoubleMove); // first double pawn move from black
+        game.playMove(blackDoubleMove); // first double pawn move from black
 
         Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(game, 35);
 
@@ -249,7 +249,7 @@ public class PawnMoveGeneratorTest {
         Move whiteDoubleMove = generator.generatePseudoLegalMoves(game, 14).stream()
                 .filter(move -> move.getEndSquare() == 30)
                 .findFirst().orElseThrow();
-        game.handleMove(whiteDoubleMove);
+        game.playMove(whiteDoubleMove);
 
         Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(game, 29);
 
@@ -274,7 +274,7 @@ public class PawnMoveGeneratorTest {
         Move whiteDoubleMove = generator.generatePseudoLegalMoves(game, 12).stream()
                 .filter(move -> move.getEndSquare() == 28)
                 .findFirst().orElseThrow();
-        game.handleMove(whiteDoubleMove);
+        game.playMove(whiteDoubleMove);
 
         Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(game, 29);
 
@@ -305,16 +305,16 @@ public class PawnMoveGeneratorTest {
         Move whiteDoubleMove = generator.generatePseudoLegalMoves(game, 10).stream()
                 .filter(move -> move.getEndSquare() == 26)
                 .findFirst().orElseThrow();
-        game.handleMove(whiteDoubleMove);
+        game.playMove(whiteDoubleMove);
 
         Move blackRookMove = moveBuilder().startSquare(63).endSquare(62).build();
-        game.handleMove(blackRookMove);
+        game.playMove(blackRookMove);
 
         // second double pawn move from black, should make the first en-passant capture impossible
         whiteDoubleMove = generator.generatePseudoLegalMoves(game, 8).stream()
                 .filter(move -> move.getEndSquare() == 24)
                 .findFirst().orElseThrow();
-        game.handleMove(whiteDoubleMove); // first double pawn move from black
+        game.playMove(whiteDoubleMove); // first double pawn move from black
 
         Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(game, 25);
 
@@ -333,12 +333,12 @@ public class PawnMoveGeneratorTest {
     public void testEnPassantRemovesCapturedPawn() {
 
         Game game = new Game();
-        game.handleMove(MoveUtils.fromNotation("e2", "e4"));
-        game.handleMove(MoveUtils.fromNotation("g8", "f6"));
-        game.handleMove(MoveUtils.fromNotation("e4", "e5"));
-        game.handleMove(MoveUtils.fromNotation("d7", "d5"));
+        game.playMove(MoveUtils.fromNotation("e2", "e4"));
+        game.playMove(MoveUtils.fromNotation("g8", "f6"));
+        game.playMove(MoveUtils.fromNotation("e4", "e5"));
+        game.playMove(MoveUtils.fromNotation("d7", "d5"));
         //en passant
-        game.handleMove(MoveUtils.fromNotation("e5", "d6"));
+        game.playMove(MoveUtils.fromNotation("e5", "d6"));
 
         Assertions.assertTrue(game.getBoard().getPieceAt(MoveUtils.fromNotation("d5")).isEmpty());
 

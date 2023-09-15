@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.service.game.drawcalculator;
 
-import com.kelseyde.calvin.model.BoardMetadata;
+import com.kelseyde.calvin.model.RepetitionMetadata;
 import com.kelseyde.calvin.model.game.DrawType;
 import com.kelseyde.calvin.model.game.Game;
 import lombok.Getter;
@@ -16,7 +16,7 @@ public class ThreefoldRepetitionCalculator implements DrawCalculator {
     public boolean isDraw(Game game) {
        return game.getBoardHistory()
                 .stream()
-                .collect(Collectors.groupingBy(BoardMetadata::toString))
+                .collect(Collectors.groupingBy(board -> RepetitionMetadata.fromBoard(board).toString()))
                 .values()
                 .stream()
                 .anyMatch(positions -> positions.size() == 3);

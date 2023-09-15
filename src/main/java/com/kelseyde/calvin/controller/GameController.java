@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.controller;
 
+import com.kelseyde.calvin.model.api.NewGameResponse;
 import com.kelseyde.calvin.model.api.PlayRequest;
 import com.kelseyde.calvin.model.api.PlayResponse;
-import com.kelseyde.calvin.model.api.NewGameResponse;
 import com.kelseyde.calvin.model.game.ActionResult;
 import com.kelseyde.calvin.model.game.ActionType;
 import com.kelseyde.calvin.model.game.Game;

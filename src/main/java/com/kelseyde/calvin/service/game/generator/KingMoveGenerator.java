@@ -35,7 +35,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
     public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
 
         Board board = game.getBoard();
-        Piece king = board.pieceAt(startSquare)
+        Piece king = board.getPieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.KING))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no king on square %s!", startSquare)));
 
@@ -43,8 +43,8 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
                 .map(offset -> getLegalMoveForOffset(board, king, startSquare, offset))
                 .flatMap(Optional::stream).collect(Collectors.toSet());
 
-        checkKingsideCastling(game, king, startSquare).ifPresent(legalMoves::add);
-        checkQueensideCastling(game, king, startSquare).ifPresent(legalMoves::add);
+        checkKingsideCastling(board, king, startSquare).ifPresent(legalMoves::add);
+        checkQueensideCastling(board, king, startSquare).ifPresent(legalMoves::add);
 
         return legalMoves;
 
@@ -60,7 +60,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             (BoardUtils.isHFile(startSquare) && H_FILE_OFFSET_EXCEPTIONS.contains(offset))) {
             return Optional.empty();
         }
-        Optional<Piece> pieceOnTargetSquare = board.pieceAt(targetSquare);
+        Optional<Piece> pieceOnTargetSquare = board.getPieceAt(targetSquare);
         if (pieceOnTargetSquare.isEmpty()) {
             return Optional.of(createKingMove(startSquare, targetSquare).build());
         } else if (pieceOnTargetSquare.get().getColour().isOppositeColour(colour)) {
@@ -70,9 +70,8 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         }
     }
 
-    private Optional<Move> checkKingsideCastling(Game game, Piece king, int startSquare) {
+    private Optional<Move> checkKingsideCastling(Board board, Piece king, int startSquare) {
         Colour colour = king.getColour();
-        Board board = game.getBoard();
 
         int kingStartingSquare = getKingStartingSquare(colour);
         int kingTargetSquare = getKingsideCastlingKingSquare(colour);
@@ -81,10 +80,11 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         int rookStartingSqure = getKingsideRookStartingSquare(colour);
         Set<Integer> rookTravelSquares = getKingsideCastlingRookTravelSquares(colour);
 
-        boolean isKingsideCastlingDisallowed = game.getCastlingRights().get(colour).isKingSide();
+        boolean isKingsideCastlingDisallowed = board.getCastlingRights().get(colour).isKingSide();
         boolean isKingOnStartSquare = startSquare == kingStartingSquare;
-        boolean isRookOnStartSquare = board.pieceIs(rookStartingSqure, colour, PieceType.ROOK);
-        boolean travelSquaresEmpty = rookTravelSquares.stream().allMatch(board::isSquareEmpty);
+        boolean isRookOnStartSquare = pieceIs(board, rookStartingSqure, colour, PieceType.ROOK);
+        boolean travelSquaresEmpty = rookTravelSquares.stream()
+                .allMatch(square -> board.getPieceAt(square).isEmpty());
 
         if (isKingsideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
             return Optional.of(createKingMove(startSquare, kingTargetSquare)
@@ -97,9 +97,8 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         return Optional.empty();
     }
 
-    private Optional<Move> checkQueensideCastling(Game game, Piece king, int startSquare) {
+    private Optional<Move> checkQueensideCastling(Board board, Piece king, int startSquare) {
         Colour colour = king.getColour();
-        Board board = game.getBoard();
 
         int kingStartingSquare = getKingStartingSquare(colour);
         int kingTargetSquare = getQueensideCastlingKingSquare(colour);
@@ -108,10 +107,12 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         int rookStartingSquare = getQueensideRookStartingSquare(colour);
         Set<Integer> rookTravelSquares = getQueensideCastlingRookTravelSquares(colour);
 
-        boolean isQueensideCastlingDisallowed = game.getCastlingRights().get(colour).isQueenSide();
+        boolean isQueensideCastlingDisallowed = board.getCastlingRights().get(colour).isQueenSide();
         boolean isKingOnStartSquare = startSquare == kingStartingSquare;
-        boolean isRookOnStartSquare = board.pieceIs(rookStartingSquare, colour, PieceType.ROOK);
-        boolean travelSquaresEmpty = rookTravelSquares.stream().allMatch(board::isSquareEmpty);
+        boolean isRookOnStartSquare = pieceIs(board, rookStartingSquare, colour, PieceType.ROOK);
+
+        boolean travelSquaresEmpty = rookTravelSquares.stream()
+                .allMatch(square -> board.getPieceAt(square).isEmpty());
 
         if (isQueensideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
             return Optional.of(createKingMove(startSquare, kingTargetSquare)
@@ -131,6 +132,12 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
                 // Any king move (including castling) precludes castling rights for the remainder of the game.
                 .negatesKingsideCastling(true)
                 .negatesQueensideCastling(true);
+    }
+
+    private boolean pieceIs(Board board, int square, Colour colour, PieceType type) {
+        return board.getPieceAt(square)
+                .filter(piece -> piece.getColour().equals(colour) && piece.getType().equals(type))
+                .isPresent();
     }
 
     private int getKingStartingSquare(Colour colour) {

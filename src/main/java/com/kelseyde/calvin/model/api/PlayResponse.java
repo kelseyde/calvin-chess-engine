@@ -22,7 +22,7 @@ public class PlayResponse {
         Map<String, String> position = new HashMap<>();
         IntStream.range(0, 64)
                 .forEach(i -> {
-                    board.pieceAt(i).ifPresent(piece -> {
+                    board.getPieceAt(i).ifPresent(piece -> {
                         String square = MoveUtils.toNotation(i);
                         String pieceCode = piece.toPieceCode();
                         position.put(square, pieceCode);

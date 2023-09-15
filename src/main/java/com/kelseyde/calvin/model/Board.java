@@ -1,10 +1,9 @@
 package com.kelseyde.calvin.model;
 
 import com.kelseyde.calvin.utils.BoardUtils;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -17,38 +16,29 @@ import java.util.stream.IntStream;
  * pieces.
  */
 @Data
-@AllArgsConstructor
+@Builder
 public class Board {
 
-    private static final Character[] EMPTY_BOARD = new Character[]{
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'};
-
-    private static final Character[] STARTING_POSITION = new Character[]{
-            'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R',
-            'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
-            'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p',
-            'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'};
-
-    public static Board emptyBoard() {
-        return BoardUtils.fromCharArray(EMPTY_BOARD);
-    }
-
-    public static Board startingPosition() {
-        return BoardUtils.fromCharArray(STARTING_POSITION);
-    }
-
     private Piece[] squares;
+
+    @Builder.Default
+    private Colour turn = Colour.WHITE;
+
+    @Builder.Default
+    private Map<Colour, CastlingRights> castlingRights = BoardUtils.getDefaultCastlingRights();
+
+    @Builder.Default
+    private int enPassantTargetSquare = -1;
+
+    @Builder.Default
+    private int halfMoveCounter = 0;
+
+    @Builder.Default
+    private int fullMoveCounter = 1;
+
+    public Optional<Piece> getPieceAt(int square) {
+        return Optional.ofNullable(squares[square]);
+    }
 
     public void setPiece(int square, Piece piece) {
         squares[square] = piece;
@@ -58,44 +48,45 @@ public class Board {
         squares[square] = null;
     }
 
-    public Optional<Piece> pieceAt(int square) {
-        return Optional.ofNullable(squares[square]);
-    }
-
-    public boolean pieceIs(int square, Colour colour, PieceType type) {
-        return pieceAt(square)
-                .filter(piece -> piece.getColour().equals(colour) && piece.getType().equals(type))
-                .isPresent();
-    }
-
     public Set<Integer> getPiecePositions(Colour colour) {
         return IntStream.range(0, 64)
-                .filter(square -> pieceAt(square).filter(piece -> colour.equals(piece.getColour())).isPresent())
+                .filter(square -> getPieceAt(square).filter(piece -> colour.equals(piece.getColour())).isPresent())
                 .boxed()
                 .collect(Collectors.toSet());
     }
 
     public Map<Integer, Piece> getPieces(Colour colour) {
         return getPiecePositions(colour).stream()
-                .collect(Collectors.toMap(square -> square, square -> pieceAt(square).orElseThrow()));
+                .collect(Collectors.toMap(square -> square, square -> getPieceAt(square).orElseThrow()));
     }
 
-    public Integer getKingSquare(Colour colour) {
-        return Arrays.asList(squares).indexOf(new Piece(colour, PieceType.KING));
+    public void incrementHalfMoveCounter() {
+        ++halfMoveCounter;
     }
 
-    public boolean isSquareEmpty(int square) {
-        return pieceAt(square).isEmpty();
+    public void resetHalfMoveCounter() {
+        halfMoveCounter = 0;
+    }
+
+    public void incrementMoveCounter() {
+        ++fullMoveCounter;
     }
 
     public Board copy() {
         Piece[] squaresCopy = new Piece[64];
         IntStream.range(0, 64)
-                .forEach(square -> squaresCopy[square] = pieceAt(square)
-                        .map(Piece::copy)
-                        .orElse(null));
-        return new Board(squaresCopy);
+                .forEach(square -> squaresCopy[square] = getPieceAt(square).map(Piece::copy).orElse(null));
+        return Board.builder()
+                .squares(squaresCopy)
+                .turn(turn)
+                .castlingRights(Map.of(
+                        Colour.WHITE, castlingRights.get(Colour.WHITE).copy(),
+                        Colour.BLACK, castlingRights.get(Colour.BLACK).copy()
+                ))
+                .enPassantTargetSquare(enPassantTargetSquare)
+                .halfMoveCounter(halfMoveCounter)
+                .fullMoveCounter(fullMoveCounter)
+                .build();
     }
-
 
 }

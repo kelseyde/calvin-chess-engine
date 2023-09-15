@@ -33,7 +33,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
 
         Board board = game.getBoard();
-        Piece piece = board.pieceAt(startSquare)
+        Piece piece = board.getPieceAt(startSquare)
                 .filter(p -> p.getType().equals(getPieceType()))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no %s on square %s!", getPieceType(), startSquare)));
 
@@ -74,7 +74,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
                 endVector = true;
                 continue;
             }
-            Optional<Piece> pieceOnTargetSquare = board.pieceAt(targetSquare);
+            Optional<Piece> pieceOnTargetSquare = board.getPieceAt(targetSquare);
             if (pieceOnTargetSquare.isEmpty()) {
                 pseudoLegalMoves.add(moveBuilder()
                         .startSquare(startSquare)

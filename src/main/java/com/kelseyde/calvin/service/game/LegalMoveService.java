@@ -3,16 +3,14 @@ package com.kelseyde.calvin.service.game;
 import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.service.game.generator.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +24,12 @@ public class LegalMoveService {
             new PawnMoveGenerator(), new KnightMoveGenerator(), new BishopMoveGenerator(),
             new RookMoveGenerator(), new QueenMoveGenerator(), new KingMoveGenerator()
     );
+
+    public Optional<Move> calculateLegalMove(Game game, Move move) {
+        return generateLegalMoves(game).stream()
+                .filter(move::moveMatches)
+                .findAny();
+    }
 
     public Set<Move> generateLegalMoves(Game game) {
         Colour colour = game.getTurn();
@@ -56,7 +60,7 @@ public class LegalMoveService {
 
     private Set<Move> generatePseudoLegalMoves(Game game, Colour colour, int square) {
 
-        Piece piece = game.getBoard().pieceAt(square)
+        Piece piece = game.getBoard().getPieceAt(square)
                 .filter(p -> p.getColour().isSameColour(colour))
                 .orElseThrow(() -> new NoSuchElementException(
                         String.format("No piece of colour %s on square %s!", colour, square)));
@@ -78,7 +82,7 @@ public class LegalMoveService {
         game.applyMove(move);
 
         Set<Integer> checkableSquares = MoveType.CASTLE.equals(move.getMoveType()) ?
-                move.getKingTravelSquares() : Set.of(board.getKingSquare(colour));
+                move.getKingTravelSquares() : Set.of(getKingSquare(board, colour));
         Set<Integer> attackedSquares = generateAllPseudoLegalMoves(game, colour.oppositeColour()).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -98,7 +102,7 @@ public class LegalMoveService {
 
         game.applyMove(move);
 
-        int opponentKingSquare = board.getKingSquare(colour.oppositeColour());
+        int opponentKingSquare = getKingSquare(board, colour.oppositeColour());
         Set<Integer> attackingSquares = generateAllPseudoLegalMoves(game, colour).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -107,6 +111,11 @@ public class LegalMoveService {
 
         game.unapplyLastMove();
         return move;
+    }
+
+    private Integer getKingSquare(Board board, Colour colour) {
+        return Arrays.asList(board.getSquares())
+                .indexOf(new Piece(colour, PieceType.KING));
     }
 
 }

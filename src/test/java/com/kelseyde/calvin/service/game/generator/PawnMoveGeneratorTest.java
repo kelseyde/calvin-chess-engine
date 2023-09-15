@@ -7,6 +7,7 @@ import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,8 +27,8 @@ public class PawnMoveGeneratorTest {
 
     @BeforeEach
     public void beforeEach() {
-        Board board = Board.emptyBoard();
-        game = Game.fromPosition(board);
+        Board board = BoardUtils.emptyBoard();
+        game = new Game(board);
     }
 
     @Test
@@ -339,7 +340,7 @@ public class PawnMoveGeneratorTest {
         //en passant
         game.handleMove(MoveUtils.fromNotation("e5", "d6"));
 
-        Assertions.assertTrue(game.getBoard().pieceAt(MoveUtils.fromNotation("d5")).isEmpty());
+        Assertions.assertTrue(game.getBoard().getPieceAt(MoveUtils.fromNotation("d5")).isEmpty());
 
     }
 

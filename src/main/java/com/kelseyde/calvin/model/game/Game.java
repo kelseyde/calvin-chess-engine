@@ -1,11 +1,11 @@
 package com.kelseyde.calvin.model.game;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.kelseyde.calvin.exception.InvalidMoveException;
 import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.game.DrawService;
 import com.kelseyde.calvin.service.game.LegalMoveService;
+import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,49 +21,26 @@ import java.util.*;
 public class Game {
 
     private String id = UUID.randomUUID().toString();
+
     private Board board;
-    private Colour turn;
-    private Map<Colour, CastlingRights> castlingRights;
-    private int enPassantTargetSquare;
-    private int halfMoveClock;
-    private int fullMoveCounter;
-    private Stack<BoardMetadata> boardHistory;
-    private Stack<Move> moveHistory;
-    private Set<Move> legalMoves;
+
+    private Stack<Board> boardHistory = new Stack<>();
+    private Stack<Move> moveHistory = new Stack<>();
+    private Set<Move> legalMoves = new HashSet<>();
 
     @JsonIgnore
-    private LegalMoveService moveService;
+    private LegalMoveService legalMoveService = new LegalMoveService();
     @JsonIgnore
-    private DrawService drawService;
+    private DrawService drawService = new DrawService();
 
     public Game() {
-        this.board = Board.startingPosition();
-        this.turn = Colour.WHITE;
-        this.boardHistory = new Stack<>();
-        this.moveHistory = new Stack<>();
-        this.castlingRights = Map.of(Colour.WHITE, new CastlingRights(), Colour.BLACK, new CastlingRights());
-        this.enPassantTargetSquare = -1;
-        this.halfMoveClock = 0;
-        this.fullMoveCounter = 1;
-
-        this.moveService = new LegalMoveService();
-        this.drawService = new DrawService();
-        this.legalMoves = moveService.generateLegalMoves(this);
+        this.board = BoardUtils.startingPosition();
+        this.legalMoves = legalMoveService.generateLegalMoves(this);
     }
 
     public Game(Board board) {
         this.board = board;
-        this.turn = Colour.WHITE;
-        this.boardHistory = new Stack<>();
-        this.moveHistory = new Stack<>();
-        this.castlingRights = Map.of(Colour.WHITE, new CastlingRights(), Colour.BLACK, new CastlingRights());
-        this.enPassantTargetSquare = -1;
-        this.halfMoveClock = 0;
-        this.fullMoveCounter = 1;
-
-        this.moveService = new LegalMoveService();
-        this.drawService = new DrawService();
-        this.legalMoves = moveService.generateLegalMoves(this);
+        this.legalMoves = legalMoveService.generateLegalMoves(this);
     }
 
     public ActionResult executeAction(GameAction action) {
@@ -75,42 +52,29 @@ public class Game {
 
     public ActionResult handleMove(Move move) {
 
-        log.info("Move: {}", move);
-        log.info("Legal moves: {}", legalMoves);
-        Optional<Move> legalMoveOpt = legalMoves.stream()
-                .filter(move::moveMatches)
-                .findFirst();
-
-        if (legalMoveOpt.isEmpty()) {
+        Optional<Move> legalMove = legalMoves.stream().filter(move::moveMatches).findAny();
+        if (legalMove.isEmpty()) {
             return ActionResult.builder()
                     .isValidMove(false)
                     .build();
         }
-        Move legalMove = legalMoveOpt.get();
 
-        applyMove(legalMove);
+        move = legalMove.get();
 
-        enPassantTargetSquare = legalMove.getEnPassantTargetSquare();
-        if (legalMove.isNegatesKingsideCastling()) {
-            castlingRights.get(turn).setKingSide(false);
-        }
-        if (legalMove.isNegatesQueensideCastling()) {
-            castlingRights.get(turn).setQueenSide(false);
-        }
+        applyMove(move);
 
-        if (Colour.BLACK.equals(turn)) {
-            fullMoveCounter++;
-        }
-        boolean resetFiftyMoveCounter = legalMove.isCapture() || PieceType.PAWN.equals(legalMove.getPieceType());
-        halfMoveClock = resetFiftyMoveCounter ? 0 : ++halfMoveClock;
-        moveHistory.push(legalMove);
-        turn = turn.oppositeColour();
-        legalMoves = moveService.generateLegalMoves(this);
+        handleEnPassantRights(move);
+        handleCastlingRights(move);
+        handleMoveCounters(move);
 
-        if (legalMove.isCheck() && legalMoves.isEmpty()) {
+        moveHistory.push(move);
+        board.setTurn(board.getTurn().oppositeColour());
+        legalMoves = legalMoveService.generateLegalMoves(this);
+
+        if (move.isCheck() && legalMoves.isEmpty()) {
             return ActionResult.builder()
                     .isWin(true)
-                    .winningColour(turn.oppositeColour())
+                    .winningColour(board.getTurn().oppositeColour())
                     .winType(WinType.CHECKMATE)
                     .build();
         } else {
@@ -122,7 +86,7 @@ public class Game {
                         .build();
             } else {
                 return ActionResult.builder()
-                        .sideToPlay(turn)
+                        .sideToPlay(board.getTurn())
                         .build();
             }
         }
@@ -130,8 +94,8 @@ public class Game {
     }
 
     public void applyMove(Move move) {
-        boardHistory.push(BoardMetadata.fromGame(this));
-        Piece piece = board.pieceAt(move.getStartSquare()).orElseThrow();
+        boardHistory.push(board.copy());
+        Piece piece = board.getPieceAt(move.getStartSquare()).orElseThrow();
         board.unsetPiece(move.getStartSquare());
         board.setPiece(move.getEndSquare(), piece);
 
@@ -144,7 +108,7 @@ public class Game {
                 board.setPiece(move.getEndSquare(), promotedPiece);
             }
             case CASTLE -> {
-                Piece rook = board.pieceAt(move.getRookStartSquare()).orElseThrow();
+                Piece rook = board.getPieceAt(move.getRookStartSquare()).orElseThrow();
                 board.unsetPiece(move.getRookStartSquare());
                 board.setPiece(move.getRookEndSquare(), rook);
             }
@@ -152,7 +116,46 @@ public class Game {
     }
 
     public void unapplyLastMove() {
-        board = boardHistory.pop().getBoard();
+        if (!boardHistory.isEmpty()) {
+            board = boardHistory.pop();
+        }
+        if (!moveHistory.isEmpty()) {
+            moveHistory.pop();
+        }
+    }
+
+    public Colour getTurn() {
+        return board.getTurn();
+    }
+
+    public void setTurn(Colour turn) {
+        this.board.setTurn(turn);
+        this.legalMoves = legalMoveService.generateLegalMoves(this);
+    }
+
+    private void handleEnPassantRights(Move move) {
+        board.setEnPassantTargetSquare(move.getEnPassantTargetSquare());
+    }
+
+    private void handleCastlingRights(Move move) {
+        if (move.isNegatesKingsideCastling()) {
+            board.getCastlingRights().get(board.getTurn()).setKingSide(false);
+        }
+        if (move.isNegatesQueensideCastling()) {
+            board.getCastlingRights().get(board.getTurn()).setQueenSide(false);
+        }
+    }
+
+    private void handleMoveCounters(Move move) {
+        if (Colour.BLACK.equals(board.getTurn())) {
+            board.incrementMoveCounter();
+        }
+        boolean resetHalfMoveClock = move.isCapture() || PieceType.PAWN.equals(move.getPieceType());
+        if (resetHalfMoveClock) {
+            board.resetHalfMoveCounter();
+        } else {
+            board.incrementHalfMoveCounter();
+        }
     }
 
     private ActionResult handleResignation(Player player) {
@@ -163,18 +166,5 @@ public class Game {
                 .build();
     }
 
-    public void setTurn(Colour turn) {
-        this.turn = turn;
-        this.legalMoves = moveService.generateLegalMoves(this);
-    }
-
-    public void setBoard(Board board) {
-        this.board = board;
-        this.legalMoves = moveService.generateLegalMoves(this);
-    }
-
-    public static Game fromPosition(Board board) {
-        return new Game(board);
-    }
 
 }

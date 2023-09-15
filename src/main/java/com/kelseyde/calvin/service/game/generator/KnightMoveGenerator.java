@@ -36,7 +36,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
     public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
 
         Board board = game.getBoard();
-        Piece knight = board.pieceAt(startSquare)
+        Piece knight = board.getPieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.KNIGHT))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no knight on square %s!", startSquare)));
 
@@ -59,7 +59,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
             (BoardUtils.isHFile(startSquare) && H_FILE_OFFSET_EXCEPTIONS.contains(offset))) {
             return Optional.empty();
         }
-        Optional<Piece> pieceOnTargetSquare = board.pieceAt(targetSquare);
+        Optional<Piece> pieceOnTargetSquare = board.getPieceAt(targetSquare);
         if (pieceOnTargetSquare.isEmpty()) {
             return Optional.of(moveBuilder()
                     .startSquare(startSquare)

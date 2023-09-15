@@ -6,6 +6,7 @@ import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.Game;
 import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.utils.BoardUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,8 +24,8 @@ public class BishopMoveGeneratorTest {
 
     @BeforeEach
     public void beforeEach() {
-        Board board = Board.emptyBoard();
-        game = Game.fromPosition(board);
+        Board board = BoardUtils.emptyBoard();
+        game = new Game(board);
     }
 
     @Test

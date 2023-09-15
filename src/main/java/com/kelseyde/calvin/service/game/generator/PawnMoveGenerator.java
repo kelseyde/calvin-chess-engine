@@ -26,7 +26,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
     public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
 
         Board board = game.getBoard();
-        Piece pawn = board.pieceAt(startSquare)
+        Piece pawn = board.getPieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.PAWN))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no pawn on square %s!", startSquare)));
 
@@ -46,7 +46,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         int standardMoveSquare = startSquare + standardMoveOffset;
 
         if (BoardUtils.isValidSquareCoordinate(standardMoveSquare)) {
-            Optional<Piece> pieceOnStandardMoveSquare = board.pieceAt(standardMoveSquare);
+            Optional<Piece> pieceOnStandardMoveSquare = board.getPieceAt(standardMoveSquare);
             if (pieceOnStandardMoveSquare.isEmpty()) {
                 if (isPromotingMove(piece, startSquare)) {
                     // Covering piece promotion
@@ -73,8 +73,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             int doubleMoveSquare = startSquare + doubleMoveOffset;
 
             if (BoardUtils.isValidSquareCoordinate(doubleMoveSquare)) {
-                Optional<Piece> pieceOnStandardMoveSquare = board.pieceAt(standardMoveSquare);
-                Optional<Piece> pieceOnDoubleMoveSquare = board.pieceAt(doubleMoveSquare);
+                Optional<Piece> pieceOnStandardMoveSquare = board.getPieceAt(standardMoveSquare);
+                Optional<Piece> pieceOnDoubleMoveSquare = board.getPieceAt(doubleMoveSquare);
                 if (pieceOnStandardMoveSquare.isEmpty() && pieceOnDoubleMoveSquare.isEmpty()) {
                     return Optional.of( moveBuilder().startSquare(startSquare).endSquare(doubleMoveSquare)
                             .enPassantTargetSquare(standardMoveSquare)
@@ -102,7 +102,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             if (!BoardUtils.isValidSquareCoordinate(targetCaptureSquare)) {
                 continue;
             }
-            Optional<Piece> pieceOnTargetSquare = game.getBoard().pieceAt(targetCaptureSquare);
+            Optional<Piece> pieceOnTargetSquare = game.getBoard().getPieceAt(targetCaptureSquare);
             if (pieceOnTargetSquare.isPresent() && pieceOnTargetSquare.get().getColour().isOppositeColour(piece.getColour())) {
                 if (isPromotingMove(piece, startSquare)) {
                     // Covering capturing + piece promotion
@@ -115,7 +115,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             }
 
             // Covering en passant
-            if (pieceOnTargetSquare.isEmpty() && game.getEnPassantTargetSquare() == targetCaptureSquare) {
+            if (pieceOnTargetSquare.isEmpty() && game.getBoard().getEnPassantTargetSquare() == targetCaptureSquare) {
                 legalCaptures.add(moveBuilder()
                         .moveType(MoveType.EN_PASSANT)
                         .isCapture(true)

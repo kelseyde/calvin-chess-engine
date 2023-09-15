@@ -5,6 +5,7 @@ import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.game.*;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ public class DrawByFiftyMoveRuleTest {
     @Test
     public void testDrawByFiftyMovesSinceWhiteCapture() {
 
-        Board board = Board.emptyBoard();
+        Board board = BoardUtils.emptyBoard();
         board.setPiece(0, new Piece(Colour.BLACK, PieceType.KING));
         board.setPiece(28, new Piece(Colour.BLACK, PieceType.KNIGHT));
         board.setPiece(36, new Piece(Colour.BLACK, PieceType.KNIGHT));
@@ -23,7 +24,7 @@ public class DrawByFiftyMoveRuleTest {
         board.setPiece(63, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(18, new Piece(Colour.WHITE, PieceType.KNIGHT));
 
-        Game game = Game.fromPosition(board);
+        Game game = new Game(board);
         game.setTurn(Colour.WHITE);
 
         // black knight captures white queen
@@ -191,14 +192,14 @@ public class DrawByFiftyMoveRuleTest {
     @Test
     public void testDrawByFiftyMovesSinceWhitePawnMove() {
 
-        Board board = Board.emptyBoard();
+        Board board = BoardUtils.emptyBoard();
         board.setPiece(0, new Piece(Colour.BLACK, PieceType.KING));
         board.setPiece(36, new Piece(Colour.BLACK, PieceType.PAWN));
 
         board.setPiece(63, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(12, new Piece(Colour.WHITE, PieceType.PAWN));
 
-        Game game = Game.fromPosition(board);
+        Game game = new Game(board);
         game.setTurn(Colour.WHITE);
 
         // white pawn makes last possible pawn move
@@ -366,7 +367,7 @@ public class DrawByFiftyMoveRuleTest {
     @Test
     public void testDrawByFiftyMovesSinceBlackCapture() {
 
-        Board board = Board.emptyBoard();
+        Board board = BoardUtils.emptyBoard();
         board.setPiece(0, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KNIGHT));
         board.setPiece(36, new Piece(Colour.WHITE, PieceType.KNIGHT));
@@ -375,7 +376,7 @@ public class DrawByFiftyMoveRuleTest {
         board.setPiece(63, new Piece(Colour.BLACK, PieceType.KING));
         board.setPiece(18, new Piece(Colour.BLACK, PieceType.KNIGHT));
 
-        Game game = Game.fromPosition(board);
+        Game game = new Game(board);
         game.setTurn(Colour.BLACK);
 
         // black knight captures white queen
@@ -543,14 +544,14 @@ public class DrawByFiftyMoveRuleTest {
     @Test
     public void testDrawByFiftyMovesSinceBlackPawnMove() {
 
-        Board board = Board.emptyBoard();
+        Board board = BoardUtils.emptyBoard();
         board.setPiece(0, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.PAWN));
 
         board.setPiece(63, new Piece(Colour.BLACK, PieceType.KING));
         board.setPiece(52, new Piece(Colour.BLACK, PieceType.PAWN));
 
-        Game game = Game.fromPosition(board);
+        Game game = new Game(board);
         game.setTurn(Colour.BLACK);
 
         // black pawn makes last possible pawn move

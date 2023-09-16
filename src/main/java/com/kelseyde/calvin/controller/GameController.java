@@ -53,7 +53,7 @@ public class GameController {
                 .endSquare(MoveUtils.fromNotation(moveRequest.getEndSquare()))
                 .promotionPieceType(moveRequest.getPromotionPieceType())
                 .build();
-        log.info("Player selects move {}", playerMove);
+        log.info("Player selects move {}", MoveUtils.toNotation(playerMove));
         GameResult playerResult = game.makeMove(playerMove);
         ResultType resultType = playerResult.getResultType();
         if (ResultType.WIN.equals(resultType) || ResultType.DRAW.equals(resultType) || ResultType.ILLEGAL_MOVE.equals(resultType)) {
@@ -63,7 +63,7 @@ public class GameController {
         }
 
         Move engineMove = engine.selectMove(game);
-        log.info("Engine selects move {}", engineMove);
+        log.info("Engine selects move {}", MoveUtils.toNotation(engineMove));
         GameResult engineResult = game.makeMove(engineMove);
         return ResponseEntity.ok(PlayResponse.fromBoard(game.getBoard())
                 .result(engineResult)

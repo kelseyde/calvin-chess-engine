@@ -4,13 +4,14 @@ import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.MoveUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 public class MoveGenerationService {
 
     public int generateMoves(Game game, int depth) {
-        Set<Move> moves = game.getLegalMoves();
+        Collection<Move> moves = game.getLegalMoves().values();
         if (depth == 1) {
             return moves.size();
         }

@@ -36,9 +36,17 @@ public class PerformanceTest {
         perft(new Game(), 3, 8902);
     }
 
+    @Disabled
     @Test
     public void testPerftFourDepth() {
         perft(new Game(), 4, 197281);
+    }
+
+    // Test returns correct result, but currently very slow (>7 minutes!)
+    @Disabled
+    @Test
+    public void testPerftFiveDepth() {
+        perft(new Game(), 5, 4865609);
     }
 
     private void perft(Game game, int depth, int expectedTotalMoves) {

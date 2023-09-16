@@ -2,6 +2,7 @@ package com.kelseyde.calvin.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.model.move.MoveKey;
 import com.kelseyde.calvin.model.result.*;
 import com.kelseyde.calvin.service.game.DrawEvaluator;
 import com.kelseyde.calvin.service.game.LegalMoveGenerator;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents a full game of chess, capturing the current and previous board state, as well as all other metadata required
@@ -26,7 +28,7 @@ public class Game {
 
     private Deque<Board> boardHistory = new ArrayDeque<>();
     private Deque<Move> moveHistory = new ArrayDeque<>();
-    private Set<Move> legalMoves = new HashSet<>();
+    private Map<MoveKey, Move> legalMoves = new HashMap<>();
 
     @JsonIgnore
     private LegalMoveGenerator legalMoveService = new LegalMoveGenerator();
@@ -36,17 +38,19 @@ public class Game {
 
     public Game() {
         this.board = BoardUtils.startingPosition();
-        this.legalMoves = legalMoveService.generateLegalMoves(board);
+        this.legalMoves = legalMoveService.generateLegalMoves(board).stream()
+                .collect(Collectors.toMap(Move::getKey, m -> m));
     }
 
     public Game(Board board) {
         this.board = board;
-        this.legalMoves = legalMoveService.generateLegalMoves(board);
+        this.legalMoves = legalMoveService.generateLegalMoves(board).stream()
+                .collect(Collectors.toMap(Move::getKey, m -> m));
     }
 
     public GameResult makeMove(Move move) {
 
-        Optional<Move> legalMove = legalMoves.stream().filter(move::moveMatches).findAny();
+        Optional<Move> legalMove = Optional.ofNullable(legalMoves.get(move.getKey()));
         if (legalMove.isEmpty()) {
             return new InvalidMoveResult(move);
         }
@@ -55,7 +59,8 @@ public class Game {
         boardHistory.push(board.copy());
         moveHistory.push(move);
         board.applyMove(move);
-        legalMoves = legalMoveService.generateLegalMoves(board);
+        legalMoves = legalMoveService.generateLegalMoves(board).stream()
+                .collect(Collectors.toMap(Move::getKey, m -> m));
 
         if (isCheckmate()) {
             Colour winner = board.getTurn().oppositeColour();
@@ -78,7 +83,8 @@ public class Game {
         if (!moveHistory.isEmpty()) {
             moveHistory.pop();
         }
-        legalMoves = legalMoveService.generateLegalMoves(board);
+        legalMoves = legalMoveService.generateLegalMoves(board).stream()
+                .collect(Collectors.toMap(Move::getKey, m -> m));
     }
 
     public Colour getTurn() {
@@ -87,7 +93,8 @@ public class Game {
 
     public void setTurn(Colour turn) {
         this.board.setTurn(turn);
-        this.legalMoves = legalMoveService.generateLegalMoves(board);
+        this.legalMoves = legalMoveService.generateLegalMoves(board).stream()
+                .collect(Collectors.toMap(Move::getKey, m -> m));
     }
 
     public boolean isCheckmate() {

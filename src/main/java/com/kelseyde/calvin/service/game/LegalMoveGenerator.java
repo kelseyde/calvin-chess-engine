@@ -19,28 +19,21 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LegalMoveGenerator {
 
-    private final List<PseudoLegalMoveGenerator> pseudoLegalMoveGenerators = List.of(
-            new PawnMoveGenerator(), new KnightMoveGenerator(), new BishopMoveGenerator(),
-            new RookMoveGenerator(), new QueenMoveGenerator(), new KingMoveGenerator()
+    private static final Map<PieceType, PseudoLegalMoveGenerator> PSEUDO_LEGAL_MOVE_GENERATORS = Map.of(
+        PieceType.PAWN, new PawnMoveGenerator(),
+        PieceType.KNIGHT, new KnightMoveGenerator(),
+        PieceType.BISHOP, new BishopMoveGenerator(),
+        PieceType.ROOK, new RookMoveGenerator(),
+        PieceType.QUEEN, new QueenMoveGenerator(),
+        PieceType.KING, new KingMoveGenerator()
     );
 
     public Set<Move> generateLegalMoves(Board board) {
         Colour colour = board.getTurn();
-        Set<Integer> pieceSquares = board.getPiecePositions(colour);
-
-        Set<Move> pseudoLegal = pieceSquares.stream()
+        return board.getPiecePositions(colour).stream()
                 .flatMap(square -> generatePseudoLegalMoves(board, colour, square).stream())
+                .filter(pseudoLegalMove -> isFullyLegal(board, pseudoLegalMove))
                 .collect(Collectors.toSet());
-
-        Set<Move> legal = pseudoLegal.stream()
-                .filter(pseudoLegalMove -> !isKingCapturable(board, pseudoLegalMove))
-                .collect(Collectors.toSet());
-
-        Set<Move> checkApplied = legal.stream()
-                .map(legalMove -> calculateCheck(board, legalMove))
-                .collect(Collectors.toSet());
-
-        return checkApplied;
     }
 
     public Set<Move> generateAllPseudoLegalMoves(Board board, Colour colour) {
@@ -58,17 +51,13 @@ public class LegalMoveGenerator {
                 .orElseThrow(() -> new NoSuchElementException(
                         String.format("No piece of colour %s on square %s!", colour, square)));
 
-        PseudoLegalMoveGenerator pseudoLegalMoveGenerator = pseudoLegalMoveGenerators.stream()
-                .filter(generator -> piece.getType().equals(generator.getPieceType()))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException(
-                        String.format("No move generator found for piece type %s!", piece.getType())));
+        PseudoLegalMoveGenerator pseudoLegalMoveGenerator = PSEUDO_LEGAL_MOVE_GENERATORS.get(piece.getType());
 
         return pseudoLegalMoveGenerator.generatePseudoLegalMoves(board, square);
 
     }
 
-    private boolean isKingCapturable(Board board, Move move) {
+    private boolean isFullyLegal(Board board, Move move) {
         Colour colour = board.getTurn();
 
         Board boardCopy = board.copy();
@@ -82,25 +71,21 @@ public class LegalMoveGenerator {
 
         Set<Integer> intersection = new HashSet<>(checkableSquares);
         intersection.retainAll(attackedSquares);
-        return !intersection.isEmpty();
+        boolean isLegalMove = intersection.isEmpty();
+        if (isLegalMove && isCheck(boardCopy, move)) {
+            move.setCheck(true);
+        }
+        return isLegalMove;
 
     }
 
-    private Move calculateCheck(Board board, Move move) {
-        Colour colour = board.getTurn();
-
-        // TODO refactor to one method with isKingCapturable
-        Board boardCopy = board.copy();
-        boardCopy.applyMove(move);
-
-        int opponentKingSquare = getKingSquare(boardCopy, colour.oppositeColour());
-        Set<Integer> attackingSquares = generateAllPseudoLegalMoves(boardCopy, colour).stream()
+    private boolean isCheck(Board board, Move move) {
+        // Additionally calculate whether the move is a check, store this info in Move.
+        int opponentKingSquare = getKingSquare(board, board.getTurn());
+        Set<Integer> attackingSquares = generateAllPseudoLegalMoves(board, board.getTurn().oppositeColour()).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
-        boolean isCheck = attackingSquares.contains(opponentKingSquare);
-        move.setCheck(isCheck);
-
-        return move;
+        return attackingSquares.contains(opponentKingSquare);
     }
 
     private Integer getKingSquare(Board board, Colour colour) {

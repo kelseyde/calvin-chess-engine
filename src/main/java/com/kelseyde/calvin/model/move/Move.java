@@ -86,6 +86,10 @@ public class Move {
     @Builder.Default
     private PieceType promotionPieceType = null;
 
+    public MoveKey getKey() {
+        return new MoveKey(startSquare, endSquare, promotionPieceType);
+    }
+
     public boolean moveMatches(Move move) {
         return startSquare == move.getStartSquare()
                 && endSquare == move.getEndSquare()

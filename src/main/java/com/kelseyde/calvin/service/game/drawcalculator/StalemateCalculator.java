@@ -5,7 +5,7 @@ import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import lombok.Getter;
 
-import java.util.Set;
+import java.util.Collection;
 
 public class StalemateCalculator implements DrawCalculator {
 
@@ -16,7 +16,7 @@ public class StalemateCalculator implements DrawCalculator {
     public boolean isDraw(Game game) {
         boolean lastMoveNotCheck =
                 game.getMoveHistory().isEmpty() || !game.getMoveHistory().peek().isCheck();
-        Set<Move> legalMoves = game.getLegalMoves();
+        Collection<Move> legalMoves = game.getLegalMoves().values();
         return lastMoveNotCheck && legalMoves.isEmpty();
     }
 

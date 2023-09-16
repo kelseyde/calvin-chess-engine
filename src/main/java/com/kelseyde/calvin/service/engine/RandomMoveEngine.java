@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-@Service
+//@Service
 public class RandomMoveEngine implements Engine {
 
     @Override
     public Move selectMove(Game game) {
-        List<Move> legalMoves = new ArrayList<>(game.getLegalMoves());
+        List<Move> legalMoves = new ArrayList<>(game.getLegalMoves().values());
         return legalMoves.get(new Random().nextInt(legalMoves.size()));
     }
 

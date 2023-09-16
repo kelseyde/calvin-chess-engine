@@ -2,22 +2,27 @@ package com.kelseyde.calvin.service.engine.minimax;
 
 import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.service.engine.evaluator.MaterialEvaluator;
 import com.kelseyde.calvin.service.engine.evaluator.PositionEvaluator;
 import com.kelseyde.calvin.service.engine.evaluator.SimplePositionEvaluator;
 import com.kelseyde.calvin.service.game.LegalMoveGenerator;
+import com.kelseyde.calvin.utils.MoveUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+@Service
+@Slf4j
 public class MinimaxEvaluator {
 
     private final LegalMoveGenerator legalMoveService = new LegalMoveGenerator();
 
-    private final PositionEvaluator positionEvaluator = new SimplePositionEvaluator();
+    private final PositionEvaluator positionEvaluator = new MaterialEvaluator();
 
     /**
-     *
      * @param game The current game state.
      * @param depth The search depth for this iteration of the algorithm.
      * @param alpha The best possible score for the maximising player. Used in alpha-beta pruning
@@ -32,6 +37,7 @@ public class MinimaxEvaluator {
         }
         List<Move> legalMoves = new ArrayList<>(legalMoveService.generateLegalMoves(game.getBoard()));
         Move bestMove = legalMoves.get(new Random().nextInt(legalMoves.size()));
+        log.info("current best move {}, legal moves: {}", MoveUtils.toNotation(bestMove), legalMoves.stream().map(MoveUtils::toNotation).toList());
         if (isMaximisingPlayer) {
             int maxEval = -100000;
             for (Move legalMove : legalMoves) {
@@ -39,10 +45,13 @@ public class MinimaxEvaluator {
                 MinimaxResult result = minimax(game, depth - 1, alpha, beta, false);
                 game.unmakeMove();
                 if (result.eval > maxEval) {
+                    log.info("result eval {} > max eval {}, move {}", result.eval, maxEval, MoveUtils.toNotation(bestMove));
                     maxEval = result.eval;
-                    bestMove = result.move;
+                    log.info("max eval: {}", maxEval);
+                    bestMove = legalMove;
                     alpha = Math.max(alpha, maxEval);
                     if (beta <= alpha) {
+                        log.info("pruning for maximising player");
                         break;
                     }
                 }
@@ -56,9 +65,11 @@ public class MinimaxEvaluator {
                 game.unmakeMove();
                 if (result.eval < minEval) {
                     minEval = result.eval;
-                    bestMove = result.move;
+                    bestMove = legalMove;
+                    log.info("result eval {} < min eval {}, move {}", result.eval, minEval, MoveUtils.toNotation(bestMove));
                     beta = Math.min(beta, minEval);
                     if (beta <= alpha) {
+                        log.info("pruning for minimising player");
                         break;
                     }
                 }

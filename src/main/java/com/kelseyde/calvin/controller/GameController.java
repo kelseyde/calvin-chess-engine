@@ -1,12 +1,12 @@
 package com.kelseyde.calvin.controller;
 
+import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.api.NewGameResponse;
 import com.kelseyde.calvin.model.api.PlayRequest;
 import com.kelseyde.calvin.model.api.PlayResponse;
-import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.result.GameResult;
 import com.kelseyde.calvin.model.result.GameResult.ResultType;
-import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.repository.GameRepository;
 import com.kelseyde.calvin.service.engine.Engine;
 import com.kelseyde.calvin.utils.MoveUtils;
@@ -54,7 +54,7 @@ public class GameController {
                 .promotionPieceType(moveRequest.getPromotionPieceType())
                 .build();
         log.info("Player selects move {}", playerMove);
-        GameResult playerResult = game.playMove(playerMove);
+        GameResult playerResult = game.makeMove(playerMove);
         ResultType resultType = playerResult.getResultType();
         if (ResultType.WIN.equals(resultType) || ResultType.DRAW.equals(resultType) || ResultType.ILLEGAL_MOVE.equals(resultType)) {
             return ResponseEntity.ok(PlayResponse.fromBoard(game.getBoard())
@@ -64,7 +64,7 @@ public class GameController {
 
         Move engineMove = engine.selectMove(game);
         log.info("Engine selects move {}", engineMove);
-        GameResult engineResult = game.playMove(engineMove);
+        GameResult engineResult = game.makeMove(engineMove);
         return ResponseEntity.ok(PlayResponse.fromBoard(game.getBoard())
                 .result(engineResult)
                 .build());

@@ -1,17 +1,14 @@
 package com.kelseyde.calvin.service.engine.minimax;
 
-import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.engine.evaluator.PositionEvaluator;
 import com.kelseyde.calvin.service.engine.evaluator.SimplePositionEvaluator;
 import com.kelseyde.calvin.service.game.LegalMoveGenerator;
-import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class MinimaxEvaluator {
 
@@ -33,14 +30,14 @@ public class MinimaxEvaluator {
             int finalEval = positionEvaluator.evaluate(game);
             return new MinimaxResult(finalEval, null);
         }
-        List<Move> legalMoves = new ArrayList<>(legalMoveService.generateLegalMoves(game));
+        List<Move> legalMoves = new ArrayList<>(legalMoveService.generateLegalMoves(game.getBoard()));
         Move bestMove = legalMoves.get(new Random().nextInt(legalMoves.size()));
         if (isMaximisingPlayer) {
             int maxEval = -100000;
             for (Move legalMove : legalMoves) {
-                game.applyMove(legalMove);
+                game.makeMove(legalMove);
                 MinimaxResult result = minimax(game, depth - 1, alpha, beta, false);
-                game.unapplyLastMove();
+                game.unmakeMove();
                 if (result.eval > maxEval) {
                     maxEval = result.eval;
                     bestMove = result.move;
@@ -54,9 +51,9 @@ public class MinimaxEvaluator {
         } else {
             int minEval = 100000;
             for (Move legalMove : legalMoves) {
-                game.applyMove(legalMove);
+                game.makeMove(legalMove);
                 MinimaxResult result = minimax(game, depth - 1,alpha, beta, true);
-                game.unapplyLastMove();
+                game.unmakeMove();
                 if (result.eval < minEval) {
                     minEval = result.eval;
                     bestMove = result.move;

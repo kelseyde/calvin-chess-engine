@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.utils.BoardUtils;
@@ -23,9 +22,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
     private final PieceType pieceType = PieceType.PAWN;
 
     @Override
-    public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
+    public Set<Move> generatePseudoLegalMoves(Board board, int startSquare) {
 
-        Board board = game.getBoard();
         Piece pawn = board.getPieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.PAWN))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no pawn on square %s!", startSquare)));
@@ -33,7 +31,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         Set<Move> legalMoves = new HashSet<>();
         legalMoves.addAll(getLegalStandardMoves(board, pawn, startSquare));
         getLegalDoubleMove(board, pawn, startSquare).ifPresent(legalMoves::add);
-        legalMoves.addAll(getLegalCaptures(game, pawn, startSquare));
+        legalMoves.addAll(getLegalCaptures(board, pawn, startSquare));
 
         return legalMoves;
 
@@ -87,7 +85,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
     }
 
-    private Set<Move> getLegalCaptures(Game game, Piece piece, int startSquare) {
+    private Set<Move> getLegalCaptures(Board board, Piece piece, int startSquare) {
 
         Set<Move> legalCaptures = new HashSet<>();
 
@@ -102,7 +100,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             if (!BoardUtils.isValidSquareCoordinate(targetCaptureSquare)) {
                 continue;
             }
-            Optional<Piece> pieceOnTargetSquare = game.getBoard().getPieceAt(targetCaptureSquare);
+            Optional<Piece> pieceOnTargetSquare = board.getPieceAt(targetCaptureSquare);
             if (pieceOnTargetSquare.isPresent() && pieceOnTargetSquare.get().getColour().isOppositeColour(piece.getColour())) {
                 if (isPromotingMove(piece, startSquare)) {
                     // Covering capturing + piece promotion
@@ -115,7 +113,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             }
 
             // Covering en passant
-            if (pieceOnTargetSquare.isEmpty() && game.getBoard().getEnPassantTargetSquare() == targetCaptureSquare) {
+            if (pieceOnTargetSquare.isEmpty() && board.getEnPassantTargetSquare() == targetCaptureSquare) {
                 legalCaptures.add(moveBuilder()
                         .moveType(MoveType.EN_PASSANT)
                         .isCapture(true)

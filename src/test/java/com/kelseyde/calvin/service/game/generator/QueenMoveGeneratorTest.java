@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import org.junit.jupiter.api.Assertions;
@@ -98,7 +97,7 @@ public class QueenMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.setPiece(startSquare, queen);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(new Game(board), startSquare).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, startSquare).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);

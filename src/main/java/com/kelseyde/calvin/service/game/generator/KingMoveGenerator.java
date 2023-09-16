@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.utils.BoardUtils;
@@ -32,9 +31,8 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
     private final PieceType pieceType = PieceType.KING;
 
     @Override
-    public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
+    public Set<Move> generatePseudoLegalMoves(Board board, int startSquare) {
 
-        Board board = game.getBoard();
         Piece king = board.getPieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.KING))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no king on square %s!", startSquare)));

@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.service.game.generator.*;
@@ -25,42 +24,36 @@ public class LegalMoveGenerator {
             new RookMoveGenerator(), new QueenMoveGenerator(), new KingMoveGenerator()
     );
 
-    public Optional<Move> calculateLegalMove(Game game, Move move) {
-        return generateLegalMoves(game).stream()
-                .filter(move::moveMatches)
-                .findAny();
-    }
-
-    public Set<Move> generateLegalMoves(Game game) {
-        Colour colour = game.getTurn();
-        Set<Integer> pieceSquares = game.getBoard().getPiecePositions(colour);
+    public Set<Move> generateLegalMoves(Board board) {
+        Colour colour = board.getTurn();
+        Set<Integer> pieceSquares = board.getPiecePositions(colour);
 
         Set<Move> pseudoLegal = pieceSquares.stream()
-                .flatMap(square -> generatePseudoLegalMoves(game, colour, square).stream())
+                .flatMap(square -> generatePseudoLegalMoves(board, colour, square).stream())
                 .collect(Collectors.toSet());
 
         Set<Move> legal = pseudoLegal.stream()
-                .filter(pseudoLegalMove -> !isKingCapturable(game, pseudoLegalMove))
+                .filter(pseudoLegalMove -> !isKingCapturable(board, pseudoLegalMove))
                 .collect(Collectors.toSet());
 
         Set<Move> checkApplied = legal.stream()
-                .map(legalMove -> calculateCheck(game, legalMove))
+                .map(legalMove -> calculateCheck(board, legalMove))
                 .collect(Collectors.toSet());
 
         return checkApplied;
     }
 
-    public Set<Move> generateAllPseudoLegalMoves(Game game, Colour colour) {
-        Set<Integer> pieceSquares = game.getBoard().getPiecePositions(colour);
+    public Set<Move> generateAllPseudoLegalMoves(Board board, Colour colour) {
+        Set<Integer> pieceSquares = board.getPiecePositions(colour);
         return pieceSquares.stream()
-                .map(square -> generatePseudoLegalMoves(game, colour, square))
+                .map(square -> generatePseudoLegalMoves(board, colour, square))
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
     }
 
-    private Set<Move> generatePseudoLegalMoves(Game game, Colour colour, int square) {
+    private Set<Move> generatePseudoLegalMoves(Board board, Colour colour, int square) {
 
-        Piece piece = game.getBoard().getPieceAt(square)
+        Piece piece = board.getPieceAt(square)
                 .filter(p -> p.getColour().isSameColour(colour))
                 .orElseThrow(() -> new NoSuchElementException(
                         String.format("No piece of colour %s on square %s!", colour, square)));
@@ -71,45 +64,42 @@ public class LegalMoveGenerator {
                 .orElseThrow(() -> new NoSuchElementException(
                         String.format("No move generator found for piece type %s!", piece.getType())));
 
-        return pseudoLegalMoveGenerator.generatePseudoLegalMoves(game, square);
+        return pseudoLegalMoveGenerator.generatePseudoLegalMoves(board, square);
 
     }
 
-    private boolean isKingCapturable(Game game, Move move) {
-        Board board = game.getBoard();
-        Colour colour = game.getTurn();
+    private boolean isKingCapturable(Board board, Move move) {
+        Colour colour = board.getTurn();
 
-        game.applyMove(move);
+        Board boardCopy = board.copy();
+        boardCopy.applyMove(move);
 
         Set<Integer> checkableSquares = MoveType.CASTLE.equals(move.getMoveType()) ?
-                move.getKingTravelSquares() : Set.of(getKingSquare(board, colour));
-        Set<Integer> attackedSquares = generateAllPseudoLegalMoves(game, colour.oppositeColour()).stream()
+                move.getKingTravelSquares() : Set.of(getKingSquare(boardCopy, colour));
+        Set<Integer> attackedSquares = generateAllPseudoLegalMoves(boardCopy, colour.oppositeColour()).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
 
         Set<Integer> intersection = new HashSet<>(checkableSquares);
         intersection.retainAll(attackedSquares);
-        boolean isKingCapturable = !intersection.isEmpty();
+        return !intersection.isEmpty();
 
-        game.unapplyLastMove();
-
-        return isKingCapturable;
     }
 
-    private Move calculateCheck(Game game, Move move) {
-        Board board = game.getBoard();
-        Colour colour = game.getTurn();
+    private Move calculateCheck(Board board, Move move) {
+        Colour colour = board.getTurn();
 
-        game.applyMove(move);
+        // TODO refactor to one method with isKingCapturable
+        Board boardCopy = board.copy();
+        boardCopy.applyMove(move);
 
-        int opponentKingSquare = getKingSquare(board, colour.oppositeColour());
-        Set<Integer> attackingSquares = generateAllPseudoLegalMoves(game, colour).stream()
+        int opponentKingSquare = getKingSquare(boardCopy, colour.oppositeColour());
+        Set<Integer> attackingSquares = generateAllPseudoLegalMoves(boardCopy, colour).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         boolean isCheck = attackingSquares.contains(opponentKingSquare);
         move.setCheck(isCheck);
 
-        game.unapplyLastMove();
         return move;
     }
 

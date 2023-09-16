@@ -2,7 +2,6 @@ package com.kelseyde.calvin.service.game.generator;
 
 import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Piece;
-import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 
@@ -30,9 +29,8 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     protected abstract void applyPostGenerationConfig(Piece piece, Set<Move> legalMoves);
 
     @Override
-    public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
+    public Set<Move> generatePseudoLegalMoves(Board board, int startSquare) {
 
-        Board board = game.getBoard();
         Piece piece = board.getPieceAt(startSquare)
                 .filter(p -> p.getType().equals(getPieceType()))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no %s on square %s!", getPieceType(), startSquare)));

@@ -24,8 +24,8 @@ public class Game {
 
     private Board board;
 
-    private Stack<Board> boardHistory = new Stack<>();
-    private Stack<Move> moveHistory = new Stack<>();
+    private Deque<Board> boardHistory = new ArrayDeque<>();
+    private Deque<Move> moveHistory = new ArrayDeque<>();
     private Set<Move> legalMoves = new HashSet<>();
 
     @JsonIgnore
@@ -36,31 +36,26 @@ public class Game {
 
     public Game() {
         this.board = BoardUtils.startingPosition();
-        this.legalMoves = legalMoveService.generateLegalMoves(this);
+        this.legalMoves = legalMoveService.generateLegalMoves(board);
     }
 
     public Game(Board board) {
         this.board = board;
-        this.legalMoves = legalMoveService.generateLegalMoves(this);
+        this.legalMoves = legalMoveService.generateLegalMoves(board);
     }
 
-    public GameResult playMove(Move move) {
+    public GameResult makeMove(Move move) {
 
         Optional<Move> legalMove = legalMoves.stream().filter(move::moveMatches).findAny();
         if (legalMove.isEmpty()) {
             return new InvalidMoveResult(move);
         }
-
         move = legalMove.get();
 
-        applyMove(move);
-
-        handleEnPassantRights(move);
-        handleCastlingRights(move);
-        handleMoveCounters(move);
-
-        board.setTurn(board.getTurn().oppositeColour());
-        legalMoves = legalMoveService.generateLegalMoves(this);
+        boardHistory.push(board.copy());
+        moveHistory.push(move);
+        board.applyMove(move);
+        legalMoves = legalMoveService.generateLegalMoves(board);
 
         if (isCheckmate()) {
             Colour winner = board.getTurn().oppositeColour();
@@ -76,36 +71,14 @@ public class Game {
 
     }
 
-    public void applyMove(Move move) {
-        boardHistory.push(board.copy());
-        Piece piece = board.getPieceAt(move.getStartSquare()).orElseThrow();
-        board.unsetPiece(move.getStartSquare());
-        board.setPiece(move.getEndSquare(), piece);
-        moveHistory.push(move);
-
-        switch (move.getMoveType()) {
-            case EN_PASSANT -> {
-                board.unsetPiece(move.getEnPassantCapturedSquare());
-            }
-            case PROMOTION -> {
-                Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionPieceType());
-                board.setPiece(move.getEndSquare(), promotedPiece);
-            }
-            case CASTLE -> {
-                Piece rook = board.getPieceAt(move.getRookStartSquare()).orElseThrow();
-                board.unsetPiece(move.getRookStartSquare());
-                board.setPiece(move.getRookEndSquare(), rook);
-            }
-        }
-    }
-
-    public void unapplyLastMove() {
+    public void unmakeMove() {
         if (!boardHistory.isEmpty()) {
             board = boardHistory.pop();
         }
         if (!moveHistory.isEmpty()) {
             moveHistory.pop();
         }
+        legalMoves = legalMoveService.generateLegalMoves(board);
     }
 
     public Colour getTurn() {
@@ -114,7 +87,7 @@ public class Game {
 
     public void setTurn(Colour turn) {
         this.board.setTurn(turn);
-        this.legalMoves = legalMoveService.generateLegalMoves(this);
+        this.legalMoves = legalMoveService.generateLegalMoves(board);
     }
 
     public boolean isCheckmate() {
@@ -126,31 +99,6 @@ public class Game {
 
     public boolean isDraw() {
         return drawEvaluator.calculateDraw(this).isPresent();
-    }
-
-    private void handleEnPassantRights(Move move) {
-        board.setEnPassantTargetSquare(move.getEnPassantTargetSquare());
-    }
-
-    private void handleCastlingRights(Move move) {
-        if (move.isNegatesKingsideCastling()) {
-            board.getCastlingRights().get(board.getTurn()).setKingSide(false);
-        }
-        if (move.isNegatesQueensideCastling()) {
-            board.getCastlingRights().get(board.getTurn()).setQueenSide(false);
-        }
-    }
-
-    private void handleMoveCounters(Move move) {
-        if (Colour.BLACK.equals(board.getTurn())) {
-            board.incrementMoveCounter();
-        }
-        boolean resetHalfMoveClock = move.isCapture() || PieceType.PAWN.equals(move.getPieceType());
-        if (resetHalfMoveClock) {
-            board.resetHalfMoveCounter();
-        } else {
-            board.incrementHalfMoveCounter();
-        }
     }
 
 }

@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
@@ -33,9 +32,8 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
     private final PieceType pieceType = PieceType.KNIGHT;
 
     @Override
-    public Set<Move> generatePseudoLegalMoves(Game game, int startSquare) {
+    public Set<Move> generatePseudoLegalMoves(Board board, int startSquare) {
 
-        Board board = game.getBoard();
         Piece knight = board.getPieceAt(startSquare)
                 .filter(piece -> piece.isType(PieceType.KNIGHT))
                 .orElseThrow(() -> new NoSuchElementException(String.format("There is no knight on square %s!", startSquare)));

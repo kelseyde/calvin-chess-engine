@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import org.junit.jupiter.api.Assertions;
@@ -111,7 +110,7 @@ public class KnightMoveGeneratorTest {
         board.setPiece(60, new Piece(Colour.BLACK, PieceType.QUEEN));
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(new Game(board), 43).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, 43).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
@@ -131,7 +130,7 @@ public class KnightMoveGeneratorTest {
         board.setPiece(58, new Piece(Colour.WHITE, PieceType.QUEEN));
         board.setPiece(60, new Piece(Colour.WHITE, PieceType.QUEEN));
 
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(new Game(board), 43).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, 43).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertTrue(legalSquares.isEmpty());
@@ -140,7 +139,7 @@ public class KnightMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.setPiece(startSquare, knight);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(new Game(board), startSquare).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, startSquare).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);

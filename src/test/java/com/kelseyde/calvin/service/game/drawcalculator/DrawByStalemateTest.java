@@ -1,14 +1,9 @@
 package com.kelseyde.calvin.service.game.drawcalculator;
 
-import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.Piece;
-import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.DrawType;
-import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.result.DrawResult;
 import com.kelseyde.calvin.model.result.GameResult;
-import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
@@ -25,7 +20,7 @@ public class DrawByStalemateTest {
         board.setPiece(1, new Piece(Colour.WHITE, PieceType.QUEEN));
 
         Game game = new Game(board);
-        GameResult result = game.playMove(move("b1", "b6"));
+        GameResult result = game.makeMove(move("b1", "b6"));
 
         // king stalemated in the corner
         Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
@@ -42,7 +37,7 @@ public class DrawByStalemateTest {
         board.setPiece(52, new Piece(Colour.WHITE, PieceType.PAWN));
 
         Game game = new Game(board);
-        GameResult result = game.playMove(move("d6", "e6"));
+        GameResult result = game.makeMove(move("d6", "e6"));
 
         // king stalemated by king and pawn
         Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
@@ -60,7 +55,7 @@ public class DrawByStalemateTest {
         board.setPiece(37, new Piece(Colour.WHITE, PieceType.BISHOP));
 
         Game game = new Game(board);
-        GameResult result = game.playMove(move("f5", "e6"));
+        GameResult result = game.makeMove(move("f5", "e6"));
 
         // king stalemated in the corner
         Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
@@ -81,7 +76,7 @@ public class DrawByStalemateTest {
         board.setPiece(9, new Piece(Colour.WHITE, PieceType.QUEEN));
 
         Game game = new Game(board);
-        GameResult result = game.playMove(move("b2", "a2"));
+        GameResult result = game.makeMove(move("b2", "a2"));
 
         // even though pawn could pseudo-legally capture on h6 with check, it is pinned, therefore stalemate
         Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());

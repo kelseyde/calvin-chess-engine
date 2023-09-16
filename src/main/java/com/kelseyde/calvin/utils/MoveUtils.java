@@ -16,6 +16,10 @@ public class MoveUtils {
                 .build();
     }
 
+    public static String toNotation(Move move) {
+        return toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
+    }
+
     /**
      * Generate a square co-ordinate from algebraic notation (e.g. "e4" -> 28)
      */

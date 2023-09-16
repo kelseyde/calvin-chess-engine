@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.service.game.drawcalculator;
 
-import com.kelseyde.calvin.model.RepetitionMetadata;
 import com.kelseyde.calvin.model.DrawType;
 import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.RepetitionMetadata;
 import lombok.Getter;
 
 import java.util.stream.Collectors;

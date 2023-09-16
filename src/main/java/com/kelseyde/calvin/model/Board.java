@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.model;
 
+import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Builder;
 import lombok.Data;
@@ -36,6 +37,46 @@ public class Board {
     @Builder.Default
     private int fullMoveCounter = 1;
 
+    public void applyMove(Move move) {
+        Piece piece = getPieceAt(move.getStartSquare()).orElseThrow();
+        unsetPiece(move.getStartSquare());
+        setPiece(move.getEndSquare(), piece);
+
+        switch (move.getMoveType()) {
+            case EN_PASSANT -> {
+                unsetPiece(move.getEnPassantCapturedSquare());
+            }
+            case PROMOTION -> {
+                Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionPieceType());
+                setPiece(move.getEndSquare(), promotedPiece);
+            }
+            case CASTLE -> {
+                Piece rook = getPieceAt(move.getRookStartSquare()).orElseThrow();
+                unsetPiece(move.getRookStartSquare());
+                setPiece(move.getRookEndSquare(), rook);
+            }
+        }
+
+        enPassantTargetSquare = move.getEnPassantTargetSquare();
+        if (move.isNegatesKingsideCastling()) {
+            castlingRights.get(turn).setKingSide(false);
+        }
+        if (move.isNegatesQueensideCastling()) {
+            castlingRights.get(turn).setQueenSide(false);
+        }
+        if (Colour.BLACK.equals(turn)) {
+            ++fullMoveCounter;
+        }
+        boolean resetHalfMoveClock = move.isCapture() || PieceType.PAWN.equals(move.getPieceType());
+        if (resetHalfMoveClock) {
+            halfMoveCounter = 0;
+        } else {
+            ++halfMoveCounter;
+        }
+
+        turn = turn.oppositeColour();
+    }
+
     public Optional<Piece> getPieceAt(int square) {
         return Optional.ofNullable(squares[square]);
     }
@@ -58,18 +99,6 @@ public class Board {
     public Map<Integer, Piece> getPieces(Colour colour) {
         return getPiecePositions(colour).stream()
                 .collect(Collectors.toMap(square -> square, square -> getPieceAt(square).orElseThrow()));
-    }
-
-    public void incrementHalfMoveCounter() {
-        ++halfMoveCounter;
-    }
-
-    public void resetHalfMoveCounter() {
-        halfMoveCounter = 0;
-    }
-
-    public void incrementMoveCounter() {
-        ++fullMoveCounter;
     }
 
     public Board copy() {

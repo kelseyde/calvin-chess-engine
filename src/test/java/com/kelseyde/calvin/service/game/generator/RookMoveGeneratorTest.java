@@ -1,10 +1,6 @@
 package com.kelseyde.calvin.service.game.generator;
 
-import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.Piece;
-import com.kelseyde.calvin.model.PieceType;
-import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import org.junit.jupiter.api.Assertions;
@@ -86,7 +82,7 @@ public class RookMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         game.getBoard().setPiece(startSquare, rook);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(game, startSquare).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(game.getBoard(), startSquare).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);

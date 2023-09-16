@@ -14,10 +14,6 @@ public class Piece {
     private final Colour colour;
     private final PieceType type;
 
-    public boolean isColour(Colour colour) {
-        return this.colour.equals(colour);
-    }
-
     public boolean isType(PieceType type) {
         return this.type.equals(type);
     }

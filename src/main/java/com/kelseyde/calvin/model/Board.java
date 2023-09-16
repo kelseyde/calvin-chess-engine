@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Does not know anything
- * about the game state (move number, whose turn, en-passant captures etc.) - it only stores the current position of the
- * pieces.
+ * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Also maintains the position
+ * 'metadata': side to move, castling rights, en passant target square, full-move counter and half-move counter (used for
+ * the 50-move rule) Equivalent to a FEN string.
  */
 @Data
 @Builder

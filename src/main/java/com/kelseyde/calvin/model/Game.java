@@ -3,8 +3,8 @@ package com.kelseyde.calvin.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.result.*;
-import com.kelseyde.calvin.service.game.DrawService;
-import com.kelseyde.calvin.service.game.LegalMoveService;
+import com.kelseyde.calvin.service.game.DrawEvaluator;
+import com.kelseyde.calvin.service.game.LegalMoveGenerator;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -29,10 +29,10 @@ public class Game {
     private Set<Move> legalMoves = new HashSet<>();
 
     @JsonIgnore
-    private LegalMoveService legalMoveService = new LegalMoveService();
+    private LegalMoveGenerator legalMoveService = new LegalMoveGenerator();
 
     @JsonIgnore
-    private DrawService drawService = new DrawService();
+    private DrawEvaluator drawEvaluator = new DrawEvaluator();
 
     public Game() {
         this.board = BoardUtils.startingPosition();
@@ -59,15 +59,14 @@ public class Game {
         handleCastlingRights(move);
         handleMoveCounters(move);
 
-        moveHistory.push(move);
         board.setTurn(board.getTurn().oppositeColour());
         legalMoves = legalMoveService.generateLegalMoves(this);
 
-        if (isCheckmate(move)) {
+        if (isCheckmate()) {
             Colour winner = board.getTurn().oppositeColour();
             return new WinResult(winner, WinType.CHECKMATE);
         }
-        Optional<DrawType> drawType = drawService.calculateDraw(this);
+        Optional<DrawType> drawType = drawEvaluator.calculateDraw(this);
         if (drawType.isPresent()) {
             return new DrawResult(drawType.get());
         } else {
@@ -82,6 +81,7 @@ public class Game {
         Piece piece = board.getPieceAt(move.getStartSquare()).orElseThrow();
         board.unsetPiece(move.getStartSquare());
         board.setPiece(move.getEndSquare(), piece);
+        moveHistory.push(move);
 
         switch (move.getMoveType()) {
             case EN_PASSANT -> {
@@ -117,6 +117,17 @@ public class Game {
         this.legalMoves = legalMoveService.generateLegalMoves(this);
     }
 
+    public boolean isCheckmate() {
+        if (moveHistory.isEmpty()) {
+            return false;
+        }
+        return moveHistory.peek().isCheck() && legalMoves.isEmpty();
+    }
+
+    public boolean isDraw() {
+        return drawEvaluator.calculateDraw(this).isPresent();
+    }
+
     private void handleEnPassantRights(Move move) {
         board.setEnPassantTargetSquare(move.getEnPassantTargetSquare());
     }
@@ -140,10 +151,6 @@ public class Game {
         } else {
             board.incrementHalfMoveCounter();
         }
-    }
-
-    private boolean isCheckmate(Move move) {
-        return move.isCheck() && legalMoves.isEmpty();
     }
 
 }

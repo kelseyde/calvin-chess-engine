@@ -7,7 +7,7 @@ import com.kelseyde.calvin.service.game.drawcalculator.*;
 import java.util.List;
 import java.util.Optional;
 
-public class DrawService {
+public class DrawEvaluator {
 
     private final List<DrawCalculator> drawCalculators = List.of(
             new StalemateCalculator(),

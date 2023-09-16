@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * move results in the game ending, either due to checkmate or one of the draw conditions.
  */
 @Slf4j
-public class LegalMoveService {
+public class LegalMoveGenerator {
 
     private final List<PseudoLegalMoveGenerator> pseudoLegalMoveGenerators = List.of(
             new PawnMoveGenerator(), new KnightMoveGenerator(), new BishopMoveGenerator(),

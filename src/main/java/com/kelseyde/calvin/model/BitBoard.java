@@ -12,6 +12,10 @@ public class BitBoard {
 
     private long board;
 
+    public BitBoard() {
+        this.board = 0L;
+    }
+
     public BitBoard xor(BitBoard other) {
         return new BitBoard(board ^ other.board);
     }
@@ -94,6 +98,21 @@ public class BitBoard {
 
     public void popLSB() {
         board = board & (board-1);
+    }
+
+    public void print() {
+        String s = Long.toBinaryString(board);
+        for (int i = 7; i >= 0; i--) {
+            for (int n = 0; n < 8; n++) {
+                System.out.print(getBit(squareIndex(i , n)) ? 1 : 0);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public int squareIndex(int rank, int file) {
+        return 8 * rank + file;
     }
 
 }

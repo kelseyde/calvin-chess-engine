@@ -45,7 +45,7 @@ public class BitBoardBoard {
         blackPieces = blackPawns.or(blackKnights).or(blackBishops).or(blackRooks).or(blackQueens).or(blackKing);
         occupied = whitePieces.or(blackPieces);
 
-        enPassantTarget = BitBoards.EMPTY_BOARD;
+        enPassantTarget = new BitBoard();
 
         System.out.println(Long.toBinaryString(occupied.getBoard()));
 

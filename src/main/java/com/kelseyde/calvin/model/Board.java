@@ -54,28 +54,28 @@ public class Board {
         blackQueens = BitBoards.BLACK_QUEENS_START;
         blackKing = BitBoards.BLACK_KING_START;
 
-        enPassantTarget = BitBoards.EMPTY_BOARD;
+        enPassantTarget = new BitBoard();
 
         recalculatePieces();
     }
 
     public static Board emptyBoard() {
         Board board = new Board();
-        board.whitePawns = BitBoards.EMPTY_BOARD;
-        board.whiteKnights = BitBoards.EMPTY_BOARD;
-        board.whiteBishops = BitBoards.EMPTY_BOARD;
-        board.whiteRooks = BitBoards.EMPTY_BOARD;
-        board.whiteQueens = BitBoards.EMPTY_BOARD;
-        board.whiteKing = BitBoards.EMPTY_BOARD;
+        board.whitePawns = new BitBoard();
+        board.whiteKnights = new BitBoard();
+        board.whiteBishops = new BitBoard();
+        board.whiteRooks = new BitBoard();
+        board.whiteQueens = new BitBoard();
+        board.whiteKing = new BitBoard();
 
-        board.blackPawns = BitBoards.EMPTY_BOARD;
-        board.blackKnights = BitBoards.EMPTY_BOARD;
-        board.blackBishops = BitBoards.EMPTY_BOARD;
-        board.blackRooks = BitBoards.EMPTY_BOARD;
-        board.blackQueens = BitBoards.EMPTY_BOARD;
-        board.blackKing = BitBoards.EMPTY_BOARD;
+        board.blackPawns = new BitBoard();
+        board.blackKnights = new BitBoard();
+        board.blackBishops = new BitBoard();
+        board.blackRooks = new BitBoard();
+        board.blackQueens = new BitBoard();
+        board.blackKing = new BitBoard();
 
-        board.enPassantTarget = BitBoards.EMPTY_BOARD;
+        board.enPassantTarget = new BitBoard();
 
         board.recalculatePieces();
 

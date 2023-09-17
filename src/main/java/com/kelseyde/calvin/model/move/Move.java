@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.model.move;
 
+import com.kelseyde.calvin.model.BitBoard;
 import com.kelseyde.calvin.model.PieceType;
 import lombok.Builder;
 import lombok.Data;
@@ -57,10 +58,23 @@ public class Move {
     private int enPassantTargetSquare = -1;
 
     /**
+     * The bitboard representing the destination square for a pawn capturing en passant. Should be set by
+     * a double pawn move that enables en passant on the next turn.
+     */
+    @Builder.Default
+    private BitBoard enPassantTarget = new BitBoard();
+
+    /**
      * The square of a pawn just captured en passant. Should be set by a pawn capturing en passant.
      */
     @Builder.Default
     private int enPassantCapturedSquare = -1;
+
+    /**
+     * The bitboard representing the square of a pawn just captured en passant. Should be set by a pawn capturing en passant.
+     */
+    @Builder.Default
+    private BitBoard enPassantCapture = new BitBoard();
 
     /**
      * In case of castling, the start square of the castling rook.

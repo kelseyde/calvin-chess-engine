@@ -3,7 +3,6 @@ package com.kelseyde.calvin.model;
 public class BitBoards {
 
     public static final BitBoard EMPTY_BOARD = new BitBoard(0L);
-    public static final BitBoard INDEX_BOARD = new BitBoard(1L);
 
     public static final BitBoard RANK_1 = new BitBoard(0b0000000000000000000000000000000000000000000000000000000011111111L);
     public static final BitBoard RANK_2 = RANK_1.shiftNorth();

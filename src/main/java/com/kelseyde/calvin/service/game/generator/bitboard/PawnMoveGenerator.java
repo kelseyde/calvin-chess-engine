@@ -25,7 +25,7 @@ public class PawnMoveGenerator {
                 pawns.shiftNorth().not(occupied).not(BitBoards.RANK_8) :
                 pawns.shiftSouth().not(occupied).not(BitBoards.RANK_1);
         copy = singleAdvances.copy();
-        while (copy.greaterThanZero()) {
+        while (copy.isNotZero()) {
             int endSquare = copy.scanForward();
             int startSquare = turn.isWhite() ? endSquare - 8 : endSquare + 8;
             moves.add(move(startSquare, endSquare).build());
@@ -35,7 +35,7 @@ public class PawnMoveGenerator {
         BitBoard doubleAdvances = turn.isWhite() ?
                 singleAdvances.shiftNorth().not(occupied).and(BitBoards.RANK_4) :
                 singleAdvances.shiftSouth().not(occupied).and(BitBoards.RANK_5);
-        while (doubleAdvances.greaterThanZero()) {
+        while (doubleAdvances.isNotZero()) {
             int endSquare = doubleAdvances.scanForward();
             int enPassantTargetSquare = turn.isWhite() ? endSquare - 8 : endSquare + 8;
             int startSquare = turn.isWhite() ? endSquare - 16 : endSquare + 16;
@@ -48,7 +48,7 @@ public class PawnMoveGenerator {
         BitBoard leftCaptures = turn.isWhite() ?
                 pawns.shiftNorthWest().and(opponentPieces).not(BitBoards.FILE_H).not(BitBoards.RANK_8) :
                 pawns.shiftSouthWest().and(opponentPieces).not(BitBoards.FILE_H).not(BitBoards.RANK_1);
-        while (leftCaptures.greaterThanZero()) {
+        while (leftCaptures.isNotZero()) {
             int endSquare = leftCaptures.scanForward();
             int startSquare = turn.isWhite() ? endSquare - 7 : endSquare + 9;
             moves.add(move(startSquare, endSquare).isCapture(true).build());
@@ -58,7 +58,7 @@ public class PawnMoveGenerator {
         BitBoard rightCaptures = turn.isWhite() ?
                 pawns.shiftNorthEast().and(opponentPieces).not(BitBoards.FILE_A).not(BitBoards.RANK_8) :
                 pawns.shiftSouthEast().and(opponentPieces).not(BitBoards.FILE_A).not(BitBoards.RANK_1);
-        while (rightCaptures.greaterThanZero()) {
+        while (rightCaptures.isNotZero()) {
             int endSquare = rightCaptures.scanForward();
             int startSquare = turn.isWhite() ? endSquare - 9 : endSquare + 7;
             moves.add(move(startSquare, endSquare).isCapture(true).build());
@@ -68,7 +68,7 @@ public class PawnMoveGenerator {
         BitBoard enPassantLeftCaptures = turn.isWhite() ?
                 pawns.shiftNorthWest().and(enPassantTarget).not(BitBoards.FILE_H) :
                 pawns.shiftSouthWest().and(enPassantTarget).not(BitBoards.FILE_H);
-        while (enPassantLeftCaptures.greaterThanZero()) {
+        while (enPassantLeftCaptures.isNotZero()) {
             int endSquare = enPassantLeftCaptures.scanForward();
             int enPassantCaptureSquare = turn.isWhite() ? endSquare - 8 : endSquare + 8;
             int startSquare = turn.isWhite() ? endSquare - 7 : endSquare + 9;
@@ -82,7 +82,7 @@ public class PawnMoveGenerator {
         BitBoard enPassantRightCaptures = turn.isWhite() ?
                 pawns.shiftNorthEast().and(enPassantTarget).not(BitBoards.FILE_A) :
                 pawns.shiftSouthEast().and(enPassantTarget).not(BitBoards.FILE_A);
-        while (enPassantRightCaptures.greaterThanZero()) {
+        while (enPassantRightCaptures.isNotZero()) {
             int endSquare = enPassantRightCaptures.scanForward();
             int enPassantCaptureSquare = turn.isWhite() ? endSquare - 8 : endSquare + 8;
             int startSquare = turn.isWhite() ? endSquare - 9 : endSquare + 7;
@@ -96,7 +96,7 @@ public class PawnMoveGenerator {
         BitBoard advancePromotions = turn.isWhite() ?
                 pawns.shiftNorth().not(occupied).and(BitBoards.RANK_8) :
                 pawns.shiftSouth().not(occupied).and(BitBoards.RANK_1);
-        while (advancePromotions.greaterThanZero()) {
+        while (advancePromotions.isNotZero()) {
             int endSquare = advancePromotions.scanForward();
             int startSquare = turn.isWhite() ? endSquare - 8 : endSquare + 8;
             moves.addAll(getPromotionMoves(startSquare, endSquare, false));
@@ -106,7 +106,7 @@ public class PawnMoveGenerator {
         BitBoard captureLeftPromotions = turn.isWhite() ?
                 pawns.shiftNorthWest().and(opponentPieces).not(BitBoards.FILE_H).and(BitBoards.RANK_8) :
                 pawns.shiftSouthWest().and(opponentPieces).not(BitBoards.FILE_H).and(BitBoards.RANK_1);
-        while (captureLeftPromotions.greaterThanZero()) {
+        while (captureLeftPromotions.isNotZero()) {
             int endSquare = captureLeftPromotions.scanForward();
             int startSquare = turn.isWhite() ? endSquare - 7 : endSquare + 9;
             moves.addAll(getPromotionMoves(startSquare, endSquare, true));
@@ -116,7 +116,7 @@ public class PawnMoveGenerator {
         BitBoard captureRightPromotions = turn.isWhite() ?
                 pawns.shiftNorthEast().and(opponentPieces).not(BitBoards.FILE_A).and(BitBoards.RANK_8) :
                 pawns.shiftSouthEast().and(opponentPieces).not(BitBoards.FILE_A).and(BitBoards.RANK_1);
-        while (captureRightPromotions.greaterThanZero()) {
+        while (captureRightPromotions.isNotZero()) {
             int endSquare = captureRightPromotions.scanForward();
             int startSquare = turn.isWhite() ? endSquare - 9 : endSquare + 7;
             moves.addAll(getPromotionMoves(startSquare, endSquare, true));

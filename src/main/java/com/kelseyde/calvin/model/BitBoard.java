@@ -3,9 +3,6 @@ package com.kelseyde.calvin.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.Iterator;
-import java.util.stream.Stream;
-
 @Data
 @AllArgsConstructor
 public class BitBoard {
@@ -56,8 +53,8 @@ public class BitBoard {
         return ((board >>> index) & 1) == 1;
     }
 
-    public boolean greaterThanZero() {
-        return board > 0;
+    public boolean isNotZero() {
+        return board != 0;
     }
 
     public BitBoard shiftWest() {

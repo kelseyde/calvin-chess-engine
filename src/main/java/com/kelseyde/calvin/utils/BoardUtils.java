@@ -48,18 +48,13 @@ public class BoardUtils {
             'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'};
 
     public static Board fromCharArray(Character[] chars) {
-        return Board.builder()
-                .squares(Arrays.stream(chars)
-                .map(Piece::fromChar)
-                .toArray(Piece[]::new))
-                .build();
+        // todo remove
+        return null;
     }
 
     public static Character[] toCharArray(Board board) {
-        return Arrays.stream(board.getSquares())
-                .map(Optional::ofNullable)
-                .map(piece -> piece.map(Piece::toChar).orElse('x'))
-                .toArray(Character[]::new);
+        // todo remove
+        return null;
     }
 
     public static Board emptyBoard() {

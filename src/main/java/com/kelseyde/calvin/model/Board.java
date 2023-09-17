@@ -2,7 +2,6 @@ package com.kelseyde.calvin.model;
 
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.*;
@@ -15,7 +14,6 @@ import java.util.stream.IntStream;
  * the 50-move rule) Equivalent to a FEN string.
  */
 @Data
-@Builder
 public class Board {
 
     private Piece[] squares;
@@ -41,7 +39,7 @@ public class Board {
 
     private BitBoard enPassantTarget;
 
-    public void startingPosition() {
+    public Board() {
         whitePawns = BitBoards.WHITE_PAWNS_START;
         whiteKnights = BitBoards.WHITE_KNIGHTS_START;
         whiteBishops = BitBoards.WHITE_BISHOPS_START;
@@ -56,48 +54,42 @@ public class Board {
         blackQueens = BitBoards.BLACK_QUEENS_START;
         blackKing = BitBoards.BLACK_KING_START;
 
-        whitePieces = whitePawns.or(whiteKnights).or(whiteBishops).or(whiteRooks).or(whiteQueens).or(whiteKing);
-        blackPieces = blackPawns.or(blackKnights).or(blackBishops).or(blackRooks).or(blackQueens).or(blackKing);
-        occupied = whitePieces.or(blackPieces);
-
         enPassantTarget = BitBoards.EMPTY_BOARD;
+
+        recalculatePieces();
     }
 
-    public void emptyBoard() {
-        whitePawns = BitBoards.EMPTY_BOARD;
-        whiteKnights = BitBoards.EMPTY_BOARD;
-        whiteBishops = BitBoards.EMPTY_BOARD;
-        whiteRooks = BitBoards.EMPTY_BOARD;
-        whiteQueens = BitBoards.EMPTY_BOARD;
-        whiteKing = BitBoards.EMPTY_BOARD;
+    public static Board emptyBoard() {
+        Board board = new Board();
+        board.whitePawns = BitBoards.EMPTY_BOARD;
+        board.whiteKnights = BitBoards.EMPTY_BOARD;
+        board.whiteBishops = BitBoards.EMPTY_BOARD;
+        board.whiteRooks = BitBoards.EMPTY_BOARD;
+        board.whiteQueens = BitBoards.EMPTY_BOARD;
+        board.whiteKing = BitBoards.EMPTY_BOARD;
 
-        blackPawns = BitBoards.EMPTY_BOARD;
-        blackKnights = BitBoards.EMPTY_BOARD;
-        blackBishops = BitBoards.EMPTY_BOARD;
-        blackRooks = BitBoards.EMPTY_BOARD;
-        blackQueens = BitBoards.EMPTY_BOARD;
-        blackKing = BitBoards.EMPTY_BOARD;
+        board.blackPawns = BitBoards.EMPTY_BOARD;
+        board.blackKnights = BitBoards.EMPTY_BOARD;
+        board.blackBishops = BitBoards.EMPTY_BOARD;
+        board.blackRooks = BitBoards.EMPTY_BOARD;
+        board.blackQueens = BitBoards.EMPTY_BOARD;
+        board.blackKing = BitBoards.EMPTY_BOARD;
 
-        whitePieces = whitePawns.or(whiteKnights).or(whiteBishops).or(whiteRooks).or(whiteQueens).or(whiteKing);
-        blackPieces = blackPawns.or(blackKnights).or(blackBishops).or(blackRooks).or(blackQueens).or(blackKing);
-        occupied = whitePieces.or(blackPieces);
+        board.enPassantTarget = BitBoards.EMPTY_BOARD;
 
-        enPassantTarget = BitBoards.EMPTY_BOARD;
+        board.recalculatePieces();
+
+        return board;
     }
 
-    @Builder.Default
     private Colour turn = Colour.WHITE;
 
-    @Builder.Default
     private Map<Colour, CastlingRights> castlingRights = BoardUtils.getDefaultCastlingRights();
 
-    @Builder.Default
     private int enPassantTargetSquare = -1;
 
-    @Builder.Default
     private int halfMoveCounter = 0;
 
-    @Builder.Default
     private int fullMoveCounter = 1;
 
     public void applyMove(Move move) {
@@ -146,11 +138,41 @@ public class Board {
     }
 
     public void setPiece(int square, Piece piece) {
-        squares[square] = piece;
+        switch (piece.toPieceCode()) {
+            case "wP" -> whitePawns.setBit(square);
+            case "wN" -> whiteKnights.setBit(square);
+            case "wB" -> whiteBishops.setBit(square);
+            case "wR" -> whiteRooks.setBit(square);
+            case "wQ" -> whiteQueens.setBit(square);
+            case "wK" -> whiteKing.setBit(square);
+            case "bP" -> blackPawns.setBit(square);
+            case "bN" -> blackKnights.setBit(square);
+            case "bB" -> blackBishops.setBit(square);
+            case "bR" -> blackRooks.setBit(square);
+            case "bQ" -> blackQueens.setBit(square);
+            case "bK" -> blackKing.setBit(square);
+        }
+        recalculatePieces();
     }
 
     public void unsetPiece(int square) {
-        squares[square] = null;
+        occupied.unsetBit(square);
+
+        whitePawns = whitePawns.and(occupied);
+        whiteKnights = whiteKnights.and(occupied);
+        whiteBishops = whiteBishops.and(occupied);
+        whiteRooks = whiteRooks.and(occupied);
+        whiteQueens = whiteQueens.and(occupied);
+        whiteKing = whiteKing.and(occupied);
+
+        blackPawns = blackPawns.and(occupied);
+        blackKnights = blackKnights.and(occupied);
+        blackBishops = blackBishops.and(occupied);
+        blackRooks = blackRooks.and(occupied);
+        blackQueens = blackQueens.and(occupied);
+        blackKing = blackKing.and(occupied);
+
+        recalculatePieces();
     }
 
     public Set<Integer> getPiecePositions(Colour colour) {
@@ -167,20 +189,28 @@ public class Board {
     }
 
     public Board copy() {
-        Piece[] squaresCopy = new Piece[64];
-        IntStream.range(0, 64)
-                .forEach(square -> squaresCopy[square] = getPieceAt(square).map(Piece::copy).orElse(null));
-        return Board.builder()
-                .squares(squaresCopy)
-                .turn(turn)
-                .castlingRights(Map.of(
-                        Colour.WHITE, castlingRights.get(Colour.WHITE).copy(),
-                        Colour.BLACK, castlingRights.get(Colour.BLACK).copy()
-                ))
-                .enPassantTargetSquare(enPassantTargetSquare)
-                .halfMoveCounter(halfMoveCounter)
-                .fullMoveCounter(fullMoveCounter)
-                .build();
+        return null;
+        // todo fix
+//        Piece[] squaresCopy = new Piece[64];
+//        IntStream.range(0, 64)
+//                .forEach(square -> squaresCopy[square] = getPieceAt(square).map(Piece::copy).orElse(null));
+//        return Board.builder()
+//                .squares(squaresCopy)
+//                .turn(turn)
+//                .castlingRights(Map.of(
+//                        Colour.WHITE, castlingRights.get(Colour.WHITE).copy(),
+//                        Colour.BLACK, castlingRights.get(Colour.BLACK).copy()
+//                ))
+//                .enPassantTargetSquare(enPassantTargetSquare)
+//                .halfMoveCounter(halfMoveCounter)
+//                .fullMoveCounter(fullMoveCounter)
+//                .build();
+    }
+
+    private void recalculatePieces() {
+        whitePieces = whitePawns.or(whiteKnights).or(whiteBishops).or(whiteRooks).or(whiteQueens).or(whiteKing);
+        blackPieces = blackPawns.or(blackKnights).or(blackBishops).or(blackRooks).or(blackQueens).or(blackKing);
+        occupied = whitePieces.or(blackPieces);
     }
 
 }

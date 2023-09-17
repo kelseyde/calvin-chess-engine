@@ -21,12 +21,12 @@ public class InsufficientMaterialCalculator implements DrawCalculator {
     public boolean isDraw(Game game) {
 
         List<PieceType> whitePieceTypes = game.getBoard().getPieces(Colour.WHITE)
-                .values().stream()
+                .stream()
                 .map(Piece::getType)
                 .toList();
 
         List<PieceType> blackPieceTypes = game.getBoard().getPieces(Colour.BLACK)
-                .values().stream()
+                .stream()
                 .map(Piece::getType)
                 .toList();
 

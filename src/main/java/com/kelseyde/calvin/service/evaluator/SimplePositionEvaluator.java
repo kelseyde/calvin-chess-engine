@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.service.engine.evaluator;
+package com.kelseyde.calvin.service.evaluator;
 
 import com.kelseyde.calvin.model.Game;
 

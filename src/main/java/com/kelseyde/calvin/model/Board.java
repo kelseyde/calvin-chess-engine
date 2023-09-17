@@ -5,9 +5,7 @@ import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -21,6 +19,71 @@ import java.util.stream.IntStream;
 public class Board {
 
     private Piece[] squares;
+
+    private BitBoard whitePawns;
+    private BitBoard whiteKnights;
+    private BitBoard whiteBishops;
+    private BitBoard whiteRooks;
+    private BitBoard whiteQueens;
+    private BitBoard whiteKing;
+
+    private BitBoard blackPawns;
+    private BitBoard blackKnights;
+    private BitBoard blackBishops;
+    private BitBoard blackRooks;
+    private BitBoard blackQueens;
+    private BitBoard blackKing;
+
+    private BitBoard whitePieces;
+    private BitBoard blackPieces;
+
+    private BitBoard occupied;
+
+    private BitBoard enPassantTarget;
+
+    public void startingPosition() {
+        whitePawns = BitBoards.WHITE_PAWNS_START;
+        whiteKnights = BitBoards.WHITE_KNIGHTS_START;
+        whiteBishops = BitBoards.WHITE_BISHOPS_START;
+        whiteRooks = BitBoards.WHITE_ROOKS_START;
+        whiteQueens = BitBoards.WHITE_QUEENS_START;
+        whiteKing = BitBoards.WHITE_KING_START;
+
+        blackPawns = BitBoards.BLACK_PAWNS_START;
+        blackKnights = BitBoards.BLACK_KNIGHTS_START;
+        blackBishops = BitBoards.BLACK_BISHOPS_START;
+        blackRooks = BitBoards.BLACK_ROOKS_START;
+        blackQueens = BitBoards.BLACK_QUEENS_START;
+        blackKing = BitBoards.BLACK_KING_START;
+
+        whitePieces = whitePawns.or(whiteKnights).or(whiteBishops).or(whiteRooks).or(whiteQueens).or(whiteKing);
+        blackPieces = blackPawns.or(blackKnights).or(blackBishops).or(blackRooks).or(blackQueens).or(blackKing);
+        occupied = whitePieces.or(blackPieces);
+
+        enPassantTarget = BitBoards.EMPTY_BOARD;
+    }
+
+    public void emptyBoard() {
+        whitePawns = BitBoards.EMPTY_BOARD;
+        whiteKnights = BitBoards.EMPTY_BOARD;
+        whiteBishops = BitBoards.EMPTY_BOARD;
+        whiteRooks = BitBoards.EMPTY_BOARD;
+        whiteQueens = BitBoards.EMPTY_BOARD;
+        whiteKing = BitBoards.EMPTY_BOARD;
+
+        blackPawns = BitBoards.EMPTY_BOARD;
+        blackKnights = BitBoards.EMPTY_BOARD;
+        blackBishops = BitBoards.EMPTY_BOARD;
+        blackRooks = BitBoards.EMPTY_BOARD;
+        blackQueens = BitBoards.EMPTY_BOARD;
+        blackKing = BitBoards.EMPTY_BOARD;
+
+        whitePieces = whitePawns.or(whiteKnights).or(whiteBishops).or(whiteRooks).or(whiteQueens).or(whiteKing);
+        blackPieces = blackPawns.or(blackKnights).or(blackBishops).or(blackRooks).or(blackQueens).or(blackKing);
+        occupied = whitePieces.or(blackPieces);
+
+        enPassantTarget = BitBoards.EMPTY_BOARD;
+    }
 
     @Builder.Default
     private Colour turn = Colour.WHITE;
@@ -38,6 +101,7 @@ public class Board {
     private int fullMoveCounter = 1;
 
     public void applyMove(Move move) {
+
         Piece piece = getPieceAt(move.getStartSquare()).orElseThrow();
         unsetPiece(move.getStartSquare());
         setPiece(move.getEndSquare(), piece);
@@ -96,9 +160,10 @@ public class Board {
                 .collect(Collectors.toSet());
     }
 
-    public Map<Integer, Piece> getPieces(Colour colour) {
+    public List<Piece> getPieces(Colour colour) {
         return getPiecePositions(colour).stream()
-                .collect(Collectors.toMap(square -> square, square -> getPieceAt(square).orElseThrow()));
+                .map(square -> getPieceAt(square).orElseThrow())
+                .toList();
     }
 
     public Board copy() {

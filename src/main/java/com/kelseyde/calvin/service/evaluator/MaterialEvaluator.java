@@ -1,19 +1,12 @@
-package com.kelseyde.calvin.service.engine.evaluator;
+package com.kelseyde.calvin.service.evaluator;
 
-import com.kelseyde.calvin.model.*;
-
-import java.util.Map;
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.Colour;
+import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.engine.PieceMaterialValues;
 
 public class MaterialEvaluator implements PositionEvaluator {
-
-    private static final Map<PieceType, Integer> MATERIAL_VALUES = Map.of(
-            PieceType.PAWN, 10,
-            PieceType.KNIGHT, 30,
-            PieceType.BISHOP, 30,
-            PieceType.ROOK, 50,
-            PieceType.QUEEN, 90,
-            PieceType.KING, 1000
-    );
 
     @Override
     public int evaluate(Game game) {
@@ -30,9 +23,9 @@ public class MaterialEvaluator implements PositionEvaluator {
 
     private int calculateMaterialScore(Board board, Colour colour) {
         return board.getPieces(colour)
-                .values().stream()
+                .stream()
                 .map(Piece::getType)
-                .map(MATERIAL_VALUES::get)
+                .map(PieceMaterialValues::get)
                 .reduce(0, Integer::sum);
     }
 

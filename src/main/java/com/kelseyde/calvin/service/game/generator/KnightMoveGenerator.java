@@ -47,7 +47,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
             int startSquare = BitBoard.scanForward(knights);
             long possibleMoves = KNIGHT_ATTACKS[startSquare] &~ friendlyPieces;
             moves.addAll(addKnightMoves(startSquare, possibleMoves));
-            knights = BitBoard.popLSB(knights);
+            knights &= (knights - 1);
         }
         return moves;
 
@@ -62,7 +62,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
                     .startSquare(startSquare)
                     .endSquare(endSquare)
                     .build());
-            possibleMoves = BitBoard.popLSB(possibleMoves);
+            possibleMoves &= (possibleMoves - 1);
         }
         return moves;
     }

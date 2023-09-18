@@ -53,7 +53,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         while (kingMoves != 0) {
             int endSquare = BitBoard.scanForward(kingMoves);
             moves.add(move(startSquare, endSquare).build());
-            kingMoves = BitBoard.popLSB(kingMoves);
+            kingMoves &= (kingMoves - 1);
         }
         if (board.getCastlingRights().get(turn).isKingSide()) {
             long travelSquares = turn.isWhite() ? BitBoards.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : BitBoards.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
@@ -61,7 +61,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             if (blockedSquares == 0) {
                 int endSquare = turn.isWhite() ? 6 : 62;
                 moves.add(move(startSquare, endSquare).moveType(MoveType.KINGSIDE_CASTLE).build());
-                blockedSquares = BitBoard.popLSB(blockedSquares);
+                blockedSquares &= (blockedSquares - 1);
             }
         }
         if (board.getCastlingRights().get(turn).isQueenSide()) {
@@ -70,7 +70,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             if (blockedSquares == 0) {
                 int endSquare = turn.isWhite() ? 2 : 58;
                 moves.add(move(startSquare, endSquare).moveType(MoveType.QUEENSIDE_CASTLE).build());
-                blockedSquares = BitBoard.popLSB(blockedSquares);
+                blockedSquares &= (blockedSquares - 1);
             }
         }
 

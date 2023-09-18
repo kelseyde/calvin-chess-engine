@@ -16,7 +16,7 @@ public class StalemateCalculator implements DrawCalculator {
     public boolean isDraw(Game game) {
         boolean lastMoveNotCheck =
                 game.getMoveHistory().isEmpty() || !game.getMoveHistory().peek().isCheck();
-        Collection<Move> legalMoves = game.getLegalMoves().values();
+        Collection<Move> legalMoves = game.getLegalMoves();
         return lastMoveNotCheck && legalMoves.isEmpty();
     }
 

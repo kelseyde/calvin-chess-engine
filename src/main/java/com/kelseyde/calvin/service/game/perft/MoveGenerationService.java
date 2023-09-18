@@ -11,7 +11,7 @@ import java.util.Set;
 public class MoveGenerationService {
 
     public int generateMoves(Game game, int depth) {
-        Collection<Move> moves = game.getLegalMoves().values();
+        Collection<Move> moves = game.getLegalMoves();
         if (depth == 1) {
             return moves.size();
         }

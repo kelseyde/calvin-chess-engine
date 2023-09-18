@@ -40,6 +40,10 @@ public class Board {
 
     private Colour turn = Colour.WHITE;
 
+    private boolean whiteKingsideCastlingAllowed;
+    private boolean whiteQueensideCastlingAllowed;
+    private boolean blackKingsideCastlingAllowed;
+    private boolean blackQueensideCastlingAllowed;
     private Map<Colour, CastlingRights> castlingRights = BoardUtils.getDefaultCastlingRights();
 
     private int halfMoveCounter = 0;

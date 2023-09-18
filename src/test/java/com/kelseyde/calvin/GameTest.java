@@ -267,14 +267,14 @@ public class GameTest {
             while (whitePieces != 0) {
                 int position = BitBoard.scanForward(whitePieces);
                 positions.add(position);
-                whitePieces = BitBoard.popLSB(whitePieces);
+                whitePieces &= (whitePieces - 1);
             }
         } else {
             long blackPieces = board.getBlackPieces();
             while (blackPieces != 0) {
                 int position = BitBoard.scanForward(blackPieces);
                 positions.add(position);
-                blackPieces = BitBoard.popLSB(blackPieces);
+                blackPieces &= (blackPieces - 1);
             }
         }
         return positions;

@@ -12,7 +12,7 @@ public class RandomMoveEngine implements Engine {
 
     @Override
     public Move selectMove(Game game) {
-        List<Move> legalMoves = new ArrayList<>(game.getLegalMoves().values());
+        List<Move> legalMoves = new ArrayList<>(game.getLegalMoves());
         return legalMoves.get(new Random().nextInt(legalMoves.size()));
     }
 

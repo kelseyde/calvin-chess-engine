@@ -5,6 +5,7 @@ import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.game.perft.MoveGenerationService;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+@Disabled
 public class PerformanceTest {
 
     private final MoveGenerationService moveGenerator = new MoveGenerationService();

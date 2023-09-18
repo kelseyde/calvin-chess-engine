@@ -114,42 +114,42 @@ public class GameTest {
     public void testBoardHistoryPreservesCastlingRights() {
         Game game = new Game();
 
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isKingSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isQueenSide());
+        Assertions.assertTrue(game.getBoard().isWhiteKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isWhiteQueensideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isBlackKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isBlackQueensideCastlingAllowed());
 
         game.makeMove(move("e2", "e3"));
         game.makeMove(move("e7", "e6"));
 
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isKingSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isQueenSide());
+        Assertions.assertTrue(game.getBoard().isWhiteKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isWhiteQueensideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isBlackKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isBlackQueensideCastlingAllowed());
 
         game.makeMove(move("e1", "e2"));
 
-        Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
-        Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isKingSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isQueenSide());
+        Assertions.assertFalse(game.getBoard().isWhiteKingsideCastlingAllowed());
+        Assertions.assertFalse(game.getBoard().isWhiteQueensideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isBlackKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isBlackQueensideCastlingAllowed());
 
-        Assertions.assertTrue(game.getBoardHistory().peek().getCastlingRights().get(Colour.WHITE).isKingSide());
-        Assertions.assertTrue(game.getBoardHistory().peek().getCastlingRights().get(Colour.WHITE).isQueenSide());
-        Assertions.assertTrue(game.getBoardHistory().peek().getCastlingRights().get(Colour.BLACK).isKingSide());
-        Assertions.assertTrue(game.getBoardHistory().peek().getCastlingRights().get(Colour.BLACK).isQueenSide());
+        Assertions.assertTrue(game.getBoardHistory().peek().isWhiteKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoardHistory().peek().isWhiteQueensideCastlingAllowed());
+        Assertions.assertTrue(game.getBoardHistory().peek().isBlackKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoardHistory().peek().isBlackQueensideCastlingAllowed());
 
         game.makeMove(move("f7", "f6"));
 
-        Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
-        Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isKingSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.BLACK).isQueenSide());
+        Assertions.assertFalse(game.getBoard().isWhiteKingsideCastlingAllowed());
+        Assertions.assertFalse(game.getBoard().isWhiteQueensideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isBlackKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isBlackQueensideCastlingAllowed());
 
-        Assertions.assertFalse(game.getBoardHistory().peek().getCastlingRights().get(Colour.WHITE).isKingSide());
-        Assertions.assertFalse(game.getBoardHistory().peek().getCastlingRights().get(Colour.WHITE).isQueenSide());
-        Assertions.assertTrue(game.getBoardHistory().peek().getCastlingRights().get(Colour.BLACK).isKingSide());
-        Assertions.assertTrue(game.getBoardHistory().peek().getCastlingRights().get(Colour.BLACK).isQueenSide());
+        Assertions.assertFalse(game.getBoardHistory().peek().isWhiteKingsideCastlingAllowed());
+        Assertions.assertFalse(game.getBoardHistory().peek().isWhiteQueensideCastlingAllowed());
+        Assertions.assertTrue(game.getBoardHistory().peek().isBlackKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoardHistory().peek().isBlackQueensideCastlingAllowed());
 
     }
 
@@ -233,13 +233,13 @@ public class GameTest {
         // castles
         game.makeMove(move("e1", "g1"));
         Assertions.assertEquals(Colour.BLACK, game.getTurn());
-        Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
-        Assertions.assertFalse(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
+        Assertions.assertFalse(game.getBoard().isWhiteKingsideCastlingAllowed());
+        Assertions.assertFalse(game.getBoard().isWhiteQueensideCastlingAllowed());
 
         game.unmakeMove();
         Assertions.assertEquals(Colour.WHITE, game.getTurn());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.WHITE).isKingSide());
-        Assertions.assertTrue(game.getBoard().getCastlingRights().get(Colour.WHITE).isQueenSide());
+        Assertions.assertTrue(game.getBoard().isWhiteKingsideCastlingAllowed());
+        Assertions.assertTrue(game.getBoard().isWhiteQueensideCastlingAllowed());
 
     }
 

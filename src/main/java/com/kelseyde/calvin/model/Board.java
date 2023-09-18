@@ -1,10 +1,7 @@
 package com.kelseyde.calvin.model;
 
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Data;
-
-import java.util.Map;
 
 /**
  * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Also maintains the position
@@ -40,11 +37,10 @@ public class Board {
 
     private Colour turn = Colour.WHITE;
 
-    private boolean whiteKingsideCastlingAllowed;
-    private boolean whiteQueensideCastlingAllowed;
-    private boolean blackKingsideCastlingAllowed;
-    private boolean blackQueensideCastlingAllowed;
-    private Map<Colour, CastlingRights> castlingRights = BoardUtils.getDefaultCastlingRights();
+    private boolean whiteKingsideCastlingAllowed = true;
+    private boolean whiteQueensideCastlingAllowed = true;
+    private boolean blackKingsideCastlingAllowed = true;
+    private boolean blackQueensideCastlingAllowed = true;
 
     private int halfMoveCounter = 0;
 
@@ -89,10 +85,10 @@ public class Board {
 
         board.enPassantTarget = 0L;
 
-        board.getCastlingRights().get(Colour.WHITE).setKingSide(false);
-        board.getCastlingRights().get(Colour.WHITE).setQueenSide(false);
-        board.getCastlingRights().get(Colour.BLACK).setKingSide(false);
-        board.getCastlingRights().get(Colour.BLACK).setQueenSide(false);
+        board.setWhiteKingsideCastlingAllowed(false);
+        board.setWhiteQueensideCastlingAllowed(false);
+        board.setBlackKingsideCastlingAllowed(false);
+        board.setBlackQueensideCastlingAllowed(false);
 
         board.recalculatePieces();
 
@@ -152,7 +148,7 @@ public class Board {
 
         enPassantTarget = move.getEnPassantTarget();
 
-        calculateCastlingRights(move);
+        updateCastlingRights(move);
 
         if (Colour.BLACK.equals(turn)) {
             ++fullMoveCounter;
@@ -220,10 +216,10 @@ public class Board {
     public Board copy() {
         Board board = new Board();
         board.setTurn(turn);
-        board.setCastlingRights(Map.of(
-                Colour.WHITE, castlingRights.get(Colour.WHITE).copy(),
-                Colour.BLACK, castlingRights.get(Colour.BLACK).copy()
-        ));
+        board.setWhiteKingsideCastlingAllowed(whiteKingsideCastlingAllowed);
+        board.setWhiteQueensideCastlingAllowed(whiteQueensideCastlingAllowed);
+        board.setBlackKingsideCastlingAllowed(blackKingsideCastlingAllowed);
+        board.setBlackQueensideCastlingAllowed(blackQueensideCastlingAllowed);
         board.setEnPassantTarget(enPassantTarget);
         board.setHalfMoveCounter(halfMoveCounter);
         board.setFullMoveCounter(fullMoveCounter);
@@ -249,20 +245,33 @@ public class Board {
         occupied = whitePieces | blackPieces;
     }
 
-    private void calculateCastlingRights(Move move) {
+    private void updateCastlingRights(Move move) {
         if (PieceType.KING.equals(move.getPieceType())) {
-            castlingRights.get(turn).setKingSide(false);
-            castlingRights.get(turn).setQueenSide(false);
+            if (turn.isWhite()) {
+                whiteKingsideCastlingAllowed = false;
+                whiteQueensideCastlingAllowed = false;
+            } else {
+                blackKingsideCastlingAllowed = false;
+                blackQueensideCastlingAllowed = false;
+            }
         }
         if (PieceType.ROOK.equals(move.getPieceType())) {
             long rooks = turn.isWhite() ? whiteRooks : blackRooks;
             long kingsideRookStart = turn.isWhite() ? 1L << 7 : 1L << 63;
             long queensideRookStart = turn.isWhite() ? 1L : 1L << 56;
             if ((rooks & kingsideRookStart) != kingsideRookStart) {
-                castlingRights.get(turn).setKingSide(false);
+                if (turn.isWhite()) {
+                    whiteKingsideCastlingAllowed = false;
+                } else {
+                    blackKingsideCastlingAllowed = false;
+                }
             }
             if ((rooks & queensideRookStart) != queensideRookStart) {
-                castlingRights.get(turn).setQueenSide(false);
+                if (turn.isWhite()) {
+                    whiteQueensideCastlingAllowed = false;
+                } else {
+                    blackQueensideCastlingAllowed = false;
+                }
             }
         }
     }

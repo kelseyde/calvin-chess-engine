@@ -3,8 +3,6 @@ package com.kelseyde.calvin.model;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Map;
-
 @Data
 @Builder
 public class RepetitionMetadata {
@@ -24,7 +22,12 @@ public class RepetitionMetadata {
     private long blackKing;
 
     private long enPassantTarget;
-    private Map<Colour, CastlingRights> castlingRights;
+
+    private boolean whiteKingsideCastlingAllowed;
+    private boolean whiteQueensideCastlingAllowed;
+    private boolean blackKingsideCastlingAllowed;
+    private boolean blackQueensideCastlingAllowed;
+
     private Colour turn;
 
     public static RepetitionMetadata fromBoard(Board board) {
@@ -41,7 +44,10 @@ public class RepetitionMetadata {
                 .blackRooks(board.getBlackRooks())
                 .blackQueens(board.getBlackQueens())
                 .blackKing(board.getBlackKing())
-                .castlingRights(board.getCastlingRights())
+                .whiteKingsideCastlingAllowed(board.isWhiteKingsideCastlingAllowed())
+                .whiteQueensideCastlingAllowed(board.isWhiteQueensideCastlingAllowed())
+                .blackKingsideCastlingAllowed(board.isBlackKingsideCastlingAllowed())
+                .blackQueensideCastlingAllowed(board.isBlackQueensideCastlingAllowed())
                 .enPassantTarget(board.getEnPassantTarget())
                 .turn(board.getTurn())
                 .build();

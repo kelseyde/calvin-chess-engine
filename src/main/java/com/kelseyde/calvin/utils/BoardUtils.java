@@ -1,10 +1,6 @@
 package com.kelseyde.calvin.utils;
 
-import com.kelseyde.calvin.model.CastlingRights;
-import com.kelseyde.calvin.model.Colour;
-
 import java.util.List;
-import java.util.Map;
 
 public class BoardUtils {
 
@@ -72,8 +68,5 @@ public class BoardUtils {
         }
     }
 
-    public static Map<Colour, CastlingRights> getDefaultCastlingRights() {
-        return  Map.of(Colour.WHITE, new CastlingRights(), Colour.BLACK, new CastlingRights());
-    }
 
 }

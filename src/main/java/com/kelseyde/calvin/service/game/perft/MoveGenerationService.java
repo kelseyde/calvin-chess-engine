@@ -27,7 +27,12 @@ public class MoveGenerationService {
     private void log(Game game, int depth, Set<Move> moves) {
         List<String> moveHistory = game.getMoveHistory().stream().map(MoveUtils::toNotation).toList();
         List<String> legalMoves = moves.stream().map(MoveUtils::toNotation).toList();
-        System.out.printf("Depth: %s, Previous moves: %s, Legal moves: %s %s%n", depth, moveHistory, legalMoves.size(), legalMoves);
+        System.out.printf("perft(%s) -- %s: %s -- %s%n", depth, moveHistory, legalMoves.size(), legalMoves);
+    }
+
+    private void log(Game game, int depth, int count) {
+        List<String> moveHistory = game.getMoveHistory().stream().map(MoveUtils::toNotation).toList();
+        System.out.printf("perft(%s) -- %s: %s %n", depth, moveHistory, count);
     }
 
 }

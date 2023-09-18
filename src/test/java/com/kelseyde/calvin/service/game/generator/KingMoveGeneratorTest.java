@@ -16,7 +16,7 @@ public class KingMoveGeneratorTest {
 
     private final KingMoveGenerator generator = new KingMoveGenerator();
 
-    private final Piece king = new Piece(Colour.WHITE, PieceType.KING);
+    private final String king = Piece.getPieceCode(Colour.WHITE, PieceType.KING);
 
     private Board board;
 

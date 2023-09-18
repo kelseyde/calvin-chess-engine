@@ -98,7 +98,7 @@ public class Board {
     public void applyMove(Move move) {
 
         PieceType pieceType = move.getPieceType();
-        Piece piece = new Piece(turn, pieceType);
+        String pieceCode = Piece.getPieceCode(turn, pieceType);
 
         // TODO work out a nice placement, this needs to go above for isCapture
         long opponentPieces = turn.isWhite() ? blackPieces : whitePieces;
@@ -110,24 +110,39 @@ public class Board {
             ++halfMoveCounter;
         }
 
-        unsetPiece(move.getStartSquare());
-        setPiece(move.getEndSquare(), piece);
+        // TODO make nice
+        occupied &= ~(1L << move.getStartSquare());
+
+        whitePawns = whitePawns & occupied;
+        whiteKnights = whiteKnights & occupied;
+        whiteBishops = whiteBishops & occupied;
+        whiteRooks = whiteRooks & occupied;
+        whiteQueens = whiteQueens & occupied;
+        whiteKing = whiteKing & occupied;
+
+        blackPawns = blackPawns & occupied;
+        blackKnights = blackKnights & occupied;
+        blackBishops = blackBishops & occupied;
+        blackRooks = blackRooks & occupied;
+        blackQueens = blackQueens & occupied;
+        blackKing = blackKing & occupied;
+        setPiece(move.getEndSquare(), pieceCode);
 
         switch (move.getMoveType()) {
             case EN_PASSANT -> {
                 unsetPiece(BitBoard.scanForward(move.getEnPassantCapture()));
             }
             case PROMOTION -> {
-                Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionPieceType());
+                String promotedPiece = Piece.getPieceCode(turn, move.getPromotionPieceType());
                 setPiece(move.getEndSquare(), promotedPiece);
             }
             case KINGSIDE_CASTLE -> {
                 unsetPiece(turn.isWhite() ? 7 : 63);
-                setPiece(turn.isWhite() ? 5 : 61, new Piece(turn, PieceType.ROOK));
+                setPiece(turn.isWhite() ? 5 : 61, Piece.getPieceCode(turn, PieceType.ROOK));
             }
             case QUEENSIDE_CASTLE -> {
                 unsetPiece(turn.isWhite() ? 0 : 56);
-                setPiece(turn.isWhite() ? 3 : 59, new Piece(turn, PieceType.ROOK));
+                setPiece(turn.isWhite() ? 3 : 59, Piece.getPieceCode(turn, PieceType.ROOK));
             }
         }
 
@@ -144,10 +159,24 @@ public class Board {
         recalculatePieces();
     }
 
-    public void setPiece(int square, Piece piece) {
-        // TODO EFFICIENCY
-        unsetPiece(square);
-        switch (piece.toPieceCode()) {
+    public void setPiece(int square, String pieceCode) {
+        // TODO make nice
+        occupied &= ~(1L << square);
+
+        whitePawns = whitePawns & occupied;
+        whiteKnights = whiteKnights & occupied;
+        whiteBishops = whiteBishops & occupied;
+        whiteRooks = whiteRooks & occupied;
+        whiteQueens = whiteQueens & occupied;
+        whiteKing = whiteKing & occupied;
+
+        blackPawns = blackPawns & occupied;
+        blackKnights = blackKnights & occupied;
+        blackBishops = blackBishops & occupied;
+        blackRooks = blackRooks & occupied;
+        blackQueens = blackQueens & occupied;
+        blackKing = blackKing & occupied;
+        switch (pieceCode) {
             case "wP" -> whitePawns |= (1L << square);
             case "wN" -> whiteKnights |= (1L << square);
             case "wB" -> whiteBishops |= (1L << square);

@@ -49,7 +49,7 @@ public class CastlingTest {
     }
 
     @Test
-    public void cannotCastleIfPiecesInTheWay() {
+    public void cannotCastleIfAllPiecesInTheWay() {
 
         Game game = new Game();
 
@@ -73,6 +73,32 @@ public class CastlingTest {
 
         // black tries to queenside castle
         assertIllegalMove(game.makeMove(MoveUtils.fromNotation("e8", "c8")));
+    }
+
+    @Test
+    public void cannotKingsideCastleIfSomePiecesInTheWay() {
+
+        Game game = new Game();
+
+        game.makeMove(MoveUtils.fromNotation("g1", "f3"));
+        game.makeMove(MoveUtils.fromNotation("e7", "e5"));
+
+        // white tries to kingside castle
+        assertIllegalMove(game.makeMove(MoveUtils.fromNotation("e1", "g1")));
+
+    }
+
+    @Test
+    public void cannotQueensideCastleIfSomePiecesInTheWay() {
+
+        Game game = new Game();
+
+        game.makeMove(MoveUtils.fromNotation("b1", "c3"));
+        game.makeMove(MoveUtils.fromNotation("e7", "e5"));
+
+        // white tries to kingside castle
+        assertIllegalMove(game.makeMove(MoveUtils.fromNotation("e1", "c1")));
+
     }
 
     @Test

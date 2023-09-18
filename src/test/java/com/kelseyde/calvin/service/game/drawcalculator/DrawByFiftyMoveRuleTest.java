@@ -14,13 +14,13 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhiteCapture() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(0, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(28, new Piece(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(36, new Piece(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(35, new Piece(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(0, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(28, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(36, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(35, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
 
-        board.setPiece(63, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(18, new Piece(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(63, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(18, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
 
         Game game = new Game(board);
         game.setTurn(Colour.WHITE);
@@ -192,11 +192,11 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhitePawnMove() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(0, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(36, new Piece(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(0, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(36, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
 
-        board.setPiece(63, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(12, new Piece(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(63, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(12, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
 
         Game game = new Game(board);
         game.setTurn(Colour.WHITE);
@@ -368,13 +368,13 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceBlackCapture() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(0, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(28, new Piece(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(36, new Piece(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(35, new Piece(Colour.WHITE, PieceType.QUEEN));
+        board.setPiece(0, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(36, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(35, Piece.getPieceCode(Colour.WHITE, PieceType.QUEEN));
 
-        board.setPiece(63, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(18, new Piece(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(63, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(18, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
 
         Game game = new Game(board);
         game.setTurn(Colour.BLACK);
@@ -546,11 +546,11 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceBlackPawnMove() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(0, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(28, new Piece(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(0, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
 
-        board.setPiece(63, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(52, new Piece(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(63, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(52, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
 
         Game game = new Game(board);
         game.setTurn(Colour.BLACK);

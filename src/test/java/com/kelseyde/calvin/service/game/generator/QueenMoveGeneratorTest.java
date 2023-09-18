@@ -16,7 +16,7 @@ public class QueenMoveGeneratorTest {
 
     private final QueenMoveGenerator generator = new QueenMoveGenerator();
 
-    private final Piece queen = new Piece(Colour.WHITE, PieceType.QUEEN);
+    private final String queen = Piece.getPieceCode(Colour.WHITE, PieceType.QUEEN);
 
     private Board board;
 
@@ -63,14 +63,14 @@ public class QueenMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(10, new Piece(Colour.BLACK, PieceType.PAWN));
-        board.setPiece(14, new Piece(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(42, new Piece(Colour.BLACK, PieceType.BISHOP));
-        board.setPiece(46, new Piece(Colour.BLACK, PieceType.ROOK));
-        board.setPiece(12, new Piece(Colour.BLACK, PieceType.PAWN));
-        board.setPiece(26, new Piece(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(30, new Piece(Colour.BLACK, PieceType.BISHOP));
-        board.setPiece(44, new Piece(Colour.BLACK, PieceType.ROOK));
+        board.setPiece(10, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(14, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(42, Piece.getPieceCode(Colour.BLACK, PieceType.BISHOP));
+        board.setPiece(46, Piece.getPieceCode(Colour.BLACK, PieceType.ROOK));
+        board.setPiece(12, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(26, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(30, Piece.getPieceCode(Colour.BLACK, PieceType.BISHOP));
+        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46, 12, 20, 26, 27, 29, 30, 36, 44));
 
@@ -81,14 +81,14 @@ public class QueenMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(10, new Piece(Colour.WHITE, PieceType.PAWN));
-        board.setPiece(14, new Piece(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(42, new Piece(Colour.WHITE, PieceType.BISHOP));
-        board.setPiece(46, new Piece(Colour.WHITE, PieceType.ROOK));
-        board.setPiece(12, new Piece(Colour.WHITE, PieceType.PAWN));
-        board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(30, new Piece(Colour.WHITE, PieceType.BISHOP));
-        board.setPiece(44, new Piece(Colour.WHITE, PieceType.ROOK));
+        board.setPiece(10, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(14, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(42, Piece.getPieceCode(Colour.WHITE, PieceType.BISHOP));
+        board.setPiece(46, Piece.getPieceCode(Colour.WHITE, PieceType.ROOK));
+        board.setPiece(12, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(26, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(30, Piece.getPieceCode(Colour.WHITE, PieceType.BISHOP));
+        board.setPiece(44, Piece.getPieceCode(Colour.WHITE, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 27, 29, 20, 36));
 

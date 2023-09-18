@@ -16,7 +16,7 @@ public class RookMoveGeneratorTest {
 
     private final RookMoveGenerator generator = new RookMoveGenerator();
 
-    private final Piece rook = new Piece(Colour.WHITE, PieceType.ROOK);
+    private final String rook = Piece.getPieceCode(Colour.WHITE, PieceType.ROOK);
 
     private Board board;
     
@@ -58,10 +58,10 @@ public class RookMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(12, new Piece(Colour.BLACK, PieceType.PAWN));
-        board.setPiece(26, new Piece(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(30, new Piece(Colour.BLACK, PieceType.BISHOP));
-        board.setPiece(44, new Piece(Colour.BLACK, PieceType.ROOK));
+        board.setPiece(12, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(26, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(30, Piece.getPieceCode(Colour.BLACK, PieceType.BISHOP));
+        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(12, 20, 26, 27, 29, 30, 36, 44));
 
@@ -72,10 +72,10 @@ public class RookMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(12, new Piece(Colour.WHITE, PieceType.PAWN));
-        board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(30, new Piece(Colour.WHITE, PieceType.BISHOP));
-        board.setPiece(44, new Piece(Colour.WHITE, PieceType.ROOK));
+        board.setPiece(12, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(26, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(30, Piece.getPieceCode(Colour.WHITE, PieceType.BISHOP));
+        board.setPiece(44, Piece.getPieceCode(Colour.WHITE, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(20, 27, 29, 36));
 
@@ -87,9 +87,6 @@ public class RookMoveGeneratorTest {
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
-
-        System.out.println("Expected: " + expectedLegalSquares.stream().toList().stream().sorted().toList());
-        System.out.println("Actual: " + legalSquares.stream().toList().stream().sorted().toList());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
         board.unsetPiece(startSquare);
     }

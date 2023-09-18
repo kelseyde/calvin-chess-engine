@@ -14,10 +14,10 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKing() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
+        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
 
-        board.setPiece(44, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(27, new Piece(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(27, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
 
         Game game = new Game(board);
         GameResult result = game.makeMove(move("e4", "d4"));
@@ -33,11 +33,11 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingBishop() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(25, new Piece(Colour.WHITE, PieceType.BISHOP));
+        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(25, Piece.getPieceCode(Colour.WHITE, PieceType.BISHOP));
 
-        board.setPiece(44, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(43, new Piece(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(43, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
 
         Game game = new Game(board);
         GameResult result = game.makeMove(move("b4", "d6"));
@@ -53,11 +53,11 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingKnight() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(26, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
 
-        board.setPiece(44, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(43, new Piece(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(43, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
 
         Game game = new Game(board);
         GameResult result = game.makeMove(move("c4", "d6"));
@@ -73,12 +73,12 @@ public class DrawByInsufficientMaterialTest {
     public void testKingBishopVersusKingBishop() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(25, new Piece(Colour.WHITE, PieceType.BISHOP));
+        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(25, Piece.getPieceCode(Colour.WHITE, PieceType.BISHOP));
 
-        board.setPiece(44, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(43, new Piece(Colour.BLACK, PieceType.QUEEN));
-        board.setPiece(52, new Piece(Colour.BLACK, PieceType.BISHOP));
+        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(43, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(52, Piece.getPieceCode(Colour.BLACK, PieceType.BISHOP));
 
         Game game = new Game(board);
         GameResult result = game.makeMove(move("b4", "d6"));
@@ -94,12 +94,12 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightVersusKingKnight() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(26, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
 
-        board.setPiece(44, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(43, new Piece(Colour.BLACK, PieceType.QUEEN));
-        board.setPiece(52, new Piece(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(43, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(52, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
 
         Game game = new Game(board);
         GameResult result = game.makeMove(move("c4", "d6"));
@@ -115,13 +115,13 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightKnightVersusKingKnightIsNotInsufficientMaterial() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(26, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
 
-        board.setPiece(44, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(43, new Piece(Colour.BLACK, PieceType.QUEEN));
-        board.setPiece(52, new Piece(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(0, new Piece(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(43, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(52, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(0, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
 
         Game game = new Game(board);
         GameResult result = game.makeMove(move("c4", "d6"));

@@ -192,9 +192,9 @@ public class CheckmateTest {
     public void testSimpleQueenCheckmate() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(48, new Piece(Colour.BLACK, PieceType.KING));
-        board.setPiece(42, new Piece(Colour.WHITE, PieceType.KING));
-        board.setPiece(1, new Piece(Colour.WHITE, PieceType.QUEEN));
+        board.setPiece(48, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
+        board.setPiece(42, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
+        board.setPiece(1, Piece.getPieceCode(Colour.WHITE, PieceType.QUEEN));
 
         Game game = new Game(board);
 

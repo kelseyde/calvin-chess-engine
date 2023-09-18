@@ -51,7 +51,6 @@ public class Game {
 
         Optional<Move> legalMove = Optional.ofNullable(legalMoves.get(move.getKey()));
         if (legalMove.isEmpty()) {
-            System.out.println("ILLEGAL MOVE! " + move);
             return new InvalidMoveResult(move);
         }
         move = legalMove.get();

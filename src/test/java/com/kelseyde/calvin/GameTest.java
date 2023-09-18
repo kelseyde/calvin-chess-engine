@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class GameTest {
 
-    private final Piece rook = new Piece(Colour.WHITE, PieceType.ROOK);
+    private final String rook = Piece.getPieceCode(Colour.WHITE, PieceType.ROOK);
 
     @BeforeEach
     public void beforeEach() {

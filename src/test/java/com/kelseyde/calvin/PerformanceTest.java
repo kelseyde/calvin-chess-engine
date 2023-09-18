@@ -21,32 +21,26 @@ public class PerformanceTest {
 
     private final MoveGenerationService moveGenerator = new MoveGenerationService();
 
-    @Disabled
     @Test
     public void testPerftOneDepth() {
         perft(new Game(), 1, 20);
     }
 
-    @Disabled
     @Test
     public void testPerftTwoDepth() {
         perft(new Game(), 2, 400);
     }
 
-    @Disabled
     @Test
     public void testPerftThreeDepth() {
         perft(new Game(), 3, 8902);
     }
 
-    @Disabled
     @Test
     public void testPerftFourDepth() {
         perft(new Game(), 4, 197281);
     }
 
-    // Test returns correct result, but currently very slow (>7 minutes!)
-    @Disabled
     @Test
     public void testPerftFiveDepth() {
         perft(new Game(), 5, 4865609);
@@ -59,7 +53,9 @@ public class PerformanceTest {
         Duration performance = Duration.between(start, end);
         System.out.printf("Move generator calculated %s possible positions at depth %s in %s",
                 totalMoveCount, depth, performance);
-        writeResults(depth, performance);
+        if (expectedTotalMoves == totalMoveCount) {
+            writeResults(depth, performance);
+        }
         Assertions.assertEquals(expectedTotalMoves, totalMoveCount);
     }
 

@@ -2,50 +2,6 @@ package com.kelseyde.calvin.model;
 
 public class BitBoard {
 
-    public static long xor(long board1, long board2) {
-        return board1 ^ board2;
-    }
-
-    public static long or(long board1, long board2) {
-        return board1 | board2;
-    }
-
-    public static long and(long board1, long board2) {
-        return board1 & board2;
-    }
-
-    public static long not(long board1, long board2) {
-        return board1 &~ board2;
-    }
-
-    public static long inverse(long board) {
-        return ~board;
-    }
-
-    public static float flipBit(long board, int index) {
-        return board ^ (1L << index);
-    }
-
-    public static float setBit(long board, int index) {
-        return board | (1L << index);
-    }
-
-    public static float unsetBit(long board, int index) {
-        return board & ~(1L << index);
-    }
-
-    public static boolean getBit(long board, int index) {
-        return ((board >>> index) & 1) == 1;
-    }
-
-    public boolean isZero(long board) {
-        return board == 0;
-    }
-
-    public boolean isNotZero(long board) {
-        return board != 0;
-    }
-
     public static long shiftWest(long board) {
         return (board >>> 1) &~ BitBoards.FILE_H;
     }
@@ -83,7 +39,7 @@ public class BitBoard {
     }
 
     public static long popLSB(long board) {
-        board = board & (board - 1);
+        board = board &= (board - 1);
         return board;
     }
 

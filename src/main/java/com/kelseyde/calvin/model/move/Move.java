@@ -62,6 +62,7 @@ public class Move {
     @Builder.Default
     private PieceType promotionPieceType = null;
 
+    // TODO remove
     public MoveKey getKey() {
         return new MoveKey(startSquare, endSquare, promotionPieceType);
     }

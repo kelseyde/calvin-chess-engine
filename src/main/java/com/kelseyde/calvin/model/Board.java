@@ -11,19 +11,19 @@ import lombok.Data;
 @Data
 public class Board {
 
-    private long whitePawns;
-    private long whiteKnights;
-    private long whiteBishops;
-    private long whiteRooks;
-    private long whiteQueens;
-    private long whiteKing;
+    private long whitePawns = BitBoards.WHITE_PAWNS_START;
+    private long whiteKnights = BitBoards.WHITE_KNIGHTS_START;
+    private long whiteBishops = BitBoards.WHITE_BISHOPS_START;
+    private long whiteRooks = BitBoards.WHITE_ROOKS_START;
+    private long whiteQueens = BitBoards.WHITE_QUEENS_START;
+    private long whiteKing = BitBoards.WHITE_KING_START;
 
-    private long blackPawns;
-    private long blackKnights;
-    private long blackBishops;
-    private long blackRooks;
-    private long blackQueens;
-    private long blackKing;
+    private long blackPawns = BitBoards.BLACK_PAWNS_START;
+    private long blackKnights = BitBoards.BLACK_KNIGHTS_START;
+    private long blackBishops = BitBoards.BLACK_BISHOPS_START;
+    private long blackRooks = BitBoards.BLACK_ROOKS_START;
+    private long blackQueens = BitBoards.BLACK_QUEENS_START;
+    private long blackKing = BitBoards.BLACK_KING_START;
 
     private long whitePieces;
     private long blackPieces;
@@ -33,7 +33,7 @@ public class Board {
     private long whiteAttacks;
     private long blackAttacks;
 
-    private long enPassantTarget;
+    private long enPassantTarget = 0L;
 
     private Colour turn = Colour.WHITE;
 
@@ -47,22 +47,6 @@ public class Board {
     private int fullMoveCounter = 1;
 
     public Board() {
-        whitePawns = BitBoards.WHITE_PAWNS_START;
-        whiteKnights = BitBoards.WHITE_KNIGHTS_START;
-        whiteBishops = BitBoards.WHITE_BISHOPS_START;
-        whiteRooks = BitBoards.WHITE_ROOKS_START;
-        whiteQueens = BitBoards.WHITE_QUEENS_START;
-        whiteKing = BitBoards.WHITE_KING_START;
-
-        blackPawns = BitBoards.BLACK_PAWNS_START;
-        blackKnights = BitBoards.BLACK_KNIGHTS_START;
-        blackBishops = BitBoards.BLACK_BISHOPS_START;
-        blackRooks = BitBoards.BLACK_ROOKS_START;
-        blackQueens = BitBoards.BLACK_QUEENS_START;
-        blackKing = BitBoards.BLACK_KING_START;
-
-        enPassantTarget = 0L;
-
         recalculatePieces();
     }
 

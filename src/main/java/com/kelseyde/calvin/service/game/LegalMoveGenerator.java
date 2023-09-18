@@ -18,13 +18,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LegalMoveGenerator {
 
+    private static final PawnMoveGenerator PAWN_MOVE_GENERATOR = new PawnMoveGenerator();
+    private static final KnightMoveGenerator KNIGHT_MOVE_GENERATOR = new KnightMoveGenerator();
+    private static final BishopMoveGenerator BISHOP_MOVE_GENERATOR = new BishopMoveGenerator();
+    private static final RookMoveGenerator ROOK_MOVE_GENERATOR = new RookMoveGenerator();
+    private static final QueenMoveGenerator QUEEN_MOVE_GENERATOR = new QueenMoveGenerator();
+    private static final KingMoveGenerator KING_MOVE_GENERATOR = new KingMoveGenerator();
+
     private static final Set<PseudoLegalMoveGenerator> PSEUDO_LEGAL_MOVE_GENERATORS = Set.of(
-        new PawnMoveGenerator(),
-        new KnightMoveGenerator(),
-        new BishopMoveGenerator(),
-        new RookMoveGenerator(),
-        new QueenMoveGenerator(),
-        new KingMoveGenerator()
+        PAWN_MOVE_GENERATOR, KNIGHT_MOVE_GENERATOR, BISHOP_MOVE_GENERATOR, ROOK_MOVE_GENERATOR, QUEEN_MOVE_GENERATOR, KING_MOVE_GENERATOR
+    );
+
+    private static final Set<PseudoLegalMoveGenerator> PSEUDO_LEGAL_MOVE_GENERATORS_WITHOUT_KING = Set.of(
+            PAWN_MOVE_GENERATOR, KNIGHT_MOVE_GENERATOR, BISHOP_MOVE_GENERATOR, ROOK_MOVE_GENERATOR, QUEEN_MOVE_GENERATOR, KING_MOVE_GENERATOR
     );
 
     public Set<Move> generateLegalMoves(Board board) {
@@ -34,13 +40,14 @@ public class LegalMoveGenerator {
     }
 
     private Set<Move> generatePseudoLegalMoves(Board board) {
-        Set<Move> pseudoLegalMoves = PSEUDO_LEGAL_MOVE_GENERATORS.stream()
+        return PSEUDO_LEGAL_MOVE_GENERATORS.stream()
                 .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
                 .collect(Collectors.toSet());
-        if (board.getTurn().isWhite()) {
-
-        }
-        return pseudoLegalMoves;
+    }
+    private Set<Move> generatePseudoLegalMovesWithoutKing(Board board) {
+        return PSEUDO_LEGAL_MOVE_GENERATORS_WITHOUT_KING.stream()
+                .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
+                .collect(Collectors.toSet());
     }
 
     private boolean isFullyLegal(Board board, Move move) {
@@ -57,7 +64,7 @@ public class LegalMoveGenerator {
 
         // TODO perhaps can be done without a stream
         long attackedSquares = 0L;
-        for (Move opponentMove : generatePseudoLegalMoves(boardCopy)) {
+        for (Move opponentMove : generatePseudoLegalMovesWithoutKing(boardCopy)) {
             attackedSquares |= (1L << opponentMove.getEndSquare());
         }
         boolean isLegalMove = (kingMask & attackedSquares) == 0;
@@ -72,7 +79,7 @@ public class LegalMoveGenerator {
         // Additionally calculate whether the move is a check, store this info in Move.
         board.setTurn(board.getTurn().oppositeColour());
         int opponentKingSquare = board.getTurn().isWhite() ? BitBoard.scanForward(board.getBlackKing()) : BitBoard.scanForward(board.getWhiteKing());
-        Set<Integer> attackingSquares = generatePseudoLegalMoves(board).stream()
+        Set<Integer> attackingSquares = generatePseudoLegalMovesWithoutKing(board).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         return attackingSquares.contains(opponentKingSquare);

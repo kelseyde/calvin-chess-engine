@@ -17,7 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-@Disabled
+//@Disabled
 public class PerformanceTest {
 
     private final MoveGenerationService moveGenerator = new MoveGenerationService();
@@ -42,6 +42,7 @@ public class PerformanceTest {
         perft(new Game(), 4, 197281);
     }
 
+    @Disabled
     @Test
     public void testPerftFiveDepth() {
         perft(new Game(), 5, 4865609);

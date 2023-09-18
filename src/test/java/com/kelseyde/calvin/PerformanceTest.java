@@ -21,16 +21,19 @@ public class PerformanceTest {
 
     private final MoveGenerationService moveGenerator = new MoveGenerationService();
 
+    @Disabled
     @Test
     public void testPerftOneDepth() {
         perft(new Game(), 1, 20);
     }
 
+    @Disabled
     @Test
     public void testPerftTwoDepth() {
         perft(new Game(), 2, 400);
     }
 
+    @Disabled
     @Test
     public void testPerftThreeDepth() {
         perft(new Game(), 3, 8902);

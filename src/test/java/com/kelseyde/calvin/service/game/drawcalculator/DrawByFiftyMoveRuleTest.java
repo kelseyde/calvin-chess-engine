@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.result.DrawResult;
 import com.kelseyde.calvin.model.result.GameResult;
-import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,7 @@ public class DrawByFiftyMoveRuleTest {
     @Test
     public void testDrawByFiftyMovesSinceWhiteCapture() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(0, new Piece(Colour.BLACK, PieceType.KING));
         board.setPiece(28, new Piece(Colour.BLACK, PieceType.KNIGHT));
         board.setPiece(36, new Piece(Colour.BLACK, PieceType.KNIGHT));
@@ -192,7 +191,7 @@ public class DrawByFiftyMoveRuleTest {
     @Test
     public void testDrawByFiftyMovesSinceWhitePawnMove() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(0, new Piece(Colour.BLACK, PieceType.KING));
         board.setPiece(36, new Piece(Colour.BLACK, PieceType.PAWN));
 
@@ -368,7 +367,7 @@ public class DrawByFiftyMoveRuleTest {
     @Test
     public void testDrawByFiftyMovesSinceBlackCapture() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(0, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KNIGHT));
         board.setPiece(36, new Piece(Colour.WHITE, PieceType.KNIGHT));
@@ -546,7 +545,7 @@ public class DrawByFiftyMoveRuleTest {
     @Test
     public void testDrawByFiftyMovesSinceBlackPawnMove() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(0, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.PAWN));
 

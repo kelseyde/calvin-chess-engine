@@ -5,7 +5,6 @@ import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.service.game.generator.bitboard.KnightMoveGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

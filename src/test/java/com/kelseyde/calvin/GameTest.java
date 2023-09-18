@@ -1,16 +1,13 @@
 package com.kelseyde.calvin;
 
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.Game;
-import com.kelseyde.calvin.model.Piece;
-import com.kelseyde.calvin.model.PieceType;
+import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,7 +22,7 @@ public class GameTest {
     @Test
     public void testFromPositionDoesNotCorruptBoard() {
 
-        Game game = new Game(BoardUtils.emptyBoard());
+        Game game = new Game(Board.emptyBoard());
         assertSinglePieceBoard(game, 0);
         assertSinglePieceBoard(game, 7);
         assertSinglePieceBoard(game, 12);
@@ -164,20 +161,19 @@ public class GameTest {
         game.makeMove(move("d7", "d5"));
         game.makeMove(move("e4", "d5"));
 
-        Set<Integer> whitePiecePositions = game.getBoard().getPiecePositions(Colour.WHITE);
+        Set<Integer> whitePiecePositions = getPiecePositions(game.getBoard(), Colour.WHITE);
         Assertions.assertEquals(Set.of(35, 8, 9, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7), whitePiecePositions);
 
-        Set<Integer> blackPiecePositions = game.getBoard().getPiecePositions(Colour.BLACK);
+        Set<Integer> blackPiecePositions = getPiecePositions(game.getBoard(), Colour.BLACK);
         Assertions.assertEquals(Set.of(56, 57, 58, 59, 60, 61, 62, 63, 48, 49, 50, 52, 53, 54, 55), blackPiecePositions);
 
         game.unmakeMove();
 
-        whitePiecePositions = game.getBoard().getPiecePositions(Colour.WHITE);
+        whitePiecePositions = getPiecePositions(game.getBoard(), Colour.WHITE);
         Assertions.assertEquals(Set.of(28, 8, 9, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7), whitePiecePositions);
 
-        blackPiecePositions = game.getBoard().getPiecePositions(Colour.BLACK);
+        blackPiecePositions = getPiecePositions(game.getBoard(), Colour.BLACK);
         Assertions.assertEquals(Set.of(35, 56, 57, 58, 59, 60, 61, 62, 63, 48, 49, 50, 52, 53, 54, 55), blackPiecePositions);
-
 
     }
 
@@ -264,14 +260,34 @@ public class GameTest {
 
     }
 
+    private Set<Integer> getPiecePositions(Board board, Colour colour) {
+        Set<Integer> positions = new HashSet<>();
+        if (colour.isWhite()) {
+            long whitePieces = board.getWhitePieces();
+            while (whitePieces != 0) {
+                int position = BitBoard.scanForward(whitePieces);
+                positions.add(position);
+                whitePieces = BitBoard.popLSB(whitePieces);
+            }
+        } else {
+            long blackPieces = board.getBlackPieces();
+            while (blackPieces != 0) {
+                int position = BitBoard.scanForward(blackPieces);
+                positions.add(position);
+                blackPieces = BitBoard.popLSB(blackPieces);
+            }
+        }
+        return positions;
+    }
+
     private Move move(String startSquare, String endSquare) {
         return MoveUtils.fromNotation(startSquare, endSquare);
     }
 
     private void assertSinglePieceBoard(Game game, int startSquare) {
         game.getBoard().setPiece(startSquare, rook);
-        Assertions.assertEquals(Set.of(startSquare), game.getBoard().getPiecePositions(Colour.WHITE));
-        Assertions.assertEquals(Set.of(), game.getBoard().getPiecePositions(Colour.BLACK));
+        Assertions.assertEquals(Set.of(startSquare), getPiecePositions(game.getBoard(), Colour.WHITE));
+        Assertions.assertEquals(Set.of(), getPiecePositions(game.getBoard(), Colour.BLACK));
         game.getBoard().unsetPiece(startSquare);
     }
 

@@ -1,42 +1,28 @@
 package com.kelseyde.calvin.service.game.drawcalculator;
 
-import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.DrawType;
+import com.kelseyde.calvin.model.Game;
 import lombok.Getter;
 
-import java.util.List;
-import java.util.Set;
-
 public class InsufficientMaterialCalculator implements DrawCalculator {
-
-    private static final Set<List<PieceType>> INSUFFICIENT_MATERIAL_PIECE_COMBINATIONS = Set.of(
-            List.of(PieceType.KING),
-            List.of(PieceType.KING, PieceType.BISHOP),
-            List.of(PieceType.KING, PieceType.KNIGHT)
-    );
 
     @Getter
     private final DrawType drawType = DrawType.INSUFFICIENT_MATERIAL;
 
     @Override
     public boolean isDraw(Game game) {
+        Board board = game.getBoard();
 
-        List<PieceType> whitePieceTypes = game.getBoard().getPieces(Colour.WHITE)
-                .stream()
-                .map(Piece::getType)
-                .toList();
+        if (board.getWhitePawns() != 0 || board.getWhiteRooks() != 0 || board.getWhiteQueens() != 0
+            || board.getBlackPawns() != 0 || board.getBlackRooks() != 0 || board.getBlackQueens() != 0) {
+            return false;
+        }
+        long whitePieces = board.getWhiteKnights() | board.getWhiteBishops();
+        long blackPieces = board.getBlackKnights() |  board.getBlackBishops();
 
-        List<PieceType> blackPieceTypes = game.getBoard().getPieces(Colour.BLACK)
-                .stream()
-                .map(Piece::getType)
-                .toList();
-
-        return INSUFFICIENT_MATERIAL_PIECE_COMBINATIONS.stream().anyMatch(list -> isSamePieceList(whitePieceTypes, list))
-                && INSUFFICIENT_MATERIAL_PIECE_COMBINATIONS.stream().anyMatch(list -> isSamePieceList(list, blackPieceTypes));
-    }
-
-    private boolean isSamePieceList(List<PieceType> list1, List<PieceType> list2) {
-        return list1.size() == list2.size()
-                && list1.containsAll(list2);
+        return (Long.bitCount(whitePieces) == 0 || Long.bitCount(whitePieces) == 1)
+                && (Long.bitCount(blackPieces) == 0 || Long.bitCount(blackPieces) == 1);
     }
 
 }

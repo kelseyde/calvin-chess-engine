@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.result.GameResult;
 import com.kelseyde.calvin.model.result.WinResult;
-import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -192,7 +191,7 @@ public class CheckmateTest {
     @Test
     public void testSimpleQueenCheckmate() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(48, new Piece(Colour.BLACK, PieceType.KING));
         board.setPiece(42, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(1, new Piece(Colour.WHITE, PieceType.QUEEN));

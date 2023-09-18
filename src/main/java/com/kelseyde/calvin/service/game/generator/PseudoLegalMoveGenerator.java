@@ -10,11 +10,6 @@ public interface PseudoLegalMoveGenerator {
 
     PieceType getPieceType();
 
-    Set<Move> generatePseudoLegalMoves(Board board, int startSquare);
-
-    default Move.MoveBuilder moveBuilder() {
-        return Move.builder()
-                .pieceType(getPieceType());
-    }
+    Set<Move> generatePseudoLegalMoves(Board board);
 
 }

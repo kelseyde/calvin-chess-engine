@@ -4,7 +4,6 @@ import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.result.DrawResult;
 import com.kelseyde.calvin.model.result.GameResult;
-import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,7 @@ public class DrawByInsufficientMaterialTest {
     @Test
     public void testKingVersusKing() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
 
         board.setPiece(44, new Piece(Colour.BLACK, PieceType.KING));
@@ -33,7 +32,7 @@ public class DrawByInsufficientMaterialTest {
     @Test
     public void testKingVersusKingBishop() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(25, new Piece(Colour.WHITE, PieceType.BISHOP));
 
@@ -53,7 +52,7 @@ public class DrawByInsufficientMaterialTest {
     @Test
     public void testKingVersusKingKnight() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
 
@@ -73,7 +72,7 @@ public class DrawByInsufficientMaterialTest {
     @Test
     public void testKingBishopVersusKingBishop() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(25, new Piece(Colour.WHITE, PieceType.BISHOP));
 
@@ -94,7 +93,7 @@ public class DrawByInsufficientMaterialTest {
     @Test
     public void testKingKnightVersusKingKnight() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
 
@@ -115,7 +114,7 @@ public class DrawByInsufficientMaterialTest {
     @Test
     public void testKingKnightKnightVersusKingKnightIsNotInsufficientMaterial() {
 
-        Board board = BoardUtils.emptyBoard();
+        Board board = Board.emptyBoard();
         board.setPiece(28, new Piece(Colour.WHITE, PieceType.KING));
         board.setPiece(26, new Piece(Colour.WHITE, PieceType.KNIGHT));
 

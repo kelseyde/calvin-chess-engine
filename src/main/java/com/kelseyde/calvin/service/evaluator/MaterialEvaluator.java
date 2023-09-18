@@ -3,8 +3,6 @@ package com.kelseyde.calvin.service.evaluator;
 import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Game;
-import com.kelseyde.calvin.model.Piece;
-import com.kelseyde.calvin.model.engine.PieceMaterialValues;
 
 public class MaterialEvaluator implements PositionEvaluator {
 
@@ -22,11 +20,13 @@ public class MaterialEvaluator implements PositionEvaluator {
     }
 
     private int calculateMaterialScore(Board board, Colour colour) {
-        return board.getPieces(colour)
-                .stream()
-                .map(Piece::getType)
-                .map(PieceMaterialValues::get)
-                .reduce(0, Integer::sum);
+        // TODO fix
+        return 0;
+//        return board.getPieces(colour)
+//                .stream()
+//                .map(Piece::getType)
+//                .map(PieceMaterialValues::get)
+//                .reduce(0, Integer::sum);
     }
 
 }

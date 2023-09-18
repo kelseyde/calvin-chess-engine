@@ -260,6 +260,26 @@ public class CastlingTest {
 
     }
 
+    @Test
+    public void cannotCastleIfKingsideRookIsCaptured() {
+        // TODO
+    }
+
+    @Test
+    public void cannotCastleIfQueensideRookIsCaptured() {
+        // TODO
+    }
+
+    @Test
+    public void whiteCanStillKingsideCastleIfQueensideRookHasMoved() {
+        // TODO
+    }
+
+    @Test
+    public void blackCanStillQueensideCastleIfQueensideRookHasMoved() {
+        // TODO
+    }
+
     private void assertIllegalMove(GameResult result) {
         Assertions.assertEquals(GameResult.ResultType.ILLEGAL_MOVE, result.getResultType());
     }

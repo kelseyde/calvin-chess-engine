@@ -1,185 +1,88 @@
 package com.kelseyde.calvin.service.game.generator;
 
-import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.Piece;
-import com.kelseyde.calvin.model.PieceType;
+
+import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
-import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-@Service
 public class KingMoveGenerator implements PseudoLegalMoveGenerator {
-
-    // All the possible candidate move offsets for a king on a 1-dimensional board array, i.e., a king in the middle
-    // of an empty board can move to the squares indicated by these offsets.
-    private static final Set<Integer> CANDIDATE_MOVE_OFFSETS = Set.of(-9, -8, -7, -1, 1, 7, 8, 9);
-
-    // The following sets are exceptions to the initial rule, in scenarios where the king is placed on the a or h-files.
-    // These exceptions prevent the piece from 'wrapping' around to the other side of the board.
-    private static final Set<Integer> A_FILE_OFFSET_EXCEPTIONS = Set.of(-9, -1, 7);
-    private static final Set<Integer> H_FILE_OFFSET_EXCEPTIONS = Set.of(-7, 1, 9);
 
     @Getter
     private final PieceType pieceType = PieceType.KING;
 
-    @Override
-    public Set<Move> generatePseudoLegalMoves(Board board, int startSquare) {
+    public static final long[] KING_ATTACKS = new long[] {
+            0x0000000000000302L, 0x0000000000000705L, 0x0000000000000e0aL, 0x0000000000001c14L,
+            0x0000000000003828L, 0x0000000000007050L, 0x000000000000e0a0L, 0x000000000000c040L,
+            0x0000000000030203L, 0x0000000000070507L, 0x00000000000e0a0eL, 0x00000000001c141cL,
+            0x0000000000382838L, 0x0000000000705070L, 0x0000000000e0a0e0L, 0x0000000000c040c0L,
+            0x0000000003020300L, 0x0000000007050700L, 0x000000000e0a0e00L, 0x000000001c141c00L,
+            0x0000000038283800L, 0x0000000070507000L, 0x00000000e0a0e000L, 0x00000000c040c000L,
+            0x0000000302030000L, 0x0000000705070000L, 0x0000000e0a0e0000L, 0x0000001c141c0000L,
+            0x0000003828380000L, 0x0000007050700000L, 0x000000e0a0e00000L, 0x000000c040c00000L,
+            0x0000030203000000L, 0x0000070507000000L, 0x00000e0a0e000000L, 0x00001c141c000000L,
+            0x0000382838000000L, 0x0000705070000000L, 0x0000e0a0e0000000L, 0x0000c040c0000000L,
+            0x0003020300000000L, 0x0007050700000000L, 0x000e0a0e00000000L, 0x001c141c00000000L,
+            0x0038283800000000L, 0x0070507000000000L, 0x00e0a0e000000000L, 0x00c040c000000000L,
+            0x0302030000000000L, 0x0705070000000000L, 0x0e0a0e0000000000L, 0x1c141c0000000000L,
+            0x3828380000000000L, 0x7050700000000000L, 0xe0a0e00000000000L, 0xc040c00000000000L,
+            0x0203000000000000L, 0x0507000000000000L, 0x0a0e000000000000L, 0x141c000000000000L,
+            0x2838000000000000L, 0x5070000000000000L, 0xa0e0000000000000L, 0x40c0000000000000L
+    };
 
-        Piece king = board.getPieceAt(startSquare)
-                .filter(piece -> piece.isType(PieceType.KING))
-                .orElseThrow(() -> new NoSuchElementException(String.format("There is no king on square %s!", startSquare)));
+    public Set<Move> generatePseudoLegalMoves(Board board) {
 
-        Set<Move> legalMoves = CANDIDATE_MOVE_OFFSETS.stream()
-                .map(offset -> getLegalMoveForOffset(board, king, startSquare, offset))
-                .flatMap(Optional::stream).collect(Collectors.toSet());
+        Set<Move> moves = new HashSet<>();
 
-        checkKingsideCastling(board, king, startSquare).ifPresent(legalMoves::add);
-        checkQueensideCastling(board, king, startSquare).ifPresent(legalMoves::add);
+        Colour turn = board.getTurn();
 
-        return legalMoves;
+        long king = turn.isWhite() ? board.getWhiteKing() : board.getBlackKing();
+        if (king == 0L) {
+            return Collections.emptySet();
+        }
+        long friendlyPieces = turn.isWhite() ? board.getWhitePieces() : board.getBlackPieces();
+        long occupied = board.getOccupied();
+
+        int startSquare = BitBoard.scanForward(king);
+
+        long kingMoves = KING_ATTACKS[startSquare] &~ friendlyPieces;
+        while (kingMoves != 0) {
+            int endSquare = BitBoard.scanForward(kingMoves);
+            moves.add(move(startSquare, endSquare).build());
+            kingMoves = BitBoard.popLSB(kingMoves);
+        }
+        if (board.getCastlingRights().get(turn).isKingSide()) {
+            long travelSquares = turn.isWhite() ? BitBoards.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : BitBoards.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
+            long blockedSquares = travelSquares & ~occupied;
+            if (blockedSquares != 0) {
+                int endSquare = turn.isWhite() ? 6 : 62;
+                moves.add(move(startSquare, endSquare).moveType(MoveType.KINGSIDE_CASTLE).build());
+                blockedSquares = BitBoard.popLSB(blockedSquares);
+            }
+        }
+        if (board.getCastlingRights().get(turn).isQueenSide()) {
+            long travelSquares = turn.isWhite() ? BitBoards.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : BitBoards.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
+            long blockedSquares = travelSquares & ~occupied;
+            if (blockedSquares != 0) {
+                int endSquare = turn.isWhite() ? 2 : 58;
+                moves.add(move(startSquare, endSquare).moveType(MoveType.QUEENSIDE_CASTLE).build());
+                blockedSquares = BitBoard.popLSB(blockedSquares);
+            }
+        }
+
+        return moves;
 
     }
 
-    private Optional<Move> getLegalMoveForOffset(Board board, Piece king, int startSquare, int offset) {
-        Colour colour = king.getColour();
-        int targetSquare = startSquare + offset;
-        if (!BoardUtils.isValidSquareCoordinate(targetSquare)) {
-            return Optional.empty();
-        }
-        if ((BoardUtils.isAFile(startSquare) && A_FILE_OFFSET_EXCEPTIONS.contains(offset)) ||
-            (BoardUtils.isHFile(startSquare) && H_FILE_OFFSET_EXCEPTIONS.contains(offset))) {
-            return Optional.empty();
-        }
-        Optional<Piece> pieceOnTargetSquare = board.getPieceAt(targetSquare);
-        if (pieceOnTargetSquare.isEmpty()) {
-            return Optional.of(createKingMove(startSquare, targetSquare).build());
-        } else if (pieceOnTargetSquare.get().getColour().isOppositeColour(colour)) {
-            return Optional.of(createKingMove(startSquare, targetSquare).isCapture(true).build());
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    private Optional<Move> checkKingsideCastling(Board board, Piece king, int startSquare) {
-        Colour colour = king.getColour();
-
-        int kingStartingSquare = getKingStartingSquare(colour);
-        int kingTargetSquare = getKingsideCastlingKingSquare(colour);
-        Set<Integer> kingTravelSquares = getKingsideCastlingTravelSquares(colour);
-
-        int rookStartingSqure = getKingsideRookStartingSquare(colour);
-        Set<Integer> rookTravelSquares = getKingsideCastlingRookTravelSquares(colour);
-
-        boolean isKingsideCastlingDisallowed = board.getCastlingRights().get(colour).isKingSide();
-        boolean isKingOnStartSquare = startSquare == kingStartingSquare;
-        boolean isRookOnStartSquare = pieceIs(board, rookStartingSqure, colour, PieceType.ROOK);
-        boolean travelSquaresEmpty = rookTravelSquares.stream()
-                .allMatch(square -> board.getPieceAt(square).isEmpty());
-
-        if (isKingsideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
-            return Optional.of(createKingMove(startSquare, kingTargetSquare)
-                    .moveType(MoveType.CASTLE)
-                    .rookStartSquare(getKingsideRookStartingSquare(colour))
-                    .rookEndSquare(getKingsideRookCastlingSquare(colour))
-                    .kingTravelSquares(kingTravelSquares)
-                    .build());
-        }
-        return Optional.empty();
-    }
-
-    private Optional<Move> checkQueensideCastling(Board board, Piece king, int startSquare) {
-        Colour colour = king.getColour();
-
-        int kingStartingSquare = getKingStartingSquare(colour);
-        int kingTargetSquare = getQueensideCastlingKingSquare(colour);
-        Set<Integer> kingTravelSquares = getQueensideCastlingTravelSquares(colour);
-
-        int rookStartingSquare = getQueensideRookStartingSquare(colour);
-        Set<Integer> rookTravelSquares = getQueensideCastlingRookTravelSquares(colour);
-
-        boolean isQueensideCastlingDisallowed = board.getCastlingRights().get(colour).isQueenSide();
-        boolean isKingOnStartSquare = startSquare == kingStartingSquare;
-        boolean isRookOnStartSquare = pieceIs(board, rookStartingSquare, colour, PieceType.ROOK);
-
-        boolean travelSquaresEmpty = rookTravelSquares.stream()
-                .allMatch(square -> board.getPieceAt(square).isEmpty());
-
-        if (isQueensideCastlingDisallowed && isKingOnStartSquare && isRookOnStartSquare && travelSquaresEmpty) {
-            return Optional.of(createKingMove(startSquare, kingTargetSquare)
-                    .moveType(MoveType.CASTLE)
-                    .rookStartSquare(getQueensideRookStartingSquare(colour))
-                    .rookEndSquare(getQueensideRookCastlingSquare(colour))
-                    .kingTravelSquares(kingTravelSquares)
-                    .build());
-        }
-        return Optional.empty();
-    }
-
-    private Move.MoveBuilder createKingMove(int startSquare, int endSquare) {
-        return moveBuilder()
+    private Move.MoveBuilder move(int startSquare, int endSquare) {
+        return Move.builder()
+                .pieceType(PieceType.KING)
                 .startSquare(startSquare)
-                .endSquare(endSquare)
-                // Any king move (including castling) precludes castling rights for the remainder of the game.
-                .negatesKingsideCastling(true)
-                .negatesQueensideCastling(true);
-    }
-
-    private boolean pieceIs(Board board, int square, Colour colour, PieceType type) {
-        return board.getPieceAt(square)
-                .filter(piece -> piece.getColour().equals(colour) && piece.getType().equals(type))
-                .isPresent();
-    }
-
-    private int getKingStartingSquare(Colour colour) {
-        return Colour.WHITE.equals(colour) ? 4 : 60;
-    }
-
-    private int getKingsideRookStartingSquare(Colour colour) {
-        return Colour.WHITE.equals(colour) ? 7 : 63;
-    }
-
-    private int getQueensideRookStartingSquare(Colour colour) {
-        return Colour.WHITE.equals(colour) ? 0 : 56;
-    }
-
-    private int getKingsideCastlingKingSquare(Colour colour) {
-        return Colour.WHITE.equals(colour) ? 6 : 62;
-    }
-
-    private int getQueensideCastlingKingSquare(Colour colour) {
-        return Colour.WHITE.equals(colour) ? 2 : 58;
-    }
-
-    private int getKingsideRookCastlingSquare(Colour colour) {
-        return Colour.WHITE.equals(colour) ? 5 : 61;
-    }
-
-    private int getQueensideRookCastlingSquare(Colour colour) {
-        return Colour.WHITE.equals(colour) ? 3 : 59;
-    }
-
-    private Set<Integer> getKingsideCastlingRookTravelSquares(Colour colour) {
-        return Colour.WHITE.equals(colour) ? Set.of(5, 6) : Set.of(61, 62);
-    }
-
-    private Set<Integer> getQueensideCastlingRookTravelSquares(Colour colour) {
-        return Colour.WHITE.equals(colour) ? Set.of(1, 2, 3) : Set.of(57, 58, 59);
-    }
-
-    private Set<Integer> getKingsideCastlingTravelSquares(Colour colour) {
-        return Colour.WHITE.equals(colour) ? Set.of(4, 5, 6) : Set.of(60, 61, 62);
-    }
-
-    private Set<Integer> getQueensideCastlingTravelSquares(Colour colour) {
-        return Colour.WHITE.equals(colour) ? Set.of(2, 3, 4) : Set.of(58, 59, 60);
+                .endSquare(endSquare);
     }
 
 }

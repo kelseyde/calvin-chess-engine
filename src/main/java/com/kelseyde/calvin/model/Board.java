@@ -4,9 +4,7 @@ import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Data;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.Map;
 
 /**
  * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Also maintains the position
@@ -16,28 +14,37 @@ import java.util.stream.IntStream;
 @Data
 public class Board {
 
-    private Piece[] squares;
+    private long whitePawns;
+    private long whiteKnights;
+    private long whiteBishops;
+    private long whiteRooks;
+    private long whiteQueens;
+    private long whiteKing;
 
-    private BitBoard whitePawns;
-    private BitBoard whiteKnights;
-    private BitBoard whiteBishops;
-    private BitBoard whiteRooks;
-    private BitBoard whiteQueens;
-    private BitBoard whiteKing;
+    private long blackPawns;
+    private long blackKnights;
+    private long blackBishops;
+    private long blackRooks;
+    private long blackQueens;
+    private long blackKing;
 
-    private BitBoard blackPawns;
-    private BitBoard blackKnights;
-    private BitBoard blackBishops;
-    private BitBoard blackRooks;
-    private BitBoard blackQueens;
-    private BitBoard blackKing;
+    private long whitePieces;
+    private long blackPieces;
 
-    private BitBoard whitePieces;
-    private BitBoard blackPieces;
+    private long occupied;
 
-    private BitBoard occupied;
+    private long whiteAttacks;
+    private long blackAttacks;
 
-    private BitBoard enPassantTarget;
+    private long enPassantTarget;
+
+    private Colour turn = Colour.WHITE;
+
+    private Map<Colour, CastlingRights> castlingRights = BoardUtils.getDefaultCastlingRights();
+
+    private int halfMoveCounter = 0;
+
+    private int fullMoveCounter = 1;
 
     public Board() {
         whitePawns = BitBoards.WHITE_PAWNS_START;
@@ -54,163 +61,177 @@ public class Board {
         blackQueens = BitBoards.BLACK_QUEENS_START;
         blackKing = BitBoards.BLACK_KING_START;
 
-        enPassantTarget = new BitBoard();
+        enPassantTarget = 0L;
 
         recalculatePieces();
     }
 
+    // TODO move outside board?
     public static Board emptyBoard() {
         Board board = new Board();
-        board.whitePawns = new BitBoard();
-        board.whiteKnights = new BitBoard();
-        board.whiteBishops = new BitBoard();
-        board.whiteRooks = new BitBoard();
-        board.whiteQueens = new BitBoard();
-        board.whiteKing = new BitBoard();
+        board.whitePawns = 0L;
+        board.whiteKnights = 0L;
+        board.whiteBishops = 0L;
+        board.whiteRooks = 0L;
+        board.whiteQueens = 0L;
+        board.whiteKing = 0L;
 
-        board.blackPawns = new BitBoard();
-        board.blackKnights = new BitBoard();
-        board.blackBishops = new BitBoard();
-        board.blackRooks = new BitBoard();
-        board.blackQueens = new BitBoard();
-        board.blackKing = new BitBoard();
+        board.blackPawns = 0L;
+        board.blackKnights = 0L;
+        board.blackBishops = 0L;
+        board.blackRooks = 0L;
+        board.blackQueens = 0L;
+        board.blackKing = 0L;
 
-        board.enPassantTarget = new BitBoard();
+        board.enPassantTarget = 0L;
+
+        board.getCastlingRights().get(Colour.WHITE).setKingSide(false);
+        board.getCastlingRights().get(Colour.WHITE).setQueenSide(false);
+        board.getCastlingRights().get(Colour.BLACK).setKingSide(false);
+        board.getCastlingRights().get(Colour.BLACK).setQueenSide(false);
 
         board.recalculatePieces();
 
         return board;
     }
 
-    private Colour turn = Colour.WHITE;
-
-    private Map<Colour, CastlingRights> castlingRights = BoardUtils.getDefaultCastlingRights();
-
-    private int enPassantTargetSquare = -1;
-
-    private int halfMoveCounter = 0;
-
-    private int fullMoveCounter = 1;
-
     public void applyMove(Move move) {
 
-        Piece piece = getPieceAt(move.getStartSquare()).orElseThrow();
-        unsetPiece(move.getStartSquare());
-        setPiece(move.getEndSquare(), piece);
+        PieceType pieceType = move.getPieceType();
+        Piece piece = new Piece(turn, pieceType);
 
-        switch (move.getMoveType()) {
-            case EN_PASSANT -> {
-                unsetPiece(move.getEnPassantCapturedSquare());
-            }
-            case PROMOTION -> {
-                Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionPieceType());
-                setPiece(move.getEndSquare(), promotedPiece);
-            }
-            case CASTLE -> {
-                Piece rook = getPieceAt(move.getRookStartSquare()).orElseThrow();
-                unsetPiece(move.getRookStartSquare());
-                setPiece(move.getRookEndSquare(), rook);
-            }
-        }
-
-        enPassantTargetSquare = move.getEnPassantTargetSquare();
-        if (move.isNegatesKingsideCastling()) {
-            castlingRights.get(turn).setKingSide(false);
-        }
-        if (move.isNegatesQueensideCastling()) {
-            castlingRights.get(turn).setQueenSide(false);
-        }
-        if (Colour.BLACK.equals(turn)) {
-            ++fullMoveCounter;
-        }
-        boolean resetHalfMoveClock = move.isCapture() || PieceType.PAWN.equals(move.getPieceType());
+        // TODO work out a nice placement, this needs to go above for isCapture
+        long opponentPieces = turn.isWhite() ? blackPieces : whitePieces;
+        boolean isCapture = (1L << move.getEndSquare() & opponentPieces) != 0;
+        boolean resetHalfMoveClock = isCapture || PieceType.PAWN.equals(move.getPieceType());
         if (resetHalfMoveClock) {
             halfMoveCounter = 0;
         } else {
             ++halfMoveCounter;
         }
 
-        turn = turn.oppositeColour();
-    }
+        unsetPiece(move.getStartSquare());
+        setPiece(move.getEndSquare(), piece);
 
-    public Optional<Piece> getPieceAt(int square) {
-        return Optional.ofNullable(squares[square]);
+        switch (move.getMoveType()) {
+            case EN_PASSANT -> {
+                unsetPiece(BitBoard.scanForward(move.getEnPassantCapture()));
+            }
+            case PROMOTION -> {
+                Piece promotedPiece = new Piece(piece.getColour(), move.getPromotionPieceType());
+                setPiece(move.getEndSquare(), promotedPiece);
+            }
+            case KINGSIDE_CASTLE -> {
+                unsetPiece(turn.isWhite() ? 7 : 63);
+                setPiece(turn.isWhite() ? 5 : 61, new Piece(turn, PieceType.ROOK));
+            }
+            case QUEENSIDE_CASTLE -> {
+                unsetPiece(turn.isWhite() ? 0 : 56);
+                setPiece(turn.isWhite() ? 3 : 59, new Piece(turn, PieceType.ROOK));
+            }
+        }
+
+        enPassantTarget = move.getEnPassantTarget();
+
+        calculateCastlingRights(move);
+
+        if (Colour.BLACK.equals(turn)) {
+            ++fullMoveCounter;
+        }
+
+
+        turn = turn.oppositeColour();
+        recalculatePieces();
     }
 
     public void setPiece(int square, Piece piece) {
+        // TODO EFFICIENCY
+        unsetPiece(square);
         switch (piece.toPieceCode()) {
-            case "wP" -> whitePawns.setBit(square);
-            case "wN" -> whiteKnights.setBit(square);
-            case "wB" -> whiteBishops.setBit(square);
-            case "wR" -> whiteRooks.setBit(square);
-            case "wQ" -> whiteQueens.setBit(square);
-            case "wK" -> whiteKing.setBit(square);
-            case "bP" -> blackPawns.setBit(square);
-            case "bN" -> blackKnights.setBit(square);
-            case "bB" -> blackBishops.setBit(square);
-            case "bR" -> blackRooks.setBit(square);
-            case "bQ" -> blackQueens.setBit(square);
-            case "bK" -> blackKing.setBit(square);
+            case "wP" -> whitePawns |= (1L << square);
+            case "wN" -> whiteKnights |= (1L << square);
+            case "wB" -> whiteBishops |= (1L << square);
+            case "wR" -> whiteRooks |= (1L << square);
+            case "wQ" -> whiteQueens |= (1L << square);
+            case "wK" -> whiteKing |= (1L << square);
+            case "bP" -> blackPawns |= (1L << square);
+            case "bN" -> blackKnights |= (1L << square);
+            case "bB" -> blackBishops |= (1L << square);
+            case "bR" -> blackRooks |= (1L << square);
+            case "bQ" -> blackQueens |= (1L << square);
+            case "bK" -> blackKing |= (1L << square);
         }
         recalculatePieces();
     }
 
     public void unsetPiece(int square) {
-        occupied.unsetBit(square);
+        occupied &= ~(1L << square);
 
-        whitePawns = whitePawns.and(occupied);
-        whiteKnights = whiteKnights.and(occupied);
-        whiteBishops = whiteBishops.and(occupied);
-        whiteRooks = whiteRooks.and(occupied);
-        whiteQueens = whiteQueens.and(occupied);
-        whiteKing = whiteKing.and(occupied);
+        whitePawns = whitePawns & occupied;
+        whiteKnights = whiteKnights & occupied;
+        whiteBishops = whiteBishops & occupied;
+        whiteRooks = whiteRooks & occupied;
+        whiteQueens = whiteQueens & occupied;
+        whiteKing = whiteKing & occupied;
 
-        blackPawns = blackPawns.and(occupied);
-        blackKnights = blackKnights.and(occupied);
-        blackBishops = blackBishops.and(occupied);
-        blackRooks = blackRooks.and(occupied);
-        blackQueens = blackQueens.and(occupied);
-        blackKing = blackKing.and(occupied);
+        blackPawns = blackPawns & occupied;
+        blackKnights = blackKnights & occupied;
+        blackBishops = blackBishops & occupied;
+        blackRooks = blackRooks & occupied;
+        blackQueens = blackQueens & occupied;
+        blackKing = blackKing & occupied;
 
         recalculatePieces();
     }
 
-    public Set<Integer> getPiecePositions(Colour colour) {
-        return IntStream.range(0, 64)
-                .filter(square -> getPieceAt(square).filter(piece -> colour.equals(piece.getColour())).isPresent())
-                .boxed()
-                .collect(Collectors.toSet());
-    }
-
-    public List<Piece> getPieces(Colour colour) {
-        return getPiecePositions(colour).stream()
-                .map(square -> getPieceAt(square).orElseThrow())
-                .toList();
-    }
-
     public Board copy() {
-        return null;
-        // todo fix
-//        Piece[] squaresCopy = new Piece[64];
-//        IntStream.range(0, 64)
-//                .forEach(square -> squaresCopy[square] = getPieceAt(square).map(Piece::copy).orElse(null));
-//        return Board.builder()
-//                .squares(squaresCopy)
-//                .turn(turn)
-//                .castlingRights(Map.of(
-//                        Colour.WHITE, castlingRights.get(Colour.WHITE).copy(),
-//                        Colour.BLACK, castlingRights.get(Colour.BLACK).copy()
-//                ))
-//                .enPassantTargetSquare(enPassantTargetSquare)
-//                .halfMoveCounter(halfMoveCounter)
-//                .fullMoveCounter(fullMoveCounter)
-//                .build();
+        Board board = new Board();
+        board.setTurn(turn);
+        board.setCastlingRights(Map.of(
+                Colour.WHITE, castlingRights.get(Colour.WHITE).copy(),
+                Colour.BLACK, castlingRights.get(Colour.BLACK).copy()
+        ));
+        board.setEnPassantTarget(enPassantTarget);
+        board.setHalfMoveCounter(halfMoveCounter);
+        board.setFullMoveCounter(fullMoveCounter);
+        board.setWhitePawns(whitePawns);
+        board.setWhiteKnights(whiteKnights);
+        board.setWhiteBishops(whiteBishops);
+        board.setWhiteRooks(whiteRooks);
+        board.setWhiteQueens(whiteQueens);
+        board.setWhiteKing(whiteKing);
+        board.setBlackPawns(blackPawns);
+        board.setBlackKnights(blackKnights);
+        board.setBlackBishops(blackBishops);
+        board.setBlackRooks(blackRooks);
+        board.setBlackQueens(blackQueens);
+        board.setBlackKing(blackKing);
+        board.recalculatePieces();
+        return board;
     }
 
     private void recalculatePieces() {
-        whitePieces = whitePawns.or(whiteKnights).or(whiteBishops).or(whiteRooks).or(whiteQueens).or(whiteKing);
-        blackPieces = blackPawns.or(blackKnights).or(blackBishops).or(blackRooks).or(blackQueens).or(blackKing);
-        occupied = whitePieces.or(blackPieces);
+        whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
+        blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
+        occupied = whitePieces | blackPieces;
+    }
+
+    private void calculateCastlingRights(Move move) {
+        if (PieceType.KING.equals(move.getPieceType())) {
+            castlingRights.get(turn).setKingSide(false);
+            castlingRights.get(turn).setQueenSide(false);
+        }
+        if (PieceType.ROOK.equals(move.getPieceType())) {
+            long rooks = turn.isWhite() ? whiteRooks : blackRooks;
+            long kingsideRookStart = turn.isWhite() ? 1L << 7 : 1L << 63;
+            long queensideRookStart = turn.isWhite() ? 1L : 1L << 56;
+            if ((rooks & kingsideRookStart) != kingsideRookStart) {
+                castlingRights.get(turn).setKingSide(false);
+            }
+            if ((rooks & queensideRookStart) != queensideRookStart) {
+                castlingRights.get(turn).setQueenSide(false);
+            }
+        }
     }
 
 }

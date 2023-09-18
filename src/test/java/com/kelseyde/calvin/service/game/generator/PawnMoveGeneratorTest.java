@@ -3,12 +3,11 @@ package com.kelseyde.calvin.service.game.generator;
 import com.kelseyde.calvin.model.*;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.model.move.MoveType;
-import com.kelseyde.calvin.service.game.generator.bitboard.PawnMoveGenerator;
+import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -143,8 +142,8 @@ public class PawnMoveGeneratorTest {
         // should not capture white pieces
         board.setPiece(50, new Piece(Colour.WHITE, PieceType.ROOK));
         assertMovesFromSquare(board, 41,
-                Set.of(moveBuilder(41, 48).isCapture(true).build(),
-                        moveBuilder(41, 49).isCapture(false).build()));
+                Set.of(moveBuilder(41, 48).build(),
+                        moveBuilder(41, 49).build()));
 
     }
 
@@ -175,14 +174,13 @@ public class PawnMoveGeneratorTest {
         board = Board.emptyBoard();
         board.setPiece(35, whitePawn);
         board.setPiece(34, blackPawn);
-        board.setEnPassantTarget(new BitBoard(1L << 42));
+        board.setEnPassantTarget(1L << 42);
 
-        Set<Move> legalWhiteMoves = generator.generateMoves(board);
+        Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(35, 43).build();
         Move enPassantCapture = moveBuilder(35, 42).moveType(MoveType.EN_PASSANT)
-                .enPassantCapture(new BitBoard(1L << 34))
-                .isCapture(true)
+                .enPassantCapture(1L << 34)
                 .build();
 
         Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalWhiteMoves);
@@ -196,16 +194,15 @@ public class PawnMoveGeneratorTest {
         board.setPiece(35, whitePawn);
         board.setPiece(52, blackPawn);
         board.setPiece(42, new Piece(Colour.BLACK, PieceType.QUEEN));
-        board.setEnPassantTarget(new BitBoard(1L << 44));
+        board.setEnPassantTarget(1L << 44);
 
-        Set<Move> legalWhiteMoves = generator.generateMoves(board);
+        Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(35, 43).build();
-        Move standardCapture = moveBuilder(35, 42).isCapture(true).build();
+        Move standardCapture = moveBuilder(35, 42).build();
         Move enPassantCapture = moveBuilder(35, 44)
                 .moveType(MoveType.EN_PASSANT)
-                .enPassantCapture(new BitBoard(1L << 36))
-                .isCapture(true)
+                .enPassantCapture(1L << 36)
                 .build();
 
         Assertions.assertEquals(Set.of(standardMove, standardCapture, enPassantCapture), legalWhiteMoves);
@@ -257,15 +254,14 @@ public class PawnMoveGeneratorTest {
 
         board.setPiece(29, blackPawn);
         board.setPiece(30, whitePawn);
-        board.setEnPassantTarget(new BitBoard(1L << 22));
+        board.setEnPassantTarget(1L << 22);
         board.setTurn(Colour.BLACK);
 
-        Set<Move> legalBlackMoves = generator.generateMoves(board);
+        Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(29, 21).build();
         Move enPassantCapture = moveBuilder(29, 22).moveType(MoveType.EN_PASSANT)
-                .enPassantCapture(new BitBoard(1L << 30))
-                .isCapture(true)
+                .enPassantCapture(1L << 30)
                 .build();
 
         Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
@@ -278,17 +274,16 @@ public class PawnMoveGeneratorTest {
         board.setPiece(29, blackPawn);
         board.setPiece(28, whitePawn);
         board.setPiece(22, new Piece(Colour.WHITE, PieceType.ROOK));
-        board.setEnPassantTarget(new BitBoard(1L << 20));
+        board.setEnPassantTarget(1L << 20);
         board.setTurn(Colour.BLACK);
 
-        Set<Move> legalBlackMoves = generator.generateMoves(board);
+        Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(29, 21).build();
-        Move standardCapture = moveBuilder(29, 22).isCapture(true).build();
+        Move standardCapture = moveBuilder(29, 22).build();
         Move enPassantCapture = moveBuilder(29, 20).startSquare(29).endSquare(20)
-                .enPassantCapture(new BitBoard(1L << 28))
+                .enPassantCapture(1L << 28)
                 .moveType(MoveType.EN_PASSANT)
-                .isCapture(true)
                 .build();
 
         Assertions.assertEquals(Set.of(standardMove, standardCapture, enPassantCapture), legalBlackMoves);
@@ -333,40 +328,34 @@ public class PawnMoveGeneratorTest {
 //        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
 //
 //    }
-//
-//    @Test
-//    public void testEnPassantRemovesCapturedPawn() {
-//
-//        Game game = new Game();
-//        game.makeMove(MoveUtils.fromNotation("e2", "e4"));
-//        game.makeMove(MoveUtils.fromNotation("g8", "f6"));
-//        game.makeMove(MoveUtils.fromNotation("e4", "e5"));
-//        game.makeMove(MoveUtils.fromNotation("d7", "d5"));
-//        //en passant
-//        game.makeMove(MoveUtils.fromNotation("e5", "d6"));
-//
-//        Assertions.assertTrue(board.getPieceAt(MoveUtils.fromNotation("d5")).isEmpty());
-//
-//    }
-//
+
+    @Test
+    public void testEnPassantRemovesCapturedPawn() {
+
+        Game game = new Game();
+        game.makeMove(MoveUtils.fromNotation("e2", "e4"));
+        game.makeMove(MoveUtils.fromNotation("g8", "f6"));
+        game.makeMove(MoveUtils.fromNotation("e4", "e5"));
+        game.makeMove(MoveUtils.fromNotation("d7", "d5"));
+        //en passant
+        game.makeMove(MoveUtils.fromNotation("e5", "d6"));
+
+        long d5Bitboard = 1L << 35;
+        // Assert d5 is empty
+        Assertions.assertEquals(0, (board.getOccupied() & d5Bitboard));
+
+    }
+
     @Test
     public void testWhiteStandardPromotion() {
         board = Board.emptyBoard();
         board.setPiece(51, whitePawn);
-        Set<Move> legalMoves = generator.generateMoves(board);
+        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
         Assertions.assertEquals(
-                Set.of(moveBuilder(51, 59)
-                                .moveType(MoveType.PROMOTION)
-                                .promotionPieceType(PieceType.QUEEN).isCapture(false).build(),
-                        moveBuilder(51, 59)
-                                .moveType(MoveType.PROMOTION)
-                                .promotionPieceType(PieceType.ROOK).isCapture(false).build(),
-                        moveBuilder(51, 59)
-                                .moveType(MoveType.PROMOTION)
-                                .promotionPieceType(PieceType.BISHOP).isCapture(false).build(),
-                        moveBuilder(51, 59)
-                                .moveType(MoveType.PROMOTION)
-                                .promotionPieceType(PieceType.KNIGHT).isCapture(false).build()),
+                Set.of(moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
+                        moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
+                        moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
+                        moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.KNIGHT).build()),
                 legalMoves
         );
     }
@@ -375,24 +364,12 @@ public class PawnMoveGeneratorTest {
     public void testBlackStandardPromotion() {
         board.setPiece(8, blackPawn);
         board.setTurn(Colour.BLACK);
-        Set<Move> legalMoves = generator.generateMoves(board);
+        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
         Assertions.assertEquals(
-                Set.of(moveBuilder(8, 0)
-                                .moveType(MoveType.PROMOTION)
-                                .promotionPieceType(PieceType.QUEEN)
-                                .isCapture(false).build(),
-                        moveBuilder(8, 0)
-                                .moveType(MoveType.PROMOTION)
-                                .promotionPieceType(PieceType.ROOK)
-                                .isCapture(false).build(),
-                        moveBuilder(8, 0)
-                                .moveType(MoveType.PROMOTION)
-                                .promotionPieceType(PieceType.BISHOP)
-                                .isCapture(false).build(),
-                        moveBuilder(8, 0)
-                                .moveType(MoveType.PROMOTION)
-                                .promotionPieceType(PieceType.KNIGHT)
-                                .isCapture(false).build()),
+                Set.of(moveBuilder(8, 0).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
+                        moveBuilder(8, 0).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
+                        moveBuilder(8, 0).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
+                        moveBuilder(8, 0).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.KNIGHT).build()),
                 legalMoves
         );
     }
@@ -401,40 +378,16 @@ public class PawnMoveGeneratorTest {
     public void testWhiteCapturePromotion() {
         board.setPiece(51, whitePawn);
         board.setPiece(58, new Piece(Colour.BLACK, PieceType.QUEEN));
-        Set<Move> legalMoves = generator.generateMoves(board);
+        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
         Assertions.assertEquals(Set.of(
-                moveBuilder(51, 59)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.QUEEN)
-                        .isCapture(false).build(),
-                moveBuilder(51, 59)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.ROOK)
-                        .isCapture(false).build(),
-                moveBuilder(51, 59)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.BISHOP)
-                        .isCapture(false).build(),
-                moveBuilder(51, 59)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.KNIGHT)
-                        .isCapture(false).build(),
-                moveBuilder(51, 58)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.QUEEN)
-                        .isCapture(true).build(),
-                moveBuilder(51, 58)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.ROOK)
-                        .isCapture(true).build(),
-                moveBuilder(51, 58)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.BISHOP)
-                        .isCapture(true).build(),
-                moveBuilder(51, 58)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.KNIGHT)
-                        .isCapture(true).build()),
+                moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
+                moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
+                moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
+                moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.KNIGHT).build(),
+                moveBuilder(51, 58).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
+                moveBuilder(51, 58).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
+                moveBuilder(51, 58).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
+                moveBuilder(51, 58).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.KNIGHT).build()),
                 legalMoves
         );
     }
@@ -444,45 +397,21 @@ public class PawnMoveGeneratorTest {
         board.setPiece(15, blackPawn);
         board.setPiece(6, new Piece(Colour.WHITE, PieceType.BISHOP));
         board.setTurn(Colour.BLACK);
-        Set<Move> legalMoves = generator.generateMoves(board);
+        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
         Set<Move> expectedLegalMoves = Set.of(
-                moveBuilder(15, 7)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.QUEEN)
-                        .isCapture(false).build(),
-                moveBuilder(15, 7)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.ROOK)
-                        .isCapture(false).build(),
-                moveBuilder(15, 7)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.BISHOP)
-                        .isCapture(false).build(),
-                moveBuilder(15, 7)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.KNIGHT)
-                        .isCapture(false).build(),
-                moveBuilder(15, 6)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.QUEEN)
-                        .isCapture(true).build(),
-                moveBuilder(15, 6)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.ROOK)
-                        .isCapture(true).build(),
-                moveBuilder(15, 6)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.BISHOP)
-                        .isCapture(true).build(),
-                moveBuilder(15, 6)
-                        .moveType(MoveType.PROMOTION)
-                        .promotionPieceType(PieceType.KNIGHT)
-                        .isCapture(true).build());
+                moveBuilder(15, 7).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
+                moveBuilder(15, 7).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
+                moveBuilder(15, 7).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
+                moveBuilder(15, 7).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.KNIGHT).build(),
+                moveBuilder(15, 6).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
+                moveBuilder(15, 6).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
+                moveBuilder(15, 6).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
+                moveBuilder(15, 6).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.KNIGHT).build());
         Assertions.assertEquals(expectedLegalMoves, legalMoves);
     }
 
     private void assertMoves(Board board, Set<Move> expected) {
-        Set<Move> actual = generator.generateMoves(board);
+        Set<Move> actual = generator.generatePseudoLegalMoves(board);
 
         Assertions.assertEquals(
                 expected.stream().map(Move::getKey).collect(Collectors.toSet()),
@@ -490,7 +419,7 @@ public class PawnMoveGeneratorTest {
     }
 
     private void assertMovesFromSquare(Board board, int square, Set<Move> expected) {
-        Set<Move> actual = generator.generateMoves(board).stream()
+        Set<Move> actual = generator.generatePseudoLegalMoves(board).stream()
                 .filter(move -> move.getStartSquare() == square)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(

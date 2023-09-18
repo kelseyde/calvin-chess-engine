@@ -1,8 +1,10 @@
 package com.kelseyde.calvin.service.game.generator;
 
-import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.Colour;
+import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.utils.BoardUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,12 +18,11 @@ public class BishopMoveGeneratorTest {
 
     private final Piece bishop = new Piece(Colour.WHITE, PieceType.BISHOP);
 
-    private Game game;
+    private Board board;
 
     @BeforeEach
     public void beforeEach() {
-        Board board = BoardUtils.emptyBoard();
-        game = new Game(board);
+        board = Board.emptyBoard();
     }
 
     @Test
@@ -60,10 +61,10 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        game.getBoard().setPiece(10, new Piece(Colour.BLACK, PieceType.PAWN));
-        game.getBoard().setPiece(14, new Piece(Colour.BLACK, PieceType.KNIGHT));
-        game.getBoard().setPiece(42, new Piece(Colour.BLACK, PieceType.BISHOP));
-        game.getBoard().setPiece(46, new Piece(Colour.BLACK, PieceType.ROOK));
+        board.setPiece(10, new Piece(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(14, new Piece(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(42, new Piece(Colour.BLACK, PieceType.BISHOP));
+        board.setPiece(46, new Piece(Colour.BLACK, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
 
@@ -74,22 +75,23 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        game.getBoard().setPiece(10, new Piece(Colour.WHITE, PieceType.PAWN));
-        game.getBoard().setPiece(14, new Piece(Colour.WHITE, PieceType.KNIGHT));
-        game.getBoard().setPiece(42, new Piece(Colour.WHITE, PieceType.BISHOP));
-        game.getBoard().setPiece(46, new Piece(Colour.WHITE, PieceType.ROOK));
+        board.setPiece(10, new Piece(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(14, new Piece(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(42, new Piece(Colour.WHITE, PieceType.BISHOP));
+        board.setPiece(46, new Piece(Colour.WHITE, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37));
 
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        game.getBoard().setPiece(startSquare, bishop);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(game.getBoard(), startSquare).stream()
+        board.setPiece(startSquare, bishop);
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
+                .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        game.getBoard().unsetPiece(startSquare);
+        board.unsetPiece(startSquare);
     }
 
 }

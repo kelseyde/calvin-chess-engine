@@ -6,7 +6,6 @@ import com.kelseyde.calvin.model.move.MoveKey;
 import com.kelseyde.calvin.model.result.*;
 import com.kelseyde.calvin.service.game.DrawEvaluator;
 import com.kelseyde.calvin.service.game.LegalMoveGenerator;
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +36,7 @@ public class Game {
     private DrawEvaluator drawEvaluator = new DrawEvaluator();
 
     public Game() {
-        this.board = BoardUtils.startingPosition();
+        this.board = new Board();
         this.legalMoves = legalMoveService.generateLegalMoves(board).stream()
                 .collect(Collectors.toMap(Move::getKey, m -> m));
     }
@@ -52,6 +51,7 @@ public class Game {
 
         Optional<Move> legalMove = Optional.ofNullable(legalMoves.get(move.getKey()));
         if (legalMove.isEmpty()) {
+            System.out.println("ILLEGAL MOVE! " + move);
             return new InvalidMoveResult(move);
         }
         move = legalMove.get();

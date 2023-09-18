@@ -5,7 +5,6 @@ import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.utils.BoardUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,7 @@ public class QueenMoveGeneratorTest {
 
     @BeforeEach
     public void beforeEach() {
-        board = BoardUtils.emptyBoard();
+        board = Board.emptyBoard();
     }
 
     @Test
@@ -97,11 +96,12 @@ public class QueenMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.setPiece(startSquare, queen);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, startSquare).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
+                .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board = BoardUtils.emptyBoard();
+        board = Board.emptyBoard();
     }
 
 }

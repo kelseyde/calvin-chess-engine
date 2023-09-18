@@ -1,97 +1,97 @@
 package com.kelseyde.calvin.service.game.generator;
 
+import com.kelseyde.calvin.model.BitBoard;
+import com.kelseyde.calvin.model.BitBoards;
 import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
 
-    // All the possible move 'vectors' for a sliding piece, i.e., the offsets for the directions in which a sliding
-    // piece is permitted to move. Bishops will use only the diagonal vectors, rooks only the orthogonal vectors, while
-    // queens will use both.
-    protected static final Set<Integer> DIAGONAL_MOVE_VECTORS = Set.of(-9, -7, 7, 9);
-    protected static final Set<Integer> ORTHOGONAL_MOVE_VECTORS = Set.of(-8, -1, 1, 8);
+    /**
+     * @return the bitboard containing all the pieces of this type and colour.
+     */
+    protected abstract long getPieceBitboard(Board board);
 
-    // The following sets are exceptions to the initial rule, in scenarios where the sliding piece is placed on the a or h-files.
-    // These exceptions prevent the piece from 'wrapping' around to the other side of the board.
-    private static final Set<Integer> A_FILE_OFFSET_EXCEPTIONS = Set.of(-9, -1, 7);
-    private static final Set<Integer> H_FILE_OFFSET_EXCEPTIONS = Set.of(-7, 1, 9);
+    /**
+     * @return whether this slider can move orthogonally.
+     */
+    protected abstract boolean isOrthogonal();
 
-    protected abstract Set<Integer> getMoveVectors();
+    /**
+     * @return whether this slider can move diagonally.
+     */
+    protected abstract boolean isDiagonal();
 
-    protected abstract void applyPostGenerationConfig(Piece piece, Set<Move> legalMoves);
+    /**
+     * Generate the possible moves for sliding pieces of this type. Uses a strategy called 'hyperbola quintessence' to
+     * quickly calculate the bitboards for vertical, horizontal, diagonal and anti-diagonal moves.
+     * @see <a href="https://www.chessprogramming.org/Hyperbola_Quintessence">Chess Programming Wiki</a>
 
+     */
     @Override
-    public Set<Move> generatePseudoLegalMoves(Board board, int startSquare) {
-
-        Piece piece = board.getPieceAt(startSquare)
-                .filter(p -> p.getType().equals(getPieceType()))
-                .orElseThrow(() -> new NoSuchElementException(String.format("There is no %s on square %s!", getPieceType(), startSquare)));
-
-        Set<Move> legalMoves = getMoveVectors().stream()
-                .flatMap(vectorOffset -> generatePseudoLegalMovesForVector(board, piece, startSquare, vectorOffset).stream())
-                .collect(Collectors.toSet());
-
-        applyPostGenerationConfig(piece, legalMoves);
-
-        return legalMoves;
-
-    }
-
-    private Set<Move> generatePseudoLegalMovesForVector(Board board, Piece piece, int startSquare, int vectorOffset) {
-
-        Set<Move> pseudoLegalMoves = new HashSet<>();
-        int targetSquare = startSquare;
-
-        // Limiting the vector iterations will prevent an orthogonal vector from sliding to the other side of the board
-        // (For example, a rook moving from a8 to b1).
-        int vectorIterations = 0;
-        int maxVectorIterations = 7;
-
-        boolean endVector = false;
-        while (!endVector) {
-            if (BoardUtils.isAFile(targetSquare) && A_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset) ||
-                BoardUtils.isHFile(targetSquare) && H_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset)) {
-                endVector = true;
-                continue;
+    public Set<Move> generatePseudoLegalMoves(Board board) {
+        Set<Move> moves = new HashSet<>();
+        long pieceBitboard = getPieceBitboard(board);
+        while (pieceBitboard != 0) {
+            int square = BitBoard.scanForward(pieceBitboard);
+            long moveBitboard = 0L;
+            if (isOrthogonal()) {
+                moveBitboard |= calculateOrthogonalMoves(board, square);
             }
-            targetSquare = targetSquare + vectorOffset;
-            vectorIterations++;
-            if (vectorIterations > maxVectorIterations) {
-                endVector = true;
-                continue;
+            if (isDiagonal()) {
+                moveBitboard |= calculateDiagonalMoves(board, square);
             }
-            if (!BoardUtils.isValidSquareCoordinate(targetSquare)) {
-                endVector = true;
-                continue;
-            }
-            Optional<Piece> pieceOnTargetSquare = board.getPieceAt(targetSquare);
-            if (pieceOnTargetSquare.isEmpty()) {
-                pseudoLegalMoves.add(moveBuilder()
-                        .startSquare(startSquare)
-                        .endSquare(targetSquare)
-                        .build());
-            }
-            else if (pieceOnTargetSquare.get().getColour().isOppositeColour(piece.getColour())) {
-                pseudoLegalMoves.add(moveBuilder()
-                        .startSquare(startSquare)
-                        .endSquare(targetSquare)
-                        .isCapture(true)
-                        .build());
-                endVector = true;
-            }
-            else if (pieceOnTargetSquare.get().getColour().isSameColour(piece.getColour())) {
-                endVector = true;
-            }
+            pieceBitboard = BitBoard.popLSB(pieceBitboard);
+            moves.addAll(addMoves(square, moveBitboard));
         }
-        return pseudoLegalMoves;
+        return moves;
     }
+
+    private long calculateOrthogonalMoves(Board board, int s) {
+        long slider = 1L << s;
+        long occ = board.getOccupied();
+        long friendlies = board.getTurn().isWhite() ? board.getWhitePieces() : board.getBlackPieces();
+        long[] ranks = BitBoards.RANK_MASKS;
+        long[] files = BitBoards.FILE_MASKS;
+
+        long horizontalMoves = (occ - 2 * slider) ^ Long.reverse(Long.reverse(occ) - 2 * Long.reverse(slider));
+        long verticalMoves = ((occ & files[s % 8]) - (2 * slider)) ^ Long.reverse(Long.reverse(occ & files[s % 8]) - (2 * Long.reverse(slider)));
+        return ((horizontalMoves & ranks[s / 8] | verticalMoves & files[s % 8])) &~ friendlies;
+    }
+
+    private long calculateDiagonalMoves(Board board, int s) {
+        long slider = 1L << s;
+        long occ = board.getOccupied();
+        long friendlies = board.getTurn().isWhite() ? board.getWhitePieces() : board.getBlackPieces();
+        long[] diagonals = BitBoards.DIAGONAL_MASKS;
+        long[] antiDiagonals = BitBoards.ANTI_DIAGONAL_MASKS;
+
+        long diagonalMoves = ((occ & diagonals[(s / 8) + (s % 8)]) - (2 * slider)) ^
+                Long.reverse(Long.reverse(occ & diagonals[(s / 8) + (s % 8)]) - (2 * Long.reverse(slider)));
+        long antiDiagonalMoves = ((occ & antiDiagonals[(s / 8) + 7 - (s % 8)]) - (2 * slider)) ^
+                Long.reverse(Long.reverse(occ & antiDiagonals[(s / 8) + 7 - (s % 8)]) - (2 * Long.reverse(slider)));
+        return ((diagonalMoves & diagonals[(s / 8) + (s % 8)]) | (antiDiagonalMoves & antiDiagonals[(s / 8) + 7 - (s % 8)])) &~ friendlies;
+    }
+
+    private Set<Move> addMoves(int startSquare, long moveBitboard) {
+        Set<Move> moves = new HashSet<>();
+        while (moveBitboard != 0) {
+            int endSquare = BitBoard.scanForward(moveBitboard);
+            moves.add(Move.builder()
+                    .pieceType(getPieceType())
+                    .startSquare(startSquare)
+                    .endSquare(endSquare)
+                    .build());
+            moveBitboard = BitBoard.popLSB(moveBitboard);
+        }
+        return moves;
+    }
+
+
+
+
 
 }

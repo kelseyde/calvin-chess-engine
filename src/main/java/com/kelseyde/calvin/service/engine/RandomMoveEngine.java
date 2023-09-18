@@ -2,7 +2,6 @@ package com.kelseyde.calvin.service.engine;
 
 import com.kelseyde.calvin.model.Game;
 import com.kelseyde.calvin.model.move.Move;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;

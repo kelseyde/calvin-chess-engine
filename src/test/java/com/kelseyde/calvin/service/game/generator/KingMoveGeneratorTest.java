@@ -1,8 +1,10 @@
 package com.kelseyde.calvin.service.game.generator;
 
-import com.kelseyde.calvin.model.*;
+import com.kelseyde.calvin.model.Board;
+import com.kelseyde.calvin.model.Colour;
+import com.kelseyde.calvin.model.Piece;
+import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.utils.BoardUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,12 +18,11 @@ public class KingMoveGeneratorTest {
 
     private final Piece king = new Piece(Colour.WHITE, PieceType.KING);
 
-    private Game game;
+    private Board board;
 
     @BeforeEach
     public void beforeEach() {
-        Board board = BoardUtils.emptyBoard();
-        game = new Game(board);
+        board = Board.emptyBoard();
     }
 
     @Test
@@ -53,12 +54,13 @@ public class KingMoveGeneratorTest {
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        game.getBoard().setPiece(startSquare, king);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(game.getBoard(), startSquare).stream()
+        board.setPiece(startSquare, king);
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
+                .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        game.getBoard().unsetPiece(startSquare);
+        board.unsetPiece(startSquare);
     }
 
 }

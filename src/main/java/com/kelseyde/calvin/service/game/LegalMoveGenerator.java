@@ -1,15 +1,14 @@
 package com.kelseyde.calvin.service.game;
 
+import com.kelseyde.calvin.model.BitBoard;
+import com.kelseyde.calvin.model.BitBoards;
 import com.kelseyde.calvin.model.Board;
 import com.kelseyde.calvin.model.Colour;
-import com.kelseyde.calvin.model.Piece;
-import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.move.MoveType;
 import com.kelseyde.calvin.service.game.generator.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -19,42 +18,29 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LegalMoveGenerator {
 
-    private static final Map<PieceType, PseudoLegalMoveGenerator> PSEUDO_LEGAL_MOVE_GENERATORS = Map.of(
-        PieceType.PAWN, new PawnMoveGenerator(),
-        PieceType.KNIGHT, new KnightMoveGenerator(),
-        PieceType.BISHOP, new BishopMoveGenerator(),
-        PieceType.ROOK, new RookMoveGenerator(),
-        PieceType.QUEEN, new QueenMoveGenerator(),
-        PieceType.KING, new KingMoveGenerator()
+    private static final Set<PseudoLegalMoveGenerator> PSEUDO_LEGAL_MOVE_GENERATORS = Set.of(
+        new PawnMoveGenerator(),
+        new KnightMoveGenerator(),
+        new BishopMoveGenerator(),
+        new RookMoveGenerator(),
+        new QueenMoveGenerator(),
+        new KingMoveGenerator()
     );
 
     public Set<Move> generateLegalMoves(Board board) {
-        Colour colour = board.getTurn();
-        return board.getPiecePositions(colour).stream()
-                .flatMap(square -> generatePseudoLegalMoves(board, colour, square).stream())
+        return generatePseudoLegalMoves(board).stream()
                 .filter(pseudoLegalMove -> isFullyLegal(board, pseudoLegalMove))
                 .collect(Collectors.toSet());
     }
 
-    public Set<Move> generateAllPseudoLegalMoves(Board board, Colour colour) {
-        Set<Integer> pieceSquares = board.getPiecePositions(colour);
-        return pieceSquares.stream()
-                .map(square -> generatePseudoLegalMoves(board, colour, square))
-                .flatMap(Set::stream)
+    private Set<Move> generatePseudoLegalMoves(Board board) {
+        Set<Move> pseudoLegalMoves = PSEUDO_LEGAL_MOVE_GENERATORS.stream()
+                .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
                 .collect(Collectors.toSet());
-    }
+        if (board.getTurn().isWhite()) {
 
-    private Set<Move> generatePseudoLegalMoves(Board board, Colour colour, int square) {
-
-        Piece piece = board.getPieceAt(square)
-                .filter(p -> p.getColour().isSameColour(colour))
-                .orElseThrow(() -> new NoSuchElementException(
-                        String.format("No piece of colour %s on square %s!", colour, square)));
-
-        PseudoLegalMoveGenerator pseudoLegalMoveGenerator = PSEUDO_LEGAL_MOVE_GENERATORS.get(piece.getType());
-
-        return pseudoLegalMoveGenerator.generatePseudoLegalMoves(board, square);
-
+        }
+        return pseudoLegalMoves;
     }
 
     private boolean isFullyLegal(Board board, Move move) {
@@ -63,34 +49,33 @@ public class LegalMoveGenerator {
         Board boardCopy = board.copy();
         boardCopy.applyMove(move);
 
-        Set<Integer> checkableSquares = MoveType.CASTLE.equals(move.getMoveType()) ?
-                move.getKingTravelSquares() : Set.of(getKingSquare(boardCopy, colour));
-        Set<Integer> attackedSquares = generateAllPseudoLegalMoves(boardCopy, colour.oppositeColour()).stream()
-                .map(Move::getEndSquare)
-                .collect(Collectors.toSet());
+        long kingMask = switch (move.getMoveType()) {
+            default -> colour.isWhite() ? boardCopy.getWhiteKing() : boardCopy.getBlackKing();
+            case KINGSIDE_CASTLE -> colour.isWhite() ? BitBoards.WHITE_KINGSIDE_CASTLE_SAFE_MASK : BitBoards.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+            case QUEENSIDE_CASTLE -> colour.isWhite() ? BitBoards.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : BitBoards.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+        };
 
-        Set<Integer> intersection = new HashSet<>(checkableSquares);
-        intersection.retainAll(attackedSquares);
-        boolean isLegalMove = intersection.isEmpty();
-        if (isLegalMove && isCheck(boardCopy, move)) {
+        // TODO perhaps can be done without a stream
+        long attackedSquares = 0L;
+        for (Move opponentMove : generatePseudoLegalMoves(boardCopy)) {
+            attackedSquares |= (1L << opponentMove.getEndSquare());
+        }
+        boolean isLegalMove = (kingMask & attackedSquares) == 0;
+        if (isLegalMove && isCheck(boardCopy)) {
             move.setCheck(true);
         }
         return isLegalMove;
 
     }
 
-    private boolean isCheck(Board board, Move move) {
+    private boolean isCheck(Board board) {
         // Additionally calculate whether the move is a check, store this info in Move.
-        int opponentKingSquare = getKingSquare(board, board.getTurn());
-        Set<Integer> attackingSquares = generateAllPseudoLegalMoves(board, board.getTurn().oppositeColour()).stream()
+        board.setTurn(board.getTurn().oppositeColour());
+        int opponentKingSquare = board.getTurn().isWhite() ? BitBoard.scanForward(board.getBlackKing()) : BitBoard.scanForward(board.getWhiteKing());
+        Set<Integer> attackingSquares = generatePseudoLegalMoves(board).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         return attackingSquares.contains(opponentKingSquare);
-    }
-
-    private Integer getKingSquare(Board board, Colour colour) {
-        return Arrays.asList(board.getSquares())
-                .indexOf(new Piece(colour, PieceType.KING));
     }
 
 }

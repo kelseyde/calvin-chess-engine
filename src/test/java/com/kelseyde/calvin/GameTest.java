@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class GameTest {
 
-    private final String rook = Piece.getPieceCode(Colour.WHITE, PieceType.ROOK);
+    private final String rook = Piece.getPieceCode(true, PieceType.ROOK);
 
     @BeforeEach
     public void beforeEach() {
@@ -161,18 +161,18 @@ public class GameTest {
         game.makeMove(move("d7", "d5"));
         game.makeMove(move("e4", "d5"));
 
-        Set<Integer> whitePiecePositions = getPiecePositions(game.getBoard(), Colour.WHITE);
+        Set<Integer> whitePiecePositions = getPiecePositions(game.getBoard(), true);
         Assertions.assertEquals(Set.of(35, 8, 9, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7), whitePiecePositions);
 
-        Set<Integer> blackPiecePositions = getPiecePositions(game.getBoard(), Colour.BLACK);
+        Set<Integer> blackPiecePositions = getPiecePositions(game.getBoard(), false);
         Assertions.assertEquals(Set.of(56, 57, 58, 59, 60, 61, 62, 63, 48, 49, 50, 52, 53, 54, 55), blackPiecePositions);
 
         game.unmakeMove();
 
-        whitePiecePositions = getPiecePositions(game.getBoard(), Colour.WHITE);
+        whitePiecePositions = getPiecePositions(game.getBoard(), true);
         Assertions.assertEquals(Set.of(28, 8, 9, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7), whitePiecePositions);
 
-        blackPiecePositions = getPiecePositions(game.getBoard(), Colour.BLACK);
+        blackPiecePositions = getPiecePositions(game.getBoard(), false);
         Assertions.assertEquals(Set.of(35, 56, 57, 58, 59, 60, 61, 62, 63, 48, 49, 50, 52, 53, 54, 55), blackPiecePositions);
 
     }
@@ -204,19 +204,19 @@ public class GameTest {
     public void testUnmakeMoveHandlesTurnSwitching() {
 
         Game game = new Game();
-        Assertions.assertEquals(Colour.WHITE, game.getTurn());
+        Assertions.assertTrue(game.getBoard().isWhiteToMove());
 
         game.makeMove(move("e2", "e4"));
-        Assertions.assertEquals(Colour.BLACK, game.getTurn());
+        Assertions.assertFalse(game.getBoard().isWhiteToMove());
 
         game.makeMove(move("d7", "d5"));
-        Assertions.assertEquals(Colour.WHITE, game.getTurn());
+        Assertions.assertTrue(game.getBoard().isWhiteToMove());
 
         game.makeMove(move("e4", "d5"));
-        Assertions.assertEquals(Colour.BLACK, game.getTurn());
+        Assertions.assertFalse(game.getBoard().isWhiteToMove());
 
         game.unmakeMove();
-        Assertions.assertEquals(Colour.WHITE, game.getTurn());
+        Assertions.assertTrue(game.getBoard().isWhiteToMove());
 
     }
 
@@ -232,12 +232,12 @@ public class GameTest {
         game.makeMove(move("f8", "e7"));
         // castles
         game.makeMove(move("e1", "g1"));
-        Assertions.assertEquals(Colour.BLACK, game.getTurn());
+        Assertions.assertFalse(game.getBoard().isWhiteToMove());
         Assertions.assertFalse(game.getBoard().isWhiteKingsideCastlingAllowed());
         Assertions.assertFalse(game.getBoard().isWhiteQueensideCastlingAllowed());
 
         game.unmakeMove();
-        Assertions.assertEquals(Colour.WHITE, game.getTurn());
+        Assertions.assertTrue(game.getBoard().isWhiteToMove());
         Assertions.assertTrue(game.getBoard().isWhiteKingsideCastlingAllowed());
         Assertions.assertTrue(game.getBoard().isWhiteQueensideCastlingAllowed());
 
@@ -255,14 +255,14 @@ public class GameTest {
         game.makeMove(move("g8", "f6"));
         // scholar's mate
         game.makeMove(move("h5", "f7"));
-        Assertions.assertEquals(Colour.BLACK, game.getTurn());
+        Assertions.assertFalse(game.getBoard().isWhiteToMove());
         // todo
 
     }
 
-    private Set<Integer> getPiecePositions(Board board, Colour colour) {
+    private Set<Integer> getPiecePositions(Board board, boolean isWhiteToMove) {
         Set<Integer> positions = new HashSet<>();
-        if (colour.isWhite()) {
+        if (isWhiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
                 int position = BitBoard.scanForward(whitePieces);
@@ -286,8 +286,8 @@ public class GameTest {
 
     private void assertSinglePieceBoard(Game game, int startSquare) {
         game.getBoard().setPiece(startSquare, rook);
-        Assertions.assertEquals(Set.of(startSquare), getPiecePositions(game.getBoard(), Colour.WHITE));
-        Assertions.assertEquals(Set.of(), getPiecePositions(game.getBoard(), Colour.BLACK));
+        Assertions.assertEquals(Set.of(startSquare), getPiecePositions(game.getBoard(), true));
+        Assertions.assertEquals(Set.of(), getPiecePositions(game.getBoard(), false));
         game.getBoard().unsetPiece(startSquare);
     }
 

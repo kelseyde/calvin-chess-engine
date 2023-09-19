@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.service.game.generator;
 
 import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
@@ -16,7 +15,7 @@ public class KingMoveGeneratorTest {
 
     private final KingMoveGenerator generator = new KingMoveGenerator();
 
-    private final String king = Piece.getPieceCode(Colour.WHITE, PieceType.KING);
+    private final String king = Piece.getPieceCode(true, PieceType.KING);
 
     private Board board;
 

@@ -53,7 +53,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     private long calculateOrthogonalMoves(Board board, int s) {
         long slider = 1L << s;
         long occ = board.getOccupied();
-        long friendlies = board.getTurn().isWhite() ? board.getWhitePieces() : board.getBlackPieces();
+        long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
         long[] ranks = BitBoards.RANK_MASKS;
         long[] files = BitBoards.FILE_MASKS;
 
@@ -65,7 +65,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     private long calculateDiagonalMoves(Board board, int s) {
         long slider = 1L << s;
         long occ = board.getOccupied();
-        long friendlies = board.getTurn().isWhite() ? board.getWhitePieces() : board.getBlackPieces();
+        long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
         long[] diagonals = BitBoards.DIAGONAL_MASKS;
         long[] antiDiagonals = BitBoards.ANTI_DIAGONAL_MASKS;
 

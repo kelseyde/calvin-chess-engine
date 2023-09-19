@@ -35,7 +35,7 @@ public class Board {
 
     private long enPassantTarget = 0L;
 
-    private Colour turn = Colour.WHITE;
+    private boolean isWhiteToMove = true;
 
     private boolean whiteKingsideCastlingAllowed = true;
     private boolean whiteQueensideCastlingAllowed = true;
@@ -82,10 +82,10 @@ public class Board {
     public void applyMove(Move move) {
 
         PieceType pieceType = move.getPieceType();
-        String pieceCode = Piece.getPieceCode(turn, pieceType);
+        String pieceCode = Piece.getPieceCode(isWhiteToMove, pieceType);
 
         // TODO work out a nice placement, this needs to go above for isCapture
-        long opponentPieces = turn.isWhite() ? blackPieces : whitePieces;
+        long opponentPieces = isWhiteToMove ? blackPieces : whitePieces;
         boolean isCapture = (1L << move.getEndSquare() & opponentPieces) != 0;
         boolean resetHalfMoveClock = isCapture || PieceType.PAWN.equals(move.getPieceType());
         if (resetHalfMoveClock) {
@@ -117,16 +117,16 @@ public class Board {
                 unsetPiece(BitBoard.scanForward(move.getEnPassantCapture()));
             }
             case PROMOTION -> {
-                String promotedPiece = Piece.getPieceCode(turn, move.getPromotionPieceType());
+                String promotedPiece = Piece.getPieceCode(isWhiteToMove, move.getPromotionPieceType());
                 setPiece(move.getEndSquare(), promotedPiece);
             }
             case KINGSIDE_CASTLE -> {
-                unsetPiece(turn.isWhite() ? 7 : 63);
-                setPiece(turn.isWhite() ? 5 : 61, Piece.getPieceCode(turn, PieceType.ROOK));
+                unsetPiece(isWhiteToMove ? 7 : 63);
+                setPiece(isWhiteToMove ? 5 : 61, Piece.getPieceCode(isWhiteToMove, PieceType.ROOK));
             }
             case QUEENSIDE_CASTLE -> {
-                unsetPiece(turn.isWhite() ? 0 : 56);
-                setPiece(turn.isWhite() ? 3 : 59, Piece.getPieceCode(turn, PieceType.ROOK));
+                unsetPiece(isWhiteToMove ? 0 : 56);
+                setPiece(isWhiteToMove ? 3 : 59, Piece.getPieceCode(isWhiteToMove, PieceType.ROOK));
             }
         }
 
@@ -134,12 +134,12 @@ public class Board {
 
         updateCastlingRights(move);
 
-        if (Colour.BLACK.equals(turn)) {
+        if (!isWhiteToMove) {
             ++fullMoveCounter;
         }
 
 
-        turn = turn.oppositeColour();
+        isWhiteToMove = !isWhiteToMove;
         recalculatePieces();
     }
 
@@ -199,7 +199,7 @@ public class Board {
 
     public Board copy() {
         Board board = new Board();
-        board.setTurn(turn);
+        board.setWhiteToMove(isWhiteToMove);
         board.setWhiteKingsideCastlingAllowed(whiteKingsideCastlingAllowed);
         board.setWhiteQueensideCastlingAllowed(whiteQueensideCastlingAllowed);
         board.setBlackKingsideCastlingAllowed(blackKingsideCastlingAllowed);
@@ -231,7 +231,7 @@ public class Board {
 
     private void updateCastlingRights(Move move) {
         if (PieceType.KING.equals(move.getPieceType())) {
-            if (turn.isWhite()) {
+            if (isWhiteToMove) {
                 whiteKingsideCastlingAllowed = false;
                 whiteQueensideCastlingAllowed = false;
             } else {
@@ -240,18 +240,18 @@ public class Board {
             }
         }
         if (PieceType.ROOK.equals(move.getPieceType())) {
-            long rooks = turn.isWhite() ? whiteRooks : blackRooks;
-            long kingsideRookStart = turn.isWhite() ? 1L << 7 : 1L << 63;
-            long queensideRookStart = turn.isWhite() ? 1L : 1L << 56;
+            long rooks = isWhiteToMove ? whiteRooks : blackRooks;
+            long kingsideRookStart = isWhiteToMove ? 1L << 7 : 1L << 63;
+            long queensideRookStart = isWhiteToMove ? 1L : 1L << 56;
             if ((rooks & kingsideRookStart) != kingsideRookStart) {
-                if (turn.isWhite()) {
+                if (isWhiteToMove) {
                     whiteKingsideCastlingAllowed = false;
                 } else {
                     blackKingsideCastlingAllowed = false;
                 }
             }
             if ((rooks & queensideRookStart) != queensideRookStart) {
-                if (turn.isWhite()) {
+                if (isWhiteToMove) {
                     whiteQueensideCastlingAllowed = false;
                 } else {
                     blackQueensideCastlingAllowed = false;

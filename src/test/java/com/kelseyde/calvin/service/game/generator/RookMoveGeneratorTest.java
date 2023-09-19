@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.service.game.generator;
 
 import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
@@ -16,7 +15,7 @@ public class RookMoveGeneratorTest {
 
     private final RookMoveGenerator generator = new RookMoveGenerator();
 
-    private final String rook = Piece.getPieceCode(Colour.WHITE, PieceType.ROOK);
+    private final String rook = Piece.getPieceCode(true, PieceType.ROOK);
 
     private Board board;
     
@@ -58,10 +57,10 @@ public class RookMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(12, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
-        board.setPiece(26, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(30, Piece.getPieceCode(Colour.BLACK, PieceType.BISHOP));
-        board.setPiece(44, Piece.getPieceCode(Colour.BLACK, PieceType.ROOK));
+        board.setPiece(12, Piece.getPieceCode(false, PieceType.PAWN));
+        board.setPiece(26, Piece.getPieceCode(false, PieceType.KNIGHT));
+        board.setPiece(30, Piece.getPieceCode(false, PieceType.BISHOP));
+        board.setPiece(44, Piece.getPieceCode(false, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(12, 20, 26, 27, 29, 30, 36, 44));
 
@@ -72,10 +71,10 @@ public class RookMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(12, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
-        board.setPiece(26, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(30, Piece.getPieceCode(Colour.WHITE, PieceType.BISHOP));
-        board.setPiece(44, Piece.getPieceCode(Colour.WHITE, PieceType.ROOK));
+        board.setPiece(12, Piece.getPieceCode(true, PieceType.PAWN));
+        board.setPiece(26, Piece.getPieceCode(true, PieceType.KNIGHT));
+        board.setPiece(30, Piece.getPieceCode(true, PieceType.BISHOP));
+        board.setPiece(44, Piece.getPieceCode(true, PieceType.ROOK));
 
         assertLegalSquares(startSquare, Set.of(20, 27, 29, 36));
 

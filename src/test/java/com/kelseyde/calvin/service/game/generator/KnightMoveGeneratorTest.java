@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.service.game.generator;
 
 import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Piece;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
@@ -16,7 +15,7 @@ public class KnightMoveGeneratorTest {
 
     private final KnightMoveGenerator generator = new KnightMoveGenerator();
 
-    private final String knight = Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT);
+    private final String knight = Piece.getPieceCode(true, PieceType.KNIGHT);
 
     private Board board;
 
@@ -99,14 +98,14 @@ public class KnightMoveGeneratorTest {
     public void canCaptureOpponentPieces() {
 
         board.setPiece(43, knight);
-        board.setPiece(26, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
-        board.setPiece(28, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
-        board.setPiece(33, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
-        board.setPiece(37, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(49, Piece.getPieceCode(Colour.BLACK, PieceType.BISHOP));
-        board.setPiece(53, Piece.getPieceCode(Colour.BLACK, PieceType.ROOK));
-        board.setPiece(58, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
-        board.setPiece(60, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(26, Piece.getPieceCode(false, PieceType.PAWN));
+        board.setPiece(28, Piece.getPieceCode(false, PieceType.PAWN));
+        board.setPiece(33, Piece.getPieceCode(false, PieceType.PAWN));
+        board.setPiece(37, Piece.getPieceCode(false, PieceType.KNIGHT));
+        board.setPiece(49, Piece.getPieceCode(false, PieceType.BISHOP));
+        board.setPiece(53, Piece.getPieceCode(false, PieceType.ROOK));
+        board.setPiece(58, Piece.getPieceCode(false, PieceType.QUEEN));
+        board.setPiece(60, Piece.getPieceCode(false, PieceType.QUEEN));
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
@@ -121,14 +120,14 @@ public class KnightMoveGeneratorTest {
     public void cannotCaptureSameColourPieces() {
 
         board.setPiece(43, knight);
-        board.setPiece(26, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
-        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
-        board.setPiece(33, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
-        board.setPiece(37, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(49, Piece.getPieceCode(Colour.WHITE, PieceType.BISHOP));
-        board.setPiece(53, Piece.getPieceCode(Colour.WHITE, PieceType.ROOK));
-        board.setPiece(58, Piece.getPieceCode(Colour.WHITE, PieceType.QUEEN));
-        board.setPiece(60, Piece.getPieceCode(Colour.WHITE, PieceType.QUEEN));
+        board.setPiece(26, Piece.getPieceCode(true, PieceType.PAWN));
+        board.setPiece(28, Piece.getPieceCode(true, PieceType.PAWN));
+        board.setPiece(33, Piece.getPieceCode(true, PieceType.PAWN));
+        board.setPiece(37, Piece.getPieceCode(true, PieceType.KNIGHT));
+        board.setPiece(49, Piece.getPieceCode(true, PieceType.BISHOP));
+        board.setPiece(53, Piece.getPieceCode(true, PieceType.ROOK));
+        board.setPiece(58, Piece.getPieceCode(true, PieceType.QUEEN));
+        board.setPiece(60, Piece.getPieceCode(true, PieceType.QUEEN));
 
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(m -> m.getStartSquare() == 43)

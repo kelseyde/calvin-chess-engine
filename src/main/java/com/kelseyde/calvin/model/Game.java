@@ -57,15 +57,13 @@ public class Game {
         legalMoves = legalMoveService.generateLegalMoves(board);
 
         if (isCheckmate()) {
-            Colour winner = board.getTurn().oppositeColour();
-            return new WinResult(winner, WinType.CHECKMATE);
+            return new WinResult(board.isWhiteToMove(), WinType.CHECKMATE);
         }
         Optional<DrawType> drawType = drawEvaluator.calculateDraw(this);
         if (drawType.isPresent()) {
             return new DrawResult(drawType.get());
         } else {
-            Colour sideToMove = board.getTurn();
-            return new NextMoveResult(sideToMove);
+            return new NextMoveResult(true);
         }
 
     }
@@ -80,12 +78,8 @@ public class Game {
         legalMoves = legalMoveService.generateLegalMoves(board);
     }
 
-    public Colour getTurn() {
-        return board.getTurn();
-    }
-
-    public void setTurn(Colour turn) {
-        this.board.setTurn(turn);
+    public void setWhiteToMove(boolean isWhiteToMove) {
+        this.board.setWhiteToMove(isWhiteToMove);
         this.legalMoves = legalMoveService.generateLegalMoves(board);
     }
 

@@ -3,7 +3,6 @@ package com.kelseyde.calvin.service.game;
 import com.kelseyde.calvin.model.BitBoard;
 import com.kelseyde.calvin.model.BitBoards;
 import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.move.Move;
 import com.kelseyde.calvin.service.game.generator.*;
 import lombok.extern.slf4j.Slf4j;
@@ -51,15 +50,14 @@ public class LegalMoveGenerator {
     }
 
     private boolean isFullyLegal(Board board, Move move) {
-        Colour colour = board.getTurn();
 
         Board boardCopy = board.copy();
         boardCopy.applyMove(move);
 
         long kingMask = switch (move.getMoveType()) {
-            default -> colour.isWhite() ? boardCopy.getWhiteKing() : boardCopy.getBlackKing();
-            case KINGSIDE_CASTLE -> colour.isWhite() ? BitBoards.WHITE_KINGSIDE_CASTLE_SAFE_MASK : BitBoards.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
-            case QUEENSIDE_CASTLE -> colour.isWhite() ? BitBoards.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : BitBoards.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+            default -> board.isWhiteToMove() ? boardCopy.getWhiteKing() : boardCopy.getBlackKing();
+            case KINGSIDE_CASTLE -> board.isWhiteToMove() ? BitBoards.WHITE_KINGSIDE_CASTLE_SAFE_MASK : BitBoards.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+            case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? BitBoards.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : BitBoards.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
         };
 
         // TODO perhaps can be done without a stream
@@ -77,8 +75,9 @@ public class LegalMoveGenerator {
 
     private boolean isCheck(Board board) {
         // Additionally calculate whether the move is a check, store this info in Move.
-        board.setTurn(board.getTurn().oppositeColour());
-        int opponentKingSquare = board.getTurn().isWhite() ? BitBoard.scanForward(board.getBlackKing()) : BitBoard.scanForward(board.getWhiteKing());
+        boolean isWhiteToMove = !board.isWhiteToMove();
+        board.setWhiteToMove(isWhiteToMove);
+        int opponentKingSquare = isWhiteToMove ? BitBoard.scanForward(board.getBlackKing()) : BitBoard.scanForward(board.getWhiteKing());
         Set<Integer> attackingSquares = generatePseudoLegalMovesWithoutKing(board).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

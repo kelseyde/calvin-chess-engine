@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.service.evaluator;
 
 import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.Game;
 
 public class MaterialEvaluator implements PositionEvaluator {
@@ -9,17 +8,16 @@ public class MaterialEvaluator implements PositionEvaluator {
     @Override
     public int evaluate(Game game) {
 
-        Colour playerColour = game.getTurn();
-        int playerScore = calculateMaterialScore(game.getBoard(), playerColour);
+        boolean isWhiteToMove = game.getBoard().isWhiteToMove();
+        int playerScore = calculateMaterialScore(game.getBoard(), isWhiteToMove);
 
-        Colour opponentColour = playerColour.oppositeColour();
-        int opponentScore = calculateMaterialScore(game.getBoard(), opponentColour);
+        int opponentScore = calculateMaterialScore(game.getBoard(), !isWhiteToMove);
 
         return playerScore - opponentScore;
 
     }
 
-    private int calculateMaterialScore(Board board, Colour colour) {
+    private int calculateMaterialScore(Board board, boolean colour) {
         // TODO fix
         return 0;
 //        return board.getPieces(colour)

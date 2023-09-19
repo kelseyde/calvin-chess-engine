@@ -2,7 +2,6 @@ package com.kelseyde.calvin.service.game.generator;
 
 import com.kelseyde.calvin.model.BitBoard;
 import com.kelseyde.calvin.model.Board;
-import com.kelseyde.calvin.model.Colour;
 import com.kelseyde.calvin.model.PieceType;
 import com.kelseyde.calvin.model.move.Move;
 import lombok.Getter;
@@ -38,10 +37,8 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
 
         Set<Move> moves = new HashSet<>();
 
-        Colour turn = board.getTurn();
-
-        long knights = turn.isWhite() ? board.getWhiteKnights() : board.getBlackKnights();
-        long friendlyPieces = turn.isWhite() ? board.getWhitePieces() : board.getBlackPieces();
+        long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
+        long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
 
         while (knights != 0) {
             int startSquare = BitBoard.scanForward(knights);

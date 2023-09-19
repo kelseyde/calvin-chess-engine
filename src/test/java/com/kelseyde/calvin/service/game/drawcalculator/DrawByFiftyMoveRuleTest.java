@@ -14,16 +14,16 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhiteCapture() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(0, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
-        board.setPiece(28, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(36, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
-        board.setPiece(35, Piece.getPieceCode(Colour.BLACK, PieceType.QUEEN));
+        board.setPiece(0, Piece.getPieceCode(false, PieceType.KING));
+        board.setPiece(28, Piece.getPieceCode(false, PieceType.KNIGHT));
+        board.setPiece(36, Piece.getPieceCode(false, PieceType.KNIGHT));
+        board.setPiece(35, Piece.getPieceCode(false, PieceType.QUEEN));
 
-        board.setPiece(63, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
-        board.setPiece(18, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
+        board.setPiece(63, Piece.getPieceCode(true, PieceType.KING));
+        board.setPiece(18, Piece.getPieceCode(true, PieceType.KNIGHT));
 
         Game game = new Game(board);
-        game.setTurn(Colour.WHITE);
+        game.getBoard().setWhiteToMove(true);
 
         // black knight captures white queen
         game.makeMove(move("c3", "d5"));
@@ -192,14 +192,14 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhitePawnMove() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(0, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
-        board.setPiece(36, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(0, Piece.getPieceCode(false, PieceType.KING));
+        board.setPiece(36, Piece.getPieceCode(false, PieceType.PAWN));
 
-        board.setPiece(63, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
-        board.setPiece(12, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(63, Piece.getPieceCode(true, PieceType.KING));
+        board.setPiece(12, Piece.getPieceCode(true, PieceType.PAWN));
 
         Game game = new Game(board);
-        game.setTurn(Colour.WHITE);
+        game.setWhiteToMove(true);
 
         // white pawn makes last possible pawn move
         game.makeMove(move("e2", "e4"));
@@ -368,16 +368,16 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceBlackCapture() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(0, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
-        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(36, Piece.getPieceCode(Colour.WHITE, PieceType.KNIGHT));
-        board.setPiece(35, Piece.getPieceCode(Colour.WHITE, PieceType.QUEEN));
+        board.setPiece(0, Piece.getPieceCode(true, PieceType.KING));
+        board.setPiece(28, Piece.getPieceCode(true, PieceType.KNIGHT));
+        board.setPiece(36, Piece.getPieceCode(true, PieceType.KNIGHT));
+        board.setPiece(35, Piece.getPieceCode(true, PieceType.QUEEN));
 
-        board.setPiece(63, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
-        board.setPiece(18, Piece.getPieceCode(Colour.BLACK, PieceType.KNIGHT));
+        board.setPiece(63, Piece.getPieceCode(false, PieceType.KING));
+        board.setPiece(18, Piece.getPieceCode(false, PieceType.KNIGHT));
 
         Game game = new Game(board);
-        game.setTurn(Colour.BLACK);
+        game.setWhiteToMove(false);
 
         // black knight captures white queen
         game.makeMove(move("c3", "d5"));
@@ -546,14 +546,14 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceBlackPawnMove() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(0, Piece.getPieceCode(Colour.WHITE, PieceType.KING));
-        board.setPiece(28, Piece.getPieceCode(Colour.WHITE, PieceType.PAWN));
+        board.setPiece(0, Piece.getPieceCode(true, PieceType.KING));
+        board.setPiece(28, Piece.getPieceCode(true, PieceType.PAWN));
 
-        board.setPiece(63, Piece.getPieceCode(Colour.BLACK, PieceType.KING));
-        board.setPiece(52, Piece.getPieceCode(Colour.BLACK, PieceType.PAWN));
+        board.setPiece(63, Piece.getPieceCode(false, PieceType.KING));
+        board.setPiece(52, Piece.getPieceCode(false, PieceType.PAWN));
 
         Game game = new Game(board);
-        game.setTurn(Colour.BLACK);
+        game.setWhiteToMove(false);
 
         // black pawn makes last possible pawn move
         game.makeMove(move("e7", "e5"));

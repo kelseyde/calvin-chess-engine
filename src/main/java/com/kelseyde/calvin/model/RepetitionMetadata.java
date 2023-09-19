@@ -28,7 +28,7 @@ public class RepetitionMetadata {
     private boolean blackKingsideCastlingAllowed;
     private boolean blackQueensideCastlingAllowed;
 
-    private Colour turn;
+    private boolean whiteToMove;
 
     public static RepetitionMetadata fromBoard(Board board) {
         return RepetitionMetadata.builder()
@@ -49,7 +49,7 @@ public class RepetitionMetadata {
                 .blackKingsideCastlingAllowed(board.isBlackKingsideCastlingAllowed())
                 .blackQueensideCastlingAllowed(board.isBlackQueensideCastlingAllowed())
                 .enPassantTarget(board.getEnPassantTarget())
-                .turn(board.getTurn())
+                .whiteToMove(board.isWhiteToMove())
                 .build();
 
     }

@@ -9,7 +9,7 @@ import com.kelseyde.calvin.board.result.GameResult;
 import com.kelseyde.calvin.board.result.GameResult.ResultType;
 import com.kelseyde.calvin.api.repository.GameRepository;
 import com.kelseyde.calvin.search.Engine;
-import com.kelseyde.calvin.utils.MoveUtils;
+import com.kelseyde.calvin.board.move.MoveUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

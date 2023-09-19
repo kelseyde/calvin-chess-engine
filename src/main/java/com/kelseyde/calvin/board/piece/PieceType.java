@@ -2,42 +2,31 @@ package com.kelseyde.calvin.board.piece;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public enum PieceType {
-    PAWN("P"),
-    KNIGHT("N"),
-    BISHOP("B"),
-    ROOK("R"),
-    QUEEN("Q"),
-    KING("K");
+    PAWN("P", 0),
+    KNIGHT("N", 1),
+    BISHOP("B", 2),
+    ROOK("R", 3),
+    QUEEN("Q", 4),
+    KING("K", 5);
 
-    @Getter
-    final String pieceCode;
+    @Getter final String pieceCode;
+    @Getter final int index;
 
-    PieceType(String pieceCode) {
+    PieceType(String pieceCode, int index) {
         this.pieceCode = pieceCode;
+        this.index = index;
     }
 
-    public static PieceType fromChar(char pieceChar) {
-        return switch (Character.toUpperCase(pieceChar)) {
-            case 'K' -> PieceType.KING;
-            case 'Q' -> PieceType.QUEEN;
-            case 'R' -> PieceType.ROOK;
-            case 'B' -> PieceType.BISHOP;
-            case 'N' -> PieceType.KNIGHT;
-            case 'P' -> PieceType.PAWN;
-            default -> throw new IllegalArgumentException(String.format("%s is not a valid piece character!", pieceChar));
-        };
-    }
-
-    public char toChar() {
-        return switch (this) {
-            case KING -> 'K';
-            case QUEEN -> 'Q';
-            case ROOK -> 'R';
-            case BISHOP -> 'B';
-            case KNIGHT -> 'N';
-            case PAWN -> 'P';
-        };
+    public static List<Integer> indices() {
+        return Arrays.stream(PieceType.values())
+                .map(PieceType::getIndex)
+                .toList();
     }
 
 }

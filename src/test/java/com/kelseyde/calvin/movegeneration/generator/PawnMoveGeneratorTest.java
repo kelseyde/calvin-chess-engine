@@ -6,7 +6,7 @@ import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
-import com.kelseyde.calvin.utils.MoveUtils;
+import com.kelseyde.calvin.board.move.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -213,45 +213,42 @@ public class PawnMoveGeneratorTest {
 
     }
 
-//    @Test TODO retest once Game is working with bitboards
-//    public void testWhiteDoubleEnPassantIsImpossible() {
-//
-//        board.setPiece(35, whitePawn);
-//        // we need another white piece to spend a move in between black's pawn moves
-//        board.setPiece(0, Piece.getPieceCode(true, PieceType.ROOK));
-//        // two black pawns on starting positions
-//        board.setPiece(50, Piece.getPieceCode(false, PieceType.PAWN));
-//        board.setPiece(52, Piece.getPieceCode(false, PieceType.PAWN));
-//
-//        game.setTurn(false);
-//
-//        // first double pawn move from black
-//        Move blackDoubleMove = generator.generatePseudoLegalMoves(board, 50).stream()
-//                .filter(move -> move.getEndSquare() == 34)
-//                .findFirst().orElseThrow();
-//        game.makeMove(blackDoubleMove);
-//
-//        Move whiteRookMove = moveBuilder().startSquare(0).endSquare(8).build();
-//        game.makeMove(whiteRookMove);
-//
-//        // second double pawn move from black, should make the first en-passant capture impossible
-//        blackDoubleMove = generator.generatePseudoLegalMoves(board, 52).stream()
-//                .filter(move -> move.getEndSquare() == 36)
-//                .findFirst().orElseThrow();
-//        game.makeMove(blackDoubleMove); // first double pawn move from black
-//
-//        Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board, 35);
-//
-//        Move standardMove = moveBuilder().startSquare(35).endSquare(43).build();
-//        Move enPassantCapture = moveBuilder().startSquare(35).endSquare(44)
-//                .enPassantCapturedSquare(36)
-//                .moveType(MoveType.EN_PASSANT)
-//                .isCapture(true)
-//                .build();
-//
-//        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalWhiteMoves);
-//
-//    }
+    @Test
+    public void testWhiteDoubleEnPassantIsImpossible() {
+
+        board = Board.emptyBoard();
+
+        board.setPiece(35, whitePawn);
+        // we need another white piece to spend a move in between black's pawn moves
+        board.setPiece(0, Piece.getPieceCode(true, PieceType.ROOK));
+        // two black pawns on starting positions
+        board.setPiece(50, Piece.getPieceCode(false, PieceType.PAWN));
+        board.setPiece(52, Piece.getPieceCode(false, PieceType.PAWN));
+
+        board.setWhiteToMove(false);
+
+        // black first double pawn advance
+        board.applyMove(moveBuilder(50, 34).enPassantTarget(1L << 42).build());
+
+        // white wastes a move with rook
+        board.applyMove(moveBuilder(0, 8).pieceType(PieceType.ROOK).build());
+
+        // black second double pawn advance
+        board.applyMove(moveBuilder(52, 36).enPassantTarget(1L << 44).build());
+
+        Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
+
+        Move standardMove = moveBuilder(35, 43)
+                .moveType(MoveType.STANDARD)
+                .build();
+        Move enPassantCapture = moveBuilder(35, 44)
+                .moveType(MoveType.EN_PASSANT)
+                .enPassantCapture(1L << 36)
+                .build();
+
+        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalWhiteMoves);
+
+    }
 
     @Test
     public void testBlackEnPassant() {
@@ -293,45 +290,38 @@ public class PawnMoveGeneratorTest {
         Assertions.assertEquals(Set.of(standardMove, standardCapture, enPassantCapture), legalBlackMoves);
 
     }
-//
-//    @Test TODO retest when Game works with Bitboards
-//    public void testBlackDoubleEnPassantIsImpossible() {
-//
-//        board.setPiece(25, blackPawn);
-//        // we need another black piece to spend a move in between black's pawn moves
-//        board.setPiece(63, Piece.getPieceCode(false, PieceType.ROOK));
-//        // two black pawns on starting positions
-//        board.setPiece(8, Piece.getPieceCode(true, PieceType.PAWN));
-//        board.setPiece(10, Piece.getPieceCode(true, PieceType.PAWN));
-//        game.setTurn(true);
-//
-//        // first double pawn move from white
-//        Move whiteDoubleMove = generator.generatePseudoLegalMoves(board, 10).stream()
-//                .filter(move -> move.getEndSquare() == 26)
-//                .findFirst().orElseThrow();
-//        game.makeMove(whiteDoubleMove);
-//
-//        Move blackRookMove = moveBuilder().startSquare(63).endSquare(62).build();
-//        game.makeMove(blackRookMove);
-//
-//        // second double pawn move from black, should make the first en-passant capture impossible
-//        whiteDoubleMove = generator.generatePseudoLegalMoves(board, 8).stream()
-//                .filter(move -> move.getEndSquare() == 24)
-//                .findFirst().orElseThrow();
-//        game.makeMove(whiteDoubleMove); // first double pawn move from black
-//
-//        Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board, 25);
-//
-//        Move standardMove = moveBuilder().startSquare(25).endSquare(17).build();
-//        Move enPassantCapture = moveBuilder().startSquare(25).endSquare(16)
-//                .enPassantCapturedSquare(24)
-//                .moveType(MoveType.EN_PASSANT)
-//                .isCapture(true)
-//                .build();
-//
-//        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
-//
-//    }
+
+    @Test
+    public void testBlackDoubleEnPassantIsImpossible() {
+
+        board.setPiece(25, blackPawn);
+        // we need another black piece to spend a move in between black's pawn moves
+        board.setPiece(63, Piece.getPieceCode(false, PieceType.ROOK));
+        // two black pawns on starting positions
+        board.setPiece(8, Piece.getPieceCode(true, PieceType.PAWN));
+        board.setPiece(10, Piece.getPieceCode(true, PieceType.PAWN));
+        board.setWhiteToMove(true);
+
+        // white first double pawn advance
+        board.applyMove(moveBuilder(10, 26).enPassantTarget(1L << 18).build());
+
+        // black wastes move with rook
+        board.applyMove(moveBuilder(63, 62).pieceType(PieceType.ROOK).build());
+
+        // second double pawn move from white, should make the first en-passant capture impossible
+        board.applyMove(moveBuilder(8, 24).enPassantTarget(1L << 16).build());
+
+        Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
+
+        Move standardMove = moveBuilder(25, 17).build();
+        Move enPassantCapture = moveBuilder(25, 16)
+                .enPassantCapture(1L << 24)
+                .moveType(MoveType.EN_PASSANT)
+                .build();
+
+        Assertions.assertEquals(Set.of(standardMove, enPassantCapture), legalBlackMoves);
+
+    }
 
     @Test
     public void testEnPassantRemovesCapturedPawn() {

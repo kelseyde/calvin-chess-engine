@@ -7,7 +7,7 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.board.result.DrawResult;
 import com.kelseyde.calvin.board.result.DrawType;
 import com.kelseyde.calvin.board.result.GameResult;
-import com.kelseyde.calvin.utils.MoveUtils;
+import com.kelseyde.calvin.board.move.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

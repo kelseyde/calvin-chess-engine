@@ -1,4 +1,6 @@
-package com.kelseyde.calvin.board;
+package com.kelseyde.calvin.board.piece;
+
+import lombok.Getter;
 
 public enum PieceType {
     PAWN("P"),
@@ -8,7 +10,9 @@ public enum PieceType {
     QUEEN("Q"),
     KING("K");
 
+    @Getter
     final String pieceCode;
+
     PieceType(String pieceCode) {
         this.pieceCode = pieceCode;
     }

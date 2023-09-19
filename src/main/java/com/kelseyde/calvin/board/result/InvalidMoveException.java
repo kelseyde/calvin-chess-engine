@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.movegeneration.exception;
+package com.kelseyde.calvin.board.result;
 
 public class InvalidMoveException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.board;
+package com.kelseyde.calvin.board.result;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

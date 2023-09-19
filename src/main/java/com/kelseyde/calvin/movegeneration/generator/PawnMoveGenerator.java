@@ -3,7 +3,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 import com.kelseyde.calvin.board.BitBoard;
 import com.kelseyde.calvin.board.BitBoards;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import lombok.Getter;
@@ -36,7 +36,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             int endSquare = BitBoard.scanForward(copy);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
             moves.add(move(startSquare, endSquare).build());
-            copy &= (copy - 1);
+            copy = BitBoard.popLSB(copy);
         }
 
         long doubleAdvances = isWhite ?
@@ -49,7 +49,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             moves.add(move(startSquare, endSquare)
                     .enPassantTarget(1L << enPassantTargetSquare)
                     .build());
-            doubleAdvances &= (doubleAdvances - 1);
+            doubleAdvances = BitBoard.popLSB(doubleAdvances);
         }
 
         long leftCaptures = isWhite ?
@@ -59,7 +59,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             int endSquare = BitBoard.scanForward(leftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             moves.add(move(startSquare, endSquare).build());
-            leftCaptures  &= (leftCaptures - 1);
+            leftCaptures = BitBoard.popLSB(leftCaptures);
         }
 
         long rightCaptures = isWhite ?
@@ -69,7 +69,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             int endSquare = BitBoard.scanForward(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             moves.add(move(startSquare, endSquare).build());
-            rightCaptures &= (rightCaptures - 1);
+            rightCaptures = BitBoard.popLSB(rightCaptures);
         }
 
         long enPassantLeftCaptures = isWhite ?
@@ -82,7 +82,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             moves.add(move(startSquare, endSquare).moveType(MoveType.EN_PASSANT)
                     .enPassantCapture(1L << enPassantCaptureSquare)
                     .build());
-            enPassantLeftCaptures &= (enPassantLeftCaptures - 1);
+            enPassantLeftCaptures = BitBoard.popLSB(enPassantLeftCaptures);
         }
 
         long enPassantRightCaptures = isWhite ?
@@ -95,7 +95,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             moves.add(move(startSquare, endSquare).moveType(MoveType.EN_PASSANT)
                     .enPassantCapture(1L << enPassantCaptureSquare)
                     .build());
-            enPassantRightCaptures &= (enPassantRightCaptures - 1);
+            enPassantRightCaptures = BitBoard.popLSB(enPassantRightCaptures);
         }
 
         long advancePromotions = isWhite ?
@@ -105,7 +105,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             int endSquare = BitBoard.scanForward(advancePromotions);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
-            advancePromotions &= (advancePromotions - 1);
+            advancePromotions = BitBoard.popLSB(advancePromotions);
         }
 
         long captureLeftPromotions = isWhite ?
@@ -115,7 +115,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             int endSquare = BitBoard.scanForward(captureLeftPromotions);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
-            captureLeftPromotions &= (captureLeftPromotions - 1);
+            captureLeftPromotions = BitBoard.popLSB(captureLeftPromotions);
         }
 
         long captureRightPromotions = isWhite ?
@@ -125,7 +125,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             int endSquare = BitBoard.scanForward(captureRightPromotions);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
-            captureRightPromotions &= (captureRightPromotions - 1);
+            captureRightPromotions = BitBoard.popLSB(captureRightPromotions);
         }
 
         return moves;

@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.movegeneration.drawcalculator;
 
-import com.kelseyde.calvin.board.DrawType;
+import com.kelseyde.calvin.board.result.DrawType;
 import com.kelseyde.calvin.board.Game;
 import lombok.Getter;
 

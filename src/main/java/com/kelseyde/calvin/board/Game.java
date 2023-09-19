@@ -2,6 +2,7 @@ package com.kelseyde.calvin.board;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.result.*;
 import com.kelseyde.calvin.movegeneration.DrawService;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import lombok.Data;

@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.piece.Piece;
+import com.kelseyde.calvin.board.piece.PieceType;
 import lombok.Data;
 
 /**

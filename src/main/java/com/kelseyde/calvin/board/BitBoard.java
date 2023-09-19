@@ -39,7 +39,7 @@ public class BitBoard {
     }
 
     public static long popLSB(long board) {
-        board = board &= (board - 1);
+        board &= (board - 1);
         return board;
     }
 

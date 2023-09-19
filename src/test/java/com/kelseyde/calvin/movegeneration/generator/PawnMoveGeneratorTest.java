@@ -2,8 +2,8 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Game;
-import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.piece.Piece;
+import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.utils.MoveUtils;

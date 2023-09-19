@@ -44,7 +44,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
             if (isDiagonal()) {
                 moveBitboard |= calculateDiagonalMoves(board, square);
             }
-            pieceBitboard &= (pieceBitboard - 1);
+            pieceBitboard = BitBoard.popLSB(pieceBitboard);
             moves.addAll(addMoves(square, moveBitboard));
         }
         return moves;
@@ -85,7 +85,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
                     .startSquare(startSquare)
                     .endSquare(endSquare)
                     .build());
-            moveBitboard &= (moveBitboard - 1);
+            moveBitboard = BitBoard.popLSB(moveBitboard);
         }
         return moves;
     }

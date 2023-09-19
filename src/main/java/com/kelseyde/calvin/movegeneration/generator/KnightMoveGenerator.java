@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.BitBoard;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.board.move.Move;
 import lombok.Getter;
 
@@ -44,7 +44,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
             int startSquare = BitBoard.scanForward(knights);
             long possibleMoves = KNIGHT_ATTACKS[startSquare] &~ friendlyPieces;
             moves.addAll(addKnightMoves(startSquare, possibleMoves));
-            knights &= (knights - 1);
+            knights = BitBoard.popLSB(knights);
         }
         return moves;
 
@@ -59,7 +59,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
                     .startSquare(startSquare)
                     .endSquare(endSquare)
                     .build());
-            possibleMoves &= (possibleMoves - 1);
+            possibleMoves = BitBoard.popLSB(possibleMoves);
         }
         return moves;
     }

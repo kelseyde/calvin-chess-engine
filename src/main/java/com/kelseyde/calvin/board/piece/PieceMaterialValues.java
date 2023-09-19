@@ -1,6 +1,6 @@
-package com.kelseyde.calvin.board.engine;
+package com.kelseyde.calvin.board.piece;
 
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.piece.PieceType;
 
 import java.util.Map;
 

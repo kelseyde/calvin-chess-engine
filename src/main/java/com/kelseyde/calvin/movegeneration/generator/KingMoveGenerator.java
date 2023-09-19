@@ -4,7 +4,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 import com.kelseyde.calvin.board.BitBoard;
 import com.kelseyde.calvin.board.BitBoards;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import lombok.Getter;
@@ -54,7 +54,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         while (kingMoves != 0) {
             int endSquare = BitBoard.scanForward(kingMoves);
             moves.add(move(startSquare, endSquare).build());
-            kingMoves &= (kingMoves - 1);
+            kingMoves = BitBoard.popLSB(kingMoves);
         }
         boolean isKingsideAllowed = board.isWhiteToMove() ? board.isWhiteKingsideCastlingAllowed() : board.isBlackKingsideCastlingAllowed();
         if (isKingsideAllowed) {

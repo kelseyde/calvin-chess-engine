@@ -2,6 +2,8 @@ package com.kelseyde.calvin;
 
 import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.piece.Piece;
+import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -267,14 +269,14 @@ public class GameTest {
             while (whitePieces != 0) {
                 int position = BitBoard.scanForward(whitePieces);
                 positions.add(position);
-                whitePieces &= (whitePieces - 1);
+                whitePieces = BitBoard.popLSB(whitePieces);
             }
         } else {
             long blackPieces = board.getBlackPieces();
             while (blackPieces != 0) {
                 int position = BitBoard.scanForward(blackPieces);
                 positions.add(position);
-                blackPieces &= (blackPieces - 1);
+                blackPieces = BitBoard.popLSB(blackPieces);
             }
         }
         return positions;

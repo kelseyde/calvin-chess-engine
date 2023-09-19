@@ -2,6 +2,11 @@ package com.kelseyde.calvin;
 
 import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.piece.Piece;
+import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.board.result.GameResult;
+import com.kelseyde.calvin.board.result.WinResult;
+import com.kelseyde.calvin.board.result.WinType;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

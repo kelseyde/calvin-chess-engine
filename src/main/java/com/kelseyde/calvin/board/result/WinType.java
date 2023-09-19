@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.board;
+package com.kelseyde.calvin.board.result;
 
 public enum WinType {
 

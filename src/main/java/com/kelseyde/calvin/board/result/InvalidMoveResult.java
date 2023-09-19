@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.board;
+package com.kelseyde.calvin.board.result;
 
 import com.kelseyde.calvin.board.move.Move;
 import lombok.Data;

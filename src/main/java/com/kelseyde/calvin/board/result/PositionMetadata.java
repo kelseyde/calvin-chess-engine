@@ -1,11 +1,15 @@
-package com.kelseyde.calvin.board;
+package com.kelseyde.calvin.board.result;
 
+import com.kelseyde.calvin.board.Board;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * All the metadata constituting the current 'position' as defined by the 50-move rule. Used for draw calculation.
+ */
 @Data
 @Builder
-public class RepetitionMetadata {
+public class PositionMetadata {
 
     private long whitePawns;
     private long whiteKnights;
@@ -30,8 +34,8 @@ public class RepetitionMetadata {
 
     private boolean whiteToMove;
 
-    public static RepetitionMetadata fromBoard(Board board) {
-        return RepetitionMetadata.builder()
+    public static PositionMetadata fromBoard(Board board) {
+        return PositionMetadata.builder()
                 .whitePawns(board.getWhitePawns())
                 .whiteKnights(board.getWhiteKnights())
                 .whiteBishops(board.getWhiteBishops())

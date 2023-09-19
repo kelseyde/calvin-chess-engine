@@ -1,8 +1,9 @@
 package com.kelseyde.calvin;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.movegeneration.perft.PerformanceTestService;
+import com.kelseyde.calvin.movegeneration.perft.PerftService;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -20,37 +21,37 @@ import java.time.temporal.ChronoUnit;
 @Disabled
 public class PerformanceTest {
 
-    private final PerformanceTestService moveGenerator = new PerformanceTestService();
+    private final PerftService moveGenerator = new PerftService();
 
     @Test
     public void testPerftOneDepth() {
-        perft(new Game(), 1, 20);
+        perft(new Board(), 1, 20);
     }
 
     @Test
     public void testPerftTwoDepth() {
-        perft(new Game(), 2, 400);
+        perft(new Board(), 2, 400);
     }
 
     @Test
     public void testPerftThreeDepth() {
-        perft(new Game(), 3, 8902);
+        perft(new Board(), 3, 8902);
     }
 
     @Test
     public void testPerftFourDepth() {
-        perft(new Game(), 4, 197281);
+        perft(new Board(), 4, 197281);
     }
 
     @Disabled
     @Test
     public void testPerftFiveDepth() {
-        perft(new Game(), 5, 4865609);
+        perft(new Board(), 5, 4865609);
     }
 
-    private void perft(Game game, int depth, int expectedTotalMoves) {
+    private void perft(Board board, int depth, int expectedTotalMoves) {
         Instant start = Instant.now();
-        int totalMoveCount = moveGenerator.generateAllLegalMoves(game, depth);
+        int totalMoveCount = moveGenerator.perft(board, depth);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
         System.out.printf("Move generator calculated %s possible positions at depth %s in %s",

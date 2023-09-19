@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
@@ -13,19 +15,19 @@ import lombok.Data;
 @Data
 public class Board {
 
-    private long whitePawns = BitBoards.WHITE_PAWNS_START;
-    private long whiteKnights = BitBoards.WHITE_KNIGHTS_START;
-    private long whiteBishops = BitBoards.WHITE_BISHOPS_START;
-    private long whiteRooks = BitBoards.WHITE_ROOKS_START;
-    private long whiteQueens = BitBoards.WHITE_QUEENS_START;
-    private long whiteKing = BitBoards.WHITE_KING_START;
+    private long whitePawns = BitBoardConstants.WHITE_PAWNS_START;
+    private long whiteKnights = BitBoardConstants.WHITE_KNIGHTS_START;
+    private long whiteBishops = BitBoardConstants.WHITE_BISHOPS_START;
+    private long whiteRooks = BitBoardConstants.WHITE_ROOKS_START;
+    private long whiteQueens = BitBoardConstants.WHITE_QUEENS_START;
+    private long whiteKing = BitBoardConstants.WHITE_KING_START;
 
-    private long blackPawns = BitBoards.BLACK_PAWNS_START;
-    private long blackKnights = BitBoards.BLACK_KNIGHTS_START;
-    private long blackBishops = BitBoards.BLACK_BISHOPS_START;
-    private long blackRooks = BitBoards.BLACK_ROOKS_START;
-    private long blackQueens = BitBoards.BLACK_QUEENS_START;
-    private long blackKing = BitBoards.BLACK_KING_START;
+    private long blackPawns = BitBoardConstants.BLACK_PAWNS_START;
+    private long blackKnights = BitBoardConstants.BLACK_KNIGHTS_START;
+    private long blackBishops = BitBoardConstants.BLACK_BISHOPS_START;
+    private long blackRooks = BitBoardConstants.BLACK_ROOKS_START;
+    private long blackQueens = BitBoardConstants.BLACK_QUEENS_START;
+    private long blackKing = BitBoardConstants.BLACK_KING_START;
 
     private long whitePieces;
     private long blackPieces;
@@ -116,7 +118,7 @@ public class Board {
 
         switch (move.getMoveType()) {
             case EN_PASSANT -> {
-                unsetPiece(BitBoard.scanForward(move.getEnPassantCapture()));
+                unsetPiece(BitBoardUtil.scanForward(move.getEnPassantCapture()));
             }
             case PROMOTION -> {
                 String promotedPiece = Piece.getPieceCode(isWhiteToMove, move.getPromotionPieceType());
@@ -139,7 +141,6 @@ public class Board {
         if (!isWhiteToMove) {
             ++fullMoveCounter;
         }
-
 
         isWhiteToMove = !isWhiteToMove;
         recalculatePieces();

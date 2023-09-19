@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
-import com.kelseyde.calvin.board.BitBoard;
-import com.kelseyde.calvin.board.BitBoards;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
+import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.board.move.Move;
@@ -28,104 +28,104 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         long copy;
 
         long singleAdvances = isWhite ?
-                BitBoard.shiftNorth(pawns) &~ occupied &~ BitBoards.RANK_8 :
-                BitBoard.shiftSouth(pawns) &~ occupied &~ BitBoards.RANK_1;
+                BitBoardUtil.shiftNorth(pawns) &~ occupied &~ BitBoardConstants.RANK_8 :
+                BitBoardUtil.shiftSouth(pawns) &~ occupied &~ BitBoardConstants.RANK_1;
 
         copy = singleAdvances;
         while (copy != 0) {
-            int endSquare = BitBoard.scanForward(copy);
+            int endSquare = BitBoardUtil.scanForward(copy);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
             moves.add(move(startSquare, endSquare).build());
-            copy = BitBoard.popLSB(copy);
+            copy = BitBoardUtil.popLSB(copy);
         }
 
         long doubleAdvances = isWhite ?
-                BitBoard.shiftNorth(singleAdvances) &~ occupied & BitBoards.RANK_4 :
-                BitBoard.shiftSouth(singleAdvances) &~ occupied & BitBoards.RANK_5;
+                BitBoardUtil.shiftNorth(singleAdvances) &~ occupied & BitBoardConstants.RANK_4 :
+                BitBoardUtil.shiftSouth(singleAdvances) &~ occupied & BitBoardConstants.RANK_5;
         while (doubleAdvances != 0) {
-            int endSquare = BitBoard.scanForward(doubleAdvances);
+            int endSquare = BitBoardUtil.scanForward(doubleAdvances);
             int enPassantTargetSquare = isWhite ? endSquare - 8 : endSquare + 8;
             int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
             moves.add(move(startSquare, endSquare)
                     .enPassantTarget(1L << enPassantTargetSquare)
                     .build());
-            doubleAdvances = BitBoard.popLSB(doubleAdvances);
+            doubleAdvances = BitBoardUtil.popLSB(doubleAdvances);
         }
 
         long leftCaptures = isWhite ?
-                BitBoard.shiftNorthWest(pawns) & opponentPieces &~ BitBoards.FILE_H &~ BitBoards.RANK_8 :
-                BitBoard.shiftSouthWest(pawns) & opponentPieces &~ BitBoards.FILE_H &~ BitBoards.RANK_1;
+                BitBoardUtil.shiftNorthWest(pawns) & opponentPieces &~ BitBoardConstants.FILE_H &~ BitBoardConstants.RANK_8 :
+                BitBoardUtil.shiftSouthWest(pawns) & opponentPieces &~ BitBoardConstants.FILE_H &~ BitBoardConstants.RANK_1;
         while (leftCaptures != 0) {
-            int endSquare = BitBoard.scanForward(leftCaptures);
+            int endSquare = BitBoardUtil.scanForward(leftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             moves.add(move(startSquare, endSquare).build());
-            leftCaptures = BitBoard.popLSB(leftCaptures);
+            leftCaptures = BitBoardUtil.popLSB(leftCaptures);
         }
 
         long rightCaptures = isWhite ?
-                BitBoard.shiftNorthEast(pawns) & opponentPieces &~ BitBoards.FILE_A &~ BitBoards.RANK_8 :
-                BitBoard.shiftSouthEast(pawns) & opponentPieces &~ BitBoards.FILE_A &~ BitBoards.RANK_1;
+                BitBoardUtil.shiftNorthEast(pawns) & opponentPieces &~ BitBoardConstants.FILE_A &~ BitBoardConstants.RANK_8 :
+                BitBoardUtil.shiftSouthEast(pawns) & opponentPieces &~ BitBoardConstants.FILE_A &~ BitBoardConstants.RANK_1;
         while (rightCaptures != 0) {
-            int endSquare = BitBoard.scanForward(rightCaptures);
+            int endSquare = BitBoardUtil.scanForward(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             moves.add(move(startSquare, endSquare).build());
-            rightCaptures = BitBoard.popLSB(rightCaptures);
+            rightCaptures = BitBoardUtil.popLSB(rightCaptures);
         }
 
         long enPassantLeftCaptures = isWhite ?
-                BitBoard.shiftNorthWest(pawns) & enPassantTarget &~ BitBoards.FILE_H :
-                BitBoard.shiftSouthWest(pawns) & enPassantTarget &~ BitBoards.FILE_H;
+                BitBoardUtil.shiftNorthWest(pawns) & enPassantTarget &~ BitBoardConstants.FILE_H :
+                BitBoardUtil.shiftSouthWest(pawns) & enPassantTarget &~ BitBoardConstants.FILE_H;
         while (enPassantLeftCaptures != 0) {
-            int endSquare = BitBoard.scanForward(enPassantLeftCaptures);
+            int endSquare = BitBoardUtil.scanForward(enPassantLeftCaptures);
             int enPassantCaptureSquare = isWhite ? endSquare - 8 : endSquare + 8;
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             moves.add(move(startSquare, endSquare).moveType(MoveType.EN_PASSANT)
                     .enPassantCapture(1L << enPassantCaptureSquare)
                     .build());
-            enPassantLeftCaptures = BitBoard.popLSB(enPassantLeftCaptures);
+            enPassantLeftCaptures = BitBoardUtil.popLSB(enPassantLeftCaptures);
         }
 
         long enPassantRightCaptures = isWhite ?
-                BitBoard.shiftNorthEast(pawns) & enPassantTarget &~ BitBoards.FILE_A :
-                BitBoard.shiftSouthEast(pawns) & enPassantTarget &~ BitBoards.FILE_A;
+                BitBoardUtil.shiftNorthEast(pawns) & enPassantTarget &~ BitBoardConstants.FILE_A :
+                BitBoardUtil.shiftSouthEast(pawns) & enPassantTarget &~ BitBoardConstants.FILE_A;
         while (enPassantRightCaptures != 0) {
-            int endSquare = BitBoard.scanForward(enPassantRightCaptures);
+            int endSquare = BitBoardUtil.scanForward(enPassantRightCaptures);
             int enPassantCaptureSquare = isWhite ? endSquare - 8 : endSquare + 8;
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             moves.add(move(startSquare, endSquare).moveType(MoveType.EN_PASSANT)
                     .enPassantCapture(1L << enPassantCaptureSquare)
                     .build());
-            enPassantRightCaptures = BitBoard.popLSB(enPassantRightCaptures);
+            enPassantRightCaptures = BitBoardUtil.popLSB(enPassantRightCaptures);
         }
 
         long advancePromotions = isWhite ?
-                BitBoard.shiftNorth(pawns) &~ occupied & BitBoards.RANK_8 :
-                BitBoard.shiftSouth(pawns) &~ occupied & BitBoards.RANK_1;
+                BitBoardUtil.shiftNorth(pawns) &~ occupied & BitBoardConstants.RANK_8 :
+                BitBoardUtil.shiftSouth(pawns) &~ occupied & BitBoardConstants.RANK_1;
         while (advancePromotions != 0) {
-            int endSquare = BitBoard.scanForward(advancePromotions);
+            int endSquare = BitBoardUtil.scanForward(advancePromotions);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
-            advancePromotions = BitBoard.popLSB(advancePromotions);
+            advancePromotions = BitBoardUtil.popLSB(advancePromotions);
         }
 
         long captureLeftPromotions = isWhite ?
-                BitBoard.shiftNorthWest(pawns) & opponentPieces &~ BitBoards.FILE_H & BitBoards.RANK_8 :
-                BitBoard.shiftSouthWest(pawns) & opponentPieces &~ BitBoards.FILE_H & BitBoards.RANK_1;
+                BitBoardUtil.shiftNorthWest(pawns) & opponentPieces &~ BitBoardConstants.FILE_H & BitBoardConstants.RANK_8 :
+                BitBoardUtil.shiftSouthWest(pawns) & opponentPieces &~ BitBoardConstants.FILE_H & BitBoardConstants.RANK_1;
         while (captureLeftPromotions != 0) {
-            int endSquare = BitBoard.scanForward(captureLeftPromotions);
+            int endSquare = BitBoardUtil.scanForward(captureLeftPromotions);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
-            captureLeftPromotions = BitBoard.popLSB(captureLeftPromotions);
+            captureLeftPromotions = BitBoardUtil.popLSB(captureLeftPromotions);
         }
 
         long captureRightPromotions = isWhite ?
-                BitBoard.shiftNorthEast(pawns) & opponentPieces &~ BitBoards.FILE_A & BitBoards.RANK_8 :
-                BitBoard.shiftSouthEast(pawns) & opponentPieces &~ BitBoards.FILE_A & BitBoards.RANK_1;
+                BitBoardUtil.shiftNorthEast(pawns) & opponentPieces &~ BitBoardConstants.FILE_A & BitBoardConstants.RANK_8 :
+                BitBoardUtil.shiftSouthEast(pawns) & opponentPieces &~ BitBoardConstants.FILE_A & BitBoardConstants.RANK_1;
         while (captureRightPromotions != 0) {
-            int endSquare = BitBoard.scanForward(captureRightPromotions);
+            int endSquare = BitBoardUtil.scanForward(captureRightPromotions);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
-            captureRightPromotions = BitBoard.popLSB(captureRightPromotions);
+            captureRightPromotions = BitBoardUtil.popLSB(captureRightPromotions);
         }
 
         return moves;

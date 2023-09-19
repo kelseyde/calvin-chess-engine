@@ -78,11 +78,6 @@ public class Game {
         legalMoves = legalMoveService.generateLegalMoves(board);
     }
 
-    public void setWhiteToMove(boolean isWhiteToMove) {
-        this.board.setWhiteToMove(isWhiteToMove);
-        this.legalMoves = legalMoveService.generateLegalMoves(board);
-    }
-
     public boolean isCheckmate() {
         if (moveHistory.isEmpty()) {
             return false;

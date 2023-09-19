@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
-import com.kelseyde.calvin.board.BitBoard;
-import com.kelseyde.calvin.board.BitBoards;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
+import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 
@@ -36,7 +36,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         Set<Move> moves = new HashSet<>();
         long pieceBitboard = getPieceBitboard(board);
         while (pieceBitboard != 0) {
-            int square = BitBoard.scanForward(pieceBitboard);
+            int square = BitBoardUtil.scanForward(pieceBitboard);
             long moveBitboard = 0L;
             if (isOrthogonal()) {
                 moveBitboard |= calculateOrthogonalMoves(board, square);
@@ -44,7 +44,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
             if (isDiagonal()) {
                 moveBitboard |= calculateDiagonalMoves(board, square);
             }
-            pieceBitboard = BitBoard.popLSB(pieceBitboard);
+            pieceBitboard = BitBoardUtil.popLSB(pieceBitboard);
             moves.addAll(addMoves(square, moveBitboard));
         }
         return moves;
@@ -54,8 +54,8 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         long slider = 1L << s;
         long occ = board.getOccupied();
         long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
-        long[] ranks = BitBoards.RANK_MASKS;
-        long[] files = BitBoards.FILE_MASKS;
+        long[] ranks = BitBoardConstants.RANK_MASKS;
+        long[] files = BitBoardConstants.FILE_MASKS;
 
         long horizontalMoves = (occ - 2 * slider) ^ Long.reverse(Long.reverse(occ) - 2 * Long.reverse(slider));
         long verticalMoves = ((occ & files[s % 8]) - (2 * slider)) ^ Long.reverse(Long.reverse(occ & files[s % 8]) - (2 * Long.reverse(slider)));
@@ -66,8 +66,8 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         long slider = 1L << s;
         long occ = board.getOccupied();
         long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
-        long[] diagonals = BitBoards.DIAGONAL_MASKS;
-        long[] antiDiagonals = BitBoards.ANTI_DIAGONAL_MASKS;
+        long[] diagonals = BitBoardConstants.DIAGONAL_MASKS;
+        long[] antiDiagonals = BitBoardConstants.ANTI_DIAGONAL_MASKS;
 
         long diagonalMoves = ((occ & diagonals[(s / 8) + (s % 8)]) - (2 * slider)) ^
                 Long.reverse(Long.reverse(occ & diagonals[(s / 8) + (s % 8)]) - (2 * Long.reverse(slider)));
@@ -79,13 +79,13 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     private Set<Move> addMoves(int startSquare, long moveBitboard) {
         Set<Move> moves = new HashSet<>();
         while (moveBitboard != 0) {
-            int endSquare = BitBoard.scanForward(moveBitboard);
+            int endSquare = BitBoardUtil.scanForward(moveBitboard);
             moves.add(Move.builder()
                     .pieceType(getPieceType())
                     .startSquare(startSquare)
                     .endSquare(endSquare)
                     .build());
-            moveBitboard = BitBoard.popLSB(moveBitboard);
+            moveBitboard = BitBoardUtil.popLSB(moveBitboard);
         }
         return moves;
     }

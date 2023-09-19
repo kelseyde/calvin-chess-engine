@@ -1,13 +1,13 @@
-package com.kelseyde.calvin.board;
+package com.kelseyde.calvin.board.bitboard;
 
-public class BitBoard {
+public class BitBoardUtil {
 
     public static long shiftWest(long board) {
-        return (board >>> 1) &~ BitBoards.FILE_H;
+        return (board >>> 1) &~ BitBoardConstants.FILE_H;
     }
 
     public static long shiftEast(long board) {
-        return board << 1 &~ BitBoards.FILE_A;
+        return board << 1 &~ BitBoardConstants.FILE_A;
     }
 
     public static long shiftSouth(long board) {
@@ -19,19 +19,19 @@ public class BitBoard {
     }
 
     public static long shiftNorthEast(long board) {
-        return board << 9 &~ BitBoards.FILE_A;
+        return board << 9 &~ BitBoardConstants.FILE_A;
     }
 
     public static long shiftSouthEast(long board) {
-        return board >>> 7 &~ BitBoards.FILE_A;
+        return board >>> 7 &~ BitBoardConstants.FILE_A;
     }
 
     public static long shiftSouthWest(long board) {
-        return board >>> 9 &~ BitBoards.FILE_H;
+        return board >>> 9 &~ BitBoardConstants.FILE_H;
     }
 
     public static long shiftNorthWest(long board) {
-        return board << 7 &~ BitBoards.FILE_H;
+        return board << 7 &~ BitBoardConstants.FILE_H;
     }
 
     public static int scanForward(long board) {

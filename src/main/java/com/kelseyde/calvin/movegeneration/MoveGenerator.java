@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration;
 
-import com.kelseyde.calvin.board.BitBoard;
-import com.kelseyde.calvin.board.BitBoards;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
+import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
@@ -56,8 +56,8 @@ public class MoveGenerator {
 
         long kingMask = switch (move.getMoveType()) {
             default -> board.isWhiteToMove() ? boardCopy.getWhiteKing() : boardCopy.getBlackKing();
-            case KINGSIDE_CASTLE -> board.isWhiteToMove() ? BitBoards.WHITE_KINGSIDE_CASTLE_SAFE_MASK : BitBoards.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
-            case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? BitBoards.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : BitBoards.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+            case KINGSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.WHITE_KINGSIDE_CASTLE_SAFE_MASK : BitBoardConstants.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+            case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : BitBoardConstants.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
         };
 
         // TODO perhaps can be done without a stream
@@ -77,7 +77,7 @@ public class MoveGenerator {
         // Additionally calculate whether the move is a check, store this info in Move.
         boolean isWhiteToMove = !board.isWhiteToMove();
         board.setWhiteToMove(isWhiteToMove);
-        int opponentKingSquare = isWhiteToMove ? BitBoard.scanForward(board.getBlackKing()) : BitBoard.scanForward(board.getWhiteKing());
+        int opponentKingSquare = isWhiteToMove ? BitBoardUtil.scanForward(board.getBlackKing()) : BitBoardUtil.scanForward(board.getWhiteKing());
         Set<Integer> attackingSquares = generatePseudoLegalMovesWithoutKing(board).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

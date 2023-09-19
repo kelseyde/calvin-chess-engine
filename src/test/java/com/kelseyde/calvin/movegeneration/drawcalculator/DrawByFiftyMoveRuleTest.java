@@ -381,6 +381,7 @@ public class DrawByFiftyMoveRuleTest {
 
         Game game = new Game(board);
         game.getBoard().setWhiteToMove(false);
+        game.setLegalMoves(game.getLegalMoveService().generateLegalMoves(game.getBoard()));
 
         // black knight captures white queen
         game.makeMove(move("c3", "d5"));
@@ -557,6 +558,7 @@ public class DrawByFiftyMoveRuleTest {
 
         Game game = new Game(board);
         game.getBoard().setWhiteToMove(false);
+        game.setLegalMoves(game.getLegalMoveService().generateLegalMoves(game.getBoard()));
 
         // black pawn makes last possible pawn move
         game.makeMove(move("e7", "e5"));

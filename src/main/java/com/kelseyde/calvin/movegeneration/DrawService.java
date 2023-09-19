@@ -9,18 +9,29 @@ import java.util.Optional;
 
 public class DrawService {
 
-    private final List<DrawCalculator> drawCalculators = List.of(
-            new StalemateCalculator(),
-            new ThreefoldRepetitionCalculator(),
-            new InsufficientMaterialCalculator(),
-            new FiftyMoveRuleCalculator()
-    );
+    private final StalemateCalculator stalemateCalculator = new StalemateCalculator();
+
+    private final ThreefoldRepetitionCalculator threefoldRepetitionCalculator = new ThreefoldRepetitionCalculator();
+
+    private final InsufficientMaterialCalculator insufficientMaterialCalculator = new InsufficientMaterialCalculator();
+
+    private final FiftyMoveRuleCalculator fiftyMoveRuleCalculator = new FiftyMoveRuleCalculator();
+
 
     public Optional<DrawType> calculateDraw(Game game) {
-        return drawCalculators.stream()
-                .filter(calculator -> calculator.isDraw(game))
-                .findFirst()
-                .map(DrawCalculator::getDrawType);
+        if (stalemateCalculator.isDraw(game)) {
+            return Optional.of(DrawType.STALEMATE);
+        }
+        if (threefoldRepetitionCalculator.isDraw(game)) {
+            return Optional.of(DrawType.THREEFOLD_REPETITION);
+        }
+        if (insufficientMaterialCalculator.isDraw(game)) {
+            return Optional.of(DrawType.INSUFFICIENT_MATERIAL);
+        }
+        if (fiftyMoveRuleCalculator.isDraw(game)) {
+            return Optional.of(DrawType.FIFTY_MOVE_RULE);
+        }
+        return Optional.empty();
     }
 
 }

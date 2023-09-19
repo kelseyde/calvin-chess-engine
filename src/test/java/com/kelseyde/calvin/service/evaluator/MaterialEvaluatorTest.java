@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.service.evaluator;
 
-import com.kelseyde.calvin.model.Game;
+import com.kelseyde.calvin.board.Game;
+import com.kelseyde.calvin.evaluation.MaterialEvaluator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

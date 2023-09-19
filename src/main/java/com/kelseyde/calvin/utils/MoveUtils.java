@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.utils;
 
-import com.kelseyde.calvin.model.move.Move;
+import com.kelseyde.calvin.board.move.Move;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package com.kelseyde.calvin;
 
-import com.kelseyde.calvin.model.Game;
-import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.service.game.perft.MoveGenerationService;
+import com.kelseyde.calvin.board.Game;
+import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.movegeneration.perft.PerformanceTestService;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -20,7 +20,7 @@ import java.time.temporal.ChronoUnit;
 @Disabled
 public class PerformanceTest {
 
-    private final MoveGenerationService moveGenerator = new MoveGenerationService();
+    private final PerformanceTestService moveGenerator = new PerformanceTestService();
 
     @Test
     public void testPerftOneDepth() {
@@ -50,7 +50,7 @@ public class PerformanceTest {
 
     private void perft(Game game, int depth, int expectedTotalMoves) {
         Instant start = Instant.now();
-        int totalMoveCount = moveGenerator.generateMoves(game, depth);
+        int totalMoveCount = moveGenerator.generateAllLegalMoves(game, depth);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
         System.out.printf("Move generator calculated %s possible positions at depth %s in %s",

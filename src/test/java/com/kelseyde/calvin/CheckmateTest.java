@@ -1,9 +1,7 @@
 package com.kelseyde.calvin;
 
-import com.kelseyde.calvin.model.*;
-import com.kelseyde.calvin.model.move.Move;
-import com.kelseyde.calvin.model.result.GameResult;
-import com.kelseyde.calvin.model.result.WinResult;
+import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.utils.MoveUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

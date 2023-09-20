@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.movegeneration;
 
-import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
-import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
 import lombok.extern.slf4j.Slf4j;

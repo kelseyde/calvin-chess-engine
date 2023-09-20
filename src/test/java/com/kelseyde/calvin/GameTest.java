@@ -1,11 +1,12 @@
 package com.kelseyde.calvin;
 
-import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.board.move.MoveUtils;
+import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -284,14 +285,14 @@ public class GameTest {
     }
 
     private Move move(String startSquare, String endSquare) {
-        return MoveUtils.fromNotation(startSquare, endSquare);
+        return NotationUtils.fromNotation(startSquare, endSquare);
     }
 
     private void assertSinglePieceBoard(Game game, int startSquare) {
-        game.getBoard().setPiece(startSquare, rook);
+        game.getBoard().setPiece(startSquare, rook, true);
         Assertions.assertEquals(Set.of(startSquare), getPiecePositions(game.getBoard(), true));
         Assertions.assertEquals(Set.of(), getPiecePositions(game.getBoard(), false));
-        game.getBoard().unsetPiece(startSquare);
+        game.getBoard().unsetPiece(startSquare, true);
     }
 
 }

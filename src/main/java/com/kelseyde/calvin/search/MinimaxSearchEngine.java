@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.evaluation.PositionEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.board.move.MoveUtils;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class MinimaxSearchEngine implements Engine {
     @Override
     public Move selectMove(Game game) {
         MinimaxResult result = minimax(game, 3, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
-        log.info("Minimax evaluation: {}, move: {}", result.eval(), MoveUtils.toNotation(result.move()));
+        log.info("Minimax evaluation: {}, move: {}", result.eval(), NotationUtils.toNotation(result.move()));
         return result.move();
     }
 
@@ -44,7 +44,7 @@ public class MinimaxSearchEngine implements Engine {
         }
         List<Move> legalMoves = new ArrayList<>(legalMoveService.generateLegalMoves(game.getBoard()));
         Move bestMove = legalMoves.get(new Random().nextInt(legalMoves.size()));
-        log.info("current best move {}, legal moves: {}", MoveUtils.toNotation(bestMove), legalMoves.stream().map(MoveUtils::toNotation).toList());
+        log.info("current best move {}, legal moves: {}", NotationUtils.toNotation(bestMove), legalMoves.stream().map(NotationUtils::toNotation).toList());
         if (isMaximisingPlayer) {
             int maxEval = Integer.MIN_VALUE;
             for (Move legalMove : legalMoves) {
@@ -52,7 +52,7 @@ public class MinimaxSearchEngine implements Engine {
                 MinimaxResult result = minimax(game, depth - 1, alpha, beta, false);
                 game.unmakeMove();
                 if (result.eval > maxEval) {
-                    log.info("result eval {} > max eval {}, move {}", result.eval, maxEval, MoveUtils.toNotation(bestMove));
+                    log.info("result eval {} > max eval {}, move {}", result.eval, maxEval, NotationUtils.toNotation(bestMove));
                     maxEval = result.eval;
                     log.info("max eval: {}", maxEval);
                     bestMove = legalMove;
@@ -73,7 +73,7 @@ public class MinimaxSearchEngine implements Engine {
                 if (result.eval < minEval) {
                     minEval = result.eval;
                     bestMove = legalMove;
-                    log.info("result eval {} < min eval {}, move {}", result.eval, minEval, MoveUtils.toNotation(bestMove));
+                    log.info("result eval {} < min eval {}, move {}", result.eval, minEval, NotationUtils.toNotation(bestMove));
                     beta = Math.min(beta, minEval);
                     if (beta <= alpha) {
                         log.info("pruning for minimising player");

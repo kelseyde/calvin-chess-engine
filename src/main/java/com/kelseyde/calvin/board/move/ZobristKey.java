@@ -34,9 +34,7 @@ public class ZobristKey {
         Random random = new Random();
 
         for (int squareIndex = 0; squareIndex < 64; squareIndex++) {
-
             for (int pieceIndex : PieceType.indices()) {
-
                 PIECE_SQUARE_HASH[squareIndex][pieceIndex][white] = random.nextLong();
                 PIECE_SQUARE_HASH[squareIndex][pieceIndex][black] = random.nextLong();
             }

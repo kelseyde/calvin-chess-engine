@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
-import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
-import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
 import com.kelseyde.calvin.board.move.Move;
 
 import java.util.HashSet;
@@ -29,7 +29,6 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
      * Generate the possible moves for sliding pieces of this type. Uses a strategy called 'hyperbola quintessence' to
      * quickly calculate the bitboards for vertical, horizontal, diagonal and anti-diagonal moves.
      * @see <a href="https://www.chessprogramming.org/Hyperbola_Quintessence">Chess Programming Wiki</a>
-
      */
     @Override
     public Set<Move> generatePseudoLegalMoves(Board board) {

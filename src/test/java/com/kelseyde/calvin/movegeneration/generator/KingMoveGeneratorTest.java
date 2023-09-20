@@ -1,9 +1,9 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.board.move.Move;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,13 +53,13 @@ public class KingMoveGeneratorTest {
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.setPiece(startSquare, king);
+        board.setPiece(startSquare, king, true);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.unsetPiece(startSquare);
+        board.unsetPiece(startSquare, true);
     }
 
 }

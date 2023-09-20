@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.board.move.MoveUtils;
+import com.kelseyde.calvin.utils.NotationUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,13 +29,13 @@ public class PerftService {
     }
 
     private void log(Game game, int depth, Set<Move> moves) {
-        List<String> moveHistory = game.getMoveHistory().stream().map(MoveUtils::toNotation).toList();
-        List<String> legalMoves = moves.stream().map(MoveUtils::toNotation).toList();
+        List<String> moveHistory = game.getMoveHistory().stream().map(NotationUtils::toNotation).toList();
+        List<String> legalMoves = moves.stream().map(NotationUtils::toNotation).toList();
         System.out.printf("perft(%s) -- %s: %s -- %s%n", depth, moveHistory, legalMoves.size(), legalMoves);
     }
 
     private void log(Game game, int depth, int count) {
-        List<String> moveHistory = game.getMoveHistory().stream().map(MoveUtils::toNotation).toList();
+        List<String> moveHistory = game.getMoveHistory().stream().map(NotationUtils::toNotation).toList();
         System.out.printf("perft(%s) -- %s: %s %n", depth, moveHistory, count);
     }
 

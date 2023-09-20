@@ -1,15 +1,15 @@
 package com.kelseyde.calvin.api.controller;
 
-import com.kelseyde.calvin.board.Game;
+import com.kelseyde.calvin.api.repository.GameRepository;
 import com.kelseyde.calvin.api.request.NewGameResponse;
 import com.kelseyde.calvin.api.request.PlayRequest;
 import com.kelseyde.calvin.api.request.PlayResponse;
+import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.result.GameResult;
 import com.kelseyde.calvin.board.result.GameResult.ResultType;
-import com.kelseyde.calvin.api.repository.GameRepository;
 import com.kelseyde.calvin.search.Engine;
-import com.kelseyde.calvin.board.move.MoveUtils;
+import com.kelseyde.calvin.utils.NotationUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -49,11 +49,11 @@ public class GameController {
                 .orElseThrow(() -> new NoSuchElementException(String.format("Invalid game id %s!", moveRequest.getGameId())));
 
         Move playerMove = Move.builder()
-                .startSquare(MoveUtils.fromNotation(moveRequest.getStartSquare()))
-                .endSquare(MoveUtils.fromNotation(moveRequest.getEndSquare()))
+                .startSquare(NotationUtils.fromNotation(moveRequest.getStartSquare()))
+                .endSquare(NotationUtils.fromNotation(moveRequest.getEndSquare()))
                 .promotionPieceType(moveRequest.getPromotionPieceType())
                 .build();
-        log.info("Player selects move {}", MoveUtils.toNotation(playerMove));
+        log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
         GameResult playerResult = game.makeMove(playerMove);
         ResultType resultType = playerResult.getResultType();
         if (ResultType.WIN.equals(resultType) || ResultType.DRAW.equals(resultType) || ResultType.ILLEGAL_MOVE.equals(resultType)) {
@@ -63,7 +63,7 @@ public class GameController {
         }
 
         Move engineMove = engine.selectMove(game);
-        log.info("Engine selects move {}", MoveUtils.toNotation(engineMove));
+        log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));
         GameResult engineResult = game.makeMove(engineMove);
         return ResponseEntity.ok(PlayResponse.fromBoard(game.getBoard())
                 .result(engineResult)

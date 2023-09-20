@@ -99,38 +99,25 @@ public class Board {
         }
 
         // TODO make nice
-        occupied &= ~(1L << move.getStartSquare());
-
-        whitePawns = whitePawns & occupied;
-        whiteKnights = whiteKnights & occupied;
-        whiteBishops = whiteBishops & occupied;
-        whiteRooks = whiteRooks & occupied;
-        whiteQueens = whiteQueens & occupied;
-        whiteKing = whiteKing & occupied;
-
-        blackPawns = blackPawns & occupied;
-        blackKnights = blackKnights & occupied;
-        blackBishops = blackBishops & occupied;
-        blackRooks = blackRooks & occupied;
-        blackQueens = blackQueens & occupied;
-        blackKing = blackKing & occupied;
-        setPiece(move.getEndSquare(), pieceCode);
+        unsetPiece(move.getStartSquare(), false);
+        setPiece(move.getEndSquare(), pieceCode, true);
 
         switch (move.getMoveType()) {
             case EN_PASSANT -> {
-                unsetPiece(BitBoardUtil.scanForward(move.getEnPassantCapture()));
+                int enPassantCapturedSquare = BitBoardUtil.scanForward(move.getEnPassantCapture());
+                unsetPiece(enPassantCapturedSquare, true);
             }
             case PROMOTION -> {
                 String promotedPiece = Piece.getPieceCode(isWhiteToMove, move.getPromotionPieceType());
-                setPiece(move.getEndSquare(), promotedPiece);
+                setPiece(move.getEndSquare(), promotedPiece, true);
             }
             case KINGSIDE_CASTLE -> {
-                unsetPiece(isWhiteToMove ? 7 : 63);
-                setPiece(isWhiteToMove ? 5 : 61, Piece.getPieceCode(isWhiteToMove, PieceType.ROOK));
+                unsetPiece(isWhiteToMove ? 7 : 63, true);
+                setPiece(isWhiteToMove ? 5 : 61, Piece.getPieceCode(isWhiteToMove, PieceType.ROOK), true);
             }
             case QUEENSIDE_CASTLE -> {
-                unsetPiece(isWhiteToMove ? 0 : 56);
-                setPiece(isWhiteToMove ? 3 : 59, Piece.getPieceCode(isWhiteToMove, PieceType.ROOK));
+                unsetPiece(isWhiteToMove ? 0 : 56, true);
+                setPiece(isWhiteToMove ? 3 : 59, Piece.getPieceCode(isWhiteToMove, PieceType.ROOK), true);
             }
         }
 
@@ -146,23 +133,8 @@ public class Board {
         recalculatePieces();
     }
 
-    public void setPiece(int square, String pieceCode) {
-        // TODO make nice
-        occupied &= ~(1L << square);
-
-        whitePawns = whitePawns & occupied;
-        whiteKnights = whiteKnights & occupied;
-        whiteBishops = whiteBishops & occupied;
-        whiteRooks = whiteRooks & occupied;
-        whiteQueens = whiteQueens & occupied;
-        whiteKing = whiteKing & occupied;
-
-        blackPawns = blackPawns & occupied;
-        blackKnights = blackKnights & occupied;
-        blackBishops = blackBishops & occupied;
-        blackRooks = blackRooks & occupied;
-        blackQueens = blackQueens & occupied;
-        blackKing = blackKing & occupied;
+    public void setPiece(int square, String pieceCode, boolean recalculate) {
+        unsetPiece(square, false);
         switch (pieceCode) {
             case "wP" -> whitePawns |= (1L << square);
             case "wN" -> whiteKnights |= (1L << square);
@@ -177,10 +149,12 @@ public class Board {
             case "bQ" -> blackQueens |= (1L << square);
             case "bK" -> blackKing |= (1L << square);
         }
-        recalculatePieces();
+        if (recalculate) {
+            recalculatePieces();
+        }
     }
 
-    public void unsetPiece(int square) {
+    public void unsetPiece(int square, boolean recalculate) {
         occupied &= ~(1L << square);
 
         whitePawns = whitePawns & occupied;
@@ -197,7 +171,9 @@ public class Board {
         blackQueens = blackQueens & occupied;
         blackKing = blackKing & occupied;
 
-        recalculatePieces();
+        if (recalculate) {
+            recalculatePieces();
+        }
     }
 
     public Board copy() {

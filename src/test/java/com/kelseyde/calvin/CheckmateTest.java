@@ -1,13 +1,14 @@
 package com.kelseyde.calvin;
 
-import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.board.result.GameResult;
 import com.kelseyde.calvin.board.result.WinResult;
 import com.kelseyde.calvin.board.result.WinType;
-import com.kelseyde.calvin.board.move.MoveUtils;
+import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -181,8 +182,8 @@ public class CheckmateTest {
         game.makeMove(move("c3", "b2"));
 
         Move move = Move.builder()
-                .startSquare(MoveUtils.fromNotation("e2"))
-                .endSquare(MoveUtils.fromNotation("d1"))
+                .startSquare(NotationUtils.fromNotation("e2"))
+                .endSquare(NotationUtils.fromNotation("d1"))
                 .promotionPieceType(PieceType.KNIGHT)
                 .build();
         GameResult result = game.makeMove(move);
@@ -195,9 +196,9 @@ public class CheckmateTest {
     public void testSimpleQueenCheckmate() {
 
         Board board = Board.emptyBoard();
-        board.setPiece(48, Piece.getPieceCode(false, PieceType.KING));
-        board.setPiece(42, Piece.getPieceCode(true, PieceType.KING));
-        board.setPiece(1, Piece.getPieceCode(true, PieceType.QUEEN));
+        board.setPiece(48, Piece.getPieceCode(false, PieceType.KING), true);
+        board.setPiece(42, Piece.getPieceCode(true, PieceType.KING), true);
+        board.setPiece(1, Piece.getPieceCode(true, PieceType.QUEEN), true);
 
         Game game = new Game(board);
 
@@ -209,7 +210,7 @@ public class CheckmateTest {
     }
 
     private Move move(String startSquare, String endSquare) {
-        return MoveUtils.fromNotation(startSquare, endSquare);
+        return NotationUtils.fromNotation(startSquare, endSquare);
     }
 
 }

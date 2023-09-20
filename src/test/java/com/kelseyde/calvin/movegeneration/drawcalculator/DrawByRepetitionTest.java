@@ -1,11 +1,11 @@
 package com.kelseyde.calvin.movegeneration.drawcalculator;
 
-import com.kelseyde.calvin.board.result.DrawType;
 import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.result.DrawResult;
+import com.kelseyde.calvin.board.result.DrawType;
 import com.kelseyde.calvin.board.result.GameResult;
-import com.kelseyde.calvin.board.move.MoveUtils;
+import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -177,7 +177,7 @@ public class DrawByRepetitionTest {
     }
 
     private Move move(String startSquare, String endSquare) {
-        return MoveUtils.fromNotation(startSquare, endSquare);
+        return NotationUtils.fromNotation(startSquare, endSquare);
     }
 
 }

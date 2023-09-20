@@ -1,10 +1,11 @@
-package com.kelseyde.calvin.board.move;
+package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.move.Move;
 
 import java.util.List;
 
-public class MoveUtils {
+public class NotationUtils {
 
     /**
      * Generate a {@link Move} from algebraic notation of the start and end square (e.g. "e2", "e4" -> new Move(12, 28))

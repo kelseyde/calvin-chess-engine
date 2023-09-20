@@ -3,7 +3,7 @@ package com.kelseyde.calvin;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.perft.PerftService;
-import com.kelseyde.calvin.board.move.MoveUtils;
+import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -74,7 +74,7 @@ public class PerformanceTest {
     }
 
     private Move move(String startSquare, String endSquare) {
-        return MoveUtils.fromNotation(startSquare, endSquare);
+        return NotationUtils.fromNotation(startSquare, endSquare);
     }
 
 

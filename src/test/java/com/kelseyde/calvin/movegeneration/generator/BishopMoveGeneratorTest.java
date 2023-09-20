@@ -1,9 +1,9 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.board.move.Move;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,10 +60,10 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(10, Piece.getPieceCode(false, PieceType.PAWN));
-        board.setPiece(14, Piece.getPieceCode(false, PieceType.KNIGHT));
-        board.setPiece(42, Piece.getPieceCode(false, PieceType.BISHOP));
-        board.setPiece(46, Piece.getPieceCode(false, PieceType.ROOK));
+        board.setPiece(10, Piece.getPieceCode(false, PieceType.PAWN), true);
+        board.setPiece(14, Piece.getPieceCode(false, PieceType.KNIGHT), true);
+        board.setPiece(42, Piece.getPieceCode(false, PieceType.BISHOP), true);
+        board.setPiece(46, Piece.getPieceCode(false, PieceType.ROOK), true);
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
 
@@ -74,23 +74,23 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(10, Piece.getPieceCode(true, PieceType.PAWN));
-        board.setPiece(14, Piece.getPieceCode(true, PieceType.KNIGHT));
-        board.setPiece(42, Piece.getPieceCode(true, PieceType.BISHOP));
-        board.setPiece(46, Piece.getPieceCode(true, PieceType.ROOK));
+        board.setPiece(10, Piece.getPieceCode(true, PieceType.PAWN), true);
+        board.setPiece(14, Piece.getPieceCode(true, PieceType.KNIGHT), true);
+        board.setPiece(42, Piece.getPieceCode(true, PieceType.BISHOP), true);
+        board.setPiece(46, Piece.getPieceCode(true, PieceType.ROOK), true);
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37));
 
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.setPiece(startSquare, bishop);
+        board.setPiece(startSquare, bishop, true);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.unsetPiece(startSquare);
+        board.unsetPiece(startSquare, true);
     }
 
 }

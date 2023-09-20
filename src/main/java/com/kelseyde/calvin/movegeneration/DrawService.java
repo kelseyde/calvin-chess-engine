@@ -1,10 +1,12 @@
 package com.kelseyde.calvin.movegeneration;
 
-import com.kelseyde.calvin.board.result.DrawType;
 import com.kelseyde.calvin.board.Game;
-import com.kelseyde.calvin.movegeneration.drawcalculator.*;
+import com.kelseyde.calvin.board.result.DrawType;
+import com.kelseyde.calvin.movegeneration.drawcalculator.FiftyMoveRuleCalculator;
+import com.kelseyde.calvin.movegeneration.drawcalculator.InsufficientMaterialCalculator;
+import com.kelseyde.calvin.movegeneration.drawcalculator.StalemateCalculator;
+import com.kelseyde.calvin.movegeneration.drawcalculator.ThreefoldRepetitionCalculator;
 
-import java.util.List;
 import java.util.Optional;
 
 public class DrawService {

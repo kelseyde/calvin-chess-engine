@@ -4,8 +4,6 @@ import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public enum PieceType {
     PAWN("P", 0),

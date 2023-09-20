@@ -2,8 +2,8 @@ package com.kelseyde.calvin.board.piece;
 
 public class Piece {
 
-    public static String getPieceCode(boolean isWhiteToMove, PieceType type) {
-        String colourCode = isWhiteToMove ? "w" : "b";
+    public static String getPieceCode(boolean isWhite, PieceType type) {
+        String colourCode = isWhite ? "w" : "b";
         String pieceCode = type.getPieceCode();
         return colourCode + pieceCode;
     }

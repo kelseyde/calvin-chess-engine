@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.board.bitboard;
 
-import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
-
 public class BitBoardConstants {
 
     public static final long RANK_1 = 0b0000000000000000000000000000000000000000000000000000000011111111L;

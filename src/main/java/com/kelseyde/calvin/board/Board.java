@@ -54,35 +54,6 @@ public class Board {
         recalculatePieces();
     }
 
-    // TODO move outside board?
-    public static Board emptyBoard() {
-        Board board = new Board();
-        board.whitePawns = 0L;
-        board.whiteKnights = 0L;
-        board.whiteBishops = 0L;
-        board.whiteRooks = 0L;
-        board.whiteQueens = 0L;
-        board.whiteKing = 0L;
-
-        board.blackPawns = 0L;
-        board.blackKnights = 0L;
-        board.blackBishops = 0L;
-        board.blackRooks = 0L;
-        board.blackQueens = 0L;
-        board.blackKing = 0L;
-
-        board.enPassantTarget = 0L;
-
-        board.setWhiteKingsideCastlingAllowed(false);
-        board.setWhiteQueensideCastlingAllowed(false);
-        board.setBlackKingsideCastlingAllowed(false);
-        board.setBlackQueensideCastlingAllowed(false);
-
-        board.recalculatePieces();
-
-        return board;
-    }
-
     public void applyMove(Move move) {
 
         PieceType pieceType = move.getPieceType();
@@ -202,7 +173,7 @@ public class Board {
         return board;
     }
 
-    private void recalculatePieces() {
+    public void recalculatePieces() {
         whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
         blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
         occupied = whitePieces | blackPieces;

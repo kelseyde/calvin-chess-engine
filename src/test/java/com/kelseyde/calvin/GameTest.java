@@ -7,6 +7,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.NotationUtils;
+import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ public class GameTest {
     @Test
     public void testFromPositionDoesNotCorruptBoard() {
 
-        Game game = new Game(Board.emptyBoard());
+        Game game = new Game(TestUtils.emptyBoard());
         assertSinglePieceBoard(game, 0);
         assertSinglePieceBoard(game, 7);
         assertSinglePieceBoard(game, 12);

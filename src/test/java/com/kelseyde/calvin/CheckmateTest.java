@@ -9,6 +9,7 @@ import com.kelseyde.calvin.board.result.GameResult;
 import com.kelseyde.calvin.board.result.WinResult;
 import com.kelseyde.calvin.board.result.WinType;
 import com.kelseyde.calvin.utils.NotationUtils;
+import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -195,7 +196,7 @@ public class CheckmateTest {
     @Test
     public void testSimpleQueenCheckmate() {
 
-        Board board = Board.emptyBoard();
+        Board board = TestUtils.emptyBoard();
         board.setPiece(48, Piece.getPieceCode(false, PieceType.KING), true);
         board.setPiece(42, Piece.getPieceCode(true, PieceType.KING), true);
         board.setPiece(1, Piece.getPieceCode(true, PieceType.QUEEN), true);

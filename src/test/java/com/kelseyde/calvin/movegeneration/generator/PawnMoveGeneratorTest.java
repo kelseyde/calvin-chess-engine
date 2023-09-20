@@ -7,6 +7,7 @@ import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.NotationUtils;
+import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ public class PawnMoveGeneratorTest {
 
     @BeforeEach
     public void beforeEach() {
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
     }
 
     @Test
@@ -50,7 +51,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhitePawnCannotMoveThroughPiece() {
 
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
         board.setPiece(16, Piece.getPieceCode(true, PieceType.ROOK), true);
         assertMovesFromSquare(board, 8, Set.of());
         board.unsetPiece(16, true);
@@ -89,7 +90,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhitePawnsNotOnStartingSquares() {
 
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
         board.setPiece(16, whitePawn, true);
         assertMovesFromSquare(board, 16, Set.of(moveBuilder(16, 24).build()));
         board.unsetPiece(16, true);
@@ -107,7 +108,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testBlackPawnsNotOnStartingSquares() {
 
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
         board.setWhiteToMove(false);
 
         board.setPiece(45, blackPawn, true);
@@ -127,7 +128,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhitePawnCaptures() {
 
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
         board.setPiece(9, Piece.getPieceCode(true, PieceType.PAWN), true);
         board.setPiece(16, Piece.getPieceCode(false, PieceType.PAWN), true);
         board.setPiece(18, Piece.getPieceCode(false, PieceType.PAWN), true);
@@ -154,7 +155,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testBlackPawnCaptures() {
 
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
         board.setWhiteToMove(false);
 
         board.setPiece(49, Piece.getPieceCode(false, PieceType.PAWN), true);
@@ -175,7 +176,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhiteEnPassant() {
 
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
         board.setPiece(35, whitePawn, true);
         board.setPiece(34, blackPawn, true);
         board.setEnPassantTarget(1L << 42);
@@ -194,7 +195,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhiteEnPassantWithOtherCapture() {
 
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
         board.setPiece(35, whitePawn, true);
         board.setPiece(52, blackPawn, true);
         board.setPiece(42, Piece.getPieceCode(false, PieceType.QUEEN), true);
@@ -216,7 +217,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhiteDoubleEnPassantIsImpossible() {
 
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
 
         board.setPiece(35, whitePawn, true);
         // we need another white piece to spend a move in between black's pawn moves
@@ -342,7 +343,7 @@ public class PawnMoveGeneratorTest {
 
     @Test
     public void testWhiteStandardPromotion() {
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
         board.setPiece(51, whitePawn, true);
         Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
         Assertions.assertEquals(

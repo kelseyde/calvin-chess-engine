@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ public class QueenMoveGeneratorTest {
 
     @BeforeEach
     public void beforeEach() {
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
     }
 
     @Test
@@ -100,7 +101,7 @@ public class QueenMoveGeneratorTest {
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board = Board.emptyBoard();
+        board = TestUtils.emptyBoard();
     }
 
 }

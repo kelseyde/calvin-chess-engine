@@ -27,10 +27,6 @@ public class Move {
     private MoveType moveType = MoveType.STANDARD;
 
     /**
-     * Whether this move comes with check.
-     */
-    private boolean isCheck;
-    /**
      * The bitboard representing the destination square for a pawn capturing en passant. Should be set by
      * a double pawn move that enables en passant on the next turn.
      */

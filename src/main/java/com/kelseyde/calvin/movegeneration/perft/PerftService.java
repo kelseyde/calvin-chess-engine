@@ -13,8 +13,6 @@ public class PerftService {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
-    private final ResultEvaluator resultEvaluator = new ResultEvaluator();
-
     public int perft(Board board, int depth) {
         Set<Move> moves = moveGenerator.generateLegalMoves(board);
         if (depth == 1) {

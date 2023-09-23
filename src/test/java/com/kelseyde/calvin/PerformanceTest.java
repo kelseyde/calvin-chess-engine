@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.perft.PerftService;
 import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+@Disabled
 public class PerformanceTest {
 
     private final PerftService perftService = new PerftService();

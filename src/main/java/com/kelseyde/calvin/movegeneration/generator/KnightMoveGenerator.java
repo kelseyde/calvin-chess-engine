@@ -38,16 +38,20 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
         Set<Move> moves = new HashSet<>();
 
         long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
-        long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
 
         while (knights != 0) {
             int startSquare = BitBoardUtils.scanForward(knights);
-            long possibleMoves = KNIGHT_ATTACKS[startSquare] &~ friendlyPieces;
-            moves.addAll(addKnightMoves(startSquare, possibleMoves));
+            moves.addAll(generatePseudoLegalMovesFromSquare(board, startSquare));
             knights = BitBoardUtils.popLSB(knights);
         }
         return moves;
 
+    }
+
+    public Set<Move> generatePseudoLegalMovesFromSquare(Board board, int startSquare) {
+        long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
+        long possibleMoves = KNIGHT_ATTACKS[startSquare] &~ friendlyPieces;
+        return new HashSet<>(addKnightMoves(startSquare, possibleMoves));
     }
 
     private Set<Move> addKnightMoves(int startSquare, long possibleMoves) {

@@ -50,10 +50,9 @@ public class MoveGenerator {
             attackedSquares |= (1L << opponentMove.getEndSquare());
         }
         boolean isLegalMove = (kingMask & attackedSquares) == 0;
-        if (isLegalMove && isCheck(board)) {
-            move.setCheck(true);
-        }
+
         board.unmakeMove();
+
         return isLegalMove;
 
     }

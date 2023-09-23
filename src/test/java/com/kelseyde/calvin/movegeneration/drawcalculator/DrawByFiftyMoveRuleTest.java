@@ -1,195 +1,191 @@
 package com.kelseyde.calvin.movegeneration.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Game;
-import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.board.result.DrawResult;
-import com.kelseyde.calvin.board.result.DrawType;
-import com.kelseyde.calvin.board.result.GameResult;
-import com.kelseyde.calvin.utils.NotationUtils;
+import com.kelseyde.calvin.movegeneration.result.GameResult;
+import com.kelseyde.calvin.movegeneration.result.ResultEvaluator;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class DrawByFiftyMoveRuleTest {
+    
+    private final ResultEvaluator resultEvaluator = new ResultEvaluator();
 
     @Test
     public void testDrawByFiftyMovesSinceWhiteCapture() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(0, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(28, Piece.getPieceCode(false, PieceType.KNIGHT), true);
-        board.setPiece(36, Piece.getPieceCode(false, PieceType.KNIGHT), true);
-        board.setPiece(35, Piece.getPieceCode(false, PieceType.QUEEN), true);
+        board.setPiece(0, PieceType.KING, false, true);
+        board.setPiece(28, PieceType.KNIGHT, false, true);
+        board.setPiece(36, PieceType.KNIGHT, false, true);
+        board.setPiece(35, PieceType.QUEEN, false, true);
 
-        board.setPiece(63, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(18, Piece.getPieceCode(true, PieceType.KNIGHT), true);
+        board.setPiece(63, PieceType.KING, true, true);
+        board.setPiece(18, PieceType.KNIGHT, true, true);
 
-        Game game = new Game(board);
-        game.getBoard().setWhiteToMove(true);
+        board.setWhiteToMove(true);
 
         // black knight captures white queen
-        game.makeMove(move("c3", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "c3", "d5"));
 
         // kings walk about until 50 move rule reached
-        game.makeMove(move("a1", "a2"));
-        game.makeMove(move("h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
 
-        game.makeMove(move("a2", "a3"));
-        game.makeMove(move("h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
 
-        game.makeMove(move("a3", "a4"));
-        game.makeMove(move("h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
 
-        game.makeMove(move("a4", "a5"));
-        game.makeMove(move("h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
 
-        game.makeMove(move("a5", "a6"));
-        game.makeMove(move("h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
 
-        game.makeMove(move("a6", "a7"));
-        game.makeMove(move("h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
 
-        game.makeMove(move("a7", "a8"));
-        game.makeMove(move("h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
 
-        game.makeMove(move("a8", "b8"));
-        game.makeMove(move("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        game.makeMove(move("b8", "c8"));
-        game.makeMove(move("g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
 
-        game.makeMove(move("c8", "d8"));
-        game.makeMove(move("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
 
-        game.makeMove(move("d8", "e8"));
-        game.makeMove(move("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
 
-        game.makeMove(move("e8", "f8"));
-        game.makeMove(move("d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
 
-        game.makeMove(move("f8", "g8"));
-        game.makeMove(move("c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
 
-        game.makeMove(move("g8", "h8"));
-        game.makeMove(move("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
 
-        game.makeMove(move("h8", "h7"));
-        game.makeMove(move("a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
 
-        game.makeMove(move("h7", "h6"));
-        game.makeMove(move("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
-        game.makeMove(move("h6", "h5"));
-        game.makeMove(move("a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
 
-        game.makeMove(move("h5", "h4"));
-        game.makeMove(move("a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
 
-        game.makeMove(move("h4", "h3"));
-        game.makeMove(move("a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
 
-        game.makeMove(move("h3", "h2"));
-        game.makeMove(move("a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
 
-        game.makeMove(move("h2", "h1"));
-        game.makeMove(move("a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
 
-        game.makeMove(move("h1", "g1"));
-        game.makeMove(move("a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
 
-        game.makeMove(move("g1", "f1"));
-        game.makeMove(move("b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
 
-        game.makeMove(move("f1", "e1"));
-        game.makeMove(move("c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
 
-        game.makeMove(move("e1", "d1"));
-        game.makeMove(move("d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
 
-        game.makeMove(move("d1", "c1"));
-        game.makeMove(move("e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
 
-        game.makeMove(move("c1", "b1"));
-        game.makeMove(move("f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
 
-        game.makeMove(move("b1", "a1"));
-        game.makeMove(move("g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
 
-        game.makeMove(move("a1", "a2"));
-        game.makeMove(move("h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
 
-        game.makeMove(move("a2", "a3"));
-        game.makeMove(move("h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
 
-        game.makeMove(move("a3", "a4"));
-        game.makeMove(move("h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
 
-        game.makeMove(move("a4", "a5"));
-        game.makeMove(move("h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
 
-        game.makeMove(move("a5", "a6"));
-        game.makeMove(move("h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
 
-        game.makeMove(move("a6", "a7"));
-        game.makeMove(move("h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
 
-        game.makeMove(move("a7", "a8"));
-        game.makeMove(move("h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
 
-        game.makeMove(move("a8", "b8"));
-        game.makeMove(move("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        game.makeMove(move("b8", "c8"));
-        game.makeMove(move("g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
 
-        game.makeMove(move("c8", "d8"));
-        game.makeMove(move("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
 
-        game.makeMove(move("d8", "e8"));
-        game.makeMove(move("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
 
-        game.makeMove(move("e8", "f8"));
-        game.makeMove(move("d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
 
-        game.makeMove(move("f8", "g8"));
-        game.makeMove(move("c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
 
-        game.makeMove(move("g8", "h8"));
-        game.makeMove(move("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
 
-        game.makeMove(move("h8", "h7"));
-        game.makeMove(move("a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
 
-        game.makeMove(move("h7", "h6"));
-        game.makeMove(move("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
-        game.makeMove(move("h6", "h5"));
-        game.makeMove(move("a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
 
-        game.makeMove(move("h5", "h4"));
-        game.makeMove(move("a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
 
-        game.makeMove(move("h4", "h3"));
-        game.makeMove(move("a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
 
-        game.makeMove(move("h3", "h2"));
-        game.makeMove(move("a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
 
-        game.makeMove(move("h2", "h1"));
-        game.makeMove(move("a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
 
         // 50 move rule not yet reached
-        GameResult result = game.makeMove(move("h1", "g1"));
-        Assertions.assertNotEquals(GameResult.ResultType.DRAW, result.getResultType());
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertFalse(result.isDraw());
 
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
         // 50 move rule reached
-        result = game.makeMove(move("a8", "b8"));
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.FIFTY_MOVE_RULE, drawResult.getDrawType());
+        result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_FIFTY_MOVE_RULE, result);
 
     }
 
@@ -197,175 +193,174 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhitePawnMove() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(0, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(36, Piece.getPieceCode(false, PieceType.PAWN), true);
+        board.setPiece(0, PieceType.KING, false, true);
+        board.setPiece(36, PieceType.PAWN, false, true);
 
-        board.setPiece(63, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(12, Piece.getPieceCode(true, PieceType.PAWN), true);
+        board.setPiece(63, PieceType.KING, true, true);
+        board.setPiece(12, PieceType.PAWN, true, true);
 
-        Game game = new Game(board);
-        game.getBoard().setWhiteToMove(true);
+        board.setWhiteToMove(true);
 
         // white pawn makes last possible pawn move
-        game.makeMove(move("e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
 
         // kings walk about until 50 move rule reached
-        game.makeMove(move("a1", "a2"));
-        game.makeMove(move("h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
 
-        game.makeMove(move("a2", "a3"));
-        game.makeMove(move("h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
 
-        game.makeMove(move("a3", "a4"));
-        game.makeMove(move("h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
 
-        game.makeMove(move("a4", "a5"));
-        game.makeMove(move("h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
 
-        game.makeMove(move("a5", "a6"));
-        game.makeMove(move("h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
 
-        game.makeMove(move("a6", "a7"));
-        game.makeMove(move("h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
 
-        game.makeMove(move("a7", "a8"));
-        game.makeMove(move("h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
 
-        game.makeMove(move("a8", "b8"));
-        game.makeMove(move("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        game.makeMove(move("b8", "c8"));
-        game.makeMove(move("g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
 
-        game.makeMove(move("c8", "d8"));
-        game.makeMove(move("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
 
-        game.makeMove(move("d8", "e8"));
-        game.makeMove(move("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
 
-        game.makeMove(move("e8", "f8"));
-        game.makeMove(move("d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
 
-        game.makeMove(move("f8", "g8"));
-        game.makeMove(move("c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
 
-        game.makeMove(move("g8", "h8"));
-        game.makeMove(move("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
 
-        game.makeMove(move("h8", "h7"));
-        game.makeMove(move("a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
 
-        game.makeMove(move("h7", "h6"));
-        game.makeMove(move("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
-        game.makeMove(move("h6", "h5"));
-        game.makeMove(move("a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
 
-        game.makeMove(move("h5", "h4"));
-        game.makeMove(move("a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
 
-        game.makeMove(move("h4", "h3"));
-        game.makeMove(move("a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
 
-        game.makeMove(move("h3", "h2"));
-        game.makeMove(move("a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
 
-        game.makeMove(move("h2", "h1"));
-        game.makeMove(move("a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
 
-        game.makeMove(move("h1", "g1"));
-        game.makeMove(move("a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
 
-        game.makeMove(move("g1", "f1"));
-        game.makeMove(move("b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
 
-        game.makeMove(move("f1", "e1"));
-        game.makeMove(move("c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
 
-        game.makeMove(move("e1", "d1"));
-        game.makeMove(move("d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
 
-        game.makeMove(move("d1", "c1"));
-        game.makeMove(move("e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
 
-        game.makeMove(move("c1", "b1"));
-        game.makeMove(move("f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
 
-        game.makeMove(move("b1", "a1"));
-        game.makeMove(move("g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
 
-        game.makeMove(move("a1", "a2"));
-        game.makeMove(move("h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
 
-        game.makeMove(move("a2", "a3"));
-        game.makeMove(move("h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
 
-        game.makeMove(move("a3", "a4"));
-        game.makeMove(move("h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
 
-        game.makeMove(move("a4", "a5"));
-        game.makeMove(move("h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
 
-        game.makeMove(move("a5", "a6"));
-        game.makeMove(move("h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
 
-        game.makeMove(move("a6", "a7"));
-        game.makeMove(move("h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
 
-        game.makeMove(move("a7", "a8"));
-        game.makeMove(move("h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
 
-        game.makeMove(move("a8", "b8"));
-        game.makeMove(move("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        game.makeMove(move("b8", "c8"));
-        game.makeMove(move("g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
 
-        game.makeMove(move("c8", "d8"));
-        game.makeMove(move("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
 
-        game.makeMove(move("d8", "e8"));
-        game.makeMove(move("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
 
-        game.makeMove(move("e8", "f8"));
-        game.makeMove(move("d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
 
-        game.makeMove(move("f8", "g8"));
-        game.makeMove(move("c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
 
-        game.makeMove(move("g8", "h8"));
-        game.makeMove(move("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
 
-        game.makeMove(move("h8", "h7"));
-        game.makeMove(move("a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
 
-        game.makeMove(move("h7", "h6"));
-        game.makeMove(move("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
-        game.makeMove(move("h6", "h5"));
-        game.makeMove(move("a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
 
-        game.makeMove(move("h5", "h4"));
-        game.makeMove(move("a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
 
-        game.makeMove(move("h4", "h3"));
-        game.makeMove(move("a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
 
-        game.makeMove(move("h3", "h2"));
-        game.makeMove(move("a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
 
-        game.makeMove(move("h2", "h1"));
-        game.makeMove(move("a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
 
         // 50 move rule not yet reached
-        GameResult result = game.makeMove(move("h1", "g1"));
-        Assertions.assertNotEquals(GameResult.ResultType.DRAW, result.getResultType());
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertFalse(result.isDraw());
 
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
         // 50 move rule reached
-        result = game.makeMove(move("a8", "b8"));
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.FIFTY_MOVE_RULE, drawResult.getDrawType());
+        result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_FIFTY_MOVE_RULE, result);
 
     }
 
@@ -373,178 +368,177 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceBlackCapture() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(0, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.KNIGHT), true);
-        board.setPiece(36, Piece.getPieceCode(true, PieceType.KNIGHT), true);
-        board.setPiece(35, Piece.getPieceCode(true, PieceType.QUEEN), true);
+        board.setPiece(0, PieceType.KING, true, true);
+        board.setPiece(28, PieceType.KNIGHT, true, true);
+        board.setPiece(36, PieceType.KNIGHT, true, true);
+        board.setPiece(35, PieceType.QUEEN, true, true);
 
-        board.setPiece(63, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(18, Piece.getPieceCode(false, PieceType.KNIGHT), true);
+        board.setPiece(63, PieceType.KING, false, true);
+        board.setPiece(18, PieceType.KNIGHT, false, true);
 
-        Game game = new Game(board);
-        game.getBoard().setWhiteToMove(false);
-        game.setLegalMoves(game.getLegalMoveService().generateLegalMoves(game.getBoard()));
+        board.setWhiteToMove(false);
 
         // black knight captures white queen
-        game.makeMove(move("c3", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "c3", "d5"));
 
         // kings walk about until 50 move rule reached
-        game.makeMove(move("a1", "a2"));
-        game.makeMove(move("h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
 
-        game.makeMove(move("a2", "a3"));
-        game.makeMove(move("h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
 
-        game.makeMove(move("a3", "a4"));
-        game.makeMove(move("h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
 
-        game.makeMove(move("a4", "a5"));
-        game.makeMove(move("h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
 
-        game.makeMove(move("a5", "a6"));
-        game.makeMove(move("h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
 
-        game.makeMove(move("a6", "a7"));
-        game.makeMove(move("h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
 
-        game.makeMove(move("a7", "a8"));
-        game.makeMove(move("h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
 
-        game.makeMove(move("a8", "b8"));
-        game.makeMove(move("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        game.makeMove(move("b8", "c8"));
-        game.makeMove(move("g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
 
-        game.makeMove(move("c8", "d8"));
-        game.makeMove(move("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
 
-        game.makeMove(move("d8", "e8"));
-        game.makeMove(move("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
 
-        game.makeMove(move("e8", "f8"));
-        game.makeMove(move("d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
 
-        game.makeMove(move("f8", "g8"));
-        game.makeMove(move("c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
 
-        game.makeMove(move("g8", "h8"));
-        game.makeMove(move("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
 
-        game.makeMove(move("h8", "h7"));
-        game.makeMove(move("a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
 
-        game.makeMove(move("h7", "h6"));
-        game.makeMove(move("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
-        game.makeMove(move("h6", "h5"));
-        game.makeMove(move("a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
 
-        game.makeMove(move("h5", "h4"));
-        game.makeMove(move("a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
 
-        game.makeMove(move("h4", "h3"));
-        game.makeMove(move("a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
 
-        game.makeMove(move("h3", "h2"));
-        game.makeMove(move("a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
 
-        game.makeMove(move("h2", "h1"));
-        game.makeMove(move("a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
 
-        game.makeMove(move("h1", "g1"));
-        game.makeMove(move("a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
 
-        game.makeMove(move("g1", "f1"));
-        game.makeMove(move("b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
 
-        game.makeMove(move("f1", "e1"));
-        game.makeMove(move("c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
 
-        game.makeMove(move("e1", "d1"));
-        game.makeMove(move("d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
 
-        game.makeMove(move("d1", "c1"));
-        game.makeMove(move("e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
 
-        game.makeMove(move("c1", "b1"));
-        game.makeMove(move("f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
 
-        game.makeMove(move("b1", "a1"));
-        game.makeMove(move("g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
 
-        game.makeMove(move("a1", "a2"));
-        game.makeMove(move("h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
 
-        game.makeMove(move("a2", "a3"));
-        game.makeMove(move("h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
 
-        game.makeMove(move("a3", "a4"));
-        game.makeMove(move("h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
 
-        game.makeMove(move("a4", "a5"));
-        game.makeMove(move("h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
 
-        game.makeMove(move("a5", "a6"));
-        game.makeMove(move("h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
 
-        game.makeMove(move("a6", "a7"));
-        game.makeMove(move("h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
 
-        game.makeMove(move("a7", "a8"));
-        game.makeMove(move("h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
 
-        game.makeMove(move("a8", "b8"));
-        game.makeMove(move("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        game.makeMove(move("b8", "c8"));
-        game.makeMove(move("g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
 
-        game.makeMove(move("c8", "d8"));
-        game.makeMove(move("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
 
-        game.makeMove(move("d8", "e8"));
-        game.makeMove(move("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
 
-        game.makeMove(move("e8", "f8"));
-        game.makeMove(move("d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
 
-        game.makeMove(move("f8", "g8"));
-        game.makeMove(move("c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
 
-        game.makeMove(move("g8", "h8"));
-        game.makeMove(move("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
 
-        game.makeMove(move("h8", "h7"));
-        game.makeMove(move("a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
 
-        game.makeMove(move("h7", "h6"));
-        game.makeMove(move("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
-        game.makeMove(move("h6", "h5"));
-        game.makeMove(move("a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
 
-        game.makeMove(move("h5", "h4"));
-        game.makeMove(move("a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
 
-        game.makeMove(move("h4", "h3"));
-        game.makeMove(move("a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
 
-        game.makeMove(move("h3", "h2"));
-        game.makeMove(move("a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
 
-        game.makeMove(move("h2", "h1"));
-        game.makeMove(move("a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
 
         // 50 move rule not yet reached
-        GameResult result = game.makeMove(move("h1", "g1"));
-        Assertions.assertNotEquals(GameResult.ResultType.DRAW, result.getResultType());
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertFalse(result.isDraw());
+
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
         // 50 move rule reached
-        result = game.makeMove(move("a8", "b8"));
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.FIFTY_MOVE_RULE, drawResult.getDrawType());
+        result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_FIFTY_MOVE_RULE, result);
 
     }
 
@@ -552,181 +546,175 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceBlackPawnMove() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(0, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.PAWN), true);
+        board.setPiece(0, PieceType.KING, true, true);
+        board.setPiece(28, PieceType.PAWN, true, true);
 
-        board.setPiece(63, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(52, Piece.getPieceCode(false, PieceType.PAWN), true);
+        board.setPiece(63, PieceType.KING, false, true);
+        board.setPiece(52, PieceType.PAWN, false, true);
 
-        Game game = new Game(board);
-        game.getBoard().setWhiteToMove(false);
-        game.setLegalMoves(game.getLegalMoveService().generateLegalMoves(game.getBoard()));
+        board.setWhiteToMove(false);
 
         // black pawn makes last possible pawn move
-        game.makeMove(move("e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
         // kings walk about until 50 move rule reached
-        game.makeMove(move("a1", "a2"));
-        game.makeMove(move("h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
 
-        game.makeMove(move("a2", "a3"));
-        game.makeMove(move("h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
 
-        game.makeMove(move("a3", "a4"));
-        game.makeMove(move("h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
 
-        game.makeMove(move("a4", "a5"));
-        game.makeMove(move("h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
 
-        game.makeMove(move("a5", "a6"));
-        game.makeMove(move("h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
 
-        game.makeMove(move("a6", "a7"));
-        game.makeMove(move("h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
 
-        game.makeMove(move("a7", "a8"));
-        game.makeMove(move("h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
 
-        game.makeMove(move("a8", "b8"));
-        game.makeMove(move("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        game.makeMove(move("b8", "c8"));
-        game.makeMove(move("g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
 
-        game.makeMove(move("c8", "d8"));
-        game.makeMove(move("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
 
-        game.makeMove(move("d8", "e8"));
-        game.makeMove(move("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
 
-        game.makeMove(move("e8", "f8"));
-        game.makeMove(move("d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
 
-        game.makeMove(move("f8", "g8"));
-        game.makeMove(move("c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
 
-        game.makeMove(move("g8", "h8"));
-        game.makeMove(move("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
 
-        game.makeMove(move("h8", "h7"));
-        game.makeMove(move("a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
 
-        game.makeMove(move("h7", "h6"));
-        game.makeMove(move("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
-        game.makeMove(move("h6", "h5"));
-        game.makeMove(move("a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
 
-        game.makeMove(move("h5", "h4"));
-        game.makeMove(move("a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
 
-        game.makeMove(move("h4", "h3"));
-        game.makeMove(move("a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
 
-        game.makeMove(move("h3", "h2"));
-        game.makeMove(move("a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
 
-        game.makeMove(move("h2", "h1"));
-        game.makeMove(move("a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
 
-        game.makeMove(move("h1", "g1"));
-        game.makeMove(move("a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
 
-        game.makeMove(move("g1", "f1"));
-        game.makeMove(move("b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
 
-        game.makeMove(move("f1", "e1"));
-        game.makeMove(move("c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
 
-        game.makeMove(move("e1", "d1"));
-        game.makeMove(move("d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
 
-        game.makeMove(move("d1", "c1"));
-        game.makeMove(move("e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
 
-        game.makeMove(move("c1", "b1"));
-        game.makeMove(move("f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
 
-        game.makeMove(move("b1", "a1"));
-        game.makeMove(move("g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
 
-        game.makeMove(move("a1", "a2"));
-        game.makeMove(move("h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
 
-        game.makeMove(move("a2", "a3"));
-        game.makeMove(move("h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
 
-        game.makeMove(move("a3", "a4"));
-        game.makeMove(move("h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
 
-        game.makeMove(move("a4", "a5"));
-        game.makeMove(move("h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
 
-        game.makeMove(move("a5", "a6"));
-        game.makeMove(move("h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
 
-        game.makeMove(move("a6", "a7"));
-        game.makeMove(move("h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
 
-        game.makeMove(move("a7", "a8"));
-        game.makeMove(move("h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
 
-        game.makeMove(move("a8", "b8"));
-        game.makeMove(move("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        game.makeMove(move("b8", "c8"));
-        game.makeMove(move("g1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f1"));
 
-        game.makeMove(move("c8", "d8"));
-        game.makeMove(move("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
 
-        game.makeMove(move("d8", "e8"));
-        game.makeMove(move("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
 
-        game.makeMove(move("e8", "f8"));
-        game.makeMove(move("d1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "c1"));
 
-        game.makeMove(move("f8", "g8"));
-        game.makeMove(move("c1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "b1"));
 
-        game.makeMove(move("g8", "h8"));
-        game.makeMove(move("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
 
-        game.makeMove(move("h8", "h7"));
-        game.makeMove(move("a1", "a2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "a2"));
 
-        game.makeMove(move("h7", "h6"));
-        game.makeMove(move("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "h6"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
-        game.makeMove(move("h6", "h5"));
-        game.makeMove(move("a3", "a4"));
+        board.makeMove(TestUtils.getLegalMove(board, "h6", "h5"));
+        board.makeMove(TestUtils.getLegalMove(board, "a3", "a4"));
 
-        game.makeMove(move("h5", "h4"));
-        game.makeMove(move("a4", "a5"));
+        board.makeMove(TestUtils.getLegalMove(board, "h5", "h4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a4", "a5"));
 
-        game.makeMove(move("h4", "h3"));
-        game.makeMove(move("a5", "a6"));
+        board.makeMove(TestUtils.getLegalMove(board, "h4", "h3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a6"));
 
-        game.makeMove(move("h3", "h2"));
-        game.makeMove(move("a6", "a7"));
+        board.makeMove(TestUtils.getLegalMove(board, "h3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "a6", "a7"));
 
-        game.makeMove(move("h2", "h1"));
-        game.makeMove(move("a7", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h2", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a7", "a8"));
 
         // 50 move rule not yet reached
-        GameResult result = game.makeMove(move("h1", "g1"));
-        Assertions.assertNotEquals(GameResult.ResultType.DRAW, result.getResultType());
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertFalse(result.isDraw());
 
         // 50 move rule reached
-        result = game.makeMove(move("a8", "b8"));
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.FIFTY_MOVE_RULE, drawResult.getDrawType());
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
+        result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_FIFTY_MOVE_RULE, result);
 
-    }
-
-    private Move move(String startSquare, String endSquare) {
-        return NotationUtils.fromNotation(startSquare, endSquare);
     }
 
 }

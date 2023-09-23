@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.board.bitboard;
 
-public class BitBoardUtil {
+public class BitBoardUtils {
 
     public static long shiftWest(long board) {
         return (board >>> 1) &~ BitBoardConstants.FILE_H;
@@ -58,6 +58,21 @@ public class BitBoardUtil {
 
     public static int squareIndex(int rank, int file) {
         return 8 * rank + file;
+    }
+
+    public static long getFileBitboard(int file) {
+        return switch (file) {
+            case -1 -> 0L;
+            case 0 -> BitBoardConstants.FILE_A;
+            case 1 -> BitBoardConstants.FILE_B;
+            case 2 -> BitBoardConstants.FILE_C;
+            case 3 -> BitBoardConstants.FILE_D;
+            case 4 -> BitBoardConstants.FILE_E;
+            case 5 -> BitBoardConstants.FILE_F;
+            case 6 -> BitBoardConstants.FILE_G;
+            case 7 -> BitBoardConstants.FILE_H;
+            default -> throw new IllegalArgumentException("Invalid file " + file);
+        };
     }
 
 }

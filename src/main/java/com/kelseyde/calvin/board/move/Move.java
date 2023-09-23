@@ -30,31 +30,12 @@ public class Move {
      * Whether this move comes with check.
      */
     private boolean isCheck;
-
     /**
      * The bitboard representing the destination square for a pawn capturing en passant. Should be set by
      * a double pawn move that enables en passant on the next turn.
      */
     @Builder.Default
-    private long enPassantTarget = 0L;
-
-    /**
-     * The bitboard representing the square of a pawn just captured en passant. Should be set by a pawn capturing en passant.
-     */
-    @Builder.Default
-    private long enPassantCapture = 0L;
-
-    /**
-     * In case of castling, the start square of the castling rook.
-     */
-    @Builder.Default
-    private int rookStartSquare = -1;
-
-    /**
-     * In case of castling, the end square of the castling rook.
-     */
-    @Builder.Default
-    private int rookEndSquare = -1;
+    private int enPassantFile = -1;
 
     /**
      * In case of promotion, what piece type the pawn should promote to.
@@ -62,12 +43,7 @@ public class Move {
     @Builder.Default
     private PieceType promotionPieceType = null;
 
-    // TODO remove
-    public MoveKey getKey() {
-        return new MoveKey(startSquare, endSquare, promotionPieceType);
-    }
-
-    public boolean moveMatches(Move move) {
+    public boolean matches(Move move) {
         return startSquare == move.getStartSquare()
                 && endSquare == move.getEndSquare()
                 && promotionPieceType == move.getPromotionPieceType();

@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 
 import java.util.HashSet;
@@ -35,7 +35,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         Set<Move> moves = new HashSet<>();
         long pieceBitboard = getPieceBitboard(board);
         while (pieceBitboard != 0) {
-            int square = BitBoardUtil.scanForward(pieceBitboard);
+            int square = BitBoardUtils.scanForward(pieceBitboard);
             long moveBitboard = 0L;
             if (isOrthogonal()) {
                 moveBitboard |= calculateOrthogonalMoves(board, square);
@@ -43,7 +43,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
             if (isDiagonal()) {
                 moveBitboard |= calculateDiagonalMoves(board, square);
             }
-            pieceBitboard = BitBoardUtil.popLSB(pieceBitboard);
+            pieceBitboard = BitBoardUtils.popLSB(pieceBitboard);
             moves.addAll(addMoves(square, moveBitboard));
         }
         return moves;
@@ -78,13 +78,13 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     private Set<Move> addMoves(int startSquare, long moveBitboard) {
         Set<Move> moves = new HashSet<>();
         while (moveBitboard != 0) {
-            int endSquare = BitBoardUtil.scanForward(moveBitboard);
+            int endSquare = BitBoardUtils.scanForward(moveBitboard);
             moves.add(Move.builder()
                     .pieceType(getPieceType())
                     .startSquare(startSquare)
                     .endSquare(endSquare)
                     .build());
-            moveBitboard = BitBoardUtil.popLSB(moveBitboard);
+            moveBitboard = BitBoardUtils.popLSB(moveBitboard);
         }
         return moves;
     }

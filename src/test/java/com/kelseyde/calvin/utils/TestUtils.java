@@ -1,8 +1,16 @@
 package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
+
+import java.util.Optional;
+import java.util.Set;
 
 public class TestUtils {
+
+    private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
 
     public static Board emptyBoard() {
         Board board = new Board();
@@ -20,16 +28,27 @@ public class TestUtils {
         board.setBlackQueens(0L);
         board.setBlackKing(0L);
 
-        board.setEnPassantTarget(0L);
-
-        board.setWhiteKingsideCastlingAllowed(false);
-        board.setWhiteQueensideCastlingAllowed(false);
-        board.setBlackKingsideCastlingAllowed(false);
-        board.setBlackQueensideCastlingAllowed(false);
+        board.getCurrentGameState().setCastlingRights(0b0000);
 
         board.recalculatePieces();
 
         return board;
+    }
+
+    public static Move getLegalMove(Board board, String startSquare, String endSquare) {
+        Move move = NotationUtils.fromNotation(startSquare, endSquare);
+        Set<Move> legalMoves = MOVE_GENERATOR.generateLegalMoves(board);
+        Optional<Move> legalMove = legalMoves.stream()
+                .filter(m -> m.matches(move))
+                .findAny();
+        if (legalMove.isEmpty()) {
+            System.out.println("Illegal move!");
+            BitBoardUtils.print(board.getWhitePieces());
+            BitBoardUtils.print(board.getBlackPieces());
+            BitBoardUtils.print(board.getOccupied());
+            throw new IllegalMoveException(String.format("Illegal move! %s%s", startSquare, endSquare));
+        }
+        return legalMove.get();
     }
 
 }

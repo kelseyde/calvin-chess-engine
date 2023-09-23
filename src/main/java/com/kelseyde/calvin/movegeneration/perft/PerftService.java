@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.movegeneration.perft;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -21,21 +20,21 @@ public class PerftService {
         }
         int totalMoveCount = 0;
         for (Move move : moves) {
-            Board boardCopy = board.copy();
-            boardCopy.applyMove(move);
-            totalMoveCount += perft(boardCopy, depth - 1);
+            board.makeMove(move);
+            totalMoveCount += perft(board, depth - 1);
+            board.unmakeMove();
         }
         return totalMoveCount;
     }
 
-    private void log(Game game, int depth, Set<Move> moves) {
-        List<String> moveHistory = game.getMoveHistory().stream().map(NotationUtils::toNotation).toList();
+    private void log(Board board, int depth, Set<Move> moves) {
+        List<String> moveHistory = board.getMoveHistory().stream().map(NotationUtils::toNotation).toList();
         List<String> legalMoves = moves.stream().map(NotationUtils::toNotation).toList();
         System.out.printf("perft(%s) -- %s: %s -- %s%n", depth, moveHistory, legalMoves.size(), legalMoves);
     }
 
-    private void log(Game game, int depth, int count) {
-        List<String> moveHistory = game.getMoveHistory().stream().map(NotationUtils::toNotation).toList();
+    private void log(Board board, int depth, int count) {
+        List<String> moveHistory = board.getMoveHistory().stream().map(NotationUtils::toNotation).toList();
         System.out.printf("perft(%s) -- %s: %s %n", depth, moveHistory, count);
     }
 

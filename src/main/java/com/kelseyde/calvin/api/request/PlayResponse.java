@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.api.request;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.result.GameResult;
+import com.kelseyde.calvin.movegeneration.result.GameResult;
 import lombok.Builder;
 import lombok.Data;
 

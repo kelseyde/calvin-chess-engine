@@ -1,13 +1,10 @@
 package com.kelseyde.calvin.movegeneration.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Game;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.board.result.DrawResult;
-import com.kelseyde.calvin.board.result.DrawType;
-import com.kelseyde.calvin.board.result.GameResult;
+import com.kelseyde.calvin.movegeneration.result.GameResult;
+import com.kelseyde.calvin.movegeneration.result.ResultEvaluator;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
@@ -15,22 +12,22 @@ import org.junit.jupiter.api.Test;
 
 public class DrawByInsufficientMaterialTest {
 
+    private final ResultEvaluator resultEvaluator = new ResultEvaluator();
+
     @Test
     public void testKingVersusKing() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.KING), true);
+        board.setPiece(28, PieceType.KING, true, true);
 
-        board.setPiece(44, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(27, Piece.getPieceCode(false, PieceType.QUEEN), true);
+        board.setPiece(44, PieceType.KING, false, true);
+        board.setPiece(27, PieceType.QUEEN, false, true);
 
-        Game game = new Game(board);
-        GameResult result = game.makeMove(move("e4", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e4", "d4"));
 
         // king captures queen -> K vs K
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_INSUFFICIENT_MATERIAL, result);
 
     }
 
@@ -38,19 +35,17 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingBishop() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(25, Piece.getPieceCode(true, PieceType.BISHOP), true);
+        board.setPiece(28, PieceType.KING, true, true);
+        board.setPiece(25, PieceType.BISHOP, true, true);
 
-        board.setPiece(44, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(43, Piece.getPieceCode(false, PieceType.QUEEN), true);
+        board.setPiece(44, PieceType.KING, false, true);
+        board.setPiece(43, PieceType.QUEEN, false, true);
 
-        Game game = new Game(board);
-        GameResult result = game.makeMove(move("b4", "d6"));
+        board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
         // bishop captures queen -> K vs KB
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_INSUFFICIENT_MATERIAL, result);
 
     }
 
@@ -58,19 +53,17 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingKnight() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(26, Piece.getPieceCode(true, PieceType.KNIGHT), true);
+        board.setPiece(28, PieceType.KING, true, true);
+        board.setPiece(26, PieceType.KNIGHT, true, true);
 
-        board.setPiece(44, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(43, Piece.getPieceCode(false, PieceType.QUEEN), true);
+        board.setPiece(44, PieceType.KING, false, true);
+        board.setPiece(43, PieceType.QUEEN, false, true);
 
-        Game game = new Game(board);
-        GameResult result = game.makeMove(move("c4", "d6"));
+        board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
         // knight captures queen -> K vs KN
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_INSUFFICIENT_MATERIAL, result);
 
     }
 
@@ -78,20 +71,18 @@ public class DrawByInsufficientMaterialTest {
     public void testKingBishopVersusKingBishop() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(25, Piece.getPieceCode(true, PieceType.BISHOP), true);
+        board.setPiece(28, PieceType.KING, true, true);
+        board.setPiece(25, PieceType.BISHOP, true, true);
 
-        board.setPiece(44, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(43, Piece.getPieceCode(false, PieceType.QUEEN), true);
-        board.setPiece(52, Piece.getPieceCode(false, PieceType.BISHOP), true);
+        board.setPiece(44, PieceType.KING, false, true);
+        board.setPiece(43, PieceType.QUEEN, false, true);
+        board.setPiece(52, PieceType.BISHOP, false, true);
 
-        Game game = new Game(board);
-        GameResult result = game.makeMove(move("b4", "d6"));
+        board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
         // bishop captures queen -> KB vs KB
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_INSUFFICIENT_MATERIAL, result);
 
     }
 
@@ -99,20 +90,18 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightVersusKingKnight() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(26, Piece.getPieceCode(true, PieceType.KNIGHT), true);
+        board.setPiece(28, PieceType.KING, true, true);
+        board.setPiece(26, PieceType.KNIGHT, true, true);
 
-        board.setPiece(44, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(43, Piece.getPieceCode(false, PieceType.QUEEN), true);
-        board.setPiece(52, Piece.getPieceCode(false, PieceType.KNIGHT), true);
+        board.setPiece(44, PieceType.KING, false, true);
+        board.setPiece(43, PieceType.QUEEN, false, true);
+        board.setPiece(52, PieceType.KNIGHT, false, true);
 
-        Game game = new Game(board);
-        GameResult result = game.makeMove(move("c4", "d6"));
+        board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
         // knight captures queen -> KN vs KN
-        Assertions.assertEquals(GameResult.ResultType.DRAW, result.getResultType());
-        DrawResult drawResult = (DrawResult) result;
-        Assertions.assertEquals(DrawType.INSUFFICIENT_MATERIAL, drawResult.getDrawType());
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_INSUFFICIENT_MATERIAL, result);
 
     }
 
@@ -120,19 +109,19 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightKnightVersusKingKnightIsNotInsufficientMaterial() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.KING), true);
-        board.setPiece(26, Piece.getPieceCode(true, PieceType.KNIGHT), true);
+        board.setPiece(28, PieceType.KING, true, true);
+        board.setPiece(26, PieceType.KNIGHT, true, true);
 
-        board.setPiece(44, Piece.getPieceCode(false, PieceType.KING), true);
-        board.setPiece(43, Piece.getPieceCode(false, PieceType.QUEEN), true);
-        board.setPiece(52, Piece.getPieceCode(false, PieceType.KNIGHT), true);
-        board.setPiece(0, Piece.getPieceCode(false, PieceType.KNIGHT), true);
+        board.setPiece(44, PieceType.KING, false, true);
+        board.setPiece(43, PieceType.QUEEN, false, true);
+        board.setPiece(52, PieceType.KNIGHT, false, true);
+        board.setPiece(0, PieceType.KNIGHT, false, true);
 
-        Game game = new Game(board);
-        GameResult result = game.makeMove(move("c4", "d6"));
+        board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
         // knight captures queen -> KNN vs KN
-        Assertions.assertNotEquals(GameResult.ResultType.DRAW, result.getResultType());
+        GameResult result = resultEvaluator.getResult(board);
+        Assertions.assertNotEquals(GameResult.DRAW_BY_INSUFFICIENT_MATERIAL, result);
 
     }
 

@@ -1,17 +1,16 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Game;
 
 public class MaterialEvaluator implements PositionEvaluator {
 
     @Override
-    public int evaluate(Game game) {
+    public int evaluate(Board board) {
 
-        boolean isWhiteToMove = game.getBoard().isWhiteToMove();
-        int playerScore = calculateMaterialScore(game.getBoard(), isWhiteToMove);
+        boolean isWhiteToMove = board.isWhiteToMove();
+        int playerScore = calculateMaterialScore(board, isWhiteToMove);
 
-        int opponentScore = calculateMaterialScore(game.getBoard(), !isWhiteToMove);
+        int opponentScore = calculateMaterialScore(board, !isWhiteToMove);
 
         return playerScore - opponentScore;
 

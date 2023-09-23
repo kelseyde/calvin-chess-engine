@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
 import lombok.Getter;
@@ -41,10 +41,10 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
         long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
 
         while (knights != 0) {
-            int startSquare = BitBoardUtil.scanForward(knights);
+            int startSquare = BitBoardUtils.scanForward(knights);
             long possibleMoves = KNIGHT_ATTACKS[startSquare] &~ friendlyPieces;
             moves.addAll(addKnightMoves(startSquare, possibleMoves));
-            knights = BitBoardUtil.popLSB(knights);
+            knights = BitBoardUtils.popLSB(knights);
         }
         return moves;
 
@@ -53,13 +53,13 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
     private Set<Move> addKnightMoves(int startSquare, long possibleMoves) {
         Set<Move> moves = new HashSet<>();
         while (possibleMoves != 0) {
-            int endSquare = BitBoardUtil.scanForward(possibleMoves);
+            int endSquare = BitBoardUtils.scanForward(possibleMoves);
             moves.add(Move.builder()
                     .pieceType(PieceType.KNIGHT)
                     .startSquare(startSquare)
                     .endSquare(endSquare)
                     .build());
-            possibleMoves = BitBoardUtil.popLSB(possibleMoves);
+            possibleMoves = BitBoardUtils.popLSB(possibleMoves);
         }
         return moves;
     }

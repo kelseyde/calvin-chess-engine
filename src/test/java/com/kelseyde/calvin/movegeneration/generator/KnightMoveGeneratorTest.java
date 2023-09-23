@@ -98,15 +98,15 @@ public class KnightMoveGeneratorTest {
     @Test
     public void canCaptureOpponentPieces() {
 
-        board.setPiece(43, knight, true);
-        board.setPiece(26, Piece.getPieceCode(false, PieceType.PAWN), true);
-        board.setPiece(28, Piece.getPieceCode(false, PieceType.PAWN), true);
-        board.setPiece(33, Piece.getPieceCode(false, PieceType.PAWN), true);
-        board.setPiece(37, Piece.getPieceCode(false, PieceType.KNIGHT), true);
-        board.setPiece(49, Piece.getPieceCode(false, PieceType.BISHOP), true);
-        board.setPiece(53, Piece.getPieceCode(false, PieceType.ROOK), true);
-        board.setPiece(58, Piece.getPieceCode(false, PieceType.QUEEN), true);
-        board.setPiece(60, Piece.getPieceCode(false, PieceType.QUEEN), true);
+        board.setPiece(43, PieceType.KNIGHT, true, true);
+        board.setPiece(26, PieceType.PAWN, false, true);
+        board.setPiece(28, PieceType.PAWN, false, true);
+        board.setPiece(33, PieceType.PAWN, false, true);
+        board.setPiece(37, PieceType.KNIGHT, false, true);
+        board.setPiece(49, PieceType.BISHOP, false, true);
+        board.setPiece(53, PieceType.ROOK, false, true);
+        board.setPiece(58, PieceType.QUEEN, false, true);
+        board.setPiece(60, PieceType.QUEEN, false, true);
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
@@ -120,15 +120,15 @@ public class KnightMoveGeneratorTest {
     @Test
     public void cannotCaptureSameColourPieces() {
 
-        board.setPiece(43, knight, true);
-        board.setPiece(26, Piece.getPieceCode(true, PieceType.PAWN), true);
-        board.setPiece(28, Piece.getPieceCode(true, PieceType.PAWN), true);
-        board.setPiece(33, Piece.getPieceCode(true, PieceType.PAWN), true);
-        board.setPiece(37, Piece.getPieceCode(true, PieceType.KNIGHT), true);
-        board.setPiece(49, Piece.getPieceCode(true, PieceType.BISHOP), true);
-        board.setPiece(53, Piece.getPieceCode(true, PieceType.ROOK), true);
-        board.setPiece(58, Piece.getPieceCode(true, PieceType.QUEEN), true);
-        board.setPiece(60, Piece.getPieceCode(true, PieceType.QUEEN), true);
+        board.setPiece(43, PieceType.KNIGHT, true, true);
+        board.setPiece(26, PieceType.PAWN, true, true);
+        board.setPiece(28, PieceType.PAWN, true, true);
+        board.setPiece(33, PieceType.PAWN, true, true);
+        board.setPiece(37, PieceType.KNIGHT, true, true);
+        board.setPiece(49, PieceType.BISHOP, true, true);
+        board.setPiece(53, PieceType.ROOK, true, true);
+        board.setPiece(58, PieceType.QUEEN, true, true);
+        board.setPiece(60, PieceType.QUEEN, true, true);
 
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(m -> m.getStartSquare() == 43)
@@ -139,7 +139,7 @@ public class KnightMoveGeneratorTest {
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.setPiece(startSquare, knight, true);
+        board.setPiece(startSquare, PieceType.KNIGHT, true, true);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(m -> m.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)

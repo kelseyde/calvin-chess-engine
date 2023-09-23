@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtil;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
 import lombok.extern.slf4j.Slf4j;
@@ -28,60 +28,53 @@ public class MoveGenerator {
         PAWN_MOVE_GENERATOR, KNIGHT_MOVE_GENERATOR, BISHOP_MOVE_GENERATOR, ROOK_MOVE_GENERATOR, QUEEN_MOVE_GENERATOR, KING_MOVE_GENERATOR
     );
 
-    private static final Set<PseudoLegalMoveGenerator> PSEUDO_LEGAL_MOVE_GENERATORS_WITHOUT_KING = Set.of(
-            PAWN_MOVE_GENERATOR, KNIGHT_MOVE_GENERATOR, BISHOP_MOVE_GENERATOR, ROOK_MOVE_GENERATOR, QUEEN_MOVE_GENERATOR, KING_MOVE_GENERATOR
-    );
-
     public Set<Move> generateLegalMoves(Board board) {
         return generatePseudoLegalMoves(board).stream()
                 .filter(pseudoLegalMove -> isFullyLegal(board, pseudoLegalMove))
                 .collect(Collectors.toSet());
     }
 
-    private Set<Move> generatePseudoLegalMoves(Board board) {
-        return PSEUDO_LEGAL_MOVE_GENERATORS.stream()
-                .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
-                .collect(Collectors.toSet());
-    }
-    private Set<Move> generatePseudoLegalMovesWithoutKing(Board board) {
-        return PSEUDO_LEGAL_MOVE_GENERATORS_WITHOUT_KING.stream()
-                .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
-                .collect(Collectors.toSet());
-    }
-
     private boolean isFullyLegal(Board board, Move move) {
 
-        Board boardCopy = board.copy();
-        boardCopy.applyMove(move);
+        board.makeMove(move);
 
         long kingMask = switch (move.getMoveType()) {
-            default -> board.isWhiteToMove() ? boardCopy.getWhiteKing() : boardCopy.getBlackKing();
-            case KINGSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.WHITE_KINGSIDE_CASTLE_SAFE_MASK : BitBoardConstants.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
-            case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : BitBoardConstants.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+            default -> board.isWhiteToMove() ? board.getBlackKing() : board.getWhiteKing();
+            case KINGSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.BLACK_KINGSIDE_CASTLE_SAFE_MASK : BitBoardConstants.WHITE_KINGSIDE_CASTLE_SAFE_MASK;
+            case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.BLACK_QUEENSIDE_CASTLE_SAFE_MASK : BitBoardConstants.WHITE_QUEENSIDE_CASTLE_SAFE_MASK;
         };
 
         // TODO perhaps can be done without a stream
         long attackedSquares = 0L;
-        for (Move opponentMove : generatePseudoLegalMovesWithoutKing(boardCopy)) {
+        for (Move opponentMove : generatePseudoLegalMoves(board)) {
             attackedSquares |= (1L << opponentMove.getEndSquare());
         }
         boolean isLegalMove = (kingMask & attackedSquares) == 0;
-        if (isLegalMove && isCheck(boardCopy)) {
+        if (isLegalMove && isCheck(board)) {
             move.setCheck(true);
         }
+        board.unmakeMove();
         return isLegalMove;
 
     }
 
-    private boolean isCheck(Board board) {
-        // Additionally calculate whether the move is a check, store this info in Move.
-        boolean isWhiteToMove = !board.isWhiteToMove();
-        board.setWhiteToMove(isWhiteToMove);
-        int opponentKingSquare = isWhiteToMove ? BitBoardUtil.scanForward(board.getBlackKing()) : BitBoardUtil.scanForward(board.getWhiteKing());
-        Set<Integer> attackingSquares = generatePseudoLegalMovesWithoutKing(board).stream()
+    public boolean isCheck(Board board) {
+        board.setWhiteToMove(!board.isWhiteToMove());
+        int enPassantFile = board.getCurrentGameState().getEnPassantFile();
+        board.getCurrentGameState().setEnPassantFile(-1);
+        int opponentKingSquare = board.isWhiteToMove() ? BitBoardUtils.scanForward(board.getBlackKing()) : BitBoardUtils.scanForward(board.getWhiteKing());
+        Set<Integer> attackingSquares = generatePseudoLegalMoves(board).stream()
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
+        board.setWhiteToMove(!board.isWhiteToMove());
+        board.getCurrentGameState().setEnPassantFile(enPassantFile);
         return attackingSquares.contains(opponentKingSquare);
+    }
+
+    private Set<Move> generatePseudoLegalMoves(Board board) {
+        return PSEUDO_LEGAL_MOVE_GENERATORS.stream()
+                .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
+                .collect(Collectors.toSet());
     }
 
 }

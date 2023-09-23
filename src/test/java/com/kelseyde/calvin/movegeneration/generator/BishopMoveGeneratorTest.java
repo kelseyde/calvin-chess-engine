@@ -61,10 +61,10 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(10, Piece.getPieceCode(false, PieceType.PAWN), true);
-        board.setPiece(14, Piece.getPieceCode(false, PieceType.KNIGHT), true);
-        board.setPiece(42, Piece.getPieceCode(false, PieceType.BISHOP), true);
-        board.setPiece(46, Piece.getPieceCode(false, PieceType.ROOK), true);
+        board.setPiece(10, PieceType.PAWN, false, true);
+        board.setPiece(14, PieceType.KNIGHT, false, true);
+        board.setPiece(42, PieceType.BISHOP, false, true);
+        board.setPiece(46, PieceType.ROOK, false, true);
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
 
@@ -75,17 +75,17 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(10, Piece.getPieceCode(true, PieceType.PAWN), true);
-        board.setPiece(14, Piece.getPieceCode(true, PieceType.KNIGHT), true);
-        board.setPiece(42, Piece.getPieceCode(true, PieceType.BISHOP), true);
-        board.setPiece(46, Piece.getPieceCode(true, PieceType.ROOK), true);
+        board.setPiece(10, PieceType.PAWN, true, true);
+        board.setPiece(14, PieceType.KNIGHT, true, true);
+        board.setPiece(42, PieceType.BISHOP, true, true);
+        board.setPiece(46, PieceType.ROOK, true, true);
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37));
 
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.setPiece(startSquare, bishop, true);
+        board.setPiece(startSquare, PieceType.BISHOP, true, true);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)

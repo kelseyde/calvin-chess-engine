@@ -1,8 +1,8 @@
 package com.kelseyde.calvin;
 
-import com.kelseyde.calvin.board.Game;
-import com.kelseyde.calvin.board.result.GameResult;
-import com.kelseyde.calvin.utils.NotationUtils;
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.utils.IllegalMoveException;
+import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -11,278 +11,278 @@ public class CastlingTest {
     @Test
     public void testSimpleKingsideCastling() {
 
-        Game game = new Game();
-        game.makeMove(NotationUtils.fromNotation("e2", "e4"));
-        game.makeMove(NotationUtils.fromNotation("e7", "e5"));
-        game.makeMove(NotationUtils.fromNotation("g1", "f3"));
-        game.makeMove(NotationUtils.fromNotation("g8", "f6"));
-        game.makeMove(NotationUtils.fromNotation("f1", "b5"));
-        game.makeMove(NotationUtils.fromNotation("f8", "b4"));
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "b5"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "b4"));
 
         // white castles
-        game.makeMove(NotationUtils.fromNotation("e1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "g1"));
 
         // black castles
-        game.makeMove(NotationUtils.fromNotation("e8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "g8"));
 
     }
 
     @Test
     public void testSimpleQueensideCastling() {
 
-        Game game = new Game();
-        game.makeMove(NotationUtils.fromNotation("d2", "d4"));
-        game.makeMove(NotationUtils.fromNotation("d7", "d5"));
-        game.makeMove(NotationUtils.fromNotation("b1", "c3"));
-        game.makeMove(NotationUtils.fromNotation("b8", "c6"));
-        game.makeMove(NotationUtils.fromNotation("c1", "f4"));
-        game.makeMove(NotationUtils.fromNotation("c8", "f5"));
-        game.makeMove(NotationUtils.fromNotation("d1", "d2"));
-        game.makeMove(NotationUtils.fromNotation("d8", "d7"));
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c6"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "f4"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "f5"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "d2"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "d7"));
 
         // white castles
-        game.makeMove(NotationUtils.fromNotation("e1", "c1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "c1"));
 
         // black castles
-        game.makeMove(NotationUtils.fromNotation("e8", "c8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "c8"));
 
     }
 
     @Test
     public void cannotCastleIfAllPiecesInTheWay() {
 
-        Game game = new Game();
+        Board board = new Board();
 
         // white tries to kingside castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "g1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
 
         // white makes legal move instead
-        game.makeMove(NotationUtils.fromNotation("e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
 
         // black tries to kingside castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e8", "g8")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "g8")));
 
         // black makes legal move instead
-        game.makeMove(NotationUtils.fromNotation("e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
         // white tries to queenside castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "c1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "c1")));
 
         // white makes legal move instead
-        game.makeMove(NotationUtils.fromNotation("d2", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
 
         // black tries to queenside castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e8", "c8")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "c8")));
     }
 
     @Test
     public void cannotKingsideCastleIfSomePiecesInTheWay() {
 
-        Game game = new Game();
+        Board board = new Board();
 
-        game.makeMove(NotationUtils.fromNotation("g1", "f3"));
-        game.makeMove(NotationUtils.fromNotation("e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
         // white tries to kingside castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "g1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
 
     }
 
     @Test
     public void cannotQueensideCastleIfSomePiecesInTheWay() {
 
-        Game game = new Game();
+        Board board = new Board();
 
-        game.makeMove(NotationUtils.fromNotation("b1", "c3"));
-        game.makeMove(NotationUtils.fromNotation("e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
         // white tries to kingside castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "c1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "c1")));
 
     }
 
     @Test
     public void cannotKingsideCastleIfKingNotOnStartingSquare() {
 
-        Game game = new Game();
-        game.makeMove(NotationUtils.fromNotation("e2", "e4"));
-        game.makeMove(NotationUtils.fromNotation("e7", "e5"));
-        game.makeMove(NotationUtils.fromNotation("g1", "f3"));
-        game.makeMove(NotationUtils.fromNotation("g8", "f6"));
-        game.makeMove(NotationUtils.fromNotation("f1", "b5"));
-        game.makeMove(NotationUtils.fromNotation("f8", "e7"));
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "b5"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "e7"));
 
         // white king moves
-        game.makeMove(NotationUtils.fromNotation("e1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "f1"));
         // black king moves
-        game.makeMove(NotationUtils.fromNotation("e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
 
         // white tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "g1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
 
         // white makes a legal move instead
-        game.makeMove(NotationUtils.fromNotation("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
         // black tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e8", "g8")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "g8")));
     }
 
     @Test
     public void cannotQueensideCastleIfKingNotOnStartingSquare() {
 
-        Game game = new Game();
-        game.makeMove(NotationUtils.fromNotation("d2", "d4"));
-        game.makeMove(NotationUtils.fromNotation("d7", "d5"));
-        game.makeMove(NotationUtils.fromNotation("b1", "c3"));
-        game.makeMove(NotationUtils.fromNotation("b8", "c6"));
-        game.makeMove(NotationUtils.fromNotation("c1", "f4"));
-        game.makeMove(NotationUtils.fromNotation("c8", "f5"));
-        game.makeMove(NotationUtils.fromNotation("d1", "d2"));
-        game.makeMove(NotationUtils.fromNotation("d8", "d7"));
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c6"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "f4"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "f5"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "d2"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "d7"));
 
         // white king moves
-        game.makeMove(NotationUtils.fromNotation("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
         // black king moves
-        game.makeMove(NotationUtils.fromNotation("e8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "d8"));
 
         // white tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "c1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "c1")));
 
         // white makes a legal move instead
-        game.makeMove(NotationUtils.fromNotation("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
         // black tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e8", "c8")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "c8")));
 
     }
 
     @Test
     public void cannotKingsideCastleIfKingHasMoved() {
 
-        Game game = new Game();
-        game.makeMove(NotationUtils.fromNotation("e2", "e4"));
-        game.makeMove(NotationUtils.fromNotation("e7", "e5"));
-        game.makeMove(NotationUtils.fromNotation("g1", "f3"));
-        game.makeMove(NotationUtils.fromNotation("g8", "f6"));
-        game.makeMove(NotationUtils.fromNotation("f1", "b5"));
-        game.makeMove(NotationUtils.fromNotation("f8", "e7"));
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "b5"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "e7"));
 
         // white king moves
-        game.makeMove(NotationUtils.fromNotation("e1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "f1"));
         // black king moves
-        game.makeMove(NotationUtils.fromNotation("e8", "f8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
 
         // white king moves back
-        game.makeMove(NotationUtils.fromNotation("f1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
         // black king moves back
-        game.makeMove(NotationUtils.fromNotation("f8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "e8"));
 
         // white tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "g1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
 
         // white makes a legal move instead
-        game.makeMove(NotationUtils.fromNotation("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
         // black tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e8", "g8")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "g8")));
     }
 
     @Test
     public void cannotQueensideCastleIfKingHasMoved() {
 
-        Game game = new Game();
-        game.makeMove(NotationUtils.fromNotation("d2", "d4"));
-        game.makeMove(NotationUtils.fromNotation("d7", "d5"));
-        game.makeMove(NotationUtils.fromNotation("b1", "c3"));
-        game.makeMove(NotationUtils.fromNotation("b8", "c6"));
-        game.makeMove(NotationUtils.fromNotation("c1", "f4"));
-        game.makeMove(NotationUtils.fromNotation("c8", "f5"));
-        game.makeMove(NotationUtils.fromNotation("d1", "d2"));
-        game.makeMove(NotationUtils.fromNotation("d8", "d7"));
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c6"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "f4"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "f5"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "d2"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "d7"));
 
         // white king moves
-        game.makeMove(NotationUtils.fromNotation("e1", "d1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "d1"));
         // black king moves
-        game.makeMove(NotationUtils.fromNotation("e8", "d8"));
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "d8"));
 
         // white king moves back
-        game.makeMove(NotationUtils.fromNotation("d1", "e1"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "e1"));
         // black king moves back
-        game.makeMove(NotationUtils.fromNotation("d8", "e8"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "e8"));
 
         // white tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "c1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "c1")));
 
         // white makes a legal move instead
-        game.makeMove(NotationUtils.fromNotation("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
         // black tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e8", "c8")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "c8")));
 
     }
 
     @Test
     public void cannotKingsideCastleIfRookHasMoved() {
 
-        Game game = new Game();
-        game.makeMove(NotationUtils.fromNotation("e2", "e4"));
-        game.makeMove(NotationUtils.fromNotation("e7", "e5"));
-        game.makeMove(NotationUtils.fromNotation("g1", "f3"));
-        game.makeMove(NotationUtils.fromNotation("g8", "f6"));
-        game.makeMove(NotationUtils.fromNotation("f1", "b5"));
-        game.makeMove(NotationUtils.fromNotation("f8", "e7"));
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "b5"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "e7"));
 
         // white rook moves
-        game.makeMove(NotationUtils.fromNotation("h1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
         // black rook moves
-        game.makeMove(NotationUtils.fromNotation("h8", "g8"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "g8"));
 
         // white rook moves back
-        game.makeMove(NotationUtils.fromNotation("g1", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "h1"));
         // black rook moves back
-        game.makeMove(NotationUtils.fromNotation("g8", "h8"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "h8"));
 
         // white tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "g1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
 
         // white makes a legal move instead
-        game.makeMove(NotationUtils.fromNotation("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
         // black tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e8", "g8")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "g8")));
     }
 
     @Test
     public void cannotQueensideCastleIfRookHasMoved() {
 
-        Game game = new Game();
-        game.makeMove(NotationUtils.fromNotation("d2", "d4"));
-        game.makeMove(NotationUtils.fromNotation("d7", "d5"));
-        game.makeMove(NotationUtils.fromNotation("b1", "c3"));
-        game.makeMove(NotationUtils.fromNotation("b8", "c6"));
-        game.makeMove(NotationUtils.fromNotation("c1", "f4"));
-        game.makeMove(NotationUtils.fromNotation("c8", "f5"));
-        game.makeMove(NotationUtils.fromNotation("d1", "d2"));
-        game.makeMove(NotationUtils.fromNotation("d8", "d7"));
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c6"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "f4"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "f5"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "d2"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "d7"));
 
         // white rook moves
-        game.makeMove(NotationUtils.fromNotation("a1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "b1"));
         // black rook moves
-        game.makeMove(NotationUtils.fromNotation("a8", "b8"));
+        board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
 
         // white rook moves back
-        game.makeMove(NotationUtils.fromNotation("b1", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a1"));
         // black rook moves back
-        game.makeMove(NotationUtils.fromNotation("b8", "a8"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "a8"));
 
         // white tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e1", "c1")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "c1")));
 
         // white makes a legal move instead
-        game.makeMove(NotationUtils.fromNotation("a2", "a3"));
+        board.makeMove(TestUtils.getLegalMove(board, "a2", "a3"));
 
         // black tries to castle
-        assertIllegalMove(game.makeMove(NotationUtils.fromNotation("e8", "c8")));
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "c8")));
 
     }
 
@@ -304,10 +304,6 @@ public class CastlingTest {
     @Test
     public void blackCanStillQueensideCastleIfQueensideRookHasMoved() {
         // TODO
-    }
-
-    private void assertIllegalMove(GameResult result) {
-        Assertions.assertEquals(GameResult.ResultType.ILLEGAL_MOVE, result.getResultType());
     }
 
 }

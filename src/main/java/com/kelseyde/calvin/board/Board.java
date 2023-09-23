@@ -6,7 +6,6 @@ import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.*;
 

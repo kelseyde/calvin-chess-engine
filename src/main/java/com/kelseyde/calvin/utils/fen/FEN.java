@@ -2,11 +2,9 @@ package com.kelseyde.calvin.utils.fen;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.ZobristKey;
-import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.NotationUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

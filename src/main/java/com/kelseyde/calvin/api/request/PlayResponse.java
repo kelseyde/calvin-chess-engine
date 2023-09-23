@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.api.request;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.NotationUtils;

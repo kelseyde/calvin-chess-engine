@@ -5,7 +5,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
-import com.kelseyde.calvin.movegeneration.result.ResultEvaluator;
+import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 public class CheckmateTest {
     
-    private final ResultEvaluator evaluator = new ResultEvaluator();
+    private final ResultCalculator evaluator = new ResultCalculator();
 
     @Test
     public void testFoolsMate() {
@@ -24,7 +24,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g2", "g4"));
 
         board.makeMove(TestUtils.getLegalMove(board, "d8", "h4"));
-        GameResult result = evaluator.getResult(board);
+        GameResult result = evaluator.calculateResult(board);
         Assertions.assertTrue(result.isCheckmate());
 
     }
@@ -41,7 +41,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d6"));
 
         board.makeMove(TestUtils.getLegalMove(board, "h5", "f7"));
-        GameResult result = evaluator.getResult(board);
+        GameResult result = evaluator.calculateResult(board);
         Assertions.assertTrue(result.isCheckmate());
 
     }
@@ -88,7 +88,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g2", "g1"));
 
         board.makeMove(TestUtils.getLegalMove(board, "e1", "d2"));
-        GameResult result = evaluator.getResult(board);
+        GameResult result = evaluator.calculateResult(board);
         Assertions.assertTrue(result.isCheckmate());
 
     }
@@ -136,7 +136,7 @@ public class CheckmateTest {
 
         // improving on Lasker's move, O-O-O#!
         board.makeMove(TestUtils.getLegalMove(board, "e1", "c1"));
-        GameResult result = evaluator.getResult(board);
+        GameResult result = evaluator.calculateResult(board);
         Assertions.assertTrue(result.isCheckmate());
 
     }
@@ -159,7 +159,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g7", "g5"));
 
         board.makeMove(TestUtils.getLegalMove(board, "f5", "g6"));
-        GameResult result = evaluator.getResult(board);
+        GameResult result = evaluator.calculateResult(board);
         Assertions.assertTrue(result.isCheckmate());
     }
 
@@ -185,7 +185,7 @@ public class CheckmateTest {
                 .promotionPieceType(PieceType.KNIGHT)
                 .build();
         board.makeMove(move);
-        GameResult result = evaluator.getResult(board);
+        GameResult result = evaluator.calculateResult(board);
         Assertions.assertTrue(result.isCheckmate());
     }
 
@@ -198,7 +198,7 @@ public class CheckmateTest {
         board.setPiece(1, PieceType.QUEEN, true, true);
         
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
-        GameResult result = evaluator.getResult(board);
+        GameResult result = evaluator.calculateResult(board);
         Assertions.assertTrue(result.isCheckmate());
 
     }

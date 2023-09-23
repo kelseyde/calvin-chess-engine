@@ -1,25 +1,27 @@
 package com.kelseyde.calvin.board.piece;
 
-import java.util.Map;
-
 /**
  * The relative material value of each piece type, measured in centipawns (hundredths of a pawn). Using the widely popular
  * values suggested by Tomasz Michniewski in 1995, although there are alternative rankings.
  * @see <a href="https://www.chessprogramming.org/Point_Value">Chess Programming Wiki</a>
  */
 public class PieceValues {
+    public static final int PAWN = 100;
+    public static final int KNIGHT = 320;
+    public static final int BISHOP = 330;
+    public static final int ROOK = 500;
+    public static final int QUEEN = 900;
+    public static final int KING = 10000;
 
-    private static final Map<PieceType, Integer> MATERIAL_VALUES = Map.of(
-            PieceType.PAWN, 100,
-            PieceType.KNIGHT, 320,
-            PieceType.BISHOP, 330,
-            PieceType.ROOK, 500,
-            PieceType.QUEEN, 900,
-            PieceType.KING, 10000
-    );
-
-    public static int get(PieceType pieceType) {
-        return MATERIAL_VALUES.get(pieceType);
+    public static int getValue(PieceType pieceType) {
+        return switch (pieceType) {
+            case PAWN -> PAWN;
+            case KNIGHT -> KNIGHT;
+            case BISHOP -> BISHOP;
+            case ROOK -> ROOK;
+            case QUEEN -> QUEEN;
+            case KING -> KING;
+        };
     }
 
 }

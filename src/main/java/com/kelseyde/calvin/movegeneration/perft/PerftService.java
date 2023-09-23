@@ -3,7 +3,6 @@ package com.kelseyde.calvin.movegeneration.perft;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.movegeneration.result.ResultEvaluator;
 import com.kelseyde.calvin.utils.NotationUtils;
 
 import java.util.List;

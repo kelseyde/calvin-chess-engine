@@ -2,14 +2,14 @@ package com.kelseyde.calvin.movegeneration.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
-import com.kelseyde.calvin.movegeneration.result.ResultEvaluator;
+import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class DrawByRepetitionTest {
     
-    private final ResultEvaluator resultEvaluator = new ResultEvaluator();
+    private final ResultCalculator resultEvaluator = new ResultCalculator();
 
     @Test
     public void testSimpleDrawByRepetition() {
@@ -33,7 +33,7 @@ public class DrawByRepetitionTest {
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
 
-        GameResult result = resultEvaluator.getResult(board);
+        GameResult result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.DRAW_BY_REPETITION, result);
 
     }
@@ -66,7 +66,7 @@ public class DrawByRepetitionTest {
         board.makeMove(TestUtils.getLegalMove(board, "f8", "e8"));
 
         // position of pieces repeated thrice, but on the first occurrence castling rights were different
-        GameResult result = resultEvaluator.getResult(board);
+        GameResult result = resultEvaluator.calculateResult(board);
         Assertions.assertNotEquals(GameResult.DRAW_BY_REPETITION, result);
 
     }
@@ -106,7 +106,7 @@ public class DrawByRepetitionTest {
         board.makeMove(TestUtils.getLegalMove(board, "f8", "e8"));
 
         // position of pieces repeated four times, three times with same castling rights
-        GameResult result = resultEvaluator.getResult(board);
+        GameResult result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.DRAW_BY_REPETITION, result);
 
     }
@@ -135,7 +135,7 @@ public class DrawByRepetitionTest {
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
 
         // position of pieces repeated thrice, but en passant rights different
-        GameResult result = resultEvaluator.getResult(board);
+        GameResult result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.IN_PROGRESS, result);
 
     }
@@ -166,7 +166,7 @@ public class DrawByRepetitionTest {
 
         // position of pieces repeated thrice, but en passant rights different
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
-        GameResult result = resultEvaluator.getResult(board);
+        GameResult result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.IN_PROGRESS, result);
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
 
@@ -174,7 +174,7 @@ public class DrawByRepetitionTest {
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
 
         // position of pieces repeated four times, three times with same en passant rights
-        result = resultEvaluator.getResult(board);
+        result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.DRAW_BY_REPETITION, result);
 
     }

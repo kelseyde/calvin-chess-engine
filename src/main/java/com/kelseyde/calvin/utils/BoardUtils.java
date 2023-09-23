@@ -1,6 +1,9 @@
 package com.kelseyde.calvin.utils;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+
+import java.util.Optional;
 
 public class BoardUtils {
 
@@ -31,6 +34,52 @@ public class BoardUtils {
             return 7;
         }
         throw new IllegalArgumentException("Illegal square coordinate " + square);
+    }
+
+    // TODO make less horrible
+    public static Optional<String> pieceCodeAt(Board board, int square) {
+        long squareBB = 1L << square;
+        if ((squareBB & board.getWhitePawns()) != 0) {
+            return Optional.of("wP");
+        }
+        if ((squareBB & board.getWhiteKnights()) != 0) {
+            return Optional.of("wN");
+        }
+        if ((squareBB & board.getWhiteBishops()) != 0) {
+            return Optional.of("wB");
+        }
+        if ((squareBB & board.getWhiteRooks()) != 0) {
+            return Optional.of("wR");
+        }
+        if ((squareBB & board.getWhiteQueens()) != 0) {
+            return Optional.of("wQ");
+        }
+        if ((squareBB & board.getWhiteKing()) != 0) {
+            return Optional.of("wK");
+        }
+        if ((squareBB & board.getBlackPawns()) != 0) {
+            return Optional.of("bP");
+        }
+        if ((squareBB & board.getBlackKnights()) != 0) {
+            return Optional.of("bN");
+        }
+        if ((squareBB & board.getBlackBishops()) != 0) {
+            return Optional.of("bB");
+        }
+        if ((squareBB & board.getBlackRooks()) != 0) {
+            return Optional.of("bR");
+        }
+        if ((squareBB & board.getBlackQueens()) != 0) {
+            return Optional.of("bQ");
+        }
+        if ((squareBB & board.getBlackKing()) != 0) {
+            return Optional.of("bK");
+        }
+        return Optional.empty();
+    }
+
+    public static int squareIndex(int rank, int file) {
+        return 8 * rank + file;
     }
 
 }

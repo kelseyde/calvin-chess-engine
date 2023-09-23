@@ -1,12 +1,16 @@
 package com.kelseyde.calvin.api.request;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
+import com.kelseyde.calvin.utils.BoardUtils;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Builder;
 import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 @Data
 @Builder
@@ -18,15 +22,13 @@ public class PlayResponse {
 
     public static PlayResponse.PlayResponseBuilder fromBoard(Board board) {
         Map<String, String> position = new HashMap<>();
-        // TODO fix ui
-//        IntStream.range(0, 64)
-//                .forEach(i -> {
-//                    board.getPieceAt(i).ifPresent(piece -> {
-//                        String square = MoveUtils.toNotation(i);
-//                        String pieceCode = piece.toPieceCode();
-//                        position.put(square, pieceCode);
-//                    });
-//                });
+        IntStream.range(0, 64)
+                .forEach(i -> {
+                    BoardUtils.pieceCodeAt(board, i).ifPresent(pieceCode -> {
+                        String square = NotationUtils.toNotation(i);
+                        position.put(square, pieceCode);
+                    });
+                });
         return PlayResponse.builder().position(position);
     }
 

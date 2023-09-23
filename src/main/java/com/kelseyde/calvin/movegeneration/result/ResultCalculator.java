@@ -4,17 +4,23 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ResultEvaluator {
+@Service
+public class ResultCalculator {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
-    public GameResult getResult(Board board) {
-
+    public GameResult calculateResult(Board board) {
         Set<Move> legalMoves = moveGenerator.generateLegalMoves(board);
+        return calculateResult(board, legalMoves);
+    }
+
+    public GameResult calculateResult(Board board, Collection<Move> legalMoves) {
         if (legalMoves.isEmpty()) {
             if (moveGenerator.isCheck(board)) {
                 return board.isWhiteToMove() ? GameResult.BLACK_WINS_BY_CHECKMATE : GameResult.WHITE_WINS_BY_CHECKMATE;
@@ -32,7 +38,6 @@ public class ResultEvaluator {
             return GameResult.DRAW_BY_FIFTY_MOVE_RULE;
         }
         return GameResult.IN_PROGRESS;
-
     }
 
     private boolean isRepetition(Board board) {

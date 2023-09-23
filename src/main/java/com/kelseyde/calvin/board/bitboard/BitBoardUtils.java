@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.board.bitboard;
 
+import com.kelseyde.calvin.utils.BoardUtils;
+
 public class BitBoardUtils {
 
     public static long shiftWest(long board) {
@@ -47,17 +49,13 @@ public class BitBoardUtils {
         String s = Long.toBinaryString(board);
         for (int i = 7; i >= 0; i--) {
             for (int n = 0; n < 8; n++) {
-                int index = squareIndex(i , n);
+                int index = BoardUtils.squareIndex(i , n);
                 boolean isBit = ((board >>> index) & 1) == 1;
                 System.out.print(isBit ? 1 : 0);
             }
             System.out.println();
         }
         System.out.println();
-    }
-
-    public static int squareIndex(int rank, int file) {
-        return 8 * rank + file;
     }
 
     public static long getFileBitboard(int file) {

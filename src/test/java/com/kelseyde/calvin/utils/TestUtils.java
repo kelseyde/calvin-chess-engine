@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 
@@ -42,10 +41,6 @@ public class TestUtils {
                 .filter(m -> m.matches(move))
                 .findAny();
         if (legalMove.isEmpty()) {
-            System.out.println("Illegal move!");
-            BitBoardUtils.print(board.getWhitePieces());
-            BitBoardUtils.print(board.getBlackPieces());
-            BitBoardUtils.print(board.getOccupied());
             throw new IllegalMoveException(String.format("Illegal move! %s%s", startSquare, endSquare));
         }
         return legalMove.get();

@@ -5,7 +5,6 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.perft.PerftService;
 import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -17,10 +16,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-@Disabled
 public class PerformanceTest {
 
-    private final PerftService moveGenerator = new PerftService();
+    private final PerftService perftService = new PerftService();
 
     @Test
     public void testPerftOneDepth() {
@@ -42,7 +40,6 @@ public class PerformanceTest {
         perft(new Board(), 4, 197281);
     }
 
-    @Disabled
     @Test
     public void testPerftFiveDepth() {
         perft(new Board(), 5, 4865609);
@@ -50,11 +47,9 @@ public class PerformanceTest {
 
     private void perft(Board board, int depth, int expectedTotalMoves) {
         Instant start = Instant.now();
-        int totalMoveCount = moveGenerator.perft(board, depth);
+        int totalMoveCount = perftService.perft(board, depth);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
-        System.out.printf("Move generator calculated %s possible positions at depth %s in %s",
-                totalMoveCount, depth, performance);
         if (expectedTotalMoves == totalMoveCount) {
             writeResults(depth, performance);
         }

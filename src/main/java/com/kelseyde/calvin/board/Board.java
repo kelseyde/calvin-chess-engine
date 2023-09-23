@@ -133,7 +133,7 @@ public class Board {
                 unsetPiece(endSquare, false);
                 setPiece(startSquare, pieceType, isWhiteToMove, true);
                 int captureSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-                unsetPiece(captureSquare, true);
+                setPiece(captureSquare, PieceType.PAWN, !isWhiteToMove, true);
             }
             case KINGSIDE_CASTLE -> {
                 unsetPiece(endSquare, false);
@@ -230,7 +230,7 @@ public class Board {
         return newCastlingRights;
     }
 
-    private PieceType getCapturedPieceType(Move move) {
+    public PieceType getCapturedPieceType(Move move) {
         long squareMask = 1L << move.getEndSquare();
 
         long pawnMask = isWhiteToMove ? blackPawns : whitePawns;

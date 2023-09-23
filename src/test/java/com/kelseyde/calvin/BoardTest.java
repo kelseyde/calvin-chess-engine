@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -154,8 +155,6 @@ public class BoardTest {
 
         new MoveGenerator().generateLegalMoves(board1);
         System.out.println("TODO");
-
-
     }
 
     @Test
@@ -208,6 +207,30 @@ public class BoardTest {
 
         blackPiecePositions = getPiecePositions(board, false);
         Assertions.assertEquals(Set.of(35, 56, 57, 58, 59, 60, 61, 62, 63, 48, 49, 50, 52, 53, 54, 55), blackPiecePositions);
+
+    }
+
+    @Test
+    public void testUnmakeEnPassantRestoresCapturedPawn() {
+
+        Board board = new Board();
+        //d4d5
+        board.makeMove(Move.builder().startSquare(11).endSquare(27).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        //e7e5
+        board.makeMove(Move.builder().startSquare(52).endSquare(36).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        //d4e5
+        board.makeMove(Move.builder().startSquare(27).endSquare(36).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        //d7d5
+        board.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        //e5d6
+        board.makeMove(Move.builder().startSquare(36).endSquare(43).pieceType(PieceType.PAWN).moveType(MoveType.EN_PASSANT).build());
+
+        Set<Integer> blackPiecePositions = getPiecePositions(board, false);
+        Assertions.assertFalse(blackPiecePositions.contains(35));
+
+        board.unmakeMove();
+        blackPiecePositions = getPiecePositions(board, false);
+        Assertions.assertTrue(blackPiecePositions.contains(35));
 
     }
 
@@ -301,6 +324,18 @@ public class BoardTest {
         Assertions.assertFalse(board.isWhiteToMove());
         // todo
 
+    }
+
+    @Test
+    public void test() {
+        Board board = new Board();
+        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "d4", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
+        List<String> moves = new MoveGenerator().generateLegalMoves(board).stream().map(NotationUtils::toNotation).toList();
+        Assertions.assertEquals(31, moves.size());
+        Assertions.assertTrue(moves.contains("e1d2"));
     }
 
     private Set<Integer> getPiecePositions(Board board, boolean isWhiteToMove) {

@@ -3,21 +3,19 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.piece.PieceValues;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
+@Service
 public class MaterialEvaluator implements PositionEvaluator {
 
     @Override
     public int evaluate(Board board) {
 
-//        boolean isWhiteToMove = board.isWhiteToMove();
-//        int modifier = isWhiteToMove ? 1 : 0;
-
         int whiteScore = calculateMaterialScore(board, true);
         int blackScore = calculateMaterialScore(board, false);
 
         int score = whiteScore - blackScore;
-//        log.info("white score: {}, black score: {}, score: {}", whiteScore, blackScore, score);
         return score;
 
     }

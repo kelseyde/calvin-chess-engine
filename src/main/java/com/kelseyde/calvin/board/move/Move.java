@@ -4,6 +4,8 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.Optional;
+
 /**
  * A legal chess move, indicating a start square, end square, and any special rules (en passant, castling, promotion
  */
@@ -40,9 +42,11 @@ public class Move {
     private PieceType promotionPieceType = null;
 
     public boolean matches(Move move) {
-        return startSquare == move.getStartSquare()
-                && endSquare == move.getEndSquare()
-                && promotionPieceType == move.getPromotionPieceType();
+        boolean squareMatch = startSquare == move.getStartSquare() && endSquare == move.getEndSquare();
+        boolean promotionMatch = Optional.ofNullable(promotionPieceType)
+                .map(piece -> piece.equals(move.getPromotionPieceType()))
+                .orElse(true);
+        return squareMatch && promotionMatch;
     }
 
 }

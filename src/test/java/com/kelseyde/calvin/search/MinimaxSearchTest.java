@@ -3,7 +3,6 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.search.engine.MinimaxSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
@@ -12,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 public class MinimaxSearchTest {
 
-    private final Search search = new MinimaxSearch(TestEvaluators.ALL_EVALUATORS);
+    private final Search search = TestUtils.CURRENT_ENGINE;
 
     @Test
     public void testFreeQueenWhite() {
@@ -93,7 +92,7 @@ public class MinimaxSearchTest {
         Board board = new Board();
         board.makeMove(NotationUtils.fromNotation("e2", "e4", PieceType.PAWN));
         board.makeMove(NotationUtils.fromNotation("b8", "c6", PieceType.PAWN));
-        board.makeMove(NotationUtils.fromNotation("f1", "a6", PieceType.PAWN));
+        board.makeMove(NotationUtils.fromNotation("f1", "a6", PieceType.BISHOP));
         SearchResult result = search.search(board, 3);
 
         Move bestMove = NotationUtils.fromNotation("b7", "a6");

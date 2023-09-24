@@ -11,8 +11,18 @@ import lombok.NoArgsConstructor;
 public class PlayRequest {
 
     private String gameId;
-    private String startSquare;
-    private String endSquare;
-    private PieceType promotionPieceType;
+    private String from;
+    private String to;
+    private String promotion;
+
+    public PieceType getPromotionPieceType() {
+        return switch (promotion) {
+            case "q" -> PieceType.QUEEN;
+            case "r" -> PieceType.ROOK;
+            case "b" -> PieceType.BISHOP;
+            case "n" -> PieceType.KNIGHT;
+            default -> null;
+        };
+    }
 
 }

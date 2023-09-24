@@ -56,8 +56,8 @@ public class GameController {
                 .orElseThrow(() -> new NoSuchElementException(String.format("Invalid game id %s!", moveRequest.getGameId())));
 
         Move playerMove = Move.builder()
-                .startSquare(NotationUtils.fromNotation(moveRequest.getStartSquare()))
-                .endSquare(NotationUtils.fromNotation(moveRequest.getEndSquare()))
+                .startSquare(NotationUtils.fromNotation(moveRequest.getFrom()))
+                .endSquare(NotationUtils.fromNotation(moveRequest.getTo()))
                 .promotionPieceType(moveRequest.getPromotionPieceType())
                 .build();
 
@@ -67,26 +67,24 @@ public class GameController {
                 .filter(lm -> lm.matches(playerMove))
                 .findAny();
         if (legalMove.isEmpty()) {
-            return ResponseEntity.ok(PlayResponse.fromBoard(board)
-                    .result(GameResult.ILLEGAL_MOVE)
-                    .build());
+            log.error("Illegal move: {}", moveRequest);
+            return ResponseEntity.ok(PlayResponse.builder().build());
         }
         board.makeMove(legalMove.get());
         GameResult result = resultCalculator.calculateResult(board);
-
         if (!result.equals(GameResult.IN_PROGRESS)) {
-            return ResponseEntity.ok(PlayResponse.fromBoard(board)
-                    .result(result)
-                    .build());
+            log.error("Result: {}", result);
+            return ResponseEntity.ok(PlayResponse.builder().build());
         }
 
         Move engineMove = search.search(board, 3).move();
         board.makeMove(engineMove);
         log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));
-        result = resultCalculator.calculateResult(board);
-        return ResponseEntity.ok(PlayResponse.fromBoard(board)
-                .result(result)
+        return ResponseEntity.ok(PlayResponse.builder()
+                .move(PlayResponse.MoveResponse.fromMove(engineMove))
                 .build());
     }
+
+
 
 }

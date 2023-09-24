@@ -2,12 +2,21 @@ package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.evaluation.MaterialEvaluator;
+import com.kelseyde.calvin.evaluation.PositionEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.engine.MinimaxSearch;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public class TestUtils {
+
+    public static final List<PositionEvaluator> ALL_EVALUATORS = List.of(new MaterialEvaluator());
+
+    public static final Search CURRENT_ENGINE = new MinimaxSearch(ALL_EVALUATORS);
 
     private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
 

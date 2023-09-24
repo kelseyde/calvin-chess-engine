@@ -58,8 +58,8 @@ public class Board {
         long newZobristKey = currentGameState.getZobristKey();
         int newFiftyMoveCounter = currentGameState.getFiftyMoveCounter();
         int newEnPassantFile = move.getEnPassantFile();
-        PieceType capturedPieceType = getCapturedPieceType(move);
-        boolean resetFiftyMoveCounter = capturedPieceType != null || PieceType.PAWN.equals(move.getPieceType());
+        Optional<PieceType> capturedPiece = pieceAt(move.getEndSquare());
+        boolean resetFiftyMoveCounter = capturedPiece.isPresent() || PieceType.PAWN.equals(move.getPieceType());
         newFiftyMoveCounter = resetFiftyMoveCounter ? 0 :  ++newFiftyMoveCounter;
 
         switch (move.getMoveType()) {
@@ -103,7 +103,7 @@ public class Board {
         newZobristKey ^= ZobristKey.EN_PASSANT_FILE[move.getEnPassantFile() + 1];
         newZobristKey ^= ZobristKey.BLACK_TO_MOVE;
 
-        GameState newGameState = new GameState(newZobristKey, capturedPieceType, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
+        GameState newGameState = new GameState(newZobristKey, capturedPiece.orElse(null), newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
         gameStateHistory.push(currentGameState);
         currentGameState = newGameState;
 
@@ -230,30 +230,30 @@ public class Board {
         return newCastlingRights;
     }
 
-    public PieceType getCapturedPieceType(Move move) {
-        long squareMask = 1L << move.getEndSquare();
+    public Optional<PieceType> pieceAt(int square) {
+        long squareMask = 1L << square;
 
         long pawnMask = isWhiteToMove ? blackPawns : whitePawns;
         if ((squareMask & pawnMask) != 0) {
-            return PieceType.PAWN;
+            return Optional.of(PieceType.PAWN);
         }
         long knightMask = isWhiteToMove ? blackKnights : whiteKnights;
         if ((squareMask & knightMask) != 0) {
-            return PieceType.KNIGHT;
+            return Optional.of(PieceType.KNIGHT);
         }
         long bishopMask = isWhiteToMove ? blackBishops : whiteBishops;
         if ((squareMask & bishopMask) != 0) {
-            return PieceType.BISHOP;
+            return Optional.of(PieceType.BISHOP);
         }
         long rookMask = isWhiteToMove ? blackRooks : whiteRooks;
         if ((squareMask & rookMask) != 0) {
-            return PieceType.ROOK;
+            return Optional.of(PieceType.ROOK);
         }
         long queenMask = isWhiteToMove ? blackQueens : whiteQueens;
         if ((squareMask & queenMask) != 0) {
-            return PieceType.QUEEN;
+            return Optional.of(PieceType.QUEEN);
         }
-        return null;
+        return Optional.empty();
     }
 
 }

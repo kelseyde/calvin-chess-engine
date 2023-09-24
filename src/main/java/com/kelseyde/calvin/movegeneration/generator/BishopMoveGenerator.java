@@ -11,8 +11,8 @@ public class BishopMoveGenerator extends SlidingMoveGenerator {
     }
 
     @Override
-    protected long getPieceBitboard(Board board) {
-        return board.isWhiteToMove() ? board.getWhiteBishops() : board.getBlackBishops();
+    protected long getSliders(Board board, boolean isWhite) {
+        return isWhite ? board.getWhiteBishops() : board.getBlackBishops();
     }
 
     @Override

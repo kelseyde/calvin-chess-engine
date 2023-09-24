@@ -12,4 +12,6 @@ public interface PseudoLegalMoveGenerator {
 
     Set<Move> generatePseudoLegalMoves(Board board);
 
+    long generateAttackMask(Board board, boolean isWhite);
+
 }

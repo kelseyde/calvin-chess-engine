@@ -77,7 +77,7 @@ public class GameController {
             return ResponseEntity.ok(PlayResponse.builder().build());
         }
 
-        Move engineMove = search.search(board, 3).move();
+        Move engineMove = search.search(board, 5).move();
         board.makeMove(engineMove);
         log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));
         return ResponseEntity.ok(PlayResponse.builder()

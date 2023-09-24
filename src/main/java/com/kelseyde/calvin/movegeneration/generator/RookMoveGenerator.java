@@ -11,8 +11,8 @@ public class RookMoveGenerator extends SlidingMoveGenerator {
     }
 
     @Override
-    protected long getPieceBitboard(Board board) {
-        return board.isWhiteToMove() ? board.getWhiteRooks() : board.getBlackRooks();
+    protected long getSliders(Board board, boolean isWhite) {
+        return isWhite ? board.getWhiteRooks() : board.getBlackRooks();
     }
 
     @Override

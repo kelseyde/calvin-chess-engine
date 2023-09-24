@@ -13,7 +13,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     /**
      * @return the bitboard containing all the pieces of this type and colour.
      */
-    protected abstract long getPieceBitboard(Board board);
+    protected abstract long getSliders(Board board, boolean isWhite);
 
     /**
      * @return whether this slider can move orthogonally.
@@ -33,15 +33,15 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     @Override
     public Set<Move> generatePseudoLegalMoves(Board board) {
         Set<Move> moves = new HashSet<>();
-        long pieceBitboard = getPieceBitboard(board);
+        long pieceBitboard = getSliders(board, board.isWhiteToMove());
         while (pieceBitboard != 0) {
             int square = BitBoardUtils.scanForward(pieceBitboard);
             long moveBitboard = 0L;
             if (isOrthogonal()) {
-                moveBitboard |= calculateOrthogonalMoves(board, square);
+                moveBitboard |= calculateOrthogonalMoves(board, square, board.isWhiteToMove());
             }
             if (isDiagonal()) {
-                moveBitboard |= calculateDiagonalMoves(board, square);
+                moveBitboard |= calculateDiagonalMoves(board, square, board.isWhiteToMove());
             }
             pieceBitboard = BitBoardUtils.popLSB(pieceBitboard);
             moves.addAll(addMoves(square, moveBitboard));
@@ -49,10 +49,27 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         return moves;
     }
 
-    private long calculateOrthogonalMoves(Board board, int s) {
+    @Override
+    public long generateAttackMask(Board board, boolean isWhite) {
+        long sliders = getSliders(board, isWhite);
+        long attackMask = 0L;
+        while (sliders != 0) {
+            int slider = BitBoardUtils.scanForward(sliders);
+            if (isOrthogonal()) {
+                attackMask |= calculateOrthogonalMoves(board, slider, isWhite);
+            }
+            if (isDiagonal()) {
+                attackMask |= calculateDiagonalMoves(board, slider, isWhite);
+            }
+            sliders = BitBoardUtils.popLSB(sliders);;
+        }
+        return attackMask;
+    }
+
+    private long calculateOrthogonalMoves(Board board, int s, boolean isWhite) {
         long slider = 1L << s;
         long occ = board.getOccupied();
-        long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
+        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
         long[] ranks = BitBoardConstants.RANK_MASKS;
         long[] files = BitBoardConstants.FILE_MASKS;
 
@@ -61,10 +78,10 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         return ((horizontalMoves & ranks[s / 8] | verticalMoves & files[s % 8])) &~ friendlies;
     }
 
-    private long calculateDiagonalMoves(Board board, int s) {
+    private long calculateDiagonalMoves(Board board, int s, boolean isWhite) {
         long slider = 1L << s;
         long occ = board.getOccupied();
-        long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
+        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
         long[] diagonals = BitBoardConstants.DIAGONAL_MASKS;
         long[] antiDiagonals = BitBoardConstants.ANTI_DIAGONAL_MASKS;
 

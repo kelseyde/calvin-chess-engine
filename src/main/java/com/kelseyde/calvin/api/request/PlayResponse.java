@@ -1,17 +1,11 @@
 package com.kelseyde.calvin.api.request;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
-import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.IntStream;
 
 @Data
 @Builder

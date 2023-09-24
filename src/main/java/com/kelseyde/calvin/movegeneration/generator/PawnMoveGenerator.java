@@ -23,7 +23,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         Set<Move> moves = new HashSet<>();
 
         long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
-        long opponentPieces = isWhite ? board.getBlackPieces() : board.getWhitePieces();
+        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
         long occupied = board.getOccupied();
         long enPassantFile = BitBoardUtils.getFileBitboard(board.getCurrentGameState().getEnPassantFile());
         long copy;
@@ -53,8 +53,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long leftCaptures = isWhite ?
-                BitBoardUtils.shiftNorthWest(pawns) & opponentPieces &~ BitBoardConstants.FILE_H &~ BitBoardConstants.RANK_8 :
-                BitBoardUtils.shiftSouthWest(pawns) & opponentPieces &~ BitBoardConstants.FILE_H &~ BitBoardConstants.RANK_1;
+                BitBoardUtils.shiftNorthWest(pawns) & opponents &~ BitBoardConstants.FILE_H &~ BitBoardConstants.RANK_8 :
+                BitBoardUtils.shiftSouthWest(pawns) & opponents &~ BitBoardConstants.FILE_H &~ BitBoardConstants.RANK_1;
         while (leftCaptures != 0) {
             int endSquare = BitBoardUtils.scanForward(leftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
@@ -63,8 +63,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long rightCaptures = isWhite ?
-                BitBoardUtils.shiftNorthEast(pawns) & opponentPieces &~ BitBoardConstants.FILE_A &~ BitBoardConstants.RANK_8 :
-                BitBoardUtils.shiftSouthEast(pawns) & opponentPieces &~ BitBoardConstants.FILE_A &~ BitBoardConstants.RANK_1;
+                BitBoardUtils.shiftNorthEast(pawns) & opponents &~ BitBoardConstants.RANK_8 :
+                BitBoardUtils.shiftSouthEast(pawns) & opponents &~ BitBoardConstants.RANK_1;
         while (rightCaptures != 0) {
             int endSquare = BitBoardUtils.scanForward(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
@@ -103,8 +103,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long captureLeftPromotions = isWhite ?
-                BitBoardUtils.shiftNorthWest(pawns) & opponentPieces &~ BitBoardConstants.FILE_H & BitBoardConstants.RANK_8 :
-                BitBoardUtils.shiftSouthWest(pawns) & opponentPieces &~ BitBoardConstants.FILE_H & BitBoardConstants.RANK_1;
+                BitBoardUtils.shiftNorthWest(pawns) & opponents &~ BitBoardConstants.FILE_H & BitBoardConstants.RANK_8 :
+                BitBoardUtils.shiftSouthWest(pawns) & opponents &~ BitBoardConstants.FILE_H & BitBoardConstants.RANK_1;
         while (captureLeftPromotions != 0) {
             int endSquare = BitBoardUtils.scanForward(captureLeftPromotions);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
@@ -113,8 +113,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long captureRightPromotions = isWhite ?
-                BitBoardUtils.shiftNorthEast(pawns) & opponentPieces &~ BitBoardConstants.FILE_A & BitBoardConstants.RANK_8 :
-                BitBoardUtils.shiftSouthEast(pawns) & opponentPieces &~ BitBoardConstants.FILE_A & BitBoardConstants.RANK_1;
+                BitBoardUtils.shiftNorthEast(pawns) & opponents & BitBoardConstants.RANK_8 :
+                BitBoardUtils.shiftSouthEast(pawns) & opponents & BitBoardConstants.RANK_1;
         while (captureRightPromotions != 0) {
             int endSquare = BitBoardUtils.scanForward(captureRightPromotions);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
@@ -124,6 +124,14 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
         return moves;
 
+    }
+
+    @Override
+    public long generateAttackMask(Board board, boolean isWhite) {
+        long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
+        long rightAttackMask = isWhite ? BitBoardUtils.shiftNorthEast(pawns) : BitBoardUtils.shiftSouthEast(pawns);
+        long leftAttackMask = isWhite ? BitBoardUtils.shiftNorthWest(pawns) : BitBoardUtils.shiftSouthWest(pawns) ;
+        return leftAttackMask | rightAttackMask;
     }
 
     private Set<Move> getPromotionMoves(int startSquare, int endSquare) {

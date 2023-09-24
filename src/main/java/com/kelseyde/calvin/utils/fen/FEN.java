@@ -70,7 +70,8 @@ public class FEN {
             boolean isWhiteToMove = parseSideToMove(parts[1]);
             int castlingRights = parseCastlingRights(parts[2]);
             int enPassantFile = parseEnPassantFile(parts[3]);
-            int fiftyMoveCounter = Integer.parseInt(parts[4]);
+            int fiftyMoveCounter = parts.length > 4 ? parseFiftyMoveCounter(parts[4]) : 0;
+            // This implementation does not require the full move counter (parts[5]).
 
             Board board = new Board();
             board.setWhitePawns(whitePawns);
@@ -137,6 +138,10 @@ public class FEN {
         }
         int square = NotationUtils.fromNotation(enPassantFile);
         return BoardUtils.getFile(square);
+    }
+
+    private static int parseFiftyMoveCounter(String fiftyMoveCounter) {
+        return Character.isDigit(fiftyMoveCounter.charAt(0)) ? Integer.parseInt(fiftyMoveCounter) : 0;
     }
 
     private static Stream<String> parseSquare(String square) {

@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,17 @@ public class QueenMoveGeneratorTest {
         // top corner
         assertLegalSquares(63, Set.of(56, 57, 58, 59, 60, 61, 62, 7, 15, 23, 31, 39, 47, 55,
                 0, 9, 18, 27, 36, 45, 54));
+
+    }
+
+    @Test
+    public void doesNotGenerateOpponentQueenMoves() {
+
+        Board board = FEN.fromFEN("K7/1Q6/8/8/8/8/6q1/7k w - - 0 1");
+
+        Set<Move> moves = generator.generatePseudoLegalMoves(board);
+
+        Assertions.assertEquals(21, moves.size());
 
     }
 

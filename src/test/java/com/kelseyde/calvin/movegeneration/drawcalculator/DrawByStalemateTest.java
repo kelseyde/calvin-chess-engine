@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,10 +32,7 @@ public class DrawByStalemateTest {
     @Test
     public void testSimpleKingAndPawnStalemate() {
 
-        Board board = TestUtils.emptyBoard();
-        board.setPiece(60, PieceType.KING, false, true);
-        board.setPiece(43, PieceType.KING, true, true);
-        board.setPiece(52, PieceType.PAWN, true, true);
+        Board board = FEN.fromFEN("4k3/4P3/3K4/8/8/8/8/8 w - - 0 1");
 
         board.makeMove(TestUtils.getLegalMove(board, "d6", "e6"));
 

@@ -4,20 +4,20 @@ import com.kelseyde.calvin.utils.BoardUtils;
 
 public class BitBoardUtils {
 
-    public static long shiftWest(long board) {
-        return (board >>> 1) &~ BitBoardConstants.FILE_H;
-    }
-
-    public static long shiftEast(long board) {
-        return board << 1 &~ BitBoardConstants.FILE_A;
+    public static long shiftNorth(long board) {
+        return board << 8;
     }
 
     public static long shiftSouth(long board) {
         return board >>> 8;
     }
 
-    public static long shiftNorth(long board) {
-        return board << 8;
+    public static long shiftEast(long board) {
+        return board << 1 &~ BitBoardConstants.FILE_A;
+    }
+
+    public static long shiftWest(long board) {
+        return (board >>> 1) &~ BitBoardConstants.FILE_H;
     }
 
     public static long shiftNorthEast(long board) {
@@ -28,12 +28,12 @@ public class BitBoardUtils {
         return board >>> 7 &~ BitBoardConstants.FILE_A;
     }
 
-    public static long shiftSouthWest(long board) {
-        return board >>> 9 &~ BitBoardConstants.FILE_H;
-    }
-
     public static long shiftNorthWest(long board) {
         return board << 7 &~ BitBoardConstants.FILE_H;
+    }
+
+    public static long shiftSouthWest(long board) {
+        return board >>> 9 &~ BitBoardConstants.FILE_H;
     }
 
     public static int scanForward(long board) {

@@ -7,6 +7,7 @@ import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 
 import java.util.Collections;
@@ -77,6 +78,16 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
 
         return moves;
 
+    }
+
+    @Override
+    public long generateAttackMask(Board board, boolean isWhite) {
+        long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
+        int startSquare = BitBoardUtils.scanForward(king);
+        if (startSquare > 63) {
+            throw new IllegalArgumentException("No king! " + board.getMoveHistory().stream().map(NotationUtils::toNotation).toList());
+        }
+        return KING_ATTACKS[startSquare];
     }
 
     private Move.MoveBuilder move(int startSquare, int endSquare) {

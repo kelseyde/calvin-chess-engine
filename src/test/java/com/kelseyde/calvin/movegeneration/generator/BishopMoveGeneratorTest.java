@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +55,17 @@ public class BishopMoveGeneratorTest {
 
         // top corner
         assertLegalSquares(63, Set.of(0, 9, 18, 27, 36, 45, 54));
+    }
+
+    @Test
+    public void doesNotGenerateOpponentBishopMoves() {
+
+        Board board = FEN.fromFEN("K7/1B6/8/8/8/8/6b1/7k w - - 0 1");
+
+        Set<Move> moves = generator.generatePseudoLegalMoves(board);
+
+        Assertions.assertEquals(7, moves.size());
+
     }
 
     @Test

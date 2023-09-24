@@ -13,7 +13,7 @@ public class PieceValues {
     public static final int QUEEN = 900;
     public static final int KING = 10000;
 
-    public static int getValue(PieceType pieceType) {
+    public static int valueOf(PieceType pieceType) {
         return switch (pieceType) {
             case PAWN -> PAWN;
             case KNIGHT -> KNIGHT;

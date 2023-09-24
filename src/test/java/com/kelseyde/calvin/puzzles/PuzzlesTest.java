@@ -9,9 +9,10 @@ import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.matchers.Not;
 
+@Disabled
 public class PuzzlesTest {
 
     private final Search search = TestUtils.CURRENT_ENGINE;

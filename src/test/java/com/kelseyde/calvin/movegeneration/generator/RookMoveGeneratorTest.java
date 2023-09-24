@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,17 @@ public class RookMoveGeneratorTest {
         board.setPiece(44, PieceType.ROOK, false, true);
 
         assertLegalSquares(startSquare, Set.of(12, 20, 26, 27, 29, 30, 36, 44));
+
+    }
+
+    @Test
+    public void doesNotGenerateOpponentRookMoves() {
+
+        Board board = FEN.fromFEN("K7/1R6/8/8/8/8/6r1/7k w - - 0 1");
+
+        Set<Move> moves = generator.generatePseudoLegalMoves(board);
+
+        Assertions.assertEquals(14, moves.size());
 
     }
 

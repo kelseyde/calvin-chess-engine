@@ -11,8 +11,8 @@ public class QueenMoveGenerator extends SlidingMoveGenerator {
     }
 
     @Override
-    protected long getPieceBitboard(Board board) {
-        return board.isWhiteToMove() ? board.getWhiteQueens() : board.getBlackQueens();
+    protected long getSliders(Board board, boolean isWhite) {
+        return isWhite ? board.getWhiteQueens() : board.getBlackQueens();
     }
 
     @Override

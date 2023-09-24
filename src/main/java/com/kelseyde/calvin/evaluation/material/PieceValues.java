@@ -1,4 +1,6 @@
-package com.kelseyde.calvin.board.piece;
+package com.kelseyde.calvin.evaluation.material;
+
+import com.kelseyde.calvin.board.piece.PieceType;
 
 /**
  * The relative material value of each piece type, measured in centipawns (hundredths of a pawn). Using the widely popular

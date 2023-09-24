@@ -2,15 +2,15 @@ package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.evaluation.MaterialEvaluator;
+import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
 import com.kelseyde.calvin.evaluation.PositionEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.engine.MinimaxSearch;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class TestUtils {
 
@@ -45,8 +45,8 @@ public class TestUtils {
 
     public static Move getLegalMove(Board board, String startSquare, String endSquare) {
         Move move = NotationUtils.fromNotation(startSquare, endSquare);
-        Set<Move> legalMoves = MOVE_GENERATOR.generateLegalMoves(board);
-        Optional<Move> legalMove = legalMoves.stream()
+        Move[] legalMoves = MOVE_GENERATOR.generateLegalMoves(board);
+        Optional<Move> legalMove = Arrays.stream(legalMoves)
                 .filter(m -> m.matches(move))
                 .findAny();
         if (legalMove.isEmpty()) {

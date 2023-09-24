@@ -10,12 +10,12 @@ import com.kelseyde.calvin.search.MoveOrdering;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -57,8 +57,9 @@ public class MinimaxSearch implements Search {
      */
     public SearchResult minimax(Board board, int depth, int alpha, int beta, boolean isMaximisingPlayer) {
         Instant start = Instant.now();
-        List<Move> legalMoves = new ArrayList<>(moveGenerator.generateLegalMoves(board));
-        List<Move> orderedMoves = moveOrdering.orderMoves(board, legalMoves);
+        Move[] legalMoves = moveGenerator.generateLegalMoves(board);
+        Move[] orderedMoves = moveOrdering.orderMoves(board, legalMoves);
+//        log.info("Ordered moves after {}: {}", NotationUtils.toNotation(board.getMoveHistory().peek()), );
         GameResult currentResult = resultEvaluator.calculateResult(board, orderedMoves);
         if (currentResult.isCheckmate()) {
             int modifier = board.isWhiteToMove() ? -1 : 1;
@@ -77,7 +78,7 @@ public class MinimaxSearch implements Search {
             statistics.addSearchDuration(start, Instant.now());
             return new SearchResult(finalEval, null);
         }
-        Move bestMove = orderedMoves.get(new Random().nextInt(orderedMoves.size()));
+        Move bestMove = orderedMoves[new Random().nextInt(orderedMoves.length)];
 
         if (isMaximisingPlayer) {
             int maxEval = Integer.MIN_VALUE;

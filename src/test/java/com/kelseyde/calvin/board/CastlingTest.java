@@ -1,4 +1,4 @@
-package com.kelseyde.calvin;
+package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.utils.IllegalMoveException;

@@ -1,7 +1,7 @@
-package com.kelseyde.calvin.evaluation;
+package com.kelseyde.calvin.evaluation.material;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.piece.PieceValues;
+import com.kelseyde.calvin.evaluation.PositionEvaluator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +11,9 @@ public class MaterialEvaluator implements PositionEvaluator {
 
     @Override
     public int evaluate(Board board) {
-
         int whiteScore = calculateMaterialScore(board, true);
         int blackScore = calculateMaterialScore(board, false);
-
-        int score = whiteScore - blackScore;
-        return score;
-
+        return whiteScore - blackScore;
     }
 
     private int calculateMaterialScore(Board board, boolean isWhite) {

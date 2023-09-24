@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -39,7 +38,7 @@ public class NegamaxSearch implements Search {
 
         log.info("Negamax depth {}, isWhite {}, alpha {}, beta {}", depth, board.isWhiteToMove(), alpha, beta);
         int modifier = board.isWhiteToMove() ? 1 : -1;
-        List<Move> legalMoves = new ArrayList<>(moveGenerator.generateLegalMoves(board));
+        Move[] legalMoves = moveGenerator.generateLegalMoves(board);
         GameResult currentResult = resultCalculator.calculateResult(board, legalMoves);
         if (currentResult.isCheckmate()) {
             return new SearchResult(modifier * Integer.MAX_VALUE, null);
@@ -54,7 +53,7 @@ public class NegamaxSearch implements Search {
         }
 
         int eval = Integer.MIN_VALUE + 1;
-        Move bestMove = legalMoves.get(new Random().nextInt(legalMoves.size() - 1));
+        Move bestMove = legalMoves[new Random().nextInt(legalMoves.length)];
 
         for (Move move : legalMoves) {
 

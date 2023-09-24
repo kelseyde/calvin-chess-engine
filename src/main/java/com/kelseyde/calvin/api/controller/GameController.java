@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -63,7 +64,7 @@ public class GameController {
 
         log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
 
-        Optional<Move> legalMove = moveGenerator.generateLegalMoves(board).stream()
+        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(board))
                 .filter(lm -> lm.matches(playerMove))
                 .findAny();
         if (legalMove.isEmpty()) {
@@ -77,7 +78,7 @@ public class GameController {
             return ResponseEntity.ok(PlayResponse.builder().build());
         }
 
-        Move engineMove = search.search(board, 5).move();
+        Move engineMove = search.search(board, 4).move();
         board.makeMove(engineMove);
         log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));
         return ResponseEntity.ok(PlayResponse.builder()

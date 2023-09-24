@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -178,7 +179,7 @@ public class PawnMoveGeneratorTest {
         Board board = new Board();
         board.makeMove(TestUtils.getLegalMove(board, "f2", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        Set<Move> legalMoves = new MoveGenerator().generateLegalMoves(board);
+        Set<Move> legalMoves = Arrays.stream(new MoveGenerator().generateLegalMoves(board)).collect(Collectors.toSet());
         Move emptySpaceCaptureLeft = moveBuilder(21, 28).build();
         Move emptySpaceCaptureRight = moveBuilder(21, 30).build();
         Assertions.assertTrue(legalMoves.stream().noneMatch(emptySpaceCaptureLeft::matches));

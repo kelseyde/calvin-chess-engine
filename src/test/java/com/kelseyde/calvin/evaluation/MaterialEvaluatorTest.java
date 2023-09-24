@@ -1,8 +1,8 @@
-package com.kelseyde.calvin.search;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.evaluation.MaterialEvaluator;
+import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
 import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

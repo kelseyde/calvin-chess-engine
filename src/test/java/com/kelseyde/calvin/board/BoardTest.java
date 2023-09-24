@@ -1,4 +1,4 @@
-package com.kelseyde.calvin;
+package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -333,7 +334,7 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d4", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        List<String> moves = new MoveGenerator().generateLegalMoves(board).stream().map(NotationUtils::toNotation).toList();
+        List<String> moves = Arrays.stream(new MoveGenerator().generateLegalMoves(board)).map(NotationUtils::toNotation).toList();
         Assertions.assertEquals(31, moves.size());
         Assertions.assertTrue(moves.contains("e1d2"));
     }

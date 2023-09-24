@@ -7,7 +7,6 @@ import com.kelseyde.calvin.movegeneration.generator.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Evaluates the effect of a {@link Move} on a game. First checks if the move is legal. Then, checks if executing the
@@ -27,11 +26,11 @@ public class MoveGenerator {
         PAWN_MOVE_GENERATOR, KNIGHT_MOVE_GENERATOR, BISHOP_MOVE_GENERATOR, ROOK_MOVE_GENERATOR, QUEEN_MOVE_GENERATOR, KING_MOVE_GENERATOR
     );
 
-    public Set<Move> generateLegalMoves(Board board) {
+    public Move[] generateLegalMoves(Board board) {
         return PSEUDO_LEGAL_MOVE_GENERATORS.stream()
                 .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
                 .filter(pseudoLegalMove -> !isKingCapturable(board, pseudoLegalMove))
-                .collect(Collectors.toSet());
+                .toArray(Move[]::new);
     }
 
     /**

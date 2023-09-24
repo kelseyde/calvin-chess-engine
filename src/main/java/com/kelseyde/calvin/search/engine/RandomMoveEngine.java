@@ -4,8 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 //@Service
@@ -15,8 +13,8 @@ public class RandomMoveEngine implements Engine {
 
     @Override
     public Move selectMove(Board board) {
-        List<Move> legalMoves = new ArrayList<>(moveGenerator.generateLegalMoves(board));
-        return legalMoves.get(new Random().nextInt(legalMoves.size()));
+        Move[] legalMoves = moveGenerator.generateLegalMoves(board);
+        return legalMoves[new Random().nextInt(legalMoves.length)];
     }
 
 }

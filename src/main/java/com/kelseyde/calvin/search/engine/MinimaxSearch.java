@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
@@ -41,9 +42,8 @@ public class MinimaxSearch implements Search {
         boolean isMaximisingPlayer = board.isWhiteToMove();
         SearchResult result = minimax(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, isMaximisingPlayer);
         Instant end = Instant.now();
-//        log.info("Minimax evaluation: {}, move: {}", result.eval(), NotationUtils.toNotation(result.move()));
-//        log.info("Total search time: {}, Nodes searched: {}, Nodes pruned: {}, Transpositions: {}, Average search duration: {}",
-//                Duration.between(start, end), statistics.getNodesSearched(), statistics.getNodesPruned(), statistics.getTranspositions(), statistics.getAverageSearchDurationMs());
+        log.info("Engine eval: {}, thinking time: {} move: {}",
+                result.eval() / 100, Duration.between(start, end), NotationUtils.toNotation(result.move()));
         return result;
     }
 
@@ -59,7 +59,6 @@ public class MinimaxSearch implements Search {
         Instant start = Instant.now();
         Move[] legalMoves = moveGenerator.generateLegalMoves(board);
         Move[] orderedMoves = moveOrdering.orderMoves(board, legalMoves);
-//        log.info("Ordered moves after {}: {}", NotationUtils.toNotation(board.getMoveHistory().peek()), );
         GameResult currentResult = resultEvaluator.calculateResult(board, orderedMoves);
         if (currentResult.isCheckmate()) {
             int modifier = board.isWhiteToMove() ? -1 : 1;

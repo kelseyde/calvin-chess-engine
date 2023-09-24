@@ -73,11 +73,13 @@ public class GameController {
         }
         board.makeMove(legalMove.get());
         GameResult result = resultCalculator.calculateResult(board);
+        log.info("Result: {}", result);
         if (!result.equals(GameResult.IN_PROGRESS)) {
             log.error("Result: {}", result);
             return ResponseEntity.ok(PlayResponse.builder().build());
         }
 
+        log.info("Engine thinking...");
         Move engineMove = search.search(board, 4).move();
         board.makeMove(engineMove);
         log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));

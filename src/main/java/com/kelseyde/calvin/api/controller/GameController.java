@@ -53,8 +53,14 @@ public class GameController {
         log.info("POST /game/play");
         log.info("Received move request {}", moveRequest);
 
-        Board board = boardRepository.getBoard(moveRequest.getGameId())
-                .orElseThrow(() -> new NoSuchElementException(String.format("Invalid game id %s!", moveRequest.getGameId())));
+        Optional<Board> existingBoard = boardRepository.getBoard(moveRequest.getGameId());
+        Board board;
+        if (existingBoard.isPresent()) {
+            board = existingBoard.get();
+        } else {
+            board = new Board();
+            boardRepository.putBoard(board);
+        }
 
         Move playerMove = Move.builder()
                 .startSquare(NotationUtils.fromNotation(moveRequest.getFrom()))
@@ -75,16 +81,22 @@ public class GameController {
         GameResult result = resultCalculator.calculateResult(board);
         log.info("Result: {}", result);
         if (!result.equals(GameResult.IN_PROGRESS)) {
-            log.error("Result: {}", result);
-            return ResponseEntity.ok(PlayResponse.builder().build());
+            log.info("Game over! Result: {}", result);
+            return ResponseEntity.ok(PlayResponse.builder().result(result).build());
         }
 
         log.info("Engine thinking...");
         Move engineMove = search.search(board, 4).move();
         board.makeMove(engineMove);
+        result = resultCalculator.calculateResult(board);
+        if (!result.equals(GameResult.IN_PROGRESS)) {
+            log.info("Game over! Result: {}", result);
+            return ResponseEntity.ok(PlayResponse.builder().result(result).build());
+        }
         log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));
         return ResponseEntity.ok(PlayResponse.builder()
                 .move(PlayResponse.MoveResponse.fromMove(engineMove))
+                .result(GameResult.IN_PROGRESS)
                 .build());
     }
 

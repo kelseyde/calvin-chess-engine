@@ -25,7 +25,7 @@ public class PlayResponse {
             return MoveResponse.builder()
                     .from(NotationUtils.toNotation(move.getStartSquare()))
                     .to(NotationUtils.toNotation(move.getEndSquare()))
-                    .promotion(getPromotion(move.getPieceType()))
+                    .promotion(getPromotion(move.getPromotionPieceType()))
                     .build();
         }
 

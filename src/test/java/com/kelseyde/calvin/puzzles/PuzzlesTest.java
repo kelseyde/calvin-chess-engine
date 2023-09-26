@@ -3,7 +3,7 @@ package com.kelseyde.calvin.puzzles;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.DepthSearch;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.negamax.NegamaxSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 @Disabled
 public class PuzzlesTest {
 
-    private Search search;
+    private DepthSearch search;
 
     @Test
     public void testSimpleBackRankMateInOne() {
@@ -139,6 +139,23 @@ public class PuzzlesTest {
         result = search.search(1);
         bestMove = NotationUtils.fromNotation("h1", "h3", PieceType.ROOK);
         Assertions.assertTrue(bestMove.matches(result.move()));
+
+    }
+
+    @Test
+    public void testKiwipete() {
+
+        String fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
+        Board board = FEN.fromFEN(fen);
+
+        NegamaxSearch negamaxSearch = new NegamaxSearch(board);
+        negamaxSearch.getTranspositionTable().setEnabled(true);
+
+        search = negamaxSearch;
+
+        SearchResult result = search.search(7);
+
+        System.out.println(NotationUtils.toNotation(result.move()));
 
     }
 

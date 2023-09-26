@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.tt;
+package com.kelseyde.calvin.search.transposition;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
@@ -7,9 +7,6 @@ import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.Assert;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class TranspositionTableTest {
 
@@ -39,7 +36,7 @@ public class TranspositionTableTest {
 
         // Do some more searching, return to this position
 
-        TranspositionEntry entry = table.get(3, 0, 100);
+        TranspositionEntry entry = table.get();
 
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(board.getGameState().getZobristKey(), entry.getZobristKey());
@@ -69,15 +66,15 @@ public class TranspositionTableTest {
 
         // Do some more searching, return to this position
 
-        TranspositionEntry entry = table.get(3, 0, 100);
+        TranspositionEntry entry = table.get();
         Assertions.assertNull(entry);
 
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        entry = table.get(3, 0, 100);
+        entry = table.get();
         Assertions.assertNull(entry);
 
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        entry = table.get(3, 0, 100);
+        entry = table.get();
         Assertions.assertNotNull(entry);
 
     }

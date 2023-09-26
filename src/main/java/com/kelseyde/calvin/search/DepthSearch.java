@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.search;
 
-public interface Search {
+public interface DepthSearch {
 
     SearchResult search(int depth);
 

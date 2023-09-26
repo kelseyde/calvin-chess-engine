@@ -8,11 +8,11 @@ import com.kelseyde.calvin.evaluation.placement.PiecePlacementEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.MoveOrdering;
-import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.DepthSearch;
+import com.kelseyde.calvin.search.MoveOrderer;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
-import com.kelseyde.calvin.search.tt.TranspositionTable;
+import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Random;
 
 @Slf4j
-public class MinimaxSearch implements Search {
+public class MinimaxSearch implements DepthSearch {
 
     private final List<BoardEvaluator> positionEvaluators = List.of(
             new MaterialEvaluator(),
@@ -35,7 +35,7 @@ public class MinimaxSearch implements Search {
 
     private final ResultCalculator resultEvaluator = new ResultCalculator();
 
-    private final MoveOrdering moveOrdering = new MoveOrdering();
+    private final MoveOrderer moveOrdering = new MoveOrderer();
 
     private TranspositionTable transpositionTable;
 

@@ -14,7 +14,7 @@ import java.util.Comparator;
 import java.util.Optional;
 
 @Slf4j
-public class MoveOrdering {
+public class MoveOrderer {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
@@ -47,19 +47,11 @@ public class MoveOrdering {
             moveScore += 10 * PieceValues.valueOf(capturedPieceType.get()) - PieceValues.valueOf(pieceType);
         }
 
-        // Discourage moving pieces to where they can be captured by pawns
-        // TODO good idea? What to add to eval function?
-//        long pawnAttacks = pawnMoveGenerator.generateAttackMask(board, !board.isWhiteToMove());
-//        if (!PieceType.PAWN.equals(move.getPieceType()) && (pawnAttacks & (1L << move.getEndSquare())) != 0) {
-//            moveScore -= 30;
-//        }
-
         // Prioritising pawn promotion
         if (move.getMoveType().equals(MoveType.PROMOTION)) {
             moveScore += 10 + PieceValues.valueOf(move.getPromotionPieceType());
         }
 
-//        log.info("move: {}, score: {}, history: {}", NotationUtils.toNotation(move), moveScore, board.getMoveHistory().stream().map(NotationUtils::toNotation).toList());
         return moveScore;
 
     }

@@ -3,41 +3,38 @@ package com.kelseyde.calvin.search.negamax;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
-import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
-import com.kelseyde.calvin.evaluation.placement.PiecePlacementEvaluator;
+import com.kelseyde.calvin.evaluation.CombinedBoardEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.MoveOrdering;
-import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.DepthSearch;
+import com.kelseyde.calvin.search.MoveOrderer;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
-import com.kelseyde.calvin.search.tt.NodeType;
-import com.kelseyde.calvin.search.tt.TranspositionEntry;
-import com.kelseyde.calvin.search.tt.TranspositionTable;
+import com.kelseyde.calvin.search.transposition.NodeType;
+import com.kelseyde.calvin.search.transposition.TranspositionEntry;
+import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.NotationUtils;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Random;
 
 @Slf4j
-public class NegamaxSearch implements Search {
+@Data
+public class NegamaxSearch implements DepthSearch {
 
     private final Board board;
 
-    private final List<BoardEvaluator> positionEvaluators = List.of(
-            new MaterialEvaluator(),
-            new PiecePlacementEvaluator()
-    );
+    private final BoardEvaluator evaluator = new CombinedBoardEvaluator();
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
-    private final ResultCalculator resultEvaluator = new ResultCalculator();
+    private final ResultCalculator resultCalculator = new ResultCalculator();
 
-    private final MoveOrdering moveOrdering = new MoveOrdering();
+    private final MoveOrderer moveOrderer = new MoveOrderer();
 
     private final TranspositionTable transpositionTable;
 
@@ -67,7 +64,7 @@ public class NegamaxSearch implements Search {
         int originalAlpha = alpha;
 
         // Handle possible transposition
-        TranspositionEntry ttEntry = transpositionTable.get(depth, alpha, beta);
+        TranspositionEntry ttEntry = transpositionTable.get();
         if (ttEntry != null && ttEntry.getDepth() >= depth) {
             statistics.incrementNodesSearched();
             statistics.incrementTranspositions();
@@ -87,7 +84,7 @@ public class NegamaxSearch implements Search {
 
         // TODO determine checkmate prior to search; then legal moves need not be generated for terminal nodes.
         Move[] legalMoves = moveGenerator.generateLegalMoves(board);
-        GameResult gameResult = resultEvaluator.calculateResult(board, legalMoves);
+        GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);
 
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
         if (gameResult.isCheckmate()) {
@@ -103,11 +100,11 @@ public class NegamaxSearch implements Search {
         if (depth == 0) {
             // In the case that max depth is reached, return the static heuristic evaluation of the position.
             statistics.incrementNodesSearched();
-            int finalEval = evaluate(board);
+            int finalEval = evaluator.evaluate(board);
             return new SearchResult(finalEval, null);
         }
 
-        Move[] orderedMoves = moveOrdering.orderMoves(board, legalMoves);
+        Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves);
 
         int eval = Integer.MIN_VALUE + 1;
         Move bestMove = legalMoves[new Random().nextInt(legalMoves.length)];
@@ -145,12 +142,6 @@ public class NegamaxSearch implements Search {
 
         return new SearchResult(eval, bestMove);
 
-    }
-
-    private int evaluate(Board board) {
-        return positionEvaluators.stream()
-                .map(evaluator -> evaluator.evaluate(board))
-                .reduce(0, Integer::sum);
     }
 
 }

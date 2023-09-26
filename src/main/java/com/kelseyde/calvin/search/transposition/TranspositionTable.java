@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.tt;
+package com.kelseyde.calvin.search.transposition;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
@@ -13,11 +13,11 @@ public class TranspositionTable {
     // TODO this is en estimation
     private static final int ENTRY_SIZE_B = 24;
 
-    private static final TranspositionEntry EXAMPLE_ENTRY = new TranspositionEntry(0L, NodeType.EXACT, Move.builder().build(), 0, 0);
-
     private Board board;
 
     private TranspositionEntry[] entries;
+
+    boolean enabled;
 
     public TranspositionTable(Board board) {
         this.board = board;
@@ -29,13 +29,19 @@ public class TranspositionTable {
         entries = new TranspositionEntry[entriesCount];
     }
 
-    public TranspositionEntry get(int depth, int alpha, int beta) {
+    public TranspositionEntry get() {
+        if (!enabled) {
+            return null;
+        }
         long zobristKey = board.getGameState().getZobristKey();
         TranspositionEntry entry = getEntry(zobristKey);
         return (entry != null && entry.getZobristKey() == zobristKey) ? entry : null;
     }
 
     public void put(NodeType type, Move move, int depth, int value) {
+        if (!enabled) {
+            return;
+        }
         long zobristKey = board.getGameState().getZobristKey();
         TranspositionEntry entry = new TranspositionEntry(zobristKey, type, move, depth, value);
         int index = getIndex(zobristKey);

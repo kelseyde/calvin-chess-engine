@@ -1,17 +1,14 @@
 package com.kelseyde.calvin.api.controller;
 
-import com.kelseyde.calvin.api.repository.BoardRepository;
-import com.kelseyde.calvin.api.request.MoveResponse;
-import com.kelseyde.calvin.api.request.NewGameResponse;
-import com.kelseyde.calvin.api.request.PlayRequest;
-import com.kelseyde.calvin.api.request.PlayResponse;
+import com.kelseyde.calvin.api.repository.GameRepository;
+import com.kelseyde.calvin.api.request.*;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.minimax.MinimaxSearch;
+import com.kelseyde.calvin.search.DepthSearch;
+import com.kelseyde.calvin.search.negamax.NegamaxSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -30,13 +27,9 @@ import java.util.Optional;
 public class GameController {
 
     @Resource
-    private BoardRepository boardRepository;
+    private GameRepository gameRepository;
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
-
-    // TODO fix, make new Game class
-    @Resource
-    private MinimaxSearch search;
 
     @Resource
     private ResultCalculator resultCalculator;
@@ -45,7 +38,9 @@ public class GameController {
     public ResponseEntity<NewGameResponse> getNewWhiteGame() {
         log.info("GET /game/new/white");
         Board board = new Board();
-        boardRepository.putBoard(board);
+        NegamaxSearch search = new NegamaxSearch(board);
+        Game game = new Game(board.getId(), board, search);
+        gameRepository.putGame(game);
         log.info("Created new board with id {}", board.getId());
         return ResponseEntity.ok(new NewGameResponse(board.getId()));
     }
@@ -54,11 +49,13 @@ public class GameController {
     public ResponseEntity<NewGameResponse> getNewBlackGame() {
         log.info("GET /game/new/black");
         Board board = new Board();
-        log.info("Created new board with id {}", board.getId());
+        NegamaxSearch search = new NegamaxSearch(board);
+        Game game = new Game(board.getId(), board, search);
+        log.info("Created new game with id {}", board.getId());
         Move move = search.search(4).move();
         log.info("Engine selects move {}", NotationUtils.toNotation(move));
         board.makeMove(move);
-        boardRepository.putBoard(board);
+        gameRepository.putGame(game);
         NewGameResponse response = new NewGameResponse(board.getId());
         response.setMove(MoveResponse.fromMove(move));
         return ResponseEntity.ok(response);
@@ -69,17 +66,16 @@ public class GameController {
         log.info("POST /game/play");
         log.info("Received move request {}", moveRequest);
 
-        Optional<Board> existingBoard = boardRepository.getBoard(moveRequest.getGameId());
-        Board board;
-        if (existingBoard.isPresent()) {
-            board = existingBoard.get();
-            if (log.isTraceEnabled()) {
-                log.trace("Found existing board:");
-                BitBoardUtils.print(board.getOccupied());
-            }
+        Optional<Game> existingGame = gameRepository.getGame(moveRequest.getGameId());
+        Game game;
+        if (existingGame.isPresent()) {
+            game = existingGame.get();
         } else {
-            board = new Board();
-            boardRepository.putBoard(board);
+            Board board = new Board();
+            DepthSearch search = new NegamaxSearch(board);
+            game = new Game(board.getId(), board, search);
+            gameRepository.putGame(game);
+            log.info("Created new board with id {}", board.getId());
         }
 
         Move playerMove = Move.builder()
@@ -90,30 +86,30 @@ public class GameController {
 
         log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
 
-        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(board))
+        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(game.getBoard()))
                 .filter(lm -> lm.matches(playerMove))
                 .findAny();
         if (legalMove.isEmpty()) {
             log.error("Illegal move: {}", moveRequest);
             return ResponseEntity.ok(PlayResponse.builder().build());
         }
-        board.makeMove(legalMove.get());
-        GameResult result = resultCalculator.calculateResult(board);
+        game.getBoard().makeMove(legalMove.get());
+        GameResult result = resultCalculator.calculateResult(game.getBoard());
         if (!result.equals(GameResult.IN_PROGRESS)) {
             log.info("Game over! Result: {}", result);
-            return ResponseEntity.ok(PlayResponse.builder().gameId(board.getId()).result(result).build());
+            return ResponseEntity.ok(PlayResponse.builder().gameId(game.getId()).result(result).build());
         }
 
-        Move engineMove = search.search(4).move();
-        board.makeMove(engineMove);
-        result = resultCalculator.calculateResult(board);
+        Move engineMove = game.getEngine().search(4).move();
+        game.getBoard().makeMove(engineMove);
+        result = resultCalculator.calculateResult(game.getBoard());
         if (!result.equals(GameResult.IN_PROGRESS)) {
             log.info("Game over! Result: {}", result);
-            return ResponseEntity.ok(PlayResponse.builder().gameId(board.getId()).result(result).build());
+            return ResponseEntity.ok(PlayResponse.builder().gameId(game.getId()).result(result).build());
         }
         log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));
         return ResponseEntity.ok(PlayResponse.builder()
-                .gameId(board.getId())
+                .gameId(game.getId())
                 .move(MoveResponse.fromMove(engineMove))
                 .result(GameResult.IN_PROGRESS)
                 .build());

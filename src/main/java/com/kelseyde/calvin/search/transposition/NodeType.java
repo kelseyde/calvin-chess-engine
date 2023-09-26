@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.tt;
+package com.kelseyde.calvin.search.transposition;
 
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
 

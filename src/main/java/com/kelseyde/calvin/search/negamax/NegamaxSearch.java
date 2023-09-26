@@ -39,7 +39,7 @@ public class NegamaxSearch implements Search {
 
     private final MoveOrdering moveOrdering = new MoveOrdering();
 
-    private TranspositionTable transpositionTable;
+    private final TranspositionTable transpositionTable;
 
     private SearchStatistics statistics;
 
@@ -64,12 +64,13 @@ public class NegamaxSearch implements Search {
 
     private SearchResult negamax(int depth, int alpha, int beta) {
 
-        int colourModifier = board.isWhiteToMove() ? 1 : -1;
         int originalAlpha = alpha;
 
         // Handle possible transposition
         TranspositionEntry ttEntry = transpositionTable.get(depth, alpha, beta);
         if (ttEntry != null && ttEntry.getDepth() >= depth) {
+            statistics.incrementNodesSearched();
+            statistics.incrementTranspositions();
             if (NodeType.EXACT.equals(ttEntry.getType())) {
                 return new SearchResult(ttEntry.getValue(), ttEntry.getBestMove());
             }
@@ -90,15 +91,18 @@ public class NegamaxSearch implements Search {
 
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
         if (gameResult.isCheckmate()) {
-            int checkmateEval = colourModifier * Integer.MAX_VALUE;
+            statistics.incrementNodesSearched();
+            int checkmateEval = -Integer.MAX_VALUE;
             return new SearchResult(checkmateEval, null);
         }
         if (gameResult.isDraw()) {
+            statistics.incrementNodesSearched();
             int drawEval = 0;
             return new SearchResult(drawEval, null);
         }
         if (depth == 0) {
             // In the case that max depth is reached, return the static heuristic evaluation of the position.
+            statistics.incrementNodesSearched();
             int finalEval = evaluate(board);
             return new SearchResult(finalEval, null);
         }
@@ -113,13 +117,15 @@ public class NegamaxSearch implements Search {
             board.makeMove(move);
             SearchResult searchResult = negamax(depth - 1, -beta, -alpha);
             board.unmakeMove();
+            statistics.incrementNodesSearched();
 
             eval = -searchResult.eval();
             if (eval > alpha) {
-                bestMove = searchResult.move();
+                bestMove = move;
                 alpha = eval;
             }
             if (eval >= beta) {
+                statistics.incrementCutoffs();
                 break;
             }
 

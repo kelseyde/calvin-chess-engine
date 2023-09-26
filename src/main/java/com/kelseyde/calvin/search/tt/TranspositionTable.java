@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TranspositionTable {
 
-    private static final int TABLE_SIZE_MB = 64;
+    private static final int TABLE_SIZE_MB = 1;
     // TODO this is en estimation
     private static final int ENTRY_SIZE_B = 24;
 
@@ -25,7 +25,7 @@ public class TranspositionTable {
         int entrySizeBytes = ENTRY_SIZE_B;
         int entriesCount = tableSizeBytes / entrySizeBytes;
         log.info("Initialising a transposition table of with {} entries based on {}MB table size and {}B entry size.",
-                entriesCount, tableSizeBytes, entrySizeBytes);
+                entriesCount, TABLE_SIZE_MB, entrySizeBytes);
         entries = new TranspositionEntry[entriesCount];
     }
 

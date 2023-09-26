@@ -11,9 +11,10 @@ public class MaterialEvaluator implements BoardEvaluator {
 
     @Override
     public int evaluate(Board board) {
+        int colourModifier = board.isWhiteToMove() ? 1 : -1;
         int whiteScore = calculateMaterialScore(board, true);
         int blackScore = calculateMaterialScore(board, false);
-        return whiteScore - blackScore;
+        return colourModifier * (whiteScore - blackScore);
     }
 
     private int calculateMaterialScore(Board board, boolean isWhite) {

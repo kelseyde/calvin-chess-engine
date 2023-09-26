@@ -11,9 +11,10 @@ public class PiecePlacementEvaluator implements BoardEvaluator {
 
     @Override
     public int evaluate(Board board) {
+        int colourModifier = board.isWhiteToMove() ? 1 : -1;
         int whiteScore = calculatePlacementScore(board, true);
         int blackScore = calculatePlacementScore(board, false);
-        return whiteScore - blackScore;
+        return colourModifier * (whiteScore - blackScore);
     }
 
     private int calculatePlacementScore(Board board, boolean isWhite) {

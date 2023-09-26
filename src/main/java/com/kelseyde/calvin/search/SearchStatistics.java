@@ -13,7 +13,7 @@ import java.util.List;
 public class SearchStatistics {
 
     int nodesSearched = 0;
-    int nodesPruned = 0;
+    int cutOffs = 0;
     int transpositions = 0;
     List<Duration> searchDurations = new ArrayList<>();
 
@@ -21,8 +21,8 @@ public class SearchStatistics {
         ++nodesSearched;
     }
 
-    public void incrementNodesPruned() {
-        ++nodesPruned;
+    public void incrementCutoffs() {
+        ++cutOffs;
     }
 
     public void incrementTranspositions() {

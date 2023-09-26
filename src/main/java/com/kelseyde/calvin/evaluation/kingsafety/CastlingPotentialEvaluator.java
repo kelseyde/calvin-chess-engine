@@ -1,12 +1,10 @@
 package com.kelseyde.calvin.evaluation.kingsafety;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.GameState;
-import com.kelseyde.calvin.evaluation.PositionEvaluator;
-import org.springframework.stereotype.Service;
+import com.kelseyde.calvin.evaluation.BoardEvaluator;
 
 //@Service
-public class CastlingPotentialEvaluator implements PositionEvaluator {
+public class CastlingPotentialEvaluator implements BoardEvaluator {
 
     @Override
     public int evaluate(Board board) {

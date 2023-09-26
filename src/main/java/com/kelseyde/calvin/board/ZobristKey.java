@@ -99,7 +99,7 @@ public class ZobristKey {
             }
         }
 
-        int enPassantFile = board.getCurrentGameState().getEnPassantFile() + 1;
+        int enPassantFile = board.getGameState().getEnPassantFile() + 1;
         key ^= EN_PASSANT_FILE[enPassantFile];
 
         if (board.isWhiteToMove()) {

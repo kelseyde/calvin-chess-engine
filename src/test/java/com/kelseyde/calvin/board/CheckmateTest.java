@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;

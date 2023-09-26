@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;

@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
@@ -62,25 +61,25 @@ public class BoardTest {
     public void testBoardHistoryPreservesCastlingRights() {
 
         Board board = new Board();
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
 
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
 
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
 
         board.makeMove(TestUtils.getLegalMove(board, "e1", "e2"));
 
-        Assertions.assertFalse(board.getCurrentGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getCurrentGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
 
         Assertions.assertTrue(board.getGameStateHistory().peek().isKingsideCastlingAllowed(true));
         Assertions.assertTrue(board.getGameStateHistory().peek().isQueensideCastlingAllowed(true));
@@ -89,10 +88,10 @@ public class BoardTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "f7", "f6"));
 
-        Assertions.assertFalse(board.getCurrentGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getCurrentGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
 
         Assertions.assertFalse(board.getGameStateHistory().peek().isKingsideCastlingAllowed(true));
         Assertions.assertFalse(board.getGameStateHistory().peek().isQueensideCastlingAllowed(true));
@@ -144,7 +143,7 @@ public class BoardTest {
         Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
         Assertions.assertEquals(board1.isWhiteToMove(), board2.isWhiteToMove());
 
-        Assertions.assertEquals(board1.getCurrentGameState(), board2.getCurrentGameState());
+        Assertions.assertEquals(board1.getGameState(), board2.getGameState());
 
     }
 
@@ -183,7 +182,7 @@ public class BoardTest {
         Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
         Assertions.assertEquals(board1.isWhiteToMove(), board2.isWhiteToMove());
 
-        Assertions.assertEquals(board1.getCurrentGameState(), board2.getCurrentGameState());
+        Assertions.assertEquals(board1.getGameState(), board2.getGameState());
 
     }
 
@@ -296,17 +295,17 @@ public class BoardTest {
         // castles
         board.makeMove(Move.builder().startSquare(4).endSquare(6).pieceType(PieceType.KING).moveType(MoveType.STANDARD).build());
         Assertions.assertFalse(board.isWhiteToMove());
-        Assertions.assertFalse(board.getCurrentGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getCurrentGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
 
         board.unmakeMove();
         Assertions.assertTrue(board.isWhiteToMove());
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getCurrentGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getCurrentGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
 
     }
 

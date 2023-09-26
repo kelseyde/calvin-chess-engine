@@ -2,11 +2,9 @@ package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
-import com.kelseyde.calvin.evaluation.PositionEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.search.Search;
-import com.kelseyde.calvin.search.engine.MinimaxSearch;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,9 +12,7 @@ import java.util.Optional;
 
 public class TestUtils {
 
-    public static final List<PositionEvaluator> ALL_EVALUATORS = List.of(new MaterialEvaluator());
-
-    public static final Search CURRENT_ENGINE = new MinimaxSearch(ALL_EVALUATORS);
+    public static final List<BoardEvaluator> ALL_EVALUATORS = List.of(new MaterialEvaluator());
 
     private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
 
@@ -36,7 +32,7 @@ public class TestUtils {
         board.setBlackQueens(0L);
         board.setBlackKing(0L);
 
-        board.getCurrentGameState().setCastlingRights(0b0000);
+        board.getGameState().setCastlingRights(0b0000);
 
         board.recalculatePieces();
 

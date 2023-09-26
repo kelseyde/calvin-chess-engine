@@ -3,11 +3,11 @@ package com.kelseyde.calvin.evaluation.placement;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.evaluation.PositionEvaluator;
+import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PiecePlacementEvaluator implements PositionEvaluator {
+public class PiecePlacementEvaluator implements BoardEvaluator {
 
     @Override
     public int evaluate(Board board) {

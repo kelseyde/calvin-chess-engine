@@ -25,7 +25,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
         long occupied = board.getOccupied();
-        long enPassantFile = BitBoardUtils.getFileBitboard(board.getCurrentGameState().getEnPassantFile());
+        long enPassantFile = BitBoardUtils.getFileBitboard(board.getGameState().getEnPassantFile());
         long copy;
 
         long singleAdvances = isWhite ?

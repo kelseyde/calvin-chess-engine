@@ -1,9 +1,6 @@
 package com.kelseyde.calvin.utils;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
-
-import java.util.Optional;
 
 public class BoardUtils {
 

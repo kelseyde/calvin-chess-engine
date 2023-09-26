@@ -1,13 +1,13 @@
 package com.kelseyde.calvin.evaluation.material;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.PositionEvaluator;
+import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class MaterialEvaluator implements PositionEvaluator {
+public class MaterialEvaluator implements BoardEvaluator {
 
     @Override
     public int evaluate(Board board) {

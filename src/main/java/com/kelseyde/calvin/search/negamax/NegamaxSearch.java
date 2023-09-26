@@ -2,83 +2,141 @@ package com.kelseyde.calvin.search.negamax;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.evaluation.PositionEvaluator;
+import com.kelseyde.calvin.evaluation.BoardEvaluator;
+import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
+import com.kelseyde.calvin.evaluation.placement.PiecePlacementEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
+import com.kelseyde.calvin.search.MoveOrdering;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.search.SearchStatistics;
+import com.kelseyde.calvin.search.tt.NodeType;
+import com.kelseyde.calvin.search.tt.TranspositionEntry;
+import com.kelseyde.calvin.search.tt.TranspositionTable;
 import com.kelseyde.calvin.utils.NotationUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Random;
 
 @Slf4j
-@Service
-@RequiredArgsConstructor
 public class NegamaxSearch implements Search {
+
+    private final Board board;
+
+    private final List<BoardEvaluator> positionEvaluators = List.of(
+            new MaterialEvaluator(),
+            new PiecePlacementEvaluator()
+    );
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
-    private final ResultCalculator resultCalculator = new ResultCalculator();
+    private final ResultCalculator resultEvaluator = new ResultCalculator();
 
-    private final List<PositionEvaluator> positionEvaluators;
+    private final MoveOrdering moveOrdering = new MoveOrdering();
 
-    public SearchResult search(Board board, int depth) {
+    private TranspositionTable transpositionTable;
+
+    private SearchStatistics statistics;
+
+    public NegamaxSearch(Board board) {
+
+        this.board = board;
+        this.transpositionTable = new TranspositionTable(board);
+
+    }
+
+    public SearchResult search(int depth) {
         log.info("Starting negamax search");
-        SearchResult result = negamax(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        log.info("Negamax result: {}", result);
+        Instant start = Instant.now();
+        statistics = new SearchStatistics();
+        SearchResult result = negamax(depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        Instant end = Instant.now();
+        log.info("Engine eval: {}, thinking time: {} move: {}",
+                result.eval() / 100, Duration.between(start, end), NotationUtils.toNotation(result.move()));
+        log.info("Search statistics: {}", statistics);
         return result;
     }
 
-    private SearchResult negamax(Board board, int depth, int alpha, int beta) {
+    private SearchResult negamax(int depth, int alpha, int beta) {
 
-        log.info("Negamax depth {}, isWhite {}, alpha {}, beta {}", depth, board.isWhiteToMove(), alpha, beta);
-        int modifier = board.isWhiteToMove() ? 1 : -1;
-        Move[] legalMoves = moveGenerator.generateLegalMoves(board);
-        GameResult currentResult = resultCalculator.calculateResult(board, legalMoves);
-        if (currentResult.isCheckmate()) {
-            return new SearchResult(modifier * Integer.MAX_VALUE, null);
+        int colourModifier = board.isWhiteToMove() ? 1 : -1;
+        int originalAlpha = alpha;
+
+        // Handle possible transposition
+        TranspositionEntry ttEntry = transpositionTable.get(depth, alpha, beta);
+        if (ttEntry != null && ttEntry.getDepth() >= depth) {
+            if (NodeType.EXACT.equals(ttEntry.getType())) {
+                return new SearchResult(ttEntry.getValue(), ttEntry.getBestMove());
+            }
+            else if (NodeType.LOWER_BOUND.equals(ttEntry.getType())) {
+                alpha = Math.max(alpha, ttEntry.getValue());
+            }
+            else if (NodeType.UPPER_BOUND.equals(ttEntry.getType())) {
+                beta = Math.min(beta, ttEntry.getValue());
+            }
+            if (alpha >= beta) {
+                return new SearchResult(ttEntry.getValue(), ttEntry.getBestMove());
+            }
         }
-        if (currentResult.isDraw()) {
-            return new SearchResult(0, null);
+
+        // TODO determine checkmate prior to search; then legal moves need not be generated for terminal nodes.
+        Move[] legalMoves = moveGenerator.generateLegalMoves(board);
+        GameResult gameResult = resultEvaluator.calculateResult(board, legalMoves);
+
+        // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
+        if (gameResult.isCheckmate()) {
+            int checkmateEval = colourModifier * Integer.MAX_VALUE;
+            return new SearchResult(checkmateEval, null);
+        }
+        if (gameResult.isDraw()) {
+            int drawEval = 0;
+            return new SearchResult(drawEval, null);
         }
         if (depth == 0) {
-            int evaluate = evaluate(board);
-            log.info("Returning terminal result {}", evaluate);
-            return new SearchResult(evaluate, null);
+            // In the case that max depth is reached, return the static heuristic evaluation of the position.
+            int finalEval = evaluate(board);
+            return new SearchResult(finalEval, null);
         }
+
+        Move[] orderedMoves = moveOrdering.orderMoves(board, legalMoves);
 
         int eval = Integer.MIN_VALUE + 1;
         Move bestMove = legalMoves[new Random().nextInt(legalMoves.length)];
 
-        for (Move move : legalMoves) {
+        for (Move move : orderedMoves) {
 
-            log.info("Considering move {}", NotationUtils.toNotation(move));
             board.makeMove(move);
-            SearchResult result = negamax(board, depth - 1, -beta, -alpha);
+            SearchResult searchResult = negamax(depth - 1, -beta, -alpha);
             board.unmakeMove();
 
-            if (result.eval() > eval) {
-                if (result.move() != null) {
-                    log.info("New winner: {} {}", NotationUtils.toNotation(result.move()), result.eval());
-                    bestMove = result.move();
-                }
-                eval = result.eval();
-            }
-
+            eval = -searchResult.eval();
             if (eval > alpha) {
+                bestMove = searchResult.move();
                 alpha = eval;
             }
-
             if (eval >= beta) {
                 break;
             }
 
         }
+
+        NodeType type;
+        if (eval <= originalAlpha) {
+            type = NodeType.UPPER_BOUND;
+        }
+        else if (eval >= beta) {
+            type = NodeType.LOWER_BOUND;
+        }
+        else {
+            type = NodeType.EXACT;
+        }
+        transpositionTable.put(type, bestMove, depth, eval);
+
         return new SearchResult(eval, bestMove);
 
     }

@@ -1,8 +1,10 @@
-package com.kelseyde.calvin.search.engine;
+package com.kelseyde.calvin.search.minimax;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.evaluation.PositionEvaluator;
+import com.kelseyde.calvin.evaluation.BoardEvaluator;
+import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
+import com.kelseyde.calvin.evaluation.placement.PiecePlacementEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
@@ -10,33 +12,44 @@ import com.kelseyde.calvin.search.MoveOrdering;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
+import com.kelseyde.calvin.search.tt.TranspositionTable;
 import com.kelseyde.calvin.utils.NotationUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
 
-@Service
 @Slf4j
-@RequiredArgsConstructor
 public class MinimaxSearch implements Search {
 
-    private final List<PositionEvaluator> positionEvaluators;
+    private final List<BoardEvaluator> positionEvaluators = List.of(
+            new MaterialEvaluator(),
+            new PiecePlacementEvaluator()
+    );
 
-    private MoveGenerator moveGenerator = new MoveGenerator();
+    private final Board board;
 
-    private ResultCalculator resultEvaluator = new ResultCalculator();
+    private final MoveGenerator moveGenerator = new MoveGenerator();
 
-    private MoveOrdering moveOrdering = new MoveOrdering();
+    private final ResultCalculator resultEvaluator = new ResultCalculator();
+
+    private final MoveOrdering moveOrdering = new MoveOrdering();
+
+    private TranspositionTable transpositionTable;
 
     private SearchStatistics statistics;
 
+    public MinimaxSearch(Board board) {
+
+        this.board = board;
+        this.transpositionTable = new TranspositionTable(board);
+
+    }
+
     @Override
-    public SearchResult search(Board board, int depth) {
+    public SearchResult search(int depth) {
         Instant start = Instant.now();
         statistics = new SearchStatistics();
         boolean isMaximisingPlayer = board.isWhiteToMove();
@@ -91,8 +104,11 @@ public class MinimaxSearch implements Search {
                 }
                 alpha = Math.max(alpha, result.eval());
                 if (beta <= alpha) {
+                    // A 'beta cut-off', where the minimizing (opponent) player's worst-possible score exceeds the maximising
+                    // player's worst-possible score. This node can be pruned and no further child nodes need be searched, as
+                    // the maximising player knows there are better alternatives elsewhere in the tree.
                     statistics.incrementNodesSearched();
-                    statistics.incrementNodesPruned();
+                    statistics.incrementCutoffs();
                     statistics.addSearchDuration(start, Instant.now());
                     break;
                 }
@@ -112,15 +128,17 @@ public class MinimaxSearch implements Search {
                 }
                 beta = Math.min(beta, result.eval());
                 if (beta <= alpha) {
+                    // A 'beta cut-off', where the minimizing (opponent) player's worst-possible score exceeds the maximising
+                    // player's worst-possible score. This node can be pruned and no further child nodes need be searched, as
+                    // the maximising player knows there are better alternatives elsewhere in the tree.
                     statistics.incrementNodesSearched();
-                    statistics.incrementNodesPruned();
+                    statistics.incrementCutoffs();
                     statistics.addSearchDuration(start, Instant.now());
                     break;
                 }
             }
-            Instant end = Instant.now();
             statistics.incrementNodesSearched();
-            statistics.addSearchDuration(start, end);
+            statistics.addSearchDuration(start, Instant.now());
             return new SearchResult(minEval, bestMove);
         }
 

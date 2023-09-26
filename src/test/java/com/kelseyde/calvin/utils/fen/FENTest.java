@@ -31,7 +31,7 @@ public class FENTest {
         Assertions.assertEquals(newBoard.getOccupied(), fenBoard.getOccupied());
 
         Assertions.assertEquals(newBoard.isWhiteToMove(), fenBoard.isWhiteToMove());
-        Assertions.assertEquals(newBoard.getCurrentGameState(), fenBoard.getCurrentGameState());
+        Assertions.assertEquals(newBoard.getGameState(), fenBoard.getGameState());
         Assertions.assertEquals(new ArrayList<>(newBoard.getGameStateHistory()), new ArrayList<>(fenBoard.getGameStateHistory()));
         Assertions.assertEquals(new ArrayList<>(newBoard.getMoveHistory()), new ArrayList<>(fenBoard.getMoveHistory()));
 

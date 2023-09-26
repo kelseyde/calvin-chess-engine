@@ -6,14 +6,12 @@ import com.kelseyde.calvin.api.request.NewGameResponse;
 import com.kelseyde.calvin.api.request.PlayRequest;
 import com.kelseyde.calvin.api.request.PlayResponse;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.GameState;
 import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.engine.Engine;
-import com.kelseyde.calvin.search.engine.MinimaxSearch;
+import com.kelseyde.calvin.search.minimax.MinimaxSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +34,7 @@ public class GameController {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
+    // TODO fix, make new Game class
     @Resource
     private MinimaxSearch search;
 
@@ -56,7 +55,7 @@ public class GameController {
         log.info("GET /game/new/black");
         Board board = new Board();
         log.info("Created new board with id {}", board.getId());
-        Move move = search.search(board, 4).move();
+        Move move = search.search(4).move();
         log.info("Engine selects move {}", NotationUtils.toNotation(move));
         board.makeMove(move);
         boardRepository.putBoard(board);
@@ -105,7 +104,7 @@ public class GameController {
             return ResponseEntity.ok(PlayResponse.builder().gameId(board.getId()).result(result).build());
         }
 
-        Move engineMove = search.search(board, 4).move();
+        Move engineMove = search.search(4).move();
         board.makeMove(engineMove);
         result = resultCalculator.calculateResult(board);
         if (!result.equals(GameResult.IN_PROGRESS)) {
@@ -119,7 +118,5 @@ public class GameController {
                 .result(GameResult.IN_PROGRESS)
                 .build());
     }
-
-
 
 }

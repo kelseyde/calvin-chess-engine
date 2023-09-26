@@ -113,6 +113,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.kelseyde.calvin.Application</mainClass>
+                    <jvmArguments>
+                        -javaagent:"\agent\InstrumentationAgent.jar"
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <execution>

@@ -40,12 +40,12 @@ public class Board {
 
     private boolean isWhiteToMove = true;
 
-    private GameState currentGameState = new GameState();
+    private GameState gameState = new GameState();
     private Deque<GameState> gameStateHistory = new ArrayDeque<>();
     private Deque<Move> moveHistory = new ArrayDeque<>();
 
     public Board() {
-        currentGameState.setZobristKey(ZobristKey.generateKey(this));
+        gameState.setZobristKey(ZobristKey.generateKey(this));
         recalculatePieces();
     }
 
@@ -55,8 +55,8 @@ public class Board {
         int endSquare = move.getEndSquare();
         PieceType pieceType = move.getPieceType();
 
-        long newZobristKey = currentGameState.getZobristKey();
-        int newFiftyMoveCounter = currentGameState.getFiftyMoveCounter();
+        long newZobristKey = gameState.getZobristKey();
+        int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
         int newEnPassantFile = move.getEnPassantFile();
         Optional<PieceType> capturedPiece = pieceAt(move.getEndSquare());
         boolean resetFiftyMoveCounter = capturedPiece.isPresent() || PieceType.PAWN.equals(move.getPieceType());
@@ -97,15 +97,15 @@ public class Board {
 
         newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[startSquare][isWhiteToMove ? 0 : 1][pieceType.getIndex()];
         newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[endSquare][isWhiteToMove ? 0 : 1][newPieceType.getIndex()];
-        newZobristKey ^= ZobristKey.CASTLING_RIGHTS[currentGameState.getCastlingRights()];
+        newZobristKey ^= ZobristKey.CASTLING_RIGHTS[gameState.getCastlingRights()];
         newZobristKey ^= ZobristKey.CASTLING_RIGHTS[calculateCastlingRights(move)];
-        newZobristKey ^= ZobristKey.EN_PASSANT_FILE[currentGameState.getEnPassantFile() + 1];
+        newZobristKey ^= ZobristKey.EN_PASSANT_FILE[gameState.getEnPassantFile() + 1];
         newZobristKey ^= ZobristKey.EN_PASSANT_FILE[move.getEnPassantFile() + 1];
         newZobristKey ^= ZobristKey.BLACK_TO_MOVE;
 
         GameState newGameState = new GameState(newZobristKey, capturedPiece.orElse(null), newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
-        gameStateHistory.push(currentGameState);
-        currentGameState = newGameState;
+        gameStateHistory.push(gameState);
+        gameState = newGameState;
 
         moveHistory.push(move);
 
@@ -148,11 +148,11 @@ public class Board {
                 setPiece(isWhiteToMove ? 0 : 56, PieceType.ROOK, isWhiteToMove, true);
             }
         }
-        if (currentGameState.getCapturedPiece() != null) {
-            setPiece(endSquare, currentGameState.getCapturedPiece(), !isWhiteToMove, false);
+        if (gameState.getCapturedPiece() != null) {
+            setPiece(endSquare, gameState.getCapturedPiece(), !isWhiteToMove, false);
         }
 
-        currentGameState = gameStateHistory.pop();
+        gameState = gameStateHistory.pop();
         recalculatePieces();
 
     }
@@ -209,7 +209,7 @@ public class Board {
     }
 
     private int calculateCastlingRights(Move move) {
-        int newCastlingRights = currentGameState.getCastlingRights();
+        int newCastlingRights = gameState.getCastlingRights();
         // Any move by the king removes castling rights.
         if (PieceType.KING.equals(move.getPieceType())) {
             newCastlingRights &= isWhiteToMove ? GameState.CLEAR_WHITE_CASTLING_MASK : GameState.CLEAR_BLACK_CASTLING_MASK;

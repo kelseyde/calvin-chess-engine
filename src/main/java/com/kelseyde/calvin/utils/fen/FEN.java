@@ -88,10 +88,10 @@ public class FEN {
             board.setBlackKing(blackKing);
             board.recalculatePieces();
             board.setWhiteToMove(isWhiteToMove);
-            board.getCurrentGameState().setCastlingRights(castlingRights);
-            board.getCurrentGameState().setEnPassantFile(enPassantFile);
-            board.getCurrentGameState().setFiftyMoveCounter(fiftyMoveCounter);
-            board.getCurrentGameState().setZobristKey(ZobristKey.generateKey(board));
+            board.getGameState().setCastlingRights(castlingRights);
+            board.getGameState().setEnPassantFile(enPassantFile);
+            board.getGameState().setFiftyMoveCounter(fiftyMoveCounter);
+            board.getGameState().setZobristKey(ZobristKey.generateKey(board));
 
             return board;
 

@@ -193,7 +193,7 @@ public class PawnMoveGeneratorTest {
         board = TestUtils.emptyBoard();
         board.setPiece(35, PieceType.PAWN, true, true);
         board.setPiece(34, PieceType.PAWN, false, true);
-        board.getCurrentGameState().setEnPassantFile(BoardUtils.getFile(42));
+        board.getGameState().setEnPassantFile(BoardUtils.getFile(42));
 
         Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
 
@@ -211,7 +211,7 @@ public class PawnMoveGeneratorTest {
         board.setPiece(35, PieceType.PAWN, true, true);
         board.setPiece(52, PieceType.PAWN, false, true);
         board.setPiece(42, PieceType.QUEEN, false, true);
-        board.getCurrentGameState().setEnPassantFile(BoardUtils.getFile(44));
+        board.getGameState().setEnPassantFile(BoardUtils.getFile(44));
 
         Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
 
@@ -264,7 +264,7 @@ public class PawnMoveGeneratorTest {
 
         board.setPiece(29, PieceType.PAWN, false, true);
         board.setPiece(30, PieceType.PAWN, true, true);
-        board.getCurrentGameState().setEnPassantFile(BoardUtils.getFile(22));
+        board.getGameState().setEnPassantFile(BoardUtils.getFile(22));
         board.setWhiteToMove(false);
 
         Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
@@ -282,7 +282,7 @@ public class PawnMoveGeneratorTest {
         board.setPiece(29, PieceType.PAWN, false, true);
         board.setPiece(28, PieceType.PAWN, true, true);
         board.setPiece(22, PieceType.ROOK, true, true);
-        board.getCurrentGameState().setEnPassantFile(BoardUtils.getFile(20));
+        board.getGameState().setEnPassantFile(BoardUtils.getFile(20));
         board.setWhiteToMove(false);
 
         Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);

@@ -59,7 +59,7 @@ public class ResultCalculator {
     }
 
     private boolean isFiftyMoveRule(Board board) {
-        return board.getCurrentGameState().getFiftyMoveCounter() >= 100;
+        return board.getGameState().getFiftyMoveCounter() >= 100;
     }
 
 }

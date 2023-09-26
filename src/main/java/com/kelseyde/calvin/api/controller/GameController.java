@@ -1,13 +1,15 @@
 package com.kelseyde.calvin.api.controller;
 
-import com.kelseyde.calvin.api.repository.GameRepository;
-import com.kelseyde.calvin.api.request.*;
+import com.kelseyde.calvin.api.repository.EngineRepository;
+import com.kelseyde.calvin.api.request.MoveResponse;
+import com.kelseyde.calvin.api.request.NewGameResponse;
+import com.kelseyde.calvin.api.request.PlayRequest;
+import com.kelseyde.calvin.api.request.PlayResponse;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.DepthSearch;
 import com.kelseyde.calvin.search.negamax.NegamaxSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import jakarta.annotation.Resource;
@@ -27,7 +29,7 @@ import java.util.Optional;
 public class GameController {
 
     @Resource
-    private GameRepository gameRepository;
+    private EngineRepository engineRepository;
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
@@ -39,8 +41,7 @@ public class GameController {
         log.info("GET /game/new/white");
         Board board = new Board();
         NegamaxSearch search = new NegamaxSearch(board);
-        Game game = new Game(board.getId(), board, search);
-        gameRepository.putGame(game);
+        engineRepository.putEngine(search);
         log.info("Created new board with id {}", board.getId());
         return ResponseEntity.ok(new NewGameResponse(board.getId()));
     }
@@ -50,12 +51,11 @@ public class GameController {
         log.info("GET /game/new/black");
         Board board = new Board();
         NegamaxSearch search = new NegamaxSearch(board);
-        Game game = new Game(board.getId(), board, search);
         log.info("Created new game with id {}", board.getId());
-        Move move = search.search(4).move();
+        Move move = search.search(7).move();
         log.info("Engine selects move {}", NotationUtils.toNotation(move));
         board.makeMove(move);
-        gameRepository.putGame(game);
+        engineRepository.putEngine(search);
         NewGameResponse response = new NewGameResponse(board.getId());
         response.setMove(MoveResponse.fromMove(move));
         return ResponseEntity.ok(response);
@@ -66,15 +66,14 @@ public class GameController {
         log.info("POST /game/play");
         log.info("Received move request {}", moveRequest);
 
-        Optional<Game> existingGame = gameRepository.getGame(moveRequest.getGameId());
-        Game game;
-        if (existingGame.isPresent()) {
-            game = existingGame.get();
+        Optional<NegamaxSearch> existingEngine = engineRepository.getEngine(moveRequest.getGameId());
+        NegamaxSearch engine;
+        if (existingEngine.isPresent()) {
+            engine = existingEngine.get();
         } else {
             Board board = new Board();
-            DepthSearch search = new NegamaxSearch(board);
-            game = new Game(board.getId(), board, search);
-            gameRepository.putGame(game);
+            engine = new NegamaxSearch(board);
+            engineRepository.putEngine(engine);
             log.info("Created new board with id {}", board.getId());
         }
 
@@ -86,30 +85,30 @@ public class GameController {
 
         log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
 
-        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(game.getBoard()))
+        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(engine.getBoard()))
                 .filter(lm -> lm.matches(playerMove))
                 .findAny();
         if (legalMove.isEmpty()) {
             log.error("Illegal move: {}", moveRequest);
             return ResponseEntity.ok(PlayResponse.builder().build());
         }
-        game.getBoard().makeMove(legalMove.get());
-        GameResult result = resultCalculator.calculateResult(game.getBoard());
+        engine.getBoard().makeMove(legalMove.get());
+        GameResult result = resultCalculator.calculateResult(engine.getBoard());
         if (!result.equals(GameResult.IN_PROGRESS)) {
             log.info("Game over! Result: {}", result);
-            return ResponseEntity.ok(PlayResponse.builder().gameId(game.getId()).result(result).build());
+            return ResponseEntity.ok(PlayResponse.builder().gameId(engine.getBoard().getId()).result(result).build());
         }
 
-        Move engineMove = game.getEngine().search(4).move();
-        game.getBoard().makeMove(engineMove);
-        result = resultCalculator.calculateResult(game.getBoard());
+        Move engineMove = engine.search(6).move();
+        engine.getBoard().makeMove(engineMove);
+        result = resultCalculator.calculateResult(engine.getBoard());
         if (!result.equals(GameResult.IN_PROGRESS)) {
             log.info("Game over! Result: {}", result);
-            return ResponseEntity.ok(PlayResponse.builder().gameId(game.getId()).result(result).build());
+            return ResponseEntity.ok(PlayResponse.builder().gameId(engine.getBoard().getId()).result(result).build());
         }
         log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));
         return ResponseEntity.ok(PlayResponse.builder()
-                .gameId(game.getId())
+                .gameId(engine.getBoard().getId())
                 .move(MoveResponse.fromMove(engineMove))
                 .result(GameResult.IN_PROGRESS)
                 .build());

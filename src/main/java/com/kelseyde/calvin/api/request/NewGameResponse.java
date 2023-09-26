@@ -9,4 +9,6 @@ public class NewGameResponse {
 
     private final String gameId;
 
+    private MoveResponse move;
+
 }

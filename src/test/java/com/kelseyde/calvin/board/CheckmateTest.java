@@ -203,4 +203,28 @@ public class CheckmateTest {
 
     }
 
+    @Test
+    public void testReturnsCheckmateResultForCorrectSide() {
+
+        Board board = TestUtils.emptyBoard();
+        board.setPiece(48, PieceType.KING, false, true);
+        board.setPiece(42, PieceType.KING, true, true);
+        board.setPiece(1, PieceType.QUEEN, true, true);
+
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
+        GameResult result = evaluator.calculateResult(board);
+        Assertions.assertEquals(GameResult.WHITE_WINS_BY_CHECKMATE, result);
+
+        board = TestUtils.emptyBoard();
+        board.setWhiteToMove(false);
+        board.setPiece(48, PieceType.KING, true, true);
+        board.setPiece(42, PieceType.KING, false, true);
+        board.setPiece(1, PieceType.QUEEN, false, true);
+
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
+        result = evaluator.calculateResult(board);
+        Assertions.assertEquals(GameResult.BLACK_WINS_BY_CHECKMATE, result);
+
+    }
+
 }

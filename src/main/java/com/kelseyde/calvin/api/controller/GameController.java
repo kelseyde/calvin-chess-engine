@@ -1,14 +1,18 @@
 package com.kelseyde.calvin.api.controller;
 
 import com.kelseyde.calvin.api.repository.BoardRepository;
+import com.kelseyde.calvin.api.request.MoveResponse;
 import com.kelseyde.calvin.api.request.NewGameResponse;
 import com.kelseyde.calvin.api.request.PlayRequest;
 import com.kelseyde.calvin.api.request.PlayResponse;
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.GameState;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
+import com.kelseyde.calvin.search.engine.Engine;
 import com.kelseyde.calvin.search.engine.MinimaxSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import jakarta.annotation.Resource;
@@ -20,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -39,13 +42,27 @@ public class GameController {
     @Resource
     private ResultCalculator resultCalculator;
 
-    @RequestMapping(value = "/new", method = RequestMethod.GET)
-    public ResponseEntity<NewGameResponse> getNewGame() {
-        log.info("GET /game/new");
+    @RequestMapping(value = "/new/white", method = RequestMethod.GET)
+    public ResponseEntity<NewGameResponse> getNewWhiteGame() {
+        log.info("GET /game/new/white");
         Board board = new Board();
         boardRepository.putBoard(board);
         log.info("Created new board with id {}", board.getId());
         return ResponseEntity.ok(new NewGameResponse(board.getId()));
+    }
+
+    @RequestMapping(value = "/new/black", method = RequestMethod.GET)
+    public ResponseEntity<NewGameResponse> getNewBlackGame() {
+        log.info("GET /game/new/black");
+        Board board = new Board();
+        log.info("Created new board with id {}", board.getId());
+        Move move = search.search(board, 4).move();
+        log.info("Engine selects move {}", NotationUtils.toNotation(move));
+        board.makeMove(move);
+        boardRepository.putBoard(board);
+        NewGameResponse response = new NewGameResponse(board.getId());
+        response.setMove(MoveResponse.fromMove(move));
+        return ResponseEntity.ok(response);
     }
 
     @RequestMapping(value = "/play", method = RequestMethod.POST)
@@ -57,6 +74,10 @@ public class GameController {
         Board board;
         if (existingBoard.isPresent()) {
             board = existingBoard.get();
+            if (log.isTraceEnabled()) {
+                log.trace("Found existing board:");
+                BitBoardUtils.print(board.getOccupied());
+            }
         } else {
             board = new Board();
             boardRepository.putBoard(board);
@@ -79,23 +100,22 @@ public class GameController {
         }
         board.makeMove(legalMove.get());
         GameResult result = resultCalculator.calculateResult(board);
-        log.info("Result: {}", result);
         if (!result.equals(GameResult.IN_PROGRESS)) {
             log.info("Game over! Result: {}", result);
-            return ResponseEntity.ok(PlayResponse.builder().result(result).build());
+            return ResponseEntity.ok(PlayResponse.builder().gameId(board.getId()).result(result).build());
         }
 
-        log.info("Engine thinking...");
         Move engineMove = search.search(board, 4).move();
         board.makeMove(engineMove);
         result = resultCalculator.calculateResult(board);
         if (!result.equals(GameResult.IN_PROGRESS)) {
             log.info("Game over! Result: {}", result);
-            return ResponseEntity.ok(PlayResponse.builder().result(result).build());
+            return ResponseEntity.ok(PlayResponse.builder().gameId(board.getId()).result(result).build());
         }
         log.info("Engine selects move {}", NotationUtils.toNotation(engineMove));
         return ResponseEntity.ok(PlayResponse.builder()
-                .move(PlayResponse.MoveResponse.fromMove(engineMove))
+                .gameId(board.getId())
+                .move(MoveResponse.fromMove(engineMove))
                 .result(GameResult.IN_PROGRESS)
                 .build());
     }

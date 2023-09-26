@@ -16,6 +16,9 @@ public class PlayRequest {
     private String promotion;
 
     public PieceType getPromotionPieceType() {
+        if (promotion == null) {
+            return null;
+        }
         return switch (promotion) {
             case "q" -> PieceType.QUEEN;
             case "r" -> PieceType.ROOK;

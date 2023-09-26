@@ -63,4 +63,25 @@ public class PuzzlesTest {
 
     }
 
+    @Test
+    public void testSimpleRemoveTheDefender() {
+
+        String fen = "r1b1k2r/1p3ppp/5n2/q2pp3/1P1b4/1QB3P1/4PPBP/RN2K1NR b KQkq - 0 1";
+        Board board = FEN.fromFEN(fen);
+
+        SearchResult result = search.search(board, 3);
+
+        Move bestMove = NotationUtils.fromNotation("d4", "c3", PieceType.BISHOP);
+        Assertions.assertTrue(bestMove.matches(result.move()));
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("b1", "c3", PieceType.BISHOP));
+
+        result = search.search(board, 3);
+        bestMove = NotationUtils.fromNotation("a5", "a1", PieceType.QUEEN);
+        Assertions.assertTrue(bestMove.matches(result.move()));
+
+    }
+
+
 }

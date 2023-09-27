@@ -55,6 +55,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
 
         while (!isTimeoutExceeded()) {
 
+            System.out.println("At depth " + currentDepth);
             hasSearchedAtLeastOneMove = false;
             search(currentDepth, 0, MIN_EVAL, MAX_EVAL);
 

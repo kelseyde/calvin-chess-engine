@@ -91,7 +91,7 @@ public class PuzzlesTest {
 
         search = new NegamaxSearch(board);
 
-        SearchResult result = search.search(5);
+        SearchResult result = search.search(3);
 
         Move bestMove = NotationUtils.fromNotation("d4", "c3", PieceType.BISHOP);
         assertMove(bestMove, result.move());

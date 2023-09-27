@@ -38,7 +38,7 @@ public class TranspositionTable {
         return (entry != null && entry.getZobristKey() == zobristKey) ? entry : null;
     }
 
-    public void put(NodeType type, Move move, int depth, int value) {
+    public void put(NodeType type, int depth, Move move, int value) {
         if (!enabled) {
             return;
         }

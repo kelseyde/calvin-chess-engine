@@ -32,7 +32,7 @@ public class TranspositionTableTest {
         int eval = 60;
         int depth = 3;
 
-        table.put(nodeType, bestMove, depth, eval);
+        table.put(nodeType, depth, bestMove, eval);
 
         // Do some more searching, return to this position
 
@@ -59,7 +59,7 @@ public class TranspositionTableTest {
         int eval = 60;
         int depth = 3;
 
-        table.put(nodeType, bestMove, depth, eval);
+        table.put(nodeType, depth, bestMove, eval);
 
         board.unmakeMove();
         board.unmakeMove();

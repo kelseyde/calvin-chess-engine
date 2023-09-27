@@ -72,13 +72,10 @@ public class NegamaxSearch implements DepthSearch {
             if (NodeType.EXACT.equals(ttEntry.getType())) {
                 return new SearchResult(ttEntry.getValue(), ttEntry.getBestMove());
             }
-            else if (NodeType.LOWER_BOUND.equals(ttEntry.getType())) {
-                alpha = Math.max(alpha, ttEntry.getValue());
+            else if (NodeType.LOWER_BOUND.equals(ttEntry.getType()) && ttEntry.getValue() <= alpha) {
+                return new SearchResult(ttEntry.getValue(), ttEntry.getBestMove());
             }
-            else if (NodeType.UPPER_BOUND.equals(ttEntry.getType())) {
-                beta = Math.min(beta, ttEntry.getValue());
-            }
-            if (alpha >= beta) {
+            else if (NodeType.UPPER_BOUND.equals(ttEntry.getType()) && ttEntry.getValue() >= beta) {
                 return new SearchResult(ttEntry.getValue(), ttEntry.getBestMove());
             }
         }
@@ -105,7 +102,7 @@ public class NegamaxSearch implements DepthSearch {
             return new SearchResult(finalEval, null);
         }
 
-        Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves);
+        Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, null);
 
         int bestEval = MIN_EVAL;
         Move bestMove = legalMoves[new Random().nextInt(legalMoves.length)];
@@ -148,7 +145,7 @@ public class NegamaxSearch implements DepthSearch {
         else {
             type = NodeType.EXACT;
         }
-        transpositionTable.put(type, bestMove, depth, bestEval);
+        transpositionTable.put(type, depth, bestMove, bestEval);
 
         System.out.printf("Colour %s, %s, alpha: %s, beta: %s, choosing best move %s, eval %s END %n",
                 !board.isWhiteToMove() ? "Black" : "White", currentLine.stream().map(NotationUtils::toNotation).toList(), alpha, beta, NotationUtils.toNotation(bestMove), bestEval);

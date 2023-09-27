@@ -76,18 +76,15 @@ public class MinimaxSearch implements DepthSearch {
         if (currentResult.isCheckmate()) {
             int modifier = board.isWhiteToMove() ? -1 : 1;
             statistics.incrementNodesSearched();
-            statistics.addSearchDuration(start, Instant.now());
             return new SearchResult(modifier * Integer.MAX_VALUE, null); // TODO correct?
         }
         if (currentResult.isDraw()) {
             statistics.incrementNodesSearched();
-            statistics.addSearchDuration(start, Instant.now());
             return new SearchResult(0, null);
         }
         if (depth == 0) {
             int finalEval = evaluate(board);
             statistics.incrementNodesSearched();
-            statistics.addSearchDuration(start, Instant.now());
             return new SearchResult(finalEval, null);
         }
         Move bestMove = orderedMoves[new Random().nextInt(orderedMoves.length)];
@@ -109,12 +106,10 @@ public class MinimaxSearch implements DepthSearch {
                     // the maximising player knows there are better alternatives elsewhere in the tree.
                     statistics.incrementNodesSearched();
                     statistics.incrementCutoffs();
-                    statistics.addSearchDuration(start, Instant.now());
                     break;
                 }
             }
             statistics.incrementNodesSearched();
-            statistics.addSearchDuration(start, Instant.now());
             return new SearchResult(maxEval, bestMove);
         } else {
             int minEval = Integer.MAX_VALUE;
@@ -124,6 +119,7 @@ public class MinimaxSearch implements DepthSearch {
                 board.unmakeMove();
                 if (result.eval() < minEval) {
                     minEval = result.eval();
+                    log.info("New winner at depth {}: {} (previous winner {})", depth, NotationUtils.toNotation(move), NotationUtils.toNotation(bestMove));
                     bestMove = move;
                 }
                 beta = Math.min(beta, result.eval());
@@ -133,12 +129,10 @@ public class MinimaxSearch implements DepthSearch {
                     // the maximising player knows there are better alternatives elsewhere in the tree.
                     statistics.incrementNodesSearched();
                     statistics.incrementCutoffs();
-                    statistics.addSearchDuration(start, Instant.now());
                     break;
                 }
             }
             statistics.incrementNodesSearched();
-            statistics.addSearchDuration(start, Instant.now());
             return new SearchResult(minEval, bestMove);
         }
 

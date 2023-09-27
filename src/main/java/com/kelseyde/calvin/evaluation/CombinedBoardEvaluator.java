@@ -15,6 +15,9 @@ public class CombinedBoardEvaluator implements BoardEvaluator {
 
     @Override
     public int evaluate(Board board) {
-        return 0;
+        return boardEvaluators.stream()
+                .map(evaluator -> evaluator.evaluate(board))
+                .reduce(0, Integer::sum);
     }
+
 }

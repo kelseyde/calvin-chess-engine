@@ -3,7 +3,6 @@ package com.kelseyde.calvin.puzzles;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.search.DepthSearch;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.negamax.NegamaxSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -15,7 +14,7 @@ import org.junit.jupiter.api.Test;
 @Disabled
 public class PuzzlesTest {
 
-    private DepthSearch search;
+    private NegamaxSearch search;
 
     @Test
     public void testSimpleBackRankMateInOne() {
@@ -28,7 +27,7 @@ public class PuzzlesTest {
         SearchResult result = search.search(3);
 
         Move bestMove = NotationUtils.fromNotation("e1", "e8");
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
     }
 
@@ -43,7 +42,7 @@ public class PuzzlesTest {
         SearchResult result = search.search(3);
 
         Move bestMove = NotationUtils.fromNotation("d3", "f2");
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
     }
 
@@ -58,7 +57,7 @@ public class PuzzlesTest {
         SearchResult result = search.search(3);
 
         Move bestMove = NotationUtils.fromNotation("e2", "f3");
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
     }
 
@@ -73,14 +72,14 @@ public class PuzzlesTest {
         SearchResult result = search.search(3);
 
         Move bestMove = NotationUtils.fromNotation("g4", "c8", PieceType.QUEEN);
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("d5", "d8", PieceType.ROOK));
 
         result = search.search(3);
         bestMove = NotationUtils.fromNotation("c8", "d8", PieceType.QUEEN);
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
     }
 
@@ -92,17 +91,17 @@ public class PuzzlesTest {
 
         search = new NegamaxSearch(board);
 
-        SearchResult result = search.search(6);
+        SearchResult result = search.search(4);
 
         Move bestMove = NotationUtils.fromNotation("d4", "c3", PieceType.BISHOP);
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("b1", "c3", PieceType.BISHOP));
+        board.makeMove(NotationUtils.fromNotation("b1", "c3", PieceType.KNIGHT));
 
         result = search.search(3);
         bestMove = NotationUtils.fromNotation("a5", "a1", PieceType.QUEEN);
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
     }
 
@@ -117,47 +116,53 @@ public class PuzzlesTest {
         SearchResult result = search.search(7);
 
         Move bestMove = NotationUtils.fromNotation("d5", "e7", PieceType.KNIGHT);
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g8", "h8", PieceType.KING));
 
         result = search.search(5);
         bestMove = NotationUtils.fromNotation("h1", "h7", PieceType.ROOK);
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("h8", "h7", PieceType.KING));
 
         result = search.search(3);
         bestMove = NotationUtils.fromNotation("d1", "h1", PieceType.ROOK);
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g4", "h3", PieceType.QUEEN));
 
         result = search.search(1);
         bestMove = NotationUtils.fromNotation("h1", "h3", PieceType.ROOK);
-        Assertions.assertTrue(bestMove.matches(result.move()));
+        assertMove(bestMove, result.move());
 
     }
 
     @Test
-    public void testKiwipete() {
+    public void testMateInOneBetterThanWinningQueenWithCheck() {
 
-        String fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
+        String fen = "6k1/5ppq/8/8/8/8/8/1B4KQ w - - 0 1";
         Board board = FEN.fromFEN(fen);
 
-        NegamaxSearch negamaxSearch = new NegamaxSearch(board);
-        negamaxSearch.getTranspositionTable().setEnabled(true);
+        search = new NegamaxSearch(board);
 
-        search = negamaxSearch;
+        SearchResult result = search.search(3);
 
-        SearchResult result = search.search(7);
-
-        System.out.println(NotationUtils.toNotation(result.move()));
+        Move bestMove = NotationUtils.fromNotation("h1", "a8", PieceType.QUEEN);
+        assertMove(bestMove, result.move());
 
     }
 
+    private void assertMove(Move expected, Move actual) {
+        boolean matches = expected.matches(actual);
+        if (!matches) {
+            System.out.printf("Expected move %s, Actual move %s%n",
+                    NotationUtils.toNotation(expected), NotationUtils.toNotation(actual));
+        }
+        Assertions.assertTrue(matches);
+    }
 
 }

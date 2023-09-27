@@ -20,11 +20,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Random;
+import java.util.*;
 
 @Slf4j
 @Data
 public class NegamaxSearch implements DepthSearch {
+
+    // + 1 because the minimum integer cannot be negated (as is requried in negamax), due to numeric overflow.
+    private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
+    private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
 
     private final Board board;
 
@@ -40,21 +44,18 @@ public class NegamaxSearch implements DepthSearch {
 
     private SearchStatistics statistics;
 
-    public NegamaxSearch(Board board) {
+    private List<Move> currentLine = new ArrayList<>();
 
+    public NegamaxSearch(Board board) {
         this.board = board;
         this.transpositionTable = new TranspositionTable(board);
-
     }
 
     public SearchResult search(int depth) {
         log.info("Starting negamax search");
-        Instant start = Instant.now();
         statistics = new SearchStatistics();
-        SearchResult result = negamax(depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        Instant end = Instant.now();
-        log.info("Engine eval: {}, thinking time: {} move: {}",
-                result.eval() / 100, Duration.between(start, end), NotationUtils.toNotation(result.move()));
+        SearchResult result = negamax(depth, MIN_EVAL, MAX_EVAL);
+        log.info("Engine eval: {}, move: {}", result.eval() / 100f, NotationUtils.toNotation(result.move()));
         log.info("Search statistics: {}", statistics);
         return result;
     }
@@ -89,39 +90,48 @@ public class NegamaxSearch implements DepthSearch {
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
         if (gameResult.isCheckmate()) {
             statistics.incrementNodesSearched();
-            int checkmateEval = -Integer.MAX_VALUE;
-            return new SearchResult(checkmateEval, null);
+            return new SearchResult(MIN_EVAL, null);
         }
         if (gameResult.isDraw()) {
             statistics.incrementNodesSearched();
-            int drawEval = 0;
-            return new SearchResult(drawEval, null);
+            return new SearchResult(0, null);
         }
         if (depth == 0) {
             // In the case that max depth is reached, return the static heuristic evaluation of the position.
             statistics.incrementNodesSearched();
             int finalEval = evaluator.evaluate(board);
+            System.out.printf("Colour %s, %s, alpha: %s, beta: %s, FINAL eval: %s%n",
+                    !board.isWhiteToMove() ? "Black" : "White", currentLine.stream().map(NotationUtils::toNotation).toList(), alpha, beta, finalEval);
             return new SearchResult(finalEval, null);
         }
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves);
 
-        int eval = Integer.MIN_VALUE + 1;
+        int bestEval = MIN_EVAL;
         Move bestMove = legalMoves[new Random().nextInt(legalMoves.length)];
 
         for (Move move : orderedMoves) {
 
             board.makeMove(move);
+            currentLine.add(move);
+//            System.out.printf("depth %s alpha/beta BEFORE recursive call: %s / %s%n", depth, alpha, beta);
             SearchResult searchResult = negamax(depth - 1, -beta, -alpha);
+//            System.out.printf("depth %s alpha/beta AFTER recursive call: %s / %s%n", depth, alpha, beta);
             board.unmakeMove();
             statistics.incrementNodesSearched();
 
-            eval = -searchResult.eval();
+            int eval = -searchResult.eval();
+            System.out.printf("Colour %s, %s, alpha: %s, beta: %s, eval: %s%n",
+                    !board.isWhiteToMove() ? "Black" : "White", currentLine.stream().map(NotationUtils::toNotation).toList(), alpha, beta, eval);
+            currentLine.remove(move);
             if (eval > alpha) {
+                System.out.printf("Colour %s choosing %s since eval %s > alpha %s%n", !board.isWhiteToMove() ? "Black" : "White", NotationUtils.toNotation(move), eval, alpha);
+                bestEval = eval;
                 bestMove = move;
                 alpha = eval;
             }
-            if (eval >= beta) {
+            if (alpha >= beta) {
+                System.out.printf("Colour %s pruning %s since alpha %s >= beta %s%n",!board.isWhiteToMove() ? "Black" : "White", NotationUtils.toNotation(move), alpha, beta);
                 statistics.incrementCutoffs();
                 break;
             }
@@ -129,19 +139,20 @@ public class NegamaxSearch implements DepthSearch {
         }
 
         NodeType type;
-        if (eval <= originalAlpha) {
+        if (bestEval <= originalAlpha) {
             type = NodeType.UPPER_BOUND;
         }
-        else if (eval >= beta) {
+        else if (bestEval >= beta) {
             type = NodeType.LOWER_BOUND;
         }
         else {
             type = NodeType.EXACT;
         }
-        transpositionTable.put(type, bestMove, depth, eval);
+        transpositionTable.put(type, bestMove, depth, bestEval);
 
-        return new SearchResult(eval, bestMove);
+        return new SearchResult(bestEval, bestMove);
 
     }
+
 
 }

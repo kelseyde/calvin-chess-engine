@@ -17,7 +17,7 @@ public class TranspositionTable {
 
     private TranspositionEntry[] entries;
 
-    boolean enabled;
+    boolean enabled = true;
 
     public TranspositionTable(Board board) {
         this.board = board;

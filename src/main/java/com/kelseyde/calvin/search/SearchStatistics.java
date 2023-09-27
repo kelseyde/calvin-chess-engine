@@ -21,10 +21,12 @@ public class SearchStatistics {
     }
 
     public void incrementCutoffs() {
+        ++nodesSearched;
         ++cutOffs;
     }
 
     public void incrementTranspositions() {
+        ++nodesSearched;
         ++transpositions;
     }
 

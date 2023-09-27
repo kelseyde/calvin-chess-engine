@@ -9,10 +9,12 @@ import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.MoveOrderer;
 import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.search.SearchStatistics;
 import com.kelseyde.calvin.search.TimedSearch;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -31,14 +33,15 @@ public class IterativeDeepeningSearch implements TimedSearch {
     private final BoardEvaluator boardEvaluator = new CombinedBoardEvaluator();
     private final TranspositionTable transpositionTable;
 
-    private final Board board;
-    private Instant timeout;
+    private final @Getter Board board;
 
+    private Instant timeout;
     private Move bestMove;
     private int bestEval;
     private Move bestMoveCurrentDepth;
     private int bestEvalCurrentDepth;
     private boolean hasSearchedAtLeastOneMove;
+    private SearchStatistics statistics;
 
     public IterativeDeepeningSearch(Board board) {
         this.board = board;
@@ -52,6 +55,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
         int currentDepth = 0;
         bestMove = null;
         bestMoveCurrentDepth = null;
+        statistics = new SearchStatistics();
 
         while (!isTimeoutExceeded()) {
 
@@ -61,6 +65,8 @@ public class IterativeDeepeningSearch implements TimedSearch {
 
             if (isTimeoutExceeded()) {
                 if (hasSearchedAtLeastOneMove) {
+                    System.out.printf("Statistics -- nodes searched: %s, cutoffs: %s, transpositions: %s%n",
+                            statistics.getNodesSearched(), statistics.getCutOffs(), statistics.getTranspositions());;
                     return new SearchResult(bestEvalCurrentDepth, bestMoveCurrentDepth);
                 }
             } else {
@@ -71,6 +77,8 @@ public class IterativeDeepeningSearch implements TimedSearch {
             currentDepth++;
         }
 
+        System.out.printf("Statistics -- nodes searched: %s, cutoffs: %s, transpositions: %s%n",
+                statistics.getNodesSearched(), statistics.getCutOffs(), statistics.getTranspositions());;
         return new SearchResult(bestEval, bestMove);
 
     }
@@ -84,7 +92,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
      * @param alpha the lower bound for child nodes at the current search depth.
      * @param beta the upper bound for child nodes at the current search depth.
      */
-    private int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
+     int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
 
         if (isTimeoutExceeded()) {
             return 0;
@@ -98,36 +106,42 @@ public class IterativeDeepeningSearch implements TimedSearch {
         Move previousBestMove = plyFromRoot == 0 ? bestMove : null;
 
         // Handle possible transposition
-        TranspositionEntry transposition = transpositionTable.get();
-        if (transposition != null && transposition.getBestMove() != null) {
-            previousBestMove = transposition.getBestMove();
-        }
-        if (transposition != null && transposition.getDepth() >= plyRemaining) {
-            NodeType type = transposition.getType();
-            if (type.equals(NodeType.EXACT)
-                    || type.equals(NodeType.LOWER_BOUND) && transposition.getValue() <= alpha
-                    || type.equals(NodeType.UPPER_BOUND) && transposition.getValue() >= beta) {
-                if (plyFromRoot == 0) {
-                    bestMoveCurrentDepth = transposition.getBestMove();
-                    bestEvalCurrentDepth = transposition.getValue();
-                }
-                return transposition.getValue();
-            }
-        }
+//        TranspositionEntry transposition = transpositionTable.get();
+//        if (transposition != null) {
+//            if (transposition.getBestMove() != null) {
+//                previousBestMove = transposition.getBestMove();
+//            }
+//            if (transposition.getDepth() >= plyRemaining) {
+//                statistics.incrementTranspositions();
+//                NodeType type = transposition.getType();
+//                if ((type.equals(NodeType.EXACT))
+//                        || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() <= alpha)
+//                        || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() >= beta)) {
+//                    if (plyFromRoot == 0) {
+//                        bestMoveCurrentDepth = transposition.getBestMove();
+//                        bestEvalCurrentDepth = transposition.getValue();
+//                    }
+//                    return transposition.getValue();
+//                }
+//            }
+//        }
 
         Move[] legalMoves = moveGenerator.generateLegalMoves(board);
         GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);
 
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
         if (gameResult.isCheckmate()) {
+            statistics.incrementNodesSearched();
             return IMMEDIATE_MATE_SCORE - plyFromRoot;
         }
         if (gameResult.isDraw()) {
+            statistics.incrementNodesSearched();
             return bestEvalCurrentDepth = 0;
         }
         if (plyRemaining == 0) {
             // In the case that max depth is reached, return the static heuristic evaluation of the position.
             // TODO quiescence search
+            statistics.incrementNodesSearched();
             return boardEvaluator.evaluate(board);
         }
 
@@ -151,6 +165,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
             if (eval >= beta) {
                 // Move is too good, opponent won't let us get here.
                 transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, move, beta);
+                statistics.incrementCutoffs();
                 return beta;
             }
 
@@ -170,7 +185,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
 
         NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
         transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
-
+         statistics.incrementNodesSearched();
         return alpha;
 
     }

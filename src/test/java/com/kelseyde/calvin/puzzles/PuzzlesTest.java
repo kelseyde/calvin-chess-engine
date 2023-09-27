@@ -93,7 +93,7 @@ public class PuzzlesTest {
 
         search = new IterativeDeepeningSearch(board);
 
-        SearchResult result = search.search(Duration.ofSeconds(10));
+        SearchResult result = search.search(Duration.ofSeconds(2));
 
         Move bestMove = NotationUtils.fromNotation("d4", "c3", PieceType.BISHOP);
         assertMove(bestMove, result.move());
@@ -101,7 +101,7 @@ public class PuzzlesTest {
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("b1", "c3", PieceType.KNIGHT));
 
-        result = search.search(Duration.ofSeconds(10));
+        result = search.search(Duration.ofMillis(100));
         bestMove = NotationUtils.fromNotation("a5", "a1", PieceType.QUEEN);
         assertMove(bestMove, result.move());
 
@@ -115,7 +115,7 @@ public class PuzzlesTest {
 
         search = new IterativeDeepeningSearch(board);
 
-        SearchResult result = search.search(Duration.ofSeconds(7));
+        SearchResult result = search.search(Duration.ofSeconds(8));
 
 
         Move bestMove = NotationUtils.fromNotation("d5", "e7", PieceType.KNIGHT);
@@ -124,21 +124,21 @@ public class PuzzlesTest {
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g8", "h8", PieceType.KING));
 
-        result = search.search(Duration.ofSeconds(5));
+        result = search.search(Duration.ofSeconds(2));
         bestMove = NotationUtils.fromNotation("h1", "h7", PieceType.ROOK);
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("h8", "h7", PieceType.KING));
 
-        result = search.search(Duration.ofSeconds(4));
+        result = search.search(Duration.ofSeconds(2));
         bestMove = NotationUtils.fromNotation("d1", "h1", PieceType.ROOK);
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g4", "h3", PieceType.QUEEN));
 
-        result = search.search(Duration.ofSeconds(3));
+        result = search.search(Duration.ofSeconds(2));
         bestMove = NotationUtils.fromNotation("h1", "h3", PieceType.ROOK);
         assertMove(bestMove, result.move());
 
@@ -152,7 +152,7 @@ public class PuzzlesTest {
 
         search = new IterativeDeepeningSearch(board);
 
-        SearchResult result = search.search(Duration.ofSeconds(3));
+        SearchResult result = search.search(Duration.ofMillis(500));
 
         Move bestMove = NotationUtils.fromNotation("h1", "a8", PieceType.QUEEN);
         assertMove(bestMove, result.move());

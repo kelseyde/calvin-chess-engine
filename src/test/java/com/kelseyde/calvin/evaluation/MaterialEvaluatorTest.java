@@ -47,6 +47,9 @@ public class MaterialEvaluatorTest {
         int score = evaluator.evaluate(board);
         Assertions.assertEquals(-320, score);
 
+        board.setWhiteToMove(!board.isWhiteToMove());
+        Assertions.assertEquals(320, evaluator.evaluate(board));
+
     }
 
 }

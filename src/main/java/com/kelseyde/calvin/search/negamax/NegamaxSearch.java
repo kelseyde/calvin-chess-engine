@@ -150,6 +150,8 @@ public class NegamaxSearch implements DepthSearch {
         }
         transpositionTable.put(type, bestMove, depth, bestEval);
 
+        System.out.printf("Colour %s, %s, alpha: %s, beta: %s, choosing best move %s, eval %s END %n",
+                !board.isWhiteToMove() ? "Black" : "White", currentLine.stream().map(NotationUtils::toNotation).toList(), alpha, beta, NotationUtils.toNotation(bestMove), bestEval);
         return new SearchResult(bestEval, bestMove);
 
     }

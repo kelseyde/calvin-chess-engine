@@ -20,7 +20,11 @@ public class PiecePlacementEvaluatorTest {
     public void bigPawnCentreGivesAdvantageToBlack() {
 
         Board board = FEN.fromFEN("r1b2rk1/pp4pp/1qnb1n2/2pppp2/8/3PPN2/PPP1BPPP/RNBQ1R1K b - - 7 10");
+        Assertions.assertEquals(100, evaluator.evaluate(board));
+
+        board.setWhiteToMove(true);
         Assertions.assertEquals(-100, evaluator.evaluate(board));
+
     }
 
 }

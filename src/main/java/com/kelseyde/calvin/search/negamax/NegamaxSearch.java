@@ -81,7 +81,7 @@ public class NegamaxSearch implements DepthSearch {
         }
 
         // TODO determine checkmate prior to search; then legal moves need not be generated for terminal nodes.
-        Move[] legalMoves = moveGenerator.generateLegalMoves(board);
+        Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
         GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);
 
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.

@@ -54,35 +54,35 @@ public class PawnMoveGeneratorTest {
         board = TestUtils.emptyBoard();
         board.setPiece(16, PieceType.ROOK, true, true);
         assertMovesFromSquare(board, 8, Set.of());
-        board.unsetPiece(16, true);
+        board.unsetPiece(16);
 
         board.setPiece(17, PieceType.PAWN, false, true);
         assertMovesFromSquare(board, 9, Set.of());
-        board.unsetPiece(17, true);
+        board.unsetPiece(17);
 
         board.setPiece(18, PieceType.KING, true, true);
         assertMovesFromSquare(board, 10, Set.of());
-        board.unsetPiece(18, true);
+        board.unsetPiece(18);
 
         board.setPiece(19, PieceType.QUEEN, false, true);
         assertMovesFromSquare(board, 11, Set.of());
-        board.unsetPiece(19, true);
+        board.unsetPiece(19);
 
         board.setPiece(44, PieceType.BISHOP, false, true);
         assertMovesFromSquare(board, 52, Set.of());
-        board.unsetPiece(44, true);
+        board.unsetPiece(44);
 
         board.setPiece(45, PieceType.PAWN, false, true);
         assertMovesFromSquare(board, 53, Set.of());
-        board.unsetPiece(45, true);
+        board.unsetPiece(45);
 
         board.setPiece(46, PieceType.KNIGHT, false, true);
         assertMovesFromSquare(board, 54, Set.of());
-        board.unsetPiece(46, true);
+        board.unsetPiece(46);
 
         board.setPiece(47, PieceType.ROOK, false, true);
         assertMovesFromSquare(board, 55, Set.of());
-        board.unsetPiece(47, true);
+        board.unsetPiece(47);
 
     }
 
@@ -93,15 +93,15 @@ public class PawnMoveGeneratorTest {
         board = TestUtils.emptyBoard();
         board.setPiece(16, PieceType.PAWN, true, true);
         assertMovesFromSquare(board, 16, Set.of(moveBuilder(16, 24).build()));
-        board.unsetPiece(16, true);
+        board.unsetPiece(16);
 
         board.setPiece(34, PieceType.PAWN, true, true);
         assertMovesFromSquare(board, 34, Set.of(moveBuilder(34, 42).build()));
-        board.unsetPiece(34, true);
+        board.unsetPiece(34);
 
         board.setPiece(45, PieceType.PAWN, true, true);
         assertMovesFromSquare(board, 45, Set.of(moveBuilder(45, 53).build()));
-        board.unsetPiece(45, true);
+        board.unsetPiece(45);
 
     }
 
@@ -113,15 +113,15 @@ public class PawnMoveGeneratorTest {
 
         board.setPiece(45, PieceType.PAWN, false, true);
         assertMovesFromSquare(board, 45, Set.of(moveBuilder(45, 37).build()));
-        board.unsetPiece(45, true);
+        board.unsetPiece(45);
 
         board.setPiece(35, PieceType.PAWN, false, true);
         assertMovesFromSquare(board, 35, Set.of(moveBuilder(35, 27).build()));
-        board.unsetPiece(35, true);
+        board.unsetPiece(35);
 
         board.setPiece(31, PieceType.PAWN, false, true);
         assertMovesFromSquare(board, 31, Set.of(moveBuilder(31, 23).build()));
-        board.unsetPiece(31, true);
+        board.unsetPiece(31);
 
     }
 
@@ -179,7 +179,7 @@ public class PawnMoveGeneratorTest {
         Board board = new Board();
         board.makeMove(TestUtils.getLegalMove(board, "f2", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        Set<Move> legalMoves = Arrays.stream(new MoveGenerator().generateLegalMoves(board)).collect(Collectors.toSet());
+        Set<Move> legalMoves = Arrays.stream(new MoveGenerator().generateLegalMoves(board, false)).collect(Collectors.toSet());
         Move emptySpaceCaptureLeft = moveBuilder(21, 28).build();
         Move emptySpaceCaptureRight = moveBuilder(21, 30).build();
         Assertions.assertTrue(legalMoves.stream().noneMatch(emptySpaceCaptureLeft::matches));

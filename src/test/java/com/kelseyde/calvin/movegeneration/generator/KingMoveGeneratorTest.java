@@ -73,7 +73,7 @@ public class KingMoveGeneratorTest {
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.unsetPiece(startSquare, true);
+        board.unsetPiece(startSquare);
     }
 
 }

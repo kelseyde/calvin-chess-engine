@@ -103,8 +103,20 @@ public class FEN {
     }
 
     public static String toFEN(Board board) {
-        // TODO implement fen parsing
-        return null;
+
+        try {
+
+            // TODO
+            String isWhiteToMove = toSideToMove(board.isWhiteToMove());
+            String castlingRights = toCastlingRights(board.getGameState().getCastlingRights());
+            String enPassantFile = toEnPassantFile(board.getGameState().getEnPassantFile());
+            String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getFiftyMoveCounter());
+
+            return null;
+
+        } catch (Exception e) {
+            throw new InvalidFENException(board.toString(), e);
+        }
     }
 
     private static boolean parseSideToMove(String sideToMove) {
@@ -113,6 +125,10 @@ public class FEN {
             case "b" -> false;
             default -> throw new IllegalArgumentException("Invalid side to move! " + sideToMove);
         };
+    }
+
+    private static String toSideToMove(boolean sideToMove) {
+        return sideToMove ? "w" : "b";
     }
 
     private static int parseCastlingRights(String castlingRights) {
@@ -132,6 +148,26 @@ public class FEN {
         return castlingRightsMask;
     }
 
+    private static String toCastlingRights(int castlingRights) {
+        if (castlingRights == 0b0000) {
+            return "-";
+        }
+        String castlingRightsString = "-";
+        if ((castlingRights & 0b0001) != 0) {
+            castlingRightsString += "K";
+        }
+        if ((castlingRights & 0b0010) != 0) {
+            castlingRightsString += "Q";
+        }
+        if ((castlingRights & 0b0100) != 0) {
+            castlingRightsString += "k";
+        }
+        if ((castlingRights & 0b1000) != 0) {
+            castlingRightsString += "q";
+        }
+        return castlingRightsString;
+    }
+
     private static int parseEnPassantFile(String enPassantFile) {
         if (enPassantFile.equals("-")) {
             return -1;
@@ -140,8 +176,19 @@ public class FEN {
         return BoardUtils.getFile(square);
     }
 
+    private static String toEnPassantFile(int enPassantFile) {
+        if (enPassantFile == -1) {
+            return "-";
+        }
+        return Integer.valueOf(NotationUtils.toNotation(enPassantFile)).toString();
+    }
+
     private static int parseFiftyMoveCounter(String fiftyMoveCounter) {
         return Character.isDigit(fiftyMoveCounter.charAt(0)) ? Integer.parseInt(fiftyMoveCounter) : 0;
+    }
+
+    private static String toFiftyMoveCounter(int fiftyMoveCounter) {
+        return Integer.toString(fiftyMoveCounter);
     }
 
     private static Stream<String> parseSquare(String square) {

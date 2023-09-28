@@ -5,8 +5,10 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -153,7 +155,7 @@ public class BoardTest {
         board1.makeMove(Move.builder().startSquare(13).endSquare(21).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
         board1.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).enPassantFile(4).moveType(MoveType.STANDARD).build());
 
-        new MoveGenerator().generateLegalMoves(board1);
+        new MoveGenerator().generateLegalMoves(board1, false);
         System.out.println("TODO");
     }
 
@@ -163,7 +165,7 @@ public class BoardTest {
         Board board1 = new Board();
         Board board2 = new Board();
 
-        new MoveGenerator().generateLegalMoves(board1);
+        new MoveGenerator().generateLegalMoves(board1, false);
 
         Assertions.assertEquals(board1.getWhitePawns(), board2.getWhitePawns());
         Assertions.assertEquals(board1.getWhiteKnights(), board2.getWhiteKnights());
@@ -327,13 +329,47 @@ public class BoardTest {
     }
 
     @Test
+    public void testRookCannotJumpToOtherSide() {
+
+        String fen = "r1b1k2r/1p3ppp/5n2/q2pp3/1P1b4/1QB3P1/4PPBP/RN2K1NR b KQkq - 0 1";
+        Board board = FEN.fromFEN(fen);
+
+        board.makeMove(TestUtils.getLegalMove(board, "d4", "c3"));
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "f1"));
+        board.makeMove(TestUtils.getLegalMove(board, "a5", "a1"));
+        board.makeMove(TestUtils.getLegalMove(board, "f2", "f4"));
+        board.makeMove(TestUtils.getLegalMove(board, "a1", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "b3", "b1"));
+        board.makeMove(TestUtils.getLegalMove(board, "e5", "f4"));
+        board.makeMove(TestUtils.getLegalMove(board, "g2", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "f4", "g3"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "h7"));
+        board.makeMove(TestUtils.getLegalMove(board, "g3", "h2"));
+        board.makeMove(TestUtils.getLegalMove(board, "h7", "g7"));
+        board.makeMove(TestUtils.getLegalMove(board, "f6", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "g7", "c3"));
+        board.makeMove(TestUtils.getLegalMove(board, "d5", "b4"));
+        board.makeMove(TestUtils.getLegalMove(board, "c3", "b4"));
+        Move queenPromotion = NotationUtils.fromNotation("h2", "g1");
+        queenPromotion.setPromotionPieceType(PieceType.QUEEN);
+        board.makeMove(TestUtils.getLegalMove(board, queenPromotion));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "g1"));
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "h1"));
+
+        System.out.println("here we are");
+        Assertions.assertThrows(IllegalMoveException.class, () ->
+                board.makeMove(TestUtils.getLegalMove(board, "h8", "h1")));
+    }
+
+    @Test
     public void test() {
         Board board = new Board();
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d4", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        List<String> moves = Arrays.stream(new MoveGenerator().generateLegalMoves(board)).map(NotationUtils::toNotation).toList();
+        List<String> moves = Arrays.stream(new MoveGenerator().generateLegalMoves(board, false)).map(NotationUtils::toNotation).toList();
         Assertions.assertEquals(31, moves.size());
         Assertions.assertTrue(moves.contains("e1d2"));
     }
@@ -362,7 +398,7 @@ public class BoardTest {
         board.setPiece(startSquare, PieceType.ROOK, true, true);
         Assertions.assertEquals(Set.of(startSquare), getPiecePositions(board, true));
         Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
-        board.unsetPiece(startSquare, true);
+        board.unsetPiece(startSquare);
     }
 
 }

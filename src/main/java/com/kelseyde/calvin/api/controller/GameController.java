@@ -87,7 +87,7 @@ public class GameController {
 
         log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
 
-        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(engine.getBoard()))
+        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(engine.getBoard(), false))
                 .filter(lm -> lm.matches(playerMove))
                 .findAny();
         if (legalMove.isEmpty()) {

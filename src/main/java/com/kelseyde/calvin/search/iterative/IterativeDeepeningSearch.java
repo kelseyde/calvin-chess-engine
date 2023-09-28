@@ -57,6 +57,8 @@ public class IterativeDeepeningSearch implements TimedSearch {
         bestMoveCurrentDepth = null;
         statistics = new SearchStatistics();
 
+        SearchResult result;
+
         while (!isTimeoutExceeded()) {
 
             System.out.println("At depth " + currentDepth);
@@ -126,7 +128,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
 //            }
 //        }
 
-        Move[] legalMoves = moveGenerator.generateLegalMoves(board);
+        Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
         GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);
 
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
@@ -140,9 +142,8 @@ public class IterativeDeepeningSearch implements TimedSearch {
         }
         if (plyRemaining == 0) {
             // In the case that max depth is reached, return the static heuristic evaluation of the position.
-            // TODO quiescence search
             statistics.incrementNodesSearched();
-            return boardEvaluator.evaluate(board);
+            return quiescenceSearch(alpha, beta);
         }
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove);
@@ -186,6 +187,47 @@ public class IterativeDeepeningSearch implements TimedSearch {
         NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
         transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
          statistics.incrementNodesSearched();
+        return alpha;
+
+    }
+
+    /**
+     * Extend the search by searching captures until a 'quiet' position is reached, where there are no further captures
+     * and therefore limited potential for winning tactics that drastically alter the evaluation. Used to mitigate the
+     * worst of the 'horizon effect'.
+     * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
+     */
+    int quiescenceSearch(int alpha, int beta) {
+        if (isTimeoutExceeded()) {
+            return 0;
+        }
+        // In the case where there are only 'bad' captures available, just return the static evaluation of the board,
+        // since the player is not forced to capture and may have good non-capture moves available.
+        int eval = boardEvaluator.evaluate(board);
+        if (eval >= beta) {
+            return beta;
+        }
+        if (eval > alpha) {
+            alpha = eval;
+        }
+
+        // Generate only legal captures
+        Move[] moves = moveGenerator.generateLegalMoves(board, true);
+
+        Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null);
+
+        for (Move move : orderedMoves) {
+            board.makeMove(move);
+            eval = -quiescenceSearch(-beta, -alpha);
+            board.unmakeMove();
+        }
+        if (eval >= beta) {
+            return beta;
+        }
+        if (eval > alpha) {
+            alpha = eval;
+        }
+
         return alpha;
 
     }

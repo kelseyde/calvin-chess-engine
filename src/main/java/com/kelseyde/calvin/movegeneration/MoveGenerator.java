@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
@@ -26,10 +27,11 @@ public class MoveGenerator {
         PAWN_MOVE_GENERATOR, KNIGHT_MOVE_GENERATOR, BISHOP_MOVE_GENERATOR, ROOK_MOVE_GENERATOR, QUEEN_MOVE_GENERATOR, KING_MOVE_GENERATOR
     );
 
-    public Move[] generateLegalMoves(Board board) {
+    public Move[] generateLegalMoves(Board board, boolean capturesOnly) {
         return PSEUDO_LEGAL_MOVE_GENERATORS.stream()
                 .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
                 .filter(pseudoLegalMove -> !isKingCapturable(board, pseudoLegalMove))
+                .filter(legalMove -> !capturesOnly || filterCapturesOnly(board, legalMove))
                 .toArray(Move[]::new);
     }
 
@@ -63,6 +65,13 @@ public class MoveGenerator {
     public boolean isCheck(Board board, boolean isWhite) {
         long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
         return isCheck(board, isWhite, kingMask);
+    }
+
+    private boolean filterCapturesOnly(Board board, Move move) {
+        boolean isWhite = board.isWhiteToMove();
+        int endSquare = move.getEndSquare();
+        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
+        return (opponents & 1L << endSquare) != 0;
     }
 
     private boolean isCheck(Board board, boolean isWhite, long kingMask) {

@@ -41,12 +41,23 @@ public class TestUtils {
 
     public static Move getLegalMove(Board board, String startSquare, String endSquare) {
         Move move = NotationUtils.fromNotation(startSquare, endSquare);
-        Move[] legalMoves = MOVE_GENERATOR.generateLegalMoves(board);
+        Move[] legalMoves = MOVE_GENERATOR.generateLegalMoves(board, false);
         Optional<Move> legalMove = Arrays.stream(legalMoves)
                 .filter(m -> m.matches(move))
                 .findAny();
         if (legalMove.isEmpty()) {
             throw new IllegalMoveException(String.format("Illegal move! %s%s", startSquare, endSquare));
+        }
+        return legalMove.get();
+    }
+
+    public static Move getLegalMove(Board board, Move move) {
+        Move[] legalMoves = MOVE_GENERATOR.generateLegalMoves(board, false);
+        Optional<Move> legalMove = Arrays.stream(legalMoves)
+                .filter(m -> m.matches(move))
+                .findAny();
+        if (legalMove.isEmpty()) {
+            throw new IllegalMoveException(String.format("Illegal move! %s", move));
         }
         return legalMove.get();
     }

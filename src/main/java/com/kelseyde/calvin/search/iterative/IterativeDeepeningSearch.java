@@ -12,6 +12,7 @@ import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
 import com.kelseyde.calvin.search.TimedSearch;
 import com.kelseyde.calvin.search.transposition.NodeType;
+import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -107,25 +108,25 @@ public class IterativeDeepeningSearch implements TimedSearch {
         Move previousBestMove = plyFromRoot == 0 ? bestMove : null;
 
         // Handle possible transposition
-//        TranspositionEntry transposition = transpositionTable.get();
-//        if (transposition != null) {
-//            if (transposition.getBestMove() != null) {
-//                previousBestMove = transposition.getBestMove();
-//            }
-//            if (transposition.getDepth() >= plyRemaining) {
-//                statistics.incrementTranspositions();
-//                NodeType type = transposition.getType();
-//                if ((type.equals(NodeType.EXACT))
-//                        || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() <= alpha)
-//                        || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() >= beta)) {
-//                    if (plyFromRoot == 0) {
-//                        bestMoveCurrentDepth = transposition.getBestMove();
-//                        bestEvalCurrentDepth = transposition.getValue();
-//                    }
-//                    return transposition.getValue();
-//                }
-//            }
-//        }
+        TranspositionEntry transposition = transpositionTable.get();
+        if (transposition != null) {
+            if (transposition.getBestMove() != null) {
+                previousBestMove = transposition.getBestMove();
+            }
+            if (transposition.getDepth() >= plyRemaining) {
+                statistics.incrementTranspositions();
+                NodeType type = transposition.getType();
+                if ((type.equals(NodeType.EXACT))
+                        || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() <= alpha)
+                        || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() >= beta)) {
+                    if (plyFromRoot == 0) {
+                        bestMoveCurrentDepth = transposition.getBestMove();
+                        bestEvalCurrentDepth = transposition.getValue();
+                    }
+                    return transposition.getValue();
+                }
+            }
+        }
 
         Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
         GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);

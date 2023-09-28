@@ -100,7 +100,7 @@ public class GameController {
             return ResponseEntity.ok(PlayResponse.builder().gameId(engine.getBoard().getId()).result(result).build());
         }
 
-        Move engineMove = engine.search(Duration.ofSeconds(2)).move();
+        Move engineMove = engine.search(Duration.ofSeconds(5)).move();
         engine.getBoard().makeMove(engineMove);
         result = resultCalculator.calculateResult(engine.getBoard());
         if (!result.equals(GameResult.IN_PROGRESS)) {

@@ -6,6 +6,8 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -14,6 +16,10 @@ import java.util.Set;
  */
 @Slf4j
 public class MoveGenerator {
+
+    // The maximum number of possible legal moves is apparently 218 in this position:
+    //R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNNK1B1 b - - 0 1
+    private static final int MAX_LEGAL_MOVES = 218;
 
     private static final PawnMoveGenerator PAWN_MOVE_GENERATOR = new PawnMoveGenerator();
     private static final KnightMoveGenerator KNIGHT_MOVE_GENERATOR = new KnightMoveGenerator();

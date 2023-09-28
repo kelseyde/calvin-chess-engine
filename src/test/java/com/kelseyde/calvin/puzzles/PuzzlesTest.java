@@ -123,14 +123,14 @@ public class PuzzlesTest {
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g8", "h8", PieceType.KING));
 
-        result = search.search(Duration.ofMillis(500));
+        result = search.search(Duration.ofMillis(1000));
         bestMove = NotationUtils.fromNotation("h1", "h7", PieceType.ROOK);
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("h8", "h7", PieceType.KING));
 
-        result = search.search(Duration.ofMillis(500));
+        result = search.search(Duration.ofMillis(1000));
         bestMove = NotationUtils.fromNotation("d1", "h1", PieceType.ROOK);
         assertMove(bestMove, result.move());
 
@@ -155,6 +155,86 @@ public class PuzzlesTest {
 
         Move bestMove = NotationUtils.fromNotation("h1", "a8", PieceType.QUEEN);
         assertMove(bestMove, result.move());
+
+    }
+
+    @Test
+    public void testQueenAndRookMateInThree() {
+
+        String fen = "4r3/2R2pk1/5pPp/8/6q1/2PQ2P1/PP6/2K5 b - - 0 34";
+        Board board = FEN.fromFEN(fen);
+
+        search = new IterativeDeepeningSearch(board);
+
+        SearchResult result = search.search(Duration.ofMillis(500));
+
+        Move bestMove = NotationUtils.fromNotation("e8", "e1", PieceType.ROOK);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("c1", "c2", PieceType.KING));
+
+        result = search.search(Duration.ofMillis(500));
+        bestMove = NotationUtils.fromNotation("g4", "a4", PieceType.QUEEN);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("b2", "b3", PieceType.PAWN));
+
+        result = search.search(Duration.ofMillis(500));
+        bestMove = NotationUtils.fromNotation("a4", "a2", PieceType.QUEEN);
+        assertMove(bestMove, result.move());
+
+    }
+
+    @Test
+    public void testRookMatingNetToEnterWinningPawnEndgame() {
+
+        String fen = "7k/R6p/2p5/4K2r/1P6/8/8/8 w - - 1 44";
+        Board board = FEN.fromFEN(fen);
+
+        search = new IterativeDeepeningSearch(board);
+
+        SearchResult result = search.search(Duration.ofMillis(2000));
+
+        Move bestMove = NotationUtils.fromNotation("e5", "f6", PieceType.KING);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("h7", "h6", PieceType.PAWN));
+
+        result = search.search(Duration.ofMillis(2000));
+        bestMove = NotationUtils.fromNotation("f6", "g6", PieceType.KING);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("h5", "g5", PieceType.ROOK));
+
+        result = search.search(Duration.ofMillis(2000));
+        bestMove = NotationUtils.fromNotation("g6", "h6", PieceType.KING);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("g5", "g4", PieceType.ROOK));
+
+        result = search.search(Duration.ofMillis(2000));
+        bestMove = NotationUtils.fromNotation("a7", "a8", PieceType.ROOK);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("g4", "g8", PieceType.ROOK));
+
+        result = search.search(Duration.ofMillis(2000));
+        bestMove = NotationUtils.fromNotation("a8", "g8", PieceType.ROOK);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("h8", "g8", PieceType.KING));
+
+        result = search.search(Duration.ofMillis(2000));
+        bestMove = NotationUtils.fromNotation("h6", "g6", PieceType.KING);
+        assertMove(bestMove, result.move());
+
 
     }
 

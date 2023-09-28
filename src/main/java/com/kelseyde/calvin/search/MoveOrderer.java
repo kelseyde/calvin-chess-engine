@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Optional;
 
 @Slf4j
 public class MoveOrderer {
@@ -51,11 +50,11 @@ public class MoveOrderer {
             moveScore += CASTLE_BIAS;
         }
 
-        Optional<PieceType> capturedPieceType = board.pieceAt(move.getEndSquare());
+        PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
 
         // Prioritising capturing most valuable opponent pieces with least valuable friendly pieces
-        if (capturedPieceType.isPresent()) {
-            int materialDelta = PieceValues.valueOf(capturedPieceType.get()) - PieceValues.valueOf(move.getPieceType());
+        if (capturedPieceType != null) {
+            int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(move.getPieceType());
             moveScore += CAPTURE_BIAS + materialDelta;
         }
 

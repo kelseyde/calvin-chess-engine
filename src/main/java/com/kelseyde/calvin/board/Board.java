@@ -7,7 +7,10 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Data;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 /**
  * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Also maintains the position
@@ -54,12 +57,13 @@ public class Board {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         PieceType pieceType = move.getPieceType();
+        PieceType promotionPieceType = move.getPromotionPieceType();
 
         long newZobristKey = gameState.getZobristKey();
         int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
         int newEnPassantFile = move.getEnPassantFile();
-        Optional<PieceType> capturedPiece = pieceAt(move.getEndSquare());
-        boolean resetFiftyMoveCounter = capturedPiece.isPresent() || PieceType.PAWN.equals(move.getPieceType());
+        PieceType capturedPiece = pieceAt(move.getEndSquare());
+        boolean resetFiftyMoveCounter = capturedPiece != null|| PieceType.PAWN.equals(move.getPieceType());
         newFiftyMoveCounter = resetFiftyMoveCounter ? 0 :  ++newFiftyMoveCounter;
 
         switch (move.getMoveType()) {
@@ -75,8 +79,7 @@ public class Board {
             }
             case PROMOTION -> {
                 unsetPiece(startSquare);
-                PieceType promotedPieceType = move.getPromotionPieceType();
-                setPiece(endSquare, promotedPieceType, isWhiteToMove, true);
+                setPiece(endSquare, promotionPieceType, isWhiteToMove, true);
             }
             case KINGSIDE_CASTLE -> {
                 unsetPiece(startSquare);
@@ -93,7 +96,10 @@ public class Board {
         }
 
         int newCastlingRights = calculateCastlingRights(move);
-        PieceType newPieceType = Optional.ofNullable(move.getPromotionPieceType()).orElse(pieceType);
+        PieceType newPieceType = pieceType;
+        if (promotionPieceType != null) {
+            newPieceType = promotionPieceType;
+        }
 
         newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[startSquare][isWhiteToMove ? 0 : 1][pieceType.getIndex()];
         newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[endSquare][isWhiteToMove ? 0 : 1][newPieceType.getIndex()];
@@ -103,7 +109,7 @@ public class Board {
         newZobristKey ^= ZobristKey.EN_PASSANT_FILE[move.getEnPassantFile() + 1];
         newZobristKey ^= ZobristKey.BLACK_TO_MOVE;
 
-        GameState newGameState = new GameState(newZobristKey, capturedPiece.orElse(null), newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
+        GameState newGameState = new GameState(newZobristKey, capturedPiece, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
         gameStateHistory.push(gameState);
         gameState = newGameState;
 
@@ -228,30 +234,30 @@ public class Board {
         return newCastlingRights;
     }
 
-    public Optional<PieceType> pieceAt(int square) {
+    public PieceType pieceAt(int square) {
         long squareMask = 1L << square;
 
         long pawnMask = isWhiteToMove ? blackPawns : whitePawns;
         if ((squareMask & pawnMask) != 0) {
-            return Optional.of(PieceType.PAWN);
+            return PieceType.PAWN;
         }
         long knightMask = isWhiteToMove ? blackKnights : whiteKnights;
         if ((squareMask & knightMask) != 0) {
-            return Optional.of(PieceType.KNIGHT);
+            return PieceType.KNIGHT;
         }
         long bishopMask = isWhiteToMove ? blackBishops : whiteBishops;
         if ((squareMask & bishopMask) != 0) {
-            return Optional.of(PieceType.BISHOP);
+            return PieceType.BISHOP;
         }
         long rookMask = isWhiteToMove ? blackRooks : whiteRooks;
         if ((squareMask & rookMask) != 0) {
-            return Optional.of(PieceType.ROOK);
+            return PieceType.ROOK;
         }
         long queenMask = isWhiteToMove ? blackQueens : whiteQueens;
         if ((squareMask & queenMask) != 0) {
-            return Optional.of(PieceType.QUEEN);
+            return PieceType.QUEEN;
         }
-        return Optional.empty();
+        return null;
     }
 
 }

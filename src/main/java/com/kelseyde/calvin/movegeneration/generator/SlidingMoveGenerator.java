@@ -35,9 +35,6 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     public Set<Move> generatePseudoLegalMoves(Board board) {
         Set<Move> moves = new HashSet<>();
         long pieceBitboard = getSliders(board, board.isWhiteToMove());
-//        if (getPieceType().equals(PieceType.ROOK)) {
-//            BitBoardUtils.print(pieceBitboard);
-//        }
         while (pieceBitboard != 0) {
             int square = BitBoardUtils.scanForward(pieceBitboard);
             long moveBitboard = 0L;

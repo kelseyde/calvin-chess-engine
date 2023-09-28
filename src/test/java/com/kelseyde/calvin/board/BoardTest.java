@@ -356,8 +356,6 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "f1", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "h1"));
-
-        System.out.println("here we are");
         Assertions.assertThrows(IllegalMoveException.class, () ->
                 board.makeMove(TestUtils.getLegalMove(board, "h8", "h1")));
     }

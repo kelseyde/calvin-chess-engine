@@ -2,6 +2,7 @@ package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -287,7 +288,19 @@ public class CastlingTest {
 
     @Test
     public void cannotCastleIfKingsideRookIsCaptured() {
-        // TODO
+
+        String fen = "r1b1k2r/1p3p2/8/3n4/1P6/2Q5/4P3/6KR b kq - 0 9";
+        Board board = FEN.fromFEN(fen);
+
+        // black rook captures white rook
+        board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));
+
+        // white king captures back
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "h1"));
+
+        // black tries to castle
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "g8")));
+
     }
 
     @Test

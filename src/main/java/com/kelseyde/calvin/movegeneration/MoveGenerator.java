@@ -2,6 +2,7 @@ package com.kelseyde.calvin.movegeneration;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -42,9 +43,9 @@ public class MoveGenerator {
     public boolean isKingCapturable(Board board, Move move) {
         board.makeMove(move);
         long kingMask = switch (move.getMoveType()) {
-            default -> board.isWhiteToMove() ? board.getBlackKing() : board.getWhiteKing();
             case KINGSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.BLACK_KINGSIDE_CASTLE_SAFE_MASK : BitBoardConstants.WHITE_KINGSIDE_CASTLE_SAFE_MASK;
             case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.BLACK_QUEENSIDE_CASTLE_SAFE_MASK : BitBoardConstants.WHITE_QUEENSIDE_CASTLE_SAFE_MASK;
+            default -> board.isWhiteToMove() ? board.getBlackKing() : board.getWhiteKing();
         };
         boolean isKingCapturable = isCheck(board, !board.isWhiteToMove(), kingMask);
         board.unmakeMove();

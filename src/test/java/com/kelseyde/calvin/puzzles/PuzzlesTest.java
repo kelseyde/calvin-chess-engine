@@ -93,7 +93,7 @@ public class PuzzlesTest {
 
         search = new IterativeDeepeningSearch(board);
 
-        SearchResult result = search.search(Duration.ofSeconds(2));
+        SearchResult result = search.search(Duration.ofMillis(500));
 
         Move bestMove = NotationUtils.fromNotation("d4", "c3", PieceType.BISHOP);
         assertMove(bestMove, result.move());

@@ -211,16 +211,18 @@ public class Board {
             newCastlingRights &= isWhiteToMove ? GameState.CLEAR_WHITE_CASTLING_MASK : GameState.CLEAR_BLACK_CASTLING_MASK;
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.
-        else if (move.getStartSquare() == 7 || move.getEndSquare() == 7) {
+        // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
+        // another rook in starting position; in that case, both sides lose castling rights!
+        if (move.getStartSquare() == 7 || move.getEndSquare() == 7) {
             newCastlingRights &= GameState.CLEAR_WHITE_KINGSIDE_MASK;
         }
-        else if (move.getStartSquare() == 63 || move.getEndSquare() == 63) {
+        if (move.getStartSquare() == 63 || move.getEndSquare() == 63) {
             newCastlingRights &= GameState.CLEAR_BLACK_KINGSIDE_MASK;
         }
-        else if (move.getStartSquare() == 0 || move.getEndSquare() == 0) {
+        if (move.getStartSquare() == 0 || move.getEndSquare() == 0) {
             newCastlingRights &= GameState.CLEAR_WHITE_QUEENSIDE_MASK;
         }
-        else if (move.getStartSquare() == 56 || move.getEndSquare() == 56) {
+        if (move.getStartSquare() == 56 || move.getEndSquare() == 56) {
             newCastlingRights &= GameState.CLEAR_BLACK_QUEENSIDE_MASK;
         }
         return newCastlingRights;

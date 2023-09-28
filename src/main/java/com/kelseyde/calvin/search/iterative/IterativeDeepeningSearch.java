@@ -222,11 +222,13 @@ public class IterativeDeepeningSearch implements TimedSearch {
             board.unmakeMove();
         }
         if (eval >= beta) {
+            statistics.incrementCutoffs();
             return beta;
         }
         if (eval > alpha) {
             alpha = eval;
         }
+        statistics.incrementNodesSearched();
 
         return alpha;
 

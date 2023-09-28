@@ -12,7 +12,6 @@ import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
 import com.kelseyde.calvin.search.TimedSearch;
 import com.kelseyde.calvin.search.transposition.NodeType;
-import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

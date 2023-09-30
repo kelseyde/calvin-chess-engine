@@ -1,10 +1,10 @@
-package com.kelseyde.calvin.api.controller;
+package com.kelseyde.calvin.api.http;
 
-import com.kelseyde.calvin.api.repository.EngineRepository;
-import com.kelseyde.calvin.api.request.MoveResponse;
-import com.kelseyde.calvin.api.request.NewGameResponse;
-import com.kelseyde.calvin.api.request.PlayRequest;
-import com.kelseyde.calvin.api.request.PlayResponse;
+import com.kelseyde.calvin.api.http.repository.EngineRepository;
+import com.kelseyde.calvin.api.http.request.MoveResponse;
+import com.kelseyde.calvin.api.http.request.NewGameResponse;
+import com.kelseyde.calvin.api.http.request.PlayRequest;
+import com.kelseyde.calvin.api.http.request.PlayResponse;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
@@ -14,6 +14,7 @@ import com.kelseyde.calvin.search.iterative.IterativeDeepeningSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @RestController
+@ConditionalOnProperty(name = "http.enabled", havingValue = "true")
 @RequestMapping(value = "/game")
 @Slf4j
 public class GameController {

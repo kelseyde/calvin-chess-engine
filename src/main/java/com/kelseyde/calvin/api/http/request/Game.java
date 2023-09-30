@@ -1,7 +1,7 @@
-package com.kelseyde.calvin.api.request;
+package com.kelseyde.calvin.api.http.request;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.search.DepthSearch;
+import com.kelseyde.calvin.search.DepthLimitedSearch;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -13,6 +13,6 @@ public class Game {
 
     private Board board;
 
-    private DepthSearch engine;
+    private DepthLimitedSearch engine;
 
 }

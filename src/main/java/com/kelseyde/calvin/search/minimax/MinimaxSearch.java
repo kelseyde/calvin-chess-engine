@@ -8,7 +8,7 @@ import com.kelseyde.calvin.evaluation.placement.PiecePlacementEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.DepthSearch;
+import com.kelseyde.calvin.search.DepthLimitedSearch;
 import com.kelseyde.calvin.search.MoveOrderer;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Random;
 
 @Slf4j
-public class MinimaxSearch implements DepthSearch {
+public class MinimaxSearch implements DepthLimitedSearch {
 
     private final List<BoardEvaluator> positionEvaluators = List.of(
             new MaterialEvaluator(),
@@ -55,7 +55,7 @@ public class MinimaxSearch implements DepthSearch {
         boolean isMaximisingPlayer = board.isWhiteToMove();
         SearchResult result = minimax(board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, isMaximisingPlayer);
         Instant end = Instant.now();
-        log.info("Engine eval: {}, thinking time: {} move: {}",
+        log.debug("Engine eval: {}, thinking time: {} move: {}",
                 result.eval() / 100, Duration.between(start, end), NotationUtils.toNotation(result.move()));
         return result;
     }
@@ -119,7 +119,7 @@ public class MinimaxSearch implements DepthSearch {
                 board.unmakeMove();
                 if (result.eval() < minEval) {
                     minEval = result.eval();
-                    log.info("New winner at depth {}: {} (previous winner {})", depth, NotationUtils.toNotation(move), NotationUtils.toNotation(bestMove));
+                    log.debug("New winner at depth {}: {} (previous winner {})", depth, NotationUtils.toNotation(move), NotationUtils.toNotation(bestMove));
                     bestMove = move;
                 }
                 beta = Math.min(beta, result.eval());

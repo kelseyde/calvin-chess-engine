@@ -27,4 +27,11 @@ public enum PieceType {
                 .toList();
     }
 
+    public static PieceType fromPieceCode(String pieceCode) {
+        return Arrays.stream(PieceType.values())
+                .filter(pieceType -> pieceType.getPieceCode().equalsIgnoreCase(pieceCode))
+                .findAny()
+                .orElseThrow();
+    }
+
 }

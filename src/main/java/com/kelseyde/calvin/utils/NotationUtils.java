@@ -4,7 +4,10 @@ import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
 
 public class NotationUtils {
 
@@ -29,8 +32,27 @@ public class NotationUtils {
                 .build();
     }
 
+    /**
+     * Generate a {@link Move} from combined albegraic notation (e.g. "e2e4"), as used in the UCI protocol.
+     * Special case promotion: "a2a1q" - values 'q' | 'b' | 'r' | 'n'
+     */
+    public static Move fromCombinedNotation(String notation) {
+        int startSquare = fromNotation(notation.substring(0, 2));
+        int endSquare = fromNotation(notation.substring(2, 4));
+        Move.MoveBuilder moveBuilder = Move.builder().startSquare(startSquare).endSquare(endSquare);
+        if (notation.length() == 5) {
+            PieceType promotionPieceType = PieceType.fromPieceCode(notation.substring(4, 5));
+            moveBuilder.promotionPieceType(promotionPieceType);
+        }
+        return moveBuilder.build();
+    }
+
     public static String toNotation(Move move) {
-        return toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
+        String notation = toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
+        if (move.getPromotionPieceType() != null) {
+            notation += move.getPromotionPieceType().getPieceCode().toLowerCase();
+        }
+        return notation;
     }
 
     public static List<String> toNotation(Deque<Move> moveHistory) {

@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.api.request;
+package com.kelseyde.calvin.api.http.request;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

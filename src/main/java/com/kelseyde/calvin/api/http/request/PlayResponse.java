@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.api.request;
+package com.kelseyde.calvin.api.http.request;
 
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import lombok.Builder;

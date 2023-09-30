@@ -23,14 +23,13 @@ public class MoveOrderer {
     private static final int CASTLE_BIAS = 4 * MILLION;
     private static final int LOSING_CAPTURE_BIAS = 3 * MILLION;
     private static final int UNDER_PROMOTION_BIAS = 2 * MILLION;
-    private static final int STANDARD_BIAS = 0;
 
     public static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 2;
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
-    private final Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
+    private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
 
     public Move[] orderMoves(Board board, Move[] moves, Move previousBestMove, boolean includeKillers, int depth) {
         Arrays.sort(moves, Comparator.comparing(move -> -calculateMoveScore(board, move, previousBestMove, includeKillers, depth)));
@@ -101,6 +100,8 @@ public class MoveOrderer {
         return false;
     }
 
-
+    public void clear() {
+        killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
+    }
 
 }

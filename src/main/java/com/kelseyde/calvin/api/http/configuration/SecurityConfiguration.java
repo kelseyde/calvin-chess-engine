@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.api.configuration;
+package com.kelseyde.calvin.api.http.configuration;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -13,12 +13,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @Slf4j
-public class SpringSecurityConfiguration {
+public class SecurityConfiguration {
 
     @Bean
     @Order
     public SecurityFilterChain noSecurityChain(HttpSecurity http) throws Exception {
-        log.info("Disabling Spring Security, since security.enable is set to 'false'");
         return http
                 .cors(cors -> cors.configure(http))
                 .csrf(AbstractHttpConfigurer::disable)

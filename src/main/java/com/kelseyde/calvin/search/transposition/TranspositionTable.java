@@ -21,12 +21,8 @@ public class TranspositionTable {
 
     public TranspositionTable(Board board) {
         this.board = board;
-        int tableSizeBytes = TABLE_SIZE_MB * 1024 * 1024;
-        int entrySizeBytes = ENTRY_SIZE_B;
-        int entriesCount = tableSizeBytes / entrySizeBytes;
-        log.info("Initialising a transposition table of {} entries based on {}MB table size and {}B entry size.",
-                entriesCount, TABLE_SIZE_MB, entrySizeBytes);
-        entries = new TranspositionEntry[entriesCount];
+        int tableSize = calculateTableSize();
+        entries = new TranspositionEntry[tableSize];
     }
 
     public TranspositionEntry get() {
@@ -48,6 +44,11 @@ public class TranspositionTable {
         entries[index] = entry;
     }
 
+    public void clear() {
+        int tableSize = calculateTableSize();
+        entries = new TranspositionEntry[tableSize];
+    }
+
     /**
      * The 64-bit zobrist key is too large to use as an index in a hashtable, due to memory constraints.
      * Therefore, we take the modulo of the zobrist and the table size, giving us a more manageable number.
@@ -60,6 +61,15 @@ public class TranspositionTable {
 
     private int getIndex(long zobristKey) {
         return Math.abs(Long.valueOf(zobristKey % entries.length).intValue());
+    }
+
+    private int calculateTableSize() {
+        int tableSizeBytes = TABLE_SIZE_MB * 1024 * 1024;
+        int entrySizeBytes = ENTRY_SIZE_B;
+        int entriesCount = tableSizeBytes / entrySizeBytes;
+        log.trace("Initialising a transposition table of {} entries based on {}MB table size and {}B entry size.",
+                entriesCount, TABLE_SIZE_MB, entrySizeBytes);
+        return entriesCount;
     }
 
 }

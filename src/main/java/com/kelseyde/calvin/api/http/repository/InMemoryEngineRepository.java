@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.api.repository;
+package com.kelseyde.calvin.api.http.repository;
 
 import com.kelseyde.calvin.search.iterative.IterativeDeepeningSearch;
 import org.springframework.stereotype.Repository;

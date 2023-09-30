@@ -8,9 +8,9 @@ import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.MoveOrderer;
+import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
-import com.kelseyde.calvin.search.TimedSearch;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
@@ -31,7 +31,7 @@ import java.time.Instant;
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
 @Slf4j
-public class IterativeDeepeningSearch implements TimedSearch {
+public class IterativeDeepeningSearch implements Search {
 
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
@@ -96,7 +96,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
         }
 
         statistics.setEnd(Instant.now());
-        log.info(statistics.generateReport());
+        log.debug(statistics.generateReport());
 
         return new SearchResult(bestEval, bestMove);
 
@@ -112,113 +112,110 @@ public class IterativeDeepeningSearch implements TimedSearch {
      * @param beta the upper bound for child nodes at the current search depth.
      */
      int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
+         if (isTimeoutExceeded()) {
+             return 0;
+         }
+         if (plyFromRoot > 0) {
+             // TODO detect draw
+             // TODO detect previous mate
+         }
+         Move previousBestMove = plyFromRoot == 0 ? bestMove : null;
 
-        if (isTimeoutExceeded()) {
-            return 0;
-        }
-
-        if (plyFromRoot > 0) {
-            // TODO detect draw
-            // TODO detect previous mate
-        }
-
-        Move previousBestMove = plyFromRoot == 0 ? bestMove : null;
-
-        // Handle possible transposition
-        TranspositionEntry transposition = transpositionTable.get();
-        if (transposition != null) {
-            if (transposition.getBestMove() != null) {
+         // Handle possible transposition
+         TranspositionEntry transposition = transpositionTable.get();
+         if (transposition != null) {
+             if (transposition.getBestMove() != null) {
                 previousBestMove = transposition.getBestMove();
-            }
-            if (transposition.getDepth() >= plyRemaining) {
-                statistics.incrementTranspositions();
-                NodeType type = transposition.getType();
-                if ((type.equals(NodeType.EXACT))
-                        || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() <= alpha)
-                        || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() >= beta)) {
-                    if (plyFromRoot == 0) {
-                        bestMoveCurrentDepth = transposition.getBestMove();
-                        bestEvalCurrentDepth = transposition.getValue();
-                    }
-                    return transposition.getValue();
-                }
-            }
-        }
+             }
+             if (transposition.getDepth() >= plyRemaining) {
+                 statistics.incrementTranspositions();
+                 NodeType type = transposition.getType();
+                 if ((type.equals(NodeType.EXACT))
+                         || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() <= alpha)
+                         || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() >= beta)) {
+                     if (plyFromRoot == 0) {
+                         bestMoveCurrentDepth = transposition.getBestMove();
+                         bestEvalCurrentDepth = transposition.getValue();
+                     }
+                     return transposition.getValue();
+                 }
+             }
+         }
 
-        Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
-        GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);
+         Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
+         GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);
 
-        // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
-        if (gameResult.isCheckmate()) {
-            statistics.incrementNodesSearched();
-            log.trace("({}) {} Found checkmate", board.isWhiteToMove() ? "White" : "Black", plyFromRoot);
-            return -CHECKMATE_EVAL + plyFromRoot;
-        }
-        if (gameResult.isDraw()) {
-            statistics.incrementNodesSearched();
-            log.trace("({}) {} Found draw", board.isWhiteToMove() ? "White" : "Black", plyFromRoot);
-            return 0;
-        }
-        if (plyRemaining == 0) {
-            // In the case that max depth is reached, return the static heuristic evaluation of the position.
-            statistics.incrementNodesSearched();
-            return quiescenceSearch(alpha, beta);
-        }
+         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
+         if (gameResult.isCheckmate()) {
+             statistics.incrementNodesSearched();
+             log.trace("({}) {} Found checkmate", board.isWhiteToMove() ? "White" : "Black", plyFromRoot);
+             return -CHECKMATE_EVAL + plyFromRoot;
+         }
+         if (gameResult.isDraw()) {
+             statistics.incrementNodesSearched();
+             log.trace("({}) {} Found draw", board.isWhiteToMove() ? "White" : "Black", plyFromRoot);
+             return 0;
+         }
+         if (plyRemaining == 0) {
+             // In the case that max depth is reached, return the static heuristic evaluation of the position.
+             statistics.incrementNodesSearched();
+             return quiescenceSearch(alpha, beta);
+         }
 
-        Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
+         Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
-        Move bestMoveInThisPosition = null;
-        int originalAlpha = alpha;
+         Move bestMoveInThisPosition = null;
+         int originalAlpha = alpha;
 
-        for (Move move : orderedMoves) {
+         for (Move move : orderedMoves) {
 
-            // TODO search extensions
-            // TODO late move reductions
-            board.makeMove(move);
-            int eval = -search(plyRemaining - 1, plyFromRoot + 1, -beta, -alpha);
-            board.unmakeMove();
+             // TODO search extensions
+             // TODO late move reductions
+             board.makeMove(move);
+             int eval = -search(plyRemaining - 1, plyFromRoot + 1, -beta, -alpha);
+             board.unmakeMove();
 
-            if (isTimeoutExceeded()) {
-                return 0;
-            }
+             if (isTimeoutExceeded()) {
+                 return 0;
+             }
 
-            if (eval >= beta) {
-                // This is a beta cut-off, meaning the move is too good - the opponent won't let us get here as they
-                // already have other options which will prevent us from reaching this position.
-                transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, move, beta);
+             if (eval >= beta) {
+                 // This is a beta cut-off, meaning the move is too good - the opponent won't let us get here as they
+                 // already have other options which will prevent us from reaching this position.
+                 transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, move, beta);
 
-                boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
-                if (!isCapture && plyFromRoot <= MoveOrderer.MAX_KILLER_MOVE_PLY_DEPTH) {
-                    // Non-captures which cause a beta cut-off are 'killer moves', and are stored so that in our move
-                    // ordering we can prioritise examining them early, on the basis that they are likely to be similarly
-                    // effective in sibling nodes.
-                    moveOrderer.addKillerMove(plyFromRoot, move);
-                    statistics.incrementKillers();
-                }
+                 boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
+                 if (!isCapture && plyFromRoot <= MoveOrderer.MAX_KILLER_MOVE_PLY_DEPTH) {
+                     // Non-captures which cause a beta cut-off are 'killer moves', and are stored so that in our move
+                     // ordering we can prioritise examining them early, on the basis that they are likely to be similarly
+                     // effective in sibling nodes.
+                     moveOrderer.addKillerMove(plyFromRoot, move);
+                     statistics.incrementKillers();
+                 }
 
-                log.trace("({}) {} {} {} eval {}", board.isWhiteToMove() ? "White" : "Black", plyFromRoot, NotationUtils.toNotation(board.getMoveHistory()), NodeType.LOWER_BOUND, alpha);
-                statistics.incrementCutoffs();
-                return beta;
-            }
+                 log.trace("({}) {} {} {} eval {}", board.isWhiteToMove() ? "White" : "Black", plyFromRoot, NotationUtils.toNotation(board.getMoveHistory()), NodeType.LOWER_BOUND, alpha);
+                 statistics.incrementCutoffs();
+                 return beta;
+             }
 
-            if (eval > alpha) {
-                // We have found a new best move
-                bestMoveInThisPosition = move;
-                alpha = eval;
-                if (plyFromRoot == 0) {
-                    bestMoveCurrentDepth = move;
-                    bestEvalCurrentDepth = eval;
-                    hasSearchedAtLeastOneMove = true;
-                }
-            }
+             if (eval > alpha) {
+                 // We have found a new best move
+                 bestMoveInThisPosition = move;
+                 alpha = eval;
+                 if (plyFromRoot == 0) {
+                     bestMoveCurrentDepth = move;
+                     bestEvalCurrentDepth = eval;
+                     hasSearchedAtLeastOneMove = true;
+                 }
+             }
 
-        }
+         }
 
-        NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
-        transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
-        statistics.incrementNodesSearched();
-        log.trace("({}) {} {} {} eval {}", board.isWhiteToMove() ? "White" : "Black", plyFromRoot, NotationUtils.toNotation(board.getMoveHistory()), transpositionType, alpha);
-        return alpha;
+         NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
+         transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
+         statistics.incrementNodesSearched();
+         log.trace("({}) {} {} {} eval {}", board.isWhiteToMove() ? "White" : "Black", plyFromRoot, NotationUtils.toNotation(board.getMoveHistory()), transpositionType, alpha);
+         return alpha;
 
     }
 
@@ -263,6 +260,12 @@ public class IterativeDeepeningSearch implements TimedSearch {
 
         return alpha;
 
+    }
+
+    @Override
+    public void clearHistory() {
+        moveOrderer.clear();
+        transpositionTable.clear();
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {

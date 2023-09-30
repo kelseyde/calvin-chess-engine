@@ -7,7 +7,7 @@ import com.kelseyde.calvin.evaluation.CombinedBoardEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.DepthSearch;
+import com.kelseyde.calvin.search.DepthLimitedSearch;
 import com.kelseyde.calvin.search.MoveOrderer;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.SearchStatistics;
@@ -24,7 +24,7 @@ import java.util.Random;
 
 @Slf4j
 @Data
-public class NegamaxSearch implements DepthSearch {
+public class NegamaxSearch implements DepthLimitedSearch {
 
     // + 1 because the minimum integer cannot be negated (as is requried in negamax), due to numeric overflow.
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
@@ -52,11 +52,11 @@ public class NegamaxSearch implements DepthSearch {
     }
 
     public SearchResult search(int depth) {
-        log.info("Starting negamax search");
+        log.debug("Starting negamax search");
         statistics = new SearchStatistics();
         SearchResult result = negamax(depth, MIN_EVAL, MAX_EVAL);
-        log.info("Engine eval: {}, move: {}", result.eval() / 100f, NotationUtils.toNotation(result.move()));
-        log.info("Search statistics: {}", statistics);
+        log.debug("Engine eval: {}, move: {}", result.eval() / 100f, NotationUtils.toNotation(result.move()));
+        log.debug("Search statistics: {}", statistics);
         return result;
     }
 

@@ -2,10 +2,13 @@ spring:
   application:
     name: calvin
 
+http:
+  enabled: true
+
 server:
   port: 8080
   servlet:
     context-path: /${spring.application.name}
 
 logging.level:
-  com.kelseyde.calvin: TRACE
+  com.kelseyde.calvin: INFO

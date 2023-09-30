@@ -57,6 +57,9 @@ public class Board {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         PieceType pieceType = move.getPieceType();
+        if (pieceType == null) {
+            pieceType = pieceAt(startSquare);
+        }
         PieceType promotionPieceType = move.getPromotionPieceType();
 
         long newZobristKey = gameState.getZobristKey();
@@ -236,26 +239,23 @@ public class Board {
 
     public PieceType pieceAt(int square) {
         long squareMask = 1L << square;
-
-        long pawnMask = isWhiteToMove ? blackPawns : whitePawns;
-        if ((squareMask & pawnMask) != 0) {
+        if ((squareMask & (whitePawns | blackPawns)) != 0) {
             return PieceType.PAWN;
         }
-        long knightMask = isWhiteToMove ? blackKnights : whiteKnights;
-        if ((squareMask & knightMask) != 0) {
+        if ((squareMask & (whiteKnights | blackKnights)) != 0) {
             return PieceType.KNIGHT;
         }
-        long bishopMask = isWhiteToMove ? blackBishops : whiteBishops;
-        if ((squareMask & bishopMask) != 0) {
+        if ((squareMask & (whiteBishops | blackBishops)) != 0) {
             return PieceType.BISHOP;
         }
-        long rookMask = isWhiteToMove ? blackRooks : whiteRooks;
-        if ((squareMask & rookMask) != 0) {
+        if ((squareMask & (whiteRooks | blackRooks)) != 0) {
             return PieceType.ROOK;
         }
-        long queenMask = isWhiteToMove ? blackQueens : whiteQueens;
-        if ((squareMask & queenMask) != 0) {
+        if ((squareMask & (whiteQueens | blackQueens)) != 0) {
             return PieceType.QUEEN;
+        }
+        if ((squareMask & (whiteKing | blackKing)) != 0) {
+            return PieceType.KING;
         }
         return null;
     }

@@ -1,10 +1,10 @@
 package com.kelseyde.calvin.utils;
 
-import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
 
-import java.util.List;
+import java.util.*;
 
 public class NotationUtils {
 
@@ -33,6 +33,14 @@ public class NotationUtils {
         return toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
     }
 
+    public static List<String> toNotation(Deque<Move> moveHistory) {
+        List<Move> moves = new ArrayList<>(moveHistory);
+        Collections.reverse(moves);
+        return moves.stream()
+                .map(NotationUtils::toNotation)
+                .toList();
+    }
+
     /**
      * Generate a square co-ordinate from algebraic notation (e.g. "e4" -> 28)
      */
@@ -48,27 +56,27 @@ public class NotationUtils {
 
     public static String getRank(int square) {
         long bb = 1L << square;
-        if ((BitBoardConstants.RANK_1 & bb) != 0) return "1";
-        if ((BitBoardConstants.RANK_2 & bb) != 0) return "2";
-        if ((BitBoardConstants.RANK_3 & bb) != 0) return "3";
-        if ((BitBoardConstants.RANK_4 & bb) != 0) return "4";
-        if ((BitBoardConstants.RANK_5 & bb) != 0) return "5";
-        if ((BitBoardConstants.RANK_6 & bb) != 0) return "6";
-        if ((BitBoardConstants.RANK_7 & bb) != 0) return "7";
-        if ((BitBoardConstants.RANK_8 & bb) != 0) return "8";
+        if ((Bits.RANK_1 & bb) != 0) return "1";
+        if ((Bits.RANK_2 & bb) != 0) return "2";
+        if ((Bits.RANK_3 & bb) != 0) return "3";
+        if ((Bits.RANK_4 & bb) != 0) return "4";
+        if ((Bits.RANK_5 & bb) != 0) return "5";
+        if ((Bits.RANK_6 & bb) != 0) return "6";
+        if ((Bits.RANK_7 & bb) != 0) return "7";
+        if ((Bits.RANK_8 & bb) != 0) return "8";
         return "X";
     }
 
     public static String getFile(int square) {
         long bb = 1L << square;
-        if ((BitBoardConstants.FILE_A & bb) != 0) return "a";
-        if ((BitBoardConstants.FILE_B & bb) != 0) return "b";
-        if ((BitBoardConstants.FILE_C & bb) != 0) return "c";
-        if ((BitBoardConstants.FILE_D & bb) != 0) return "d";
-        if ((BitBoardConstants.FILE_E & bb) != 0) return "e";
-        if ((BitBoardConstants.FILE_F & bb) != 0) return "f";
-        if ((BitBoardConstants.FILE_G & bb) != 0) return "g";
-        if ((BitBoardConstants.FILE_H & bb) != 0) return "h";
+        if ((Bits.FILE_A & bb) != 0) return "a";
+        if ((Bits.FILE_B & bb) != 0) return "b";
+        if ((Bits.FILE_C & bb) != 0) return "c";
+        if ((Bits.FILE_D & bb) != 0) return "d";
+        if ((Bits.FILE_E & bb) != 0) return "e";
+        if ((Bits.FILE_F & bb) != 0) return "f";
+        if ((Bits.FILE_G & bb) != 0) return "g";
+        if ((Bits.FILE_H & bb) != 0) return "h";
         return "X";
     }
 

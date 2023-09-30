@@ -24,7 +24,7 @@ public class TranspositionTable {
         int tableSizeBytes = TABLE_SIZE_MB * 1024 * 1024;
         int entrySizeBytes = ENTRY_SIZE_B;
         int entriesCount = tableSizeBytes / entrySizeBytes;
-        log.info("Initialising a transposition table of with {} entries based on {}MB table size and {}B entry size.",
+        log.info("Initialising a transposition table of {} entries based on {}MB table size and {}B entry size.",
                 entriesCount, TABLE_SIZE_MB, entrySizeBytes);
         entries = new TranspositionEntry[entriesCount];
     }

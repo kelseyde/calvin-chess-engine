@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
@@ -59,7 +59,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         }
         boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
         if (isKingsideAllowed) {
-            long travelSquares = board.isWhiteToMove() ? BitBoardConstants.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : BitBoardConstants.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
+            long travelSquares = board.isWhiteToMove() ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
             long blockedSquares = travelSquares & occupied;
             if (blockedSquares == 0) {
                 int endSquare = board.isWhiteToMove() ? 6 : 62;
@@ -68,7 +68,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         }
         boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
         if (isQueensideAllowed) {
-            long travelSquares = board.isWhiteToMove() ? BitBoardConstants.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : BitBoardConstants.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
+            long travelSquares = board.isWhiteToMove() ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
             long blockedSquares = travelSquares & occupied;
             if (blockedSquares == 0) {
                 int endSquare = board.isWhiteToMove() ? 2 : 58;

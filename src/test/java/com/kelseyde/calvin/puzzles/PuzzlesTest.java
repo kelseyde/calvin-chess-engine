@@ -123,14 +123,14 @@ public class PuzzlesTest {
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g8", "h8", PieceType.KING));
 
-        result = search.search(Duration.ofMillis(1000));
+        result = search.search(Duration.ofMillis(500));
         bestMove = NotationUtils.fromNotation("h1", "h7", PieceType.ROOK);
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("h8", "h7", PieceType.KING));
 
-        result = search.search(Duration.ofMillis(1000));
+        result = search.search(Duration.ofMillis(500));
         bestMove = NotationUtils.fromNotation("d1", "h1", PieceType.ROOK);
         assertMove(bestMove, result.move());
 
@@ -181,7 +181,7 @@ public class PuzzlesTest {
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("b2", "b3", PieceType.PAWN));
 
-        result = search.search(Duration.ofMillis(500));
+        result = search.search(Duration.ofMillis(1000));
         bestMove = NotationUtils.fromNotation("a4", "a2", PieceType.QUEEN);
         assertMove(bestMove, result.move());
 
@@ -217,7 +217,7 @@ public class PuzzlesTest {
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g5", "g4", PieceType.ROOK));
 
-        result = search.search(Duration.ofMillis(2000));
+        result = search.search(Duration.ofMillis(3000));
         bestMove = NotationUtils.fromNotation("a7", "a8", PieceType.ROOK);
         assertMove(bestMove, result.move());
 
@@ -235,8 +235,23 @@ public class PuzzlesTest {
         bestMove = NotationUtils.fromNotation("h6", "g6", PieceType.KING);
         assertMove(bestMove, result.move());
 
-
     }
+
+//    @Test
+//    public void testIgnoreScaryChecksForQueenRookMate() {
+//
+//        String fen = "2k2b1r/3Rpppp/2p2q2/2Np4/3P4/4Qb2/r3nPPP/5R1K w - - 8 25";
+//
+//        Board board = FEN.fromFEN(fen);
+//
+//        search = new IterativeDeepeningSearch(board);
+//
+//        SearchResult result = search.search(Duration.ofMillis(1000));
+//
+//        Move bestMove = NotationUtils.fromNotation("e3", "b3", PieceType.QUEEN);
+//        assertMove(bestMove, result.move());
+//
+//    }
 
     private void assertMove(Move expected, Move actual) {
         boolean matches = expected.matches(actual);

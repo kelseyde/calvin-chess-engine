@@ -1,13 +1,11 @@
 package com.kelseyde.calvin.movegeneration;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -47,8 +45,8 @@ public class MoveGenerator {
     public boolean isKingCapturable(Board board, Move move) {
         board.makeMove(move);
         long kingMask = switch (move.getMoveType()) {
-            case KINGSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.BLACK_KINGSIDE_CASTLE_SAFE_MASK : BitBoardConstants.WHITE_KINGSIDE_CASTLE_SAFE_MASK;
-            case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? BitBoardConstants.BLACK_QUEENSIDE_CASTLE_SAFE_MASK : BitBoardConstants.WHITE_QUEENSIDE_CASTLE_SAFE_MASK;
+            case KINGSIDE_CASTLE -> board.isWhiteToMove() ? Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK : Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK;
+            case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK : Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK;
             default -> board.isWhiteToMove() ? board.getBlackKing() : board.getWhiteKing();
         };
         boolean isKingCapturable = isCheck(board, !board.isWhiteToMove(), kingMask);

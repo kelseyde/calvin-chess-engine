@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
@@ -22,19 +22,19 @@ public class Board {
 
     private final String id = UUID.randomUUID().toString();
 
-    private long whitePawns = BitBoardConstants.WHITE_PAWNS_START;
-    private long whiteKnights = BitBoardConstants.WHITE_KNIGHTS_START;
-    private long whiteBishops = BitBoardConstants.WHITE_BISHOPS_START;
-    private long whiteRooks = BitBoardConstants.WHITE_ROOKS_START;
-    private long whiteQueens = BitBoardConstants.WHITE_QUEENS_START;
-    private long whiteKing = BitBoardConstants.WHITE_KING_START;
+    private long whitePawns = Bits.WHITE_PAWNS_START;
+    private long whiteKnights = Bits.WHITE_KNIGHTS_START;
+    private long whiteBishops = Bits.WHITE_BISHOPS_START;
+    private long whiteRooks = Bits.WHITE_ROOKS_START;
+    private long whiteQueens = Bits.WHITE_QUEENS_START;
+    private long whiteKing = Bits.WHITE_KING_START;
 
-    private long blackPawns = BitBoardConstants.BLACK_PAWNS_START;
-    private long blackKnights = BitBoardConstants.BLACK_KNIGHTS_START;
-    private long blackBishops = BitBoardConstants.BLACK_BISHOPS_START;
-    private long blackRooks = BitBoardConstants.BLACK_ROOKS_START;
-    private long blackQueens = BitBoardConstants.BLACK_QUEENS_START;
-    private long blackKing = BitBoardConstants.BLACK_KING_START;
+    private long blackPawns = Bits.BLACK_PAWNS_START;
+    private long blackKnights = Bits.BLACK_KNIGHTS_START;
+    private long blackBishops = Bits.BLACK_BISHOPS_START;
+    private long blackRooks = Bits.BLACK_ROOKS_START;
+    private long blackQueens = Bits.BLACK_QUEENS_START;
+    private long blackKing = Bits.BLACK_KING_START;
 
     private long whitePieces;
     private long blackPieces;

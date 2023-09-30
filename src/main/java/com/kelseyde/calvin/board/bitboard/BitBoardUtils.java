@@ -13,27 +13,27 @@ public class BitBoardUtils {
     }
 
     public static long shiftEast(long board) {
-        return board << 1 &~ BitBoardConstants.FILE_A;
+        return board << 1 &~ Bits.FILE_A;
     }
 
     public static long shiftWest(long board) {
-        return (board >>> 1) &~ BitBoardConstants.FILE_H;
+        return (board >>> 1) &~ Bits.FILE_H;
     }
 
     public static long shiftNorthEast(long board) {
-        return board << 9 &~ BitBoardConstants.FILE_A;
+        return board << 9 &~ Bits.FILE_A;
     }
 
     public static long shiftSouthEast(long board) {
-        return board >>> 7 &~ BitBoardConstants.FILE_A;
+        return board >>> 7 &~ Bits.FILE_A;
     }
 
     public static long shiftNorthWest(long board) {
-        return board << 7 &~ BitBoardConstants.FILE_H;
+        return board << 7 &~ Bits.FILE_H;
     }
 
     public static long shiftSouthWest(long board) {
-        return board >>> 9 &~ BitBoardConstants.FILE_H;
+        return board >>> 9 &~ Bits.FILE_H;
     }
 
     public static int scanForward(long board) {
@@ -61,14 +61,14 @@ public class BitBoardUtils {
     public static long getFileBitboard(int file) {
         return switch (file) {
             case -1 -> 0L;
-            case 0 -> BitBoardConstants.FILE_A;
-            case 1 -> BitBoardConstants.FILE_B;
-            case 2 -> BitBoardConstants.FILE_C;
-            case 3 -> BitBoardConstants.FILE_D;
-            case 4 -> BitBoardConstants.FILE_E;
-            case 5 -> BitBoardConstants.FILE_F;
-            case 6 -> BitBoardConstants.FILE_G;
-            case 7 -> BitBoardConstants.FILE_H;
+            case 0 -> Bits.FILE_A;
+            case 1 -> Bits.FILE_B;
+            case 2 -> Bits.FILE_C;
+            case 3 -> Bits.FILE_D;
+            case 4 -> Bits.FILE_E;
+            case 5 -> Bits.FILE_F;
+            case 6 -> Bits.FILE_G;
+            case 7 -> Bits.FILE_H;
             default -> throw new IllegalArgumentException("Invalid file " + file);
         };
     }

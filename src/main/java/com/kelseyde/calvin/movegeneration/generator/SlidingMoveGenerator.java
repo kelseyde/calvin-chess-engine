@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardConstants;
+import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.move.Move;
 
@@ -70,8 +70,8 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         long slider = 1L << s;
         long occ = board.getOccupied();
         long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
-        long[] ranks = BitBoardConstants.RANK_MASKS;
-        long[] files = BitBoardConstants.FILE_MASKS;
+        long[] ranks = Bits.RANK_MASKS;
+        long[] files = Bits.FILE_MASKS;
 
         long horizontalMoves = (occ - 2 * slider) ^ Long.reverse(Long.reverse(occ) - 2 * Long.reverse(slider));
         long verticalMoves = ((occ & files[s % 8]) - (2 * slider)) ^ Long.reverse(Long.reverse(occ & files[s % 8]) - (2 * Long.reverse(slider)));
@@ -82,8 +82,8 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         long slider = 1L << s;
         long occ = board.getOccupied();
         long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
-        long[] diagonals = BitBoardConstants.DIAGONAL_MASKS;
-        long[] antiDiagonals = BitBoardConstants.ANTI_DIAGONAL_MASKS;
+        long[] diagonals = Bits.DIAGONAL_MASKS;
+        long[] antiDiagonals = Bits.ANTI_DIAGONAL_MASKS;
 
         long diagonalMoves = ((occ & diagonals[(s / 8) + (s % 8)]) - (2 * slider)) ^
                 Long.reverse(Long.reverse(occ & diagonals[(s / 8) + (s % 8)]) - (2 * Long.reverse(slider)));

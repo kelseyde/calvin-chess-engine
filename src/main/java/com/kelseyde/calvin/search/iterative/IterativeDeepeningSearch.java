@@ -14,18 +14,28 @@ import com.kelseyde.calvin.search.TimedSearch;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
 
+/**
+ * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
+ * then 3 ply and so on, until the time limit is exhausted. In case the timeout is reached in the middle of an iteration,
+ * the search can still fall back on the best move found in the previous iteration. By prioritising searching the best
+ * move found in the previous iteration, as well as the other ordering heuristics in the {@link MoveOrderer} -- and by
+ * using a {@link TranspositionTable} -- the iterative approach is much more efficient than it might sound.
+ *
+ * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
+ */
 @Slf4j
 public class IterativeDeepeningSearch implements TimedSearch {
 
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
-    private static final int IMMEDIATE_MATE_SCORE = -1000000;
+    private static final int CHECKMATE_EVAL = 1000000;
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
     private final ResultCalculator resultCalculator = new ResultCalculator();
@@ -56,39 +66,46 @@ public class IterativeDeepeningSearch implements TimedSearch {
         bestMove = null;
         bestMoveCurrentDepth = null;
         statistics = new SearchStatistics();
-
-        SearchResult result;
+        statistics.setStart(Instant.now());
 
         while (!isTimeoutExceeded()) {
 
-            System.out.println("At depth " + currentDepth);
             hasSearchedAtLeastOneMove = false;
+
             search(currentDepth, 0, MIN_EVAL, MAX_EVAL);
 
             if (isTimeoutExceeded()) {
                 if (hasSearchedAtLeastOneMove) {
-                    System.out.printf("Statistics -- nodes searched: %s, cutoffs: %s, transpositions: %s%n",
-                            statistics.getNodesSearched(), statistics.getCutOffs(), statistics.getTranspositions());;
-                    return new SearchResult(bestEvalCurrentDepth, bestMoveCurrentDepth);
+                    bestMove = bestMoveCurrentDepth;
+                    bestEval = bestEvalCurrentDepth;
+                    log.trace("({}) {} {} Timeout reached, best move {}, eval {}", board.isWhiteToMove() ? "White" : "Black", currentDepth, NotationUtils.toNotation(board.getMoveHistory()), bestMove, bestEval);
+                    break;
                 }
             } else {
                 bestMove = bestMoveCurrentDepth;
                 bestEval = bestEvalCurrentDepth;
+
+                if (isCheckmateFoundAtCurrentDepth(bestEval, currentDepth)) {
+                    // Exit early if we have found the fastest mate at the current depth
+                    break;
+                }
+
             }
 
             currentDepth++;
         }
 
-        System.out.printf("Statistics -- nodes searched: %s, cutoffs: %s, transpositions: %s%n",
-                statistics.getNodesSearched(), statistics.getCutOffs(), statistics.getTranspositions());;
+        statistics.setEnd(Instant.now());
+        log.info(statistics.generateReport());
+
         return new SearchResult(bestEval, bestMove);
 
     }
 
     /**
      * Run a single iteration of the iterative deepening search for a specific depth. Since this function is called
-     * recursively until the depth limit is reached, 'depth' needs to be split into two parameters: ply remaining and
-     * ply from root.
+     * recursively until the depth limit is reached, 'depth' needs to be split into two parameters: 'ply remaining' and
+     * 'ply from root'.
      * @param plyRemaining The number of ply deeper left to go in the current search
      * @param plyFromRoot The number of ply already examined in this iteration of the search.
      * @param alpha the lower bound for child nodes at the current search depth.
@@ -101,8 +118,8 @@ public class IterativeDeepeningSearch implements TimedSearch {
         }
 
         if (plyFromRoot > 0) {
-            // detect draw
-            // detect previous mate
+            // TODO detect draw
+            // TODO detect previous mate
         }
 
         Move previousBestMove = plyFromRoot == 0 ? bestMove : null;
@@ -134,11 +151,13 @@ public class IterativeDeepeningSearch implements TimedSearch {
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
         if (gameResult.isCheckmate()) {
             statistics.incrementNodesSearched();
-            return IMMEDIATE_MATE_SCORE - plyFromRoot;
+            log.trace("({}) {} Found checkmate", board.isWhiteToMove() ? "White" : "Black", plyFromRoot);
+            return -CHECKMATE_EVAL + plyFromRoot;
         }
         if (gameResult.isDraw()) {
             statistics.incrementNodesSearched();
-            return bestEvalCurrentDepth = 0;
+            log.trace("({}) {} Found draw", board.isWhiteToMove() ? "White" : "Black", plyFromRoot);
+            return 0;
         }
         if (plyRemaining == 0) {
             // In the case that max depth is reached, return the static heuristic evaluation of the position.
@@ -146,7 +165,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
             return quiescenceSearch(alpha, beta);
         }
 
-        Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove);
+        Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
         Move bestMoveInThisPosition = null;
         int originalAlpha = alpha;
@@ -164,8 +183,20 @@ public class IterativeDeepeningSearch implements TimedSearch {
             }
 
             if (eval >= beta) {
-                // Move is too good, opponent won't let us get here.
+                // This is a beta cut-off, meaning the move is too good - the opponent won't let us get here as they
+                // already have other options which will prevent us from reaching this position.
                 transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, move, beta);
+
+                boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
+                if (!isCapture && plyFromRoot <= MoveOrderer.MAX_KILLER_MOVE_PLY_DEPTH) {
+                    // Non-captures which cause a beta cut-off are 'killer moves', and are stored so that in our move
+                    // ordering we can prioritise examining them early, on the basis that they are likely to be similarly
+                    // effective in sibling nodes.
+                    moveOrderer.addKillerMove(plyFromRoot, move);
+                    statistics.incrementKillers();
+                }
+
+                log.trace("({}) {} {} {} eval {}", board.isWhiteToMove() ? "White" : "Black", plyFromRoot, NotationUtils.toNotation(board.getMoveHistory()), NodeType.LOWER_BOUND, alpha);
                 statistics.incrementCutoffs();
                 return beta;
             }
@@ -174,8 +205,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
                 // We have found a new best move
                 bestMoveInThisPosition = move;
                 alpha = eval;
-                if (plyFromRoot == 0)
-                {
+                if (plyFromRoot == 0) {
                     bestMoveCurrentDepth = move;
                     bestEvalCurrentDepth = eval;
                     hasSearchedAtLeastOneMove = true;
@@ -186,7 +216,8 @@ public class IterativeDeepeningSearch implements TimedSearch {
 
         NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
         transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
-         statistics.incrementNodesSearched();
+        statistics.incrementNodesSearched();
+        log.trace("({}) {} {} {} eval {}", board.isWhiteToMove() ? "White" : "Black", plyFromRoot, NotationUtils.toNotation(board.getMoveHistory()), transpositionType, alpha);
         return alpha;
 
     }
@@ -214,7 +245,7 @@ public class IterativeDeepeningSearch implements TimedSearch {
         // Generate only legal captures
         Move[] moves = moveGenerator.generateLegalMoves(board, true);
 
-        Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null);
+        Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
 
         for (Move move : orderedMoves) {
             board.makeMove(move);
@@ -232,6 +263,10 @@ public class IterativeDeepeningSearch implements TimedSearch {
 
         return alpha;
 
+    }
+
+    private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {
+        return Math.abs(bestEval) >= CHECKMATE_EVAL - currentDepth;
     }
 
     private boolean isTimeoutExceeded() {

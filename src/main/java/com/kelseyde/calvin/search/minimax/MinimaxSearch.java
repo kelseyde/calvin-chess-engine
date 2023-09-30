@@ -71,7 +71,7 @@ public class MinimaxSearch implements DepthSearch {
     public SearchResult minimax(Board board, int depth, int alpha, int beta, boolean isMaximisingPlayer) {
         Instant start = Instant.now();
         Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
-        Move[] orderedMoves = moveOrdering.orderMoves(board, legalMoves, null);
+        Move[] orderedMoves = moveOrdering.orderMoves(board, legalMoves, null, true, depth);
         GameResult currentResult = resultEvaluator.calculateResult(board, orderedMoves);
         if (currentResult.isCheckmate()) {
             int modifier = board.isWhiteToMove() ? -1 : 1;

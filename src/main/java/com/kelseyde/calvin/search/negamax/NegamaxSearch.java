@@ -102,7 +102,7 @@ public class NegamaxSearch implements DepthSearch {
             return new SearchResult(finalEval, null);
         }
 
-        Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, null);
+        Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, null, true, 0);
 
         int bestEval = MIN_EVAL;
         Move bestMove = legalMoves[new Random().nextInt(legalMoves.length)];

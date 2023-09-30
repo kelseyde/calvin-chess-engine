@@ -1,6 +1,10 @@
 package com.kelseyde.calvin.board.bitboard;
 
-public class BitBoardConstants {
+/**
+ * Common bitboards stored here for general utility. Includes bitboards for ranks, files, diagonals, anti-diagonals,
+ * castling masks, piece starting positions, etc.
+ */
+public class Bits {
 
     public static final long RANK_1 = 0b0000000000000000000000000000000000000000000000000000000011111111L;
     public static final long RANK_2 = BitBoardUtils.shiftNorth(RANK_1);

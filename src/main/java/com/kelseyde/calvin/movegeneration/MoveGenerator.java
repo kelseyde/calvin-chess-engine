@@ -49,11 +49,8 @@ public class MoveGenerator {
             case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK : Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK;
             default -> board.isWhiteToMove() ? board.getBlackKing() : board.getWhiteKing();
         };
-        System.out.println("before check");
         boolean isKingCapturable = isCheck(board, !board.isWhiteToMove(), kingMask);
-        System.out.println("after check");
         board.unmakeMove();
-        System.out.println("after make move");
         return isKingCapturable;
     }
 

@@ -2,14 +2,17 @@ package com.kelseyde.calvin.bot;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.iterative.IterativeDeepeningSearch;
+import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -19,9 +22,11 @@ import java.util.function.Consumer;
 @Slf4j
 public class CalvinBot implements Bot {
 
-    private Search search;
-
     private Board board;
+
+    private MoveGenerator moveGenerator;
+
+    private Search search;
 
     private CompletableFuture<Move> think;
 
@@ -32,8 +37,6 @@ public class CalvinBot implements Bot {
 
     @Override
     public void newGame() {
-        if (gameInProgress) {
-        }
         gameInProgress = true;
         if (search != null) {
             search.clearHistory();
@@ -45,11 +48,14 @@ public class CalvinBot implements Bot {
         if (board == null) {
             board = FEN.fromFEN(fen);
             search = new IterativeDeepeningSearch(board);
-            moves.forEach(board::makeMove);
+            moveGenerator = new MoveGenerator();
+            moves.stream()
+                    .map(this::getLegalMove)
+                    .forEach(board::makeMove);
         } else {
             if (!moves.isEmpty()) {
                 Move lastMove = moves.get(moves.size() - 1);
-                board.makeMove(lastMove);
+                board.makeMove(getLegalMove(lastMove));
             }
         }
     }
@@ -57,7 +63,10 @@ public class CalvinBot implements Bot {
     @Override
     public void think(int thinkTimeMs, Consumer<Move> onThinkComplete) {
         think = CompletableFuture.supplyAsync(() -> search.search(Duration.ofMillis(thinkTimeMs)).move());
-        think.thenAccept(onThinkComplete);
+        think.thenAccept((move -> {
+            board.makeMove(move);
+            onThinkComplete.accept(move);
+        }));
     }
 
     @Override
@@ -104,6 +113,13 @@ public class CalvinBot implements Bot {
         }
         board = null;
         search = null;
+    }
+
+    private Move getLegalMove(Move move) {
+        return Arrays.stream(moveGenerator.generateLegalMoves(board, false))
+                .filter(move::matches)
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + NotationUtils.toNotation(move)));
     }
 
 }

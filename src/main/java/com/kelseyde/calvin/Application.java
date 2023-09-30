@@ -9,14 +9,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 @EnableConfigurationProperties
 public class Application {
 
-    private static ConfigurableApplicationContext ctx;
-
     public static void main(String[] args) {
-        ctx = SpringApplication.run(Application.class, args);
-    }
-
-    public static void exit() {
-        System.exit(SpringApplication.exit(ctx, () -> 0));
+        SpringApplication.run(Application.class, args);
     }
 
 }

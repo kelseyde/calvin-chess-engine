@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.api.uci;
 
-import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -8,10 +7,11 @@ import com.kelseyde.calvin.utils.fen.FEN;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.Console;
 import java.util.*;
 
 @Component
@@ -23,6 +23,8 @@ public class UCICommandLineRunner implements CommandLineRunner {
 
     private static final String[] POSITION_LABELS = new String[] { "position", "fen", "moves" };
     private static final String[] GO_LABELS = new String[] { "go", "movetime", "wtime", "btime", "winc", "binc", "movestogo" };
+
+    private final ConfigurableApplicationContext applicationContext;
 
     private final Bot bot;
 
@@ -98,7 +100,6 @@ public class UCICommandLineRunner implements CommandLineRunner {
 
         if (command.contains("movetime")) {
             int moveTimeMs = getLabelInt(command, "movetime", GO_LABELS, 0);
-            System.out.println("thinking for " + moveTimeMs);
             bot.think(moveTimeMs, this::writeMove);
         }
         else {
@@ -120,7 +121,7 @@ public class UCICommandLineRunner implements CommandLineRunner {
     private void handleQuit() {
         bot.gameOver();
         running = false;
-        Application.exit();
+        System.exit(SpringApplication.exit(applicationContext, () -> 0));
     }
 
     private void writeMove(Move move) {

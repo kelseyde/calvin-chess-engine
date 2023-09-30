@@ -57,9 +57,6 @@ public class Board {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         PieceType pieceType = move.getPieceType();
-        if (pieceType == null) {
-            pieceType = pieceAt(startSquare);
-        }
         PieceType promotionPieceType = move.getPromotionPieceType();
 
         long newZobristKey = gameState.getZobristKey();

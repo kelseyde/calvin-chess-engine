@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search;
+package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
@@ -49,7 +49,8 @@ public class MoveOrderer {
         // e.g. winning a queen with a pawn - should be given a high priority. 'Losing captures', where we capture a low
         // value piece with a high-value piece - e.g. going pawn-grabbing with the queen - are given a slightly lower priority.
         PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
-        if (capturedPieceType != null) {
+        boolean isCapture = capturedPieceType != null;
+        if (isCapture) {
             // TODO only apply the losing capture bias if the opponent can recapture on the next move.
             int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(move.getPieceType());
             int captureBias = materialDelta >= 0 ? WINNING_CAPTURE_BIAS : LOSING_CAPTURE_BIAS;
@@ -63,7 +64,7 @@ public class MoveOrderer {
         }
 
         // Prioritise killers
-        if (includeKillers && isKillerMove(depth, move)) {
+        if (!isCapture && includeKillers && isKillerMove(depth, move)) {
             moveScore += KILLER_MOVE_BIAS;
         }
 

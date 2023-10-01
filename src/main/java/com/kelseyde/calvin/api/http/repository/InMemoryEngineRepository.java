@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.api.http.repository;
 
-import com.kelseyde.calvin.search.iterative.IterativeDeepeningSearch;
+import com.kelseyde.calvin.search.IterativeDeepeningSearch;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;

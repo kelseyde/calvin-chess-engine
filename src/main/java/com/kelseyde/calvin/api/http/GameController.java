@@ -10,7 +10,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.iterative.IterativeDeepeningSearch;
+import com.kelseyde.calvin.search.IterativeDeepeningSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

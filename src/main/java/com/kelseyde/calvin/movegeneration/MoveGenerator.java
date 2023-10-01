@@ -74,7 +74,7 @@ public class MoveGenerator {
         boolean isWhite = board.isWhiteToMove();
         int endSquare = move.getEndSquare();
         long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
-        return (opponents & 1L << endSquare) != 0;
+        return (opponents & (1L << endSquare)) != 0;
     }
 
     private boolean isCheck(Board board, boolean isWhite, long kingMask) {

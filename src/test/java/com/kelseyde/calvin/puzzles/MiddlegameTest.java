@@ -24,4 +24,18 @@ public class MiddlegameTest {
 
     }
 
+    @Test
+    public void testDontSacKnightForCenterPawn2() {
+
+        String fen = "rnbqk2r/ppp2ppp/3b1n2/4p3/3pP3/5N2/PPPPNPPP/1RBQKB1R w Kkq - 4 6";
+        Bot bot = new CalvinBot();
+        bot.newGame();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(3000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("f3d4")));
+        Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("e2d4")));
+
+    }
+
 }

@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.search.iterative.IterativeDeepeningSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Disabled;

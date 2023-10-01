@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.Search;
-import com.kelseyde.calvin.search.iterative.IterativeDeepeningSearch;
+import com.kelseyde.calvin.search.IterativeDeepeningSearch;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import lombok.Data;

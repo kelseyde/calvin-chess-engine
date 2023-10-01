@@ -63,6 +63,12 @@ public class NotationUtils {
                 .toList();
     }
 
+    public static List<String> toNotation(List<Move> moves) {
+        return moves.stream()
+                .map(NotationUtils::toNotation)
+                .toList();
+    }
+
     /**
      * Generate a square co-ordinate from algebraic notation (e.g. "e4" -> 28)
      */

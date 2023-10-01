@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -19,8 +21,10 @@ public class SearchStatistics {
     int transpositions = 0;
     int quiescents = 0;
     int killers = 0;
+    Map<Integer, Duration> depthDurationMap = new HashMap<>();
 
-    public void incrementMaxDepth() {
+    public void incrementDepth(int depth, Instant depthStart, Instant depthEnd) {
+        depthDurationMap.put(depth, Duration.between(depthStart, depthEnd));
         maxDepth++;
     }
 
@@ -29,17 +33,14 @@ public class SearchStatistics {
     }
 
     public void incrementCutoffs() {
-        ++nodesSearched;
         ++cutOffs;
     }
 
     public void incrementTranspositions() {
-        ++nodesSearched;
         ++transpositions;
     }
 
     public void incrementQuiescents() {
-        ++nodesSearched;
         ++quiescents;
     }
 
@@ -53,8 +54,9 @@ public class SearchStatistics {
         double nodesPerSecond = nodesSearched / millis * 1000;
         return String.format(
                 "Searched %s nodes in %s (%s nodes per second). " +
-                        "Max depth %s, Transpositions: %s, Cut-offs: %s, Quiescents: %s, Killers: %s%n",
-                nodesSearched, searchDuration, nodesPerSecond, maxDepth, transpositions, cutOffs, quiescents, killers);
+                        "Max depth %s, Transpositions: %s, Cut-offs: %s, Quiescents: %s, Killers: %s, " +
+                                "Depth durations: %s%n",
+                nodesSearched, searchDuration, nodesPerSecond, maxDepth, transpositions, cutOffs, quiescents, killers, depthDurationMap);
     }
 
 }

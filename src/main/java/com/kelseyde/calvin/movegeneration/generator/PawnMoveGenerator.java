@@ -62,8 +62,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long rightCaptures = isWhite ?
-                BitBoardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8 :
-                BitBoardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
+                BitBoardUtils.shiftNorthEast(pawns) & opponents &~ Bits.RANK_8 :
+                BitBoardUtils.shiftSouthEast(pawns) & opponents &~ Bits.RANK_1;
         while (rightCaptures != 0) {
             int endSquare = BitBoardUtils.scanForward(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;

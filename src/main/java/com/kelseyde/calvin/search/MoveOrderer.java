@@ -56,6 +56,13 @@ public class MoveOrderer {
             moveScore += captureBias + materialDelta;
         }
 
+        // Prioritising pawn promotion
+        if (move.getMoveType().equals(MoveType.PROMOTION)) {
+            int promotionBias = move.getPromotionPieceType().equals(PieceType.QUEEN) ? PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
+            moveScore += promotionBias;
+        }
+
+        // Prioritise killers
         if (includeKillers && isKillerMove(depth, move)) {
             moveScore += KILLER_MOVE_BIAS;
         }
@@ -66,14 +73,8 @@ public class MoveOrderer {
         }
 
         // Castling likely to be good (king safety)
-        if (move.getMoveType().equals(MoveType.QUEENSIDE_CASTLE) || move.getMoveType().equals(MoveType.KINGSIDE_CASTLE)) {
+        if (move.getMoveType().equals(MoveType.KINGSIDE_CASTLE) || move.getMoveType().equals(MoveType.QUEENSIDE_CASTLE)) {
             moveScore += CASTLE_BIAS;
-        }
-
-        // Prioritising pawn promotion
-        if (move.getMoveType().equals(MoveType.PROMOTION)) {
-            int promotionBias = move.getPromotionPieceType().equals(PieceType.QUEEN) ? PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
-            moveScore += promotionBias;
         }
 
         return moveScore;

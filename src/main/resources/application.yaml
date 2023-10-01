@@ -1,14 +1,21 @@
 spring:
   application:
     name: calvin
+  main:
+    banner-mode: off
 
 http:
   enabled: true
 
 server:
-  port: 8081
+  port: 8080
   servlet:
     context-path: /${spring.application.name}
 
-logging.level:
-  com.kelseyde.calvin: INFO
+logging:
+  file:
+    path: ./
+    name: calvin_debug.log
+  level:
+    root: WARN
+    com.kelseyde.calvin: DEBUG

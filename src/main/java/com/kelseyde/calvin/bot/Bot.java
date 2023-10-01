@@ -17,6 +17,8 @@ public interface Bot {
 
     void think(int thinkTimeMs, Consumer<Move> onSearchComplete);
 
+    Move think(int thinkTimeMs);
+
     int chooseThinkTime(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs);
 
     void stopThinking();

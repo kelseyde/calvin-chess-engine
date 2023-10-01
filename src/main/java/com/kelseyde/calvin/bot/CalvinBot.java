@@ -62,11 +62,16 @@ public class CalvinBot implements Bot {
 
     @Override
     public void think(int thinkTimeMs, Consumer<Move> onThinkComplete) {
-        think = CompletableFuture.supplyAsync(() -> search.search(Duration.ofMillis(thinkTimeMs)).move());
+        think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
         think.thenAccept((move -> {
             board.makeMove(move);
             onThinkComplete.accept(move);
         }));
+    }
+
+    @Override
+    public Move think(int thinkTimeMs) {
+        return search.search(Duration.ofMillis(thinkTimeMs)).move();
     }
 
     @Override

@@ -92,11 +92,13 @@ public class IterativeDeepeningSearch implements Search {
 
             }
 
+
             currentDepth++;
+            statistics.incrementMaxDepth();
         }
 
         statistics.setEnd(Instant.now());
-        log.debug(statistics.generateReport());
+        System.out.println(statistics.generateReport());
 
         return new SearchResult(bestEval, bestMove);
 
@@ -159,7 +161,9 @@ public class IterativeDeepeningSearch implements Search {
          if (plyRemaining == 0) {
              // In the case that max depth is reached, return the static heuristic evaluation of the position.
              statistics.incrementNodesSearched();
-             return quiescenceSearch(alpha, beta);
+             int finalEval = quiescenceSearch(alpha, beta);
+             System.out.printf("Final eval: %s -- %s%n", NotationUtils.toNotation(board.getMoveHistory()), finalEval);
+             return finalEval;
          }
 
          Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
@@ -256,7 +260,7 @@ public class IterativeDeepeningSearch implements Search {
         if (eval > alpha) {
             alpha = eval;
         }
-        statistics.incrementNodesSearched();
+        statistics.incrementQuiescents();
 
         return alpha;
 

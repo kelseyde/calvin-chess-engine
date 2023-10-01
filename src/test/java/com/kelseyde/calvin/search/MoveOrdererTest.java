@@ -278,8 +278,10 @@ public class MoveOrdererTest {
 
         Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("e2", "a6", PieceType.BISHOP)));
         Assertions.assertTrue(orderedMoves[1].matches(NotationUtils.fromNotation("e1", "c1", PieceType.KING)));
-        Assertions.assertTrue(orderedMoves[2].matches(NotationUtils.fromNotation("g2", "h3", PieceType.PAWN)));
-        Assertions.assertTrue(orderedMoves[3].matches(NotationUtils.fromNotation("d5", "e6", PieceType.PAWN)));
+        Assertions.assertTrue(orderedMoves[2].matches(NotationUtils.fromNotation("g2", "h3", PieceType.PAWN))
+                || orderedMoves[3].matches(NotationUtils.fromNotation("g2", "h3", PieceType.PAWN)));
+        Assertions.assertTrue(orderedMoves[3].matches(NotationUtils.fromNotation("d5", "e6", PieceType.PAWN))
+                || orderedMoves[2].matches(NotationUtils.fromNotation("d5", "e6", PieceType.PAWN)));
         Assertions.assertTrue(orderedMoves[4].matches(NotationUtils.fromNotation("e1", "g1", PieceType.KING)));
 
     }

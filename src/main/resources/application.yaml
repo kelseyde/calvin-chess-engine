@@ -14,7 +14,7 @@ server:
 
 logging:
   file:
-    path: ./
+    path: calvin-chess-engine/log/
     name: calvin_debug.log
   level:
     root: WARN

@@ -51,16 +51,21 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
     public long generateAttackMask(Board board, boolean isWhite) {
 
         long attackMask = 0L;
-        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
         long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
         while (knights != 0) {
             int knight = BitBoardUtils.scanForward(knights);
-            long knightAttacks = KNIGHT_ATTACKS[knight] &~ friendlies;
+            long knightAttacks = generateAttackMaskFromSquare(board, knight, isWhite);
             attackMask |= knightAttacks;
             knights = BitBoardUtils.popLSB(knights);
         }
         return attackMask;
 
+    }
+
+    @Override
+    public long generateAttackMaskFromSquare(Board board, int square, boolean isWhite) {
+        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
+        return KNIGHT_ATTACKS[square] &~ friendlies;
     }
 
     public Set<Move> generatePseudoLegalMovesFromSquare(Board board, int startSquare) {

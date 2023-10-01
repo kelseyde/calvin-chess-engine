@@ -26,18 +26,17 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
         long occupied = board.getOccupied();
         long enPassantFile = BitBoardUtils.getFileBitboard(board.getGameState().getEnPassantFile());
-        long copy;
 
         long singleAdvances = isWhite ?
                 BitBoardUtils.shiftNorth(pawns) &~ occupied &~ Bits.RANK_8 :
                 BitBoardUtils.shiftSouth(pawns) &~ occupied &~ Bits.RANK_1;
 
-        copy = singleAdvances;
-        while (copy != 0) {
-            int endSquare = BitBoardUtils.scanForward(copy);
+        long singleAdvancesCopy = singleAdvances;
+        while (singleAdvancesCopy != 0) {
+            int endSquare = BitBoardUtils.scanForward(singleAdvancesCopy);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
             moves.add(move(startSquare, endSquare).build());
-            copy = BitBoardUtils.popLSB(copy);
+            singleAdvancesCopy = BitBoardUtils.popLSB(singleAdvancesCopy);
         }
 
         long doubleAdvances = isWhite ?
@@ -63,8 +62,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long rightCaptures = isWhite ?
-                BitBoardUtils.shiftNorthEast(pawns) & opponents &~ Bits.RANK_8 :
-                BitBoardUtils.shiftSouthEast(pawns) & opponents &~ Bits.RANK_1;
+                BitBoardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8 :
+                BitBoardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
         while (rightCaptures != 0) {
             int endSquare = BitBoardUtils.scanForward(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
@@ -132,6 +131,25 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         long rightAttackMask = isWhite ? BitBoardUtils.shiftNorthEast(pawns) : BitBoardUtils.shiftSouthEast(pawns);
         long leftAttackMask = isWhite ? BitBoardUtils.shiftNorthWest(pawns) : BitBoardUtils.shiftSouthWest(pawns) ;
         return leftAttackMask | rightAttackMask;
+    }
+
+    @Override
+    public long generateAttackMaskFromSquare(Board board, int square, boolean isWhite) {
+        long attackMask = 0L;
+        long squareBB = 1L << square;
+        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
+
+        long leftCapture = isWhite ?
+                BitBoardUtils.shiftNorthWest(squareBB) &~ friendlies &~ Bits.FILE_H :
+                BitBoardUtils.shiftSouthWest(squareBB) &~ friendlies &~ Bits.FILE_H;
+        attackMask |= leftCapture;
+
+        long rightCapture = isWhite ?
+                BitBoardUtils.shiftNorthEast(squareBB) &~ friendlies &~ Bits.FILE_A :
+                BitBoardUtils.shiftSouthEast(squareBB) &~ friendlies &~ Bits.FILE_A;
+        attackMask |= rightCapture;
+
+        return attackMask;
     }
 
     private Set<Move> getPromotionMoves(int startSquare, int endSquare) {

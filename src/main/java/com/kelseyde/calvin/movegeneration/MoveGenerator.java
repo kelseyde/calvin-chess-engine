@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.movegeneration;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
@@ -78,13 +79,51 @@ public class MoveGenerator {
     }
 
     private boolean isCheck(Board board, boolean isWhite, long kingMask) {
-        long attackMask = PAWN_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
-                KNIGHT_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
-                BISHOP_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
-                ROOK_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
-                QUEEN_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
-                KING_MOVE_GENERATOR.generateAttackMask(board, !isWhite);
-        return (attackMask & kingMask) != 0;
+//        long attackMask = PAWN_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
+//                KNIGHT_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
+//                BISHOP_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
+//                ROOK_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
+//                QUEEN_MOVE_GENERATOR.generateAttackMask(board, !isWhite) |
+//                KING_MOVE_GENERATOR.generateAttackMask(board, !isWhite);
+//        return (attackMask & kingMask) != 0;
+        int kingSquare = BitBoardUtils.scanForward(kingMask);
+
+        long opponentPawns = isWhite ? board.getBlackPawns() : board.getWhitePawns();
+        long pawnAttackMask = PAWN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
+        if ((pawnAttackMask & opponentPawns) != 0) {
+            return true;
+        }
+
+        long opponentKnights = isWhite ? board.getBlackKnights() : board.getWhiteKnights();
+        long knightAttackMask = KNIGHT_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
+        if ((knightAttackMask & opponentKnights) != 0) {
+            return true;
+        }
+
+        long opponentBishops = isWhite ? board.getBlackBishops() : board.getWhiteBishops();
+        long bishopAttackMask = BISHOP_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
+        if ((bishopAttackMask & opponentBishops) != 0) {
+            return true;
+        }
+
+        long opponentRooks = isWhite ? board.getBlackRooks() : board.getWhiteRooks();
+        long rookAttackMask = ROOK_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
+        if ((rookAttackMask & opponentRooks) != 0) {
+            return true;
+        }
+
+        long opponentQueens = isWhite ? board.getBlackQueens() : board.getWhiteQueens();
+        long queenAttackMask = QUEEN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
+        if ((queenAttackMask & opponentQueens) != 0) {
+            return true;
+        }
+
+        long opponentKing = isWhite ? board.getBlackKing() : board.getWhiteKing();
+        long kingAttackMask = KING_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
+        if ((kingAttackMask & opponentKing) != 0) {
+            return true;
+        }
+        return false;
     }
 
 

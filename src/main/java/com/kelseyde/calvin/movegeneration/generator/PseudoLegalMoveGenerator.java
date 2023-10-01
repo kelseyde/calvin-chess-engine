@@ -14,4 +14,6 @@ public interface PseudoLegalMoveGenerator {
 
     long generateAttackMask(Board board, boolean isWhite);
 
+    long generateAttackMaskFromSquare(Board board, int square, boolean isWhite);
+
 }

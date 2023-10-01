@@ -55,13 +55,20 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         long attackMask = 0L;
         while (sliders != 0) {
             int slider = BitBoardUtils.scanForward(sliders);
-            if (isOrthogonal()) {
-                attackMask |= calculateOrthogonalMoves(board, slider, isWhite);
-            }
-            if (isDiagonal()) {
-                attackMask |= calculateDiagonalMoves(board, slider, isWhite);
-            }
+            attackMask |= generateAttackMaskFromSquare(board, slider, isWhite);
             sliders = BitBoardUtils.popLSB(sliders);;
+        }
+        return attackMask;
+    }
+
+    @Override
+    public long generateAttackMaskFromSquare(Board board, int square, boolean isWhite) {
+        long attackMask = 0L;
+        if (isOrthogonal()) {
+            attackMask |= calculateOrthogonalMoves(board, square, isWhite);
+        }
+        if (isDiagonal()) {
+            attackMask |= calculateDiagonalMoves(board, square, isWhite);
         }
         return attackMask;
     }

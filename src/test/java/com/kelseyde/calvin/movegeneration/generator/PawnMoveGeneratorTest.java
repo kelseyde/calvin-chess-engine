@@ -8,6 +8,7 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,9 +20,6 @@ import java.util.stream.Collectors;
 public class PawnMoveGeneratorTest {
 
     private final PawnMoveGenerator generator = new PawnMoveGenerator();
-
-    private final String whitePawn = Piece.getPieceCode(true, PieceType.PAWN);
-    private final String blackPawn = Piece.getPieceCode(false, PieceType.PAWN);
 
     private Board board;
 
@@ -402,6 +400,20 @@ public class PawnMoveGeneratorTest {
                 moveBuilder(15, 6).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
                 moveBuilder(15, 6).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.KNIGHT).build());
         Assertions.assertEquals(expectedLegalMoves, legalMoves);
+    }
+
+    @Test
+    public void testPawnCannotWrapCaptureAroundBoard() {
+
+        String fen = "4k3/8/8/8/n7/7P/8/4K3 w - - 0 1";
+
+        Board board = FEN.fromFEN(fen);
+
+        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
+        Set<Move> expectedLegalMoves = Set.of(moveBuilder(23, 31).build());
+        Assertions.assertEquals(1, legalMoves.size());
+        Assertions.assertEquals(expectedLegalMoves, legalMoves);
+
     }
 
     private void assertMoves(Board board, Set<Move> expected) {

@@ -90,6 +90,12 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         return KING_ATTACKS[startSquare];
     }
 
+    @Override
+    public long generateAttackMaskFromSquare(Board board, int square, boolean isWhite) {
+        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
+        return KING_ATTACKS[square] &~ friendlies;
+    }
+
     private Move.MoveBuilder move(int startSquare, int endSquare) {
         return Move.builder()
                 .pieceType(PieceType.KING)

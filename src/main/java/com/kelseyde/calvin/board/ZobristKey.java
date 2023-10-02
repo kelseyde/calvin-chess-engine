@@ -8,6 +8,7 @@ import java.util.Random;
  * Utility class for generating Zobrist keys, which are 64-bit values that (almost uniquely) represent a chess position.
  * It is used to quickly identify positions that have already been examined by the move generator/evaluator, cutting
  * down on a lot of double-work.
+ *
  * @see <a href="https://www.chessprogramming.org/Zobrist_Hashing">Chess Programming Wiki</a>
  */
 public class ZobristKey {

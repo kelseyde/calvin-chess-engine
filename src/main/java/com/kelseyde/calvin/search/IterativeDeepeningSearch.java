@@ -97,7 +97,7 @@ public class IterativeDeepeningSearch implements Search {
         }
 
         statistics.setEnd(Instant.now());
-        System.out.println(statistics.generateReport());
+//        System.out.println(statistics.generateReport());
 
         return new SearchResult(bestEval, bestMove);
 
@@ -235,6 +235,7 @@ public class IterativeDeepeningSearch implements Search {
      * Extend the search by searching captures until a 'quiet' position is reached, where there are no further captures
      * and therefore limited potential for winning tactics that drastically alter the evaluation. Used to mitigate the
      * worst of the 'horizon effect'.
+     *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
     int quiescenceSearch(int alpha, int beta) {
@@ -244,14 +245,12 @@ public class IterativeDeepeningSearch implements Search {
         // In the case where there are only 'bad' captures available, just return the static evaluation of the board,
         // since the player is not forced to capture and may have good non-capture moves available.
         int eval = boardEvaluator.evaluate(board);
+        alpha = Math.max(alpha, eval);
         if (eval >= beta) {
             statistics.incrementNodesSearched();
             statistics.incrementQuiescents();
             statistics.incrementCutoffs();
             return beta;
-        }
-        if (eval > alpha) {
-            alpha = eval;
         }
 
         // Generate only legal captures

@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.piece.PieceType;
 /**
  * The relative material value of each piece type, measured in centipawns (hundredths of a pawn). Using the widely popular
  * values suggested by Tomasz Michniewski in 1995, although there are alternative rankings.
+ *
  * @see <a href="https://www.chessprogramming.org/Point_Value">Chess Programming Wiki</a>
  */
 public class PieceValues {

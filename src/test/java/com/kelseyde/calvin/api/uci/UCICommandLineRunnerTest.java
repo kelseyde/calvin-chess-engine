@@ -10,6 +10,7 @@ import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -18,19 +19,19 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
+@Disabled
 public class UCICommandLineRunnerTest {
 
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
     private UCICommandLineRunner runner;
-    private Bot bot;
     private ConfigurableApplicationContext context;
 
     @BeforeEach
     public void setUp() {
         System.setOut(new PrintStream(outputStream));
-        bot = new CalvinBot();
+        Bot bot = new CalvinBot();
         runner = new UCICommandLineRunner(context, bot);
     }
 

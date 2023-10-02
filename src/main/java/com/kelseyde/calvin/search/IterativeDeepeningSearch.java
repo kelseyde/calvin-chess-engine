@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import com.kelseyde.calvin.evaluation.CombinedBoardEvaluator;
+import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
@@ -17,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
 
 /**
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
@@ -39,6 +39,7 @@ public class IterativeDeepeningSearch implements Search {
     private final ResultCalculator resultCalculator = new ResultCalculator();
     private final MoveOrderer moveOrderer = new MoveOrderer();
     private final BoardEvaluator boardEvaluator = new CombinedBoardEvaluator();
+    private final StaticExchangeEvaluator see = new StaticExchangeEvaluator();
     private final TranspositionTable transpositionTable;
 
     private final @Getter Board board;
@@ -97,7 +98,7 @@ public class IterativeDeepeningSearch implements Search {
         }
 
         statistics.setEnd(Instant.now());
-//        System.out.println(statistics.generateReport());
+        System.out.println(statistics.generateReport());
 
         return new SearchResult(bestEval, bestMove);
 
@@ -161,7 +162,7 @@ public class IterativeDeepeningSearch implements Search {
              // In the case that max depth is reached, return the static heuristic evaluation of the position.
              statistics.incrementNodesSearched();
 //             int finalEval = boardEvaluator.evaluate(board);
-             int finalEval = quiescenceSearch(alpha, beta);
+             int finalEval = quiescenceSearch(alpha, beta, 1);
 //             System.out.printf("%s %s (%s, %s) Final eval: %s%n", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, finalEval);
              return finalEval;
          }
@@ -238,7 +239,7 @@ public class IterativeDeepeningSearch implements Search {
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta) {
+    int quiescenceSearch(int alpha, int beta, int depth) {
         if (isTimeoutExceeded()) {
             return 0;
         }
@@ -259,8 +260,16 @@ public class IterativeDeepeningSearch implements Search {
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
 
         for (Move move : orderedMoves) {
+
+            int seeEval = see.evaluate(board, move);
+            if ((depth <= 4 && seeEval < 0) || (depth > 4 && seeEval <= 0)) {
+                // Up to depth 4 in quiescence, only considers captures with SEE eval >= 0.
+                // Past depth 4 in quiescence, only consider captures with SEE eval > 0.
+                continue;
+            }
+
             board.makeMove(move);
-            eval = -quiescenceSearch(-beta, -alpha);
+            eval = -quiescenceSearch(-beta, -alpha, depth + 1);
             board.unmakeMove();
         }
         if (eval >= beta) {

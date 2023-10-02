@@ -219,7 +219,7 @@ public class MoveOrdererTest {
     @Test
     public void testWinningCaptureBeatsLosingCapture() {
 
-        String fen = "7k/8/8/8/4r3/3P1Q2/8/7K w - - 0 1";
+        String fen = "7k/8/8/5p2/4r3/3P1Q2/8/7K w - - 0 1";
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {

@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
+import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,10 +17,11 @@ public class MoveOrderer {
 
     private static final int MILLION = 1000000;
     private static final int PREVIOUS_BEST_MOVE_BIAS = 100 * MILLION;
-    private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int PROMOTION_BIAS = 9 * MILLION;
-    private static final int KILLER_MOVE_BIAS = 7 * MILLION;
-    private static final int CHECK_BIAS = 6 * MILLION;
+    private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
+    private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
+    private static final int KILLER_MOVE_BIAS = 6 * MILLION;
+    private static final int CHECK_BIAS = 5 * MILLION;
     private static final int CASTLE_BIAS = 4 * MILLION;
     private static final int LOSING_CAPTURE_BIAS = 3 * MILLION;
     private static final int UNDER_PROMOTION_BIAS = 2 * MILLION;
@@ -28,6 +30,7 @@ public class MoveOrderer {
     private static final int MAX_KILLER_MOVES_PER_PLY = 2;
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
+    private final StaticExchangeEvaluator seeEvaluator = new StaticExchangeEvaluator();
 
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
 
@@ -51,10 +54,16 @@ public class MoveOrderer {
         PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
         boolean isCapture = capturedPieceType != null;
         if (isCapture) {
-            // TODO only apply the losing capture bias if the opponent can recapture on the next move.
-            int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(move.getPieceType());
-            int captureBias = materialDelta >= 0 ? WINNING_CAPTURE_BIAS : LOSING_CAPTURE_BIAS;
-            moveScore += captureBias + materialDelta;
+            int seeEval = seeEvaluator.evaluate(board, move);
+            if (seeEval > 0) {
+                moveScore += seeEval + WINNING_CAPTURE_BIAS;
+            }
+            else if (seeEval == 0) {
+                moveScore += EQUAL_CAPTURE_BIAS;
+            }
+            else {
+                moveScore += seeEval + LOSING_CAPTURE_BIAS;
+            }
         }
 
         // Prioritising pawn promotion

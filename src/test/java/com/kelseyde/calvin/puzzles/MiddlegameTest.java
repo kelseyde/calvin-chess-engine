@@ -14,7 +14,7 @@ import java.util.Collections;
 public class MiddlegameTest {
 
     @Test
-    public void testDontSacKnightForCenterPawn() throws InterruptedException {
+    public void testDontSacKnightForCenterPawn() {
 
         String fen = "r1bqkb1r/1pp1pppp/p1n2n2/8/2BPP3/2N2N2/PP3PPP/R1BQK2R b KQkq - 0 6";
         Bot bot = new CalvinBot();

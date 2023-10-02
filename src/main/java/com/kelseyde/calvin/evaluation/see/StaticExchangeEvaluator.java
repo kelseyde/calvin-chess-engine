@@ -42,6 +42,9 @@ public class StaticExchangeEvaluator {
         board.makeMove(move);
         Move leastValuableAttacker = getLeastValuableAttacker(board, square);
         if (leastValuableAttacker != null) {
+            // The opponent should have the option of 'standing pat' - that is, declining to continue the capture
+            // sequence if it would lead to a loss of material.
+            // Therefore, we return the minimum of the stand-pat score and the capture score.
             score = Math.min(score, score - evaluate(board, leastValuableAttacker));
         }
         board.unmakeMove();

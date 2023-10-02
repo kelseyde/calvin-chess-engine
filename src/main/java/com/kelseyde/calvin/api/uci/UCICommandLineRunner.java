@@ -39,7 +39,6 @@ public class UCICommandLineRunner implements CommandLineRunner {
     }
 
     public void handleCommand(String command) {
-        log.debug("Handling command {}", command);
 
         command = command.trim().toLowerCase();
         String commandType = command.split(" ")[0];

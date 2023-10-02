@@ -40,4 +40,34 @@ public class MiddlegameTest {
 
     }
 
+    @Test
+    public void testDontMoveRookBeforeCastling() {
+
+        String fen = "r1b1kbnr/ppp2ppp/2n1p3/3q4/3P4/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 5";
+
+        Bot bot = new CalvinBot();
+        bot.newGame();
+        bot.setPosition(fen, Collections.emptyList());
+        int thinkTime = bot.chooseThinkTime(165769, 154150, 2000, 2000);
+        Move move = bot.think(thinkTime);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("h1g1")));
+
+    }
+
+    @Test
+    public void testDontSacYourQueenForPawn() {
+
+        String fen = "rnbq1rk1/ppp2ppp/5n2/4p3/2P5/3P2P1/PQ2PP1P/R1B1KBNR b KQ - 2 9";
+
+        Bot bot = new CalvinBot();
+        bot.newGame();
+        bot.setPosition(fen, Collections.emptyList());
+        int thinkTime = bot.chooseThinkTime(165320, 149989, 1000, 1000);
+        Move move = bot.think(thinkTime);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("d8d3")));
+
+    }
+
 }

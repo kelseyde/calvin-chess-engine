@@ -14,8 +14,8 @@ server:
 
 logging:
   file:
-    path: calvin-chess-engine/log/
+    path: /Users/senfal/git/dan/calvin/calvin-chess-engine/log
     name: calvin_debug.log
   level:
     root: WARN
-    com.kelseyde.calvin: DEBUG
+    com.kelseyde.calvin: TRACE

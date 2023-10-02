@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 
 /**
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
@@ -161,14 +162,13 @@ public class IterativeDeepeningSearch implements Search {
          if (plyRemaining == 0) {
              // In the case that max depth is reached, return the static heuristic evaluation of the position.
              statistics.incrementNodesSearched();
-//             int finalEval = boardEvaluator.evaluate(board);
              int finalEval = quiescenceSearch(alpha, beta, 1);
-//             System.out.printf("%s %s (%s, %s) Final eval: %s%n", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, finalEval);
+             log.trace("{} {} ({}, {}) Final eval: {}", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, finalEval);
              return finalEval;
          }
 
          Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
-//         System.out.printf("%s %s (%s, %s) Ordered moves: %s%n", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(Arrays.asList(orderedMoves)));
+         log.trace("{} {} ({}, {}) Ordered moves: {}", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(Arrays.asList(orderedMoves)));
 
          Move bestMoveInThisPosition = null;
          int originalAlpha = alpha;
@@ -180,8 +180,7 @@ public class IterativeDeepeningSearch implements Search {
              board.makeMove(move);
              int eval = -search(plyRemaining - 1, plyFromRoot + 1, -beta, -alpha);
              board.unmakeMove();
-//             System.out.printf("%s %s (%s, %s) Eval for %s: %s%n",
-//                     board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval);
+             log.trace("{} {} ({}, {}) Eval for {}: {}", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval);
 
              if (isTimeoutExceeded()) {
                  return 0;
@@ -200,10 +199,8 @@ public class IterativeDeepeningSearch implements Search {
                      moveOrderer.addKillerMove(plyFromRoot, move);
                      statistics.incrementKillers();
                  }
-
-                 log.trace("({}) {} {} {} eval {}", board.isWhiteToMove() ? "WHITE" : "BLACK", plyFromRoot, NotationUtils.toNotation(board.getMoveHistory()), NodeType.LOWER_BOUND, alpha);
-//                 System.out.printf("%s %s (%s, %s) Pruning %s as eval %s >= beta %s%n",
-//                         board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval, beta);
+                 log.trace("{} {} ({}, {}) Pruning {} as eval {} >= beta {}",
+                         board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval, beta);
                  statistics.incrementNodesSearched();
                  statistics.incrementCutoffs();
                  return beta;
@@ -212,8 +209,8 @@ public class IterativeDeepeningSearch implements Search {
              if (eval > alpha) {
                  // We have found a new best move
                  bestMoveInThisPosition = move;
-//                 System.out.printf("%s %s (%s, %s) New best move %s as eval %s > alpha %s%n",
-//                         board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval, alpha);
+                 log.trace("{} {} ({}, {}) New best move {} as eval {} > alpha {}",
+                         board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval, alpha);
                  alpha = eval;
                  if (plyFromRoot == 0) {
                      bestMoveCurrentDepth = move;
@@ -227,7 +224,8 @@ public class IterativeDeepeningSearch implements Search {
          NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
          transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
          statistics.incrementNodesSearched();
-         log.trace("({}) {} {} {} eval {}", board.isWhiteToMove() ? "WHITE" : "BLACK", plyFromRoot, NotationUtils.toNotation(board.getMoveHistory()), transpositionType, alpha);
+
+
          return alpha;
 
     }

@@ -20,7 +20,7 @@ public class MiddlegameTest {
         Bot bot = new CalvinBot();
         bot.newGame();
         bot.setPosition(fen, Collections.emptyList());
-        Move move = bot.think(3000);
+        Move move = bot.think(1000);
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("f6e4")));
 
@@ -33,7 +33,7 @@ public class MiddlegameTest {
         Bot bot = new CalvinBot();
         bot.newGame();
         bot.setPosition(fen, Collections.emptyList());
-        Move move = bot.think(3000);
+        Move move = bot.think(1000);
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("f3d4")));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("e2d4")));

@@ -28,8 +28,6 @@ import java.util.Collections;
 @Slf4j
 public class GameController {
 
-    private final MoveGenerator moveGenerator = new MoveGenerator();
-
     @Resource
     private Bot bot;
 
@@ -39,15 +37,7 @@ public class GameController {
     @RequestMapping(value = "/new/white", method = RequestMethod.GET)
     public ResponseEntity<NewGameResponse> getNewWhiteGame() {
         log.info("GET /game/new/white");
-        bot.newGame();
-        bot.setPosition(FEN.STARTING_POSITION, Collections.emptyList());
-        log.info("Created new game with id {}", bot.getBoard().getId());
-        return ResponseEntity.ok(new NewGameResponse(bot.getBoard().getId()));
-    }
-
-    @RequestMapping(value = "/new/black", method = RequestMethod.GET)
-    public ResponseEntity<NewGameResponse> getNewBlackGame() {
-        log.info("GET /game/new/black");
+        bot.gameOver();
         bot.newGame();
         bot.setPosition(FEN.STARTING_POSITION, Collections.emptyList());
         log.info("Created new game with id {}", bot.getBoard().getId());
@@ -56,6 +46,16 @@ public class GameController {
         NewGameResponse response = new NewGameResponse(bot.getBoard().getId());
         response.setMove(MoveResponse.fromMove(move));
         return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(value = "/new/black", method = RequestMethod.GET)
+    public ResponseEntity<NewGameResponse> getNewBlackGame() {
+        log.info("GET /game/new/black");
+        bot.gameOver();
+        bot.newGame();
+        bot.setPosition(FEN.STARTING_POSITION, Collections.emptyList());
+        log.info("Created new game with id {}", bot.getBoard().getId());
+        return ResponseEntity.ok(new NewGameResponse(bot.getBoard().getId()));
     }
 
     @RequestMapping(value = "/play", method = RequestMethod.POST)

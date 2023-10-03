@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 @RestController
 @ConditionalOnProperty(name = "http.enabled", havingValue = "true")
@@ -33,6 +35,8 @@ public class GameController {
 
     @Resource
     private ResultCalculator resultCalculator;
+
+    private final MoveGenerator moveGenerator = new MoveGenerator();
 
     @RequestMapping(value = "/new/white", method = RequestMethod.GET)
     public ResponseEntity<NewGameResponse> getNewWhiteGame() {
@@ -70,6 +74,14 @@ public class GameController {
                 .build();
 
         log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
+        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(bot.getBoard(), false))
+                .filter(m -> m.matches(playerMove))
+                .findAny();
+        if (legalMove.isEmpty()) {
+            log.warn("Illegal move! {}", NotationUtils.toNotation(playerMove));
+            return ResponseEntity.badRequest().build();
+        }
+
         bot.applyMove(playerMove);
 
         GameResult result = resultCalculator.calculateResult(bot.getBoard());

@@ -1,9 +1,13 @@
 package com.kelseyde.calvin.movegeneration.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
+import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -155,25 +159,42 @@ public class DrawByRepetitionTest {
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
 
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
+        // position of pieces repeated twice, but en passant rights different
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
 
-        // position of pieces repeated twice, but en passant rights different
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
 
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
+        // position of pieces repeated thrice, but en passant rights different
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
 
-        // position of pieces repeated thrice, but en passant rights different
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         GameResult result = resultEvaluator.calculateResult(board);
+        Assertions.assertEquals(GameResult.DRAW_BY_REPETITION, result);
+
+    }
+
+    @Test
+    public void testGameExampleDrawRepetition() {
+
+        String fen = "7r/4b1p1/8/3BkP2/4N3/8/PPn2PP1/1R1R2K1 b - - 0 26";
+        Board board = FEN.fromFEN(fen);
+
+        board.makeMove(NotationUtils.fromNotation("h8", "b8", PieceType.ROOK));
+        board.makeMove(NotationUtils.fromNotation("e4", "c3", PieceType.KNIGHT));
+        board.makeMove(NotationUtils.fromNotation("e7", "c5", PieceType.BISHOP));
+        board.makeMove(NotationUtils.fromNotation("c3", "e4", PieceType.KNIGHT));
+        board.makeMove(NotationUtils.fromNotation("c5", "e7", PieceType.BISHOP));
+        board.makeMove(NotationUtils.fromNotation("e4", "c3", PieceType.KNIGHT));
+        board.makeMove(NotationUtils.fromNotation("e7", "c5", PieceType.BISHOP));
+        board.makeMove(NotationUtils.fromNotation("c3", "e4", PieceType.KNIGHT));
+
+        GameResult result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.IN_PROGRESS, result);
-        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
 
-        board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
-        board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
+        board.makeMove(NotationUtils.fromNotation("c5", "e7", PieceType.BISHOP));
 
-        // position of pieces repeated four times, three times with same en passant rights
         result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.DRAW_BY_REPETITION, result);
 

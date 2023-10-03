@@ -43,7 +43,7 @@ public class PawnEvaluator implements BoardEvaluator {
         int doubledPawnCount = 0;
         long friendlyPawnsIterator = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         while (friendlyPawnsIterator > 0) {
-            int pawn = BitBoardUtils.scanForward(friendlyPawns);
+            int pawn = BitBoardUtils.scanForward(friendlyPawnsIterator);
             int rank = BoardUtils.getRank(pawn);
             int file = BoardUtils.getFile(pawn);
 
@@ -55,11 +55,10 @@ public class PawnEvaluator implements BoardEvaluator {
 
                 long protectionMask = isWhite ? PawnBits.WHITE_PROTECTED_PAWN_MASK[pawn] : PawnBits.BLACK_PROTECTED_PAWN_MASK[pawn];
                 int protectingPawnsBonus = Long.bitCount(protectionMask & friendlyPawns) * PROTECTED_PASSED_PAWN_BONUS;
-                passedPawnBonus += protectingPawnsBonus;
+                passedPawnsBonus += protectingPawnsBonus;
             }
-
-            long adjacentPawnMask = PawnBits.ADJACENT_FILE_MASK[file];
-            if ((adjacentPawnMask & friendlyPawns) == 0) {
+            // Passed pawns are not penalised for being isolated
+            else if ((PawnBits.ADJACENT_FILE_MASK[file] & friendlyPawns) == 0) {
                 isolatedPawnCount++;
             }
 

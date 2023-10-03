@@ -14,6 +14,7 @@ public class PlayRequest {
     private String from;
     private String to;
     private String promotion;
+    private Integer thinkTimeMs;
 
     public PieceType getPromotionPieceType() {
         if (promotion == null) {

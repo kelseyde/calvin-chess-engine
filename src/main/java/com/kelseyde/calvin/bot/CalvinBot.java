@@ -8,6 +8,7 @@ import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class CalvinBot implements Bot {
 
+    @Getter
     private Board board;
 
     private MoveGenerator moveGenerator;
@@ -51,7 +53,7 @@ public class CalvinBot implements Bot {
             moveGenerator = new MoveGenerator();
             moves.stream()
                     .map(this::getLegalMove)
-                    .forEach(board::makeMove);
+                    .forEach(this::applyMove);
         } else {
             if (!moves.isEmpty()) {
                 Move lastMove = moves.get(moves.size() - 1);
@@ -61,10 +63,15 @@ public class CalvinBot implements Bot {
     }
 
     @Override
+    public void applyMove(Move move) {
+        board.makeMove(move);
+    }
+
+    @Override
     public void think(int thinkTimeMs, Consumer<Move> onThinkComplete) {
         think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
         think.thenAccept((move -> {
-            board.makeMove(move);
+            applyMove(move);
             onThinkComplete.accept(move);
         }));
     }

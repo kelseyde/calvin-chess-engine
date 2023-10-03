@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.bot;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 
 import java.util.List;
@@ -7,11 +8,15 @@ import java.util.function.Consumer;
 
 public interface Bot {
 
+    Board getBoard();
+
     void newGame();
 
     void gameOver();
 
     void setPosition(String fen, List<Move> moves);
+
+    void applyMove(Move move);
 
     boolean isThinking();
 

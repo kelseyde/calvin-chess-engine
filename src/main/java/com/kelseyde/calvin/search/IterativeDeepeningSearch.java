@@ -97,7 +97,7 @@ public class IterativeDeepeningSearch implements Search {
         }
 
         statistics.setEnd(Instant.now());
-        System.out.println(statistics.generateReport());
+//        System.out.println(statistics.generateReport());
         transpositionTable.logTableSize();
         return new SearchResult(bestEval, bestMove);
 
@@ -197,7 +197,6 @@ public class IterativeDeepeningSearch implements Search {
              int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha);
 
              if (reductions > 0 && eval > alpha) {
-                 System.out.println("WARN late move beat alpha");
                  // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
                  eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
              }

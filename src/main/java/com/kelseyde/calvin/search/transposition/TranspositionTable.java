@@ -81,7 +81,7 @@ public class TranspositionTable {
                 .filter(Objects::nonNull)
                 .count();
         int percent = (occupiedSize / fullTableSize) * 100;
-        System.out.printf("Transposition table size %s/%s (%s%%)%n", occupiedSize, fullTableSize, percent);
+//        System.out.printf("Transposition table size %s/%s (%s%%)%n", occupiedSize, fullTableSize, percent);
     }
 
 }

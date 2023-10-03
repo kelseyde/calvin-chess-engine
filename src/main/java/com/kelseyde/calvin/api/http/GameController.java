@@ -82,7 +82,7 @@ public class GameController {
             return ResponseEntity.badRequest().build();
         }
 
-        bot.applyMove(playerMove);
+        bot.applyMove(legalMove.get());
 
         GameResult result = resultCalculator.calculateResult(bot.getBoard());
         if (!result.equals(GameResult.IN_PROGRESS)) {

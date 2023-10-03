@@ -15,7 +15,7 @@ server:
 logging:
   file:
     path: /Users/senfal/git/dan/calvin/calvin-chess-engine/log
-    name: calvin_debug.log
+    name: calvin_debug2.log
   level:
     root: WARN
     com.kelseyde.calvin: WARN

@@ -99,7 +99,7 @@ public class IterativeDeepeningSearch implements Search {
         }
 
         statistics.setEnd(Instant.now());
-        System.out.println(statistics.generateReport());
+//        System.out.println(statistics.generateReport());
 
         return new SearchResult(bestEval, bestMove);
 

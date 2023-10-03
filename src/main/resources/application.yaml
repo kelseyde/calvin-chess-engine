@@ -18,4 +18,4 @@ logging:
     name: calvin_debug.log
   level:
     root: WARN
-    com.kelseyde.calvin: TRACE
+    com.kelseyde.calvin: WARN

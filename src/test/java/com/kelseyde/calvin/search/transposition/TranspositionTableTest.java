@@ -36,7 +36,7 @@ public class TranspositionTableTest {
 
         // Do some more searching, return to this position
 
-        TranspositionEntry entry = table.get();
+        TranspositionNode entry = table.get();
 
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(board.getGameState().getZobristKey(), entry.getZobristKey());
@@ -66,7 +66,7 @@ public class TranspositionTableTest {
 
         // Do some more searching, return to this position
 
-        TranspositionEntry entry = table.get();
+        TranspositionNode entry = table.get();
         Assertions.assertNull(entry);
 
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));

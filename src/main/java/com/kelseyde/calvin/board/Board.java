@@ -22,19 +22,19 @@ public class Board {
 
     private final String id = UUID.randomUUID().toString();
 
-    private long whitePawns = Bits.WHITE_PAWNS_START;
+    private long whitePawns =   Bits.WHITE_PAWNS_START;
     private long whiteKnights = Bits.WHITE_KNIGHTS_START;
     private long whiteBishops = Bits.WHITE_BISHOPS_START;
-    private long whiteRooks = Bits.WHITE_ROOKS_START;
-    private long whiteQueens = Bits.WHITE_QUEENS_START;
-    private long whiteKing = Bits.WHITE_KING_START;
+    private long whiteRooks =   Bits.WHITE_ROOKS_START;
+    private long whiteQueens =  Bits.WHITE_QUEENS_START;
+    private long whiteKing =    Bits.WHITE_KING_START;
 
-    private long blackPawns = Bits.BLACK_PAWNS_START;
+    private long blackPawns =   Bits.BLACK_PAWNS_START;
     private long blackKnights = Bits.BLACK_KNIGHTS_START;
     private long blackBishops = Bits.BLACK_BISHOPS_START;
-    private long blackRooks = Bits.BLACK_ROOKS_START;
-    private long blackQueens = Bits.BLACK_QUEENS_START;
-    private long blackKing = Bits.BLACK_KING_START;
+    private long blackRooks =   Bits.BLACK_ROOKS_START;
+    private long blackQueens =  Bits.BLACK_QUEENS_START;
+    private long blackKing =    Bits.BLACK_KING_START;
 
     private long whitePieces;
     private long blackPieces;

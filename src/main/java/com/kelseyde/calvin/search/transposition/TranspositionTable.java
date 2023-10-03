@@ -5,6 +5,9 @@ import com.kelseyde.calvin.board.move.Move;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 @Data
 @Slf4j
 public class TranspositionTable {
@@ -15,22 +18,22 @@ public class TranspositionTable {
 
     private Board board;
 
-    private TranspositionEntry[] entries;
+    private TranspositionNode[] entries;
 
     boolean enabled = true;
 
     public TranspositionTable(Board board) {
         this.board = board;
         int tableSize = calculateTableSize();
-        entries = new TranspositionEntry[tableSize];
+        entries = new TranspositionNode[tableSize];
     }
 
-    public TranspositionEntry get() {
+    public TranspositionNode get() {
         if (!enabled) {
             return null;
         }
         long zobristKey = board.getGameState().getZobristKey();
-        TranspositionEntry entry = getEntry(zobristKey);
+        TranspositionNode entry = getEntry(zobristKey);
         return (entry != null && entry.getZobristKey() == zobristKey) ? entry : null;
     }
 
@@ -39,14 +42,14 @@ public class TranspositionTable {
             return;
         }
         long zobristKey = board.getGameState().getZobristKey();
-        TranspositionEntry entry = new TranspositionEntry(zobristKey, type, move, depth, value);
+        TranspositionNode entry = new TranspositionNode(zobristKey, type, move, depth, value);
         int index = getIndex(zobristKey);
         entries[index] = entry;
     }
 
     public void clear() {
         int tableSize = calculateTableSize();
-        entries = new TranspositionEntry[tableSize];
+        entries = new TranspositionNode[tableSize];
     }
 
     /**
@@ -54,7 +57,7 @@ public class TranspositionTable {
      * Therefore, we take the modulo of the zobrist and the table size, giving us a more manageable number.
      * Collisions can occur though, so we store the full key inside the entry to check we have the correct position.
      */
-    private TranspositionEntry getEntry(long zobristKey) {
+    private TranspositionNode getEntry(long zobristKey) {
         int index = getIndex(zobristKey);
         return entries[index];
     }
@@ -70,6 +73,15 @@ public class TranspositionTable {
         log.trace("Initialising a transposition table of {} entries based on {}MB table size and {}B entry size.",
                 entriesCount, TABLE_SIZE_MB, entrySizeBytes);
         return entriesCount;
+    }
+
+    public void logTableSize() {
+        int fullTableSize = entries.length;
+        int occupiedSize = (int) Arrays.stream(entries)
+                .filter(Objects::nonNull)
+                .count();
+        int percent = (occupiedSize / fullTableSize) * 100;
+        System.out.printf("Transposition table size %s/%s (%s%%)%n", occupiedSize, fullTableSize, percent);
     }
 
 }

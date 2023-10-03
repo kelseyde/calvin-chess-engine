@@ -237,6 +237,38 @@ public class PuzzlesTest {
 
     }
 
+    @Test
+    public void testSacRookBishopMateInThree() {
+
+        String fen = "8/pp3N2/6Rb/1kp5/4P3/1KP5/PP6/2r5 b - - 4 32";
+
+        Board board = FEN.fromFEN(fen);
+
+        search = new IterativeDeepeningSearch(board);
+
+        SearchResult result = search.search(Duration.ofMillis(500));
+
+        Move bestMove = NotationUtils.fromNotation("c5", "c4", PieceType.PAWN);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("b3", "a3", PieceType.KING));
+
+        result = search.search(Duration.ofMillis(500));
+
+        bestMove = NotationUtils.fromNotation("c1", "c3", PieceType.ROOK);
+        assertMove(bestMove, result.move());
+
+        board.makeMove(bestMove);
+        board.makeMove(NotationUtils.fromNotation("b2", "c3", PieceType.PAWN));
+
+        result = search.search(Duration.ofMillis(200));
+        bestMove = NotationUtils.fromNotation("h6", "c1", PieceType.BISHOP);
+        assertMove(bestMove, result.move());
+
+
+    }
+
 //    @Test
 //    public void testIgnoreScaryChecksForQueenRookMate() {
 //
@@ -246,7 +278,7 @@ public class PuzzlesTest {
 //
 //        search = new IterativeDeepeningSearch(board);
 //
-//        SearchResult result = search.search(Duration.ofMillis(1000));
+//        SearchResult result = search.search(Duration.ofMillis(5000));
 //
 //        Move bestMove = NotationUtils.fromNotation("e3", "b3", PieceType.QUEEN);
 //        assertMove(bestMove, result.move());

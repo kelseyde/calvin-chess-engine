@@ -37,6 +37,7 @@ public class GameController {
     @RequestMapping(value = "/new/white", method = RequestMethod.GET)
     public ResponseEntity<NewGameResponse> getNewWhiteGame() {
         log.info("GET /game/new/white");
+        bot.gameOver();
         bot.newGame();
         bot.setPosition(FEN.STARTING_POSITION, Collections.emptyList());
         log.info("Created new game with id {}", bot.getBoard().getId());
@@ -50,6 +51,7 @@ public class GameController {
     @RequestMapping(value = "/new/black", method = RequestMethod.GET)
     public ResponseEntity<NewGameResponse> getNewBlackGame() {
         log.info("GET /game/new/black");
+        bot.gameOver();
         bot.newGame();
         bot.setPosition(FEN.STARTING_POSITION, Collections.emptyList());
         log.info("Created new game with id {}", bot.getBoard().getId());

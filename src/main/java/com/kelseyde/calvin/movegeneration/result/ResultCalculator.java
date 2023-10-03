@@ -7,6 +7,7 @@ import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ResultCalculator {
@@ -39,7 +40,7 @@ public class ResultCalculator {
     }
 
     private boolean isRepetition(Board board) {
-        return board.getGameStateHistory().stream()
+        return Stream.concat(board.getGameStateHistory().stream(), Stream.of(board.getGameState()))
                 .collect(Collectors.groupingBy(GameState::toRepetitionString))
                 .values()
                 .stream()

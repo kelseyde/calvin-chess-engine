@@ -28,8 +28,6 @@ import java.util.Collections;
 @Slf4j
 public class GameController {
 
-    private final MoveGenerator moveGenerator = new MoveGenerator();
-
     @Resource
     private Bot bot;
 
@@ -42,7 +40,11 @@ public class GameController {
         bot.newGame();
         bot.setPosition(FEN.STARTING_POSITION, Collections.emptyList());
         log.info("Created new game with id {}", bot.getBoard().getId());
-        return ResponseEntity.ok(new NewGameResponse(bot.getBoard().getId()));
+        Move move = bot.think(1000);
+        bot.applyMove(move);
+        NewGameResponse response = new NewGameResponse(bot.getBoard().getId());
+        response.setMove(MoveResponse.fromMove(move));
+        return ResponseEntity.ok(response);
     }
 
     @RequestMapping(value = "/new/black", method = RequestMethod.GET)
@@ -51,11 +53,7 @@ public class GameController {
         bot.newGame();
         bot.setPosition(FEN.STARTING_POSITION, Collections.emptyList());
         log.info("Created new game with id {}", bot.getBoard().getId());
-        Move move = bot.think(1000);
-        bot.applyMove(move);
-        NewGameResponse response = new NewGameResponse(bot.getBoard().getId());
-        response.setMove(MoveResponse.fromMove(move));
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new NewGameResponse(bot.getBoard().getId()));
     }
 
     @RequestMapping(value = "/play", method = RequestMethod.POST)

@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import lombok.extern.slf4j.Slf4j;

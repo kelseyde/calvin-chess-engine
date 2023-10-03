@@ -71,13 +71,6 @@ public class MoveGenerator {
         return isCheck(board, isWhite, kingMask);
     }
 
-    private boolean filterCapturesOnly(Board board, Move move) {
-        boolean isWhite = board.isWhiteToMove();
-        int endSquare = move.getEndSquare();
-        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
-        return (opponents & (1L << endSquare)) != 0;
-    }
-
     private boolean isCheck(Board board, boolean isWhite, long kingMask) {
         while (kingMask != 0) {
             int kingSquare = BitBoardUtils.scanForward(kingMask);
@@ -120,6 +113,13 @@ public class MoveGenerator {
             kingMask = BitBoardUtils.popLSB(kingMask);
         }
         return false;
+    }
+
+    private boolean filterCapturesOnly(Board board, Move move) {
+        boolean isWhite = board.isWhiteToMove();
+        int endSquare = move.getEndSquare();
+        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
+        return (opponents & (1L << endSquare)) != 0;
     }
 
 

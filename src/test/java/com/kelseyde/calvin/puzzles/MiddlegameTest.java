@@ -20,7 +20,7 @@ public class MiddlegameTest {
         Bot bot = new CalvinBot();
         bot.newGame();
         bot.setPosition(fen, Collections.emptyList());
-        Move move = bot.think(1000);
+        Move move = bot.think(500);
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("f6e4")));
 
@@ -33,7 +33,7 @@ public class MiddlegameTest {
         Bot bot = new CalvinBot();
         bot.newGame();
         bot.setPosition(fen, Collections.emptyList());
-        Move move = bot.think(1000);
+        Move move = bot.think(500);
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("f3d4")));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("e2d4")));
@@ -48,8 +48,7 @@ public class MiddlegameTest {
         Bot bot = new CalvinBot();
         bot.newGame();
         bot.setPosition(fen, Collections.emptyList());
-        int thinkTime = bot.chooseThinkTime(165769, 154150, 2000, 2000);
-        Move move = bot.think(thinkTime);
+        Move move = bot.think(500);
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("h1g1")));
 
@@ -63,10 +62,23 @@ public class MiddlegameTest {
         Bot bot = new CalvinBot();
         bot.newGame();
         bot.setPosition(fen, Collections.emptyList());
-        int thinkTime = bot.chooseThinkTime(165320, 149989, 1000, 1000);
-        Move move = bot.think(thinkTime);
+        Move move = bot.think(500);
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("d8d3")));
+
+    }
+
+    @Test
+    public void testAnotherKnightSac() {
+
+        String fen = "r2qkb1r/ppp1pppp/2n2n2/3p4/3PP3/2N2P1P/PPP2P2/R1BQKB1R b KQkq - 0 6";
+
+        Bot bot = new CalvinBot();
+        bot.newGame();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(500);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("f6e4")));
 
     }
 

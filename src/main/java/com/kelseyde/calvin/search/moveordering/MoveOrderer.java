@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -53,16 +54,19 @@ public class MoveOrderer {
         PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
         boolean isCapture = capturedPieceType != null;
         if (isCapture) {
-            int seeEval = seeEvaluator.evaluate(board, move);
-            if (seeEval > 0) {
-                moveScore += seeEval + WINNING_CAPTURE_BIAS;
-            }
-            else if (seeEval == 0) {
-                moveScore += EQUAL_CAPTURE_BIAS;
-            }
-            else {
-                moveScore += seeEval + LOSING_CAPTURE_BIAS;
-            }
+            int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(move.getPieceType());
+            int captureBias = materialDelta >= 0 ? WINNING_CAPTURE_BIAS : LOSING_CAPTURE_BIAS;
+            moveScore += captureBias + materialDelta;
+//            int seeEval = seeEvaluator.evaluate(board, move);
+//            if (seeEval > 0) {
+//                moveScore += seeEval + WINNING_CAPTURE_BIAS;
+//            }
+//            else if (seeEval == 0) {
+//                moveScore += EQUAL_CAPTURE_BIAS;
+//            }
+//            else {
+//                moveScore += seeEval + LOSING_CAPTURE_BIAS;
+//            }
         }
 
         // Prioritising pawn promotion

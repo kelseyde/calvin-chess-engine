@@ -15,7 +15,9 @@ server:
 logging:
   file:
     path: /Users/senfal/git/dan/calvin/calvin-chess-engine/log
-    name: calvin_debug2.log
+    name: calvin_debug.log
+    max-size: 1
+    clean-history-on-start: true
   level:
     root: WARN
     com.kelseyde.calvin: WARN

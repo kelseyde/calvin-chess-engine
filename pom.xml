@@ -5,7 +5,7 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>1.4.0-ExtensionsAndReductions</version>
+    <version>1.5.0-PawnEvaluation</version>
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 

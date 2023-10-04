@@ -269,21 +269,21 @@ public class PuzzlesTest {
 
     }
 
-//    @Test
-//    public void testIgnoreScaryChecksForQueenRookMate() {
-//
-//        String fen = "2k2b1r/3Rpppp/2p2q2/2Np4/3P4/4Qb2/r3nPPP/5R1K w - - 8 25";
-//
-//        Board board = FEN.fromFEN(fen);
-//
-//        search = new IterativeDeepeningSearch(board);
-//
-//        SearchResult result = search.search(Duration.ofMillis(5000));
-//
-//        Move bestMove = NotationUtils.fromNotation("e3", "b3", PieceType.QUEEN);
-//        assertMove(bestMove, result.move());
-//
-//    }
+    @Test
+    public void testIgnoreScaryChecksForQueenRookMate() {
+
+        String fen = "2k2b1r/3Rpppp/2p2q2/2Np4/3P4/4Qb2/r3nPPP/5R1K w - - 8 25";
+
+        Board board = FEN.fromFEN(fen);
+
+        search = new IterativeDeepeningSearch(board);
+
+        SearchResult result = search.search(Duration.ofMillis(5000));
+
+        Move bestMove = NotationUtils.fromNotation("e3", "b3", PieceType.QUEEN);
+        assertMove(bestMove, result.move());
+
+    }
 
     private void assertMove(Move expected, Move actual) {
         boolean matches = expected.matches(actual);

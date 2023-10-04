@@ -23,6 +23,8 @@ import java.util.function.Consumer;
 @Slf4j
 public class CalvinBot implements Bot {
 
+    private static final int PONDER_DURATION_MS = 60 * 60 * 1000; // 1 hour
+
     @Getter
     private Board board;
 
@@ -69,6 +71,7 @@ public class CalvinBot implements Bot {
 
     @Override
     public void think(int thinkTimeMs, Consumer<Move> onThinkComplete) {
+        stopThinking();
         think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
         think.thenAccept((move -> {
             applyMove(move);
@@ -78,7 +81,15 @@ public class CalvinBot implements Bot {
 
     @Override
     public Move think(int thinkTimeMs) {
-        return search.search(Duration.ofMillis(thinkTimeMs)).move();
+        stopThinking();
+        Move move = search.search(Duration.ofMillis(thinkTimeMs)).move();
+        startPondering();
+        return move;
+    }
+
+    @Override
+    public void startPondering() {
+        think(PONDER_DURATION_MS, (m) -> stopThinking());
     }
 
     @Override

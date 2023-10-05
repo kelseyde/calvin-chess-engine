@@ -38,4 +38,8 @@ public class GameState {
         return String.format("%s-%s-%s", zobristKey, enPassantFile, castlingRights);
     }
 
+    public GameState copy() {
+        return new GameState(zobristKey, capturedPiece, enPassantFile, castlingRights, fiftyMoveCounter);
+    }
+
 }

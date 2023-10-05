@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.generator.*;
@@ -73,7 +73,7 @@ public class MoveGenerator {
 
     private boolean isCheck(Board board, boolean isWhite, long kingMask) {
         while (kingMask != 0) {
-            int kingSquare = BitBoardUtils.scanForward(kingMask);
+            int kingSquare = BitboardUtils.scanForward(kingMask);
 
             long opponentPawns = isWhite ? board.getBlackPawns() : board.getWhitePawns();
             long pawnAttackMask = PAWN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
@@ -110,7 +110,7 @@ public class MoveGenerator {
             if ((kingAttackMask & opponentKing) != 0) {
                 return true;
             }
-            kingMask = BitBoardUtils.popLSB(kingMask);
+            kingMask = BitboardUtils.popLSB(kingMask);
         }
         return false;
     }

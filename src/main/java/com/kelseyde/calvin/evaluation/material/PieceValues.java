@@ -16,6 +16,8 @@ public class PieceValues {
     public static final int QUEEN = 900;
     public static final int KING = 10000;
 
+    public static final int BISHOP_PAIR = 50;
+
     public static int valueOf(PieceType pieceType) {
         return switch (pieceType) {
             case PAWN -> PAWN;

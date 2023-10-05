@@ -28,6 +28,8 @@ public class CalvinBot implements Bot {
     @Getter
     private Board board;
 
+    private Board ponderBoard;
+
     private MoveGenerator moveGenerator;
 
     private Search search;
@@ -83,7 +85,7 @@ public class CalvinBot implements Bot {
     public Move think(int thinkTimeMs) {
         stopThinking();
         Move move = search.search(Duration.ofMillis(thinkTimeMs)).move();
-        startPondering();
+//        startPondering(); TODO
         return move;
     }
 

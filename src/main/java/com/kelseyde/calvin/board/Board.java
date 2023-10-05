@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Also maintains the position
@@ -164,22 +166,51 @@ public class Board {
     }
 
     public void setPiece(int square, PieceType pieceType, boolean isWhite, boolean recalculate) {
-        String pieceCode = Piece.getPieceCode(isWhite, pieceType);
         unsetPiece(square);
-        switch (pieceCode) {
-            case "wP" -> whitePawns |= (1L << square);
-            case "wN" -> whiteKnights |= (1L << square);
-            case "wB" -> whiteBishops |= (1L << square);
-            case "wR" -> whiteRooks |= (1L << square);
-            case "wQ" -> whiteQueens |= (1L << square);
-            case "wK" -> whiteKing |= (1L << square);
-            case "bP" -> blackPawns |= (1L << square);
-            case "bN" -> blackKnights |= (1L << square);
-            case "bB" -> blackBishops |= (1L << square);
-            case "bR" -> blackRooks |= (1L << square);
-            case "bQ" -> blackQueens |= (1L << square);
-            case "bK" -> blackKing |= (1L << square);
-        }
+        switch (pieceType) {
+            case PAWN -> {
+                if (isWhite) {
+                    whitePawns |= (1L << square);
+                } else {
+                    blackPawns |= (1L << square);
+                }
+            }
+            case KNIGHT -> {
+                if (isWhite) {
+                    whiteKnights |= (1L << square);
+                } else {
+                    blackKnights |= (1L << square);
+                }
+            }
+            case BISHOP -> {
+                if (isWhite) {
+                    whiteBishops |= (1L << square);
+                } else {
+                    blackBishops |= (1L << square);
+                }
+            }
+            case ROOK -> {
+                if (isWhite) {
+                    whiteRooks |= (1L << square);
+                } else {
+                    blackRooks |= (1L << square);
+                }
+            }
+            case QUEEN -> {
+                if (isWhite) {
+                    whiteQueens |= (1L << square);
+                } else {
+                    blackQueens |= (1L << square);
+                }
+            }
+            case KING -> {
+                if (isWhite) {
+                    whiteKing |= (1L << square);
+                } else {
+                    blackKing |= (1L << square);
+                }
+            }
+        };
         if (recalculate) {
             recalculatePieces();
         }
@@ -255,6 +286,37 @@ public class Board {
             return PieceType.KING;
         }
         return null;
+    }
+
+    /**
+     * Return a deep copy of the board
+     * Warning: do NOT use in move generation, evaluation or search, as it is very slow.
+     * Only to be used in one-off scenarios, such as copying the board to allow the {@link Bot} to ponder.
+     */
+    public Board copy() {
+        Board copy = new Board();
+        copy.setWhitePawns(whitePawns);
+        copy.setBlackPawns(blackPawns);
+        copy.setWhiteKnights(whiteKnights);
+        copy.setBlackKnights(blackKnights);
+        copy.setWhiteBishops(whiteBishops);
+        copy.setBlackBishops(blackBishops);
+        copy.setWhiteRooks(whiteRooks);
+        copy.setBlackRooks(blackRooks);
+        copy.setWhiteQueens(whiteQueens);
+        copy.setBlackQueens(blackQueens);
+        copy.setWhiteKing(whiteKing);
+        copy.setBlackKing(blackKing);
+        copy.setOccupied(occupied);
+        copy.setWhiteToMove(isWhiteToMove);
+        copy.setGameState(gameState.copy());
+        copy.setGameStateHistory(gameStateHistory.stream()
+                .map(GameState::copy)
+                .collect(Collectors.toCollection(ArrayDeque::new)));
+        copy.setMoveHistory(moveHistory.stream()
+                .map(Move::copy)
+                .collect(Collectors.toCollection(ArrayDeque::new)));
+        return copy;
     }
 
 }

@@ -2,7 +2,6 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
@@ -16,8 +15,6 @@ import java.util.stream.Collectors;
 public class RookMoveGeneratorTest {
 
     private final RookMoveGenerator generator = new RookMoveGenerator();
-
-    private final String rook = Piece.getPieceCode(true, PieceType.ROOK);
 
     private Board board;
     
@@ -63,6 +60,7 @@ public class RookMoveGeneratorTest {
         board.setPiece(26, PieceType.KNIGHT, false, true);
         board.setPiece(30, PieceType.BISHOP, false, true);
         board.setPiece(44, PieceType.ROOK, false, true);
+        System.out.println(board.getOccupied());
 
         assertLegalSquares(startSquare, Set.of(12, 20, 26, 27, 29, 30, 36, 44));
 

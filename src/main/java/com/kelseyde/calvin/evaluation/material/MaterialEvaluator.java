@@ -19,20 +19,27 @@ public class MaterialEvaluator implements BoardEvaluator {
 
     private int calculateMaterialScore(Board board, boolean isWhite) {
 
-        long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
-        long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
-        long bishops = isWhite ? board.getWhiteBishops() : board.getBlackBishops();
-        long rooks = isWhite ? board.getWhiteRooks() : board.getBlackRooks();
-        long queens = isWhite ? board.getWhiteQueens() : board.getBlackQueens();
-        long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
+        int score = 0;
 
-        return (Long.bitCount(pawns) * PieceValues.PAWN) +
-                (Long.bitCount(knights) * PieceValues.KNIGHT) +
-                (Long.bitCount(bishops) * PieceValues.BISHOP) +
-                (Long.bitCount(rooks) * PieceValues.ROOK) +
-                (Long.bitCount(queens) * PieceValues.QUEEN) +
-                (Long.bitCount(king) * PieceValues.KING);
+        int pawns = Long.bitCount(isWhite ? board.getWhitePawns() : board.getBlackPawns());
+        int knights = Long.bitCount(isWhite ? board.getWhiteKnights() : board.getBlackKnights());
+        int bishops = Long.bitCount(isWhite ? board.getWhiteBishops() : board.getBlackBishops());
+        int rooks = Long.bitCount(isWhite ? board.getWhiteRooks() : board.getBlackRooks());
+        int queens = Long.bitCount(isWhite ? board.getWhiteQueens() : board.getBlackQueens());
+        int king = Long.bitCount(isWhite ? board.getWhiteKing() : board.getBlackKing());
 
+        score += pawns * PieceValues.PAWN;
+        score += knights * PieceValues.KNIGHT;
+        score += bishops * PieceValues.BISHOP;
+        score += rooks * PieceValues.ROOK;
+        score += queens * PieceValues.QUEEN;
+        score += king * PieceValues.KING;
+
+        if (bishops == 2) {
+            score += PieceValues.BISHOP_PAIR;
+        }
+
+        return score;
     }
 
 }

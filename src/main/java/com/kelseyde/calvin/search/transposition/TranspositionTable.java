@@ -12,7 +12,7 @@ import java.util.Objects;
 @Slf4j
 public class TranspositionTable {
 
-    private static final int TABLE_SIZE_MB = 10;
+    private static final int TABLE_SIZE_MB = 5;
     // TODO this is en estimation
     private static final int ENTRY_SIZE_B = 24;
 
@@ -80,7 +80,7 @@ public class TranspositionTable {
         int occupiedSize = (int) Arrays.stream(entries)
                 .filter(Objects::nonNull)
                 .count();
-        int percent = (occupiedSize / fullTableSize) * 100;
+        double percent = ((double) occupiedSize / (double) fullTableSize) * 100;
 //        System.out.printf("Transposition table size %s/%s (%s%%)%n", occupiedSize, fullTableSize, percent);
     }
 

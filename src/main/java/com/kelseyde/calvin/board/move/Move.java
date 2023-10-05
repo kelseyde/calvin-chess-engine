@@ -28,8 +28,6 @@ public class Move {
     @Builder.Default
     private MoveType moveType = MoveType.STANDARD;
 
-    private boolean isCheck;
-
     /**
      * The bitboard representing the destination square for a pawn capturing en passant. Should be set by
      * a double pawn move that enables en passant on the next turn.
@@ -49,6 +47,17 @@ public class Move {
                 .map(piece -> piece.equals(move.getPromotionPieceType()))
                 .orElse(true);
         return squareMatch && promotionMatch;
+    }
+
+    public Move copy() {
+        return Move.builder()
+                .startSquare(startSquare)
+                .endSquare(endSquare)
+                .moveType(moveType)
+                .pieceType(pieceType)
+                .promotionPieceType(promotionPieceType)
+                .enPassantFile(enPassantFile)
+                .build();
     }
 
 }

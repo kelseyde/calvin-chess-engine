@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.evaluation.placement;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import org.springframework.stereotype.Service;
@@ -37,9 +37,9 @@ public class PiecePlacementEvaluator implements BoardEvaluator {
     private int scorePieceType(PieceType type, long pieceBB, boolean isWhite) {
         int pieceTypeScore = 0;
         while (pieceBB != 0) {
-            int piece = BitBoardUtils.scanForward(pieceBB);
+            int piece = BitboardUtils.scanForward(pieceBB);
             pieceTypeScore += PieceSquareTable.scorePiece(type, piece, isWhite);
-            pieceBB = BitBoardUtils.popLSB(pieceBB);
+            pieceBB = BitboardUtils.popLSB(pieceBB);
         }
         return pieceTypeScore;
     }

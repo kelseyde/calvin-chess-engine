@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
 import com.kelseyde.calvin.board.piece.PieceType;
@@ -377,16 +377,16 @@ public class BoardTest {
         if (isWhiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
-                int position = BitBoardUtils.scanForward(whitePieces);
+                int position = BitboardUtils.scanForward(whitePieces);
                 positions.add(position);
-                whitePieces = BitBoardUtils.popLSB(whitePieces);
+                whitePieces = BitboardUtils.popLSB(whitePieces);
             }
         } else {
             long blackPieces = board.getBlackPieces();
             while (blackPieces != 0) {
-                int position = BitBoardUtils.scanForward(blackPieces);
+                int position = BitboardUtils.scanForward(blackPieces);
                 positions.add(position);
-                blackPieces = BitBoardUtils.popLSB(blackPieces);
+                blackPieces = BitboardUtils.popLSB(blackPieces);
             }
         }
         return positions;

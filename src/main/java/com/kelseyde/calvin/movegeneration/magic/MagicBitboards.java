@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.movegeneration.generator.magic;
+package com.kelseyde.calvin.movegeneration.magic;
 
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.utils.BoardUtils;

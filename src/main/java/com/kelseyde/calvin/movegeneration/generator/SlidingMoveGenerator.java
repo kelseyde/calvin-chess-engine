@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.movegeneration.generator.magic.MagicBitboards;
+import com.kelseyde.calvin.movegeneration.magic.MagicBitboards;
 import com.kelseyde.calvin.board.move.Move;
 
 import java.util.HashSet;

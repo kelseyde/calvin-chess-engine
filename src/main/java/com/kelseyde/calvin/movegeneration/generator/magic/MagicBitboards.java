@@ -1,11 +1,16 @@
-package com.kelseyde.calvin.board.bitboard;
+package com.kelseyde.calvin.movegeneration.generator.magic;
 
+import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Using a perfect hashing algorithm to pre-calculate a lookup table for sliding piece attacks.
+ * @see <a href="https://www.chessprogramming.org/Magic_Bitboards">Chess Programming Wiki</a>
+ */
 public class MagicBitboards {
 
     public static final long[] ROOK_MAGICS = new long[] {
@@ -74,23 +79,22 @@ public class MagicBitboards {
     public static final long[][] BISHOP_ATTACKS = initMagicAttacks(false);
 
     public static long getRookAttacks(int square, long blockers) {
-        long mask = ROOK_MASKS[square];
-        long blocker = blockers & mask;
-        long magic = ROOK_MAGICS[square];
-        long index = blocker * magic;
-        long shift = ROOK_SHIFTS[square];
-        long key = index >>> shift;
-        return ROOK_ATTACKS[square][(int) key];
+        return getSliderAttacks(square, blockers, ROOK_MASKS, ROOK_MAGICS, ROOK_SHIFTS, ROOK_ATTACKS);
     }
 
     public static long getBishopAttacks(int square, long blockers) {
-        long mask = BISHOP_MASKS[square];
+        return getSliderAttacks(square, blockers, BISHOP_MASKS, BISHOP_MAGICS, BISHOP_SHIFTS, BISHOP_ATTACKS);
+    }
+
+    private static long getSliderAttacks(
+            int square, long blockers, long[] masks, long[] magics, int[] shifts, long[][] attacks) {
+        long mask = masks[square];
         long blocker = blockers & mask;
-        long magic = BISHOP_MAGICS[square];
+        long magic = magics[square];
         long index = blocker * magic;
-        long shift = BISHOP_SHIFTS[square];
+        long shift = shifts[square];
         long key = index >>> shift;
-        return BISHOP_ATTACKS[square][(int) key];
+        return attacks[square][(int) key];
     }
 
     private static long[] initMagicMask(boolean isOrthogonal) {
@@ -123,12 +127,11 @@ public class MagicBitboards {
 
         for (long blockerMask : blockerMasks) {
             long index = (blockerMask * magic) >>> shift;
-            long legalMoves = createLegalMoveMask(square, blockerMask, isOrthogonal);
-            table[(int) index] = legalMoves;
+            long attacks = createAttackMask(square, blockerMask, isOrthogonal);
+            table[(int) index] = attacks;
         }
         return table;
     }
-
 
     private static long[] createBlockerMasks(long movementMask) {
         List<Integer> moveSquares = new ArrayList<>();
@@ -171,9 +174,9 @@ public class MagicBitboards {
         return movementMask;
     }
 
-    private static long createLegalMoveMask(int startSquare, long blockers, boolean isOrthogonal) {
+    private static long createAttackMask(int startSquare, long blockers, boolean isOrthogonal) {
 
-        long legalMoveMask = 0L;
+        long attackMask = 0L;
         Set<Integer> vectors = isOrthogonal ? BoardUtils.ORTHOGONAL_MOVE_VECTORS : BoardUtils.DIAGONAL_MOVE_VECTORS;
 
         for (int vector : vectors) {
@@ -181,7 +184,7 @@ public class MagicBitboards {
             for (int distance = 1; distance < 8; distance++) {
                 if (BoardUtils.isValidIndex(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
                     currentSquare = currentSquare + vector;
-                    legalMoveMask |= 1L << currentSquare;
+                    attackMask |= 1L << currentSquare;
                     if ((blockers & 1L << currentSquare) != 0) {
                         break;
                     }
@@ -190,7 +193,7 @@ public class MagicBitboards {
                 }
             }
         }
-        return legalMoveMask;
+        return attackMask;
 
     }
 
@@ -202,6 +205,5 @@ public class MagicBitboards {
 
         return (!isAFile || !isVectorAFileException) && (!isHFile || !isVectorHFileException);
     }
-
 
 }

@@ -2,7 +2,6 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
@@ -16,8 +15,6 @@ import java.util.stream.Collectors;
 public class BishopMoveGeneratorTest {
 
     private final BishopMoveGenerator generator = new BishopMoveGenerator();
-
-    private final String bishop = Piece.getPieceCode(true, PieceType.BISHOP);
 
     private Board board;
 
@@ -77,6 +74,7 @@ public class BishopMoveGeneratorTest {
         board.setPiece(14, PieceType.KNIGHT, false, true);
         board.setPiece(42, PieceType.BISHOP, false, true);
         board.setPiece(46, PieceType.ROOK, false, true);
+        System.out.println(board.getOccupied());
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
 

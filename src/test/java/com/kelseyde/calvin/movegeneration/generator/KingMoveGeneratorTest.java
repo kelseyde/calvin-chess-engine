@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
@@ -60,9 +60,9 @@ public class KingMoveGeneratorTest {
         Board board = new Board();
 
         long whiteKingAttacks = generator.generateAttackMask(board, true);
-        BitBoardUtils.print(whiteKingAttacks);
+        BitboardUtils.print(whiteKingAttacks);
         long blackKingAttacks = generator.generateAttackMask(board, false);
-        BitBoardUtils.print(blackKingAttacks);
+        BitboardUtils.print(blackKingAttacks);
 
     }
 

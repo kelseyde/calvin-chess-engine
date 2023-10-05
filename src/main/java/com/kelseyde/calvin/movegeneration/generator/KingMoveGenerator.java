@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.move.MoveType;
@@ -49,13 +49,13 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupied();
 
-        int startSquare = BitBoardUtils.scanForward(king);
+        int startSquare = BitboardUtils.scanForward(king);
 
         long kingMoves = KING_ATTACKS[startSquare] &~ friendlyPieces;
         while (kingMoves != 0) {
-            int endSquare = BitBoardUtils.scanForward(kingMoves);
+            int endSquare = BitboardUtils.scanForward(kingMoves);
             moves.add(move(startSquare, endSquare).build());
-            kingMoves = BitBoardUtils.popLSB(kingMoves);
+            kingMoves = BitboardUtils.popLSB(kingMoves);
         }
         boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
         if (isKingsideAllowed) {
@@ -83,7 +83,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
     @Override
     public long generateAttackMask(Board board, boolean isWhite) {
         long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
-        int startSquare = BitBoardUtils.scanForward(king);
+        int startSquare = BitboardUtils.scanForward(king);
         if (startSquare > 63) {
             throw new IllegalArgumentException("No king! " + board.getMoveHistory().stream().map(NotationUtils::toNotation).toList());
         }

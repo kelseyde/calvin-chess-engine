@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.evaluation.pawnstructure;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import com.kelseyde.calvin.utils.BoardUtils;
@@ -43,7 +43,7 @@ public class PawnEvaluator implements BoardEvaluator {
         int doubledPawnCount = 0;
         long friendlyPawnsIterator = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         while (friendlyPawnsIterator > 0) {
-            int pawn = BitBoardUtils.scanForward(friendlyPawnsIterator);
+            int pawn = BitboardUtils.scanForward(friendlyPawnsIterator);
             int rank = BoardUtils.getRank(pawn);
             int file = BoardUtils.getFile(pawn);
 
@@ -67,7 +67,7 @@ public class PawnEvaluator implements BoardEvaluator {
                 doubledPawnCount++;
             }
 
-            friendlyPawnsIterator = BitBoardUtils.popLSB(friendlyPawnsIterator);
+            friendlyPawnsIterator = BitboardUtils.popLSB(friendlyPawnsIterator);
         }
         return passedPawnsBonus + ISOLATED_PAWN_PENALTY[isolatedPawnCount] + DOUBLED_PAWN_PENALTY[doubledPawnCount];
 

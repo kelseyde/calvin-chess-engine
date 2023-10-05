@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
 import lombok.Getter;
@@ -40,9 +40,9 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
         long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
 
         while (knights != 0) {
-            int startSquare = BitBoardUtils.scanForward(knights);
+            int startSquare = BitboardUtils.scanForward(knights);
             moves.addAll(generatePseudoLegalMovesFromSquare(board, startSquare));
-            knights = BitBoardUtils.popLSB(knights);
+            knights = BitboardUtils.popLSB(knights);
         }
         return moves;
 
@@ -53,10 +53,10 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
         long attackMask = 0L;
         long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
         while (knights != 0) {
-            int knight = BitBoardUtils.scanForward(knights);
+            int knight = BitboardUtils.scanForward(knights);
             long knightAttacks = generateAttackMaskFromSquare(board, knight, isWhite);
             attackMask |= knightAttacks;
-            knights = BitBoardUtils.popLSB(knights);
+            knights = BitboardUtils.popLSB(knights);
         }
         return attackMask;
 
@@ -77,13 +77,13 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
     private Set<Move> addKnightMoves(int startSquare, long possibleMoves) {
         Set<Move> moves = new HashSet<>();
         while (possibleMoves != 0) {
-            int endSquare = BitBoardUtils.scanForward(possibleMoves);
+            int endSquare = BitboardUtils.scanForward(possibleMoves);
             moves.add(Move.builder()
                     .pieceType(PieceType.KNIGHT)
                     .startSquare(startSquare)
                     .endSquare(endSquare)
                     .build());
-            possibleMoves = BitBoardUtils.popLSB(possibleMoves);
+            possibleMoves = BitboardUtils.popLSB(possibleMoves);
         }
         return moves;
     }

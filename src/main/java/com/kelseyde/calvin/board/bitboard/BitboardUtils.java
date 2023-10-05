@@ -2,7 +2,7 @@ package com.kelseyde.calvin.board.bitboard;
 
 import com.kelseyde.calvin.utils.BoardUtils;
 
-public class BitBoardUtils {
+public class BitboardUtils {
 
     public static long shiftNorth(long board) {
         return board << 8;

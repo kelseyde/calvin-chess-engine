@@ -6,8 +6,6 @@ import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class PawnEvaluatorTest {
 
     private final BoardEvaluator evaluator = new PawnEvaluator();

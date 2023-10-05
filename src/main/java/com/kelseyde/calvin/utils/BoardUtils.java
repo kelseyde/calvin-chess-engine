@@ -2,7 +2,20 @@ package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.bitboard.Bits;
 
+import java.util.Set;
+
 public class BoardUtils {
+
+    // All the possible move 'vectors' for a sliding piece, i.e., the offsets for the directions in which a sliding
+    // piece is permitted to move. Bishops will use only the diagonal vectors, rooks only the orthogonal vectors, while
+    // queens will use both.
+    public static final Set<Integer> DIAGONAL_MOVE_VECTORS = Set.of(-9, -7, 7, 9);
+    public static final Set<Integer> ORTHOGONAL_MOVE_VECTORS = Set.of(-8, -1, 1, 8);
+
+    // The following sets are exceptions to the initial rule, in scenarios where the sliding piece is placed on the a or h-files.
+    // These exceptions prevent the piece from 'wrapping' around to the other side of the board.
+    public static final Set<Integer> A_FILE_OFFSET_EXCEPTIONS = Set.of(-9, -1, 7);
+    public static final Set<Integer> H_FILE_OFFSET_EXCEPTIONS = Set.of(-7, 1, 9);
 
     public static int getFile(int square) {
         long bb = 1L << square;
@@ -32,6 +45,10 @@ public class BoardUtils {
 
     public static int squareIndex(int rank, int file) {
         return 8 * rank + file;
+    }
+
+    public static boolean isValidIndex(int squareIndex) {
+        return squareIndex >= 0 && squareIndex < 64;
     }
 
 }

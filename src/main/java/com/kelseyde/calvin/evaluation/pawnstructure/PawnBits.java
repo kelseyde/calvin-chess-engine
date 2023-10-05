@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.evaluation.pawnstructure;
 
-import com.kelseyde.calvin.board.bitboard.BitBoardUtils;
+import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.utils.BoardUtils;
 
@@ -44,8 +44,8 @@ public class PawnBits {
         for (int square = 0; square < 64; square++) {
             long squareBB = 1L << square;
             pawnProtectionMask[square] = isWhite ?
-                    BitBoardUtils.shiftSouthEast(squareBB) | BitBoardUtils.shiftSouthWest(squareBB) :
-                    BitBoardUtils.shiftNorthEast(squareBB) | BitBoardUtils.shiftNorthWest(squareBB);
+                    BitboardUtils.shiftSouthEast(squareBB) | BitboardUtils.shiftSouthWest(squareBB) :
+                    BitboardUtils.shiftNorthEast(squareBB) | BitboardUtils.shiftNorthWest(squareBB);
         }
         return pawnProtectionMask;
     }

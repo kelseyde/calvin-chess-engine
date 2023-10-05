@@ -7,23 +7,23 @@ package com.kelseyde.calvin.board.bitboard;
 public class Bits {
 
     public static final long RANK_1 = 0b0000000000000000000000000000000000000000000000000000000011111111L;
-    public static final long RANK_2 = BitBoardUtils.shiftNorth(RANK_1);
-    public static final long RANK_3 = BitBoardUtils.shiftNorth(RANK_2);
-    public static final long RANK_4 = BitBoardUtils.shiftNorth(RANK_3);
-    public static final long RANK_5 = BitBoardUtils.shiftNorth(RANK_4);
-    public static final long RANK_6 = BitBoardUtils.shiftNorth(RANK_5);
-    public static final long RANK_7 = BitBoardUtils.shiftNorth(RANK_6);
-    public static final long RANK_8 = BitBoardUtils.shiftNorth(RANK_7);
+    public static final long RANK_2 = BitboardUtils.shiftNorth(RANK_1);
+    public static final long RANK_3 = BitboardUtils.shiftNorth(RANK_2);
+    public static final long RANK_4 = BitboardUtils.shiftNorth(RANK_3);
+    public static final long RANK_5 = BitboardUtils.shiftNorth(RANK_4);
+    public static final long RANK_6 = BitboardUtils.shiftNorth(RANK_5);
+    public static final long RANK_7 = BitboardUtils.shiftNorth(RANK_6);
+    public static final long RANK_8 = BitboardUtils.shiftNorth(RANK_7);
     public static final long[] RANK_MASKS = {RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8};
 
     public static final long FILE_A = 0b0000000100000001000000010000000100000001000000010000000100000001L;
-    public static final long FILE_B = BitBoardUtils.shiftEast(FILE_A);
-    public static final long FILE_C = BitBoardUtils.shiftEast(FILE_B);
-    public static final long FILE_D = BitBoardUtils.shiftEast(FILE_C);
-    public static final long FILE_E = BitBoardUtils.shiftEast(FILE_D);
-    public static final long FILE_F = BitBoardUtils.shiftEast(FILE_E);
-    public static final long FILE_G = BitBoardUtils.shiftEast(FILE_F);
-    public static final long FILE_H = BitBoardUtils.shiftEast(FILE_G);
+    public static final long FILE_B = BitboardUtils.shiftEast(FILE_A);
+    public static final long FILE_C = BitboardUtils.shiftEast(FILE_B);
+    public static final long FILE_D = BitboardUtils.shiftEast(FILE_C);
+    public static final long FILE_E = BitboardUtils.shiftEast(FILE_D);
+    public static final long FILE_F = BitboardUtils.shiftEast(FILE_E);
+    public static final long FILE_G = BitboardUtils.shiftEast(FILE_F);
+    public static final long FILE_H = BitboardUtils.shiftEast(FILE_G);
     public static final long[] FILE_MASKS = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
 
     public static final long[] DIAGONAL_MASKS = {

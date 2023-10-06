@@ -1,5 +1,11 @@
 package com.kelseyde.calvin.utils;
 
+/**
+ * Precalculated lookup table for the number of king moves between each pair of squares on the board (the so-called
+ * 'Chebyshev distance). Used mainly in the endgame when king races often occur.
+ *
+ * @see <a href="https://www.chessprogramming.org/Distance">Chess Programming Wiki</a>
+ */
 public class Distance {
 
     private static final int[][] DISTANCE_TABLE = new int[64][64];

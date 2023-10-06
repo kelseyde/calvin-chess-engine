@@ -18,5 +18,5 @@ logging:
     max-size: 1
     clean-history-on-start: true
   level:
-    root: DEBUG
+    root: WARN
     com.kelseyde.calvin: DEBUG

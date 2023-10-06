@@ -60,7 +60,6 @@ public class RookMoveGeneratorTest {
         board.setPiece(26, PieceType.KNIGHT, false, true);
         board.setPiece(30, PieceType.BISHOP, false, true);
         board.setPiece(44, PieceType.ROOK, false, true);
-        System.out.println(board.getOccupied());
 
         assertLegalSquares(startSquare, Set.of(12, 20, 26, 27, 29, 30, 36, 44));
 

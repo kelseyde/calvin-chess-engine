@@ -2,7 +2,6 @@ package com.kelseyde.calvin.evaluation.placement;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import org.springframework.stereotype.Service;
 
@@ -10,14 +9,14 @@ import org.springframework.stereotype.Service;
 public class PiecePlacementEvaluator implements BoardEvaluator {
 
     @Override
-    public int evaluate(Board board) {
+    public int evaluate(Board board, float gamePhase) {
         int colourModifier = board.isWhiteToMove() ? 1 : -1;
-        int whiteScore = calculatePlacementScore(board, true);
-        int blackScore = calculatePlacementScore(board, false);
+        int whiteScore = calculatePlacementScore(board, gamePhase, true);
+        int blackScore = calculatePlacementScore(board, gamePhase, false);
         return colourModifier * (whiteScore - blackScore);
     }
 
-    private int calculatePlacementScore(Board board, boolean isWhite) {
+    private int calculatePlacementScore(Board board, float gamePhase, boolean isWhite) {
 
         long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
@@ -26,20 +25,41 @@ public class PiecePlacementEvaluator implements BoardEvaluator {
         long queens = isWhite ? board.getWhiteQueens() : board.getBlackQueens();
         long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
 
-        return scorePieceType(PieceType.PAWN, pawns, isWhite)
-                + scorePieceType(PieceType.KNIGHT, knights, isWhite)
-                + scorePieceType(PieceType.BISHOP, bishops, isWhite)
-                + scorePieceType(PieceType.ROOK, rooks, isWhite)
-                + scorePieceType(PieceType.QUEEN, queens, isWhite)
-                + scorePieceType(PieceType.KING, king, isWhite);
+        int[] pawnStartTable = isWhite ? PieceSquareTable.WHITE_PAWN_START_TABLE : PieceSquareTable.BLACK_PAWN_START_TABLE;
+        int[] pawnEndTable = isWhite ? PieceSquareTable.WHITE_PAWN_END_TABLE : PieceSquareTable.BLACK_PAWN_END_TABLE;
+        int[] knightTable = isWhite ? PieceSquareTable.WHITE_KNIGHT_TABLE : PieceSquareTable.BLACK_KNIGHT_TABLE;
+        int[] bishopTable = isWhite ? PieceSquareTable.WHITE_BISHOP_TABLE : PieceSquareTable.BLACK_BISHOP_TABLE;
+        int[] rookTable = isWhite ? PieceSquareTable.WHITE_ROOK_TABLE : PieceSquareTable.BLACK_ROOK_TABLE;
+        int[] queenTable = isWhite ? PieceSquareTable.WHITE_QUEEN_TABLE : PieceSquareTable.BLACK_QUEEN_TABLE;
+        int[] kingStartTable = isWhite ? PieceSquareTable.WHITE_KING_START_TABLE : PieceSquareTable.BLACK_KING_START_TABLE;
+        int[] kingEndTable = isWhite ? PieceSquareTable.WHITE_KING_END_TABLE : PieceSquareTable.BLACK_KING_END_TABLE;
+
+        return scoreMultiTablePiece(pawns, gamePhase, pawnStartTable, pawnEndTable)
+                + scoreSingleTablePiece(knights, knightTable)
+                + scoreSingleTablePiece(bishops, bishopTable)
+                + scoreSingleTablePiece(rooks, rookTable)
+                + scoreSingleTablePiece(queens, queenTable)
+                + scoreMultiTablePiece(king, gamePhase, kingStartTable, kingEndTable);
     }
 
-    private int scorePieceType(PieceType type, long pieceBB, boolean isWhite) {
+    private int scoreSingleTablePiece(long pieces, int[] pieceTable) {
         int pieceTypeScore = 0;
-        while (pieceBB != 0) {
-            int piece = BitboardUtils.scanForward(pieceBB);
-            pieceTypeScore += PieceSquareTable.scorePiece(type, piece, isWhite);
-            pieceBB = BitboardUtils.popLSB(pieceBB);
+        while (pieces != 0) {
+            int square = BitboardUtils.scanForward(pieces);
+            pieceTypeScore += pieceTable[square];
+            pieces = BitboardUtils.popLSB(pieces);
+        }
+        return pieceTypeScore;
+    }
+
+    private int scoreMultiTablePiece(long pieces, float gamePhase, int[] openingTable, int[] endgameTable) {
+        int pieceTypeScore = 0;
+        while (pieces != 0) {
+            int square = BitboardUtils.scanForward(pieces);
+            // gives a tapered eval based on what phase the game is in
+            pieceTypeScore += gamePhase * openingTable[square];
+            pieceTypeScore += (1 - gamePhase) * endgameTable[square];
+            pieces = BitboardUtils.popLSB(pieces);
         }
         return pieceTypeScore;
     }

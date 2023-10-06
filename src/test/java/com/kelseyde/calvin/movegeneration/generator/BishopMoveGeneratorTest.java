@@ -74,7 +74,6 @@ public class BishopMoveGeneratorTest {
         board.setPiece(14, PieceType.KNIGHT, false, true);
         board.setPiece(42, PieceType.BISHOP, false, true);
         board.setPiece(46, PieceType.ROOK, false, true);
-        System.out.println(board.getOccupied());
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
 

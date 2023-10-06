@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class MaterialEvaluator implements BoardEvaluator {
 
     @Override
-    public int evaluate(Board board) {
+    public int evaluate(Board board, float gamePhase) {
         int colourModifier = board.isWhiteToMove() ? 1 : -1;
         int whiteScore = calculateMaterialScore(board, true);
         int blackScore = calculateMaterialScore(board, false);

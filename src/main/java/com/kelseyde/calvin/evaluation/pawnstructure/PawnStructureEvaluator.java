@@ -26,7 +26,7 @@ public class PawnStructureEvaluator implements BoardEvaluator {
     private static final int[] DOUBLED_PAWN_PENALTY = { 0, -5, -10, -20, -40, -60, -75, -85, -95};
 
     @Override
-    public int evaluate(Board board) {
+    public int evaluate(Board board, float gamePhase) {
         int colourModifier = board.isWhiteToMove() ? 1 : -1;
         int whiteScore = calculatePawnScore(board, true);
         int blackScore = calculatePawnScore(board, false);

@@ -47,6 +47,16 @@ public class BoardUtils {
         return 8 * rank + file;
     }
 
+    public static int distance(int sq1, int sq2) {
+        int file1 = sq1 & 7;
+        int file2 = sq2 & 7;
+        int rank1 = sq1 >> 3;
+        int rank2 = sq2 >> 3;
+        int rankDistance = Math.abs(rank2 - rank1);
+        int fileDistance = Math.abs(file2 - file1);
+        return Math.max(rankDistance, fileDistance);
+    }
+
     public static boolean isValidIndex(int squareIndex) {
         return squareIndex >= 0 && squareIndex < 64;
     }

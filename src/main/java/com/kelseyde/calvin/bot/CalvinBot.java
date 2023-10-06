@@ -83,10 +83,8 @@ public class CalvinBot implements Bot {
 
     @Override
     public Move think(int thinkTimeMs) {
-        stopThinking();
-        Move move = search.search(Duration.ofMillis(thinkTimeMs)).move();
+        return search.search(Duration.ofMillis(thinkTimeMs)).move();
 //        startPondering(); TODO
-        return move;
     }
 
     @Override

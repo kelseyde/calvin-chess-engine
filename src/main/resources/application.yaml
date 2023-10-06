@@ -8,16 +8,15 @@ http:
   enabled: true
 
 server:
-  port: 8084
+  port: 8082
   servlet:
     context-path: /${spring.application.name}
 
 logging:
   file:
-    path: /Users/senfal/git/dan/calvin/calvin-chess-engine/log
     name: calvin_debug.log
     max-size: 1
     clean-history-on-start: true
   level:
-    root: WARN
-    com.kelseyde.calvin: WARN
+    root: DEBUG
+    com.kelseyde.calvin: DEBUG

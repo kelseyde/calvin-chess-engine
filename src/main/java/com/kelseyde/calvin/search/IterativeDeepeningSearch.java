@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
@@ -36,7 +36,7 @@ public class IterativeDeepeningSearch implements Search {
     private final MoveGenerator moveGenerator = new MoveGenerator();
     private final ResultCalculator resultCalculator = new ResultCalculator();
     private final MoveOrderer moveOrderer = new MoveOrderer();
-    private final Evaluator evaluator = new Evaluator();
+    private final BoardEvaluator evaluator = new BoardEvaluator();
     private final StaticExchangeEvaluator see = new StaticExchangeEvaluator();
     private final TranspositionTable transpositionTable;
 

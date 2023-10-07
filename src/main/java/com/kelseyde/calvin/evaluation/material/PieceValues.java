@@ -9,6 +9,7 @@ import com.kelseyde.calvin.board.piece.PieceType;
  * @see <a href="https://www.chessprogramming.org/Point_Value">Chess Programming Wiki</a>
  */
 public class PieceValues {
+
     public static final int PAWN = 100;
     public static final int KNIGHT = 320;
     public static final int BISHOP = 330;

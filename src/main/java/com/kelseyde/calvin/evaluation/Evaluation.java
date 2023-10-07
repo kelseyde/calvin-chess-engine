@@ -1,19 +1,27 @@
 package com.kelseyde.calvin.evaluation;
 
-import lombok.Builder;
+import com.kelseyde.calvin.evaluation.material.Material;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-// TODO
 @Data
-@Builder
+@NoArgsConstructor
 public class Evaluation {
 
-    int materialScore;
+    Material material;
+
+    int gamePhase;
 
     int pieceSquareScore;
 
     int pawnStructureScore;
 
     int kingSafetyScore;
+
+    int mopUpEval;
+
+    public int sum() {
+        return material.eval() + pieceSquareScore + pawnStructureScore + kingSafetyScore + mopUpEval;
+    }
 
 }

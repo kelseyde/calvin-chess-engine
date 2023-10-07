@@ -55,8 +55,13 @@ public class MoveOrderer {
         boolean isCapture = capturedPieceType != null;
         if (isCapture) {
             int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(move.getPieceType());
-            int captureBias = materialDelta >= 0 ? WINNING_CAPTURE_BIAS : LOSING_CAPTURE_BIAS;
-            moveScore += captureBias + materialDelta;
+            if (materialDelta > 0) {
+                moveScore += WINNING_CAPTURE_BIAS;
+            } else if (materialDelta == 0) {
+                moveScore += EQUAL_CAPTURE_BIAS;
+            } else {
+                moveScore += LOSING_CAPTURE_BIAS;
+            }
 //            int seeEval = seeEvaluator.evaluate(board, move);
 //            if (seeEval > 0) {
 //                moveScore += seeEval + WINNING_CAPTURE_BIAS;

@@ -2,21 +2,12 @@ package com.kelseyde.calvin.evaluation.placement;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PiecePlacementEvaluator implements BoardEvaluator {
+public class PiecePlacementEvaluator {
 
-    @Override
-    public int evaluate(Board board, float gamePhase) {
-        int colourModifier = board.isWhiteToMove() ? 1 : -1;
-        int whiteScore = calculatePlacementScore(board, gamePhase, true);
-        int blackScore = calculatePlacementScore(board, gamePhase, false);
-        return colourModifier * (whiteScore - blackScore);
-    }
-
-    private int calculatePlacementScore(Board board, float gamePhase, boolean isWhite) {
+    public int evaluate(Board board, float gamePhase, boolean isWhite) {
 
         long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();

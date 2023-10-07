@@ -14,23 +14,27 @@ public class MopUpEvaluator {
 
     public int evaluate(Board board, Material friendlyMaterial, Material opponentMaterial, boolean isWhite) {
 
-        int score = 0;
         boolean twoPawnAdvantage = friendlyMaterial.eval() > (opponentMaterial.eval() + 2 * PieceValues.PAWN);
 
         if (twoPawnAdvantage && opponentMaterial.phase() < 1) {
+
+            int mopUpEval = 0;
 
             int friendlyKing = BitboardUtils.scanForward(isWhite ? board.getWhiteKing() : board.getBlackKing());
             int opponentKing = BitboardUtils.scanForward(isWhite ? board.getBlackKing() : board.getWhiteKing());
 
             // Bonus for moving king closer to opponent king
-            score += (14 - Distance.manhattan(friendlyKing, opponentKing)) * KING_MANHATTAN_DISTANCE_MULTIPLIER;
+            mopUpEval += (14 - Distance.manhattan(friendlyKing, opponentKing)) * KING_MANHATTAN_DISTANCE_MULTIPLIER;
 
             // Bonus for pushing opponent king to the edges of the board
-            score += Distance.centerManhattan(opponentKing) * KING_CENTER_MANHATTAN_DISTANCE_MULTIPLIER;
+            mopUpEval += Distance.centerManhattan(opponentKing) * KING_CENTER_MANHATTAN_DISTANCE_MULTIPLIER;
+
+            // Taper the eval based on how much material the opponent has remaining
+            return mopUpEval * (int) (1 - opponentMaterial.phase());
 
         }
 
-        return score;
+        return 0;
     }
 
 }

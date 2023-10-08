@@ -7,6 +7,7 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
@@ -33,6 +34,7 @@ public class MoveOrderer {
     private final StaticExchangeEvaluator seeEvaluator = new StaticExchangeEvaluator();
 
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
+    private int[][][] historyMoves = new int[2][64][64];
 
     public Move[] orderMoves(Board board, Move[] moves, Move previousBestMove, boolean includeKillers, int depth) {
         Arrays.sort(moves, Comparator.comparing(move -> -calculateMoveScore(board, move, previousBestMove, includeKillers, depth)));
@@ -80,9 +82,12 @@ public class MoveOrderer {
             moveScore += promotionBias;
         }
 
-        // Prioritise killers
-        if (!isCapture && includeKillers && isKillerMove(depth, move)) {
-            moveScore += KILLER_MOVE_BIAS;
+        // Prioritise killers + history moves
+        if (!isCapture) {
+            if (includeKillers && isKillerMove(depth, move)) {
+                moveScore += KILLER_MOVE_BIAS;
+            }
+            moveScore += historyMoves[colourIndex(board.isWhiteToMove())][move.getStartSquare()][move.getEndSquare()];
         }
 
         // Prioritise evaluating checks
@@ -110,7 +115,7 @@ public class MoveOrderer {
         }
     }
 
-    public boolean isKillerMove(int ply, Move move) {
+    private boolean isKillerMove(int ply, Move move) {
         for (Move killerMove : killerMoves[ply]) {
             if (killerMove != null && killerMove.matches(move)) {
                 return true;
@@ -119,8 +124,21 @@ public class MoveOrderer {
         return false;
     }
 
+    public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {
+        int colourIndex = colourIndex(isWhite);
+        int startSquare = historyMove.getStartSquare();
+        int endSquare = historyMove.getEndSquare();
+        int score = plyRemaining * plyRemaining;
+        historyMoves[colourIndex][startSquare][endSquare] = score;
+    }
+
+    private int colourIndex(boolean isWhite) {
+        return isWhite ? 1 : 0;
+    }
+
     public void clear() {
         killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
+        historyMoves = new int[2][64][64];
     }
 
 }

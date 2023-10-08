@@ -1,6 +1,9 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
+import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -238,6 +241,55 @@ public class CheckTest {
         // try to castle through the bishop check
         Assertions.assertThrows(IllegalMoveException.class,
                 () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "c8")));
+
+    }
+
+    @Test
+    public void cannotStepKingBackOnRayOfCheckingOrthogonalSlider() {
+
+        String fen = "8/8/8/2k5/2r2K2/8/8/8 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+
+        // try to step away on same rank as rook
+        Assertions.assertThrows(IllegalMoveException.class,
+                () -> board.makeMove(TestUtils.getLegalMove(board, "f4", "g4")));
+
+    }
+
+    @Test
+    public void cannotStepKingBackOnRayOfCheckingDiagonalSlider() {
+
+        String fen = "8/8/3b4/2k5/5K2/8/8/8 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+
+        // try to step away on same diagonal as bishop
+        Assertions.assertThrows(IllegalMoveException.class,
+                () -> board.makeMove(TestUtils.getLegalMove(board, "f4", "g3")));
+
+    }
+
+    @Test
+    public void cannotEnPassantIntoCheck() {
+
+        // fen = en passant funhouse fen
+        String fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ";
+        Board board = FEN.fromFEN(fen);
+
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
+        Assertions.assertThrows(IllegalMoveException.class,
+                () -> board.makeMove(TestUtils.getLegalMove(board, "f4", "e3")));
+
+    }
+
+    @Test
+    public void canEnPassantCheckingPawn() {
+
+        String fen = "8/2p5/3p4/1P4r1/1K3p1k/8/4P1P1/1R6 b - - 3 2";
+
+        Board board = FEN.fromFEN(fen);
+
+        board.makeMove(TestUtils.getLegalMove(board, "c7", "c5"));
+        board.makeMove(TestUtils.getLegalMove(board, "b5", "c6"));
 
     }
 

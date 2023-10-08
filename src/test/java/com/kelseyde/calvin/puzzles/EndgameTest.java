@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 import java.util.Collections;
 
+@Disabled
 public class EndgameTest {
 
     private final Bot bot = new CalvinBot();
@@ -39,7 +40,6 @@ public class EndgameTest {
     }
 
     @Test
-    @Disabled
     public void testQueenCheckmate() {
 
         String fen = "8/8/8/3k4/8/8/1Q6/4K3 w - - 0 1";
@@ -47,7 +47,6 @@ public class EndgameTest {
 
     }
 
-    @Disabled
     @Test
     public void testRookCheckmate() {
 

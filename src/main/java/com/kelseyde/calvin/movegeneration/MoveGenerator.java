@@ -75,10 +75,10 @@ public class MoveGenerator {
         return allMoves.stream()
                 .filter(move ->
 
-                    // If we are in single-check, filter out all moves that do not resolve check
+                    // If we are in single-check, filter out all moves that do not resolve the check
                     (!isCheck || resolvesCheck(board, move, kingSquare, isWhite)) &&
 
-                    // If we are in single-check, filter out all moves that do not resolve check
+                    // Additionally, filter out moves that leave the king in (a new) check
                     doesNotLeaveKingInCheck(board, move, kingSquare, isWhite) &&
 
                      // Finally, optionally filter out non-capture moves

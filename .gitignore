@@ -23,4 +23,6 @@ target/**
 *.iws
 *.log.json
 
+venv
+
 .DS_Store

@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.Piece;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -98,15 +99,15 @@ public class KnightMoveGeneratorTest {
     @Test
     public void canCaptureOpponentPieces() {
 
-        board.setPiece(43, PieceType.KNIGHT, true, true);
-        board.setPiece(26, PieceType.PAWN, false, true);
-        board.setPiece(28, PieceType.PAWN, false, true);
-        board.setPiece(33, PieceType.PAWN, false, true);
-        board.setPiece(37, PieceType.KNIGHT, false, true);
-        board.setPiece(49, PieceType.BISHOP, false, true);
-        board.setPiece(53, PieceType.ROOK, false, true);
-        board.setPiece(58, PieceType.QUEEN, false, true);
-        board.setPiece(60, PieceType.QUEEN, false, true);
+        board.toggleSquare(PieceType.KNIGHT, true, 43);
+        board.toggleSquare(PieceType.PAWN, false, 26);
+        board.toggleSquare(PieceType.PAWN, false, 28);
+        board.toggleSquare(PieceType.PAWN, false, 33);
+        board.toggleSquare(PieceType.KNIGHT, false, 37);
+        board.toggleSquare(PieceType.BISHOP, false, 49);
+        board.toggleSquare(PieceType.ROOK, false, 53);
+        board.toggleSquare(PieceType.QUEEN, false, 58);
+        board.toggleSquare(PieceType.QUEEN, false, 60);
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
@@ -120,15 +121,8 @@ public class KnightMoveGeneratorTest {
     @Test
     public void cannotCaptureSameColourPieces() {
 
-        board.setPiece(43, PieceType.KNIGHT, true, true);
-        board.setPiece(26, PieceType.PAWN, true, true);
-        board.setPiece(28, PieceType.PAWN, true, true);
-        board.setPiece(33, PieceType.PAWN, true, true);
-        board.setPiece(37, PieceType.KNIGHT, true, true);
-        board.setPiece(49, PieceType.BISHOP, true, true);
-        board.setPiece(53, PieceType.ROOK, true, true);
-        board.setPiece(58, PieceType.QUEEN, true, true);
-        board.setPiece(60, PieceType.QUEEN, true, true);
+        String fen = "2R1R3/1P3Q2/3N4/1B3B2/2P1P3/8/8/K6k w - - 0 1";
+        board = FEN.fromFEN(fen);
 
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(m -> m.getStartSquare() == 43)
@@ -139,7 +133,7 @@ public class KnightMoveGeneratorTest {
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.setPiece(startSquare, PieceType.KNIGHT, true, true);
+        board.toggleSquare(PieceType.KNIGHT, true, startSquare);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(m -> m.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)

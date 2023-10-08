@@ -54,15 +54,14 @@ public class RookMoveGeneratorTest {
     @Test
     public void testCapturingOpponentPiecesEndsVector() {
 
-        int startSquare = 28; //e4
+        String fen = "k7/8/4p3/8/2n1R1b1/8/4q3/K7 w - - 0 1";
+        board = FEN.fromFEN(fen);
 
-        board.setPiece(12, PieceType.PAWN, false, true);
-        board.setPiece(26, PieceType.KNIGHT, false, true);
-        board.setPiece(30, PieceType.BISHOP, false, true);
-        board.setPiece(44, PieceType.ROOK, false, true);
-        System.out.println(board.getOccupied());
-
-        assertLegalSquares(startSquare, Set.of(12, 20, 26, 27, 29, 30, 36, 44));
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
+                .filter(move -> move.getStartSquare() == 28)
+                .map(Move::getEndSquare)
+                .collect(Collectors.toSet());
+        Assertions.assertEquals(Set.of(12, 20, 26, 27, 29, 30, 36, 44), legalSquares);
 
     }
 
@@ -82,23 +81,24 @@ public class RookMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.setPiece(12, PieceType.PAWN, true, true);
-        board.setPiece(26, PieceType.KNIGHT, true, true);
-        board.setPiece(30, PieceType.BISHOP, true, true);
-        board.setPiece(44, PieceType.ROOK, true, true);
+        board.toggleSquare(PieceType.PAWN, true, 12);
+        board.toggleSquare(PieceType.KNIGHT, true, 26);
+        board.toggleSquare(PieceType.BISHOP, true, 30);
+        board.toggleSquare(PieceType.ROOK, true, 44);
+        board.recalculatePieces();
 
         assertLegalSquares(startSquare, Set.of(20, 27, 29, 36));
 
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.setPiece(startSquare, PieceType.ROOK, true, true);
+        board.toggleSquare(PieceType.ROOK, true, startSquare);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.unsetPiece(startSquare);
+        board.toggleSquare(PieceType.ROOK, true, startSquare);
     }
 
 }

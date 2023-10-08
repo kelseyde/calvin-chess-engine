@@ -7,6 +7,7 @@ import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -192,9 +193,9 @@ public class CheckmateTest {
     public void testSimpleQueenCheckmate() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(48, PieceType.KING, false, true);
-        board.setPiece(42, PieceType.KING, true, true);
-        board.setPiece(1, PieceType.QUEEN, true, true);
+        board.toggleSquare(PieceType.KING, false, 48);
+        board.toggleSquare(PieceType.KING, true, 42);
+        board.toggleSquare(PieceType.QUEEN, true, 1);
         
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         GameResult result = evaluator.calculateResult(board);
@@ -205,20 +206,15 @@ public class CheckmateTest {
     @Test
     public void testReturnsCheckmateResultForCorrectSide() {
 
-        Board board = TestUtils.emptyBoard();
-        board.setPiece(48, PieceType.KING, false, true);
-        board.setPiece(42, PieceType.KING, true, true);
-        board.setPiece(1, PieceType.QUEEN, true, true);
+        String fen = "8/k7/2K5/8/8/8/8/1Q6 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         GameResult result = evaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.WHITE_WINS_BY_CHECKMATE, result);
 
-        board = TestUtils.emptyBoard();
-        board.setWhiteToMove(false);
-        board.setPiece(48, PieceType.KING, true, true);
-        board.setPiece(42, PieceType.KING, false, true);
-        board.setPiece(1, PieceType.QUEEN, false, true);
+        fen = "8/K7/2k5/8/8/8/8/1q6 b - - 0 1";
+        board = FEN.fromFEN(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         result = evaluator.calculateResult(board);

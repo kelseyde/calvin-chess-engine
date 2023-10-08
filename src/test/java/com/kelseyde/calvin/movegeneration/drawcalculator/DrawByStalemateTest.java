@@ -17,9 +17,9 @@ public class DrawByStalemateTest {
     public void testSimpleQueenStalemate() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(56, PieceType.KING, false, true);
-        board.setPiece(42, PieceType.KING, true, true);
-        board.setPiece(1, PieceType.QUEEN, true, true);
+        board.toggleSquare(PieceType.KING, false, 56);
+        board.toggleSquare(PieceType.KING, true, 42);
+        board.toggleSquare(PieceType.QUEEN, true, 1);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b6"));
 
@@ -46,10 +46,10 @@ public class DrawByStalemateTest {
     public void testSimpleKingAndBishopStalemate() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(63, PieceType.KING, false, true);
-        board.setPiece(46, PieceType.KING, true, true);
-        board.setPiece(47, PieceType.PAWN, true, true);
-        board.setPiece(37, PieceType.BISHOP, true, true);
+        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(PieceType.KING, true, 46);
+        board.toggleSquare(PieceType.PAWN, true, 47);
+        board.toggleSquare(PieceType.BISHOP, true, 37);
 
         board.makeMove(TestUtils.getLegalMove(board, "f5", "e6"));
 
@@ -63,13 +63,13 @@ public class DrawByStalemateTest {
     public void testStalemateWithPinnedPawn() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(63, PieceType.KING, false, true);
-        board.setPiece(54, PieceType.PAWN, false, true);
-        board.setPiece(38, PieceType.KING, true, true);
-        board.setPiece(47, PieceType.PAWN, true, true);
-        board.setPiece(36, PieceType.BISHOP, true, true);
-        board.setPiece(37, PieceType.BISHOP, true, true);
-        board.setPiece(9, PieceType.QUEEN, true, true);
+        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(PieceType.PAWN, false, 54);
+        board.toggleSquare(PieceType.KING, true, 38);
+        board.toggleSquare(PieceType.PAWN, true, 47);
+        board.toggleSquare(PieceType.BISHOP, true, 36);
+        board.toggleSquare(PieceType.BISHOP, true, 37);
+        board.toggleSquare(PieceType.QUEEN, true, 9);
 
         board.makeMove(TestUtils.getLegalMove(board, "b2", "a2"));
 

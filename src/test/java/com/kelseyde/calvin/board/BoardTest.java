@@ -331,24 +331,8 @@ public class BoardTest {
     @Test
     public void testRookCannotJumpToOtherSide() {
 
-        String fen = "r1b1k2r/1p3ppp/5n2/q2pp3/1P1b4/1QB3P1/4PPBP/RN2K1NR b KQkq - 0 1";
+        String fen = "r1b1k2r/1p3p2/8/8/1n6/2Q5/4P2p/5KNR w kq - 0 1";
         Board board = FEN.fromFEN(fen);
-
-        board.makeMove(TestUtils.getLegalMove(board, "d4", "c3"));
-        board.makeMove(TestUtils.getLegalMove(board, "e1", "f1"));
-        board.makeMove(TestUtils.getLegalMove(board, "a5", "a1"));
-        board.makeMove(TestUtils.getLegalMove(board, "f2", "f4"));
-        board.makeMove(TestUtils.getLegalMove(board, "a1", "b1"));
-        board.makeMove(TestUtils.getLegalMove(board, "b3", "b1"));
-        board.makeMove(TestUtils.getLegalMove(board, "e5", "f4"));
-        board.makeMove(TestUtils.getLegalMove(board, "g2", "d5"));
-        board.makeMove(TestUtils.getLegalMove(board, "f4", "g3"));
-        board.makeMove(TestUtils.getLegalMove(board, "b1", "h7"));
-        board.makeMove(TestUtils.getLegalMove(board, "g3", "h2"));
-        board.makeMove(TestUtils.getLegalMove(board, "h7", "g7"));
-        board.makeMove(TestUtils.getLegalMove(board, "f6", "d5"));
-        board.makeMove(TestUtils.getLegalMove(board, "g7", "c3"));
-        board.makeMove(TestUtils.getLegalMove(board, "d5", "b4"));
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b4"));
         Move queenPromotion = NotationUtils.fromNotation("h2", "g1");
         queenPromotion.setPromotionPieceType(PieceType.QUEEN);
@@ -393,10 +377,12 @@ public class BoardTest {
     }
 
     private void assertSinglePieceBoard(Board board, int startSquare) {
-        board.setPiece(startSquare, PieceType.ROOK, true, true);
+        board.toggleSquare(PieceType.ROOK, true, startSquare);
+        board.recalculatePieces();
         Assertions.assertEquals(Set.of(startSquare), getPiecePositions(board, true));
         Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
-        board.unsetPiece(startSquare);
+        board.toggleSquare(PieceType.ROOK, true, startSquare);
+        board.recalculatePieces();
     }
 
 }

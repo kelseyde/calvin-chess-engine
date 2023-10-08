@@ -16,13 +16,13 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhiteCapture() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(0, PieceType.KING, false, true);
-        board.setPiece(28, PieceType.KNIGHT, false, true);
-        board.setPiece(36, PieceType.KNIGHT, false, true);
-        board.setPiece(35, PieceType.QUEEN, false, true);
+        board.toggleSquare(PieceType.KING, false, 0);
+        board.toggleSquare(PieceType.KNIGHT, false, 28);
+        board.toggleSquare(PieceType.KNIGHT, false, 36);
+        board.toggleSquare(PieceType.QUEEN, false, 35);
 
-        board.setPiece(63, PieceType.KING, true, true);
-        board.setPiece(18, PieceType.KNIGHT, true, true);
+        board.toggleSquare(PieceType.KING, true, 63);
+        board.toggleSquare(PieceType.KNIGHT, true, 18);
 
         board.setWhiteToMove(true);
 
@@ -193,11 +193,11 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhitePawnMove() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(0, PieceType.KING, false, true);
-        board.setPiece(36, PieceType.PAWN, false, true);
+        board.toggleSquare(PieceType.KING, false, 0);
+        board.toggleSquare(PieceType.PAWN, false, 36);
 
-        board.setPiece(63, PieceType.KING, true, true);
-        board.setPiece(12, PieceType.PAWN, true, true);
+        board.toggleSquare(PieceType.KING, true, 63);
+        board.toggleSquare(PieceType.PAWN, true, 12);
 
         board.setWhiteToMove(true);
 
@@ -368,13 +368,13 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceBlackCapture() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(0, PieceType.KING, true, true);
-        board.setPiece(28, PieceType.KNIGHT, true, true);
-        board.setPiece(36, PieceType.KNIGHT, true, true);
-        board.setPiece(35, PieceType.QUEEN, true, true);
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KNIGHT, true, 28);
+        board.toggleSquare(PieceType.KNIGHT, true, 36);
+        board.toggleSquare(PieceType.QUEEN, true, 35);
 
-        board.setPiece(63, PieceType.KING, false, true);
-        board.setPiece(18, PieceType.KNIGHT, false, true);
+        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(PieceType.KNIGHT, false, 18);
 
         board.setWhiteToMove(false);
 
@@ -546,11 +546,11 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceBlackPawnMove() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(0, PieceType.KING, true, true);
-        board.setPiece(28, PieceType.PAWN, true, true);
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.PAWN, true, 28);
 
-        board.setPiece(63, PieceType.KING, false, true);
-        board.setPiece(52, PieceType.PAWN, false, true);
+        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(PieceType.PAWN, false, 52);
 
         board.setWhiteToMove(false);
 

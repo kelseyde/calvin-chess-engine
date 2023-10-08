@@ -2,6 +2,7 @@ package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -225,6 +226,18 @@ public class CheckTest {
         // try to castle through the bishop check
         Assertions.assertThrows(IllegalMoveException.class,
                 () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
+
+    }
+
+    @Test
+    public void cannotCastleQueensideThroughKnightCheck() {
+
+        String fen = "r3k2r/p1ppqpb1/bnN1pnp1/3P4/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 1 1";
+        Board board = FEN.fromFEN(fen);
+
+        // try to castle through the bishop check
+        Assertions.assertThrows(IllegalMoveException.class,
+                () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "c8")));
 
     }
 

@@ -84,11 +84,18 @@ public class MoveOrdererTest {
                 .build();
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h7", "h5", PieceType.KING),
-                NotationUtils.fromNotation("g7", "g5", PieceType.KING),
-                NotationUtils.fromNotation("f7", "f5", PieceType.KING),
-                NotationUtils.fromNotation("e8", "f8", PieceType.QUEEN),
-                NotationUtils.fromNotation("e8", "g8", PieceType.PAWN),
+                NotationUtils.fromNotation("h7", "h5", PieceType.PAWN),
+                NotationUtils.fromNotation("g7", "g5", PieceType.PAWN),
+                NotationUtils.fromNotation("f7", "f5", PieceType.PAWN),
+                NotationUtils.fromNotation("h7", "h6", PieceType.PAWN),
+                NotationUtils.fromNotation("g7", "g6", PieceType.PAWN),
+                NotationUtils.fromNotation("f7", "f6", PieceType.PAWN),
+                NotationUtils.fromNotation("e8", "f8", PieceType.KING),
+                NotationUtils.fromNotation("e8", "e7", PieceType.KING),
+                NotationUtils.fromNotation("e8", "d7", PieceType.KING),
+                NotationUtils.fromNotation("e8", "d8", PieceType.KING),
+                NotationUtils.fromNotation("h8", "g8", PieceType.ROOK),
+                NotationUtils.fromNotation("h8", "f8", PieceType.ROOK),
                 castlingMove
         };
 

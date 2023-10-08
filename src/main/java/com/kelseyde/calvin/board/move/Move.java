@@ -49,15 +49,4 @@ public class Move {
         return squareMatch && promotionMatch;
     }
 
-    public Move copy() {
-        return Move.builder()
-                .startSquare(startSquare)
-                .endSquare(endSquare)
-                .moveType(moveType)
-                .pieceType(pieceType)
-                .promotionPieceType(promotionPieceType)
-                .enPassantFile(enPassantFile)
-                .build();
-    }
-
 }

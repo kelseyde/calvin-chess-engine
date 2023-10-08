@@ -103,6 +103,7 @@ public class MiddlegameTest {
         Move move = bot.think(thinkTimeMs);
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("c3e4")));
+        System.out.println(new ResultCalculator().calculateResult(bot.getBoard()));
 
         bot.applyMove(NotationUtils.fromNotation("c3", "e4", PieceType.KNIGHT));
         bot.applyMove(NotationUtils.fromNotation("c5", "e7", PieceType.BISHOP));

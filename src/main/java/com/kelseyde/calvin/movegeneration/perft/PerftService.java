@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.NotationUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 

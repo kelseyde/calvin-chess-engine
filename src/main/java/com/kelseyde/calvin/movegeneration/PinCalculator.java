@@ -13,32 +13,39 @@ public class PinCalculator {
         long pinMask = 0L;
         int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
         long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
+        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
 
         // Calculate possible orthogonal (queen or rook) pins
         long opponentOrthogonalSliders = isWhite ? board.getBlackQueens() | board.getBlackRooks() : board.getWhiteQueens() | board.getWhiteRooks();
         if (opponentOrthogonalSliders != 0) {
             long possibleOrthogonalPinners = Magics.getRookAttacks(kingSquare, opponentOrthogonalSliders) & opponentOrthogonalSliders;
-            pinMask += calculatePins(board, kingSquare, friendlies, possibleOrthogonalPinners);
+            pinMask += calculatePins(board, kingSquare, friendlies, opponents, possibleOrthogonalPinners);
         }
 
         // Calculate possible diagonal (queen or bishop) pins
         long opponentDiagonalSliders = isWhite ? board.getBlackQueens() | board.getBlackBishops() : board.getWhiteQueens() | board.getWhiteBishops();
         if (opponentDiagonalSliders != 0) {
             long possibleDiagonalPinners = Magics.getBishopAttacks(kingSquare, opponentDiagonalSliders) & opponentDiagonalSliders;
-            pinMask += calculatePins(board, kingSquare, friendlies, possibleDiagonalPinners);
+            pinMask += calculatePins(board, kingSquare, friendlies, opponents, possibleDiagonalPinners);
         }
 
         return pinMask;
 
     }
 
-    private long calculatePins(Board board, int kingSquare, long friendlies, long possiblePinners) {
+    private long calculatePins(Board board, int kingSquare, long friendlies, long opponents, long possiblePinners) {
 
         long pinMask = 0L;
 
         while (possiblePinners != 0) {
             int possiblePinner = BitboardUtils.getLSB(possiblePinners);
-            long friendliesBetween = rayCalculator.rayBetween(kingSquare, possiblePinner) & friendlies;
+            long ray = rayCalculator.rayBetween(kingSquare, possiblePinner);
+            long opponentsBetween = ray & opponents;
+            if (opponentsBetween > 0) {
+                possiblePinners = BitboardUtils.popLSB(possiblePinners);
+                continue;
+            }
+            long friendliesBetween = ray & friendlies;
             boolean onlyPieceBetween = friendliesBetween > 0 && Long.bitCount(friendliesBetween) == 1;
             if (onlyPieceBetween) {
                 pinMask |= friendliesBetween;

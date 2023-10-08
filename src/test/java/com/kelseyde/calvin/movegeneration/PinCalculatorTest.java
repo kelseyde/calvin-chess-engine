@@ -66,6 +66,17 @@ public class PinCalculatorTest {
     }
 
     @Test
+    public void testCannotOrthogonallyPinThroughSameSidePiece() {
+
+        String fen = "5k2/4q3/4p3/8/8/8/8/4K3 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+
+        Assertions.assertEquals(0L, calculator.calculatePinMask(board, true));
+        Assertions.assertEquals(0L, calculator.calculatePinMask(board, false));
+
+    }
+
+    @Test
     public void testSimplePositiveFileOrthogonalPin() {
 
         String fen = "4k3/4r3/8/8/8/8/4P3/4K3 w - - 0 1";

@@ -10,6 +10,8 @@ import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Evaluates the effect of a {@link Move} on a game. First checks if the move is legal. Then, checks if executing the
@@ -22,47 +24,114 @@ public class MoveGenerator {
     //R6R/3Q4/1Q4Q1/4Q3/2Q4Q/Q4Q2/pp1Q4/kBNNK1B1 b - - 0 1
     private static final int MAX_LEGAL_MOVES = 218;
 
-    private static final PawnMoveGenerator PAWN_MOVE_GENERATOR = new PawnMoveGenerator();
-    private static final KnightMoveGenerator KNIGHT_MOVE_GENERATOR = new KnightMoveGenerator();
-    private static final BishopMoveGenerator BISHOP_MOVE_GENERATOR = new BishopMoveGenerator();
-    private static final RookMoveGenerator ROOK_MOVE_GENERATOR = new RookMoveGenerator();
-    private static final QueenMoveGenerator QUEEN_MOVE_GENERATOR = new QueenMoveGenerator();
-    private static final KingMoveGenerator KING_MOVE_GENERATOR = new KingMoveGenerator();
+    private final PawnMoveGenerator pawnMoveGenerator = new PawnMoveGenerator();
+    private final KnightMoveGenerator knightMoveGenerator = new KnightMoveGenerator();
+    private final BishopMoveGenerator bishopMoveGenerator = new BishopMoveGenerator();
+    private final RookMoveGenerator rookMoveGenerator = new RookMoveGenerator();
+    private final QueenMoveGenerator queenMoveGenerator = new QueenMoveGenerator();
+    private final KingMoveGenerator kingMoveGenerator = new KingMoveGenerator();
 
-    private static final Set<PseudoLegalMoveGenerator> PSEUDO_LEGAL_MOVE_GENERATORS = Set.of(
-        PAWN_MOVE_GENERATOR, KNIGHT_MOVE_GENERATOR, BISHOP_MOVE_GENERATOR, ROOK_MOVE_GENERATOR, QUEEN_MOVE_GENERATOR, KING_MOVE_GENERATOR
+    private final PinCalculator pinCalculator = new PinCalculator();
+    private final RayCalculator rayCalculator = new RayCalculator();
+
+    private final Set<PseudoLegalMoveGenerator> PSEUDO_LEGAL_MOVE_GENERATORS = Set.of(
+            pawnMoveGenerator, knightMoveGenerator, bishopMoveGenerator, rookMoveGenerator, queenMoveGenerator, kingMoveGenerator
     );
 
     private long pinMask;
+    private long opponentCheckers;
+    private int opponentCheckersCount;
 
     public Move[] generateLegalMoves(Board board, boolean capturesOnly) {
-        return PSEUDO_LEGAL_MOVE_GENERATORS.stream()
-                .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
-                .filter(pseudoLegalMove -> !isKingCapturable(board, pseudoLegalMove))
+
+        boolean isWhite = board.isWhiteToMove();
+        int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
+
+        calculateAttackData(board, kingSquare, isWhite);
+
+        Set<Move> kingPseudoLegals = kingMoveGenerator.generatePseudoLegalMoves(board);
+
+        // If we are in double-check, the only legal moves are king moves
+        if (opponentCheckersCount == 2) {
+            return kingPseudoLegals.stream()
+                   .filter(pseudoLegalMove -> isLegal(board, pseudoLegalMove))
+                   .filter(legalMove -> !capturesOnly || filterCapturesOnly(board, legalMove))
+                   .toArray(Move[]::new);
+        }
+
+        // Otherwise, generate all the other pseudo-legal moves
+        Set<Move> allPseudoLegals = Stream.of(pawnMoveGenerator, knightMoveGenerator, bishopMoveGenerator, rookMoveGenerator, queenMoveGenerator)
+               .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
+               .collect(Collectors.toSet());
+        allPseudoLegals.addAll(kingPseudoLegals);
+
+        if (opponentCheckersCount == 1) {
+            // capture checking piece, block checking piece, move king
+            int checkerSquare = BitboardUtils.getLSB(opponentCheckers);
+            allPseudoLegals = allPseudoLegals.stream()
+                    .filter(move -> {
+
+                        int endSquare = move.getEndSquare();
+
+                        boolean isCapturingChecker = checkerSquare == endSquare;
+                        if (isCapturingChecker) {
+                            return true;
+                        }
+
+                        if (move.getMoveType().isEnPassant()) {
+                            int enPassantSquare = isWhite ? endSquare - 8 : endSquare + 8;
+                            if (enPassantSquare == checkerSquare) {
+                                return true;
+                            }
+                        }
+
+                        long checkingRay = rayCalculator.rayBetween(kingSquare, checkerSquare);
+                        boolean isBlockingCheck = (checkingRay & 1L << endSquare) != 0;
+                        if (isBlockingCheck) {
+                            return true;
+                        }
+
+                        if (move.getPieceType().equals(PieceType.KING)) {
+                            return true;
+                        }
+                        return false;
+
+                    })
+                    .collect(Collectors.toSet());
+        }
+
+
+        return allPseudoLegals.stream()
+                .filter(pseudoLegalMove -> isLegal(board, pseudoLegalMove))
                 .filter(legalMove -> !capturesOnly || filterCapturesOnly(board, legalMove))
                 .toArray(Move[]::new);
+
     }
 
     public boolean isLegal(Board board, Move move) {
 
+        // TODO multiple isAttacked
         boolean isWhite = board.isWhiteToMove();
 
-        if (move.getPieceType().equals(PieceType.KING)) {
-            long endSquareMask = BitboardUtils.getSquareMask(move.getEndSquare());
-            return !isAttacked(board, board.isWhiteToMove(), endSquareMask);
-
+        if (move.getMoveType().isCastling()) {
+            long kingMask = getCastlingKingTravelSquares(move, isWhite);
+            return !isAttacked(board, isWhite, kingMask);
         }
         else if (move.getMoveType().isEnPassant()) {
             board.makeMove(move);
             long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
-            boolean isKingCapturable = isAttacked(board, !board.isWhiteToMove(), kingMask);
+            boolean isKingCapturable = isAttacked(board, isWhite, kingMask);
             board.unmakeMove();
             return !isKingCapturable;
 
         }
-        else if (move.getMoveType().isCastling()) {
-            long kingMask = getCastlingKingTravelSquares(move, isWhite);
-            return isAttacked(board, board.isWhiteToMove(), kingMask);
+        else if (move.getPieceType().equals(PieceType.KING)) {
+            board.makeMove(move);
+            // TODO can be faster
+            long endSquareMask = 1L << move.getEndSquare();
+            boolean isNotAttacked = !isAttacked(board, isWhite, endSquareMask);
+            board.unmakeMove();
+            return isNotAttacked;
 
         }
         else {
@@ -70,8 +139,15 @@ public class MoveGenerator {
             int endSquare = move.getEndSquare();
             int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
             return !isPinned(startSquare) || BoardUtils.isAligned(kingSquare, startSquare, endSquare);
-
         }
+
+    }
+
+    private void calculateAttackData(Board board, int kingSquare, boolean isWhite) {
+
+        opponentCheckers = calculateAttackerMask(board, isWhite, 1L << kingSquare);
+        opponentCheckersCount = Long.bitCount(opponentCheckers);
+        pinMask = pinCalculator.calculatePinMask(board, isWhite);
 
     }
 
@@ -101,54 +177,46 @@ public class MoveGenerator {
         return isCheck;
     }
 
-
     public boolean isCheck(Board board, boolean isWhite) {
         long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
         return isAttacked(board, isWhite, kingMask);
     }
 
-    private boolean isAttacked(Board board, boolean isWhite, long kingMask) {
-        while (kingMask != 0) {
-            int kingSquare = BitboardUtils.getLSB(kingMask);
+    private long calculateAttackerMask(Board board, boolean isWhite, long squareMask) {
+        long attackerMask = 0L;
+        while (squareMask != 0) {
+            int square = BitboardUtils.getLSB(squareMask);
 
             long opponentPawns = isWhite ? board.getBlackPawns() : board.getWhitePawns();
-            long pawnAttackMask = PAWN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
-            if ((pawnAttackMask & opponentPawns) != 0) {
-                return true;
-            }
+            long pawnAttackMask = pawnMoveGenerator.generateAttackMaskFromSquare(board, square, isWhite);
+            attackerMask |= pawnAttackMask & opponentPawns;
 
             long opponentKnights = isWhite ? board.getBlackKnights() : board.getWhiteKnights();
-            long knightAttackMask = KNIGHT_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
-            if ((knightAttackMask & opponentKnights) != 0) {
-                return true;
-            }
+            long knightAttackMask = knightMoveGenerator.generateAttackMaskFromSquare(board, square, isWhite);
+            attackerMask |= knightAttackMask & opponentKnights;
 
             long opponentBishops = isWhite ? board.getBlackBishops() : board.getWhiteBishops();
-            long bishopAttackMask = BISHOP_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
-            if ((bishopAttackMask & opponentBishops) != 0) {
-                return true;
-            }
+            long bishopAttackMask = bishopMoveGenerator.generateAttackMaskFromSquare(board, square, isWhite);
+            attackerMask |= bishopAttackMask & opponentBishops;
 
             long opponentRooks = isWhite ? board.getBlackRooks() : board.getWhiteRooks();
-            long rookAttackMask = ROOK_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
-            if ((rookAttackMask & opponentRooks) != 0) {
-                return true;
-            }
+            long rookAttackMask = rookMoveGenerator.generateAttackMaskFromSquare(board, square, isWhite);
+            attackerMask |= rookAttackMask & opponentRooks;
 
             long opponentQueens = isWhite ? board.getBlackQueens() : board.getWhiteQueens();
-            long queenAttackMask = QUEEN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
-            if ((queenAttackMask & opponentQueens) != 0) {
-                return true;
-            }
+            long queenAttackMask = queenMoveGenerator.generateAttackMaskFromSquare(board, square, isWhite);
+            attackerMask |= queenAttackMask & opponentQueens;
 
             long opponentKing = isWhite ? board.getBlackKing() : board.getWhiteKing();
-            long kingAttackMask = KING_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);
-            if ((kingAttackMask & opponentKing) != 0) {
-                return true;
-            }
-            kingMask = BitboardUtils.popLSB(kingMask);
+            long kingAttackMask = kingMoveGenerator.generateAttackMaskFromSquare(board, square, isWhite);
+            attackerMask |= kingAttackMask & opponentKing;
+            squareMask = BitboardUtils.popLSB(squareMask);
         }
-        return false;
+        return attackerMask;
+    }
+
+    private boolean isAttacked(Board board, boolean isWhite, long squareMask) {
+        return calculateAttackerMask(board, isWhite, squareMask) != 0;
     }
 
     private boolean filterCapturesOnly(Board board, Move move) {

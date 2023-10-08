@@ -33,7 +33,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
         long singleAdvancesCopy = singleAdvances;
         while (singleAdvancesCopy != 0) {
-            int endSquare = BitboardUtils.scanForward(singleAdvancesCopy);
+            int endSquare = BitboardUtils.getLSB(singleAdvancesCopy);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
             moves.add(move(startSquare, endSquare).build());
             singleAdvancesCopy = BitboardUtils.popLSB(singleAdvancesCopy);
@@ -43,7 +43,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 BitboardUtils.shiftNorth(singleAdvances) &~ occupied & Bits.RANK_4 :
                 BitboardUtils.shiftSouth(singleAdvances) &~ occupied & Bits.RANK_5;
         while (doubleAdvances != 0) {
-            int endSquare = BitboardUtils.scanForward(doubleAdvances);
+            int endSquare = BitboardUtils.getLSB(doubleAdvances);
             int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
             moves.add(move(startSquare, endSquare)
                     .enPassantFile(BoardUtils.getFile(endSquare))
@@ -55,7 +55,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_8 :
                 BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_1;
         while (leftCaptures != 0) {
-            int endSquare = BitboardUtils.scanForward(leftCaptures);
+            int endSquare = BitboardUtils.getLSB(leftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             moves.add(move(startSquare, endSquare).build());
             leftCaptures = BitboardUtils.popLSB(leftCaptures);
@@ -65,7 +65,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8:
                 BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
         while (rightCaptures != 0) {
-            int endSquare = BitboardUtils.scanForward(rightCaptures);
+            int endSquare = BitboardUtils.getLSB(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             moves.add(move(startSquare, endSquare).build());
             rightCaptures = BitboardUtils.popLSB(rightCaptures);
@@ -75,7 +75,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 BitboardUtils.shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 &~ Bits.FILE_H :
                 BitboardUtils.shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 &~ Bits.FILE_H;
         while (enPassantLeftCaptures != 0) {
-            int endSquare = BitboardUtils.scanForward(enPassantLeftCaptures);
+            int endSquare = BitboardUtils.getLSB(enPassantLeftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             moves.add(move(startSquare, endSquare).moveType(MoveType.EN_PASSANT).build());
             enPassantLeftCaptures = BitboardUtils.popLSB(enPassantLeftCaptures);
@@ -85,7 +85,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 BitboardUtils.shiftNorthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_6 :
                 BitboardUtils.shiftSouthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_3;
         while (enPassantRightCaptures != 0) {
-            int endSquare = BitboardUtils.scanForward(enPassantRightCaptures);
+            int endSquare = BitboardUtils.getLSB(enPassantRightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             moves.add(move(startSquare, endSquare).moveType(MoveType.EN_PASSANT).build());
             enPassantRightCaptures = BitboardUtils.popLSB(enPassantRightCaptures);
@@ -95,7 +95,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 BitboardUtils.shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
                 BitboardUtils.shiftSouth(pawns) &~ occupied & Bits.RANK_1;
         while (advancePromotions != 0) {
-            int endSquare = BitboardUtils.scanForward(advancePromotions);
+            int endSquare = BitboardUtils.getLSB(advancePromotions);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
             advancePromotions = BitboardUtils.popLSB(advancePromotions);
@@ -105,7 +105,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_8 :
                 BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_1;
         while (captureLeftPromotions != 0) {
-            int endSquare = BitboardUtils.scanForward(captureLeftPromotions);
+            int endSquare = BitboardUtils.getLSB(captureLeftPromotions);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
             captureLeftPromotions = BitboardUtils.popLSB(captureLeftPromotions);
@@ -115,7 +115,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
                 BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_8 :
                 BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
         while (captureRightPromotions != 0) {
-            int endSquare = BitboardUtils.scanForward(captureRightPromotions);
+            int endSquare = BitboardUtils.getLSB(captureRightPromotions);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             moves.addAll(getPromotionMoves(startSquare, endSquare));
             captureRightPromotions = BitboardUtils.popLSB(captureRightPromotions);

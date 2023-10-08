@@ -20,8 +20,8 @@ public class MopUpEvaluator {
 
             int mopUpEval = 0;
 
-            int friendlyKing = BitboardUtils.scanForward(isWhite ? board.getWhiteKing() : board.getBlackKing());
-            int opponentKing = BitboardUtils.scanForward(isWhite ? board.getBlackKing() : board.getWhiteKing());
+            int friendlyKing = BitboardUtils.getLSB(isWhite ? board.getWhiteKing() : board.getBlackKing());
+            int opponentKing = BitboardUtils.getLSB(isWhite ? board.getBlackKing() : board.getWhiteKing());
 
             // Bonus for moving king closer to opponent king
             mopUpEval += (14 - Distance.manhattan(friendlyKing, opponentKing)) * KING_MANHATTAN_DISTANCE_MULTIPLIER;

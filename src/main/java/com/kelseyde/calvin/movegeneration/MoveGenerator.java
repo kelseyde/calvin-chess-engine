@@ -73,7 +73,7 @@ public class MoveGenerator {
 
     private boolean isCheck(Board board, boolean isWhite, long kingMask) {
         while (kingMask != 0) {
-            int kingSquare = BitboardUtils.scanForward(kingMask);
+            int kingSquare = BitboardUtils.getLSB(kingMask);
 
             long opponentPawns = isWhite ? board.getBlackPawns() : board.getWhitePawns();
             long pawnAttackMask = PAWN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, kingSquare, isWhite);

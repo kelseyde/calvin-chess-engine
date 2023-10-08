@@ -151,12 +151,12 @@ public class BoardTest {
 
     @Test
     public void testEnPassantFileIsClearedAfterNextMove() {
+        // TODO
         Board board1 = new Board();
         board1.makeMove(Move.builder().startSquare(13).endSquare(21).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
         board1.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).enPassantFile(4).moveType(MoveType.STANDARD).build());
 
         new MoveGenerator().generateLegalMoves(board1, false);
-        System.out.println("TODO");
     }
 
     @Test

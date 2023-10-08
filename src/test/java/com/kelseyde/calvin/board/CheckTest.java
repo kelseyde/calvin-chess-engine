@@ -1,9 +1,6 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
-import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;

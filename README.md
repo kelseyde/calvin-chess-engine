@@ -1,6 +1,6 @@
 # calvin-chess-engine
 
-![Calvin](src/main/resources/calvin.png)
+<img src="src/main/resources/calvin.png" width="48">
 
 A chess engine written in Java. Named after my favourite comic book character.
 

@@ -102,7 +102,7 @@ public class MoveGenerator {
             return true;
         }
 
-        // 2. Block the check
+        // 2. Block the check with another piece
         long checkingRay = rayCalculator.rayBetween(kingSquare, checkerSquare);
         boolean isBlockingCheck = (checkingRay & 1L << endSquare) != 0;
         if (isBlockingCheck) {
@@ -117,23 +117,20 @@ public class MoveGenerator {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
 
+        // Check that none of the squares the king travels through to castle are attacked.
         if (move.getMoveType().isCastling()) {
             long kingMask = getCastlingKingTravelSquares(move, isWhite);
             return !isAttacked(board, isWhite, kingMask);
         }
-        else if (move.getMoveType().isEnPassant()) {
+        // For en passant and king moves, just make the move on the board and check the king is not attacked.
+        else if (move.getMoveType().isEnPassant() || move.getPieceType().equals(PieceType.KING)) {
             board.makeMove(move);
             long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
             boolean isAttacked = isAttacked(board, isWhite, kingMask);
             board.unmakeMove();
             return !isAttacked;
         }
-        else if (move.getPieceType().equals(PieceType.KING)) {
-            board.makeMove(move);
-            boolean isAttacked = isAttacked(board, isWhite, 1L << endSquare);
-            board.unmakeMove();
-            return !isAttacked;
-        }
+        // All other moves are legal if and only if the piece is not pinned (or is pinned, but is moving along the pin ray)
         else {
             boolean isPinned = (pinMask & 1L << startSquare) != 0;
             return !isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare);

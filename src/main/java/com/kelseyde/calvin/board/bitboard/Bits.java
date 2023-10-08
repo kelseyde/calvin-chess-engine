@@ -26,15 +26,45 @@ public class Bits {
     public static final long FILE_H = BitboardUtils.shiftEast(FILE_G);
     public static final long[] FILE_MASKS = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
 
+    public static final long DIAGONAL_1 =   0x1L;
+    public static final long DIAGONAL_2 =   0x102L;
+    public static final long DIAGONAL_3 =   0x10204L;
+    public static final long DIAGONAL_4 =   0x1020408L;
+    public static final long DIAGONAL_5 =   0x102040810L;
+    public static final long DIAGONAL_6 =   0x10204081020L;
+    public static final long DIAGONAL_7 =   0x1020408102040L;
+    public static final long DIAGONAL_8 =   0x102040810204080L;
+    public static final long DIAGONAL_9 =   0x204081020408000L;
+    public static final long DIAGONAL_10 =  0x408102040800000L;
+    public static final long DIAGONAL_11 =  0x810204080000000L;
+    public static final long DIAGONAL_12 =  0x1020408000000000L;
+    public static final long DIAGONAL_13 =  0x2040800000000000L;
+    public static final long DIAGONAL_14 =  0x4080000000000000L;
+    public static final long DIAGONAL_15 =  0x8000000000000000L;
     public static final long[] DIAGONAL_MASKS = {
-                    0x1L, 0x102L, 0x10204L, 0x1020408L, 0x102040810L, 0x10204081020L, 0x1020408102040L,
-                    0x102040810204080L, 0x204081020408000L, 0x408102040800000L, 0x810204080000000L,
-                    0x1020408000000000L, 0x2040800000000000L, 0x4080000000000000L, 0x8000000000000000L
+                    DIAGONAL_1, DIAGONAL_2, DIAGONAL_3, DIAGONAL_4, DIAGONAL_5, DIAGONAL_6, DIAGONAL_7, DIAGONAL_8,
+                    DIAGONAL_9, DIAGONAL_10, DIAGONAL_11, DIAGONAL_12, DIAGONAL_13, DIAGONAL_14, DIAGONAL_15
             };
+
+    public static final long ANTI_DIAGONAL_MASK_1 =   0x80L;
+    public static final long ANTI_DIAGONAL_MASK_2 =   0x8040L;
+    public static final long ANTI_DIAGONAL_MASK_3 =   0x804020L;
+    public static final long ANTI_DIAGONAL_MASK_4 =   0x80402010L;
+    public static final long ANTI_DIAGONAL_MASK_5 =   0x8040201008L;
+    public static final long ANTI_DIAGONAL_MASK_6 =   0x804020100804L;
+    public static final long ANTI_DIAGONAL_MASK_7 =   0x80402010080402L;
+    public static final long ANTI_DIAGONAL_MASK_8 =   0x8040201008040201L;
+    public static final long ANTI_DIAGONAL_MASK_9 =   0x4020100804020100L;
+    public static final long ANTI_DIAGONAL_MASK_10 =  0x2010080402010000L;
+    public static final long ANTI_DIAGONAL_MASK_11 =  0x1008040201000000L;
+    public static final long ANTI_DIAGONAL_MASK_12 =  0x804020100000000L;
+    public static final long ANTI_DIAGONAL_MASK_13 =  0x402010000000000L;
+    public static final long ANTI_DIAGONAL_MASK_14 =  0x201000000000000L;
+    public static final long ANTI_DIAGONAL_MASK_15 =  0x100000000000000L;
     public static final long[] ANTI_DIAGONAL_MASKS = {
-                    0x80L, 0x8040L, 0x804020L, 0x80402010L, 0x8040201008L, 0x804020100804L, 0x80402010080402L,
-                    0x8040201008040201L, 0x4020100804020100L, 0x2010080402010000L, 0x1008040201000000L,
-                    0x804020100000000L, 0x402010000000000L, 0x201000000000000L, 0x100000000000000L
+                    ANTI_DIAGONAL_MASK_1, ANTI_DIAGONAL_MASK_2, ANTI_DIAGONAL_MASK_3, ANTI_DIAGONAL_MASK_4, ANTI_DIAGONAL_MASK_5,
+                    ANTI_DIAGONAL_MASK_6, ANTI_DIAGONAL_MASK_7, ANTI_DIAGONAL_MASK_8, ANTI_DIAGONAL_MASK_9, ANTI_DIAGONAL_MASK_10,
+                    ANTI_DIAGONAL_MASK_11, ANTI_DIAGONAL_MASK_12, ANTI_DIAGONAL_MASK_13, ANTI_DIAGONAL_MASK_14, ANTI_DIAGONAL_MASK_15
             };
 
     // Masks for the squares that must be unoccupied for legal castling

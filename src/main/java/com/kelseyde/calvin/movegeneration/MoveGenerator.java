@@ -4,7 +4,9 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.generator.*;
+import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
@@ -31,12 +33,46 @@ public class MoveGenerator {
         PAWN_MOVE_GENERATOR, KNIGHT_MOVE_GENERATOR, BISHOP_MOVE_GENERATOR, ROOK_MOVE_GENERATOR, QUEEN_MOVE_GENERATOR, KING_MOVE_GENERATOR
     );
 
+    private long pinMask;
+
     public Move[] generateLegalMoves(Board board, boolean capturesOnly) {
         return PSEUDO_LEGAL_MOVE_GENERATORS.stream()
                 .flatMap(generator -> generator.generatePseudoLegalMoves(board).stream())
                 .filter(pseudoLegalMove -> !isKingCapturable(board, pseudoLegalMove))
                 .filter(legalMove -> !capturesOnly || filterCapturesOnly(board, legalMove))
                 .toArray(Move[]::new);
+    }
+
+    public boolean isLegal(Board board, Move move) {
+
+        boolean isWhite = board.isWhiteToMove();
+
+        if (move.getPieceType().equals(PieceType.KING)) {
+            long endSquareMask = BitboardUtils.getSquareMask(move.getEndSquare());
+            return !isAttacked(board, board.isWhiteToMove(), endSquareMask);
+
+        }
+        else if (move.getMoveType().isEnPassant()) {
+            board.makeMove(move);
+            long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
+            boolean isKingCapturable = isAttacked(board, !board.isWhiteToMove(), kingMask);
+            board.unmakeMove();
+            return !isKingCapturable;
+
+        }
+        else if (move.getMoveType().isCastling()) {
+            long kingMask = getCastlingKingTravelSquares(move, isWhite);
+            return isAttacked(board, board.isWhiteToMove(), kingMask);
+
+        }
+        else {
+            int startSquare = move.getStartSquare();
+            int endSquare = move.getEndSquare();
+            int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
+            return !isPinned(startSquare) || BoardUtils.isAligned(kingSquare, startSquare, endSquare);
+
+        }
+
     }
 
     /**
@@ -50,7 +86,7 @@ public class MoveGenerator {
             case QUEENSIDE_CASTLE -> board.isWhiteToMove() ? Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK : Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK;
             default -> board.isWhiteToMove() ? board.getBlackKing() : board.getWhiteKing();
         };
-        boolean isKingCapturable = isCheck(board, !board.isWhiteToMove(), kingMask);
+        boolean isKingCapturable = isAttacked(board, !board.isWhiteToMove(), kingMask);
         board.unmakeMove();
         return isKingCapturable;
     }
@@ -68,10 +104,10 @@ public class MoveGenerator {
 
     public boolean isCheck(Board board, boolean isWhite) {
         long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
-        return isCheck(board, isWhite, kingMask);
+        return isAttacked(board, isWhite, kingMask);
     }
 
-    private boolean isCheck(Board board, boolean isWhite, long kingMask) {
+    private boolean isAttacked(Board board, boolean isWhite, long kingMask) {
         while (kingMask != 0) {
             int kingSquare = BitboardUtils.getLSB(kingMask);
 
@@ -122,5 +158,16 @@ public class MoveGenerator {
         return (opponents & (1L << endSquare)) != 0;
     }
 
+    private long getCastlingKingTravelSquares(Move move, boolean isWhite) {
+        return switch (move.getMoveType()) {
+            case KINGSIDE_CASTLE -> isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+            case QUEENSIDE_CASTLE -> isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+            default -> throw new IllegalArgumentException("Not a castling move!");
+        };
+    }
+
+    private boolean isPinned(int square) {
+        return (pinMask & 1L << square) != 0;
+    }
 
 }

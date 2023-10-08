@@ -36,13 +36,25 @@ public class BitboardUtils {
         return board >>> 9 &~ Bits.FILE_H;
     }
 
-    public static int scanForward(long board) {
+    /**
+     * Get the index of the least-significant bit in the bitboard
+     */
+    public static int getLSB(long board) {
         return Long.numberOfTrailingZeros(board);
     }
 
+    /**
+     * Get a bitboard containing only the least-significant bit of the given bitboard.
+     */
+    public static long getBitboardLSB(long board) {
+        return board & (-board);
+    }
+
+    /**
+     * Get a bitboard with the least-significant bit removed from the given bitboard.
+     */
     public static long popLSB(long board) {
-        board &= (board - 1);
-        return board;
+        return board & (board - 1);
     }
 
     public static void print(long board) {

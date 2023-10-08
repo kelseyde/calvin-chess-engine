@@ -361,14 +361,14 @@ public class BoardTest {
         if (isWhiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
-                int position = BitboardUtils.scanForward(whitePieces);
+                int position = BitboardUtils.getLSB(whitePieces);
                 positions.add(position);
                 whitePieces = BitboardUtils.popLSB(whitePieces);
             }
         } else {
             long blackPieces = board.getBlackPieces();
             while (blackPieces != 0) {
-                int position = BitboardUtils.scanForward(blackPieces);
+                int position = BitboardUtils.getLSB(blackPieces);
                 positions.add(position);
                 blackPieces = BitboardUtils.popLSB(blackPieces);
             }

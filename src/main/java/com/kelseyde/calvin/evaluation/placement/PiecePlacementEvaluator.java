@@ -36,7 +36,7 @@ public class PiecePlacementEvaluator {
     private int scoreSingleTablePiece(long pieces, int[] pieceTable) {
         int pieceTypeScore = 0;
         while (pieces != 0) {
-            int square = BitboardUtils.scanForward(pieces);
+            int square = BitboardUtils.getLSB(pieces);
             pieceTypeScore += pieceTable[square];
             pieces = BitboardUtils.popLSB(pieces);
         }
@@ -46,7 +46,7 @@ public class PiecePlacementEvaluator {
     private int scoreMultiTablePiece(long pieces, float gamePhase, int[] openingTable, int[] endgameTable) {
         int pieceTypeScore = 0;
         while (pieces != 0) {
-            int square = BitboardUtils.scanForward(pieces);
+            int square = BitboardUtils.getLSB(pieces);
             // gives a tapered eval based on what phase the game is in
             pieceTypeScore += gamePhase * openingTable[square];
             pieceTypeScore += (1 - gamePhase) * endgameTable[square];

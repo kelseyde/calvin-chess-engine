@@ -49,11 +49,11 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupied();
 
-        int startSquare = BitboardUtils.scanForward(king);
+        int startSquare = BitboardUtils.getLSB(king);
 
         long kingMoves = KING_ATTACKS[startSquare] &~ friendlyPieces;
         while (kingMoves != 0) {
-            int endSquare = BitboardUtils.scanForward(kingMoves);
+            int endSquare = BitboardUtils.getLSB(kingMoves);
             moves.add(move(startSquare, endSquare).build());
             kingMoves = BitboardUtils.popLSB(kingMoves);
         }
@@ -83,7 +83,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
     @Override
     public long generateAttackMask(Board board, boolean isWhite) {
         long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
-        int startSquare = BitboardUtils.scanForward(king);
+        int startSquare = BitboardUtils.getLSB(king);
         if (startSquare > 63) {
             throw new IllegalArgumentException("No king! " + board.getMoveHistory().stream().map(NotationUtils::toNotation).toList());
         }

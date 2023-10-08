@@ -3,6 +3,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.magic.Magics;
 
 import java.util.HashSet;
@@ -34,18 +35,18 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     @Override
     public Set<Move> generatePseudoLegalMoves(Board board) {
         Set<Move> moves = new HashSet<>();
-        long pieceBitboard = getSliders(board, board.isWhiteToMove());
+        PieceType pieceType = getPieceType();
+        boolean isWhite = board.isWhiteToMove();
+        long pieceBitboard = getSliders(board, isWhite);
         while (pieceBitboard != 0) {
-            int square = BitboardUtils.scanForward(pieceBitboard);
-            long moveBitboard = 0L;
-            if (isOrthogonal()) {
-                moveBitboard |= calculateOrthogonalMoves(board, square, board.isWhiteToMove());
-            }
-            if (isDiagonal()) {
-                moveBitboard |= calculateDiagonalMoves(board, square, board.isWhiteToMove());
-            }
+            int startSquare = BitboardUtils.getLSB(pieceBitboard);
+            long moveBitboard = generateAttackMaskFromSquare(board, startSquare, isWhite);
             pieceBitboard = BitboardUtils.popLSB(pieceBitboard);
-            moves.addAll(addMoves(square, moveBitboard));
+            while (moveBitboard != 0) {
+                int endSquare = BitboardUtils.getLSB(moveBitboard);
+                moves.add(move(pieceType, startSquare, endSquare).build());
+                moveBitboard = BitboardUtils.popLSB(moveBitboard);
+            }
         }
         return moves;
     }
@@ -55,7 +56,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         long sliders = getSliders(board, isWhite);
         long attackMask = 0L;
         while (sliders != 0) {
-            int slider = BitboardUtils.scanForward(sliders);
+            int slider = BitboardUtils.getLSB(sliders);
             attackMask |= generateAttackMaskFromSquare(board, slider, isWhite);
             sliders = BitboardUtils.popLSB(sliders);;
         }
@@ -86,18 +87,11 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         return Magics.getBishopAttacks(s, occ) &~ friendlies;
     }
 
-    private Set<Move> addMoves(int startSquare, long moveBitboard) {
-        Set<Move> moves = new HashSet<>();
-        while (moveBitboard != 0) {
-            int endSquare = BitboardUtils.scanForward(moveBitboard);
-            moves.add(Move.builder()
-                    .pieceType(getPieceType())
-                    .startSquare(startSquare)
-                    .endSquare(endSquare)
-                    .build());
-            moveBitboard = BitboardUtils.popLSB(moveBitboard);
-        }
-        return moves;
+    private Move.MoveBuilder move(PieceType type, int startSquare, int endSquare) {
+        return Move.builder()
+                .pieceType(type)
+                .startSquare(startSquare)
+                .endSquare(endSquare);
     }
 
 }

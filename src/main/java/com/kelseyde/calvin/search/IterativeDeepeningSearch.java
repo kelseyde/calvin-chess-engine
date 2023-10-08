@@ -159,7 +159,9 @@ public class IterativeDeepeningSearch implements Search {
          if (gameResult.isDraw()) {
              statistics.incrementNodesSearched();
 //             log.trace("({}) {} Found draw", board.isWhiteToMove() ? "WHITE" : "BLACK", plyFromRoot);
-             return 0;
+             // Avoid draws where the static evaluation is in our favour.
+             // Favour draws when the static evaluation is in the opponent's favour
+             return -evaluator.evaluate(board);
          }
          if (plyRemaining == 0) {
              // In the case that max depth is reached, begin the quiescence search

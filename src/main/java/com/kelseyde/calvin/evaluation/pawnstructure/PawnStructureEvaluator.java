@@ -34,7 +34,7 @@ public class PawnStructureEvaluator {
         int doubledPawnCount = 0;
         long friendlyPawnsIterator = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         while (friendlyPawnsIterator > 0) {
-            int pawn = BitboardUtils.scanForward(friendlyPawnsIterator);
+            int pawn = BitboardUtils.getLSB(friendlyPawnsIterator);
             int rank = BoardUtils.getRank(pawn);
             int file = BoardUtils.getFile(pawn);
 

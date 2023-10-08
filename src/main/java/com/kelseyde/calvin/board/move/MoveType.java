@@ -6,6 +6,18 @@ public enum MoveType {
     EN_PASSANT,
     KINGSIDE_CASTLE,
     QUEENSIDE_CASTLE,
-    PROMOTION
+    PROMOTION;
+
+    public boolean isCastling() {
+        return this.equals(KINGSIDE_CASTLE) || this.equals(QUEENSIDE_CASTLE);
+    }
+
+    public boolean isEnPassant() {
+        return this.equals(EN_PASSANT);
+    }
+
+    public boolean isPromotion() {
+        return this.equals(PROMOTION);
+    }
 
 }

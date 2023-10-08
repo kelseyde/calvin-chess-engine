@@ -7,7 +7,6 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;

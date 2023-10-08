@@ -18,4 +18,4 @@ Current feautures include:
 - Transposition tables
 - Zobrist hashing
 - Evaluation: basic material count and piece square tables, pawn structure, passed pawn bonuses, isolated/doubled pawn penalties
-- UCI protocol implemented and Calvin is connected to Lichess where he participates regularly in the bot pool: https://lichess.org/@/Calvin_Bot
+- UCI protocol implemented and Calvin is connected to Lichess where he plays regularly in the bot pool: https://lichess.org/@/Calvin_Bot

@@ -54,18 +54,6 @@ public class KingMoveGeneratorTest {
 
     }
 
-    @Test
-    public void testGenerateAttackMasks() {
-
-        Board board = new Board();
-
-        long whiteKingAttacks = generator.generateAttackMask(board, true);
-        BitboardUtils.print(whiteKingAttacks);
-        long blackKingAttacks = generator.generateAttackMask(board, false);
-        BitboardUtils.print(blackKingAttacks);
-
-    }
-
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(PieceType.KING, true, startSquare);
         Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()

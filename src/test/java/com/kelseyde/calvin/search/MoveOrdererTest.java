@@ -177,6 +177,32 @@ public class MoveOrdererTest {
     }
 
     @Test
+    public void testHistoryHeuristicOrdering() {
+
+        String fen = "5rk1/5ppp/8/8/8/8/4QPPP/5RK1 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+
+        Move[] moves = new Move[] {
+                NotationUtils.fromNotation("g1", "h1", PieceType.KING),
+                NotationUtils.fromNotation("f2", "f4", PieceType.PAWN),
+                NotationUtils.fromNotation("g2", "g4", PieceType.PAWN),
+                NotationUtils.fromNotation("h2", "h4", PieceType.PAWN),
+                NotationUtils.fromNotation("f2", "f3", PieceType.PAWN),
+                NotationUtils.fromNotation("g2", "g3", PieceType.PAWN),
+                NotationUtils.fromNotation("h2", "h3", PieceType.PAWN),
+                NotationUtils.fromNotation("f1", "e1", PieceType.ROOK),
+                NotationUtils.fromNotation("e2", "e7", PieceType.QUEEN),
+        };
+
+        moveOrderer.addHistoryMove(5, NotationUtils.fromNotation("f1", "e1", PieceType.ROOK), true);
+
+        Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
+
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("f1", "e1", PieceType.ROOK)));
+
+    }
+
+    @Test
     public void testPromotionBias() {
 
         String fen = "7k/2P5/8/8/8/8/8/7K w - - 0 1";

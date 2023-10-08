@@ -216,6 +216,7 @@ public class IterativeDeepeningSearch implements Search {
                      // ordering we can prioritise examining them early, on the basis that they are likely to be similarly
                      // effective in sibling nodes.
                      moveOrderer.addKillerMove(plyFromRoot, move);
+                     moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
                      statistics.incrementKillers();
                  }
 //                 log.trace("{} {} ({}, {}) Pruning {} as eval {} >= beta {}",

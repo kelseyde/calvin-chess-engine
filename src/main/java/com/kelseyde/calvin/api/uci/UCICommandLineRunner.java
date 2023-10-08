@@ -32,6 +32,7 @@ public class UCICommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        System.out.println("Initialising UCI command line runner...");
         while (running) {
             readCommand()
                     .ifPresent(this::handleCommand);
@@ -152,8 +153,15 @@ public class UCICommandLineRunner implements CommandLineRunner {
     }
 
     private Optional<String> readCommand() {
-        return Optional.ofNullable(in.nextLine())
-                .filter(StringUtils::hasText);
+        try {
+            String line = in.nextLine();
+            if (StringUtils.hasText(line)) {
+                return Optional.of(line);
+            }
+        } catch (NoSuchElementException e) {
+            // do nothing
+        }
+        return Optional.empty();
     }
 
     private void write(String output) {

@@ -2,8 +2,8 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.movegeneration.magic.MagicBitboards;
 import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.movegeneration.magic.Magics;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -77,13 +77,13 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     private long calculateOrthogonalMoves(Board board, int s, boolean isWhite) {
         long occ = board.getOccupied();
         long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
-        return MagicBitboards.getRookAttacks(s, occ) &~ friendlies;
+        return Magics.getRookAttacks(s, occ) &~ friendlies;
     }
 
     private long calculateDiagonalMoves(Board board, int s, boolean isWhite) {
         long occ = board.getOccupied();
         long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
-        return MagicBitboards.getBishopAttacks(s, occ) &~ friendlies;
+        return Magics.getBishopAttacks(s, occ) &~ friendlies;
     }
 
     private Set<Move> addMoves(int startSquare, long moveBitboard) {

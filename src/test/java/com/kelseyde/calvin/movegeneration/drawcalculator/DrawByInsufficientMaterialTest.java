@@ -18,10 +18,10 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKing() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, PieceType.KING, true, true);
+        board.toggleSquare(PieceType.KING, true, 28);
 
-        board.setPiece(44, PieceType.KING, false, true);
-        board.setPiece(27, PieceType.QUEEN, false, true);
+        board.toggleSquare(PieceType.KING, false, 44);
+        board.toggleSquare(PieceType.QUEEN, false, 27);
 
         board.makeMove(TestUtils.getLegalMove(board, "e4", "d4"));
 
@@ -35,11 +35,11 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingBishop() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, PieceType.KING, true, true);
-        board.setPiece(25, PieceType.BISHOP, true, true);
+        board.toggleSquare(PieceType.KING, true, 28);
+        board.toggleSquare(PieceType.BISHOP, true, 25);
 
-        board.setPiece(44, PieceType.KING, false, true);
-        board.setPiece(43, PieceType.QUEEN, false, true);
+        board.toggleSquare(PieceType.KING, false, 44);
+        board.toggleSquare(PieceType.QUEEN, false, 43);
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
@@ -53,11 +53,11 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingKnight() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, PieceType.KING, true, true);
-        board.setPiece(26, PieceType.KNIGHT, true, true);
+        board.toggleSquare(PieceType.KING, true, 28);
+        board.toggleSquare(PieceType.KNIGHT, true, 26);
 
-        board.setPiece(44, PieceType.KING, false, true);
-        board.setPiece(43, PieceType.QUEEN, false, true);
+        board.toggleSquare(PieceType.KING, false, 44);
+        board.toggleSquare(PieceType.QUEEN, false, 43);
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
@@ -71,12 +71,12 @@ public class DrawByInsufficientMaterialTest {
     public void testKingBishopVersusKingBishop() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, PieceType.KING, true, true);
-        board.setPiece(25, PieceType.BISHOP, true, true);
+        board.toggleSquare(PieceType.KING, true, 28);
+        board.toggleSquare(PieceType.BISHOP, true, 25);
 
-        board.setPiece(44, PieceType.KING, false, true);
-        board.setPiece(43, PieceType.QUEEN, false, true);
-        board.setPiece(52, PieceType.BISHOP, false, true);
+        board.toggleSquare(PieceType.KING, false, 44);
+        board.toggleSquare(PieceType.QUEEN, false, 43);
+        board.toggleSquare(PieceType.BISHOP, false, 52);
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
@@ -90,12 +90,12 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightVersusKingKnight() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, PieceType.KING, true, true);
-        board.setPiece(26, PieceType.KNIGHT, true, true);
+        board.toggleSquare(PieceType.KING, true, 28);
+        board.toggleSquare(PieceType.KNIGHT, true, 26);
 
-        board.setPiece(44, PieceType.KING, false, true);
-        board.setPiece(43, PieceType.QUEEN, false, true);
-        board.setPiece(52, PieceType.KNIGHT, false, true);
+        board.toggleSquare(PieceType.KING, false, 44);
+        board.toggleSquare(PieceType.QUEEN, false, 43);
+        board.toggleSquare(PieceType.KNIGHT, false, 52);
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
@@ -109,13 +109,13 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightKnightVersusKingKnightIsNotInsufficientMaterial() {
 
         Board board = TestUtils.emptyBoard();
-        board.setPiece(28, PieceType.KING, true, true);
-        board.setPiece(26, PieceType.KNIGHT, true, true);
+        board.toggleSquare(PieceType.KING, true, 28);
+        board.toggleSquare(PieceType.KNIGHT, true, 26);
 
-        board.setPiece(44, PieceType.KING, false, true);
-        board.setPiece(43, PieceType.QUEEN, false, true);
-        board.setPiece(52, PieceType.KNIGHT, false, true);
-        board.setPiece(0, PieceType.KNIGHT, false, true);
+        board.toggleSquare(PieceType.KING, false, 44);
+        board.toggleSquare(PieceType.QUEEN, false, 43);
+        board.toggleSquare(PieceType.KNIGHT, false, 52);
+        board.toggleSquare(PieceType.KNIGHT, false, 0);
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 

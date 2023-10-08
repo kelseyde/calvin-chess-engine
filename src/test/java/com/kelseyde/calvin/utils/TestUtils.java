@@ -2,17 +2,12 @@ package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.evaluation.BoardEvaluator;
-import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class TestUtils {
-
-    public static final List<BoardEvaluator> ALL_EVALUATORS = List.of(new MaterialEvaluator());
 
     private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
 

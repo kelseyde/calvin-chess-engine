@@ -57,49 +57,49 @@ public class Board {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         PieceType pieceType = move.getPieceType();
-        PieceType promotionPieceType = move.getPromotionPieceType();
+        PieceType capturedPieceType = pieceAt(move.getEndSquare());
 
         long newZobristKey = gameState.getZobristKey();
         int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
         int newEnPassantFile = move.getEnPassantFile();
-        PieceType capturedPiece = pieceAt(move.getEndSquare());
-        boolean resetFiftyMoveCounter = capturedPiece != null|| PieceType.PAWN.equals(move.getPieceType());
+        boolean resetFiftyMoveCounter = capturedPieceType != null|| PieceType.PAWN.equals(move.getPieceType());
         newFiftyMoveCounter = resetFiftyMoveCounter ? 0 :  ++newFiftyMoveCounter;
 
         switch (move.getMoveType()) {
             case STANDARD -> {
-                unsetPiece(startSquare);
-                setPiece(endSquare, pieceType, isWhiteToMove, true);
+                toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
+                if (capturedPieceType != null) {
+                    toggleSquare(capturedPieceType, !isWhiteToMove, endSquare);
+                }
             }
             case EN_PASSANT -> {
-                unsetPiece(startSquare);
-                setPiece(endSquare, pieceType, isWhiteToMove, true);
-                int captureSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-                unsetPiece(captureSquare);
+                toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
+                int pawnSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
+                toggleSquare(PieceType.PAWN, !isWhiteToMove, pawnSquare);
             }
             case PROMOTION -> {
-                unsetPiece(startSquare);
-                setPiece(endSquare, promotionPieceType, isWhiteToMove, true);
+                toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
+                toggleSquare(move.getPromotionPieceType(), isWhiteToMove, endSquare);
+                if (capturedPieceType != null) {
+                    toggleSquare(capturedPieceType, !isWhiteToMove, endSquare);
+                }
             }
             case KINGSIDE_CASTLE -> {
-                unsetPiece(startSquare);
-                setPiece(endSquare, pieceType, isWhiteToMove, true);
-                unsetPiece(isWhiteToMove ? 7 : 63);
-                setPiece(isWhiteToMove ? 5 : 61, PieceType.ROOK, isWhiteToMove, true);
+                toggleSquares(PieceType.KING, isWhiteToMove, startSquare, endSquare);
+                int rookStartSquare = isWhiteToMove ? 7 : 63;
+                int rookEndSquare = isWhiteToMove ? 5 : 61;
+                toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
             }
             case QUEENSIDE_CASTLE -> {
-                unsetPiece(startSquare);
-                setPiece(endSquare, pieceType, isWhiteToMove, true);
-                unsetPiece(isWhiteToMove ? 0 : 56);
-                setPiece(isWhiteToMove ? 3 : 59, PieceType.ROOK, isWhiteToMove, true);
+                toggleSquares(PieceType.KING, isWhiteToMove, startSquare, endSquare);
+                int rookStartSquare = isWhiteToMove ? 0 : 56;
+                int rookEndSquare = isWhiteToMove ? 3 : 59;
+                toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
             }
         }
 
         int newCastlingRights = calculateCastlingRights(move);
-        PieceType newPieceType = pieceType;
-        if (promotionPieceType != null) {
-            newPieceType = promotionPieceType;
-        }
+        PieceType newPieceType = move.getPromotionPieceType() == null ? pieceType : move.getPromotionPieceType();
 
         newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[startSquare][isWhiteToMove ? 0 : 1][pieceType.getIndex()];
         newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[endSquare][isWhiteToMove ? 0 : 1][newPieceType.getIndex()];
@@ -109,7 +109,7 @@ public class Board {
         newZobristKey ^= ZobristKey.EN_PASSANT_FILE[move.getEnPassantFile() + 1];
         newZobristKey ^= ZobristKey.BLACK_TO_MOVE;
 
-        GameState newGameState = new GameState(newZobristKey, capturedPiece, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
+        GameState newGameState = new GameState(newZobristKey, capturedPieceType, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
         gameStateHistory.push(gameState);
         gameState = newGameState;
 
@@ -131,31 +131,36 @@ public class Board {
         }
 
         switch (lastMove.getMoveType()) {
-            case STANDARD, PROMOTION -> {
-                unsetPiece(endSquare);
-                setPiece(startSquare, pieceType, isWhiteToMove, true);
+            case STANDARD -> {
+                toggleSquares(pieceType, isWhiteToMove, endSquare, startSquare);
+                if (gameState.getCapturedPiece() != null) {
+                    toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
+                }
             }
             case EN_PASSANT -> {
-                unsetPiece(endSquare);
-                setPiece(startSquare, pieceType, isWhiteToMove, true);
+                toggleSquares(PieceType.PAWN, isWhiteToMove, endSquare, startSquare);
                 int captureSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-                setPiece(captureSquare, PieceType.PAWN, !isWhiteToMove, true);
+                toggleSquare(PieceType.PAWN, !isWhiteToMove, captureSquare);
+            }
+            case PROMOTION -> {
+                toggleSquare(lastMove.getPromotionPieceType(), isWhiteToMove, endSquare);
+                toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
+                if (gameState.getCapturedPiece() != null) {
+                    toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
+                }
             }
             case KINGSIDE_CASTLE -> {
-                unsetPiece(endSquare);
-                setPiece(startSquare, pieceType, isWhiteToMove, true);
-                unsetPiece(isWhiteToMove ? 5 : 61);
-                setPiece(isWhiteToMove ? 7 : 63, PieceType.ROOK, isWhiteToMove, true);
+                toggleSquares(PieceType.KING, isWhiteToMove, endSquare, startSquare);
+                int rookStartSquare = isWhiteToMove ? 5 : 61;
+                int rookEndSquare = isWhiteToMove ? 7 : 63;
+                toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
             }
             case QUEENSIDE_CASTLE -> {
-                unsetPiece(endSquare);
-                setPiece(startSquare, pieceType, isWhiteToMove, true);
-                unsetPiece(isWhiteToMove ? 3 : 59);
-                setPiece(isWhiteToMove ? 0 : 56, PieceType.ROOK, isWhiteToMove, true);
+                toggleSquares(PieceType.KING, isWhiteToMove, endSquare, startSquare);
+                int rookStartSquare = isWhiteToMove ? 3 : 59;
+                int rookEndSquare = isWhiteToMove ? 0 : 56;
+                toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
             }
-        }
-        if (gameState.getCapturedPiece() != null) {
-            setPiece(endSquare, gameState.getCapturedPiece(), !isWhiteToMove, false);
         }
 
         gameState = gameStateHistory.pop();
@@ -163,74 +168,98 @@ public class Board {
 
     }
 
-    public void setPiece(int square, PieceType pieceType, boolean isWhite, boolean recalculate) {
-        unsetPiece(square);
-        switch (pieceType) {
+    public void toggleSquares(PieceType type, boolean isWhite, int startSquare, int endSquare) {
+        switch (type) {
             case PAWN -> {
                 if (isWhite) {
-                    whitePawns |= (1L << square);
+                    whitePawns ^= (1L << startSquare | 1L << endSquare);
                 } else {
-                    blackPawns |= (1L << square);
+                    blackPawns ^= (1L << startSquare | 1L << endSquare);
                 }
             }
             case KNIGHT -> {
                 if (isWhite) {
-                    whiteKnights |= (1L << square);
+                    whiteKnights ^= (1L << startSquare | 1L << endSquare);
                 } else {
-                    blackKnights |= (1L << square);
+                    blackKnights ^= (1L << startSquare | 1L << endSquare);
                 }
             }
             case BISHOP -> {
                 if (isWhite) {
-                    whiteBishops |= (1L << square);
+                    whiteBishops ^= (1L << startSquare | 1L << endSquare);
                 } else {
-                    blackBishops |= (1L << square);
+                    blackBishops ^= (1L << startSquare | 1L << endSquare);
                 }
             }
             case ROOK -> {
                 if (isWhite) {
-                    whiteRooks |= (1L << square);
+                    whiteRooks ^= (1L << startSquare | 1L << endSquare);
                 } else {
-                    blackRooks |= (1L << square);
+                    blackRooks ^= (1L << startSquare | 1L << endSquare);
                 }
             }
             case QUEEN -> {
                 if (isWhite) {
-                    whiteQueens |= (1L << square);
+                    whiteQueens ^= (1L << startSquare | 1L << endSquare);
                 } else {
-                    blackQueens |= (1L << square);
+                    blackQueens ^= (1L << startSquare | 1L << endSquare);
                 }
             }
             case KING -> {
                 if (isWhite) {
-                    whiteKing |= (1L << square);
+                    whiteKing ^= (1L << startSquare | 1L << endSquare);
                 } else {
-                    blackKing |= (1L << square);
+                    blackKing ^= (1L << startSquare | 1L << endSquare);
                 }
             }
         };
-        if (recalculate) {
-            recalculatePieces();
-        }
     }
 
-    public void unsetPiece(int square) {
-        occupied &= ~(1L << square);
-
-        whitePawns = whitePawns & occupied;
-        whiteKnights = whiteKnights & occupied;
-        whiteBishops = whiteBishops & occupied;
-        whiteRooks = whiteRooks & occupied;
-        whiteQueens = whiteQueens & occupied;
-        whiteKing = whiteKing & occupied;
-
-        blackPawns = blackPawns & occupied;
-        blackKnights = blackKnights & occupied;
-        blackBishops = blackBishops & occupied;
-        blackRooks = blackRooks & occupied;
-        blackQueens = blackQueens & occupied;
-        blackKing = blackKing & occupied;
-
+    public void toggleSquare(PieceType type, boolean isWhite, int square) {
+        switch (type) {
+            case PAWN -> {
+                if (isWhite) {
+                    whitePawns ^= 1L << square;
+                } else {
+                    blackPawns ^= 1L << square;
+                }
+            }
+            case KNIGHT -> {
+                if (isWhite) {
+                    whiteKnights ^= 1L << square;
+                } else {
+                    blackKnights ^= 1L << square;
+                }
+            }
+            case BISHOP -> {
+                if (isWhite) {
+                    whiteBishops ^= 1L << square;
+                } else {
+                    blackBishops ^= 1L << square;
+                }
+            }
+            case ROOK -> {
+                if (isWhite) {
+                    whiteRooks ^= 1L << square;
+                } else {
+                    blackRooks ^= 1L << square;
+                }
+            }
+            case QUEEN -> {
+                if (isWhite) {
+                    whiteQueens ^= 1L << square;
+                } else {
+                    blackQueens ^= 1L << square;
+                }
+            }
+            case KING -> {
+                if (isWhite) {
+                    whiteKing ^= 1L << square;
+                } else {
+                    blackKing ^= 1L << square;
+                }
+            }
+        };
     }
 
     public void recalculatePieces() {

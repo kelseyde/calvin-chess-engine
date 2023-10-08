@@ -79,6 +79,7 @@ public class GameController {
                 .findAny();
         if (legalMove.isEmpty()) {
             log.warn("Illegal move! {}", NotationUtils.toNotation(playerMove));
+            log.warn("Board: {}", bot.getBoard());
             return ResponseEntity.badRequest().build();
         }
 

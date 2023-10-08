@@ -2,21 +2,22 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
+import com.kelseyde.calvin.evaluation.material.MaterialCalculator;
 import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class MaterialEvaluatorTest {
 
-    private final MaterialEvaluator evaluator = new MaterialEvaluator();
+    private final MaterialCalculator evaluator = new MaterialCalculator();
 
     @Test
     public void testStartingPosition() {
 
         Board board = new Board();
-        int score = evaluator.evaluate(board);
-        Assertions.assertEquals(0, score);
+        int whiteScore = evaluator.calculate(board, true).eval();
+        int blackScore = evaluator.calculate(board, false).eval();
+        Assertions.assertEquals(0, whiteScore - blackScore);
 
     }
 
@@ -44,11 +45,9 @@ public class MaterialEvaluatorTest {
         // white score: (8 * 100) + 650 + 1000 + 10000 = 12450
         // black score: (8 * 100) + 970 + 1000 + 10000 = 12770
         // score = 12450 - 12770 = -320
-        int score = evaluator.evaluate(board);
-        Assertions.assertEquals(-320, score);
-
-        board.setWhiteToMove(!board.isWhiteToMove());
-        Assertions.assertEquals(320, evaluator.evaluate(board));
+        int whiteScore = evaluator.calculate(board, true).eval();
+        int blackScore = evaluator.calculate(board, false).eval();
+        Assertions.assertEquals(-320, whiteScore - blackScore);
 
     }
 

@@ -32,7 +32,7 @@ public abstract class PerftTest {
         Assertions.assertEquals(expectedTotalMoves, totalMoveCount);
     }
 
-    protected void writeResults(int depth, Duration performance) {
+    private void writeResults(int depth, Duration performance) {
         Instant timestamp = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         String line = String.format("%s,%s\n", timestamp, performance);
         String fileName = String.format("src/test/resources/perft/%s/perft_depth_%s.csv", getSubFolder(), depth);

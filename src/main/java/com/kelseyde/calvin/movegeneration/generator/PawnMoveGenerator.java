@@ -62,8 +62,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long rightCaptures = isWhite ?
-                BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.RANK_8 :
-                BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.RANK_1;
+                BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8:
+                BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
         while (rightCaptures != 0) {
             int endSquare = BitboardUtils.scanForward(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
@@ -82,8 +82,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long enPassantRightCaptures = isWhite ?
-                BitboardUtils.shiftNorthEast(pawns) & enPassantFile & Bits.RANK_6 &~ Bits.FILE_A :
-                BitboardUtils.shiftSouthEast(pawns) & enPassantFile & Bits.RANK_3 &~ Bits.FILE_A;
+                BitboardUtils.shiftNorthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_6 :
+                BitboardUtils.shiftSouthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_3;
         while (enPassantRightCaptures != 0) {
             int endSquare = BitboardUtils.scanForward(enPassantRightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
@@ -112,8 +112,8 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         }
 
         long captureRightPromotions = isWhite ?
-                BitboardUtils.shiftNorthEast(pawns) & opponents & Bits.RANK_8 :
-                BitboardUtils.shiftSouthEast(pawns) & opponents & Bits.RANK_1;
+                BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_8 :
+                BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
         while (captureRightPromotions != 0) {
             int endSquare = BitboardUtils.scanForward(captureRightPromotions);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;

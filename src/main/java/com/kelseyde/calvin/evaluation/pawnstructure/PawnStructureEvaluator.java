@@ -3,14 +3,13 @@ package com.kelseyde.calvin.evaluation.pawnstructure;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 /**
  * Evaluate certain characteristics of the remaining pawns: bonuses for passed pawns, connected pawns; penalties for
  * isolated and doubled pawns.
  */
-public class PawnEvaluator implements BoardEvaluator {
+public class PawnStructureEvaluator {
 
     // The bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
     private static final int[] PASSED_PAWN_BONUS = { 0, 120, 80, 50, 30, 15, 15 };
@@ -25,15 +24,7 @@ public class PawnEvaluator implements BoardEvaluator {
     // treated as 'separate' doubled pawns.
     private static final int[] DOUBLED_PAWN_PENALTY = { 0, -5, -10, -20, -40, -60, -75, -85, -95};
 
-    @Override
-    public int evaluate(Board board) {
-        int colourModifier = board.isWhiteToMove() ? 1 : -1;
-        int whiteScore = calculatePawnScore(board, true);
-        int blackScore = calculatePawnScore(board, false);
-        return colourModifier * (whiteScore - blackScore);
-    }
-
-    private int calculatePawnScore(Board board, boolean isWhite) {
+    public int evaluate(Board board, boolean isWhite) {
 
         long friendlyPawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         long opponentPawns = isWhite ? board.getBlackPawns() : board.getWhitePawns();

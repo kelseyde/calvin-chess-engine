@@ -3,7 +3,6 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
-import com.kelseyde.calvin.evaluation.CombinedBoardEvaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
@@ -37,7 +36,7 @@ public class IterativeDeepeningSearch implements Search {
     private final MoveGenerator moveGenerator = new MoveGenerator();
     private final ResultCalculator resultCalculator = new ResultCalculator();
     private final MoveOrderer moveOrderer = new MoveOrderer();
-    private final BoardEvaluator boardEvaluator = new CombinedBoardEvaluator();
+    private final BoardEvaluator evaluator = new BoardEvaluator();
     private final StaticExchangeEvaluator see = new StaticExchangeEvaluator();
     private final TranspositionTable transpositionTable;
 
@@ -263,7 +262,7 @@ public class IterativeDeepeningSearch implements Search {
         }
         // In the case where there are only 'bad' captures available, just return the static evaluation of the board,
         // since the player is not forced to capture and may have good non-capture moves available.
-        int eval = boardEvaluator.evaluate(board);
+        int eval = evaluator.evaluate(board);
         alpha = Math.max(alpha, eval);
         if (eval >= beta) {
             statistics.incrementNodesSearched();

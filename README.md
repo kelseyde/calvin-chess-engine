@@ -1,6 +1,7 @@
 # calvin-chess-engine
 
 ![Calvin](src/main/resources/calvin.png)
+
 A chess engine written in Java. Named after my favourite comic book character.
 
 This is a personal project. I am a professional Java developer and I love chess, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life.

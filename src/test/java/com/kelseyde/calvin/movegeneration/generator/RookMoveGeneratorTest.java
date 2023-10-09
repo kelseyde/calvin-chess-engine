@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,7 +71,7 @@ public class RookMoveGeneratorTest {
 
         Board board = FEN.fromFEN("K7/1R6/8/8/8/8/6r1/7k w - - 0 1");
 
-        Set<Move> moves = generator.generatePseudoLegalMoves(board);
+        List<Move> moves = generator.generatePseudoLegalMoves(board);
 
         Assertions.assertEquals(14, moves.size());
 

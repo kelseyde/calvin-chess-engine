@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,7 +60,7 @@ public class BishopMoveGeneratorTest {
 
         Board board = FEN.fromFEN("K7/1B6/8/8/8/8/6b1/7k w - - 0 1");
 
-        Set<Move> moves = generator.generatePseudoLegalMoves(board);
+        List<Move> moves = generator.generatePseudoLegalMoves(board);
 
         Assertions.assertEquals(7, moves.size());
 

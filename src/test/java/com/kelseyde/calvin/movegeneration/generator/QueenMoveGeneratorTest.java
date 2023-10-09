@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,7 +65,7 @@ public class QueenMoveGeneratorTest {
 
         Board board = FEN.fromFEN("K7/1Q6/8/8/8/8/6q1/7k w - - 0 1");
 
-        Set<Move> moves = generator.generatePseudoLegalMoves(board);
+        List<Move> moves = generator.generatePseudoLegalMoves(board);
 
         Assertions.assertEquals(21, moves.size());
 

@@ -10,9 +10,7 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class KingMoveGenerator implements PseudoLegalMoveGenerator {
 
@@ -38,13 +36,13 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             0x2838000000000000L, 0x5070000000000000L, 0xa0e0000000000000L, 0x40c0000000000000L
     };
 
-    public Set<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board) {
 
-        Set<Move> moves = new HashSet<>();
+        List<Move> moves = new ArrayList<>();
 
         long king = board.isWhiteToMove() ? board.getWhiteKing() : board.getBlackKing();
         if (king == 0L) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
         long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupied();

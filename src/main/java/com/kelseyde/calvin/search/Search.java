@@ -8,4 +8,6 @@ public interface Search {
 
     void clearHistory();
 
+    void logStatistics();
+
 }

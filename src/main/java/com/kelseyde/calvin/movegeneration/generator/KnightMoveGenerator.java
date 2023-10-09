@@ -6,7 +6,9 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
@@ -33,9 +35,9 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
             0x0044280000000000L, 0x0088500000000000L, 0x0010a00000000000L, 0x0020400000000000L
     };
 
-    public Set<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board) {
 
-        Set<Move> moves = new HashSet<>();
+        List<Move> moves = new ArrayList<>();
 
         long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
 

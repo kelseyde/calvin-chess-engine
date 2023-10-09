@@ -26,13 +26,13 @@ public class UCICommandLineRunnerTest {
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
     private UCICommandLineRunner runner;
-    private ConfigurableApplicationContext context;
+    private ApplicationShutdownManager shutdownManager;
 
     @BeforeEach
     public void setUp() {
         System.setOut(new PrintStream(outputStream));
         Bot bot = new CalvinBot();
-        runner = new UCICommandLineRunner(context, bot);
+        runner = new UCICommandLineRunner(shutdownManager, bot);
     }
 
     @Test

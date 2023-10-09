@@ -134,6 +134,7 @@ public class CalvinBot implements Bot {
         if (isThinking()) {
             stopThinking();
         }
+        search.logStatistics();
         board = null;
         search = null;
     }

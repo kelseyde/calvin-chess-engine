@@ -1,6 +1,6 @@
 <img src="src/main/resources/calvin.png" width="120">
 
-A chess engine written in Java. Named after 
+A chess engine written in Java. Named after my favourite comic book character.
 
 This is a personal project. I am a professional Java developer and amateur chess player, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life.
 
@@ -17,5 +17,7 @@ Current feautures include:
 - Zobrist hashing
 - Evaluation: basic material count and piece square tables, pawn structure, passed pawn bonuses, isolated/doubled pawn penalties
 - UCI protocol implemented and Calvin is connected to Lichess where he plays regularly in the bot pool: https://lichess.org/@/Calvin_Bot
+
+If you would like to contribute, or just talk about chess/chess programming, get in touch!
 
 <img src="src/main/resources/hobbes.png" width="140">

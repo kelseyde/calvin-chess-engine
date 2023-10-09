@@ -18,4 +18,4 @@ Current feautures include:
 - Evaluation: basic material count and piece square tables, pawn structure, passed pawn bonuses, isolated/doubled pawn penalties
 - UCI protocol implemented and Calvin is connected to Lichess where he plays regularly in the bot pool: https://lichess.org/@/Calvin_Bot
 
-<img src="src/main/resources/hobbes.png" width="120">
+<img src="src/main/resources/hobbes.png" width="140">

@@ -21,7 +21,3 @@ logging:
   level:
     root: WARN
     com.kelseyde.calvin: DEBUG
-    org:
-      springframework:
-        boot:
-          autoconfigure: DEBUG

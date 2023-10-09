@@ -12,7 +12,7 @@ import java.util.Objects;
 @Slf4j
 public class TranspositionTable {
 
-    private static final int TABLE_SIZE_MB = 5;
+    private static final int TABLE_SIZE_MB = 10;
     // TODO this is en estimation
     private static final int ENTRY_SIZE_B = 24;
 

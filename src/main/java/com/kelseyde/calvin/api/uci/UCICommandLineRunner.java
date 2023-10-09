@@ -122,7 +122,7 @@ public class UCICommandLineRunner implements CommandLineRunner {
 
     private void handleQuit() {
         bot.gameOver();
-//        shutdownManager.initiateShutdown(0);
+        shutdownManager.initiateShutdown(0);
     }
 
     private void writeMove(Move move) {

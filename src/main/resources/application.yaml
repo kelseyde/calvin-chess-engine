@@ -2,6 +2,7 @@ spring:
   application:
     name: calvin
   main:
+    lazy-initialization: true
     banner-mode: off
 
 http:
@@ -20,3 +21,7 @@ logging:
   level:
     root: WARN
     com.kelseyde.calvin: DEBUG
+    org:
+      springframework:
+        boot:
+          autoconfigure: DEBUG

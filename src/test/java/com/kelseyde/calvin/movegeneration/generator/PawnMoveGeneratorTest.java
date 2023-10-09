@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -184,7 +185,7 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(PieceType.PAWN, false, 34);
         board.getGameState().setEnPassantFile(BoardUtils.getFile(42));
 
-        Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(35, 43).build();
         Move enPassantCapture = moveBuilder(35, 42).moveType(MoveType.EN_PASSANT).build();
@@ -201,7 +202,7 @@ public class PawnMoveGeneratorTest {
 
         board.makeMove(TestUtils.getLegalMove(board, NotationUtils.fromNotation("e7", "e5", PieceType.PAWN)));
 
-        Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(35, 43).build();
         Move standardCapture = moveBuilder(35, 42).build();
@@ -235,7 +236,7 @@ public class PawnMoveGeneratorTest {
         // black second double pawn advance
         board.makeMove(moveBuilder(52, 36).enPassantFile(4).build());
 
-        Set<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalWhiteMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(35, 43)
                 .moveType(MoveType.STANDARD)
@@ -255,7 +256,7 @@ public class PawnMoveGeneratorTest {
         board.getGameState().setEnPassantFile(BoardUtils.getFile(22));
         board.setWhiteToMove(false);
 
-        Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(29, 21).build();
         Move enPassantCapture = moveBuilder(29, 22).moveType(MoveType.EN_PASSANT).build();
@@ -271,7 +272,7 @@ public class PawnMoveGeneratorTest {
         Board board = FEN.fromFEN(fen);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
 
-        Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(29, 21).build();
         Move standardCapture = moveBuilder(29, 22).build();
@@ -300,7 +301,7 @@ public class PawnMoveGeneratorTest {
         // second double pawn move from white, should make the first en-passant capture impossible
         board.makeMove(moveBuilder(8, 24).enPassantFile(0).build());
 
-        Set<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalBlackMoves = generator.generatePseudoLegalMoves(board);
 
         Move standardMove = moveBuilder(25, 17).build();
         Move enPassantCapture = moveBuilder(25, 16).moveType(MoveType.EN_PASSANT).build();
@@ -330,7 +331,7 @@ public class PawnMoveGeneratorTest {
     public void testWhiteStandardPromotion() {
         board = TestUtils.emptyBoard();
         board.toggleSquare(PieceType.PAWN, true, 51);
-        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalMoves = generator.generatePseudoLegalMoves(board);
         Assertions.assertEquals(
                 Set.of(moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
                         moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
@@ -344,7 +345,7 @@ public class PawnMoveGeneratorTest {
     public void testBlackStandardPromotion() {
         board.toggleSquare(PieceType.PAWN, false, 8);
         board.setWhiteToMove(false);
-        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalMoves = generator.generatePseudoLegalMoves(board);
         Assertions.assertEquals(
                 Set.of(moveBuilder(8, 0).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
                         moveBuilder(8, 0).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
@@ -358,7 +359,7 @@ public class PawnMoveGeneratorTest {
     public void testWhiteCapturePromotion() {
         String fen = "k1q5/3P4/8/8/8/8/8/K7 w - - 0 1";
         board = FEN.fromFEN(fen);
-        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> legalMoves = generator.generatePseudoLegalMoves(board);
         Assertions.assertEquals(Set.of(
                 moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
                 moveBuilder(51, 59).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
@@ -376,8 +377,8 @@ public class PawnMoveGeneratorTest {
     public void testBlackCapturePromotion() {
         String fen = "k7/8/8/8/8/8/7p/K5B1 b - - 0 1";
         board = FEN.fromFEN(fen);
-        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
-        Set<Move> expectedLegalMoves = Set.of(
+        List<Move> legalMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> expectedLegalMoves = List.of(
                 moveBuilder(15, 7).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
                 moveBuilder(15, 7).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
                 moveBuilder(15, 7).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
@@ -396,15 +397,15 @@ public class PawnMoveGeneratorTest {
 
         Board board = FEN.fromFEN(fen);
 
-        Set<Move> legalMoves = generator.generatePseudoLegalMoves(board);
-        Set<Move> expectedLegalMoves = Set.of(moveBuilder(23, 31).build());
+        List<Move> legalMoves = generator.generatePseudoLegalMoves(board);
+        List<Move> expectedLegalMoves = List.of(moveBuilder(23, 31).build());
         Assertions.assertEquals(1, legalMoves.size());
         Assertions.assertEquals(expectedLegalMoves, legalMoves);
 
     }
 
     private void assertMoves(Board board, Set<Move> expected) {
-        Set<Move> actual = generator.generatePseudoLegalMoves(board);
+        List<Move> actual = generator.generatePseudoLegalMoves(board);
 
         Assertions.assertEquals(
                 expected.stream().map(m -> m.getPieceType().toString() + m.getStartSquare() + m.getEndSquare()).collect(Collectors.toSet()),
@@ -412,9 +413,9 @@ public class PawnMoveGeneratorTest {
     }
 
     private void assertMovesFromSquare(Board board, int square, Set<Move> expected) {
-        Set<Move> actual = generator.generatePseudoLegalMoves(board).stream()
+        List<Move> actual = generator.generatePseudoLegalMoves(board).stream()
                 .filter(move -> move.getStartSquare() == square)
-                .collect(Collectors.toSet());
+                .toList();
         Assertions.assertEquals(
                 expected.stream().map(m -> m.getPieceType().toString() + m.getStartSquare() + m.getEndSquare()).collect(Collectors.toSet()),
                 actual.stream().map(m -> m.getPieceType().toString() + m.getStartSquare() + m.getEndSquare()).collect(Collectors.toSet()));

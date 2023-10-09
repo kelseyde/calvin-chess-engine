@@ -6,7 +6,9 @@ import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.magic.Magics;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
@@ -33,8 +35,8 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
      * @see <a href="https://www.chessprogramming.org/Hyperbola_Quintessence">Chess Programming Wiki</a>
      */
     @Override
-    public Set<Move> generatePseudoLegalMoves(Board board) {
-        Set<Move> moves = new HashSet<>();
+    public List<Move> generatePseudoLegalMoves(Board board) {
+        List<Move> moves = new ArrayList<>();
         PieceType pieceType = getPieceType();
         boolean isWhite = board.isWhiteToMove();
         long pieceBitboard = getSliders(board, isWhite);

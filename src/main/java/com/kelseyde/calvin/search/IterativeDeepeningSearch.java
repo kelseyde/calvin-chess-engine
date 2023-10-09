@@ -314,6 +314,11 @@ public class IterativeDeepeningSearch implements Search {
         transpositionTable.clear();
     }
 
+    @Override
+    public void logStatistics() {
+        transpositionTable.logTableSize();
+    }
+
     private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {
         return Math.abs(bestEval) >= CHECKMATE_EVAL - currentDepth;
     }

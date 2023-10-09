@@ -10,6 +10,7 @@ import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,7 +49,7 @@ public class MoveGenerator {
         pinMask = pinCalculator.calculatePinMask(board, isWhite);
         int checkersCount = Long.bitCount(checkersMask);
 
-        Set<Move> allMoves = new HashSet<>(kingMoveGenerator.generatePseudoLegalMoves(board));
+        List<Move> allMoves = kingMoveGenerator.generatePseudoLegalMoves(board);
 
         // If we are in double-check, the only legal moves are king moves
         boolean isDoubleCheck = checkersCount == 2;

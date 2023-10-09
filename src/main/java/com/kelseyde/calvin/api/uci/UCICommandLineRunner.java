@@ -24,18 +24,19 @@ public class UCICommandLineRunner implements CommandLineRunner {
     private static final String[] POSITION_LABELS = new String[] { "position", "fen", "moves" };
     private static final String[] GO_LABELS = new String[] { "go", "movetime", "wtime", "btime", "winc", "binc", "movestogo" };
 
-    private final ConfigurableApplicationContext applicationContext;
+    private final ApplicationShutdownManager shutdownManager;
 
     private final Bot bot;
-
-    private boolean running = true;
 
     @Override
     public void run(String... args) {
         System.out.println("Initialising UCI command line runner...");
-        while (running) {
-            readCommand()
-                    .ifPresent(this::handleCommand);
+        String command = "";
+        while (!command.equals("quit")) {
+            command = readCommand();
+            if (StringUtils.hasText(command)) {
+                handleCommand(command);
+            }
         }
     }
 
@@ -121,8 +122,7 @@ public class UCICommandLineRunner implements CommandLineRunner {
 
     private void handleQuit() {
         bot.gameOver();
-        running = false;
-        System.exit(SpringApplication.exit(applicationContext, () -> 0));
+//        shutdownManager.initiateShutdown(0);
     }
 
     private void writeMove(Move move) {
@@ -152,16 +152,16 @@ public class UCICommandLineRunner implements CommandLineRunner {
         return StringUtils.hasText(valueString) ? Integer.parseInt(valueString) : defaultValue;
     }
 
-    private Optional<String> readCommand() {
+    private String readCommand() {
         try {
             String line = in.nextLine();
             if (StringUtils.hasText(line)) {
-                return Optional.of(line);
+                return line;
             }
         } catch (NoSuchElementException e) {
             // do nothing
         }
-        return Optional.empty();
+        return "";
     }
 
     private void write(String output) {

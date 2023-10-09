@@ -9,7 +9,9 @@ import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
@@ -17,10 +19,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
     @Getter
     private final PieceType pieceType = PieceType.PAWN;
 
-    public Set<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board) {
 
         boolean isWhite = board.isWhiteToMove();
-        Set<Move> moves = new HashSet<>();
+        List<Move> moves = new ArrayList<>();
 
         long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();

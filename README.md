@@ -4,7 +4,7 @@ A chess engine written in Java. Named after my favourite comic book character.
 
 This is a personal project. I am a Java developer and amateur chess player, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life.
 
-Calvin is still a pretty average chess player (~1600 on Lichess as of October 2023), but his rating slowly climbs as I add things here and there. 
+Calvin is rated about 1600 on Lichess as of October 2023.
 
 Current feautures include:
 

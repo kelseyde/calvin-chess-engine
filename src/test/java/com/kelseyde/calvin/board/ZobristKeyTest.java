@@ -1,8 +1,6 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.move.MoveType;
-import com.kelseyde.calvin.board.piece.PieceType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +13,7 @@ public class ZobristKeyTest {
         Board board2 = new Board();
         Assertions.assertEquals(board1.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
 
-        Move e4 = Move.builder().startSquare(12).endSquare(28).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build();
+        Move e4 = new Move(12, 28, Move.PAWN_DOUBLE_MOVE_FLAG);
         board1.makeMove(e4);
         board2.makeMove(e4);
 

@@ -1,9 +1,8 @@
 package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.move.MoveType;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
@@ -55,7 +54,7 @@ public class MoveOrderer {
         PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
         boolean isCapture = capturedPieceType != null;
         if (isCapture) {
-            int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(move.getPieceType());
+            int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(board.pieceAt(move.getStartSquare()));
             if (materialDelta > 0) {
                 moveScore += WINNING_CAPTURE_BIAS;
             } else if (materialDelta == 0) {
@@ -76,7 +75,7 @@ public class MoveOrderer {
         }
 
         // Prioritising pawn promotion
-        if (move.getMoveType().equals(MoveType.PROMOTION)) {
+        if (move.isPromotion()) {
             int promotionBias = move.getPromotionPieceType().equals(PieceType.QUEEN) ? PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
             moveScore += promotionBias;
         }
@@ -95,7 +94,7 @@ public class MoveOrderer {
         }
 
         // Castling likely to be good (king safety)
-        if (move.getMoveType().equals(MoveType.KINGSIDE_CASTLE) || move.getMoveType().equals(MoveType.QUEENSIDE_CASTLE)) {
+        if (move.isCastling()) {
             moveScore += CASTLE_BIAS;
         }
 

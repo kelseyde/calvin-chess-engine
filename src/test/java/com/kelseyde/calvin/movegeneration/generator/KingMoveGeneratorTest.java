@@ -1,9 +1,8 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.Piece;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,8 +14,6 @@ import java.util.stream.Collectors;
 public class KingMoveGeneratorTest {
 
     private final KingMoveGenerator generator = new KingMoveGenerator();
-
-    private final String king = Piece.getPieceCode(true, PieceType.KING);
 
     private Board board;
 

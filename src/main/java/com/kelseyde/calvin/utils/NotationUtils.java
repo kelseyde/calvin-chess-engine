@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.utils;
 
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,21 +15,7 @@ public class NotationUtils {
      * Generate a {@link Move} from algebraic notation of the start and end square (e.g. "e2", "e4" -> new Move(12, 28))
      */
     public static Move fromNotation(String startSquare, String endSquare) {
-        return Move.builder()
-                .startSquare(fromNotation(startSquare))
-                .endSquare(fromNotation(endSquare))
-                .build();
-    }
-
-    /**
-     * Generate a {@link Move} from algebraic notation of the start and end square (e.g. "e2", "e4" -> new Move(12, 28))
-     */
-    public static Move fromNotation(String startSquare, String endSquare, PieceType type) {
-        return Move.builder()
-                .startSquare(fromNotation(startSquare))
-                .endSquare(fromNotation(endSquare))
-                .pieceType(type)
-                .build();
+        return new Move(fromNotation(startSquare), fromNotation(endSquare));
     }
 
     /**
@@ -39,12 +25,13 @@ public class NotationUtils {
     public static Move fromCombinedNotation(String notation) {
         int startSquare = fromNotation(notation.substring(0, 2));
         int endSquare = fromNotation(notation.substring(2, 4));
-        Move.MoveBuilder moveBuilder = Move.builder().startSquare(startSquare).endSquare(endSquare);
+
+        short flag = Move.NO_FLAG;
         if (notation.length() == 5) {
             PieceType promotionPieceType = PieceType.fromPieceCode(notation.substring(4, 5));
-            moveBuilder.promotionPieceType(promotionPieceType);
+            flag = Move.getPromotionFlag(promotionPieceType);
         }
-        return moveBuilder.build();
+        return new Move(startSquare, endSquare, flag);
     }
 
     public static String toNotation(Move move) {

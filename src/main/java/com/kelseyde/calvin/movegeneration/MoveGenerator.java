@@ -1,17 +1,15 @@
 package com.kelseyde.calvin.movegeneration;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.generator.*;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Evaluates the effect of a {@link Move} on a game. First checks if the move is legal. Then, checks if executing the
@@ -98,7 +96,7 @@ public class MoveGenerator {
 
         // 1. Capture the piece checking the king
         boolean isCapturingChecker = checkerSquare == endSquare
-                || move.getMoveType().isEnPassant() && (isWhite ? endSquare - 8 : endSquare + 8) == checkerSquare;
+                || move.isEnPassant() && (isWhite ? endSquare - 8 : endSquare + 8) == checkerSquare;
         if (isCapturingChecker) {
             return true;
         }
@@ -111,7 +109,7 @@ public class MoveGenerator {
         }
 
         // 3. Move the king (the legality of the king destination square is checked later).
-        return move.getPieceType().equals(PieceType.KING);
+        return board.pieceAt(move.getStartSquare()).equals(PieceType.KING);
     }
 
     public boolean doesNotLeaveKingInCheck(Board board, Move move, int kingSquare, boolean isWhite) {
@@ -119,12 +117,12 @@ public class MoveGenerator {
         int endSquare = move.getEndSquare();
 
         // Check that none of the squares the king travels through to castle are attacked.
-        if (move.getMoveType().isCastling()) {
+        if (move.isCastling()) {
             long kingMask = getCastlingKingTravelSquares(move, isWhite);
             return !isAttacked(board, isWhite, kingMask);
         }
         // For en passant and king moves, just make the move on the board and check the king is not attacked.
-        else if (move.getMoveType().isEnPassant() || move.getPieceType().equals(PieceType.KING)) {
+        else if (move.isEnPassant() || board.pieceAt(startSquare).equals(PieceType.KING)) {
             board.makeMove(move);
             long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
             boolean isAttacked = isAttacked(board, isWhite, kingMask);
@@ -200,11 +198,11 @@ public class MoveGenerator {
     }
 
     private long getCastlingKingTravelSquares(Move move, boolean isWhite) {
-        return switch (move.getMoveType()) {
-            case KINGSIDE_CASTLE -> isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
-            case QUEENSIDE_CASTLE -> isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
-            default -> throw new IllegalArgumentException("Not a castling move!");
-        };
+        if (BoardUtils.getFile(move.getEndSquare()) == 6) {
+            return isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+        } else {
+            return isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+        }
     }
 
 }

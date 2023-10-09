@@ -1,9 +1,9 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -80,11 +80,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
         Set<Move> moves = new HashSet<>();
         while (possibleMoves != 0) {
             int endSquare = BitboardUtils.getLSB(possibleMoves);
-            moves.add(Move.builder()
-                    .pieceType(PieceType.KNIGHT)
-                    .startSquare(startSquare)
-                    .endSquare(endSquare)
-                    .build());
+            moves.add(new Move(startSquare, endSquare));
             possibleMoves = BitboardUtils.popLSB(possibleMoves);
         }
         return moves;

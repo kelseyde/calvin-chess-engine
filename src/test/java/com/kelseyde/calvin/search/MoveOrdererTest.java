@@ -2,8 +2,6 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.move.MoveType;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -29,18 +27,12 @@ public class MoveOrdererTest {
         String fen = "7k/2P5/8/8/8/8/8/7K w - - 0 1";
         Board board = FEN.fromFEN(fen);
 
-        Move underPromotionMove = Move.builder()
-                .startSquare(50)
-                .endSquare(58)
-                .pieceType(PieceType.PAWN)
-                .moveType(MoveType.PROMOTION)
-                .promotionPieceType(PieceType.KNIGHT)
-                .build();
+        Move underPromotionMove = new Move(50, 58, Move.PROMOTE_TO_KNIGHT_FLAG);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h1", "h2", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g1", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g2", PieceType.KING),
+                NotationUtils.fromNotation("h1", "h2"),
+                NotationUtils.fromNotation("h1", "g1"),
+                NotationUtils.fromNotation("h1", "g2"),
                 underPromotionMove
         };
 
@@ -57,16 +49,16 @@ public class MoveOrdererTest {
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h1", "h2", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g1", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g2", PieceType.KING),
-                NotationUtils.fromNotation("f3", "e4", PieceType.QUEEN),
+                NotationUtils.fromNotation("h1", "h2"),
+                NotationUtils.fromNotation("h1", "g1"),
+                NotationUtils.fromNotation("h1", "g2"),
+                NotationUtils.fromNotation("f3", "e4"),
 //                NotationUtils.fromNotation("d3", "e4", PieceType.PAWN),
         };
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("f3", "e4", PieceType.QUEEN)));
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("f3", "e4")));
 
     }
 
@@ -76,26 +68,22 @@ public class MoveOrdererTest {
         String fen = "4k2r/5ppp/8/8/8/8/5PPP/4K2R b Kk - 0 1";
         Board board = FEN.fromFEN(fen);
 
-        Move castlingMove = Move.builder()
-                .startSquare(60)
-                .endSquare(62)
-                .pieceType(PieceType.KING)
-                .moveType(MoveType.KINGSIDE_CASTLE)
-                .build();
+
+        Move castlingMove = new Move(60, 62, Move.CASTLE_FLAG);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h7", "h5", PieceType.PAWN),
-                NotationUtils.fromNotation("g7", "g5", PieceType.PAWN),
-                NotationUtils.fromNotation("f7", "f5", PieceType.PAWN),
-                NotationUtils.fromNotation("h7", "h6", PieceType.PAWN),
-                NotationUtils.fromNotation("g7", "g6", PieceType.PAWN),
-                NotationUtils.fromNotation("f7", "f6", PieceType.PAWN),
-                NotationUtils.fromNotation("e8", "f8", PieceType.KING),
-                NotationUtils.fromNotation("e8", "e7", PieceType.KING),
-                NotationUtils.fromNotation("e8", "d7", PieceType.KING),
-                NotationUtils.fromNotation("e8", "d8", PieceType.KING),
-                NotationUtils.fromNotation("h8", "g8", PieceType.ROOK),
-                NotationUtils.fromNotation("h8", "f8", PieceType.ROOK),
+                NotationUtils.fromNotation("h7", "h5"),
+                NotationUtils.fromNotation("g7", "g5"),
+                NotationUtils.fromNotation("f7", "f5"),
+                NotationUtils.fromNotation("h7", "h6"),
+                NotationUtils.fromNotation("g7", "g6"),
+                NotationUtils.fromNotation("f7", "f6"),
+                NotationUtils.fromNotation("e8", "f8"),
+                NotationUtils.fromNotation("e8", "e7"),
+                NotationUtils.fromNotation("e8", "d7"),
+                NotationUtils.fromNotation("e8", "d8"),
+                NotationUtils.fromNotation("h8", "g8"),
+                NotationUtils.fromNotation("h8", "f8"),
                 castlingMove
         };
 
@@ -112,15 +100,15 @@ public class MoveOrdererTest {
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h1", "h2", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g1", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g2", PieceType.KING),
-                NotationUtils.fromNotation("e6", "e8", PieceType.QUEEN),
+                NotationUtils.fromNotation("h1", "h2"),
+                NotationUtils.fromNotation("h1", "g1"),
+                NotationUtils.fromNotation("h1", "g2"),
+                NotationUtils.fromNotation("e5", "e8"),
         };
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("e6", "e8", PieceType.QUEEN)));
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("e5", "e8")));
 
     }
 
@@ -131,22 +119,18 @@ public class MoveOrdererTest {
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("g1", "h1", PieceType.KING),
-                NotationUtils.fromNotation("g1", "f1", PieceType.KING),
-                NotationUtils.fromNotation("f3", "f4", PieceType.PAWN),
-                NotationUtils.fromNotation("h2", "h4", PieceType.PAWN),
+                NotationUtils.fromNotation("g1", "h1"),
+                NotationUtils.fromNotation("g1", "f1"),
+                NotationUtils.fromNotation("f3", "f4"),
+                NotationUtils.fromNotation("h2", "h4"),
         };
 
-        Move killerMove = Move.builder()
-                .startSquare(21)
-                .endSquare(29)
-                .pieceType(PieceType.PAWN)
-                .build();
+        Move killerMove = new Move(21, 29);
         moveOrderer.addKillerMove(1, killerMove);
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("f3", "f4", PieceType.PAWN)));
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("f3", "f4")));
 
     }
 
@@ -157,22 +141,18 @@ public class MoveOrdererTest {
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("g1", "h1", PieceType.KING),
-                NotationUtils.fromNotation("g1", "f1", PieceType.KING),
-                NotationUtils.fromNotation("f3", "f4", PieceType.PAWN),
-                NotationUtils.fromNotation("h2", "h4", PieceType.PAWN),
+                NotationUtils.fromNotation("g1", "h1"),
+                NotationUtils.fromNotation("g1", "f1"),
+                NotationUtils.fromNotation("f3", "f4"),
+                NotationUtils.fromNotation("h2", "h4"),
         };
 
-        Move killerMove = Move.builder()
-                .startSquare(21)
-                .endSquare(29)
-                .pieceType(PieceType.PAWN)
-                .build();
+        Move killerMove = new Move(21, 29);
         moveOrderer.addKillerMove(2, killerMove);
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
-        Assertions.assertFalse(orderedMoves[0].matches(NotationUtils.fromNotation("f3", "f4", PieceType.PAWN)));
+        Assertions.assertFalse(orderedMoves[0].matches(NotationUtils.fromNotation("f3", "f4")));
 
     }
 
@@ -183,22 +163,22 @@ public class MoveOrdererTest {
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("g1", "h1", PieceType.KING),
-                NotationUtils.fromNotation("f2", "f4", PieceType.PAWN),
-                NotationUtils.fromNotation("g2", "g4", PieceType.PAWN),
-                NotationUtils.fromNotation("h2", "h4", PieceType.PAWN),
-                NotationUtils.fromNotation("f2", "f3", PieceType.PAWN),
-                NotationUtils.fromNotation("g2", "g3", PieceType.PAWN),
-                NotationUtils.fromNotation("h2", "h3", PieceType.PAWN),
-                NotationUtils.fromNotation("f1", "e1", PieceType.ROOK),
-                NotationUtils.fromNotation("e2", "e7", PieceType.QUEEN),
+                NotationUtils.fromNotation("g1", "h1"),
+                NotationUtils.fromNotation("f2", "f4"),
+                NotationUtils.fromNotation("g2", "g4"),
+                NotationUtils.fromNotation("h2", "h4"),
+                NotationUtils.fromNotation("f2", "f3"),
+                NotationUtils.fromNotation("g2", "g3"),
+                NotationUtils.fromNotation("h2", "h3"),
+                NotationUtils.fromNotation("f1", "e1"),
+                NotationUtils.fromNotation("e2", "e7"),
         };
 
-        moveOrderer.addHistoryMove(5, NotationUtils.fromNotation("f1", "e1", PieceType.ROOK), true);
+        moveOrderer.addHistoryMove(5, NotationUtils.fromNotation("f1", "e1"), true);
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("f1", "e1", PieceType.ROOK)));
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("f1", "e1")));
 
     }
 
@@ -208,18 +188,12 @@ public class MoveOrdererTest {
         String fen = "7k/2P5/8/8/8/8/8/7K w - - 0 1";
         Board board = FEN.fromFEN(fen);
 
-        Move underPromotionMove = Move.builder()
-                .startSquare(50)
-                .endSquare(58)
-                .pieceType(PieceType.PAWN)
-                .moveType(MoveType.PROMOTION)
-                .promotionPieceType(PieceType.QUEEN)
-                .build();
+        Move underPromotionMove = new Move(50, 58, Move.PROMOTE_TO_QUEEN_FLAG);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h1", "h2", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g1", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g2", PieceType.KING),
+                NotationUtils.fromNotation("h1", "h2"),
+                NotationUtils.fromNotation("h1", "g1"),
+                NotationUtils.fromNotation("h1", "g2"),
                 underPromotionMove
         };
 
@@ -236,16 +210,16 @@ public class MoveOrdererTest {
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h1", "h2", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g1", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g2", PieceType.KING),
+                NotationUtils.fromNotation("h1", "h2"),
+                NotationUtils.fromNotation("h1", "g1"),
+                NotationUtils.fromNotation("h1", "g2"),
 //                NotationUtils.fromNotation("f3", "e4", PieceType.QUEEN),
-                NotationUtils.fromNotation("d3", "e4", PieceType.PAWN),
+                NotationUtils.fromNotation("d3", "e4"),
         };
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("d3", "e4", PieceType.PAWN)));
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("d3", "e4")));
 
     }
 
@@ -256,17 +230,17 @@ public class MoveOrdererTest {
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h1", "h2", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g1", PieceType.KING),
-                NotationUtils.fromNotation("h1", "g2", PieceType.KING),
-                NotationUtils.fromNotation("f3", "e4", PieceType.QUEEN),
-                NotationUtils.fromNotation("d3", "e4", PieceType.PAWN),
+                NotationUtils.fromNotation("h1", "h2"),
+                NotationUtils.fromNotation("h1", "g1"),
+                NotationUtils.fromNotation("h1", "g2"),
+                NotationUtils.fromNotation("f3", "e4"),
+                NotationUtils.fromNotation("d3", "e4"),
         };
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("d3", "e4", PieceType.PAWN)));
-        Assertions.assertTrue(orderedMoves[1].matches(NotationUtils.fromNotation("f3", "e4", PieceType.QUEEN)));
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("d3", "e4")));
+        Assertions.assertTrue(orderedMoves[1].matches(NotationUtils.fromNotation("f3", "e4")));
 
     }
 
@@ -277,18 +251,18 @@ public class MoveOrdererTest {
         Board board = FEN.fromFEN(fen);
 
         Move[] moves = new Move[] {
-                NotationUtils.fromNotation("c8", "a6", PieceType.BISHOP),
-                NotationUtils.fromNotation("g8", "h7", PieceType.KING),
-                NotationUtils.fromNotation("f7", "f5", PieceType.PAWN),
-                NotationUtils.fromNotation("h6", "h5", PieceType.PAWN),
-                NotationUtils.fromNotation("e8", "e1", PieceType.ROOK),
+                NotationUtils.fromNotation("c8", "a6"),
+                NotationUtils.fromNotation("g8", "h7"),
+                NotationUtils.fromNotation("f7", "f5"),
+                NotationUtils.fromNotation("h6", "h5"),
+                NotationUtils.fromNotation("e8", "e1"),
         };
 
-        Move previousBestMove = NotationUtils.fromNotation("e8", "e1", PieceType.ROOK);
+        Move previousBestMove = NotationUtils.fromNotation("e8", "e1");
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, moves, previousBestMove, true, 1);
 
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("e8", "e1", PieceType.ROOK)));
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("e8", "e1")));
 
     }
 
@@ -301,21 +275,21 @@ public class MoveOrdererTest {
 
         Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
 
-        Move killerMove = NotationUtils.fromNotation("e1", "c1", PieceType.KING);
-        killerMove.setMoveType(MoveType.QUEENSIDE_CASTLE);
+        Move killerMove = NotationUtils.fromNotation("e1", "c1");
+        killerMove.setFlag(Move.CASTLE_FLAG);
         moveOrderer.addKillerMove(1, killerMove);
 
-        Move prevBestMove = NotationUtils.fromNotation("e2", "a6", PieceType.BISHOP);
+        Move prevBestMove = NotationUtils.fromNotation("e2", "a6");
 
         Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, prevBestMove, true, 1);
 
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("e2", "a6", PieceType.BISHOP)));
-        Assertions.assertTrue(orderedMoves[1].matches(NotationUtils.fromNotation("e1", "c1", PieceType.KING)));
-        Assertions.assertTrue(orderedMoves[2].matches(NotationUtils.fromNotation("g2", "h3", PieceType.PAWN))
-                || orderedMoves[3].matches(NotationUtils.fromNotation("g2", "h3", PieceType.PAWN)));
-        Assertions.assertTrue(orderedMoves[3].matches(NotationUtils.fromNotation("d5", "e6", PieceType.PAWN))
-                || orderedMoves[2].matches(NotationUtils.fromNotation("d5", "e6", PieceType.PAWN)));
-        Assertions.assertTrue(orderedMoves[4].matches(NotationUtils.fromNotation("e1", "g1", PieceType.KING)));
+        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("e2", "a6")));
+        Assertions.assertTrue(orderedMoves[1].matches(NotationUtils.fromNotation("e1", "c1")));
+        Assertions.assertTrue(orderedMoves[2].matches(NotationUtils.fromNotation("g2", "h3"))
+                || orderedMoves[3].matches(NotationUtils.fromNotation("g2", "h3")));
+        Assertions.assertTrue(orderedMoves[3].matches(NotationUtils.fromNotation("d5", "e6"))
+                || orderedMoves[2].matches(NotationUtils.fromNotation("d5", "e6")));
+        Assertions.assertTrue(orderedMoves[4].matches(NotationUtils.fromNotation("e1", "g1")));
 
     }
 

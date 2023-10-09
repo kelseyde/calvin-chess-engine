@@ -1,15 +1,13 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.magic.Magics;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
 
@@ -46,7 +44,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
             pieceBitboard = BitboardUtils.popLSB(pieceBitboard);
             while (moveBitboard != 0) {
                 int endSquare = BitboardUtils.getLSB(moveBitboard);
-                moves.add(move(pieceType, startSquare, endSquare).build());
+                moves.add(new Move(startSquare, endSquare));
                 moveBitboard = BitboardUtils.popLSB(moveBitboard);
             }
         }
@@ -87,13 +85,6 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         long occ = board.getOccupied();
         long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
         return Magics.getBishopAttacks(s, occ) &~ friendlies;
-    }
-
-    private Move.MoveBuilder move(PieceType type, int startSquare, int endSquare) {
-        return Move.builder()
-                .pieceType(type)
-                .startSquare(startSquare)
-                .endSquare(endSquare);
     }
 
 }

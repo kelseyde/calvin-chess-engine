@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.bot;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.IterativeDeepeningSearch;
 import com.kelseyde.calvin.search.Search;

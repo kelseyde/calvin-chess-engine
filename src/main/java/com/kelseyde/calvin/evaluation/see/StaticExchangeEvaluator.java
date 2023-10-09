@@ -1,9 +1,9 @@
 package com.kelseyde.calvin.evaluation.see;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.movegeneration.generator.*;
 

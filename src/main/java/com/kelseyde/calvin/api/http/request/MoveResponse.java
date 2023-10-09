@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.api.http.request;
 
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
-import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Builder;
 import lombok.Data;

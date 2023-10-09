@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.bot;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,7 +39,7 @@ public interface Bot {
     void applyMove(Move move);
 
     /**
-     * @return Whether the bot is currently thinking (either on its own turn, or 'pondering' on its opponent's turn.
+     * @return Whether the bot is currently thinking, either on its own turn, or 'pondering' on its opponent's turn.
      */
     boolean isThinking();
 
@@ -64,7 +64,7 @@ public interface Bot {
     int chooseThinkTime(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs);
 
     /**
-     * Immediately terminate any thinking processes (but preserve any cached information, transposition tables etc. for the next search.
+     * Immediately terminate any thinking processes, but preserve any cached information, transposition tables etc. for the next search.
      */
     void stopThinking();
 

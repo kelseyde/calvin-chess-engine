@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.search.transposition;
 
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -32,7 +32,7 @@ public class TranspositionNode {
     private int depth;
 
     /**
-     * The evaluation score from the previous search for this position (note: may not be exact, see {@link #type}.
+     * The evaluation score from the previous search for this position (note: may not be exact, see {@link #type}).
      */
     private int value;
 

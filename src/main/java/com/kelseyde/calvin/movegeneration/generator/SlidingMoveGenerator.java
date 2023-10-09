@@ -1,9 +1,8 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.magic.Magics;
 
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     @Override
     public List<Move> generatePseudoLegalMoves(Board board) {
         List<Move> moves = new ArrayList<>();
-        PieceType pieceType = getPieceType();
         boolean isWhite = board.isWhiteToMove();
         long pieceBitboard = getSliders(board, isWhite);
         while (pieceBitboard != 0) {
@@ -58,7 +56,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
         while (sliders != 0) {
             int slider = BitboardUtils.getLSB(sliders);
             attackMask |= generateAttackMaskFromSquare(board, slider, isWhite);
-            sliders = BitboardUtils.popLSB(sliders);;
+            sliders = BitboardUtils.popLSB(sliders);
         }
         return attackMask;
     }

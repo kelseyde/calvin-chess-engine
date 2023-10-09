@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.move.Move;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

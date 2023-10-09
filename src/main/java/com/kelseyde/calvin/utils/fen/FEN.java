@@ -63,7 +63,7 @@ public class FEN {
                         case "r" -> blackRooks |= squareBB;
                         case "q" -> blackQueens |= squareBB;
                         case "k" -> blackKing |= squareBB;
-                    };
+                    }
                 }
             }
 

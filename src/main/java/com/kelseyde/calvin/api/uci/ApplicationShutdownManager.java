@@ -7,11 +7,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class ApplicationShutdownManager {
+record ApplicationShutdownManager(ApplicationContext appContext) {
 
-    private final ApplicationContext appContext;
-
-    public void initiateShutdown(int returnCode){
+    public void initiateShutdown(int returnCode) {
         System.exit(SpringApplication.exit(appContext, () -> returnCode));
     }
 

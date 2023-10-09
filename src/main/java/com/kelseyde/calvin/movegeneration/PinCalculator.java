@@ -19,21 +19,21 @@ public class PinCalculator {
         long opponentOrthogonalSliders = isWhite ? board.getBlackQueens() | board.getBlackRooks() : board.getWhiteQueens() | board.getWhiteRooks();
         if (opponentOrthogonalSliders != 0) {
             long possibleOrthogonalPinners = Magics.getRookAttacks(kingSquare, opponentOrthogonalSliders) & opponentOrthogonalSliders;
-            pinMask += calculatePins(board, kingSquare, friendlies, opponents, possibleOrthogonalPinners);
+            pinMask += calculatePins(kingSquare, friendlies, opponents, possibleOrthogonalPinners);
         }
 
         // Calculate possible diagonal (queen or bishop) pins
         long opponentDiagonalSliders = isWhite ? board.getBlackQueens() | board.getBlackBishops() : board.getWhiteQueens() | board.getWhiteBishops();
         if (opponentDiagonalSliders != 0) {
             long possibleDiagonalPinners = Magics.getBishopAttacks(kingSquare, opponentDiagonalSliders) & opponentDiagonalSliders;
-            pinMask += calculatePins(board, kingSquare, friendlies, opponents, possibleDiagonalPinners);
+            pinMask += calculatePins(kingSquare, friendlies, opponents, possibleDiagonalPinners);
         }
 
         return pinMask;
 
     }
 
-    private long calculatePins(Board board, int kingSquare, long friendlies, long opponents, long possiblePinners) {
+    private long calculatePins(int kingSquare, long friendlies, long opponents, long possiblePinners) {
 
         long pinMask = 0L;
 

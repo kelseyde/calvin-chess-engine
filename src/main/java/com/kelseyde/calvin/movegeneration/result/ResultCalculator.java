@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.result;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import org.springframework.stereotype.Service;
 

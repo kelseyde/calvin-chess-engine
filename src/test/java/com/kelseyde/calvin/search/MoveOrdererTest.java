@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -14,7 +14,7 @@ public class MoveOrdererTest {
 
     private MoveOrderer moveOrderer;
 
-    private MoveGenerator moveGenerator = new MoveGenerator();
+    private final MoveGenerator moveGenerator = new MoveGenerator();
 
     @BeforeEach
     public void beforeEach() {
@@ -275,8 +275,7 @@ public class MoveOrdererTest {
 
         Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
 
-        Move killerMove = NotationUtils.fromNotation("e1", "c1");
-        killerMove.setFlag(Move.CASTLE_FLAG);
+        Move killerMove = NotationUtils.fromNotation("e1", "c1", Move.CASTLE_FLAG);
         moveOrderer.addKillerMove(1, killerMove);
 
         Move prevBestMove = NotationUtils.fromNotation("e2", "a6");

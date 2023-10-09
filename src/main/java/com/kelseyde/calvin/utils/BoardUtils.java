@@ -113,10 +113,7 @@ public class BoardUtils {
         int antiDiagonal1 = getAntiDiagonal(sq1);
         int antiDiagonal2 = getAntiDiagonal(sq2);
         int antiDiagonal3 = getAntiDiagonal(sq3);
-        if (antiDiagonal1 == antiDiagonal2 && antiDiagonal2 == antiDiagonal3) {
-            return true;
-        }
-        return false;
+        return antiDiagonal1 == antiDiagonal2 && antiDiagonal2 == antiDiagonal3;
     }
 
 }

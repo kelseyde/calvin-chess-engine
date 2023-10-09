@@ -1,6 +1,5 @@
-package com.kelseyde.calvin.board.move;
+package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.PieceType;
 import lombok.EqualsAndHashCode;
 
 import java.util.Optional;
@@ -32,9 +31,8 @@ public class Move {
 
     public static final int START_SQUARE_MASK = 0b0000000000111111;
     public static final int END_SQUARE_MASK = 0b0000111111000000;
-    public static final int FLAG_MASK = 0b1111000000000000;
 
-    private short value;
+    private final short value;
 
     public Move(int startSquare, int endSquare) {
         this.value = (short) (startSquare | endSquare << 6);
@@ -88,14 +86,6 @@ public class Move {
         return (value >>> 12) == PAWN_DOUBLE_MOVE_FLAG;
     }
 
-    public int getFlag() {
-        return (value >>> 12);
-    }
-
-    public void setFlag(short flag) {
-        this.value += (flag << 12);
-    }
-
     public boolean matches(Move move) {
         boolean squareMatch = getStartSquare() == move.getStartSquare() && getEndSquare() == move.getEndSquare();
         boolean promotionMatch = Optional.ofNullable(getPromotionPieceType())
@@ -103,6 +93,5 @@ public class Move {
                 .orElse(true);
         return squareMatch && promotionMatch;
     }
-
 
 }

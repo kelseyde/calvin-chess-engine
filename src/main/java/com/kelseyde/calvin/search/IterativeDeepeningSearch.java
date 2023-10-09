@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
@@ -32,6 +32,7 @@ public class IterativeDeepeningSearch implements Search {
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
     private static final int CHECKMATE_EVAL = 1000000;
+    private static final int CONTEMPT_FACTOR = -200;
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
     private final ResultCalculator resultCalculator = new ResultCalculator();
@@ -166,9 +167,7 @@ public class IterativeDeepeningSearch implements Search {
          if (plyRemaining == 0) {
              // In the case that max depth is reached, begin the quiescence search
              statistics.incrementNodesSearched();
-             int finalEval = quiescenceSearch(alpha, beta, 1);
-//             log.trace("{} {} ({}, {}) Final eval: {}", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, finalEval);
-             return finalEval;
+             return quiescenceSearch(alpha, beta, 1);
          }
 
          Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
@@ -221,8 +220,6 @@ public class IterativeDeepeningSearch implements Search {
                      moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
                      statistics.incrementKillers();
                  }
-//                 log.trace("{} {} ({}, {}) Pruning {} as eval {} >= beta {}",
-//                         board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval, beta);
                  statistics.incrementNodesSearched();
                  statistics.incrementCutoffs();
                  return beta;
@@ -231,8 +228,6 @@ public class IterativeDeepeningSearch implements Search {
              if (eval > alpha) {
                  // We have found a new best move
                  bestMoveInThisPosition = move;
-//                 log.trace("{} {} ({}, {}) New best move {} as eval {} > alpha {}",
-//                         board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval, alpha);
                  alpha = eval;
                  if (plyFromRoot == 0) {
                      bestMoveCurrentDepth = move;

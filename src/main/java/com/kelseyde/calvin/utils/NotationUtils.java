@@ -1,12 +1,9 @@
 package com.kelseyde.calvin.utils;
 
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.board.move.Move;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
 import java.util.List;
 
 public class NotationUtils {
@@ -16,6 +13,10 @@ public class NotationUtils {
      */
     public static Move fromNotation(String startSquare, String endSquare) {
         return new Move(fromNotation(startSquare), fromNotation(endSquare));
+    }
+
+    public static Move fromNotation(String startSquare, String endSquare, short flag) {
+        return new Move(fromNotation(startSquare), fromNotation(endSquare), flag);
     }
 
     /**
@@ -37,23 +38,9 @@ public class NotationUtils {
     public static String toNotation(Move move) {
         String notation = toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
         if (move.getPromotionPieceType() != null) {
-            notation += move.getPromotionPieceType().getPieceCode().toLowerCase();
+            notation += move.getPromotionPieceType().getPieceCode();
         }
         return notation;
-    }
-
-    public static List<String> toNotation(Deque<Move> moveHistory) {
-        List<Move> moves = new ArrayList<>(moveHistory);
-        Collections.reverse(moves);
-        return moves.stream()
-                .map(NotationUtils::toNotation)
-                .toList();
-    }
-
-    public static List<String> toNotation(List<Move> moves) {
-        return moves.stream()
-                .map(NotationUtils::toNotation)
-                .toList();
     }
 
     /**

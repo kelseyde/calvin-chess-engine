@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
-import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
@@ -62,6 +62,7 @@ public class MoveOrderer {
             } else {
                 moveScore += LOSING_CAPTURE_BIAS;
             }
+            // TODO test SEE in move ordering
 //            int seeEval = seeEvaluator.evaluate(board, move);
 //            if (seeEval > 0) {
 //                moveScore += seeEval + WINNING_CAPTURE_BIAS;

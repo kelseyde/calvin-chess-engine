@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.api.uci;
 
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
@@ -99,14 +99,14 @@ public class UCICommandLineRunner implements CommandLineRunner {
     private void handleGo(String command) {
 
         if (command.contains("movetime")) {
-            int moveTimeMs = getLabelInt(command, "movetime", GO_LABELS, 0);
+            int moveTimeMs = getLabelInt(command, "movetime", GO_LABELS);
             bot.think(moveTimeMs, this::writeMove);
         }
         else {
-            int timeWhiteMs = getLabelInt(command, "wtime", GO_LABELS, 0);
-            int timeBlackMs = getLabelInt(command, "btime", GO_LABELS, 0);
-            int incrementWhiteMs = getLabelInt(command, "winc", GO_LABELS, 0);
-            int incrementBlackMs = getLabelInt(command, "binc", GO_LABELS, 0);
+            int timeWhiteMs = getLabelInt(command, "wtime", GO_LABELS);
+            int timeBlackMs = getLabelInt(command, "btime", GO_LABELS);
+            int incrementWhiteMs = getLabelInt(command, "winc", GO_LABELS);
+            int incrementBlackMs = getLabelInt(command, "binc", GO_LABELS);
 
             int thinkTimeMs = bot.chooseThinkTime(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
             bot.think(thinkTimeMs, this::writeMove);
@@ -145,9 +145,9 @@ public class UCICommandLineRunner implements CommandLineRunner {
         return defaultValue;
     }
 
-    private int getLabelInt(String command, String label, String[] allLabels, int defaultValue) {
-        String valueString = getLabelString(command, label, allLabels, String.valueOf(defaultValue));
-        return StringUtils.hasText(valueString) ? Integer.parseInt(valueString) : defaultValue;
+    private int getLabelInt(String command, String label, String[] allLabels) {
+        String valueString = getLabelString(command, label, allLabels, String.valueOf(0));
+        return StringUtils.hasText(valueString) ? Integer.parseInt(valueString) : 0;
     }
 
     private String readCommand() {

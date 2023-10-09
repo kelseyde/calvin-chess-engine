@@ -1,26 +1,28 @@
 package com.kelseyde.calvin.search.transposition;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.move.Move;
-import lombok.Data;
+import com.kelseyde.calvin.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.Objects;
 
-@Data
 @Slf4j
 public class TranspositionTable {
 
+    /**
+     * Maximum size of the table in megabytes
+     */
     private static final int TABLE_SIZE_MB = 10;
-    // TODO this is en estimation
-    private static final int ENTRY_SIZE_B = 24;
 
-    private Board board;
+    /**
+     * Estimated size of a single table entry in bytes
+     */
+    private static final int MAX_ENTRY_SIZE_B = 24;
+
+    private final Board board;
 
     private TranspositionNode[] entries;
-
-    boolean enabled = true;
 
     public TranspositionTable(Board board) {
         this.board = board;
@@ -29,18 +31,12 @@ public class TranspositionTable {
     }
 
     public TranspositionNode get() {
-        if (!enabled) {
-            return null;
-        }
         long zobristKey = board.getGameState().getZobristKey();
         TranspositionNode entry = getEntry(zobristKey);
         return (entry != null && entry.getZobristKey() == zobristKey) ? entry : null;
     }
 
     public void put(NodeType type, int depth, Move move, int value) {
-        if (!enabled) {
-            return;
-        }
         long zobristKey = board.getGameState().getZobristKey();
         TranspositionNode entry = new TranspositionNode(zobristKey, type, move, depth, value);
         int index = getIndex(zobristKey);
@@ -68,7 +64,7 @@ public class TranspositionTable {
 
     private int calculateTableSize() {
         int tableSizeBytes = TABLE_SIZE_MB * 1024 * 1024;
-        int entrySizeBytes = ENTRY_SIZE_B;
+        int entrySizeBytes = MAX_ENTRY_SIZE_B;
         int entriesCount = tableSizeBytes / entrySizeBytes;
         log.trace("Initialising a transposition table of {} entries based on {}MB table size and {}B entry size.",
                 entriesCount, TABLE_SIZE_MB, entrySizeBytes);

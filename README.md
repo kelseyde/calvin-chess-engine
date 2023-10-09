@@ -22,8 +22,8 @@ Current feautures include:
 
 Perft results (starting position):
 
-| Depth | Nodes     | Speed        |
-|-------|-----------|--------------|
+| 	Depth	 | 	Nodes	 | 	Speed	 | 
+| 	:-----:	 | 	:-----:	 | 	:-----:	 | 
 | 1     | 20        | PT0.000016S  |
 | 2     | 400       | PT0.000099S  |
 | 3     | 8902      | PT0.156442S  |

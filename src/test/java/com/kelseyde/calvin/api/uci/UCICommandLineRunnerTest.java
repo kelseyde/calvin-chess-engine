@@ -2,7 +2,6 @@ package com.kelseyde.calvin.api.uci;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -84,7 +82,7 @@ public class UCICommandLineRunnerTest {
         Move move = NotationUtils.fromCombinedNotation(moveNotation);
 
         Board testBoard = new Board();
-        testBoard.makeMove(NotationUtils.fromNotation("e2", "e4", PieceType.PAWN));
+        testBoard.makeMove(NotationUtils.fromNotation("e2", "e4"));
 
         List<Move> legalMoves = Arrays.asList(moveGenerator.generateLegalMoves(testBoard, false));
         Assertions.assertTrue(legalMoves.stream().anyMatch(move::matches));
@@ -101,7 +99,7 @@ public class UCICommandLineRunnerTest {
         moveNotation = lines.get(3).split(" ")[1].trim();
         move = NotationUtils.fromCombinedNotation(moveNotation);
 
-        testBoard.makeMove(NotationUtils.fromNotation("e2", "e4", PieceType.PAWN));
+        testBoard.makeMove(NotationUtils.fromNotation("e2", "e4"));
         legalMoves = Arrays.asList(moveGenerator.generateLegalMoves(testBoard, false));
         Assertions.assertTrue(legalMoves.stream().anyMatch(move::matches));
 

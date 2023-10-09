@@ -67,11 +67,9 @@ public class GameController {
         log.info("POST /game/play");
         log.info("Received move request {}", moveRequest);
 
-        Move playerMove = Move.builder()
-                .startSquare(NotationUtils.fromNotation(moveRequest.getFrom()))
-                .endSquare(NotationUtils.fromNotation(moveRequest.getTo()))
-                .promotionPieceType(moveRequest.getPromotionPieceType())
-                .build();
+        int startSquare = NotationUtils.fromNotation(moveRequest.getFrom());
+        int endSquare = NotationUtils.fromNotation(moveRequest.getTo());
+        Move playerMove = new Move(startSquare, endSquare, Move.getPromotionFlag(moveRequest.getPromotionPieceType()));
 
         log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
         Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(bot.getBoard(), false))

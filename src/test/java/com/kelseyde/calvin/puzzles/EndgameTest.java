@@ -2,7 +2,6 @@ package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
@@ -34,7 +33,7 @@ public class EndgameTest {
 
         SearchResult result = search.search(Duration.ofMillis(300));
 
-        Move bestMove = NotationUtils.fromNotation("b2", "b7", PieceType.QUEEN);
+        Move bestMove = NotationUtils.fromNotation("b2", "b7");
         assertMove(bestMove, result.move());
 
     }

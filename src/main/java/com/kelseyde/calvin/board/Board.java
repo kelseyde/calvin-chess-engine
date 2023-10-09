@@ -2,8 +2,7 @@ package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.Piece;
-import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Data;
 
@@ -13,9 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**
- * Represents the current board state, as a 64x one-dimensional array of {@link Piece} pieces. Also maintains the position
- * 'metadata': side to move, castling rights, en passant target square, full-move counter and half-move counter (used for
- * the 50-move rule) Equivalent to a FEN string.
+ * TODO javadoc
  */
 @Data
 public class Board {
@@ -56,57 +53,60 @@ public class Board {
 
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
-        PieceType pieceType = move.getPieceType();
+        PieceType pieceType = pieceAt(startSquare);
         PieceType capturedPieceType = pieceAt(move.getEndSquare());
 
         long newZobristKey = gameState.getZobristKey();
         int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
-        int newEnPassantFile = move.getEnPassantFile();
-        boolean resetFiftyMoveCounter = capturedPieceType != null|| PieceType.PAWN.equals(move.getPieceType());
+        int newEnPassantFile = -1;
+        boolean resetFiftyMoveCounter = capturedPieceType != null|| PieceType.PAWN.equals(pieceType);
         newFiftyMoveCounter = resetFiftyMoveCounter ? 0 :  ++newFiftyMoveCounter;
 
-        switch (move.getMoveType()) {
-            case STANDARD -> {
-                toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
-                if (capturedPieceType != null) {
-                    toggleSquare(capturedPieceType, !isWhiteToMove, endSquare);
-                }
-            }
-            case EN_PASSANT -> {
-                toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
-                int pawnSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-                toggleSquare(PieceType.PAWN, !isWhiteToMove, pawnSquare);
-            }
-            case PROMOTION -> {
-                toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
-                toggleSquare(move.getPromotionPieceType(), isWhiteToMove, endSquare);
-                if (capturedPieceType != null) {
-                    toggleSquare(capturedPieceType, !isWhiteToMove, endSquare);
-                }
-            }
-            case KINGSIDE_CASTLE -> {
-                toggleSquares(PieceType.KING, isWhiteToMove, startSquare, endSquare);
+        if (move.isPawnDoubleMove()) {
+            toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
+            newEnPassantFile = BoardUtils.getFile(endSquare);
+        }
+        else if (move.isCastling()) {
+            toggleSquares(PieceType.KING, isWhiteToMove, startSquare, endSquare);
+            boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+            if (isKingside) {
                 int rookStartSquare = isWhiteToMove ? 7 : 63;
                 int rookEndSquare = isWhiteToMove ? 5 : 61;
                 toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
-            }
-            case QUEENSIDE_CASTLE -> {
-                toggleSquares(PieceType.KING, isWhiteToMove, startSquare, endSquare);
+            } else {
                 int rookStartSquare = isWhiteToMove ? 0 : 56;
                 int rookEndSquare = isWhiteToMove ? 3 : 59;
                 toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
             }
         }
+        else if (move.isPromotion()) {
+            toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
+            toggleSquare(move.getPromotionPieceType(), isWhiteToMove, endSquare);
+            if (capturedPieceType != null) {
+                toggleSquare(capturedPieceType, !isWhiteToMove, endSquare);
+            }
+        }
+        else if (move.isEnPassant()) {
+            toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
+            int pawnSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
+            toggleSquare(PieceType.PAWN, !isWhiteToMove, pawnSquare);
+        }
+        else {
+            toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
+            if (capturedPieceType != null) {
+                toggleSquare(capturedPieceType, !isWhiteToMove, endSquare);
+            }
+        }
 
-        int newCastlingRights = calculateCastlingRights(move);
+        int newCastlingRights = calculateCastlingRights(startSquare, endSquare, pieceType);
         PieceType newPieceType = move.getPromotionPieceType() == null ? pieceType : move.getPromotionPieceType();
 
         newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[startSquare][isWhiteToMove ? 0 : 1][pieceType.getIndex()];
         newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[endSquare][isWhiteToMove ? 0 : 1][newPieceType.getIndex()];
         newZobristKey ^= ZobristKey.CASTLING_RIGHTS[gameState.getCastlingRights()];
-        newZobristKey ^= ZobristKey.CASTLING_RIGHTS[calculateCastlingRights(move)];
+        newZobristKey ^= ZobristKey.CASTLING_RIGHTS[newCastlingRights];
         newZobristKey ^= ZobristKey.EN_PASSANT_FILE[gameState.getEnPassantFile() + 1];
-        newZobristKey ^= ZobristKey.EN_PASSANT_FILE[move.getEnPassantFile() + 1];
+        newZobristKey ^= ZobristKey.EN_PASSANT_FILE[newEnPassantFile + 1];
         newZobristKey ^= ZobristKey.BLACK_TO_MOVE;
 
         GameState newGameState = new GameState(newZobristKey, capturedPieceType, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
@@ -125,41 +125,40 @@ public class Board {
         Move lastMove = moveHistory.pop();
         int startSquare = lastMove.getStartSquare();
         int endSquare = lastMove.getEndSquare();
-        PieceType pieceType = lastMove.getPieceType();
+        PieceType pieceType = pieceAt(endSquare);
         if (pieceType == null) {
             throw new NoSuchElementException("piece type is null! " + NotationUtils.toNotation(lastMove));
         }
 
-        switch (lastMove.getMoveType()) {
-            case STANDARD -> {
-                toggleSquares(pieceType, isWhiteToMove, endSquare, startSquare);
-                if (gameState.getCapturedPiece() != null) {
-                    toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
-                }
-            }
-            case EN_PASSANT -> {
-                toggleSquares(PieceType.PAWN, isWhiteToMove, endSquare, startSquare);
-                int captureSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-                toggleSquare(PieceType.PAWN, !isWhiteToMove, captureSquare);
-            }
-            case PROMOTION -> {
-                toggleSquare(lastMove.getPromotionPieceType(), isWhiteToMove, endSquare);
-                toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
-                if (gameState.getCapturedPiece() != null) {
-                    toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
-                }
-            }
-            case KINGSIDE_CASTLE -> {
-                toggleSquares(PieceType.KING, isWhiteToMove, endSquare, startSquare);
+        if (lastMove.isCastling()) {
+            toggleSquares(PieceType.KING, isWhiteToMove, endSquare, startSquare);
+            boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+            if (isKingside) {
                 int rookStartSquare = isWhiteToMove ? 5 : 61;
                 int rookEndSquare = isWhiteToMove ? 7 : 63;
                 toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
-            }
-            case QUEENSIDE_CASTLE -> {
-                toggleSquares(PieceType.KING, isWhiteToMove, endSquare, startSquare);
+            } else {
                 int rookStartSquare = isWhiteToMove ? 3 : 59;
                 int rookEndSquare = isWhiteToMove ? 0 : 56;
                 toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
+            }
+        }
+        else if (lastMove.isPromotion()) {
+            toggleSquare(lastMove.getPromotionPieceType(), isWhiteToMove, endSquare);
+            toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
+            if (gameState.getCapturedPiece() != null) {
+                toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
+            }
+        }
+        else if (lastMove.isEnPassant()) {
+            toggleSquares(PieceType.PAWN, isWhiteToMove, endSquare, startSquare);
+            int captureSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
+            toggleSquare(PieceType.PAWN, !isWhiteToMove, captureSquare);
+        }
+        else {
+            toggleSquares(pieceType, isWhiteToMove, endSquare, startSquare);
+            if (gameState.getCapturedPiece() != null) {
+                toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
             }
         }
 
@@ -268,25 +267,25 @@ public class Board {
         occupied = whitePieces | blackPieces;
     }
 
-    private int calculateCastlingRights(Move move) {
+    private int calculateCastlingRights(int startSquare, int endSquare, PieceType pieceType) {
         int newCastlingRights = gameState.getCastlingRights();
         // Any move by the king removes castling rights.
-        if (PieceType.KING.equals(move.getPieceType())) {
+        if (PieceType.KING.equals(pieceType)) {
             newCastlingRights &= isWhiteToMove ? GameState.CLEAR_WHITE_CASTLING_MASK : GameState.CLEAR_BLACK_CASTLING_MASK;
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.
         // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
         // another rook in starting position; in that case, both sides lose castling rights!
-        if (move.getStartSquare() == 7 || move.getEndSquare() == 7) {
+        if (startSquare == 7 || endSquare == 7) {
             newCastlingRights &= GameState.CLEAR_WHITE_KINGSIDE_MASK;
         }
-        if (move.getStartSquare() == 63 || move.getEndSquare() == 63) {
+        if (startSquare == 63 || endSquare == 63) {
             newCastlingRights &= GameState.CLEAR_BLACK_KINGSIDE_MASK;
         }
-        if (move.getStartSquare() == 0 || move.getEndSquare() == 0) {
+        if (startSquare == 0 || endSquare == 0) {
             newCastlingRights &= GameState.CLEAR_WHITE_QUEENSIDE_MASK;
         }
-        if (move.getStartSquare() == 56 || move.getEndSquare() == 56) {
+        if (startSquare == 56 || endSquare == 56) {
             newCastlingRights &= GameState.CLEAR_BLACK_QUEENSIDE_MASK;
         }
         return newCastlingRights;

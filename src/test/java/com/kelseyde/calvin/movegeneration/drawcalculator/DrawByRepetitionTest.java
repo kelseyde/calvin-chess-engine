@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.movegeneration.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -180,19 +179,19 @@ public class DrawByRepetitionTest {
         String fen = "7r/4b1p1/8/3BkP2/4N3/8/PPn2PP1/1R1R2K1 b - - 0 26";
         Board board = FEN.fromFEN(fen);
 
-        board.makeMove(NotationUtils.fromNotation("h8", "b8", PieceType.ROOK));
-        board.makeMove(NotationUtils.fromNotation("e4", "c3", PieceType.KNIGHT));
-        board.makeMove(NotationUtils.fromNotation("e7", "c5", PieceType.BISHOP));
-        board.makeMove(NotationUtils.fromNotation("c3", "e4", PieceType.KNIGHT));
-        board.makeMove(NotationUtils.fromNotation("c5", "e7", PieceType.BISHOP));
-        board.makeMove(NotationUtils.fromNotation("e4", "c3", PieceType.KNIGHT));
-        board.makeMove(NotationUtils.fromNotation("e7", "c5", PieceType.BISHOP));
-        board.makeMove(NotationUtils.fromNotation("c3", "e4", PieceType.KNIGHT));
+        board.makeMove(NotationUtils.fromNotation("h8", "b8"));
+        board.makeMove(NotationUtils.fromNotation("e4", "c3"));
+        board.makeMove(NotationUtils.fromNotation("e7", "c5"));
+        board.makeMove(NotationUtils.fromNotation("c3", "e4"));
+        board.makeMove(NotationUtils.fromNotation("c5", "e7"));
+        board.makeMove(NotationUtils.fromNotation("e4", "c3"));
+        board.makeMove(NotationUtils.fromNotation("e7", "c5"));
+        board.makeMove(NotationUtils.fromNotation("c3", "e4"));
 
         GameResult result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.IN_PROGRESS, result);
 
-        board.makeMove(NotationUtils.fromNotation("c5", "e7", PieceType.BISHOP));
+        board.makeMove(NotationUtils.fromNotation("c5", "e7"));
 
         result = resultEvaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.DRAW_BY_REPETITION, result);

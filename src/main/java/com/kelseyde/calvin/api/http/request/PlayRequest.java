@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.api.http.request;
 
-import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.board.PieceType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

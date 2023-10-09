@@ -1,11 +1,10 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 
 import java.util.List;
-import java.util.Set;
 
 public interface PseudoLegalMoveGenerator {
 

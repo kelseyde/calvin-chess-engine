@@ -2,7 +2,6 @@ package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.search.IterativeDeepeningSearch;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -73,14 +72,14 @@ public class PuzzlesTest {
 
         SearchResult result = search.search(Duration.ofMillis(100));
 
-        Move bestMove = NotationUtils.fromNotation("g4", "c8", PieceType.QUEEN);
+        Move bestMove = NotationUtils.fromNotation("g4", "c8");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("d5", "d8", PieceType.ROOK));
+        board.makeMove(NotationUtils.fromNotation("d5", "d8"));
 
         result = search.search(Duration.ofMillis(100));
-        bestMove = NotationUtils.fromNotation("c8", "d8", PieceType.QUEEN);
+        bestMove = NotationUtils.fromNotation("c8", "d8");
         assertMove(bestMove, result.move());
 
     }
@@ -95,14 +94,14 @@ public class PuzzlesTest {
 
         SearchResult result = search.search(Duration.ofMillis(500));
 
-        Move bestMove = NotationUtils.fromNotation("d4", "c3", PieceType.BISHOP);
+        Move bestMove = NotationUtils.fromNotation("d4", "c3");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("b1", "c3", PieceType.KNIGHT));
+        board.makeMove(NotationUtils.fromNotation("b1", "c3"));
 
         result = search.search(Duration.ofMillis(100));
-        bestMove = NotationUtils.fromNotation("a5", "a1", PieceType.QUEEN);
+        bestMove = NotationUtils.fromNotation("a5", "a1");
         assertMove(bestMove, result.move());
 
     }
@@ -117,28 +116,28 @@ public class PuzzlesTest {
 
         SearchResult result = search.search(Duration.ofMillis(500));
 
-        Move bestMove = NotationUtils.fromNotation("d5", "e7", PieceType.KNIGHT);
+        Move bestMove = NotationUtils.fromNotation("d5", "e7");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("g8", "h8", PieceType.KING));
+        board.makeMove(NotationUtils.fromNotation("g8", "h8"));
 
         result = search.search(Duration.ofMillis(500));
-        bestMove = NotationUtils.fromNotation("h1", "h7", PieceType.ROOK);
+        bestMove = NotationUtils.fromNotation("h1", "h7");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("h8", "h7", PieceType.KING));
+        board.makeMove(NotationUtils.fromNotation("h8", "h7"));
 
         result = search.search(Duration.ofMillis(500));
-        bestMove = NotationUtils.fromNotation("d1", "h1", PieceType.ROOK);
+        bestMove = NotationUtils.fromNotation("d1", "h1");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("g4", "h3", PieceType.QUEEN));
+        board.makeMove(NotationUtils.fromNotation("g4", "h3"));
 
         result = search.search(Duration.ofMillis(500));
-        bestMove = NotationUtils.fromNotation("h1", "h3", PieceType.ROOK);
+        bestMove = NotationUtils.fromNotation("h1", "h3");
         assertMove(bestMove, result.move());
 
     }
@@ -153,7 +152,7 @@ public class PuzzlesTest {
 
         SearchResult result = search.search(Duration.ofMillis(100));
 
-        Move bestMove = NotationUtils.fromNotation("h1", "a8", PieceType.QUEEN);
+        Move bestMove = NotationUtils.fromNotation("h1", "a8");
         assertMove(bestMove, result.move());
 
     }
@@ -168,21 +167,21 @@ public class PuzzlesTest {
 
         SearchResult result = search.search(Duration.ofMillis(500));
 
-        Move bestMove = NotationUtils.fromNotation("e8", "e1", PieceType.ROOK);
+        Move bestMove = NotationUtils.fromNotation("e8", "e1");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("c1", "c2", PieceType.KING));
+        board.makeMove(NotationUtils.fromNotation("c1", "c2"));
 
         result = search.search(Duration.ofMillis(500));
-        bestMove = NotationUtils.fromNotation("g4", "a4", PieceType.QUEEN);
+        bestMove = NotationUtils.fromNotation("g4", "a4");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("b2", "b3", PieceType.PAWN));
+        board.makeMove(NotationUtils.fromNotation("b2", "b3"));
 
         result = search.search(Duration.ofMillis(1000));
-        bestMove = NotationUtils.fromNotation("a4", "a2", PieceType.QUEEN);
+        bestMove = NotationUtils.fromNotation("a4", "a2");
         assertMove(bestMove, result.move());
 
     }
@@ -197,42 +196,42 @@ public class PuzzlesTest {
 
         SearchResult result = search.search(Duration.ofMillis(2000));
 
-        Move bestMove = NotationUtils.fromNotation("e5", "f6", PieceType.KING);
+        Move bestMove = NotationUtils.fromNotation("e5", "f6");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("h7", "h6", PieceType.PAWN));
+        board.makeMove(NotationUtils.fromNotation("h7", "h6"));
 
         result = search.search(Duration.ofMillis(2000));
-        bestMove = NotationUtils.fromNotation("f6", "g6", PieceType.KING);
+        bestMove = NotationUtils.fromNotation("f6", "g6");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("h5", "g5", PieceType.ROOK));
+        board.makeMove(NotationUtils.fromNotation("h5", "g5"));
 
         result = search.search(Duration.ofMillis(2000));
-        bestMove = NotationUtils.fromNotation("g6", "h6", PieceType.KING);
+        bestMove = NotationUtils.fromNotation("g6", "h6");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("g5", "g4", PieceType.ROOK));
+        board.makeMove(NotationUtils.fromNotation("g5", "g4"));
 
         result = search.search(Duration.ofMillis(3000));
-        bestMove = NotationUtils.fromNotation("a7", "a8", PieceType.ROOK);
+        bestMove = NotationUtils.fromNotation("a7", "a8");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("g4", "g8", PieceType.ROOK));
+        board.makeMove(NotationUtils.fromNotation("g4", "g8"));
 
         result = search.search(Duration.ofMillis(2000));
-        bestMove = NotationUtils.fromNotation("a8", "g8", PieceType.ROOK);
+        bestMove = NotationUtils.fromNotation("a8", "g8");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("h8", "g8", PieceType.KING));
+        board.makeMove(NotationUtils.fromNotation("h8", "g8"));
 
         result = search.search(Duration.ofMillis(2000));
-        bestMove = NotationUtils.fromNotation("h6", "g6", PieceType.KING);
+        bestMove = NotationUtils.fromNotation("h6", "g6");
         assertMove(bestMove, result.move());
 
     }
@@ -248,22 +247,22 @@ public class PuzzlesTest {
 
         SearchResult result = search.search(Duration.ofMillis(500));
 
-        Move bestMove = NotationUtils.fromNotation("c5", "c4", PieceType.PAWN);
+        Move bestMove = NotationUtils.fromNotation("c5", "c4");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("b3", "a3", PieceType.KING));
+        board.makeMove(NotationUtils.fromNotation("b3", "a3"));
 
         result = search.search(Duration.ofMillis(500));
 
-        bestMove = NotationUtils.fromNotation("c1", "c3", PieceType.ROOK);
+        bestMove = NotationUtils.fromNotation("c1", "c3");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
-        board.makeMove(NotationUtils.fromNotation("b2", "c3", PieceType.PAWN));
+        board.makeMove(NotationUtils.fromNotation("b2", "c3"));
 
         result = search.search(Duration.ofMillis(200));
-        bestMove = NotationUtils.fromNotation("h6", "c1", PieceType.BISHOP);
+        bestMove = NotationUtils.fromNotation("h6", "c1");
         assertMove(bestMove, result.move());
 
 
@@ -280,7 +279,7 @@ public class PuzzlesTest {
 
         SearchResult result = search.search(Duration.ofMillis(5000));
 
-        Move bestMove = NotationUtils.fromNotation("e3", "b3", PieceType.QUEEN);
+        Move bestMove = NotationUtils.fromNotation("e3", "b3");
         assertMove(bestMove, result.move());
 
     }

@@ -139,6 +139,7 @@ public class CalvinBot implements Bot {
         search = null;
     }
 
+    // TODO can be removed?
     private Move getLegalMove(Move move) {
         return Arrays.stream(moveGenerator.generateLegalMoves(board, false))
                 .filter(move::matches)

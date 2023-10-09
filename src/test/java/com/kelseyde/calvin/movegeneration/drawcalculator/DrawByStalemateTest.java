@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.piece.PieceType;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -62,14 +62,7 @@ public class DrawByStalemateTest {
     @Test
     public void testStalemateWithPinnedPawn() {
 
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, false, 63);
-        board.toggleSquare(PieceType.PAWN, false, 54);
-        board.toggleSquare(PieceType.KING, true, 38);
-        board.toggleSquare(PieceType.PAWN, true, 47);
-        board.toggleSquare(PieceType.BISHOP, true, 36);
-        board.toggleSquare(PieceType.BISHOP, true, 37);
-        board.toggleSquare(PieceType.QUEEN, true, 9);
+        Board board = FEN.fromFEN("7k/6p1/7P/4BBK1/8/8/1Q6/8 w - - 0 1");
 
         board.makeMove(TestUtils.getLegalMove(board, "b2", "a2"));
 

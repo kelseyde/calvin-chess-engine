@@ -2,8 +2,6 @@ package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.move.MoveType;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -105,16 +103,16 @@ public class BoardTest {
     @Test
     public void testSimpleUnmakeMove() {
         Board board1 = new Board();
-        board1.makeMove(Move.builder().startSquare(12).endSquare(28).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(52).endSquare(36).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(11).endSquare(27).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(10).endSquare(26).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(50).endSquare(34).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(9).endSquare(25).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(49).endSquare(33).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(8).endSquare(24).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(48).endSquare(32).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board1.makeMove(new Move(12, 28));
+        board1.makeMove(new Move(52, 36));
+        board1.makeMove(new Move(11, 27));
+        board1.makeMove(new Move(51, 35));
+        board1.makeMove(new Move(10, 26));
+        board1.makeMove(new Move(50, 34));
+        board1.makeMove(new Move(9, 25));
+        board1.makeMove(new Move(49, 33));
+        board1.makeMove(new Move(8, 24));
+        board1.makeMove(new Move(48, 32));
         board1.unmakeMove();
         board1.unmakeMove();
         board1.unmakeMove();
@@ -153,8 +151,8 @@ public class BoardTest {
     public void testEnPassantFileIsClearedAfterNextMove() {
         // TODO
         Board board1 = new Board();
-        board1.makeMove(Move.builder().startSquare(13).endSquare(21).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board1.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).enPassantFile(4).moveType(MoveType.STANDARD).build());
+        board1.makeMove(new Move(13, 21));
+        board1.makeMove(new Move(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
 
         new MoveGenerator().generateLegalMoves(board1, false);
     }
@@ -192,9 +190,9 @@ public class BoardTest {
     public void testUnmakeMoveRestoresCapturedPieces() {
 
         Board board = new Board();
-        board.makeMove(Move.builder().startSquare(12).endSquare(28).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(28).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(12, 28));
+        board.makeMove(new Move(51, 35));
+        board.makeMove(new Move(28, 35));
 
         Set<Integer> whitePiecePositions = getPiecePositions(board, true);
         Assertions.assertEquals(Set.of(35, 8, 9, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7), whitePiecePositions);
@@ -217,15 +215,15 @@ public class BoardTest {
 
         Board board = new Board();
         //d4d5
-        board.makeMove(Move.builder().startSquare(11).endSquare(27).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(11, 27));
         //e7e5
-        board.makeMove(Move.builder().startSquare(52).endSquare(36).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(52, 36));
         //d4e5
-        board.makeMove(Move.builder().startSquare(27).endSquare(36).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(27, 36));
         //d7d5
-        board.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
         //e5d6
-        board.makeMove(Move.builder().startSquare(36).endSquare(43).pieceType(PieceType.PAWN).moveType(MoveType.EN_PASSANT).build());
+        board.makeMove(new Move(36, 43, Move.EN_PASSANT_FLAG));
 
         Set<Integer> blackPiecePositions = getPiecePositions(board, false);
         Assertions.assertFalse(blackPiecePositions.contains(35));
@@ -240,27 +238,22 @@ public class BoardTest {
     public void testUnmakeMoveRemovesCorrectMoveFromMoveHistory() {
 
         Board board = new Board();
-        board.makeMove(Move.builder().startSquare(12).endSquare(28).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(28).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(12, 28));
+        board.makeMove(new Move(51, 35));
+        board.makeMove(new Move(28, 35));
 
         List<Move> moveHistory = board.getMoveHistory().stream().toList();
         Assertions.assertEquals(3, moveHistory.size());
-        Assertions.assertTrue(Move.builder().startSquare(28).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build()
-                .matches(moveHistory.get(0)));
-        Assertions.assertTrue(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build()
-                .matches(moveHistory.get(1)));
-        Assertions.assertTrue(Move.builder().startSquare(12).endSquare(28).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build()
-                .matches(moveHistory.get(2)));
+        Assertions.assertTrue(new Move(28, 35).matches(moveHistory.get(0)));
+        Assertions.assertTrue(new Move(51, 35).matches(moveHistory.get(1)));
+        Assertions.assertTrue(new Move(12, 28).matches(moveHistory.get(2)));
 
         board.unmakeMove();
 
         moveHistory = board.getMoveHistory().stream().toList();
         Assertions.assertEquals(2, moveHistory.size());
-        Assertions.assertTrue(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build()
-                .matches(moveHistory.get(0)));
-        Assertions.assertTrue(Move.builder().startSquare(12).endSquare(28).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build()
-                .matches(moveHistory.get(1)));
+        Assertions.assertTrue(new Move(51, 35).matches(moveHistory.get(0)));
+        Assertions.assertTrue(new Move(12, 28).matches(moveHistory.get(1)));
 
     }
 
@@ -270,13 +263,13 @@ public class BoardTest {
         Board board = new Board();
         Assertions.assertTrue(board.isWhiteToMove());
 
-        board.makeMove(Move.builder().startSquare(28).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(12, 28));
         Assertions.assertFalse(board.isWhiteToMove());
 
-        board.makeMove(Move.builder().startSquare(51).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(51, 35));
         Assertions.assertTrue(board.isWhiteToMove());
 
-        board.makeMove(Move.builder().startSquare(28).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(28, 35));
         Assertions.assertFalse(board.isWhiteToMove());
 
         board.unmakeMove();
@@ -288,14 +281,14 @@ public class BoardTest {
     public void testUnmakeMoveHandlesCastling() {
 
         Board board = new Board();
-        board.makeMove(Move.builder().startSquare(28).endSquare(35).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(52).endSquare(44).pieceType(PieceType.PAWN).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(6).endSquare(21).pieceType(PieceType.KNIGHT).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(62).endSquare(45).pieceType(PieceType.KNIGHT).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(5).endSquare(12).pieceType(PieceType.BISHOP).moveType(MoveType.STANDARD).build());
-        board.makeMove(Move.builder().startSquare(61).endSquare(52).pieceType(PieceType.BISHOP).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(12, 28));
+        board.makeMove(new Move(52, 44));
+        board.makeMove(new Move(6, 21));
+        board.makeMove(new Move(62, 45));
+        board.makeMove(new Move(5, 12));
+        board.makeMove(new Move(61, 52));
         // castles
-        board.makeMove(Move.builder().startSquare(4).endSquare(6).pieceType(PieceType.KING).moveType(MoveType.STANDARD).build());
+        board.makeMove(new Move(4, 6, Move.CASTLE_FLAG));
         Assertions.assertFalse(board.isWhiteToMove());
         Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
         Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));
@@ -335,7 +328,7 @@ public class BoardTest {
         Board board = FEN.fromFEN(fen);
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b4"));
         Move queenPromotion = NotationUtils.fromNotation("h2", "g1");
-        queenPromotion.setPromotionPieceType(PieceType.QUEEN);
+        queenPromotion.setFlag(Move.PROMOTE_TO_QUEEN_FLAG);
         board.makeMove(TestUtils.getLegalMove(board, queenPromotion));
         board.makeMove(TestUtils.getLegalMove(board, "f1", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));

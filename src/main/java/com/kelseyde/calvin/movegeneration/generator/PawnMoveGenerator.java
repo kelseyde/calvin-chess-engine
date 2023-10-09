@@ -1,18 +1,14 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.move.MoveType;
-import com.kelseyde.calvin.board.piece.PieceType;
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
@@ -37,7 +33,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (singleAdvancesCopy != 0) {
             int endSquare = BitboardUtils.getLSB(singleAdvancesCopy);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
-            moves.add(move(startSquare, endSquare).build());
+            moves.add(new Move(startSquare, endSquare));
             singleAdvancesCopy = BitboardUtils.popLSB(singleAdvancesCopy);
         }
 
@@ -47,9 +43,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (doubleAdvances != 0) {
             int endSquare = BitboardUtils.getLSB(doubleAdvances);
             int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
-            moves.add(move(startSquare, endSquare)
-                    .enPassantFile(BoardUtils.getFile(endSquare))
-                    .build());
+            moves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
             doubleAdvances = BitboardUtils.popLSB(doubleAdvances);
         }
 
@@ -59,7 +53,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (leftCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(leftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            moves.add(move(startSquare, endSquare).build());
+            moves.add(new Move(startSquare, endSquare));
             leftCaptures = BitboardUtils.popLSB(leftCaptures);
         }
 
@@ -69,7 +63,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (rightCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            moves.add(move(startSquare, endSquare).build());
+            moves.add(new Move(startSquare, endSquare));
             rightCaptures = BitboardUtils.popLSB(rightCaptures);
         }
 
@@ -79,7 +73,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (enPassantLeftCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(enPassantLeftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            moves.add(move(startSquare, endSquare).moveType(MoveType.EN_PASSANT).build());
+            moves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
             enPassantLeftCaptures = BitboardUtils.popLSB(enPassantLeftCaptures);
         }
 
@@ -89,7 +83,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (enPassantRightCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(enPassantRightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            moves.add(move(startSquare, endSquare).moveType(MoveType.EN_PASSANT).build());
+            moves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
             enPassantRightCaptures = BitboardUtils.popLSB(enPassantRightCaptures);
         }
 
@@ -154,19 +148,12 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         return attackMask;
     }
 
-    private Set<Move> getPromotionMoves(int startSquare, int endSquare) {
-        return Set.of(
-                move(startSquare, endSquare).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.QUEEN).build(),
-                move(startSquare, endSquare).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.ROOK).build(),
-                move(startSquare, endSquare).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.BISHOP).build(),
-                move(startSquare, endSquare).moveType(MoveType.PROMOTION).promotionPieceType(PieceType.KNIGHT).build());
-    }
-
-    private Move.MoveBuilder move(int startSquare, int endSquare) {
-        return Move.builder()
-                .pieceType(PieceType.PAWN)
-                .startSquare(startSquare)
-                .endSquare(endSquare);
+    private List<Move> getPromotionMoves(int startSquare, int endSquare) {
+        return List.of(
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
     }
 
 }

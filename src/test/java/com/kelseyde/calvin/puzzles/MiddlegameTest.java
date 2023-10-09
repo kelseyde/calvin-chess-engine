@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
@@ -91,13 +90,13 @@ public class MiddlegameTest {
         Bot bot = new CalvinBot();
         bot.newGame();
         bot.setPosition(fen, Collections.emptyList());
-        bot.applyMove(NotationUtils.fromNotation("h8", "b8", PieceType.ROOK));
-        bot.applyMove(NotationUtils.fromNotation("e4", "c3", PieceType.KNIGHT));
-        bot.applyMove(NotationUtils.fromNotation("e7", "c5", PieceType.BISHOP));
-        bot.applyMove(NotationUtils.fromNotation("c3", "e4", PieceType.KNIGHT));
-        bot.applyMove(NotationUtils.fromNotation("c5", "e7", PieceType.BISHOP));
-        bot.applyMove(NotationUtils.fromNotation("e4", "c3", PieceType.KNIGHT));
-        bot.applyMove(NotationUtils.fromNotation("e7", "c5", PieceType.BISHOP));
+        bot.applyMove(NotationUtils.fromNotation("h8", "b8"));
+        bot.applyMove(NotationUtils.fromNotation("e4", "c3"));
+        bot.applyMove(NotationUtils.fromNotation("e7", "c5"));
+        bot.applyMove(NotationUtils.fromNotation("c3", "e4"));
+        bot.applyMove(NotationUtils.fromNotation("c5", "e7"));
+        bot.applyMove(NotationUtils.fromNotation("e4", "c3"));
+        bot.applyMove(NotationUtils.fromNotation("e7", "c5"));
 
         int thinkTimeMs = bot.chooseThinkTime(121959, 139090, 2000, 2000);
         Move move = bot.think(thinkTimeMs);
@@ -105,8 +104,8 @@ public class MiddlegameTest {
         Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("c3e4")));
         System.out.println(new ResultCalculator().calculateResult(bot.getBoard()));
 
-        bot.applyMove(NotationUtils.fromNotation("c3", "e4", PieceType.KNIGHT));
-        bot.applyMove(NotationUtils.fromNotation("c5", "e7", PieceType.BISHOP));
+        bot.applyMove(NotationUtils.fromNotation("c3", "e4"));
+        bot.applyMove(NotationUtils.fromNotation("c5", "e7"));
         System.out.println(new ResultCalculator().calculateResult(bot.getBoard()));
 
     }

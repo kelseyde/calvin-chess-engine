@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.board.piece;
+package com.kelseyde.calvin.board;
 
 import lombok.Getter;
 

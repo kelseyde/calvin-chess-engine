@@ -1,8 +1,6 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.move.MoveType;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -177,13 +175,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "d3", "e2"));
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b2"));
 
-        Move move = Move.builder()
-                .startSquare(NotationUtils.fromNotation("e2"))
-                .endSquare(NotationUtils.fromNotation("d1"))
-                .pieceType(PieceType.PAWN)
-                .moveType(MoveType.PROMOTION)
-                .promotionPieceType(PieceType.KNIGHT)
-                .build();
+        Move move = new Move(NotationUtils.fromNotation("e2"), NotationUtils.fromNotation("d1"), Move.PROMOTE_TO_KNIGHT_FLAG);
         board.makeMove(move);
         GameResult result = evaluator.calculateResult(board);
         Assertions.assertTrue(result.isCheckmate());

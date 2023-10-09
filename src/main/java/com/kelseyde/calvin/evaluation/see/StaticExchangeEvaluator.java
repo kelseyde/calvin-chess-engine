@@ -1,9 +1,9 @@
 package com.kelseyde.calvin.evaluation.see;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.movegeneration.generator.*;
 
@@ -60,42 +60,42 @@ public class StaticExchangeEvaluator {
         long pawnAttackMask = PAWN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
         if ((pawnAttackMask & pawns) != 0) {
             int pawnStartSquare = BitboardUtils.getLSB(pawnAttackMask & pawns);
-            return Move.builder().startSquare(pawnStartSquare).endSquare(square).pieceType(PieceType.PAWN).build();
+            return new Move(pawnStartSquare, square);
         }
 
         long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
         long knightAttackMask = KNIGHT_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
         if ((knightAttackMask & knights) != 0) {
             int knightStartSquare = BitboardUtils.getLSB(knightAttackMask & knights);
-            return Move.builder().startSquare(knightStartSquare).endSquare(square).pieceType(PieceType.KNIGHT).build();
+            return new Move(knightStartSquare, square);
         }
 
         long bishops = isWhite ? board.getWhiteBishops() : board.getBlackBishops();
         long bishopAttackMask = BISHOP_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
         if ((bishopAttackMask & bishops) != 0) {
             int bishopStartSquare = BitboardUtils.getLSB(bishopAttackMask & bishops);
-            return Move.builder().startSquare(bishopStartSquare).endSquare(square).pieceType(PieceType.BISHOP).build();
+            return new Move(bishopStartSquare, square);
         }
 
         long rooks = isWhite ? board.getWhiteRooks() : board.getBlackRooks();
         long rookAttackMask = ROOK_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
         if ((rookAttackMask & rooks) != 0) {
             int rookStartSquare = BitboardUtils.getLSB(rookAttackMask & rooks);
-            return Move.builder().startSquare(rookStartSquare).endSquare(square).pieceType(PieceType.ROOK).build();
+            return new Move(rookStartSquare, square);
         }
 
         long queens = isWhite ? board.getWhiteQueens() : board.getBlackQueens();
         long queenAttackMask = QUEEN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
         if ((queenAttackMask & queens) != 0) {
             int queenStartSquare = BitboardUtils.getLSB(queenAttackMask & queens);
-            return Move.builder().startSquare(queenStartSquare).endSquare(square).pieceType(PieceType.QUEEN).build();
+            return new Move(queenStartSquare, square);
         }
 
         long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
         long kingAttackMask = KING_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
         if ((kingAttackMask & king) != 0) {
             int kingStartSquare = BitboardUtils.getLSB(kingAttackMask & king);
-            return Move.builder().startSquare(kingStartSquare).endSquare(square).pieceType(PieceType.KING).build();
+            return new Move(kingStartSquare, square);
         }
         return null;
     }

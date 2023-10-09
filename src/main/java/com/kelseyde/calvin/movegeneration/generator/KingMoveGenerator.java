@@ -1,16 +1,16 @@
 package com.kelseyde.calvin.movegeneration.generator;
 
-
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.move.Move;
-import com.kelseyde.calvin.board.move.MoveType;
-import com.kelseyde.calvin.board.piece.PieceType;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class KingMoveGenerator implements PseudoLegalMoveGenerator {
 
@@ -52,7 +52,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         long kingMoves = KING_ATTACKS[startSquare] &~ friendlyPieces;
         while (kingMoves != 0) {
             int endSquare = BitboardUtils.getLSB(kingMoves);
-            moves.add(move(startSquare, endSquare).build());
+            moves.add(new Move(startSquare, endSquare));
             kingMoves = BitboardUtils.popLSB(kingMoves);
         }
         boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
@@ -61,7 +61,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             long blockedSquares = travelSquares & occupied;
             if (blockedSquares == 0) {
                 int endSquare = board.isWhiteToMove() ? 6 : 62;
-                moves.add(move(startSquare, endSquare).moveType(MoveType.KINGSIDE_CASTLE).build());
+                moves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
             }
         }
         boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
@@ -70,7 +70,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             long blockedSquares = travelSquares & occupied;
             if (blockedSquares == 0) {
                 int endSquare = board.isWhiteToMove() ? 2 : 58;
-                moves.add(move(startSquare, endSquare).moveType(MoveType.QUEENSIDE_CASTLE).build());
+                moves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
             }
         }
 
@@ -92,13 +92,6 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
     public long generateAttackMaskFromSquare(Board board, int square, boolean isWhite) {
         long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
         return KING_ATTACKS[square] &~ friendlies;
-    }
-
-    private Move.MoveBuilder move(int startSquare, int endSquare) {
-        return Move.builder()
-                .pieceType(PieceType.KING)
-                .startSquare(startSquare)
-                .endSquare(endSquare);
     }
 
 }

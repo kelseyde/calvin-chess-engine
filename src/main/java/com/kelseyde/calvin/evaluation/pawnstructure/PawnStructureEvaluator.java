@@ -21,7 +21,7 @@ public class PawnStructureEvaluator {
     private static final int[] ISOLATED_PAWN_PENALTY = { 0, -10, -25, -50, -75, -75, -75, -75, -75 };
 
     // The penalties for doubled pawns, indexed by the number of doubled pawns (two pawns on the same rank are
-    // treated as 'separate' doubled pawns.
+    // treated as 'separate' doubled pawns).
     private static final int[] DOUBLED_PAWN_PENALTY = { 0, -5, -10, -20, -40, -60, -75, -85, -95};
 
     public int evaluate(Board board, boolean isWhite) {

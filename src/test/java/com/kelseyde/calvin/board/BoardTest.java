@@ -1,14 +1,12 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -17,10 +15,6 @@ import java.util.List;
 import java.util.Set;
 
 public class BoardTest {
-
-    @BeforeEach
-    public void beforeEach() {
-    }
 
     @Test
     public void testFromPositionDoesNotCorruptBoard() {
@@ -327,8 +321,7 @@ public class BoardTest {
         String fen = "r1b1k2r/1p3p2/8/8/1n6/2Q5/4P2p/5KNR w kq - 0 1";
         Board board = FEN.fromFEN(fen);
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b4"));
-        Move queenPromotion = NotationUtils.fromNotation("h2", "g1");
-        queenPromotion.setFlag(Move.PROMOTE_TO_QUEEN_FLAG);
+        Move queenPromotion = NotationUtils.fromNotation("h2", "g1", Move.PROMOTE_TO_QUEEN_FLAG);
         board.makeMove(TestUtils.getLegalMove(board, queenPromotion));
         board.makeMove(TestUtils.getLegalMove(board, "f1", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));

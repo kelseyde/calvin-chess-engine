@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.perft;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.NotationUtils;
 
@@ -11,8 +11,6 @@ import java.util.Set;
 public class PerftService {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
-
-    public int castlingCount = 0;
 
     public int perft(Board board, int depth) {
         Move[] moves = moveGenerator.generateLegalMoves(board, false);

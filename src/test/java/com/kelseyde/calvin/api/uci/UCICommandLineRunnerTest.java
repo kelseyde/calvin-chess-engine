@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.api.uci;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;

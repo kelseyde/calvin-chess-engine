@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Data;
@@ -69,15 +68,16 @@ public class Board {
         else if (move.isCastling()) {
             toggleSquares(PieceType.KING, isWhiteToMove, startSquare, endSquare);
             boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+            int rookStartSquare;
+            int rookEndSquare;
             if (isKingside) {
-                int rookStartSquare = isWhiteToMove ? 7 : 63;
-                int rookEndSquare = isWhiteToMove ? 5 : 61;
-                toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
+                rookStartSquare = isWhiteToMove ? 7 : 63;
+                rookEndSquare = isWhiteToMove ? 5 : 61;
             } else {
-                int rookStartSquare = isWhiteToMove ? 0 : 56;
-                int rookEndSquare = isWhiteToMove ? 3 : 59;
-                toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
+                rookStartSquare = isWhiteToMove ? 0 : 56;
+                rookEndSquare = isWhiteToMove ? 3 : 59;
             }
+            toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
         }
         else if (move.isPromotion()) {
             toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
@@ -133,15 +133,16 @@ public class Board {
         if (lastMove.isCastling()) {
             toggleSquares(PieceType.KING, isWhiteToMove, endSquare, startSquare);
             boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+            int rookStartSquare;
+            int rookEndSquare;
             if (isKingside) {
-                int rookStartSquare = isWhiteToMove ? 5 : 61;
-                int rookEndSquare = isWhiteToMove ? 7 : 63;
-                toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
+                rookStartSquare = isWhiteToMove ? 5 : 61;
+                rookEndSquare = isWhiteToMove ? 7 : 63;
             } else {
-                int rookStartSquare = isWhiteToMove ? 3 : 59;
-                int rookEndSquare = isWhiteToMove ? 0 : 56;
-                toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
+                rookStartSquare = isWhiteToMove ? 3 : 59;
+                rookEndSquare = isWhiteToMove ? 0 : 56;
             }
+            toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
         }
         else if (lastMove.isPromotion()) {
             toggleSquare(lastMove.getPromotionPieceType(), isWhiteToMove, endSquare);
@@ -211,7 +212,7 @@ public class Board {
                     blackKing ^= (1L << startSquare | 1L << endSquare);
                 }
             }
-        };
+        }
     }
 
     public void toggleSquare(PieceType type, boolean isWhite, int square) {
@@ -258,7 +259,7 @@ public class Board {
                     blackKing ^= 1L << square;
                 }
             }
-        };
+        }
     }
 
     public void recalculatePieces() {

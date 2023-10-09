@@ -36,22 +36,11 @@ public class BitboardUtils {
         return board >>> 9 &~ Bits.FILE_H;
     }
 
-    public static long getSquareMask(int square) {
-        return 1L << square;
-    }
-
     /**
      * Get the index of the least-significant bit in the bitboard
      */
     public static int getLSB(long board) {
         return Long.numberOfTrailingZeros(board);
-    }
-
-    /**
-     * Get a bitboard containing only the least-significant bit of the given bitboard.
-     */
-    public static long getBitboardLSB(long board) {
-        return board & (-board);
     }
 
     /**

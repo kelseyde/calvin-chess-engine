@@ -29,8 +29,8 @@ public class ZobristKey {
 
     public static final long BLACK_TO_MOVE;
 
-    private static final int white = 0;
-    private static final int black = 1;
+    private static final int WHITE = 0;
+    private static final int BLACK = 1;
 
     static {
 
@@ -38,8 +38,8 @@ public class ZobristKey {
 
         for (int square = 0; square < 64; square++) {
             for (int piece : PieceType.indices()) {
-                PIECE_SQUARE_HASH[square][white][piece] = random.nextLong();
-                PIECE_SQUARE_HASH[square][black][piece] = random.nextLong();
+                PIECE_SQUARE_HASH[square][WHITE][piece] = random.nextLong();
+                PIECE_SQUARE_HASH[square][BLACK][piece] = random.nextLong();
             }
         }
 
@@ -61,40 +61,40 @@ public class ZobristKey {
 
         for (int square = 0; square < 64; square++) {
             if (((board.getWhitePawns() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][white][PieceType.PAWN.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.PAWN.getIndex()];
             }
             else if (((board.getBlackPawns() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][black][PieceType.PAWN.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.PAWN.getIndex()];
             }
             else if (((board.getWhiteKnights() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][white][PieceType.KNIGHT.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.KNIGHT.getIndex()];
             }
             else if (((board.getBlackKnights() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][black][PieceType.KNIGHT.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.KNIGHT.getIndex()];
             }
             else if (((board.getWhiteBishops() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][white][PieceType.BISHOP.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.BISHOP.getIndex()];
             }
             else if (((board.getBlackBishops() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][black][PieceType.BISHOP.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.BISHOP.getIndex()];
             }
             else if (((board.getWhiteRooks() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][white][PieceType.ROOK.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.ROOK.getIndex()];
             }
             else if (((board.getBlackRooks() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][black][PieceType.ROOK.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.ROOK.getIndex()];
             }
             else if (((board.getWhiteQueens() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][white][PieceType.QUEEN.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.QUEEN.getIndex()];
             }
             else if (((board.getBlackQueens() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][black][PieceType.QUEEN.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.QUEEN.getIndex()];
             }
             else if (((board.getWhiteKing() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][white][PieceType.KING.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.KING.getIndex()];
             }
             else if (((board.getBlackKing() >> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][black][PieceType.KING.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.KING.getIndex()];
             }
         }
 
@@ -104,6 +104,8 @@ public class ZobristKey {
         if (board.isWhiteToMove()) {
             key ^= BLACK_TO_MOVE;
         }
+
+        key ^= CASTLING_RIGHTS[board.getGameState().getCastlingRights()];
 
         return key;
     }

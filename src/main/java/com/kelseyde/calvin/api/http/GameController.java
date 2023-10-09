@@ -4,7 +4,7 @@ import com.kelseyde.calvin.api.http.request.MoveResponse;
 import com.kelseyde.calvin.api.http.request.NewGameResponse;
 import com.kelseyde.calvin.api.http.request.PlayRequest;
 import com.kelseyde.calvin.api.http.request.PlayResponse;
-import com.kelseyde.calvin.board.move.Move;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;

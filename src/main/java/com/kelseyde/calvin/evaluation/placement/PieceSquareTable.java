@@ -49,14 +49,14 @@ public class PieceSquareTable {
     };
 
     public static final int[] WHITE_ROOK_TABLE = new int[]{
-            0,  0,  0,  5,  5,  0,  0,  0,
+             0,  0,  0,  5,  5,  0,  0,  0,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
-            5, 10, 10, 10, 10, 10, 10,  5,
-            0,  0,  0,  0,  0,  0,  0,  0
+             5, 10, 10, 10, 10, 10, 10,  5,
+             0,  0,  0,  0,  0,  0,  0,  0
     };
 
     public static final int[] WHITE_QUEEN_TABLE = new int[]{

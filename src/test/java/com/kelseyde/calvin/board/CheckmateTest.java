@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.move.Move;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.NotationUtils;

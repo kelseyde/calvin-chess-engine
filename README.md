@@ -22,14 +22,14 @@ Current feautures include:
 
 Perft results (starting position):
 
-| Depth | Nodes | Speed |
-| --------- | ------- | |
-| 1 | 20 | PT0.000016S |
-| 2 | 400 | PT0.000099S |
-| 3 | 8902 | PT0.156442S |
-| 4 | 197281 | PT0.030105S |
-| 5 | 4865609 | PT1.353785S |
-| 6 | 119060324 | PT10.100071S |
+| Depth | Nodes     | Speed        |
+|-------|-----------|--------------|
+| 1     | 20        | PT0.000016S  |
+| 2     | 400       | PT0.000099S  |
+| 3     | 8902      | PT0.156442S  |
+| 4     | 197281    | PT0.030105S  |
+| 5     | 4865609   | PT1.353785S  |
+| 6     | 119060324 | PT10.100071S |
 
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 

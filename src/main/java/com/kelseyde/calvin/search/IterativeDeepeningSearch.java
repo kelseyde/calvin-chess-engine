@@ -10,6 +10,7 @@ import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,7 +44,6 @@ public class IterativeDeepeningSearch implements Search {
     private final @Getter Board board;
 
     private Instant timeout;
-    private boolean isWhite;
     private Move bestMove;
     private int bestEval;
     private Move bestMoveCurrentDepth;
@@ -53,7 +53,6 @@ public class IterativeDeepeningSearch implements Search {
 
     public IterativeDeepeningSearch(Board board) {
         this.board = board;
-        this.isWhite = board.isWhiteToMove();
         this.transpositionTable = new TranspositionTable(board);
         this.repetitionTable = new RepetitionTable(board);
     }
@@ -65,6 +64,7 @@ public class IterativeDeepeningSearch implements Search {
         int currentDepth = 1;
         bestMove = null;
         bestMoveCurrentDepth = null;
+        repetitionTable.init(board);
         statistics = new SearchStatistics();
         statistics.setStart(Instant.now());
 
@@ -116,7 +116,8 @@ public class IterativeDeepeningSearch implements Search {
          if (isTimeoutExceeded()) {
              return 0;
          }
-         if (repetitionTable.isThreefoldRepitition(board) || board.getGameState().getFiftyMoveCounter() >= 100) {
+         if (repetitionTable.isThreefoldRepetition(board.getGameState().getZobristKey())
+                 || board.getGameState().getFiftyMoveCounter() >= 100) {
              // Found repetition / 50-move rule
              statistics.incrementNodes();
              // In case of draws, get the static evaluation of the position.
@@ -184,9 +185,8 @@ public class IterativeDeepeningSearch implements Search {
             }
          }
 
-         if (plyRemaining > 0) {
-             repetitionTable.push(board);
-         }
+
+         repetitionTable.push(board.getGameState().getZobristKey());
 
          Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
@@ -236,9 +236,8 @@ public class IterativeDeepeningSearch implements Search {
                      moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
                      statistics.incrementKillers();
                  }
-                 if (plyRemaining > 0) {
-                     repetitionTable.pop(board);
-                 }
+
+                 repetitionTable.pop(board.getGameState().getZobristKey());
                  statistics.incrementNodes();
                  statistics.incrementCutoffs();
 
@@ -257,9 +256,9 @@ public class IterativeDeepeningSearch implements Search {
              }
 
          }
-         if (plyRemaining > 0) {
-             repetitionTable.pop(board);
-         }
+
+         repetitionTable.pop(board.getGameState().getZobristKey());
+
 
          NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
          transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);

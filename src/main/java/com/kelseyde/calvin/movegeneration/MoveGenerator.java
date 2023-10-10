@@ -12,8 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
- * Evaluates the effect of a {@link Move} on a game. First checks if the move is legal. Then, checks if executing the
- * move results in the game ending, either due to checkmate or one of the draw conditions.
+ * Generates all the legal moves in a given position. Using a hybrid of pseudo-legal and legal move generation: first
+ * we calculate the bitboards for checking pieces and pinned pieces. If there is a check, we filter out all moves that
+ * do not resolve the check. Finally we filter out all moves that leave the king in (a new) check.
  */
 @Slf4j
 public class MoveGenerator {

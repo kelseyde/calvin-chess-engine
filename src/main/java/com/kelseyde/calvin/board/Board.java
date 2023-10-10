@@ -11,7 +11,8 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**
- * TODO javadoc
+ * Represents the current state of the board, including the position of the pieces, the side to move, castling and
+ * en passant rights, and the move history.
  */
 @Data
 public class Board {

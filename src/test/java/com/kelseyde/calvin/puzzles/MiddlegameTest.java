@@ -117,7 +117,7 @@ public class MiddlegameTest {
     @Test
     public void testEvaluationOfWinningEqualMaterialPosition() {
 
-        String fen = "8/5k2/1P6/7p/4R2P/1r2B2K/1r6/6N1 w - - 13 71";
+        String fen = "k6K/1pp2P1P/p1p5/P7/8/8/5r2/2R5 w - - 1 51";
         Board board = FEN.fromFEN(fen);
 
         BoardEvaluator evaluator = new BoardEvaluator();

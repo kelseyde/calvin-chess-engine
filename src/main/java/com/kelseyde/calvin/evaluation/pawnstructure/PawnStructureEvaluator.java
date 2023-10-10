@@ -12,7 +12,7 @@ import com.kelseyde.calvin.utils.BoardUtils;
 public class PawnStructureEvaluator {
 
     // The bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
-    private static final int[] PASSED_PAWN_BONUS = { 0, 120, 80, 50, 30, 15, 15 };
+    private static final int[] PASSED_PAWN_BONUS = { 0, 140, 100, 60, 30, 15, 15 };
 
     // The bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
     private static final int PROTECTED_PASSED_PAWN_BONUS = 25;

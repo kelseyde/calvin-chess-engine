@@ -12,7 +12,8 @@ Current feautures include:
 - Pseudo-legal move generation
 - Magic bitboards for sliding piece move generation
 - Iterative deepening search within a negamax framework, with an added quiescence search at the end to handle 'noisy' positions
-- Move ordering: previous best move, MVV-LVA, killer heuristic, history heuristic.
+- Contempt factor of 200 centipawns to evaluate draws during search
+- Move ordering: previous best move, MVV-LVA, killer heuristic, history heuristic
 - Transposition tables
 - Zobrist hashing
 - Evaluation: basic material count and piece square tables, pawn structure, passed pawn bonuses, isolated/doubled pawn penalties

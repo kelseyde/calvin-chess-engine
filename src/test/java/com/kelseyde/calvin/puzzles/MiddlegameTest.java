@@ -1,10 +1,14 @@
 package com.kelseyde.calvin.puzzles;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
+import com.kelseyde.calvin.evaluation.BoardEvaluator;
+import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.NotationUtils;
+import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -107,6 +111,17 @@ public class MiddlegameTest {
         bot.applyMove(NotationUtils.fromNotation("c3", "e4"));
         bot.applyMove(NotationUtils.fromNotation("c5", "e7"));
         System.out.println(new ResultCalculator().calculateResult(bot.getBoard()));
+
+    }
+
+    @Test
+    public void testEvaluationOfWinningEqualMaterialPosition() {
+
+        String fen = "8/5k2/1P6/7p/4R2P/1r2B2K/1r6/6N1 w - - 13 71";
+        Board board = FEN.fromFEN(fen);
+
+        BoardEvaluator evaluator = new BoardEvaluator();
+        System.out.println(evaluator.evaluate(board));
 
     }
 

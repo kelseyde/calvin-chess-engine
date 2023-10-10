@@ -28,9 +28,9 @@ public class RepetitionTable {
         hashes.computeIfPresent(hash, (key, value) -> value--);
     }
 
-    public boolean contains(Board board) {
+    public boolean isRepeated(Board board) {
         long hash = board.getGameState().getZobristKey();
-        return hashes.containsKey(hash);
+        return hashes.getOrDefault(hash, 0) > 1;
     }
 
 }

@@ -28,7 +28,7 @@ public class SearchStatistics {
         maxDepth++;
     }
 
-    public void incrementNodesSearched() {
+    public void incrementNodes() {
         ++nodesSearched;
     }
 

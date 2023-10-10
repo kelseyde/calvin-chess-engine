@@ -33,8 +33,4 @@ public class GameState {
         return (castlingRights & queensideMask) == queensideMask;
     }
 
-    public String toRepetitionString() {
-        return String.format("%s-%s-%s", zobristKey, enPassantFile, castlingRights);
-    }
-
 }

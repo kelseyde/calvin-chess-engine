@@ -8,6 +8,7 @@ import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
+import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
@@ -32,7 +33,16 @@ public class IterativeDeepeningSearch implements Search {
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
     private static final int CHECKMATE_EVAL = 1000000;
-    private static final int CONTEMPT_FACTOR = -200;
+    private static final int CONTEMPT_FACTOR = 200;
+
+    /*
+    if (eval > contempt)
+        return -contempt
+    else if (eval < contempt)
+        return contempt
+    else
+        return 0;
+     */
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
     private final ResultCalculator resultCalculator = new ResultCalculator();
@@ -40,6 +50,7 @@ public class IterativeDeepeningSearch implements Search {
     private final BoardEvaluator evaluator = new BoardEvaluator();
     private final StaticExchangeEvaluator see = new StaticExchangeEvaluator();
     private final TranspositionTable transpositionTable;
+    private final RepetitionTable repetitionTable;
 
     private final @Getter Board board;
 
@@ -54,6 +65,7 @@ public class IterativeDeepeningSearch implements Search {
     public IterativeDeepeningSearch(Board board) {
         this.board = board;
         this.transpositionTable = new TranspositionTable(board);
+        this.repetitionTable = new RepetitionTable(board);
     }
 
     @Override
@@ -78,18 +90,15 @@ public class IterativeDeepeningSearch implements Search {
                 if (hasSearchedAtLeastOneMove) {
                     bestMove = bestMoveCurrentDepth;
                     bestEval = bestEvalCurrentDepth;
-//                    log.trace("({}) {} {} Timeout reached, best move {}, eval {}", board.isWhiteToMove() ? "White" : "Black", currentDepth, NotationUtils.toNotation(board.getMoveHistory()), bestMove, bestEval);
                     break;
                 }
             } else {
                 bestMove = bestMoveCurrentDepth;
                 bestEval = bestEvalCurrentDepth;
-
                 if (isCheckmateFoundAtCurrentDepth(bestEval, currentDepth)) {
                     // Exit early if we have found the fastest mate at the current depth
                     break;
                 }
-
             }
 
             statistics.incrementDepth(currentDepth, depthStart, Instant.now());
@@ -117,11 +126,25 @@ public class IterativeDeepeningSearch implements Search {
              return 0;
          }
          if (plyFromRoot > 0) {
-             // TODO detect draw
+
+             if (repetitionTable.contains(board) || board.getGameState().getFiftyMoveCounter() >= 100) {
+                 // Found repetition / 50-move rule
+                 statistics.incrementNodes();
+                 // In case of draws, get the static evaluation of the position.
+                 // Avoid draws when evaluation is above the contempt threshold.
+                 // Favour draws when evaluation is below the contempt threshold.
+                 int eval = evaluator.evaluate(board);
+                 if (eval > CONTEMPT_FACTOR || eval < CONTEMPT_FACTOR) {
+                     return -eval;
+                 }
+                 return 0;
+             }
+
              // Exit early if we have already found a forced mate at an earlier ply
              alpha = Math.max(alpha, -CHECKMATE_EVAL + plyFromRoot);
              beta = Math.min(beta, CHECKMATE_EVAL - plyFromRoot);
              if (alpha >= beta) {
+                 statistics.incrementNodes();
                  return alpha;
              }
          }
@@ -152,26 +175,32 @@ public class IterativeDeepeningSearch implements Search {
          GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);
 
          // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
-         if (gameResult.isCheckmate()) {
-             statistics.incrementNodesSearched();
-//             log.trace("({}) {} Found checkmate", board.isWhiteToMove() ? "WHITE" : "BLACK", plyFromRoot);
-             return -CHECKMATE_EVAL + plyFromRoot;
-         }
-         if (gameResult.isDraw()) {
-             statistics.incrementNodesSearched();
-//             log.trace("({}) {} Found draw", board.isWhiteToMove() ? "WHITE" : "BLACK", plyFromRoot);
-             // Avoid draws where the static evaluation is in our favour.
-             // Favour draws when the static evaluation is in the opponent's favour
-             return -evaluator.evaluate(board);
+
+         if (legalMoves.length == 0) {
+            if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
+                // Found checkmate
+                statistics.incrementNodes();
+                return -CHECKMATE_EVAL + plyFromRoot;
+            } else {
+                // Found stalemate
+                statistics.incrementNodes();
+                // In case of draws, get the static evaluation of the position.
+                // Avoid draws when evaluation is above the contempt threshold.
+                // Favour draws when evaluation is below the contempt threshold.
+                int eval = evaluator.evaluate(board);
+                if (eval > CONTEMPT_FACTOR || eval < CONTEMPT_FACTOR) {
+                    return -eval;
+                }
+                return 0;
+            }
          }
          if (plyRemaining == 0) {
              // In the case that max depth is reached, begin the quiescence search
-             statistics.incrementNodesSearched();
+             statistics.incrementNodes();
              return quiescenceSearch(alpha, beta, 1);
          }
 
          Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
-//         log.trace("{} {} ({}, {}) Ordered moves: {}", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(Arrays.asList(orderedMoves)));
 
          Move bestMoveInThisPosition = null;
          int originalAlpha = alpha;
@@ -220,7 +249,7 @@ public class IterativeDeepeningSearch implements Search {
                      moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
                      statistics.incrementKillers();
                  }
-                 statistics.incrementNodesSearched();
+                 statistics.incrementNodes();
                  statistics.incrementCutoffs();
                  return beta;
              }
@@ -240,7 +269,7 @@ public class IterativeDeepeningSearch implements Search {
 
          NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
          transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
-         statistics.incrementNodesSearched();
+         statistics.incrementNodes();
 
 
          return alpha;
@@ -263,7 +292,7 @@ public class IterativeDeepeningSearch implements Search {
         int eval = evaluator.evaluate(board);
         alpha = Math.max(alpha, eval);
         if (eval >= beta) {
-            statistics.incrementNodesSearched();
+            statistics.incrementNodes();
             statistics.incrementQuiescents();
             statistics.incrementCutoffs();
             return beta;
@@ -288,7 +317,7 @@ public class IterativeDeepeningSearch implements Search {
             board.unmakeMove();
         }
         if (eval >= beta) {
-            statistics.incrementNodesSearched();
+            statistics.incrementNodes();
             statistics.incrementQuiescents();
             statistics.incrementCutoffs();
             return beta;
@@ -296,7 +325,7 @@ public class IterativeDeepeningSearch implements Search {
         if (eval > alpha) {
             alpha = eval;
         }
-        statistics.incrementNodesSearched();
+        statistics.incrementNodes();
         statistics.incrementQuiescents();
 
         return alpha;

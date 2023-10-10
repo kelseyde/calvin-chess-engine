@@ -41,7 +41,7 @@ public class ResultCalculator {
 
     private boolean isRepetition(Board board) {
         return Stream.concat(board.getGameStateHistory().stream(), Stream.of(board.getGameState()))
-                .collect(Collectors.groupingBy(GameState::toRepetitionString))
+                .collect(Collectors.groupingBy(GameState::getZobristKey))
                 .values()
                 .stream()
                 .anyMatch(repetitions -> repetitions.size() == 3);

@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * Using a 'perfect hashing' algorithm to pre-calculate a lookup table for sliding piece attacks.
+ *
  * @see <a href="https://www.chessprogramming.org/Magic_Bitboards">Chess Programming Wiki</a>
  */
 public class MagicInitializer {

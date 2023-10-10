@@ -61,6 +61,9 @@ public class Move {
     }
 
     public static short getPromotionFlag(PieceType pieceType) {
+        if (pieceType == null) {
+            return NO_FLAG;
+        }
         return switch (pieceType) {
             case QUEEN -> PROMOTE_TO_QUEEN_FLAG;
             case ROOK -> PROMOTE_TO_ROOK_FLAG;

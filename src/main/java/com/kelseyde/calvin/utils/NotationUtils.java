@@ -4,6 +4,9 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.Bits;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 public class NotationUtils {
@@ -41,6 +44,15 @@ public class NotationUtils {
             notation += move.getPromotionPieceType().getPieceCode();
         }
         return notation;
+    }
+
+    public static String toNotation(Deque<Move> moveHistory) {
+        List<Move> moves = new ArrayList<>(moveHistory);
+        Collections.reverse(moves);
+        return moves.stream()
+                .map(NotationUtils::toNotation)
+                .toList()
+                .toString();
     }
 
     /**

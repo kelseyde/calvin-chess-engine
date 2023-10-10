@@ -43,6 +43,7 @@ public class IterativeDeepeningSearch implements Search {
     private final @Getter Board board;
 
     private Instant timeout;
+    private boolean isWhite;
     private Move bestMove;
     private int bestEval;
     private Move bestMoveCurrentDepth;
@@ -52,6 +53,7 @@ public class IterativeDeepeningSearch implements Search {
 
     public IterativeDeepeningSearch(Board board) {
         this.board = board;
+        this.isWhite = board.isWhiteToMove();
         this.transpositionTable = new TranspositionTable(board);
         this.repetitionTable = new RepetitionTable(board);
     }
@@ -109,25 +111,21 @@ public class IterativeDeepeningSearch implements Search {
      * @param alpha the lower bound for child nodes at the current search depth.
      * @param beta the upper bound for child nodes at the current search depth.
      */
-     int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
+     public int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
+
          if (isTimeoutExceeded()) {
              return 0;
          }
+         if (repetitionTable.isThreefoldRepitition(board) || board.getGameState().getFiftyMoveCounter() >= 100) {
+             // Found repetition / 50-move rule
+             statistics.incrementNodes();
+             // In case of draws, get the static evaluation of the position.
+             // Avoid draws when evaluation is above the contempt threshold (we are winning).
+             // Favour draws when evaluation is below the contempt threshold (we are losing).
+             int eval = evaluator.evaluate(board);
+             return (eval > CONTEMPT_FACTOR || eval < -CONTEMPT_FACTOR) ? -eval : 0;
+         }
          if (plyFromRoot > 0) {
-
-             if (repetitionTable.isRepeated(board) || board.getGameState().getFiftyMoveCounter() >= 100) {
-                 // Found repetition / 50-move rule
-                 statistics.incrementNodes();
-                 // In case of draws, get the static evaluation of the position.
-                 // Avoid draws when evaluation is above the contempt threshold.
-                 // Favour draws when evaluation is below the contempt threshold.
-                 int eval = evaluator.evaluate(board);
-                 if (eval > CONTEMPT_FACTOR || eval < CONTEMPT_FACTOR) {
-                     return -eval;
-                 }
-                 return 0;
-             }
-
              // Exit early if we have already found a forced mate at an earlier ply
              alpha = Math.max(alpha, -CHECKMATE_EVAL + plyFromRoot);
              beta = Math.min(beta, CHECKMATE_EVAL - plyFromRoot);
@@ -182,10 +180,7 @@ public class IterativeDeepeningSearch implements Search {
                 // Avoid draws when evaluation is above the contempt threshold.
                 // Favour draws when evaluation is below the contempt threshold.
                 int eval = evaluator.evaluate(board);
-                if (eval > CONTEMPT_FACTOR || eval < CONTEMPT_FACTOR) {
-                    return -eval;
-                }
-                return 0;
+                return (eval > CONTEMPT_FACTOR || eval < CONTEMPT_FACTOR) ? -eval : 0;
             }
          }
 
@@ -223,7 +218,6 @@ public class IterativeDeepeningSearch implements Search {
                  eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
              }
              board.unmakeMove();
-//             log.trace("{} {} ({}, {}) Eval for {}: {}", board.isWhiteToMove() ? "WHITE" : "BLACK", NotationUtils.toNotation(board.getMoveHistory()), alpha, beta, NotationUtils.toNotation(move), eval);
 
              if (isTimeoutExceeded()) {
                  return 0;

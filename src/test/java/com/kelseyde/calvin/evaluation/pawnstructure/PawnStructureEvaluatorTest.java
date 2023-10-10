@@ -27,15 +27,15 @@ public class PawnStructureEvaluatorTest {
 
         fen = "4k3/8/8/P7/8/8/8/4K3 w - - 0 1";
         board = FEN.fromFEN(fen);
-        Assertions.assertEquals(50, score(board));
+        Assertions.assertEquals(60, score(board));
 
         fen = "4k3/8/P7/8/8/8/8/4K3 w - - 0 1";
         board = FEN.fromFEN(fen);
-        Assertions.assertEquals(80, score(board));
+        Assertions.assertEquals(100, score(board));
 
         fen = "4k3/P7/8/8/8/8/8/4K3 w - - 0 1";
         board = FEN.fromFEN(fen);
-        Assertions.assertEquals(120, score(board));
+        Assertions.assertEquals(140, score(board));
 
         // Black
         fen = "4k3/p7/8/8/8/8/8/4K3 w - - 0 1";
@@ -52,15 +52,15 @@ public class PawnStructureEvaluatorTest {
 
         fen = "4k3/8/8/8/p7/8/8/4K3 w - - 0 1";
         board = FEN.fromFEN(fen);
-        Assertions.assertEquals(-50, score(board));
+        Assertions.assertEquals(-60, score(board));
 
         fen = "4k3/8/8/8/8/p7/8/4K3 w - - 0 1";
         board = FEN.fromFEN(fen);
-        Assertions.assertEquals(-80, score(board));
+        Assertions.assertEquals(-100, score(board));
 
         fen = "4k3/8/8/8/8/8/p7/4K3 w - - 0 1";
         board = FEN.fromFEN(fen);
-        Assertions.assertEquals(-120, score(board));
+        Assertions.assertEquals(-140, score(board));
 
     }
 
@@ -69,8 +69,8 @@ public class PawnStructureEvaluatorTest {
 
         String fen = "4k3/2p5/Pp6/1P6/8/8/8/4K3 w - - 0 1";
         Board board = FEN.fromFEN(fen);
-        //80 + (25)
-        Assertions.assertEquals(105, score(board));
+        //100 + (25)
+        Assertions.assertEquals(125, score(board));
 
         fen = "4k3/8/6p1/6Pp/5P2/8/8/4K3 w - - 0 1";
         board = FEN.fromFEN(fen);
@@ -84,13 +84,13 @@ public class PawnStructureEvaluatorTest {
 
         String fen = "4k3/8/3p3p/4pPp1/4P1P1/7P/8/4K3 w - - 0 1";
         Board board = FEN.fromFEN(fen);
-        //50 + (2 * 25)
-        Assertions.assertEquals(100, score(board));
+        //60 + (2 * 25)
+        Assertions.assertEquals(110, score(board));
 
         fen = "4k3/8/8/8/1p1p4/1PpP4/P3P3/4K3 w - - 0 1";
         board = FEN.fromFEN(fen);
-        //80 + (2 * 25)
-        Assertions.assertEquals(-130, score(board));
+        //100 + (2 * 25)
+        Assertions.assertEquals(-150, score(board));
 
     }
 

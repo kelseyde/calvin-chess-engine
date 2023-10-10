@@ -10,7 +10,6 @@ import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

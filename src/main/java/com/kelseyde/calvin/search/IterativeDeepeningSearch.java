@@ -107,7 +107,7 @@ public class IterativeDeepeningSearch implements Search {
 
         statistics.setEnd(Instant.now());
 //        System.out.println(statistics.generateReport());
-        transpositionTable.logTableSize();
+//        transpositionTable.logTableSize();
         return new SearchResult(bestEval, bestMove);
 
     }

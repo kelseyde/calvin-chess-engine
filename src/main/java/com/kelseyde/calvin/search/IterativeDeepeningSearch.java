@@ -5,8 +5,6 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.BoardEvaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.movegeneration.result.GameResult;
-import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
@@ -35,17 +33,7 @@ public class IterativeDeepeningSearch implements Search {
     private static final int CHECKMATE_EVAL = 1000000;
     private static final int CONTEMPT_FACTOR = 200;
 
-    /*
-    if (eval > contempt)
-        return -contempt
-    else if (eval < contempt)
-        return contempt
-    else
-        return 0;
-     */
-
     private final MoveGenerator moveGenerator = new MoveGenerator();
-    private final ResultCalculator resultCalculator = new ResultCalculator();
     private final MoveOrderer moveOrderer = new MoveOrderer();
     private final BoardEvaluator evaluator = new BoardEvaluator();
     private final StaticExchangeEvaluator see = new StaticExchangeEvaluator();
@@ -127,7 +115,7 @@ public class IterativeDeepeningSearch implements Search {
          }
          if (plyFromRoot > 0) {
 
-             if (repetitionTable.contains(board) || board.getGameState().getFiftyMoveCounter() >= 100) {
+             if (repetitionTable.isRepeated(board) || board.getGameState().getFiftyMoveCounter() >= 100) {
                  // Found repetition / 50-move rule
                  statistics.incrementNodes();
                  // In case of draws, get the static evaluation of the position.
@@ -172,14 +160,20 @@ public class IterativeDeepeningSearch implements Search {
          }
 
          Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
-         GameResult gameResult = resultCalculator.calculateResult(board, legalMoves);
+
+         if (plyRemaining == 0) {
+             // In the case that max depth is reached, begin the quiescence search
+             statistics.incrementNodes();
+             return quiescenceSearch(alpha, beta, 1);
+         }
 
          // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
-
          if (legalMoves.length == 0) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
                 // Found checkmate
                 statistics.incrementNodes();
+                // In case of checkmate, favour checkmates closer to the root node.
+                // This leads the engine to prefer e.g. mate in one over mate in two.
                 return -CHECKMATE_EVAL + plyFromRoot;
             } else {
                 // Found stalemate
@@ -194,10 +188,9 @@ public class IterativeDeepeningSearch implements Search {
                 return 0;
             }
          }
-         if (plyRemaining == 0) {
-             // In the case that max depth is reached, begin the quiescence search
-             statistics.incrementNodes();
-             return quiescenceSearch(alpha, beta, 1);
+
+         if (plyRemaining > 0) {
+             repetitionTable.push(board);
          }
 
          Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
@@ -249,8 +242,12 @@ public class IterativeDeepeningSearch implements Search {
                      moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
                      statistics.incrementKillers();
                  }
+                 if (plyRemaining > 0) {
+                     repetitionTable.pop(board);
+                 }
                  statistics.incrementNodes();
                  statistics.incrementCutoffs();
+
                  return beta;
              }
 
@@ -266,11 +263,13 @@ public class IterativeDeepeningSearch implements Search {
              }
 
          }
+         if (plyRemaining > 0) {
+             repetitionTable.pop(board);
+         }
 
          NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
          transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
          statistics.incrementNodes();
-
 
          return alpha;
 

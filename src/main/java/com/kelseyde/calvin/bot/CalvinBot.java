@@ -28,8 +28,6 @@ public class CalvinBot implements Bot {
     @Getter
     private Board board;
 
-    private Board ponderBoard;
-
     private MoveGenerator moveGenerator;
 
     private Search search;

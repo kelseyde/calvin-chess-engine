@@ -10,11 +10,13 @@ import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 
 /**
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
@@ -134,13 +136,15 @@ public class IterativeDeepeningSearch implements Search {
                  return alpha;
              }
          }
-         Move previousBestMove = plyFromRoot == 0 ? bestMove : null;
+
+         // Get the best move from the search at the previous depth - the 'principal variation'.
+         Move principalVariation = plyFromRoot == 0 ? bestMove : null;
 
          // Handle possible transposition
          TranspositionNode transposition = transpositionTable.get();
          if (transposition != null) {
              if (transposition.getBestMove() != null) {
-                previousBestMove = transposition.getBestMove();
+                principalVariation = transposition.getBestMove();
              }
              if (transposition.getDepth() >= plyRemaining) {
                  statistics.incrementTranspositions();
@@ -187,9 +191,10 @@ public class IterativeDeepeningSearch implements Search {
 
          repetitionTable.push(board.getGameState().getZobristKey());
 
-         Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
+         Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, principalVariation, true, plyFromRoot);
 
          Move bestMoveInThisPosition = null;
+         boolean hasPrincipalVariation = principalVariation != null;
          int originalAlpha = alpha;
 
          for (int i = 0; i < orderedMoves.length; i++) {
@@ -209,11 +214,26 @@ public class IterativeDeepeningSearch implements Search {
              if (extensions == 0 && plyRemaining >= 3 && i >= 3 && !isCapture) {
                  reductions = 1;
              }
+             int adjustedDepth = plyRemaining - 1 + extensions - reductions;
 
-             int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha);
+             int eval;
 
-             if (reductions > 0 && eval > alpha) {
-                 // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
+             if (hasPrincipalVariation) {
+                 if (move.equals(principalVariation)) {
+                     System.out.println("doing PV search");
+                     eval = -search(adjustedDepth, plyFromRoot + 1, -beta, -alpha);
+                 } else {
+                     eval = -search(adjustedDepth, plyFromRoot + 1, -alpha - 1, -alpha);
+                 }
+             } else {
+                 eval = -search(adjustedDepth, plyFromRoot + 1, -beta, -alpha);
+             }
+
+             if ((reductions > 0 || !move.equals(principalVariation)) && eval > alpha) {
+                 // Cases in which we need to do a full re-search:
+                 // 1: we reduced the search depth but the move beat alpha
+                 // 2: we searched with a null window but the move beat alpha
+                 // In either case, re-search to get a more accurate eval.
                  eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
              }
              board.unmakeMove();

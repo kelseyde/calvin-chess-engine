@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
+import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
     @Getter
     private final PieceType pieceType = PieceType.PAWN;
 
-    public List<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board, long pinMask, int kingSquare) {
 
         boolean isWhite = board.isWhiteToMove();
         List<Move> moves = new ArrayList<>();
@@ -33,7 +34,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (singleAdvancesCopy != 0) {
             int endSquare = BitboardUtils.getLSB(singleAdvancesCopy);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
-            moves.add(new Move(startSquare, endSquare));
+            boolean isPinned = (pinMask & 1L << startSquare) != 0;
+            if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                moves.add(new Move(startSquare, endSquare));
+            }
             singleAdvancesCopy = BitboardUtils.popLSB(singleAdvancesCopy);
         }
 
@@ -43,7 +47,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (doubleAdvances != 0) {
             int endSquare = BitboardUtils.getLSB(doubleAdvances);
             int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
-            moves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
+            boolean isPinned = (pinMask & 1L << startSquare) != 0;
+            if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                moves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
+            }
             doubleAdvances = BitboardUtils.popLSB(doubleAdvances);
         }
 
@@ -53,7 +60,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (leftCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(leftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            moves.add(new Move(startSquare, endSquare));
+            boolean isPinned = (pinMask & 1L << startSquare) != 0;
+            if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                moves.add(new Move(startSquare, endSquare));
+            }
             leftCaptures = BitboardUtils.popLSB(leftCaptures);
         }
 
@@ -63,7 +73,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (rightCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            moves.add(new Move(startSquare, endSquare));
+            boolean isPinned = (pinMask & 1L << startSquare) != 0;
+            if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                moves.add(new Move(startSquare, endSquare));
+            }
             rightCaptures = BitboardUtils.popLSB(rightCaptures);
         }
 
@@ -73,7 +86,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (enPassantLeftCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(enPassantLeftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            moves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
+            boolean isPinned = (pinMask & 1L << startSquare) != 0;
+            if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                moves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
+            }
             enPassantLeftCaptures = BitboardUtils.popLSB(enPassantLeftCaptures);
         }
 
@@ -83,7 +99,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (enPassantRightCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(enPassantRightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            moves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
+            boolean isPinned = (pinMask & 1L << startSquare) != 0;
+            if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                moves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
+            }
             enPassantRightCaptures = BitboardUtils.popLSB(enPassantRightCaptures);
         }
 
@@ -103,7 +122,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (captureLeftPromotions != 0) {
             int endSquare = BitboardUtils.getLSB(captureLeftPromotions);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            moves.addAll(getPromotionMoves(startSquare, endSquare));
+            boolean isPinned = (pinMask & 1L << startSquare) != 0;
+            if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                moves.addAll(getPromotionMoves(startSquare, endSquare));
+            }
             captureLeftPromotions = BitboardUtils.popLSB(captureLeftPromotions);
         }
 
@@ -113,7 +135,10 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         while (captureRightPromotions != 0) {
             int endSquare = BitboardUtils.getLSB(captureRightPromotions);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            moves.addAll(getPromotionMoves(startSquare, endSquare));
+            boolean isPinned = (pinMask & 1L << startSquare) != 0;
+            if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                moves.addAll(getPromotionMoves(startSquare, endSquare));
+            }
             captureRightPromotions = BitboardUtils.popLSB(captureRightPromotions);
         }
 

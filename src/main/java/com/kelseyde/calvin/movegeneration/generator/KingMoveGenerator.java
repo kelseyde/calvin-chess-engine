@@ -36,7 +36,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             0x2838000000000000L, 0x5070000000000000L, 0xa0e0000000000000L, 0x40c0000000000000L
     };
 
-    public List<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board, long pinMask, int kingSquare) {
 
         List<Move> moves = new ArrayList<>();
 

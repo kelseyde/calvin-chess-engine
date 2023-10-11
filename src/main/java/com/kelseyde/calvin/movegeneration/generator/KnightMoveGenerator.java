@@ -35,11 +35,12 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
             0x0044280000000000L, 0x0088500000000000L, 0x0010a00000000000L, 0x0020400000000000L
     };
 
-    public List<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board, long pinMask, int kingSquare) {
 
         List<Move> moves = new ArrayList<>();
 
-        long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
+        // Pinned knights have no legal moves
+        long knights = board.isWhiteToMove() ? board.getWhiteKnights() &~ pinMask : board.getBlackKnights() &~ pinMask;
 
         while (knights != 0) {
             int startSquare = BitboardUtils.getLSB(knights);

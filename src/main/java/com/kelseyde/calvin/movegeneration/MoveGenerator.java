@@ -48,7 +48,7 @@ public class MoveGenerator {
         pinMask = pinCalculator.calculatePinMask(board, isWhite);
         int checkersCount = Long.bitCount(checkersMask);
 
-        List<Move> allMoves = kingMoveGenerator.generatePseudoLegalMoves(board);
+        List<Move> allMoves = kingMoveGenerator.generatePseudoLegalMoves(board, pinMask, kingSquare);
 
         // If we are in double-check, the only legal moves are king moves
         boolean isDoubleCheck = checkersCount == 2;
@@ -64,11 +64,11 @@ public class MoveGenerator {
         }
 
         // Otherwise, generate all the other pseudo-legal moves
-        allMoves.addAll(pawnMoveGenerator.generatePseudoLegalMoves(board));
-        allMoves.addAll(knightMoveGenerator.generatePseudoLegalMoves(board));
-        allMoves.addAll(bishopMoveGenerator.generatePseudoLegalMoves(board));
-        allMoves.addAll(rookMoveGenerator.generatePseudoLegalMoves(board));
-        allMoves.addAll(queenMoveGenerator.generatePseudoLegalMoves(board));
+        allMoves.addAll(pawnMoveGenerator.generatePseudoLegalMoves(board, pinMask, kingSquare));
+        allMoves.addAll(knightMoveGenerator.generatePseudoLegalMoves(board, pinMask, kingSquare));
+        allMoves.addAll(bishopMoveGenerator.generatePseudoLegalMoves(board, pinMask, kingSquare));
+        allMoves.addAll(rookMoveGenerator.generatePseudoLegalMoves(board, pinMask, kingSquare));
+        allMoves.addAll(queenMoveGenerator.generatePseudoLegalMoves(board, pinMask, kingSquare));
 
         boolean isCheck = checkersCount == 1;
 
@@ -130,11 +130,7 @@ public class MoveGenerator {
             board.unmakeMove();
             return !isAttacked;
         }
-        // All other moves are legal if and only if the piece is not pinned (or is pinned, but is moving along the pin ray)
-        else {
-            boolean isPinned = (pinMask & 1L << startSquare) != 0;
-            return !isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare);
-        }
+        return true;
 
     }
 

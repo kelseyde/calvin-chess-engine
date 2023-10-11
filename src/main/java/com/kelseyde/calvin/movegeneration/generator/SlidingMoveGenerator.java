@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.movegeneration.magic.Magics;
+import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
      * @see <a href="https://www.chessprogramming.org/Hyperbola_Quintessence">Chess Programming Wiki</a>
      */
     @Override
-    public List<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board, long pinMask, int kingSquare) {
         List<Move> moves = new ArrayList<>();
         boolean isWhite = board.isWhiteToMove();
         long pieceBitboard = getSliders(board, isWhite);
@@ -42,7 +43,10 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
             pieceBitboard = BitboardUtils.popLSB(pieceBitboard);
             while (moveBitboard != 0) {
                 int endSquare = BitboardUtils.getLSB(moveBitboard);
-                moves.add(new Move(startSquare, endSquare));
+                boolean isPinned = (pinMask & 1L << startSquare) != 0;
+                if (!isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare)) {
+                    moves.add(new Move(startSquare, endSquare));
+                }
                 moveBitboard = BitboardUtils.popLSB(moveBitboard);
             }
         }

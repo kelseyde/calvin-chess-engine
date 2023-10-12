@@ -95,8 +95,8 @@ public class IterativeDeepeningSearch implements Search {
         }
 
         statistics.setEnd(Instant.now());
-//        System.out.println(statistics.generateReport());
-//        transpositionTable.logTableSize();
+        System.out.println(statistics.generateReport());
+        transpositionTable.logTableSize();
         return new SearchResult(bestEval, bestMove);
 
     }
@@ -146,8 +146,8 @@ public class IterativeDeepeningSearch implements Search {
                  statistics.incrementTranspositions();
                  NodeType type = transposition.getType();
                  if ((type.equals(NodeType.EXACT))
-                         || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() <= alpha)
-                         || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() >= beta)) {
+                         || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta)
+                         || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha)) {
                      if (plyFromRoot == 0) {
                          bestMoveCurrentDepth = transposition.getBestMove();
                          bestEvalCurrentDepth = transposition.getValue();

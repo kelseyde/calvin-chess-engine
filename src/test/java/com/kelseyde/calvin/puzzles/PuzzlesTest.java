@@ -194,7 +194,7 @@ public class PuzzlesTest {
 
         search = new IterativeDeepeningSearch(board);
 
-        SearchResult result = search.search(Duration.ofMillis(2000));
+        SearchResult result = search.search(Duration.ofMillis(1000));
 
         Move bestMove = NotationUtils.fromNotation("e5", "f6");
         assertMove(bestMove, result.move());
@@ -202,35 +202,35 @@ public class PuzzlesTest {
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("h7", "h6"));
 
-        result = search.search(Duration.ofMillis(2000));
+        result = search.search(Duration.ofMillis(1000));
         bestMove = NotationUtils.fromNotation("f6", "g6");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("h5", "g5"));
 
-        result = search.search(Duration.ofMillis(2000));
+        result = search.search(Duration.ofMillis(1000));
         bestMove = NotationUtils.fromNotation("g6", "h6");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g5", "g4"));
 
-        result = search.search(Duration.ofMillis(3000));
+        result = search.search(Duration.ofMillis(1000));
         bestMove = NotationUtils.fromNotation("a7", "a8");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("g4", "g8"));
 
-        result = search.search(Duration.ofMillis(2000));
+        result = search.search(Duration.ofMillis(1000));
         bestMove = NotationUtils.fromNotation("a8", "g8");
         assertMove(bestMove, result.move());
 
         board.makeMove(bestMove);
         board.makeMove(NotationUtils.fromNotation("h8", "g8"));
 
-        result = search.search(Duration.ofMillis(2000));
+        result = search.search(Duration.ofMillis(1000));
         bestMove = NotationUtils.fromNotation("h6", "g6");
         assertMove(bestMove, result.move());
 

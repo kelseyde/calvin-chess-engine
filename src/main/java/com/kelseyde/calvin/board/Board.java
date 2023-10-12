@@ -56,7 +56,6 @@ public class Board {
         PieceType pieceType = pieceAt(startSquare);
         PieceType capturedPieceType = pieceAt(move.getEndSquare());
 
-        long newZobristKey = gameState.getZobristKey();
         int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
         int newEnPassantFile = -1;
         boolean resetFiftyMoveCounter = capturedPieceType != null|| PieceType.PAWN.equals(pieceType);
@@ -102,13 +101,9 @@ public class Board {
         int newCastlingRights = calculateCastlingRights(startSquare, endSquare, pieceType);
         PieceType newPieceType = move.getPromotionPieceType() == null ? pieceType : move.getPromotionPieceType();
 
-        newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[startSquare][isWhiteToMove ? 0 : 1][pieceType.getIndex()];
-        newZobristKey ^= ZobristKey.PIECE_SQUARE_HASH[endSquare][isWhiteToMove ? 0 : 1][newPieceType.getIndex()];
-        newZobristKey ^= ZobristKey.CASTLING_RIGHTS[gameState.getCastlingRights()];
-        newZobristKey ^= ZobristKey.CASTLING_RIGHTS[newCastlingRights];
-        newZobristKey ^= ZobristKey.EN_PASSANT_FILE[gameState.getEnPassantFile() + 1];
-        newZobristKey ^= ZobristKey.EN_PASSANT_FILE[newEnPassantFile + 1];
-        newZobristKey ^= ZobristKey.BLACK_TO_MOVE;
+        long newZobristKey =
+                ZobristKey.updateKey(gameState.getZobristKey(), isWhiteToMove, startSquare, endSquare, pieceType, newPieceType,
+                        gameState.getCastlingRights(), newCastlingRights, gameState.getEnPassantFile(), newEnPassantFile);
 
         GameState newGameState = new GameState(newZobristKey, capturedPieceType, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
         gameStateHistory.push(gameState);

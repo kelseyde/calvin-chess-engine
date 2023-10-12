@@ -156,12 +156,6 @@ public class IterativeDeepeningSearch implements Search {
                          bestMoveCurrentDepth = transposition.getBestMove();
                          bestEvalCurrentDepth = transposition.getValue();
                      }
-                     if (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta) {
-                         System.out.println("returning lower bound");
-                     }
-                     if (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha) {
-                         System.out.println("returning upper bound");
-                     }
                      return transposition.getValue();
                  }
              }

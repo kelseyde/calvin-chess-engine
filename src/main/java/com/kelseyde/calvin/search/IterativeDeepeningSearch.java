@@ -43,11 +43,11 @@ public class IterativeDeepeningSearch implements Search {
     private final @Getter Board board;
 
     private Instant timeout;
-    private Move bestMove;
-    private int bestEval;
-    private Move bestMoveCurrentDepth;
-    private int bestEvalCurrentDepth;
-    private boolean hasSearchedAtLeastOneMove;
+
+    private SearchResult result;
+    private SearchResult resultCurrentDepth;
+
+    private boolean hasResultAtCurrentDepth;
     private SearchStatistics statistics;
 
     public IterativeDeepeningSearch(Board board) {
@@ -61,8 +61,8 @@ public class IterativeDeepeningSearch implements Search {
 
         timeout = Instant.now().plus(duration);
         int currentDepth = 1;
-        bestMove = null;
-        bestMoveCurrentDepth = null;
+        result = null;
+        resultCurrentDepth = null;
         repetitionTable.init(board);
         statistics = new SearchStatistics();
         statistics.setStart(Instant.now());
@@ -71,20 +71,18 @@ public class IterativeDeepeningSearch implements Search {
 
             Instant depthStart = Instant.now();
 
-            hasSearchedAtLeastOneMove = false;
+            hasResultAtCurrentDepth = false;
 
             search(currentDepth, 0, MIN_EVAL, MAX_EVAL);
 
             if (isTimeoutExceeded()) {
-                if (hasSearchedAtLeastOneMove) {
-                    bestMove = bestMoveCurrentDepth;
-                    bestEval = bestEvalCurrentDepth;
+                if (hasResultAtCurrentDepth) {
+                    result = resultCurrentDepth;
                     break;
                 }
             } else {
-                bestMove = bestMoveCurrentDepth;
-                bestEval = bestEvalCurrentDepth;
-                if (isCheckmateFoundAtCurrentDepth(bestEval, currentDepth)) {
+                result = resultCurrentDepth;
+                if (isCheckmateFoundAtCurrentDepth(result.eval(), currentDepth)) {
                     // Exit early if we have found the fastest mate at the current depth
                     break;
                 }
@@ -97,7 +95,7 @@ public class IterativeDeepeningSearch implements Search {
         statistics.setEnd(Instant.now());
 //        System.out.println(statistics.generateReport());
 //        transpositionTable.logTableSize();
-        return new SearchResult(bestEval, bestMove);
+        return result;
 
     }
 
@@ -134,7 +132,7 @@ public class IterativeDeepeningSearch implements Search {
                  return alpha;
              }
          }
-         Move previousBestMove = plyFromRoot == 0 ? bestMove : null;
+         Move previousBestMove = plyFromRoot == 0 ? result.move() : null;
 
          // Handle possible transposition
          TranspositionNode transposition = transpositionTable.get();
@@ -156,8 +154,7 @@ public class IterativeDeepeningSearch implements Search {
                          || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta)) {
 
                      if (plyFromRoot == 0) {
-                         bestMoveCurrentDepth = transposition.getBestMove();
-                         bestEvalCurrentDepth = transposition.getValue();
+                         resultCurrentDepth = new SearchResult(transposition.getValue(), transposition.getBestMove());
                      }
                      return transposition.getValue();
                  }
@@ -255,9 +252,8 @@ public class IterativeDeepeningSearch implements Search {
                  bestMoveInThisPosition = move;
                  alpha = eval;
                  if (plyFromRoot == 0) {
-                     bestMoveCurrentDepth = move;
-                     bestEvalCurrentDepth = eval;
-                     hasSearchedAtLeastOneMove = true;
+                     resultCurrentDepth = new SearchResult(eval, move);
+                     hasResultAtCurrentDepth = true;
                  }
              }
 

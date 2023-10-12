@@ -4,12 +4,18 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.Bits;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 public class NotationUtils {
+
+    private static final Map<PieceType, String> PIECE_CODE_INDEX = Map.of(
+            PieceType.PAWN, "p",
+            PieceType.KNIGHT, "n",
+            PieceType.BISHOP, "b",
+            PieceType.ROOK, "r",
+            PieceType.QUEEN, "q",
+            PieceType.KING, "k"
+    );
 
     /**
      * Generate a {@link Move} from algebraic notation of the start and end square (e.g. "e2", "e4" -> new Move(12, 28))
@@ -32,7 +38,10 @@ public class NotationUtils {
 
         short flag = Move.NO_FLAG;
         if (notation.length() == 5) {
-            PieceType promotionPieceType = PieceType.fromPieceCode(notation.substring(4, 5));
+            String pieceCode = notation.substring(4, 5);
+            PieceType promotionPieceType = PIECE_CODE_INDEX.entrySet().stream()
+                    .filter(entry -> entry.getValue().equalsIgnoreCase(pieceCode))
+                    .findAny().orElseThrow().getKey();
             flag = Move.getPromotionFlag(promotionPieceType);
         }
         return new Move(startSquare, endSquare, flag);
@@ -41,7 +50,7 @@ public class NotationUtils {
     public static String toNotation(Move move) {
         String notation = toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
         if (move.getPromotionPieceType() != null) {
-            notation += move.getPromotionPieceType().getPieceCode();
+            notation += PIECE_CODE_INDEX.get(move.getPromotionPieceType());
         }
         return notation;
     }

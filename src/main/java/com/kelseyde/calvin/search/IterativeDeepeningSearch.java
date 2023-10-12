@@ -150,11 +150,17 @@ public class IterativeDeepeningSearch implements Search {
                  statistics.incrementTranspositions();
                  NodeType type = transposition.getType();
                  if ((type.equals(NodeType.EXACT))
-                         || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() <= alpha)
-                         || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() >= beta)) {
+                         || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta)
+                         || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha)) {
                      if (plyFromRoot == 0) {
                          bestMoveCurrentDepth = transposition.getBestMove();
                          bestEvalCurrentDepth = transposition.getValue();
+                     }
+                     if (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta) {
+                         System.out.println("returning lower bound");
+                     }
+                     if (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha) {
+                         System.out.println("returning upper bound");
                      }
                      return transposition.getValue();
                  }
@@ -188,7 +194,6 @@ public class IterativeDeepeningSearch implements Search {
             }
          }
 
-
          repetitionTable.push(board.getGameState().getZobristKey());
 
          Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, principalVariation, true, plyFromRoot);
@@ -220,7 +225,6 @@ public class IterativeDeepeningSearch implements Search {
 
              if (hasPrincipalVariation) {
                  if (move.equals(principalVariation)) {
-                     System.out.println("doing PV search");
                      eval = -search(adjustedDepth, plyFromRoot + 1, -beta, -alpha);
                  } else {
                      eval = -search(adjustedDepth, plyFromRoot + 1, -alpha - 1, -alpha);
@@ -229,7 +233,9 @@ public class IterativeDeepeningSearch implements Search {
                  eval = -search(adjustedDepth, plyFromRoot + 1, -beta, -alpha);
              }
 
-             if ((reductions > 0 || !move.equals(principalVariation)) && eval > alpha) {
+             boolean isInWindow = eval > alpha && eval < beta;
+
+             if ((reductions > 0 || !move.equals(principalVariation)) && isInWindow) {
                  // Cases in which we need to do a full re-search:
                  // 1: we reduced the search depth but the move beat alpha
                  // 2: we searched with a null window but the move beat alpha

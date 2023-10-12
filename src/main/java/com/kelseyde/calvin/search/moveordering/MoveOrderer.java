@@ -44,7 +44,7 @@ public class MoveOrderer {
         int moveScore = 0;
 
         // Always search the best move from the previous iteration first.
-        if (previousBestMove != null && move.matches(previousBestMove)) {
+        if (move.equals(previousBestMove)) {
             moveScore += PREVIOUS_BEST_MOVE_BIAS;
         }
 

@@ -1,11 +1,9 @@
 package com.kelseyde.calvin.search.transposition;
 
-import com.kelseyde.calvin.evaluation.Evaluator;
-
 public enum NodeType {
 
     /**
-     * The value for this node is the exact evaluation as determined by the {@link Evaluator} position evaluators.
+     * The value for this node is the exact evaluation as determined by the evaluation function.
      */
     EXACT,
 

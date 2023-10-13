@@ -119,7 +119,7 @@ public class MiddlegameTest {
         String fen = "k6K/1pp2P1P/p1p5/P7/8/8/5r2/2R5 w - - 1 51";
         Board board = FEN.fromFEN(fen);
 
-        BoardEvaluator evaluator = new BoardEvaluator();
+        BoardEvaluator evaluator = new BoardEvaluator(board);
         System.out.println(evaluator.evaluate(board));
 
     }

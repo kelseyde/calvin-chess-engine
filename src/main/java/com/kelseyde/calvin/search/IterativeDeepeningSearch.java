@@ -11,6 +11,7 @@ import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -26,6 +27,7 @@ import java.time.Instant;
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
 @Slf4j
+@NoArgsConstructor
 public class IterativeDeepeningSearch implements Search {
 
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
@@ -33,14 +35,14 @@ public class IterativeDeepeningSearch implements Search {
     private static final int CHECKMATE_EVAL = 1000000;
     private static final int CONTEMPT_FACTOR = 200;
 
-    private final MoveGenerator moveGenerator = new MoveGenerator();
-    private final MoveOrderer moveOrderer = new MoveOrderer();
-    private final BoardEvaluator evaluator = new BoardEvaluator();
-    private final StaticExchangeEvaluator see = new StaticExchangeEvaluator();
-    private final TranspositionTable transpositionTable;
-    private final RepetitionTable repetitionTable;
+    private MoveGenerator moveGenerator;
+    private MoveOrderer moveOrderer;
+    private BoardEvaluator evaluator;
+    private StaticExchangeEvaluator see;
+    private TranspositionTable transpositionTable;
+    private RepetitionTable repetitionTable;
 
-    private final @Getter Board board;
+    private @Getter Board board;
 
     private Instant timeout;
 
@@ -52,6 +54,10 @@ public class IterativeDeepeningSearch implements Search {
 
     public IterativeDeepeningSearch(Board board) {
         this.board = board;
+        this.moveGenerator = new MoveGenerator();
+        this.moveOrderer = new MoveOrderer();
+        this.see = new StaticExchangeEvaluator();
+        this.evaluator = new BoardEvaluator(board);
         this.transpositionTable = new TranspositionTable(board);
         this.repetitionTable = new RepetitionTable(board);
     }

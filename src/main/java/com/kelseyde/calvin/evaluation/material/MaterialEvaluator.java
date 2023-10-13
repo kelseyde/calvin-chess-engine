@@ -1,12 +1,15 @@
 package com.kelseyde.calvin.evaluation.material;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.evaluation.Evaluation;
+import com.kelseyde.calvin.evaluation.EvaluationUpdater;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-public class MaterialCalculator {
+public class MaterialEvaluator {
 
     private static final int OPENING_MATERIAL = (PieceValues.KNIGHT * 2) + (PieceValues.BISHOP * 2) + (PieceValues.ROOK * 2) + PieceValues.QUEEN;
 
@@ -36,6 +39,7 @@ public class MaterialCalculator {
         }
 
         return new Material(pawns, knights, bishops, rooks, queens, phase, eval);
+
     }
 
 }

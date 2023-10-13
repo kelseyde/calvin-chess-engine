@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.material.MaterialCalculator;
+import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
 import com.kelseyde.calvin.evaluation.placement.PiecePlacementEvaluator;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class PiecePlacementEvaluatorTest {
 
     private final PiecePlacementEvaluator evaluator = new PiecePlacementEvaluator();
-    private final MaterialCalculator materialCalculator = new MaterialCalculator();
+    private final MaterialEvaluator materialCalculator = new MaterialEvaluator();
 
     @Test
     public void testStartingPosition() {

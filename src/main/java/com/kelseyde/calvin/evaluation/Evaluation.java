@@ -11,8 +11,6 @@ public class Evaluation {
 
     Material material;
 
-    int gamePhase;
-
     PiecePlacementScore piecePlacementScore;
 
     int pawnStructureScore;
@@ -23,6 +21,16 @@ public class Evaluation {
 
     public int sum() {
         return material.eval() + piecePlacementScore.sum() + pawnStructureScore + kingSafetyScore + mopUpEval;
+    }
+
+    public Evaluation copy() {
+        Evaluation evaluation = new Evaluation();
+        evaluation.setMaterial(material);
+        evaluation.setPiecePlacementScore(piecePlacementScore);
+        evaluation.setPawnStructureScore(pawnStructureScore);
+        evaluation.setKingSafetyScore(kingSafetyScore);
+        evaluation.setMopUpEval(mopUpEval);
+        return evaluation;
     }
 
 }

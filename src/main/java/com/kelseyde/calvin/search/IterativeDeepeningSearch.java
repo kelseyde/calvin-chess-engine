@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.BoardEvaluator;
+import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
@@ -10,6 +10,7 @@ import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class IterativeDeepeningSearch implements Search {
 
     private MoveGenerator moveGenerator;
     private MoveOrderer moveOrderer;
-    private BoardEvaluator evaluator;
+    private Evaluator evaluator;
     private StaticExchangeEvaluator see;
     private TranspositionTable transpositionTable;
     private RepetitionTable repetitionTable;
@@ -57,7 +58,7 @@ public class IterativeDeepeningSearch implements Search {
         this.moveGenerator = new MoveGenerator();
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
-        this.evaluator = new BoardEvaluator(board);
+        this.evaluator = new Evaluator(board);
         this.transpositionTable = new TranspositionTable(board);
         this.repetitionTable = new RepetitionTable(board);
     }
@@ -65,6 +66,7 @@ public class IterativeDeepeningSearch implements Search {
     @Override
     public SearchResult search(Duration duration) {
 
+        evaluator = new Evaluator(board);
         timeout = Instant.now().plus(duration);
         int currentDepth = 1;
         result = null;
@@ -132,7 +134,7 @@ public class IterativeDeepeningSearch implements Search {
              // In case of draws, get the static evaluation of the position.
              // Avoid draws when evaluation is above the contempt threshold (we are winning).
              // Favour draws when evaluation is below the contempt threshold (we are losing).
-             int eval = evaluator.evaluate(board);
+             int eval = evaluator.getScore();
              return (eval > CONTEMPT_FACTOR || eval < -CONTEMPT_FACTOR) ? -eval : 0;
          }
          if (plyFromRoot > 0) {
@@ -195,7 +197,7 @@ public class IterativeDeepeningSearch implements Search {
                 // In case of draws, get the static evaluation of the position.
                 // Avoid draws when evaluation is above the contempt threshold.
                 // Favour draws when evaluation is below the contempt threshold.
-                int eval = evaluator.evaluate(board);
+                int eval = evaluator.getScore();
                 return (eval > CONTEMPT_FACTOR || eval < CONTEMPT_FACTOR) ? -eval : 0;
             }
          }
@@ -213,6 +215,7 @@ public class IterativeDeepeningSearch implements Search {
              Move move = orderedMoves[i];
              boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
              board.makeMove(move);
+             evaluator.makeMove(move);
 
              int extensions = 0;
              // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
@@ -233,6 +236,7 @@ public class IterativeDeepeningSearch implements Search {
                  eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
              }
              board.unmakeMove();
+             evaluator.unmakeMove();
 
              if (isTimeoutExceeded()) {
                  return 0;
@@ -295,7 +299,7 @@ public class IterativeDeepeningSearch implements Search {
         }
         // In the case where there are only 'bad' captures available, just return the static evaluation of the board,
         // since the player is not forced to capture and may have good non-capture moves available.
-        int eval = evaluator.evaluate(board);
+        int eval = evaluator.getScore();
         alpha = Math.max(alpha, eval);
         if (eval >= beta) {
             statistics.incrementNodes();
@@ -319,8 +323,10 @@ public class IterativeDeepeningSearch implements Search {
             }
 
             board.makeMove(move);
+            evaluator.makeMove(move);
             eval = -quiescenceSearch(-beta, -alpha, depth + 1);
             board.unmakeMove();
+            evaluator.unmakeMove();
         }
         if (eval >= beta) {
             statistics.incrementNodes();

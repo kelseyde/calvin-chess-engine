@@ -10,9 +10,7 @@ public interface PseudoLegalMoveGenerator {
 
     PieceType getPieceType();
 
-    List<Move> generatePseudoLegalMoves(Board board);
-
-    long generateAttackMask(Board board, boolean isWhite);
+    List<Move> generatePseudoLegalMoves(Board board, boolean capturesOnly);
 
     long generateAttackMaskFromSquare(Board board, int square, boolean isWhite);
 

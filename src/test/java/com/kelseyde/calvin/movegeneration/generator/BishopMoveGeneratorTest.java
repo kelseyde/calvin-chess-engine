@@ -60,7 +60,7 @@ public class BishopMoveGeneratorTest {
 
         Board board = FEN.fromFEN("K7/1B6/8/8/8/8/6b1/7k w - - 0 1");
 
-        List<Move> moves = generator.generatePseudoLegalMoves(board);
+        List<Move> moves = generator.generatePseudoLegalMoves(board, false);
 
         Assertions.assertEquals(7, moves.size());
 
@@ -98,7 +98,7 @@ public class BishopMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(PieceType.BISHOP, true, startSquare);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

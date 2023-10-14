@@ -87,6 +87,7 @@ public class Board {
             }
         }
         else if (move.isEnPassant()) {
+            capturedPieceType = PieceType.PAWN;
             toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
             int pawnSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
             toggleSquare(PieceType.PAWN, !isWhiteToMove, pawnSquare);

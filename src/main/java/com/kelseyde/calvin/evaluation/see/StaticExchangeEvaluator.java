@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.movegeneration.generator.*;
+import com.kelseyde.calvin.utils.NotationUtils;
 
 import java.util.NoSuchElementException;
 
@@ -33,7 +34,7 @@ public class StaticExchangeEvaluator {
 
         int score = 0;
         int square = move.getEndSquare();
-        PieceType capturedPieceType = board.pieceAt(square);
+        PieceType capturedPieceType = move.isEnPassant() ? PieceType.PAWN : board.pieceAt(square);
         if (capturedPieceType == null) {
             throw new NoSuchElementException("No piece to capture on square " + square);
         }

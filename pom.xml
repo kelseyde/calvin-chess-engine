@@ -5,7 +5,7 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>1.10.4-FixTranspositionTable</version>
+    <version>1.11.0-IncrementalEvalUpdates</version>
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 

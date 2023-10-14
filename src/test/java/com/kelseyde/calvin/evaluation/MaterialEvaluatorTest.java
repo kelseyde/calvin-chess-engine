@@ -17,6 +17,9 @@ public class MaterialEvaluatorTest {
         int whiteScore = evaluator.evaluate(board, true).eval();
         int blackScore = evaluator.evaluate(board, false).eval();
         Assertions.assertEquals(0, whiteScore - blackScore);
+        // 900 (queen) + 1000 (rooks) + 660 (bishops) + 640 (knights) + 800 (pawns) + 50 (bishop pair) = 4050
+        Assertions.assertEquals(4050, whiteScore);
+        Assertions.assertEquals(4050, blackScore);
 
     }
 

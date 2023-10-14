@@ -48,7 +48,7 @@ public class MoveGenerator {
         pinMask = pinCalculator.calculatePinMask(board, isWhite);
         int checkersCount = Long.bitCount(checkersMask);
 
-        List<Move> allMoves = kingMoveGenerator.generatePseudoLegalMoves(board);
+        List<Move> allMoves = kingMoveGenerator.generatePseudoLegalMoves(board, capturesOnly);
 
         // If we are in double-check, the only legal moves are king moves
         boolean isDoubleCheck = checkersCount == 2;
@@ -56,34 +56,26 @@ public class MoveGenerator {
             return allMoves.stream()
                    .filter(move ->
                            // Filter out all king moves that leave the king in check
-                           doesNotLeaveKingInCheck(board, move, kingSquare, isWhite) &&
-                           // Optionally filter out non-capture moves
-                           (!capturesOnly || isCapture(board, move))
-                   )
+                           doesNotLeaveKingInCheck(board, move, kingSquare, isWhite))
                    .toArray(Move[]::new);
         }
 
         // Otherwise, generate all the other pseudo-legal moves
-        allMoves.addAll(pawnMoveGenerator.generatePseudoLegalMoves(board));
-        allMoves.addAll(knightMoveGenerator.generatePseudoLegalMoves(board));
-        allMoves.addAll(bishopMoveGenerator.generatePseudoLegalMoves(board));
-        allMoves.addAll(rookMoveGenerator.generatePseudoLegalMoves(board));
-        allMoves.addAll(queenMoveGenerator.generatePseudoLegalMoves(board));
+        allMoves.addAll(pawnMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(knightMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(bishopMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(rookMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(queenMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
 
         boolean isCheck = checkersCount == 1;
 
         return allMoves.stream()
                 .filter(move ->
-
                     // If we are in single-check, filter out all moves that do not resolve the check
                     (!isCheck || resolvesCheck(board, move, kingSquare, isWhite)) &&
 
                     // Additionally, filter out moves that leave the king in (a new) check
-                    doesNotLeaveKingInCheck(board, move, kingSquare, isWhite) &&
-
-                     // Finally, optionally filter out non-capture moves
-                    (!capturesOnly || isCapture(board, move))
-
+                    doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)
                 )
                 .toArray(Move[]::new);
 

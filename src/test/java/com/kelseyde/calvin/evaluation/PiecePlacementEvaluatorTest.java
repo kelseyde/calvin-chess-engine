@@ -54,11 +54,11 @@ public class PiecePlacementEvaluatorTest {
 
     private int score(Board board, float gamePhase) {
         int modifier = board.isWhiteToMove() ? 1 : -1;
-        return modifier * (evaluator.evaluate(board, gamePhase, true) - evaluator.evaluate(board, gamePhase, false));
+        return modifier * (evaluator.evaluate(board, gamePhase, true).sum() - evaluator.evaluate(board, gamePhase, false).sum());
     }
 
     private float phase(Board board) {
-        return (materialCalculator.calculate(board, true).phase() + materialCalculator.calculate(board, false).phase()) / 2;
+        return (materialCalculator.evaluate(board, true).phase() + materialCalculator.evaluate(board, false).phase()) / 2;
     }
 
 }

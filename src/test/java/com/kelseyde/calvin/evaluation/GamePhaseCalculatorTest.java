@@ -87,7 +87,7 @@ public class GamePhaseCalculatorTest {
     }
 
     private float score(Board board) {
-        return (materialCalculator.calculate(board, true).phase() + materialCalculator.calculate(board, false).phase()) / 2;
+        return (materialCalculator.evaluate(board, true).phase() + materialCalculator.evaluate(board, false).phase()) / 2;
     }
 
 }

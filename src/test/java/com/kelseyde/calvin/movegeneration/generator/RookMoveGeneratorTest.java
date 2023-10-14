@@ -58,7 +58,7 @@ public class RookMoveGeneratorTest {
         String fen = "k7/8/4p3/8/2n1R1b1/8/4q3/K7 w - - 0 1";
         board = FEN.fromFEN(fen);
 
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == 28)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -71,7 +71,7 @@ public class RookMoveGeneratorTest {
 
         Board board = FEN.fromFEN("K7/1R6/8/8/8/8/6r1/7k w - - 0 1");
 
-        List<Move> moves = generator.generatePseudoLegalMoves(board);
+        List<Move> moves = generator.generatePseudoLegalMoves(board, false);
 
         Assertions.assertEquals(14, moves.size());
 
@@ -94,7 +94,7 @@ public class RookMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(PieceType.ROOK, true, startSquare);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board).stream()
+        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

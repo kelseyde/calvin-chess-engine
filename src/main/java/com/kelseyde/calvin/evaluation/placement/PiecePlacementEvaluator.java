@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.utils.BoardUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -58,7 +57,7 @@ public class PiecePlacementEvaluator {
 
     public PiecePlacementScore handleCapture(Board board, float gamePhase, PiecePlacementScore score, PieceType capturedPiece) {
         // Assuming the move is already made on the board, so side to score != side to move
-        boolean isWhite = !board.isWhiteToMove();
+        boolean isWhite = board.isWhiteToMove();
 
         int pawnScore = score.pawnScore();
         int knightScore = score.knightScore();
@@ -69,10 +68,27 @@ public class PiecePlacementEvaluator {
 
         switch (capturedPiece) {
             case PAWN -> pawnScore = scorePawns(board, gamePhase, isWhite);
-            case KNIGHT -> knightScore = scoreKnights(board, isWhite);
-            case BISHOP -> bishopScore = scoreBishops(board, isWhite);
-            case ROOK -> rookScore = scoreRooks(board, isWhite);
-            case QUEEN -> queenScore = scoreQueens(board, isWhite);
+            case KNIGHT -> {
+                knightScore = scoreKnights(board, isWhite);
+                // With every captured piece, we need to re-evaluate the king and pawns score as the tapered evaluation will change
+                pawnScore = scorePawns(board, gamePhase, isWhite);
+                kingScore = scoreKing(board, gamePhase, isWhite);
+            }
+            case BISHOP -> {
+                bishopScore = scoreBishops(board, isWhite);
+                pawnScore = scorePawns(board, gamePhase, isWhite);
+                kingScore = scoreKing(board, gamePhase, isWhite);
+            }
+            case ROOK -> {
+                rookScore = scoreRooks(board, isWhite);
+                pawnScore = scorePawns(board, gamePhase, isWhite);
+                kingScore = scoreKing(board, gamePhase, isWhite);
+            }
+            case QUEEN -> {
+                queenScore = scoreQueens(board, isWhite);
+                pawnScore = scorePawns(board, gamePhase, isWhite);
+                kingScore = scoreKing(board, gamePhase, isWhite);
+            }
             case KING -> kingScore = scoreKing(board, gamePhase, isWhite);
         }
         return new PiecePlacementScore(pawnScore, knightScore, bishopScore, rookScore, queenScore, kingScore);

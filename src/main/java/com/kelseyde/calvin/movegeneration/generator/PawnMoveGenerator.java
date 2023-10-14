@@ -15,7 +15,7 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
     @Getter
     private final PieceType pieceType = PieceType.PAWN;
 
-    public List<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board, boolean capturesOnly) {
 
         boolean isWhite = board.isWhiteToMove();
         List<Move> moves = new ArrayList<>();
@@ -25,26 +25,38 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
         long occupied = board.getOccupied();
         long enPassantFile = BitboardUtils.getFileBitboard(board.getGameState().getEnPassantFile());
 
-        long singleAdvances = isWhite ?
-                BitboardUtils.shiftNorth(pawns) &~ occupied &~ Bits.RANK_8 :
-                BitboardUtils.shiftSouth(pawns) &~ occupied &~ Bits.RANK_1;
+        if (!capturesOnly) {
+            long singleAdvances = isWhite ?
+                    BitboardUtils.shiftNorth(pawns) &~ occupied &~ Bits.RANK_8 :
+                    BitboardUtils.shiftSouth(pawns) &~ occupied &~ Bits.RANK_1;
 
-        long singleAdvancesCopy = singleAdvances;
-        while (singleAdvancesCopy != 0) {
-            int endSquare = BitboardUtils.getLSB(singleAdvancesCopy);
-            int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
-            moves.add(new Move(startSquare, endSquare));
-            singleAdvancesCopy = BitboardUtils.popLSB(singleAdvancesCopy);
-        }
+            long singleAdvancesCopy = singleAdvances;
+            while (singleAdvancesCopy != 0) {
+                int endSquare = BitboardUtils.getLSB(singleAdvancesCopy);
+                int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
+                moves.add(new Move(startSquare, endSquare));
+                singleAdvancesCopy = BitboardUtils.popLSB(singleAdvancesCopy);
+            }
 
-        long doubleAdvances = isWhite ?
-                BitboardUtils.shiftNorth(singleAdvances) &~ occupied & Bits.RANK_4 :
-                BitboardUtils.shiftSouth(singleAdvances) &~ occupied & Bits.RANK_5;
-        while (doubleAdvances != 0) {
-            int endSquare = BitboardUtils.getLSB(doubleAdvances);
-            int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
-            moves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
-            doubleAdvances = BitboardUtils.popLSB(doubleAdvances);
+            long doubleAdvances = isWhite ?
+                    BitboardUtils.shiftNorth(singleAdvances) &~ occupied & Bits.RANK_4 :
+                    BitboardUtils.shiftSouth(singleAdvances) &~ occupied & Bits.RANK_5;
+            while (doubleAdvances != 0) {
+                int endSquare = BitboardUtils.getLSB(doubleAdvances);
+                int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
+                moves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
+                doubleAdvances = BitboardUtils.popLSB(doubleAdvances);
+            }
+
+            long advancePromotions = isWhite ?
+                    BitboardUtils.shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
+                    BitboardUtils.shiftSouth(pawns) &~ occupied & Bits.RANK_1;
+            while (advancePromotions != 0) {
+                int endSquare = BitboardUtils.getLSB(advancePromotions);
+                int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
+                moves.addAll(getPromotionMoves(startSquare, endSquare));
+                advancePromotions = BitboardUtils.popLSB(advancePromotions);
+            }
         }
 
         long leftCaptures = isWhite ?
@@ -87,16 +99,6 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
             enPassantRightCaptures = BitboardUtils.popLSB(enPassantRightCaptures);
         }
 
-        long advancePromotions = isWhite ?
-                BitboardUtils.shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
-                BitboardUtils.shiftSouth(pawns) &~ occupied & Bits.RANK_1;
-        while (advancePromotions != 0) {
-            int endSquare = BitboardUtils.getLSB(advancePromotions);
-            int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
-            moves.addAll(getPromotionMoves(startSquare, endSquare));
-            advancePromotions = BitboardUtils.popLSB(advancePromotions);
-        }
-
         long captureLeftPromotions = isWhite ?
                 BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_8 :
                 BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_1;
@@ -119,14 +121,6 @@ public class PawnMoveGenerator implements PseudoLegalMoveGenerator {
 
         return moves;
 
-    }
-
-    @Override
-    public long generateAttackMask(Board board, boolean isWhite) {
-        long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
-        long rightAttackMask = isWhite ? BitboardUtils.shiftNorthEast(pawns) : BitboardUtils.shiftSouthEast(pawns);
-        long leftAttackMask = isWhite ? BitboardUtils.shiftNorthWest(pawns) : BitboardUtils.shiftSouthWest(pawns) ;
-        return leftAttackMask | rightAttackMask;
     }
 
     @Override

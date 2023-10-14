@@ -35,7 +35,7 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
             0x0044280000000000L, 0x0088500000000000L, 0x0010a00000000000L, 0x0020400000000000L
     };
 
-    public List<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board, boolean capturesOnly) {
 
         List<Move> moves = new ArrayList<>();
 
@@ -43,24 +43,10 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
 
         while (knights != 0) {
             int startSquare = BitboardUtils.getLSB(knights);
-            moves.addAll(generatePseudoLegalMovesFromSquare(board, startSquare));
+            moves.addAll(generatePseudoLegalMovesFromSquare(board, startSquare, capturesOnly));
             knights = BitboardUtils.popLSB(knights);
         }
         return moves;
-
-    }
-
-    public long generateAttackMask(Board board, boolean isWhite) {
-
-        long attackMask = 0L;
-        long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
-        while (knights != 0) {
-            int knight = BitboardUtils.getLSB(knights);
-            long knightAttacks = generateAttackMaskFromSquare(board, knight, isWhite);
-            attackMask |= knightAttacks;
-            knights = BitboardUtils.popLSB(knights);
-        }
-        return attackMask;
 
     }
 
@@ -70,9 +56,13 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
         return KNIGHT_ATTACKS[square] &~ friendlies;
     }
 
-    public Set<Move> generatePseudoLegalMovesFromSquare(Board board, int startSquare) {
+    private Set<Move> generatePseudoLegalMovesFromSquare(Board board, int startSquare, boolean capturesOnly) {
         long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
+        long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
         long possibleMoves = KNIGHT_ATTACKS[startSquare] &~ friendlies;
+        if (capturesOnly) {
+            possibleMoves = possibleMoves & opponents;
+        }
         return new HashSet<>(addKnightMoves(startSquare, possibleMoves));
     }
 

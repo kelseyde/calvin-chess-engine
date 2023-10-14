@@ -32,13 +32,17 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
      * @see <a href="https://www.chessprogramming.org/Hyperbola_Quintessence">Chess Programming Wiki</a>
      */
     @Override
-    public List<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board, boolean capturesOnly) {
         List<Move> moves = new ArrayList<>();
         boolean isWhite = board.isWhiteToMove();
         long pieceBitboard = getSliders(board, isWhite);
         while (pieceBitboard != 0) {
             int startSquare = BitboardUtils.getLSB(pieceBitboard);
             long moveBitboard = generateAttackMaskFromSquare(board, startSquare, isWhite);
+            if (capturesOnly) {
+                long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
+                moveBitboard = moveBitboard & opponents;
+            }
             pieceBitboard = BitboardUtils.popLSB(pieceBitboard);
             while (moveBitboard != 0) {
                 int endSquare = BitboardUtils.getLSB(moveBitboard);
@@ -47,18 +51,6 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
             }
         }
         return moves;
-    }
-
-    @Override
-    public long generateAttackMask(Board board, boolean isWhite) {
-        long sliders = getSliders(board, isWhite);
-        long attackMask = 0L;
-        while (sliders != 0) {
-            int slider = BitboardUtils.getLSB(sliders);
-            attackMask |= generateAttackMaskFromSquare(board, slider, isWhite);
-            sliders = BitboardUtils.popLSB(sliders);
-        }
-        return attackMask;
     }
 
     @Override

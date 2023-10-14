@@ -36,7 +36,7 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
             0x2838000000000000L, 0x5070000000000000L, 0xa0e0000000000000L, 0x40c0000000000000L
     };
 
-    public List<Move> generatePseudoLegalMoves(Board board) {
+    public List<Move> generatePseudoLegalMoves(Board board, boolean capturesOnly) {
 
         List<Move> moves = new ArrayList<>();
 
@@ -50,42 +50,38 @@ public class KingMoveGenerator implements PseudoLegalMoveGenerator {
         int startSquare = BitboardUtils.getLSB(king);
 
         long kingMoves = KING_ATTACKS[startSquare] &~ friendlyPieces;
+        if (capturesOnly) {
+            long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
+            kingMoves = kingMoves & opponents;
+        }
         while (kingMoves != 0) {
             int endSquare = BitboardUtils.getLSB(kingMoves);
             moves.add(new Move(startSquare, endSquare));
             kingMoves = BitboardUtils.popLSB(kingMoves);
         }
-        boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
-        if (isKingsideAllowed) {
-            long travelSquares = board.isWhiteToMove() ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
-            long blockedSquares = travelSquares & occupied;
-            if (blockedSquares == 0) {
-                int endSquare = board.isWhiteToMove() ? 6 : 62;
-                moves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+        if (!capturesOnly) {
+            boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
+            if (isKingsideAllowed) {
+                long travelSquares = board.isWhiteToMove() ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
+                long blockedSquares = travelSquares & occupied;
+                if (blockedSquares == 0) {
+                    int endSquare = board.isWhiteToMove() ? 6 : 62;
+                    moves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+                }
             }
-        }
-        boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
-        if (isQueensideAllowed) {
-            long travelSquares = board.isWhiteToMove() ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
-            long blockedSquares = travelSquares & occupied;
-            if (blockedSquares == 0) {
-                int endSquare = board.isWhiteToMove() ? 2 : 58;
-                moves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+            boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
+            if (isQueensideAllowed) {
+                long travelSquares = board.isWhiteToMove() ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
+                long blockedSquares = travelSquares & occupied;
+                if (blockedSquares == 0) {
+                    int endSquare = board.isWhiteToMove() ? 2 : 58;
+                    moves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+                }
             }
         }
 
         return moves;
 
-    }
-
-    @Override
-    public long generateAttackMask(Board board, boolean isWhite) {
-        long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
-        int startSquare = BitboardUtils.getLSB(king);
-        if (startSquare > 63) {
-            throw new IllegalArgumentException("No king! " + board.getMoveHistory().stream().map(NotationUtils::toNotation).toList());
-        }
-        return KING_ATTACKS[startSquare];
     }
 
     @Override

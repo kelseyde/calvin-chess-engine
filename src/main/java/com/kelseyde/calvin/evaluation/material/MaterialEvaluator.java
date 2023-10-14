@@ -29,40 +29,40 @@ public class MaterialEvaluator {
 
     }
 
-    public Material updateCapture(Material material, PieceType capturedPieceType) {
-        int pawns = material.pawns();
-        int knights = material.knights();
-        int bishops = material.bishops();
-        int rooks = material.rooks();
-        int queens = material.queens();
-        switch (capturedPieceType) {
-            case PAWN -> --pawns;
-            case KNIGHT -> --knights;
-            case BISHOP -> --bishops;
-            case ROOK -> --rooks;
-            case QUEEN -> --queens;
-        }
-        float phase = calculatePhase(knights, bishops, rooks, queens);
-        int eval = calculateEval(pawns, knights, bishops, rooks, queens);
-        return new Material(pawns, knights, bishops, rooks, queens, phase, eval);
-    }
-
-    public Material updatePromotion(Material material, PieceType promotionPieceType) {
-        int pawns = material.pawns() - 1;
-        int knights = material.knights();
-        int bishops = material.bishops();
-        int rooks = material.rooks();
-        int queens = material.queens();
-        switch (promotionPieceType) {
-            case QUEEN -> ++queens;
-            case KNIGHT -> ++knights;
-            case ROOK -> ++rooks;
-            case BISHOP -> ++bishops;
-        }
-        float phase = calculatePhase(knights, bishops, rooks, queens);
-        int eval = calculateEval(pawns, knights, bishops, rooks, queens);
-        return new Material(pawns, knights, bishops, rooks, queens, phase, eval);
-    }
+//    public Material updateCapture(Material material, PieceType capturedPieceType) {
+//        int pawns = material.pawns();
+//        int knights = material.knights();
+//        int bishops = material.bishops();
+//        int rooks = material.rooks();
+//        int queens = material.queens();
+//        switch (capturedPieceType) {
+//            case PAWN -> --pawns;
+//            case KNIGHT -> --knights;
+//            case BISHOP -> --bishops;
+//            case ROOK -> --rooks;
+//            case QUEEN -> --queens;
+//        }
+//        float phase = calculatePhase(knights, bishops, rooks, queens);
+//        int eval = calculateEval(pawns, knights, bishops, rooks, queens);
+//        return new Material(pawns, knights, bishops, rooks, queens, phase, eval);
+//    }
+//
+//    public Material updatePromotion(Material material, PieceType promotionPieceType) {
+//        int pawns = material.pawns() - 1;
+//        int knights = material.knights();
+//        int bishops = material.bishops();
+//        int rooks = material.rooks();
+//        int queens = material.queens();
+//        switch (promotionPieceType) {
+//            case QUEEN -> ++queens;
+//            case KNIGHT -> ++knights;
+//            case ROOK -> ++rooks;
+//            case BISHOP -> ++bishops;
+//        }
+//        float phase = calculatePhase(knights, bishops, rooks, queens);
+//        int eval = calculateEval(pawns, knights, bishops, rooks, queens);
+//        return new Material(pawns, knights, bishops, rooks, queens, phase, eval);
+//    }
 
     private int calculateEval(int pawns, int knights, int bishops, int rooks, int queens) {
         // small bonus for the bishop pair

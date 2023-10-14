@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
-import com.kelseyde.calvin.evaluation.BoardEvaluator;
+import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
@@ -12,13 +12,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
@@ -37,7 +32,7 @@ public class SearchTest {
     MoveOrderer moveOrderer = Mockito.mock(MoveOrderer.class);
 
 //    @Mock
-    BoardEvaluator evaluator = Mockito.mock(BoardEvaluator.class);
+    Evaluator evaluator = Mockito.mock(Evaluator.class);
 
 //    @Mock
     StaticExchangeEvaluator see = Mockito.mock(StaticExchangeEvaluator.class);
@@ -76,7 +71,7 @@ public class SearchTest {
         Mockito.when(repetitionTable.isThreefoldRepetition(Mockito.anyByte()))
                 .thenReturn(true);
 
-        Mockito.when(evaluator.evaluate(Mockito.any()))
+        Mockito.when(evaluator.getScore())
                 .thenReturn(10);
 
         int eval = search.search(3, 0, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);

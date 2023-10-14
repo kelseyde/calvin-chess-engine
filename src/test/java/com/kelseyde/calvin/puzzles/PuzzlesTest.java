@@ -55,7 +55,7 @@ public class PuzzlesTest {
 
         search = new IterativeDeepeningSearch(board);
 
-        SearchResult result = search.search(Duration.ofMillis(500));
+        SearchResult result = search.search(Duration.ofMillis(200));
 
         Move bestMove = NotationUtils.fromNotation("e2", "f3");
         assertMove(bestMove, result.move());
@@ -277,7 +277,7 @@ public class PuzzlesTest {
 
         search = new IterativeDeepeningSearch(board);
 
-        SearchResult result = search.search(Duration.ofMillis(5000));
+        SearchResult result = search.search(Duration.ofMillis(1000));
 
         Move bestMove = NotationUtils.fromNotation("e3", "b3");
         assertMove(bestMove, result.move());

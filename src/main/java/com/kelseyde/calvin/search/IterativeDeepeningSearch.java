@@ -98,6 +98,12 @@ public class IterativeDeepeningSearch implements Search {
             currentDepth++;
         }
 
+        if (result == null) {
+            // If we did not find a single move during search (almost impossible), just return a random
+            // legal move as a last resort.
+            Move move = moveGenerator.generateLegalMoves(board, false)[0];
+            result = new SearchResult(0, move);
+        }
         statistics.setEnd(Instant.now());
 //        System.out.println(statistics.generateReport());
 //        transpositionTable.logTableSize();
@@ -138,7 +144,7 @@ public class IterativeDeepeningSearch implements Search {
                  return alpha;
              }
          }
-         Move previousBestMove = plyFromRoot == 0 ? result.move() : null;
+         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
          // Handle possible transposition
          TranspositionNode transposition = transpositionTable.get();

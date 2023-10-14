@@ -14,8 +14,8 @@ public class MaterialEvaluatorTest {
     public void testStartingPosition() {
 
         Board board = new Board();
-        int whiteScore = evaluator.calculate(board, true).eval();
-        int blackScore = evaluator.calculate(board, false).eval();
+        int whiteScore = evaluator.evaluate(board, true).eval();
+        int blackScore = evaluator.evaluate(board, false).eval();
         Assertions.assertEquals(0, whiteScore - blackScore);
 
     }
@@ -44,8 +44,8 @@ public class MaterialEvaluatorTest {
         // white score: (8 * 100) + 650 + 1000 + 10000 = 12450
         // black score: (8 * 100) + 970 + 1000 + 10000 = 12770
         // score = 12450 - 12770 = -320
-        int whiteScore = evaluator.calculate(board, true).eval();
-        int blackScore = evaluator.calculate(board, false).eval();
+        int whiteScore = evaluator.evaluate(board, true).eval();
+        int blackScore = evaluator.evaluate(board, false).eval();
         Assertions.assertEquals(-320, whiteScore - blackScore);
 
     }

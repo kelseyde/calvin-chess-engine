@@ -216,6 +216,10 @@ public class IterativeDeepeningSearch implements Search {
              boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
              board.makeMove(move);
              evaluator.makeMove(move);
+//             if (evaluator.get() != new Evaluator(board).get()) {
+//                 System.out.println(NotationUtils.toNotation(board.getMoveHistory()));
+//                 System.out.println("oops!");
+//             }
 
              int extensions = 0;
              // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
@@ -237,6 +241,10 @@ public class IterativeDeepeningSearch implements Search {
              }
              board.unmakeMove();
              evaluator.unmakeMove();
+//             if (evaluator.get() != new Evaluator(board).get()) {
+//                 System.out.println(NotationUtils.toNotation(board.getMoveHistory()));
+//                 System.out.println("oops!");
+//             }
 
              if (isTimeoutExceeded()) {
                  return 0;
@@ -324,9 +332,17 @@ public class IterativeDeepeningSearch implements Search {
 
             board.makeMove(move);
             evaluator.makeMove(move);
+//            if (evaluator.get() != new Evaluator(board).get()) {
+//                System.out.println(NotationUtils.toNotation(board.getMoveHistory()));
+//                System.out.println("oops!");
+//            }
             eval = -quiescenceSearch(-beta, -alpha, depth + 1);
             board.unmakeMove();
             evaluator.unmakeMove();
+//            if (evaluator.get() != new Evaluator(board).get()) {
+//                System.out.println(NotationUtils.toNotation(board.getMoveHistory()));
+//                System.out.println("oops!");
+//            }
         }
         if (eval >= beta) {
             statistics.incrementNodes();

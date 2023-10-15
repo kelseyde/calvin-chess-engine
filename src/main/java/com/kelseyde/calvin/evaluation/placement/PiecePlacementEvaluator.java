@@ -20,6 +20,21 @@ public class PiecePlacementEvaluator {
         );
     }
 
+    /**
+     * Update only the pieces whose evaluation changes in relation to the endgame weight: pawns and kings.
+     * Used to efficiently recalculate piece placement scores as captures on the board change the endgame weight.
+     */
+    public PiecePlacementScore updateWeightedPieces(Board board, float gamePhase, PiecePlacementScore score, boolean isWhite) {
+        return new PiecePlacementScore(
+                scorePawns(board, gamePhase, isWhite),
+                score.knightScore(),
+                score.bishopScore(),
+                score.rookScore(),
+                score.queenScore(),
+                scoreKing(board, gamePhase, isWhite)
+        );
+    }
+
     public PiecePlacementScore handleMove(Board board, float gamePhase, PiecePlacementScore score, Move move) {
 
         // Assuming the move is already made on the board, so side to score != side to move

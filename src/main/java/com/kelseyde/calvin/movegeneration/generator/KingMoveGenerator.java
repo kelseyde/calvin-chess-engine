@@ -5,7 +5,6 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 
 import java.util.ArrayList;

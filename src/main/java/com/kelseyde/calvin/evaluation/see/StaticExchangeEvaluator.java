@@ -6,7 +6,6 @@ import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.movegeneration.generator.*;
-import com.kelseyde.calvin.utils.NotationUtils;
 
 import java.util.NoSuchElementException;
 

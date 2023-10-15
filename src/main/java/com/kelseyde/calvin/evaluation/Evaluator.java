@@ -64,15 +64,19 @@ public class Evaluator {
         boolean updatePawnStructure = false;
         boolean updateWhiteMaterial = false;
         boolean updateBlackMaterial = false;
-        boolean updateWhitePiecePlacement = false;
-        boolean updateBlackPiecePlacement = false;
+        boolean updateWhiteCapture = false;
+        boolean updateBlackCapture = false;
+        boolean updateWhiteWeightedPieces = false;
+        boolean updateBlackWeightedPieces = false;
 
         if (move.isPromotion()) {
             updatePawnStructure = true;
             if (board.isWhiteToMove()) {
                 updateBlackMaterial = true;
+                updateBlackWeightedPieces = true;
             } else {
                 updateWhiteMaterial = true;
+                updateWhiteWeightedPieces = true;
             }
         }
 
@@ -80,23 +84,19 @@ public class Evaluator {
         if (capturedPiece != null) {
             if (board.isWhiteToMove()) {
                 updateWhiteMaterial = true;
-                updateWhitePiecePlacement = true;
+                updateWhiteCapture = true;
+                updateWhiteWeightedPieces = true;
                 if (capturedPiece == PieceType.PAWN) {
                     updatePawnStructure = true;
                 }
             } else {
                 updateBlackMaterial = true;
-                updateBlackPiecePlacement = true;
+                updateBlackCapture = true;
+                updateBlackWeightedPieces = true;
                 if (capturedPiece == PieceType.PAWN) {
                     updatePawnStructure = true;
                 }
             }
-        }
-
-        if (board.isWhiteToMove()) {
-            updateBlackPiecePlacement = true;
-        } else {
-            updateWhitePiecePlacement = true;
         }
 
         if (pieceType == PieceType.PAWN) {
@@ -122,12 +122,24 @@ public class Evaluator {
         if (updateBlackMaterial) {
             blackMaterial = materialEvaluator.evaluate(board, false);
         }
-
-        if (updateWhitePiecePlacement) {
-            whitePieceScore = piecePlacementEvaluator.evaluate(board, whiteMaterial.phase(), true);
+        if (updateWhiteWeightedPieces) {
+            whitePieceScore = piecePlacementEvaluator.updateWeightedPieces(board, whiteMaterial.phase(), whitePieceScore, true);
         }
-        if (updateBlackPiecePlacement) {
-            blackPieceScore = piecePlacementEvaluator.evaluate(board, blackMaterial.phase(), false);
+        if (updateBlackWeightedPieces) {
+            blackPieceScore = piecePlacementEvaluator.updateWeightedPieces(board, blackMaterial.phase(), blackPieceScore, false);
+        }
+
+        if (board.isWhiteToMove()) {
+            blackPieceScore = piecePlacementEvaluator.handleMove(board, blackMaterial.phase(), blackPieceScore, move);
+        } else {
+            whitePieceScore = piecePlacementEvaluator.handleMove(board, whiteMaterial.phase(), whitePieceScore, move);
+        }
+
+        if (updateWhiteCapture) {
+            whitePieceScore = piecePlacementEvaluator.handleCapture(board, whiteMaterial.phase(), whitePieceScore, capturedPiece);
+        }
+        if (updateBlackCapture) {
+            blackPieceScore = piecePlacementEvaluator.handleCapture(board, blackMaterial.phase(), blackPieceScore, capturedPiece);
         }
 
         int whiteMopUpScore = mopUpEvaluator.evaluate(board, whiteMaterial, blackMaterial, true);

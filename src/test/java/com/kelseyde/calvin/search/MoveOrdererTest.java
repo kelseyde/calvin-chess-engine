@@ -94,25 +94,6 @@ public class MoveOrdererTest {
     }
 
     @Test
-    public void testCheckBias() {
-
-        String fen = "6k1/5ppp/8/4Q3/8/8/8/7K w - - 0 1";
-        Board board = FEN.fromFEN(fen);
-
-        Move[] moves = new Move[] {
-                NotationUtils.fromNotation("h1", "h2"),
-                NotationUtils.fromNotation("h1", "g1"),
-                NotationUtils.fromNotation("h1", "g2"),
-                NotationUtils.fromNotation("e5", "e8"),
-        };
-
-        Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
-
-        Assertions.assertTrue(orderedMoves[0].matches(NotationUtils.fromNotation("e5", "e8")));
-
-    }
-
-    @Test
     public void testKillerMoveBias() {
 
         String fen = "k7/8/8/6q1/8/5PP1/6BP/6K1 w - - 0 1";

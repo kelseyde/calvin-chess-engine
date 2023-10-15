@@ -6,6 +6,11 @@ import com.kelseyde.calvin.evaluation.material.Material;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.utils.Distance;
 
+/**
+ * When one side has a material advantage, they start to receive a bonus for pushing the enemy king to the edge of the board.
+ * This is useful for endgame checkmates, where the checkmating line is beyond the horizon of the search algorithm.
+ * The mop up bonus will direct the engine to corner the enemy king, up to the point that the checkmate is found during search.
+ */
 public class MopUpEvaluator {
 
     private static final int KING_MANHATTAN_DISTANCE_MULTIPLIER = 4;

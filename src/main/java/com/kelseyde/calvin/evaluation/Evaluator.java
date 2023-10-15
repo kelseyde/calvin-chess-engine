@@ -14,6 +14,14 @@ import lombok.Getter;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/**
+ * Calculates a numeric score evaluating the board. The evaluation is relative to the side to move, meaning a positive
+ * score indicates the side to move has an advantage, and vice versa, regardless of the colour of the pieces.
+ *
+ * The score consists of the material score + the piece placement score + pawn structure bonuses/penalties + mop up eval.
+ *
+ * The evaluation is incrementally updated as moves are made on the board, rather than re-calculated every time.
+ */
 public class Evaluator {
 
     private final MaterialEvaluator materialEvaluator = new MaterialEvaluator();

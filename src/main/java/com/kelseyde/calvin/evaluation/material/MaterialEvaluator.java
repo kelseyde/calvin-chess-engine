@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.evaluation.material;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.PieceType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +8,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class MaterialEvaluator {
 
-    private static final int OPENING_MATERIAL = (PieceValues.KNIGHT * 2) + (PieceValues.BISHOP * 2) + (PieceValues.ROOK * 2) + PieceValues.QUEEN;
+    // Endgame tapering starts after the piece value equivalent of a queen is removed from the board
+    private static final float ENDGAME_MATERIAL_START = (PieceValues.KNIGHT * 2) + (PieceValues.BISHOP * 2) + (PieceValues.ROOK * 2);
 
     public Material evaluate(Board board, boolean isWhite) {
 
@@ -28,6 +28,10 @@ public class MaterialEvaluator {
         return new Material(pawns, knights, bishops, rooks, queens, phase, eval);
 
     }
+
+//    public Material update(Board board, Material material, boolean isWhite) {
+//
+//    }
 
 //    public Material updateCapture(Material material, PieceType capturedPieceType) {
 //        int pawns = material.pawns();
@@ -76,10 +80,12 @@ public class MaterialEvaluator {
     }
 
     private float calculatePhase(int knights, int bishops, int rooks, int queens) {
-        return (float) ((knights * PieceValues.KNIGHT) +
+        int pieceScore = (knights * PieceValues.KNIGHT) +
                 (bishops * PieceValues.BISHOP) +
                 (rooks * PieceValues.ROOK) +
-                (queens * PieceValues.QUEEN)) / OPENING_MATERIAL;
+                (queens * PieceValues.QUEEN);
+        float multiplier = 1 / ENDGAME_MATERIAL_START;
+        return Math.min(1, pieceScore * multiplier);
     }
 
 }

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled
-public class StartingPositionEvalTest extends EPerftTest {
+public class StartingPositionEPerftTest extends EPerftTest {
 
     @Getter
     private final String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

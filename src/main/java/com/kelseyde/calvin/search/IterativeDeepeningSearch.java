@@ -134,7 +134,7 @@ public class IterativeDeepeningSearch implements Search {
              // In case of draws, get the static evaluation of the position.
              // Avoid draws when evaluation is above the contempt threshold (we are winning).
              // Favour draws when evaluation is below the contempt threshold (we are losing).
-             int eval = evaluator.getScore();
+             int eval = evaluator.get();
              return (eval > CONTEMPT_FACTOR || eval < -CONTEMPT_FACTOR) ? -eval : 0;
          }
          if (plyFromRoot > 0) {
@@ -197,7 +197,7 @@ public class IterativeDeepeningSearch implements Search {
                 // In case of draws, get the static evaluation of the position.
                 // Avoid draws when evaluation is above the contempt threshold.
                 // Favour draws when evaluation is below the contempt threshold.
-                int eval = evaluator.getScore();
+                int eval = evaluator.get();
                 return (eval > CONTEMPT_FACTOR || eval < CONTEMPT_FACTOR) ? -eval : 0;
             }
          }
@@ -299,7 +299,7 @@ public class IterativeDeepeningSearch implements Search {
         }
         // In the case where there are only 'bad' captures available, just return the static evaluation of the board,
         // since the player is not forced to capture and may have good non-capture moves available.
-        int eval = evaluator.getScore();
+        int eval = evaluator.get();
         alpha = Math.max(alpha, eval);
         if (eval >= beta) {
             statistics.incrementNodes();

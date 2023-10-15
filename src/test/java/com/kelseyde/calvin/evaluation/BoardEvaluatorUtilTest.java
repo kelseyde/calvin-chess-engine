@@ -15,7 +15,7 @@ public class BoardEvaluatorUtilTest {
         Board board = FEN.fromFEN(fen);
 
         Evaluator boardEvaluator = new Evaluator(board);
-        System.out.println(boardEvaluator.getScore());
+        System.out.println(boardEvaluator.get());
     }
 
     @Test
@@ -25,12 +25,12 @@ public class BoardEvaluatorUtilTest {
         Board board = FEN.fromFEN(fen);
 
         Evaluator boardEvaluator = new Evaluator(board);
-        System.out.println(boardEvaluator.getScore());
+        System.out.println(boardEvaluator.get());
 
         fen = "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b KQkq - 1 1";
         board = FEN.fromFEN(fen);
 
-        System.out.println(boardEvaluator.getScore());
+        System.out.println(boardEvaluator.get());
 
     }
 

@@ -35,11 +35,11 @@ public class PawnStructureEvaluator {
         long friendlyPawnsIterator = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         while (friendlyPawnsIterator > 0) {
             int pawn = BitboardUtils.getLSB(friendlyPawnsIterator);
-            int rank = BoardUtils.getRank(pawn);
             int file = BoardUtils.getFile(pawn);
 
             long passedPawnMask = isWhite ? PawnBits.WHITE_PASSED_PAWN_MASK[pawn] : PawnBits.BLACK_PASSED_PAWN_MASK[pawn];
             if ((passedPawnMask & opponentPawns) == 0) {
+                int rank = BoardUtils.getRank(pawn);
                 int squaresFromPromotion = isWhite ? 7 - rank : rank;
                 int passedPawnBonus = PASSED_PAWN_BONUS[squaresFromPromotion];
                 passedPawnsBonus += passedPawnBonus;

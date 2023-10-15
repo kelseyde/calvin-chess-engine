@@ -40,10 +40,20 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
         List<Move> moves = new ArrayList<>();
 
         long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
+        long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
+        long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
 
         while (knights != 0) {
             int startSquare = BitboardUtils.getLSB(knights);
-            moves.addAll(generatePseudoLegalMovesFromSquare(board, startSquare, capturesOnly));
+            long possibleMoves = KNIGHT_ATTACKS[startSquare] &~ friendlies;
+            if (capturesOnly) {
+                possibleMoves = possibleMoves & opponents;
+            }
+            while (possibleMoves != 0) {
+                int endSquare = BitboardUtils.getLSB(possibleMoves);
+                moves.add(new Move(startSquare, endSquare));
+                possibleMoves = BitboardUtils.popLSB(possibleMoves);
+            }
             knights = BitboardUtils.popLSB(knights);
         }
         return moves;
@@ -54,26 +64,6 @@ public class KnightMoveGenerator implements PseudoLegalMoveGenerator {
     public long generateAttackMaskFromSquare(Board board, int square, boolean isWhite) {
         long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
         return KNIGHT_ATTACKS[square] &~ friendlies;
-    }
-
-    private Set<Move> generatePseudoLegalMovesFromSquare(Board board, int startSquare, boolean capturesOnly) {
-        long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
-        long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
-        long possibleMoves = KNIGHT_ATTACKS[startSquare] &~ friendlies;
-        if (capturesOnly) {
-            possibleMoves = possibleMoves & opponents;
-        }
-        return new HashSet<>(addKnightMoves(startSquare, possibleMoves));
-    }
-
-    private Set<Move> addKnightMoves(int startSquare, long possibleMoves) {
-        Set<Move> moves = new HashSet<>();
-        while (possibleMoves != 0) {
-            int endSquare = BitboardUtils.getLSB(possibleMoves);
-            moves.add(new Move(startSquare, endSquare));
-            possibleMoves = BitboardUtils.popLSB(possibleMoves);
-        }
-        return moves;
     }
 
 }

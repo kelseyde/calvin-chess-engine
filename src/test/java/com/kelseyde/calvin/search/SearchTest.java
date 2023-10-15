@@ -71,7 +71,7 @@ public class SearchTest {
         Mockito.when(repetitionTable.isThreefoldRepetition(Mockito.anyByte()))
                 .thenReturn(true);
 
-        Mockito.when(evaluator.getScore())
+        Mockito.when(evaluator.get())
                 .thenReturn(10);
 
         int eval = search.search(3, 0, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);

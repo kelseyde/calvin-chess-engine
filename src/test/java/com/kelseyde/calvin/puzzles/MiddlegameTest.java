@@ -120,7 +120,7 @@ public class MiddlegameTest {
         Board board = FEN.fromFEN(fen);
 
         Evaluator evaluator = new Evaluator(board);
-        System.out.println(evaluator.getScore());
+        System.out.println(evaluator.get());
 
     }
 

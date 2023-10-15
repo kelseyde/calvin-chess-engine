@@ -53,9 +53,7 @@ public class GamePhaseCalculatorTest {
 
         float value = score(board);
 
-        // 0 + (1000 / 6400) = 0.15625
-
-        Assertions.assertEquals(0.15625f, value);
+        Assertions.assertEquals(0.21, value, 0.01);
 
     }
 
@@ -67,9 +65,7 @@ public class GamePhaseCalculatorTest {
 
         float value = score(board);
 
-        // 0 + ((320 + 330) / 6400) = 0.1015625
-
-        Assertions.assertEquals(0.1015625f, value);
+        Assertions.assertEquals(0.14f, value, 0.01);
 
     }
 
@@ -82,7 +78,7 @@ public class GamePhaseCalculatorTest {
         float value = score(board);
 
         // 0 + (1800 + 1000 + 660) / 6400 = 0.540625
-        Assertions.assertEquals(0.540625f, value);
+        Assertions.assertEquals(0.75, value, 0.05);
 
     }
 

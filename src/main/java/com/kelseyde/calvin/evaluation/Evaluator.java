@@ -3,10 +3,12 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.evaluation.material.Material;
 import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
 import com.kelseyde.calvin.evaluation.mopup.MopUpEvaluator;
 import com.kelseyde.calvin.evaluation.pawnstructure.PawnStructureEvaluator;
 import com.kelseyde.calvin.evaluation.placement.PiecePlacementEvaluator;
+import com.kelseyde.calvin.evaluation.placement.PiecePlacementScore;
 import lombok.Getter;
 
 import java.util.ArrayDeque;
@@ -28,8 +30,6 @@ public class Evaluator {
     private @Getter Evaluation whiteEval;
     private @Getter Evaluation blackEval;
 
-    private @Getter int score;
-
     private final Board board;
 
     public Evaluator(Board board) {
@@ -49,19 +49,12 @@ public class Evaluator {
         whiteEval.setMopUpEval(mopUpEvaluator.evaluate(board, whiteEval.getMaterial(), blackEval.getMaterial(), true));
         blackEval.setMopUpEval(mopUpEvaluator.evaluate(board, blackEval.getMaterial(), whiteEval.getMaterial(), false));
 
-        int whiteScore = whiteEval.sum();
-        int blackScore = blackEval.sum();
-        int modifier = board.isWhiteToMove() ? 1 : -1;
-        score = modifier * (whiteScore - blackScore);
     }
 
     /**
      * Updates the evaluation based on the last move. Assumes that the move has already been 'made' on the board.
      */
     public void makeMove(Move move) {
-
-        Evaluation newWhiteEval = whiteEval.copy();
-        Evaluation newBlackEval = blackEval.copy();
 
         whiteEvalHistory.push(whiteEval);
         blackEvalHistory.push(blackEval);
@@ -111,45 +104,50 @@ public class Evaluator {
             updatePawnStructure = true;
         }
 
+        Material whiteMaterial = whiteEval.getMaterial();
+        Material blackMaterial = blackEval.getMaterial();
+        PiecePlacementScore whitePieceScore = whiteEval.getPiecePlacementScore();
+        PiecePlacementScore blackPieceScore = blackEval.getPiecePlacementScore();
+        int whitePawnStructureScore = whiteEval.getPawnStructureScore();
+        int blackPawnStructureScore = blackEval.getPawnStructureScore();
+
         if (updatePawnStructure) {
-            newBlackEval.setPawnStructureScore(pawnStructureEvaluator.evaluate(board, false));
-            newWhiteEval.setPawnStructureScore(pawnStructureEvaluator.evaluate(board, true));
+            whitePawnStructureScore = pawnStructureEvaluator.evaluate(board, true);
+            blackPawnStructureScore = pawnStructureEvaluator.evaluate(board, false);
         }
 
         if (updateWhiteMaterial) {
-            newWhiteEval.setMaterial(materialEvaluator.evaluate(board, true));
+            whiteMaterial = materialEvaluator.evaluate(board, true);
         }
         if (updateBlackMaterial) {
-            newBlackEval.setMaterial(materialEvaluator.evaluate(board, false));
+            blackMaterial = materialEvaluator.evaluate(board, false);
         }
 
         if (updateWhitePiecePlacement) {
-            newWhiteEval.setPiecePlacementScore(piecePlacementEvaluator.evaluate(board, newWhiteEval.getMaterial().phase(), true));
+            whitePieceScore = piecePlacementEvaluator.evaluate(board, whiteMaterial.phase(), true);
         }
         if (updateBlackPiecePlacement) {
-            newBlackEval.setPiecePlacementScore(piecePlacementEvaluator.evaluate(board, newBlackEval.getMaterial().phase(), false));
+            blackPieceScore = piecePlacementEvaluator.evaluate(board, blackMaterial.phase(), false);
         }
 
-        newWhiteEval.setMopUpEval(mopUpEvaluator.evaluate(board, newWhiteEval.getMaterial(), newBlackEval.getMaterial(), true));
-        newBlackEval.setMopUpEval(mopUpEvaluator.evaluate(board, newBlackEval.getMaterial(), newWhiteEval.getMaterial(), false));
+        int whiteMopUpScore = mopUpEvaluator.evaluate(board, whiteMaterial, blackMaterial, true);
+        int blackMopUpScore = mopUpEvaluator.evaluate(board, blackMaterial, whiteMaterial, false);
 
-        this.whiteEval = newWhiteEval;
-        this.blackEval = newBlackEval;
-
-        int whiteScore = newWhiteEval.sum();
-        int blackScore = newBlackEval.sum();
-        int modifier = board.isWhiteToMove() ? 1 : -1;
-        this.score = modifier * (whiteScore - blackScore);
+        this.whiteEval = new Evaluation(whiteMaterial, whitePieceScore, whitePawnStructureScore, whiteMopUpScore);
+        this.blackEval = new Evaluation(blackMaterial, blackPieceScore, blackPawnStructureScore, blackMopUpScore);
 
     }
 
     public void unmakeMove() {
         whiteEval = whiteEvalHistory.pop();
         blackEval = blackEvalHistory.pop();
+    }
+
+    public int get() {
         int whiteScore = whiteEval.sum();
         int blackScore = blackEval.sum();
         int modifier = board.isWhiteToMove() ? 1 : -1;
-        score = modifier * (whiteScore - blackScore);
+        return modifier * (whiteScore - blackScore);
     }
 
 }

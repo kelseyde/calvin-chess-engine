@@ -6,6 +6,11 @@ import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import org.springframework.stereotype.Service;
 
+/**
+ * Calculates the score each piece gets for the square it is currently on based on that piece type's {@link PieceSquareTable}.
+ * Pawns and kings have two tables, for the opening and the endgame, and the score they get is weighted between the two tables
+ * as the game progresses.
+ */
 @Service
 public class PiecePlacementEvaluator {
 

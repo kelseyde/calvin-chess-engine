@@ -20,7 +20,6 @@ public class MoveOrderer {
     private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int CHECK_BIAS = 5 * MILLION;
     private static final int CASTLE_BIAS = 4 * MILLION;
     private static final int LOSING_CAPTURE_BIAS = 3 * MILLION;
     private static final int UNDER_PROMOTION_BIAS = 2 * MILLION;
@@ -44,7 +43,7 @@ public class MoveOrderer {
         int moveScore = 0;
 
         // Always search the best move from the previous iteration first.
-        if (previousBestMove != null && move.matches(previousBestMove)) {
+        if (move.equals(previousBestMove)) {
             moveScore += PREVIOUS_BEST_MOVE_BIAS;
         }
 
@@ -89,11 +88,6 @@ public class MoveOrderer {
             moveScore += historyMoves[colourIndex(board.isWhiteToMove())][move.getStartSquare()][move.getEndSquare()];
         }
 
-        // Prioritise evaluating checks
-        if (moveGenerator.isCheck(board, move)) {
-            moveScore += CHECK_BIAS;
-        }
-
         // Castling likely to be good (king safety)
         if (move.isCastling()) {
             moveScore += CASTLE_BIAS;
@@ -107,7 +101,7 @@ public class MoveOrderer {
         Move firstKiller = killerMoves[ply][0];
         // By ensuring that the new killer is not the same as the first existing killer, we guarantee
         // that both killers at this ply are unique.
-        if (firstKiller == null || !newKiller.matches(firstKiller)) {
+        if (!newKiller.equals(firstKiller)) {
             // Add the new killer at the start of the killer list for this ply.
             killerMoves[ply][1] = firstKiller;
             killerMoves[ply][0] = newKiller;
@@ -115,12 +109,13 @@ public class MoveOrderer {
     }
 
     private boolean isKillerMove(int ply, Move move) {
-        for (Move killerMove : killerMoves[ply]) {
-            if (killerMove != null && killerMove.matches(move)) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.asList(killerMoves[ply]).contains(move);
+//        for (Move killerMove : killerMoves[ply]) {
+//            if (move.equals(killerMove)) {
+//                return true;
+//            }
+//        }
+//        return false;
     }
 
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {

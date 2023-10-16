@@ -16,7 +16,7 @@ public class ResultCalculator {
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
     public GameResult calculateResult(Board board) {
-        List<Move> legalMoves = moveGenerator.generateLegalMoves(board, false);
+        List<Move> legalMoves = moveGenerator.generateMoves(board, false);
         return calculateResult(board, legalMoves);
     }
 

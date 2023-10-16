@@ -5,6 +5,8 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
+import com.kelseyde.calvin.movegeneration.check.PinCalculator;
+import com.kelseyde.calvin.movegeneration.check.RayCalculator;
 import com.kelseyde.calvin.movegeneration.generator.*;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +20,7 @@ import java.util.List;
  * do not resolve the check. Finally we filter out all moves that leave the king in (a new) check.
  */
 @Slf4j
-public class MoveGenerator {
+public class MoveGenerator implements MoveGeneration {
 
     private final PawnMoveGenerator pawnMoveGenerator = new PawnMoveGenerator();
     private final KnightMoveGenerator knightMoveGenerator = new KnightMoveGenerator();
@@ -40,7 +42,8 @@ public class MoveGenerator {
      */
     private long checkersMask;
 
-    public List<Move> generateLegalMoves(Board board, boolean capturesOnly) {
+    @Override
+    public List<Move> generateMoves(Board board, boolean capturesOnly) {
 
         boolean isWhite = board.isWhiteToMove();
         int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
@@ -85,6 +88,12 @@ public class MoveGenerator {
 
     }
 
+    @Override
+    public boolean isCheck(Board board, boolean isWhite) {
+        long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
+        return isAttacked(board, isWhite, kingMask);
+    }
+
     private boolean resolvesCheck(Board board, Move move, int kingSquare, boolean isWhite) {
         int checkerSquare = BitboardUtils.getLSB(checkersMask);
         int endSquare = move.getEndSquare();
@@ -109,7 +118,7 @@ public class MoveGenerator {
         return board.pieceAt(move.getStartSquare()).equals(PieceType.KING);
     }
 
-    public boolean doesNotLeaveKingInCheck(Board board, Move move, int kingSquare, boolean isWhite) {
+    private boolean doesNotLeaveKingInCheck(Board board, Move move, int kingSquare, boolean isWhite) {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
 
@@ -132,21 +141,6 @@ public class MoveGenerator {
             return !isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare);
         }
 
-    }
-
-    /**
-     * Makes a move, and then calculates whether that moves results in a check for the side making the move
-     */
-    public boolean isCheck(Board board, Move move) {
-        board.makeMove(move);
-        boolean isCheck = isCheck(board, board.isWhiteToMove());
-        board.unmakeMove();
-        return isCheck;
-    }
-
-    public boolean isCheck(Board board, boolean isWhite) {
-        long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
-        return isAttacked(board, isWhite, kingMask);
     }
 
     private long calculateAttackerMask(Board board, boolean isWhite, long squareMask) {

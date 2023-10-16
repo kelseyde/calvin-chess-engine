@@ -68,7 +68,6 @@ public class ResultCalculator {
 
     private boolean isDoubleRepetition(Board board) {
 
-        int repetitionCount = 0;
         long zobrist = board.getGameState().getZobristKey();
         Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
         while (iterator.hasNext()) {

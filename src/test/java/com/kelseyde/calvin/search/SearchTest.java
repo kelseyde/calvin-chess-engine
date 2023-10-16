@@ -6,7 +6,6 @@ import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,9 +39,6 @@ public class SearchTest {
 //    @Mock
     TranspositionTable transpositionTable = Mockito.mock(TranspositionTable.class);
 
-//    @Mock
-    RepetitionTable repetitionTable = Mockito.mock(RepetitionTable.class);
-
     Board board;
 
 //    @InjectMocks
@@ -61,15 +57,12 @@ public class SearchTest {
         ReflectionTestUtils.setField(search, "evaluator", evaluator);
         ReflectionTestUtils.setField(search, "see", see);
         ReflectionTestUtils.setField(search, "transpositionTable", transpositionTable);
-        ReflectionTestUtils.setField(search, "repetitionTable", repetitionTable);
         ReflectionTestUtils.setField(search, "timeout", Instant.now().plus(Duration.ofHours(1)));
     }
 
     @Test
     public void threefoldRepetitionWithEvalInsideContemptWindow() {
 
-        Mockito.when(repetitionTable.isThreefoldRepetition(Mockito.anyByte()))
-                .thenReturn(true);
 
         Mockito.when(evaluator.get())
                 .thenReturn(10);

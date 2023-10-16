@@ -15,7 +15,7 @@ Calvin is rated about 1700 on Lichess as of October 2023.
 ### Move Generation
 
 - [Hybrid legal/pseudo-legal move generation](https://www.chessprogramming.org/Move_Generation): check, pin and attack masks are generated first. Single and double-check are resolved, and then a final filter for moves that do not put the king in a 'new' check.
-- Magic bitboards are used for sliding piece move generatiton.
+- [Magic bitboards](https://www.chessprogramming.org/Magic_Bitboards) are used for sliding piece move generatiton.
 
 ### Search
 - [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) within a [negamax](https://www.chessprogramming.org/Negamax) framework.

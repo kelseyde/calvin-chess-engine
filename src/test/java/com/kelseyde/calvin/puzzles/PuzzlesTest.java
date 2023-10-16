@@ -2,8 +2,8 @@ package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;

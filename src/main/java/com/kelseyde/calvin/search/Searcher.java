@@ -10,7 +10,6 @@ import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ import java.util.List;
  */
 @Slf4j
 @NoArgsConstructor
-public class IterativeDeepeningSearch implements Search {
+public class Searcher implements Search {
 
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
@@ -54,7 +53,7 @@ public class IterativeDeepeningSearch implements Search {
     private boolean hasResultAtCurrentDepth;
     private SearchStatistics statistics;
 
-    public IterativeDeepeningSearch(Board board) {
+    public Searcher(Board board) {
         this.board = board;
         this.moveGenerator = new MoveGenerator();
         this.moveOrderer = new MoveOrderer();
@@ -104,7 +103,7 @@ public class IterativeDeepeningSearch implements Search {
         if (result == null) {
             // If we did not find a single move during search (almost impossible), just return a random
             // legal move as a last resort.
-            Move move = moveGenerator.generateLegalMoves(board, false).get(0);
+            Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
         statistics.setEnd(Instant.now());
@@ -176,7 +175,7 @@ public class IterativeDeepeningSearch implements Search {
              }
          }
 
-         List<Move> legalMoves = moveGenerator.generateLegalMoves(board, false);
+         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
          if (plyRemaining == 0) {
              // In the case that max depth is reached, begin the quiescence search
@@ -318,7 +317,7 @@ public class IterativeDeepeningSearch implements Search {
         }
 
         // Generate only legal captures
-        List<Move> moves = moveGenerator.generateLegalMoves(board, true);
+        List<Move> moves = moveGenerator.generateMoves(board, true);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
 

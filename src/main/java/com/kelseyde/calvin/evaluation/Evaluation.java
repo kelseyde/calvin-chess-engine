@@ -1,26 +1,16 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.evaluation.material.Material;
-import com.kelseyde.calvin.evaluation.placement.PiecePlacementScore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Evaluation {
+public interface Evaluation {
 
-    Material material;
+    void init(Board board);
 
-    PiecePlacementScore piecePlacementScore;
+    void makeMove(Move move);
 
-    int pawnStructureScore;
+    void unmakeMove();
 
-    int mopUpEval;
-
-    public int sum() {
-        return material.eval() + piecePlacementScore.sum() + pawnStructureScore + mopUpEval;
-    }
+    int get();
 
 }

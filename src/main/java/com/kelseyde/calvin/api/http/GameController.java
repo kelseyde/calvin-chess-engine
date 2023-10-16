@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -72,7 +71,7 @@ public class GameController {
         Move playerMove = new Move(startSquare, endSquare, Move.getPromotionFlag(moveRequest.getPromotionPieceType()));
 
         log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
-        Optional<Move> legalMove = moveGenerator.generateLegalMoves(bot.getBoard(), false).stream()
+        Optional<Move> legalMove = moveGenerator.generateMoves(bot.getBoard(), false).stream()
                 .filter(m -> m.matches(playerMove))
                 .findAny();
         if (legalMove.isEmpty()) {

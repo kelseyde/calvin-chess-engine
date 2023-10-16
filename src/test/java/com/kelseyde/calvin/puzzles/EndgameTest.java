@@ -5,7 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.search.IterativeDeepeningSearch;
+import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
@@ -29,7 +29,7 @@ public class EndgameTest {
         String fen = "k7/8/2K5/8/8/8/1Q6/8 w - - 1 1";
         Board board = FEN.fromFEN(fen);
 
-        IterativeDeepeningSearch search = new IterativeDeepeningSearch(board);
+        Searcher search = new Searcher(board);
 
         SearchResult result = search.search(Duration.ofMillis(300));
 

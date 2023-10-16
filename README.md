@@ -6,19 +6,35 @@ This is a personal project. I am a Java developer and amateur chess player, and 
 
 Calvin is rated about 1700 on Lichess as of October 2023.
 
-Current feautures include:
+Current features:
 
-- Bitboard board representation
-- Pseudo-legal move generation
-- Magic bitboards for sliding piece move generation
-- Iterative deepening search within a negamax framework, with an added quiescence search at the end to handle 'noisy' positions
-- Contempt factor of 200 centipawns to evaluate draws during search
-- Move ordering: previous best move, MVV-LVA, killer heuristic, history heuristic
-- Transposition tables
-- Zobrist hashing
-- Evaluation: basic material count and piece square tables, pawn structure, passed pawn bonuses, isolated/doubled pawn penalties
+#Board representation
+
+- Bitboards of each piece type/colour are used for internal board representation.
+
+#Move Generation
+
+- Hybrid legal/pseudo-legal move generation: check, pin and attack masks are generated first. Single and double-check are resolved, and then a final filter for moves that do not put the king in a 'new' check.
+- Magic bitboards are used for sliding piece move generatiton.
+
+#Search
+- Iterative deepening search within a negamax framework.
+- Quiescence search to filter out 'noisy' positions.
+- Transposition table with Zobrist hashing.
+
+#Move Ordering
+- Previous best move, MVV-LVA, killer move heuristic, history heuristic.
+
+#Evaluation
+- Basic material count
+- Piece square tables: start- and end- tables for king and pawns, with tapered eval based on the 'endgame weight'.
+- Pawn structure: passed pawn bonuses, isolated/doubled pawn penalties.
+
+#Opening Book / Endgame Tablebase
+- Not yet! I would like to implement these soon.
+
+#Communication
 - UCI protocol implemented with time management support.
-- No opening book or endgame tablebase. Maybe soon!
 - Calvin is connected to Lichess where he plays regularly in the bot pool: https://lichess.org/@/Calvin_Bot
 
 Perft results (starting position):

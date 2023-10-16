@@ -4,8 +4,10 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.search.Search;
 import org.springframework.stereotype.Service;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,7 +30,7 @@ public class ResultCalculator {
                 return GameResult.DRAW_BY_STALEMATE;
             }
         }
-        if (isRepetition(board)) {
+        if (isThreefoldRepetition(board)) {
             return GameResult.DRAW_BY_REPETITION;
         }
         if (isInsufficientMaterial(board)) {
@@ -40,12 +42,43 @@ public class ResultCalculator {
         return GameResult.IN_PROGRESS;
     }
 
-    private boolean isRepetition(Board board) {
-        return Stream.concat(board.getGameStateHistory().stream(), Stream.of(board.getGameState()))
-                .collect(Collectors.groupingBy(GameState::getZobristKey))
-                .values()
-                .stream()
-                .anyMatch(repetitions -> repetitions.size() == 3);
+    /**
+     * Check for an 'effective' draw, which treats a single repetition of the position as a draw.
+     * This is used during {@link Search} to quickly check for a draw; it will lead to some errors in edge cases, but the
+     * gamble is that the boost in search speed is worth the potential cost.
+     */
+    public boolean isEffectiveDraw(Board board) {
+        return isDoubleRepetition(board) || isFiftyMoveRule(board) || isInsufficientMaterial(board);
+    }
+
+    private boolean isThreefoldRepetition(Board board) {
+
+        int repetitionCount = 0;
+        long zobrist = board.getGameState().getZobristKey();
+        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
+        while (iterator.hasNext()) {
+            GameState gameState = iterator.next();
+            if (gameState.getZobristKey() == zobrist) {
+                repetitionCount += 1;
+            }
+        }
+        return repetitionCount >= 2;
+
+    }
+
+    private boolean isDoubleRepetition(Board board) {
+
+        int repetitionCount = 0;
+        long zobrist = board.getGameState().getZobristKey();
+        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
+        while (iterator.hasNext()) {
+            GameState gameState = iterator.next();
+            if (gameState.getZobristKey() == zobrist) {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     private boolean isInsufficientMaterial(Board board) {

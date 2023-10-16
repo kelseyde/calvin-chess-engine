@@ -22,6 +22,7 @@ public class DrawByInsufficientMaterialTest {
 
         board.toggleSquare(PieceType.KING, false, 44);
         board.toggleSquare(PieceType.QUEEN, false, 27);
+        Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "e4", "d4"));
 
@@ -40,6 +41,7 @@ public class DrawByInsufficientMaterialTest {
 
         board.toggleSquare(PieceType.KING, false, 44);
         board.toggleSquare(PieceType.QUEEN, false, 43);
+        Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
@@ -58,6 +60,7 @@ public class DrawByInsufficientMaterialTest {
 
         board.toggleSquare(PieceType.KING, false, 44);
         board.toggleSquare(PieceType.QUEEN, false, 43);
+        Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
@@ -77,6 +80,7 @@ public class DrawByInsufficientMaterialTest {
         board.toggleSquare(PieceType.KING, false, 44);
         board.toggleSquare(PieceType.QUEEN, false, 43);
         board.toggleSquare(PieceType.BISHOP, false, 52);
+        Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
@@ -96,6 +100,7 @@ public class DrawByInsufficientMaterialTest {
         board.toggleSquare(PieceType.KING, false, 44);
         board.toggleSquare(PieceType.QUEEN, false, 43);
         board.toggleSquare(PieceType.KNIGHT, false, 52);
+        Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
@@ -116,6 +121,7 @@ public class DrawByInsufficientMaterialTest {
         board.toggleSquare(PieceType.QUEEN, false, 43);
         board.toggleSquare(PieceType.KNIGHT, false, 52);
         board.toggleSquare(PieceType.KNIGHT, false, 0);
+        Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 

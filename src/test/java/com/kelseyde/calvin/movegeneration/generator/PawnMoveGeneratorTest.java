@@ -176,7 +176,7 @@ public class PawnMoveGeneratorTest {
         Board board = new Board();
         board.makeMove(TestUtils.getLegalMove(board, "f2", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        Set<Move> legalMoves = Arrays.stream(new MoveGenerator().generateLegalMoves(board, false)).collect(Collectors.toSet());
+        Set<Move> legalMoves = new MoveGenerator().generateLegalMoves(board, false).stream().collect(Collectors.toSet());
         Move emptySpaceCaptureLeft = new Move(21, 28);
         Move emptySpaceCaptureRight = new Move(21, 30);
         Assertions.assertTrue(legalMoves.stream().noneMatch(emptySpaceCaptureLeft::matches));

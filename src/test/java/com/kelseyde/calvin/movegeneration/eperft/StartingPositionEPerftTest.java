@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation.eperft;
+package com.kelseyde.calvin.movegeneration.eperft;
 
 import lombok.Getter;
 import org.junit.jupiter.api.Disabled;

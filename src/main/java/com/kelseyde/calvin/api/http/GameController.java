@@ -72,7 +72,7 @@ public class GameController {
         Move playerMove = new Move(startSquare, endSquare, Move.getPromotionFlag(moveRequest.getPromotionPieceType()));
 
         log.info("Player selects move {}", NotationUtils.toNotation(playerMove));
-        Optional<Move> legalMove = Arrays.stream(moveGenerator.generateLegalMoves(bot.getBoard(), false))
+        Optional<Move> legalMove = moveGenerator.generateLegalMoves(bot.getBoard(), false).stream()
                 .filter(m -> m.matches(playerMove))
                 .findAny();
         if (legalMove.isEmpty()) {

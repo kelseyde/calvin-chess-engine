@@ -8,8 +8,7 @@ import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 @Slf4j
 public class MoveOrderer {
@@ -33,9 +32,10 @@ public class MoveOrderer {
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
     private int[][][] historyMoves = new int[2][64][64];
 
-    public Move[] orderMoves(Board board, Move[] moves, Move previousBestMove, boolean includeKillers, int depth) {
-        Arrays.sort(moves, Comparator.comparing(move -> -calculateMoveScore(board, move, previousBestMove, includeKillers, depth)));
-        return moves;
+    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
+        List<Move> orderedMoves = new ArrayList<>(moves);
+        orderedMoves.sort(Comparator.comparing(move -> -calculateMoveScore(board, move, previousBestMove, includeKillers, depth)));
+        return orderedMoves;
     }
 
     private int calculateMoveScore(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
@@ -109,13 +109,7 @@ public class MoveOrderer {
     }
 
     private boolean isKillerMove(int ply, Move move) {
-        return Arrays.asList(killerMoves[ply]).contains(move);
-//        for (Move killerMove : killerMoves[ply]) {
-//            if (move.equals(killerMove)) {
-//                return true;
-//            }
-//        }
-//        return false;
+        return ply < MAX_KILLER_MOVE_PLY_DEPTH && Arrays.asList(killerMoves[ply]).contains(move);
     }
 
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {

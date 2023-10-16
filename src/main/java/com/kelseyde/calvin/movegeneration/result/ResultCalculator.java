@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,12 +16,12 @@ public class ResultCalculator {
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
     public GameResult calculateResult(Board board) {
-        Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
+        List<Move> legalMoves = moveGenerator.generateLegalMoves(board, false);
         return calculateResult(board, legalMoves);
     }
 
-    public GameResult calculateResult(Board board, Move[] legalMoves) {
-        if (legalMoves.length == 0) {
+    public GameResult calculateResult(Board board, List<Move> legalMoves) {
+        if (legalMoves.size() == 0) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
                 return board.isWhiteToMove() ? GameResult.BLACK_WINS_BY_CHECKMATE : GameResult.WHITE_WINS_BY_CHECKMATE;
             } else {

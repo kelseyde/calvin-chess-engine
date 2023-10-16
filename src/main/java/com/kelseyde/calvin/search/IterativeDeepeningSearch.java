@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
@@ -103,7 +104,7 @@ public class IterativeDeepeningSearch implements Search {
         if (result == null) {
             // If we did not find a single move during search (almost impossible), just return a random
             // legal move as a last resort.
-            Move move = moveGenerator.generateLegalMoves(board, false)[0];
+            Move move = moveGenerator.generateLegalMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
         statistics.setEnd(Instant.now());
@@ -175,7 +176,7 @@ public class IterativeDeepeningSearch implements Search {
              }
          }
 
-         Move[] legalMoves = moveGenerator.generateLegalMoves(board, false);
+         List<Move> legalMoves = moveGenerator.generateLegalMoves(board, false);
 
          if (plyRemaining == 0) {
              // In the case that max depth is reached, begin the quiescence search
@@ -184,7 +185,7 @@ public class IterativeDeepeningSearch implements Search {
          }
 
          // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
-         if (legalMoves.length == 0) {
+         if (legalMoves.size() == 0) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
                 // Found checkmate
                 statistics.incrementNodes();
@@ -205,14 +206,14 @@ public class IterativeDeepeningSearch implements Search {
 
          repetitionTable.push(board.getGameState().getZobristKey());
 
-         Move[] orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
+         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
          Move bestMoveInThisPosition = null;
          int originalAlpha = alpha;
 
-         for (int i = 0; i < orderedMoves.length; i++) {
+         for (int i = 0; i < orderedMoves.size(); i++) {
 
-             Move move = orderedMoves[i];
+             Move move = orderedMoves.get(i);
              boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
              board.makeMove(move);
              evaluator.makeMove(move);
@@ -317,9 +318,9 @@ public class IterativeDeepeningSearch implements Search {
         }
 
         // Generate only legal captures
-        Move[] moves = moveGenerator.generateLegalMoves(board, true);
+        List<Move> moves = moveGenerator.generateLegalMoves(board, true);
 
-        Move[] orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
 
         for (Move move : orderedMoves) {
 

@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class TestUtils {
@@ -36,8 +37,8 @@ public class TestUtils {
 
     public static Move getLegalMove(Board board, String startSquare, String endSquare) {
         Move move = NotationUtils.fromNotation(startSquare, endSquare);
-        Move[] legalMoves = MOVE_GENERATOR.generateLegalMoves(board, false);
-        Optional<Move> legalMove = Arrays.stream(legalMoves)
+        List<Move> legalMoves = MOVE_GENERATOR.generateLegalMoves(board, false);
+        Optional<Move> legalMove = legalMoves.stream()
                 .filter(m -> m.matches(move))
                 .findAny();
         if (legalMove.isEmpty()) {
@@ -47,8 +48,8 @@ public class TestUtils {
     }
 
     public static Move getLegalMove(Board board, Move move) {
-        Move[] legalMoves = MOVE_GENERATOR.generateLegalMoves(board, false);
-        Optional<Move> legalMove = Arrays.stream(legalMoves)
+        List<Move> legalMoves = MOVE_GENERATOR.generateLegalMoves(board, false);
+        Optional<Move> legalMove = legalMoves.stream()
                 .filter(m -> m.matches(move))
                 .findAny();
         if (legalMove.isEmpty()) {

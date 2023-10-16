@@ -216,10 +216,6 @@ public class Searcher implements Search {
              boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
              board.makeMove(move);
              evaluator.makeMove(move);
-//             if (evaluator.get() != new Evaluator(board).get()) {
-//                 System.out.println(NotationUtils.toNotation(board.getMoveHistory()));
-//                 System.out.println("oops!");
-//             }
 
              int extensions = 0;
              // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
@@ -241,10 +237,6 @@ public class Searcher implements Search {
              }
              board.unmakeMove();
              evaluator.unmakeMove();
-//             if (evaluator.get() != new Evaluator(board).get()) {
-//                 System.out.println(NotationUtils.toNotation(board.getMoveHistory()));
-//                 System.out.println("oops!");
-//             }
 
              if (isTimeoutExceeded()) {
                  return 0;
@@ -305,8 +297,9 @@ public class Searcher implements Search {
         if (isTimeoutExceeded()) {
             return 0;
         }
-        // In the case where there are only 'bad' captures available, just return the static evaluation of the board,
-        // since the player is not forced to capture and may have good non-capture moves available.
+        // First check the 'stand pat' score, that is, the evaluation of the board if the player declines to make any more
+        // captures. Since the player is not forced to capture and may have good non-capture moves available, they may
+        // choose to stand pat. In that case, treat this node as a beta cut-off.
         int eval = evaluator.get();
         alpha = Math.max(alpha, eval);
         if (eval >= beta) {
@@ -316,13 +309,17 @@ public class Searcher implements Search {
             return beta;
         }
 
-        // Generate only legal captures
+        // Generate all legal captures
         List<Move> moves = moveGenerator.generateMoves(board, true);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
 
         for (Move move : orderedMoves) {
 
+            // Get the static exchange evaluation of the position ('see'). This is equivalent to the human heuristic of
+            // 'counting the attackers and defenders' - if an exchange is obviously bad, like for example giving up the
+            // queen for a pawn, don't bother searching that branch. This saves time at the expense of potentially missing
+            // some tactical combinations.
             int seeEval = see.evaluate(board, move);
             if ((depth <= 4 && seeEval < 0) || (depth > 4 && seeEval <= 0)) {
                 // Up to depth 4 in quiescence, only considers captures with SEE eval >= 0.
@@ -332,17 +329,9 @@ public class Searcher implements Search {
 
             board.makeMove(move);
             evaluator.makeMove(move);
-//            if (evaluator.get() != new Evaluator(board).get()) {
-//                System.out.println(NotationUtils.toNotation(board.getMoveHistory()));
-//                System.out.println("oops!");
-//            }
             eval = -quiescenceSearch(-beta, -alpha, depth + 1);
             board.unmakeMove();
             evaluator.unmakeMove();
-//            if (evaluator.get() != new Evaluator(board).get()) {
-//                System.out.println(NotationUtils.toNotation(board.getMoveHistory()));
-//                System.out.println("oops!");
-//            }
         }
         if (eval >= beta) {
             statistics.incrementNodes();

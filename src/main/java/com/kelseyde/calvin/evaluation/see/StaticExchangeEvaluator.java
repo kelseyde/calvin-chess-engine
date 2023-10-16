@@ -15,8 +15,8 @@ import java.util.NoSuchElementException;
  * an int value signifying the material loss or gain if all possible attackers and defenders of that square are traded
  * away.
  * Used in the quiescence search to prune capture nodes which are obviously detrimental to the side to move (like
- * queen takes pawn followed by pawn takes queen.). This improves search speed at the cost of potentially missing some
- * tactical complications elsewhere on the board.
+ * exchanging your queen for a pawn). This improves search speed at the cost of potentially missing some tactical complications
+ * elsewhere on the board.
  *
  * @see <a href="https://www.chessprogramming.org/Static_Exchange_Evaluation">Chess Programming Wiki</a>
  */

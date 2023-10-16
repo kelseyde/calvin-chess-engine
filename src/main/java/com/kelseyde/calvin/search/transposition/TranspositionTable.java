@@ -13,7 +13,7 @@ public class TranspositionTable {
     /**
      * Maximum size of the table in megabytes
      */
-    private static final int TABLE_SIZE_MB = 10;
+    private static final int TABLE_SIZE_MB = 64;
 
     /**
      * Estimated size of a single table entry in bytes

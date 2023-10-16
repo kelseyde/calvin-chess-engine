@@ -256,7 +256,7 @@ public class MoveOrdererTest {
         String fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
         Board board = FEN.fromFEN(fen);
 
-        List<Move> legalMoves = moveGenerator.generateLegalMoves(board, false);
+        List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
         Move killerMove = NotationUtils.fromNotation("e1", "c1", Move.CASTLE_FLAG);
         moveOrderer.addKillerMove(1, killerMove);

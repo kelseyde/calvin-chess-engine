@@ -9,7 +9,6 @@ import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -148,7 +147,7 @@ public class BoardTest {
         board1.makeMove(new Move(13, 21));
         board1.makeMove(new Move(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
 
-        new MoveGenerator().generateLegalMoves(board1, false);
+        new MoveGenerator().generateMoves(board1, false);
     }
 
     @Test
@@ -157,7 +156,7 @@ public class BoardTest {
         Board board1 = new Board();
         Board board2 = new Board();
 
-        new MoveGenerator().generateLegalMoves(board1, false);
+        new MoveGenerator().generateMoves(board1, false);
 
         Assertions.assertEquals(board1.getWhitePawns(), board2.getWhitePawns());
         Assertions.assertEquals(board1.getWhiteKnights(), board2.getWhiteKnights());
@@ -337,7 +336,7 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d4", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        List<String> moves = new MoveGenerator().generateLegalMoves(board, false).stream().map(NotationUtils::toNotation).toList();
+        List<String> moves = new MoveGenerator().generateMoves(board, false).stream().map(NotationUtils::toNotation).toList();
         Assertions.assertEquals(31, moves.size());
         Assertions.assertTrue(moves.contains("e1d2"));
     }

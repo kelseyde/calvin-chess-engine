@@ -1,21 +1,26 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.GameState;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.w3c.dom.Notation;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -33,15 +38,16 @@ public class Searcher implements Search {
 
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
-    private static final int CHECKMATE_EVAL = 1000000;
-    private static final int CONTEMPT_FACTOR = 200;
+    private static final int CHECKMATE_SCORE = 1000000;
+    private static final int DRAW_SCORE = 0;
+//    private static final int CONTEMPT_FACTOR = 200;
 
     private MoveGenerator moveGenerator;
     private MoveOrderer moveOrderer;
     private Evaluator evaluator;
     private StaticExchangeEvaluator see;
     private TranspositionTable transpositionTable;
-    private RepetitionTable repetitionTable;
+    private ResultCalculator resultCalculator;
 
     private @Getter Board board;
 
@@ -58,9 +64,9 @@ public class Searcher implements Search {
         this.moveGenerator = new MoveGenerator();
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
+        this.resultCalculator = new ResultCalculator();
         this.evaluator = new Evaluator(board);
         this.transpositionTable = new TranspositionTable(board);
-        this.repetitionTable = new RepetitionTable(board);
     }
 
     @Override
@@ -71,7 +77,6 @@ public class Searcher implements Search {
         int currentDepth = 1;
         result = null;
         resultCurrentDepth = null;
-//        repetitionTable.init(board);
         statistics = new SearchStatistics();
         statistics.setStart(Instant.now());
 
@@ -127,25 +132,22 @@ public class Searcher implements Search {
          if (isTimeoutExceeded()) {
              return 0;
          }
-         if (repetitionTable.isThreefoldRepetition(board.getGameState().getZobristKey())
-                 || board.getGameState().getFiftyMoveCounter() >= 100) {
-             // Found repetition / 50-move rule
-             statistics.incrementNodes();
-             // In case of draws, get the static evaluation of the position.
-             // Avoid draws when evaluation is above the contempt threshold (we are winning).
-             // Favour draws when evaluation is below the contempt threshold (we are losing).
-             int eval = evaluator.get();
-             return (eval > CONTEMPT_FACTOR || eval < -CONTEMPT_FACTOR) ? -eval : 0;
-         }
          if (plyFromRoot > 0) {
              // Exit early if we have already found a forced mate at an earlier ply
-             alpha = Math.max(alpha, -CHECKMATE_EVAL + plyFromRoot);
-             beta = Math.min(beta, CHECKMATE_EVAL - plyFromRoot);
+             alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
+             beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
              if (alpha >= beta) {
                  statistics.incrementNodes();
                  return alpha;
              }
          }
+
+         if (plyRemaining <= 0) {
+             // In the case that max depth is reached, begin the quiescence search
+             statistics.incrementNodes();
+             return quiescenceSearch(alpha, beta, 1);
+         }
+
          Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
          // Handle possible transposition
@@ -160,10 +162,8 @@ public class Searcher implements Search {
 
                  // Previous search returned the exact evaluation for this position.
                  if ((type.equals(NodeType.EXACT))
-
                          // Previous search failed low, beating alpha score; only use it if it beats the current alpha.
                          || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha)
-
                          // Previous search failed high, causing a beta cut-off; only use it if greater than current beta.
                          || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta)) {
 
@@ -177,12 +177,6 @@ public class Searcher implements Search {
 
          List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
-         if (plyRemaining == 0) {
-             // In the case that max depth is reached, begin the quiescence search
-             statistics.incrementNodes();
-             return quiescenceSearch(alpha, beta, 1);
-         }
-
          // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
          if (legalMoves.size() == 0) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
@@ -190,20 +184,13 @@ public class Searcher implements Search {
                 statistics.incrementNodes();
                 // In case of checkmate, favour checkmates closer to the root node.
                 // This leads the engine to prefer e.g. mate in one over mate in two.
-                return -CHECKMATE_EVAL + plyFromRoot;
+                return -CHECKMATE_SCORE + plyFromRoot;
             } else {
                 // Found stalemate
                 statistics.incrementNodes();
-                // In case of draws, get the static evaluation of the position.
-                // Avoid draws when evaluation is above the contempt threshold.
-                // Favour draws when evaluation is below the contempt threshold.
-                int eval = evaluator.get();
-                return (eval > CONTEMPT_FACTOR || eval < CONTEMPT_FACTOR) ? -eval : 0;
+                return DRAW_SCORE;
             }
          }
-
-
-         repetitionTable.push(board.getGameState().getZobristKey());
 
          List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
@@ -217,24 +204,34 @@ public class Searcher implements Search {
              board.makeMove(move);
              evaluator.makeMove(move);
 
-             int extensions = 0;
-             // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
-             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
-                 extensions = 1;
+             int eval = DRAW_SCORE;
+
+             boolean isDraw = resultCalculator.isEffectiveDraw(board);
+             if (isDraw) {
+                 System.out.printf("%s move %s found draw %n", NotationUtils.toNotation(board.getMoveHistory()), NotationUtils.toNotation(move));
              }
 
-             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
-             int reductions = 0;
-             if (extensions == 0 && plyRemaining >= 3 && i >= 3 && !isCapture) {
-                 reductions = 1;
+             if (!isDraw) {
+                 int extensions = 0;
+                 // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
+                 if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
+                     extensions = 1;
+                 }
+
+                 // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
+                 int reductions = 0;
+                 if (extensions == 0 && plyRemaining >= 3 && i >= 3 && !isCapture) {
+                     reductions = 1;
+                 }
+
+                 eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha);
+
+                 if (reductions > 0 && eval > alpha) {
+                     // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
+                     eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
+                 }
              }
 
-             int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha);
-
-             if (reductions > 0 && eval > alpha) {
-                 // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
-                 eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
-             }
              board.unmakeMove();
              evaluator.unmakeMove();
 
@@ -255,8 +252,6 @@ public class Searcher implements Search {
                      moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
                      statistics.incrementKillers();
                  }
-
-                 repetitionTable.pop(board.getGameState().getZobristKey());
                  statistics.incrementNodes();
                  statistics.incrementCutoffs();
 
@@ -272,11 +267,7 @@ public class Searcher implements Search {
                      hasResultAtCurrentDepth = true;
                  }
              }
-
          }
-
-         repetitionTable.pop(board.getGameState().getZobristKey());
-
 
          NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
          transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
@@ -361,7 +352,7 @@ public class Searcher implements Search {
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {
-        return Math.abs(bestEval) >= CHECKMATE_EVAL - currentDepth;
+        return Math.abs(bestEval) >= CHECKMATE_SCORE - currentDepth;
     }
 
     private boolean isTimeoutExceeded() {

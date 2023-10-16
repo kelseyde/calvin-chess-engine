@@ -1,6 +1,7 @@
-package com.kelseyde.calvin.evaluation.eperft;
+package com.kelseyde.calvin.movegeneration.eperft;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.evaluation.eperft.EPerftService;
 import com.kelseyde.calvin.utils.fen.FEN;
 
 import java.io.IOException;

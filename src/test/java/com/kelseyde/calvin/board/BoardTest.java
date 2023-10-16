@@ -337,7 +337,7 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d4", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        List<String> moves = Arrays.stream(new MoveGenerator().generateLegalMoves(board, false)).map(NotationUtils::toNotation).toList();
+        List<String> moves = new MoveGenerator().generateLegalMoves(board, false).stream().map(NotationUtils::toNotation).toList();
         Assertions.assertEquals(31, moves.size());
         Assertions.assertTrue(moves.contains("e1d2"));
     }

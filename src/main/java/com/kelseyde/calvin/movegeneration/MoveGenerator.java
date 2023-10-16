@@ -9,6 +9,7 @@ import com.kelseyde.calvin.movegeneration.generator.*;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public class MoveGenerator {
      */
     private long checkersMask;
 
-    public Move[] generateLegalMoves(Board board, boolean capturesOnly) {
+    public List<Move> generateLegalMoves(Board board, boolean capturesOnly) {
 
         boolean isWhite = board.isWhiteToMove();
         int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
@@ -49,15 +50,18 @@ public class MoveGenerator {
         int checkersCount = Long.bitCount(checkersMask);
 
         List<Move> allMoves = kingMoveGenerator.generatePseudoLegalMoves(board, capturesOnly);
+        List<Move> legalMoves = new ArrayList<>();
 
         // If we are in double-check, the only legal moves are king moves
         boolean isDoubleCheck = checkersCount == 2;
         if (isDoubleCheck) {
-            return allMoves.stream()
-                   .filter(move ->
-                           // Filter out all king moves that leave the king in check
-                           doesNotLeaveKingInCheck(board, move, kingSquare, isWhite))
-                   .toArray(Move[]::new);
+            for (Move move : allMoves) {
+                // Filter out moves that leave the king in check
+                if (doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)) {
+                    legalMoves.add(move);
+                }
+            }
+            return legalMoves;
         }
 
         // Otherwise, generate all the other pseudo-legal moves
@@ -69,15 +73,15 @@ public class MoveGenerator {
 
         boolean isCheck = checkersCount == 1;
 
-        return allMoves.stream()
-                .filter(move ->
-                    // If we are in single-check, filter out all moves that do not resolve the check
-                    (!isCheck || resolvesCheck(board, move, kingSquare, isWhite)) &&
-
-                    // Additionally, filter out moves that leave the king in (a new) check
-                    doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)
-                )
-                .toArray(Move[]::new);
+        for (Move move : allMoves) {
+            // If we are in single-check, filter out all moves that do not resolve the check
+            if ((!isCheck || resolvesCheck(board, move, kingSquare, isWhite)) &&
+                // Additionally, filter out moves that leave the king in (a new) check
+                doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)) {
+                legalMoves.add(move);
+            }
+        }
+        return legalMoves;
 
     }
 

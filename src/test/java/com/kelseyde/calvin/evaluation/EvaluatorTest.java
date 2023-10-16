@@ -76,8 +76,8 @@ public class EvaluatorTest {
         Assertions.assertEquals(820, evaluator.getBlackEval().getMaterial().eval());
         Assertions.assertEquals(10, evaluator.getWhiteEval().getPiecePlacementScore().bishopScore());
         Assertions.assertEquals(15, evaluator.getBlackEval().getPiecePlacementScore().knightScore());
-        Assertions.assertEquals(-21, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(9, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
+        Assertions.assertEquals(-9, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
+        Assertions.assertEquals(19, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
         int overallScore = evaluator.get();
 
         Move move = TestUtils.getLegalMove(board, "c5", "d3");
@@ -88,8 +88,8 @@ public class EvaluatorTest {
         Assertions.assertEquals(820, evaluator.getBlackEval().getMaterial().eval());
         Assertions.assertEquals(0, evaluator.getWhiteEval().getPiecePlacementScore().bishopScore());
         Assertions.assertEquals(15, evaluator.getBlackEval().getPiecePlacementScore().knightScore());
-        Assertions.assertEquals(-30, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(9, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
+        Assertions.assertEquals(-9, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
+        Assertions.assertEquals(25, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
 
         board.unmakeMove();
         evaluator.unmakeMove();
@@ -98,8 +98,8 @@ public class EvaluatorTest {
         Assertions.assertEquals(820, evaluator.getBlackEval().getMaterial().eval());
         Assertions.assertEquals(10, evaluator.getWhiteEval().getPiecePlacementScore().bishopScore());
         Assertions.assertEquals(15, evaluator.getBlackEval().getPiecePlacementScore().knightScore());
-        Assertions.assertEquals(-21, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(9, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
+        Assertions.assertEquals(-9, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
+        Assertions.assertEquals(19, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
         Assertions.assertEquals(overallScore, evaluator.get());
 
     }
@@ -125,12 +125,11 @@ public class EvaluatorTest {
 
         Assertions.assertEquals(900, evaluator.getWhiteEval().getMaterial().eval());
         Assertions.assertEquals(0, evaluator.getBlackEval().getMaterial().eval());
-        // As soon as white promotes, the king gets a penalty for being far away from the enemy king.
-        Assertions.assertEquals(-11, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
+        Assertions.assertEquals(5, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
         Assertions.assertEquals(5, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
         Assertions.assertEquals(0, evaluator.getWhiteEval().getPiecePlacementScore().pawnScore());
         Assertions.assertEquals(0, evaluator.getWhiteEval().getPawnStructureScore());
-        Assertions.assertEquals(-948, evaluator.get());
+        Assertions.assertEquals(-964, evaluator.get());
 
         board.unmakeMove();
         evaluator.unmakeMove();

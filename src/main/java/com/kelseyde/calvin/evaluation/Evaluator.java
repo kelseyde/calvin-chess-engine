@@ -55,8 +55,8 @@ public class Evaluator implements Evaluation {
         whiteEval.setMaterial(materialEvaluator.evaluate(board, true));
         blackEval.setMaterial(materialEvaluator.evaluate(board, false));
 
-        whiteEval.setPiecePlacementScore(piecePlacementEvaluator.evaluate(board, whiteEval.getMaterial().phase(), true));
-        blackEval.setPiecePlacementScore(piecePlacementEvaluator.evaluate(board, blackEval.getMaterial().phase(), false));
+        whiteEval.setPiecePlacementScore(piecePlacementEvaluator.evaluate(board, blackEval.getMaterial().phase(), true));
+        blackEval.setPiecePlacementScore(piecePlacementEvaluator.evaluate(board, whiteEval.getMaterial().phase(), false));
 
         whiteEval.setPawnStructureScore(pawnStructureEvaluator.evaluate(board, true));
         blackEval.setPawnStructureScore(pawnStructureEvaluator.evaluate(board, false));
@@ -101,14 +101,14 @@ public class Evaluator implements Evaluation {
             if (board.isWhiteToMove()) {
                 updateWhiteMaterial = true;
                 updateWhiteCapture = true;
-                updateWhiteWeightedPieces = true;
+                updateBlackWeightedPieces = true;
                 if (capturedPiece == PieceType.PAWN) {
                     updatePawnStructure = true;
                 }
             } else {
                 updateBlackMaterial = true;
                 updateBlackCapture = true;
-                updateBlackWeightedPieces = true;
+                updateWhiteWeightedPieces = true;
                 if (capturedPiece == PieceType.PAWN) {
                     updatePawnStructure = true;
                 }
@@ -139,23 +139,23 @@ public class Evaluator implements Evaluation {
             blackMaterial = materialEvaluator.evaluate(board, false);
         }
         if (updateWhiteWeightedPieces) {
-            whitePieceScore = piecePlacementEvaluator.updateWeightedPieces(board, whiteMaterial.phase(), whitePieceScore, true);
+            whitePieceScore = piecePlacementEvaluator.updateWeightedPieces(board, blackMaterial.phase(), whitePieceScore, true);
         }
         if (updateBlackWeightedPieces) {
-            blackPieceScore = piecePlacementEvaluator.updateWeightedPieces(board, blackMaterial.phase(), blackPieceScore, false);
+            blackPieceScore = piecePlacementEvaluator.updateWeightedPieces(board, whiteMaterial.phase(), blackPieceScore, false);
         }
 
         if (board.isWhiteToMove()) {
-            blackPieceScore = piecePlacementEvaluator.handleMove(board, blackMaterial.phase(), blackPieceScore, move);
+            blackPieceScore = piecePlacementEvaluator.handleMove(board, whiteMaterial.phase(), blackPieceScore, move);
         } else {
-            whitePieceScore = piecePlacementEvaluator.handleMove(board, whiteMaterial.phase(), whitePieceScore, move);
+            whitePieceScore = piecePlacementEvaluator.handleMove(board, blackMaterial.phase(), whitePieceScore, move);
         }
 
         if (updateWhiteCapture) {
-            whitePieceScore = piecePlacementEvaluator.handleCapture(board, whiteMaterial.phase(), whitePieceScore, capturedPiece);
+            whitePieceScore = piecePlacementEvaluator.handleCapture(board, blackMaterial.phase(), whitePieceScore, capturedPiece);
         }
         if (updateBlackCapture) {
-            blackPieceScore = piecePlacementEvaluator.handleCapture(board, blackMaterial.phase(), blackPieceScore, capturedPiece);
+            blackPieceScore = piecePlacementEvaluator.handleCapture(board, whiteMaterial.phase(), blackPieceScore, capturedPiece);
         }
 
         int whiteMopUpScore = mopUpEvaluator.evaluate(board, whiteMaterial, blackMaterial, true);

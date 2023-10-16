@@ -71,7 +71,7 @@ public class Searcher implements Search {
         int currentDepth = 1;
         result = null;
         resultCurrentDepth = null;
-        repetitionTable.init(board);
+//        repetitionTable.init(board);
         statistics = new SearchStatistics();
         statistics.setStart(Instant.now());
 

@@ -6,35 +6,35 @@ This is a personal project. I am a Java developer and amateur chess player, and 
 
 Calvin is rated about 1700 on Lichess as of October 2023.
 
-Current features:
+## Features
 
 ### Board representation
 
-- Bitboards of each piece type/colour are used for internal board representation.
+- [Bitboards](https://www.chessprogramming.org/Bitboards) of each piece type/colour are used for internal board representation.
 
 ### Move Generation
 
-- Hybrid legal/pseudo-legal move generation: check, pin and attack masks are generated first. Single and double-check are resolved, and then a final filter for moves that do not put the king in a 'new' check.
+- [Hybrid legal/pseudo-legal move generation](https://www.chessprogramming.org/Move_Generation): check, pin and attack masks are generated first. Single and double-check are resolved, and then a final filter for moves that do not put the king in a 'new' check.
 - Magic bitboards are used for sliding piece move generatiton.
 
 ### Search
-- Iterative deepening search within a negamax framework.
-- Quiescence search to filter out 'noisy' positions.
-- Transposition table with Zobrist hashing.
+- [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) within a [negamax](https://www.chessprogramming.org/Negamax) framework.
+- [Quiescence search](https://www.chessprogramming.org/Quiescence_Search) to filter out 'noisy' positions.
+- [Transposition table](https://www.chessprogramming.org/Transposition_Table) with [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing).
 
 ### Move Ordering
-- Previous best move, MVV-LVA, killer move heuristic, history heuristic.
+- [Previous best move](https://www.chessprogramming.org/Principal_Variation_Search), [MVV-LVA](https://www.chessprogramming.org/MVV-LVA), [killer move heuristic](https://www.chessprogramming.org/Killer_Move), [history heuristic](https://www.chessprogramming.org/History_Heuristic).
 
 ### Evaluation
 - Basic material count
-- Piece square tables: start- and end- tables for king and pawns, with tapered eval based on the 'endgame weight'.
+- [Piece square tables](https://www.chessprogramming.org/Piece-Square_Tables): start- and end- tables for king and pawns, with [tapered eval](https://www.chessprogramming.org/Tapered_Eval) based on the 'endgame weight'.
 - Pawn structure: passed pawn bonuses, isolated/doubled pawn penalties.
 
 ### Opening Book / Endgame Tablebase
 - Not yet! I would like to implement these soon.
 
 ### Communication
-- UCI protocol implemented with time management support.
+- [UCI protocol](https://www.chessprogramming.org/UCI) implemented with time management support.
 - Calvin is connected to Lichess where he plays regularly in the bot pool: https://lichess.org/@/Calvin_Bot
 
 ### Perft results (starting position):

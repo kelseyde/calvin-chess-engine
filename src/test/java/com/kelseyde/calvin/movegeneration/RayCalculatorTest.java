@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.movegeneration;
 
+import com.kelseyde.calvin.movegeneration.check.RayCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -22,7 +22,7 @@ import java.util.Deque;
  *
  * The evaluation is incrementally updated as moves are made on the board, rather than re-calculated every time.
  */
-public class Evaluator {
+public class Evaluator implements Evaluation {
 
     private final MaterialEvaluator materialEvaluator = new MaterialEvaluator();
 
@@ -32,18 +32,25 @@ public class Evaluator {
 
     private final MopUpEvaluator mopUpEvaluator = new MopUpEvaluator();
 
-    private final Deque<Evaluation> whiteEvalHistory = new ArrayDeque<>();
-    private final Deque<Evaluation> blackEvalHistory = new ArrayDeque<>();
+    private final Deque<EvaluationResult> whiteEvalHistory = new ArrayDeque<>();
+    private final Deque<EvaluationResult> blackEvalHistory = new ArrayDeque<>();
 
-    private @Getter Evaluation whiteEval;
-    private @Getter Evaluation blackEval;
+    private @Getter
+    EvaluationResult whiteEval;
+    private @Getter
+    EvaluationResult blackEval;
 
-    private final Board board;
+    private Board board;
 
     public Evaluator(Board board) {
+        init(board);
+    }
+
+    @Override
+    public void init(Board board) {
         this.board = board;
-        this.whiteEval = new Evaluation();
-        this.blackEval = new Evaluation();
+        this.whiteEval = new EvaluationResult();
+        this.blackEval = new EvaluationResult();
 
         whiteEval.setMaterial(materialEvaluator.evaluate(board, true));
         blackEval.setMaterial(materialEvaluator.evaluate(board, false));
@@ -62,6 +69,7 @@ public class Evaluator {
     /**
      * Updates the evaluation based on the last move. Assumes that the move has already been 'made' on the board.
      */
+    @Override
     public void makeMove(Move move) {
 
         whiteEvalHistory.push(whiteEval);
@@ -153,16 +161,18 @@ public class Evaluator {
         int whiteMopUpScore = mopUpEvaluator.evaluate(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = mopUpEvaluator.evaluate(board, blackMaterial, whiteMaterial, false);
 
-        this.whiteEval = new Evaluation(whiteMaterial, whitePieceScore, whitePawnStructureScore, whiteMopUpScore);
-        this.blackEval = new Evaluation(blackMaterial, blackPieceScore, blackPawnStructureScore, blackMopUpScore);
+        this.whiteEval = new EvaluationResult(whiteMaterial, whitePieceScore, whitePawnStructureScore, whiteMopUpScore);
+        this.blackEval = new EvaluationResult(blackMaterial, blackPieceScore, blackPawnStructureScore, blackMopUpScore);
 
     }
 
+    @Override
     public void unmakeMove() {
         whiteEval = whiteEvalHistory.pop();
         blackEval = blackEvalHistory.pop();
     }
 
+    @Override
     public int get() {
         int whiteScore = whiteEval.sum();
         int blackScore = blackEval.sum();

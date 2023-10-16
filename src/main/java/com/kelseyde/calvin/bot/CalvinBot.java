@@ -3,7 +3,7 @@ package com.kelseyde.calvin.bot;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.search.IterativeDeepeningSearch;
+import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -51,7 +50,7 @@ public class CalvinBot implements Bot {
     public void setPosition(String fen, List<Move> moves) {
         if (board == null) {
             board = FEN.fromFEN(fen);
-            search = new IterativeDeepeningSearch(board);
+            search = new Searcher(board);
             moveGenerator = new MoveGenerator();
             moves.stream()
                     .map(this::getLegalMove)
@@ -139,7 +138,7 @@ public class CalvinBot implements Bot {
 
     // TODO can be removed?
     private Move getLegalMove(Move move) {
-        return moveGenerator.generateLegalMoves(board, false).stream()
+        return moveGenerator.generateMoves(board, false).stream()
                 .filter(move::matches)
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Illegal move " + NotationUtils.toNotation(move)));

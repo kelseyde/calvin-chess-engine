@@ -46,7 +46,7 @@ public class SearchTest {
     Board board;
 
 //    @InjectMocks
-    IterativeDeepeningSearch search;
+    Searcher search;
 
     @BeforeEach
     public void beforeEach() {
@@ -54,7 +54,7 @@ public class SearchTest {
 
         Mockito.when(board.getGameState()).thenReturn(new GameState());
         Mockito.when(board.getGameStateHistory()).thenReturn(new ArrayDeque<>());
-        search = new IterativeDeepeningSearch(board);
+        search = new Searcher(board);
         MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(search, "moveGenerator", moveGenerator);
         ReflectionTestUtils.setField(search, "moveOrderer", moveOrderer);

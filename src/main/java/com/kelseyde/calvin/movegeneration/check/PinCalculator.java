@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.movegeneration;
+package com.kelseyde.calvin.movegeneration.check;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;

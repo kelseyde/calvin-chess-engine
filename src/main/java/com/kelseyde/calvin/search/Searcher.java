@@ -1,26 +1,21 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.GameState;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.repetition.RepetitionTable;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.Notation;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -38,9 +33,9 @@ public class Searcher implements Search {
 
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
+
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
-//    private static final int CONTEMPT_FACTOR = 200;
 
     private MoveGenerator moveGenerator;
     private MoveOrderer moveOrderer;
@@ -112,8 +107,8 @@ public class Searcher implements Search {
             result = new SearchResult(0, move);
         }
         statistics.setEnd(Instant.now());
-//        System.out.println(statistics.generateReport());
-//        transpositionTable.logTableSize();
+        log.info(statistics.generateReport());
+        transpositionTable.logTableSize();
         return result;
 
     }
@@ -133,6 +128,10 @@ public class Searcher implements Search {
              return 0;
          }
          if (plyFromRoot > 0) {
+             if (resultCalculator.isEffectiveDraw(board)) {
+                 statistics.incrementNodes();
+                 return DRAW_SCORE;
+             }
              // Exit early if we have already found a forced mate at an earlier ply
              alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
              beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
@@ -141,13 +140,6 @@ public class Searcher implements Search {
                  return alpha;
              }
          }
-
-         if (plyRemaining <= 0) {
-             // In the case that max depth is reached, begin the quiescence search
-             statistics.incrementNodes();
-             return quiescenceSearch(alpha, beta, 1);
-         }
-
          Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
          // Handle possible transposition
@@ -177,12 +169,17 @@ public class Searcher implements Search {
 
          List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
+         if (plyRemaining == 0) {
+             // In the case that max depth is reached, begin the quiescence search
+             statistics.incrementNodes();
+             return quiescenceSearch(alpha, beta, 1);
+         }
+
          // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
          if (legalMoves.size() == 0) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
-                // Found checkmate
                 statistics.incrementNodes();
-                // In case of checkmate, favour checkmates closer to the root node.
+                // Found checkmate: favour checkmates closer to the root node.
                 // This leads the engine to prefer e.g. mate in one over mate in two.
                 return -CHECKMATE_SCORE + plyFromRoot;
             } else {
@@ -204,34 +201,24 @@ public class Searcher implements Search {
              board.makeMove(move);
              evaluator.makeMove(move);
 
-             int eval = DRAW_SCORE;
-
-             boolean isDraw = resultCalculator.isEffectiveDraw(board);
-             if (isDraw) {
-                 System.out.printf("%s move %s found draw %n", NotationUtils.toNotation(board.getMoveHistory()), NotationUtils.toNotation(move));
+             int extensions = 0;
+             // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
+             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
+                 extensions = 1;
              }
 
-             if (!isDraw) {
-                 int extensions = 0;
-                 // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
-                 if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
-                     extensions = 1;
-                 }
-
-                 // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
-                 int reductions = 0;
-                 if (extensions == 0 && plyRemaining >= 3 && i >= 3 && !isCapture) {
-                     reductions = 1;
-                 }
-
-                 eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha);
-
-                 if (reductions > 0 && eval > alpha) {
-                     // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
-                     eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
-                 }
+             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
+             int reductions = 0;
+             if (extensions == 0 && plyRemaining >= 3 && i >= 3 && !isCapture) {
+                 reductions = 1;
              }
 
+             int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha);
+
+             if (reductions > 0 && eval > alpha) {
+                 // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
+                 eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
+             }
              board.unmakeMove();
              evaluator.unmakeMove();
 

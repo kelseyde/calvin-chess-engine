@@ -54,4 +54,8 @@ public class TranspositionTable {
         return entriesCount;
     }
 
+    public void logTableSize() {
+        System.out.println("Transposition table size: " + entries.size());
+    }
+
 }

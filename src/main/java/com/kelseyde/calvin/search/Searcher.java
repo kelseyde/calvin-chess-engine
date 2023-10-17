@@ -108,6 +108,7 @@ public class Searcher implements Search {
         }
         statistics.setEnd(Instant.now());
         log.info(statistics.generateReport());
+        transpositionTable.logTableSize();
         return result;
 
     }

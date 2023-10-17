@@ -29,9 +29,6 @@ public class MoveOrderer {
     public static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 2;
 
-    private final MoveGenerator moveGenerator = new MoveGenerator();
-    private final StaticExchangeEvaluator seeEvaluator = new StaticExchangeEvaluator();
-
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
     private int[][][] historyMoves = new int[2][64][64];
 
@@ -101,6 +98,9 @@ public class MoveOrderer {
     }
 
     public void addKillerMove(int ply, Move newKiller) {
+        if (ply > MAX_KILLER_MOVE_PLY_DEPTH) {
+            return;
+        }
         Move firstKiller = killerMoves[ply][0];
         // By ensuring that the new killer is not the same as the first existing killer, we guarantee
         // that both killers at this ply are unique.

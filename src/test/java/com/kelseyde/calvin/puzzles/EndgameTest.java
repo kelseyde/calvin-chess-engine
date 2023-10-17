@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
+import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.utils.NotationUtils;
@@ -80,6 +81,16 @@ public class EndgameTest {
         } else {
             System.out.println(50 - moveLimit);
         }
+
+    }
+
+    @Test
+    public void testRookVsTwoConnectedPawns() {
+
+        String fen = "8/8/2k5/6KP/6P1/8/3r4/8 b - - 1 46";
+        Search search = new Searcher(FEN.fromFEN(fen));
+        Move move = search.search(Duration.ofSeconds(2)).move();
+        System.out.println(NotationUtils.toNotation(move));
 
     }
 

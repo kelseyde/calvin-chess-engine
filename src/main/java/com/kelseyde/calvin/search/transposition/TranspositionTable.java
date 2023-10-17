@@ -9,23 +9,12 @@ import java.util.LinkedHashMap;
 @Slf4j
 public class TranspositionTable {
 
-    /**
-     * Maximum size of the table in megabytes
-     */
-    private static final int TABLE_SIZE_MB = 64;
-
-    /**
-     * Estimated size of a single table entry in bytes
-     */
-    private static final int MAX_ENTRY_SIZE_B = 24;
-
     private final Board board;
 
     private LinkedHashMap<Long, TranspositionNode> entries;
 
     public TranspositionTable(Board board) {
         this.board = board;
-        int tableSize = calculateTableSize();
         entries = new LinkedHashMap<>();
     }
 
@@ -43,15 +32,6 @@ public class TranspositionTable {
 
     public void clear() {
         entries = new LinkedHashMap<>();
-    }
-
-    private int calculateTableSize() {
-        int tableSizeBytes = TABLE_SIZE_MB * 1024 * 1024;
-        int entrySizeBytes = MAX_ENTRY_SIZE_B;
-        int entriesCount = tableSizeBytes / entrySizeBytes;
-        log.info("Initialising a transposition table of {} entries based on {}MB table size and {}B entry size.",
-                entriesCount, TABLE_SIZE_MB, entrySizeBytes);
-        return entriesCount;
     }
 
     public void logTableSize() {

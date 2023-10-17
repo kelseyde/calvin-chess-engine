@@ -5,7 +5,7 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>1.11.4-IncreaseTranspositionTableSize</version>
+    <version>1.11.5-UseLinkedHashMapForTT</version>
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 

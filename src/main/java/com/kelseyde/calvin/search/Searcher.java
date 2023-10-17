@@ -108,7 +108,6 @@ public class Searcher implements Search {
         }
         statistics.setEnd(Instant.now());
         log.info(statistics.generateReport());
-        transpositionTable.logTableSize();
         return result;
 
     }
@@ -335,7 +334,7 @@ public class Searcher implements Search {
 
     @Override
     public void logStatistics() {
-        transpositionTable.logTableSize();
+//        transpositionTable.logTableSize();
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {

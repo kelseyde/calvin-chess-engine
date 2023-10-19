@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.board;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Random;
 
 /**

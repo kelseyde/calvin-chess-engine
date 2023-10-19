@@ -103,12 +103,13 @@ public class Searcher implements Search {
         if (result == null) {
             // If we did not find a single move during search (almost impossible), just return a random
             // legal move as a last resort.
+            log.warn("Time expired before a move was found");
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
         statistics.setEnd(Instant.now());
-        log.info(statistics.generateReport());
-        transpositionTable.logTableSize();
+//        log.info(statistics.generateReport());
+//        transpositionTable.logTableSize();
         return result;
 
     }

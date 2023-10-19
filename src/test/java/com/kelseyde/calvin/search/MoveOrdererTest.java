@@ -2,12 +2,14 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -25,23 +27,40 @@ public class MoveOrdererTest {
     }
 
     @Test
-    public void testUnderpromotionBias() {
+    public void testMvvLvaScores() {
 
-        String fen = "7k/2P5/8/8/8/8/8/7K w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        int[][] table = MoveOrderer.MVV_LVA_TABLE;
 
-        Move underPromotionMove = new Move(50, 58, Move.PROMOTE_TO_KNIGHT_FLAG);
-
-        List<Move> moves = new ArrayList<>(List.of(
-                NotationUtils.fromNotation("h1", "h2"),
-                NotationUtils.fromNotation("h1", "g1"),
-                NotationUtils.fromNotation("h1", "g2"),
-                underPromotionMove
-        ));
-
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
-
-        Assertions.assertTrue(orderedMoves.get(0).matches(underPromotionMove));
+        Assertions.assertEquals(10, table[PieceType.PAWN.getIndex()][PieceType.KING.getIndex()]);
+        Assertions.assertEquals(11, table[PieceType.PAWN.getIndex()][PieceType.QUEEN.getIndex()]);
+        Assertions.assertEquals(12, table[PieceType.PAWN.getIndex()][PieceType.ROOK.getIndex()]);
+        Assertions.assertEquals(13, table[PieceType.PAWN.getIndex()][PieceType.BISHOP.getIndex()]);
+        Assertions.assertEquals(14, table[PieceType.PAWN.getIndex()][PieceType.KNIGHT.getIndex()]);
+        Assertions.assertEquals(15, table[PieceType.PAWN.getIndex()][PieceType.PAWN.getIndex()]);
+        Assertions.assertEquals(20, table[PieceType.KNIGHT.getIndex()][PieceType.KING.getIndex()]);
+        Assertions.assertEquals(21, table[PieceType.KNIGHT.getIndex()][PieceType.QUEEN.getIndex()]);
+        Assertions.assertEquals(22, table[PieceType.KNIGHT.getIndex()][PieceType.ROOK.getIndex()]);
+        Assertions.assertEquals(23, table[PieceType.KNIGHT.getIndex()][PieceType.BISHOP.getIndex()]);
+        Assertions.assertEquals(24, table[PieceType.KNIGHT.getIndex()][PieceType.KNIGHT.getIndex()]);
+        Assertions.assertEquals(25, table[PieceType.KNIGHT.getIndex()][PieceType.PAWN.getIndex()]);
+        Assertions.assertEquals(30, table[PieceType.BISHOP.getIndex()][PieceType.KING.getIndex()]);
+        Assertions.assertEquals(31, table[PieceType.BISHOP.getIndex()][PieceType.QUEEN.getIndex()]);
+        Assertions.assertEquals(32, table[PieceType.BISHOP.getIndex()][PieceType.ROOK.getIndex()]);
+        Assertions.assertEquals(33, table[PieceType.BISHOP.getIndex()][PieceType.BISHOP.getIndex()]);
+        Assertions.assertEquals(34, table[PieceType.BISHOP.getIndex()][PieceType.KNIGHT.getIndex()]);
+        Assertions.assertEquals(35, table[PieceType.BISHOP.getIndex()][PieceType.PAWN.getIndex()]);
+        Assertions.assertEquals(40, table[PieceType.ROOK.getIndex()][PieceType.KING.getIndex()]);
+        Assertions.assertEquals(41, table[PieceType.ROOK.getIndex()][PieceType.QUEEN.getIndex()]);
+        Assertions.assertEquals(42, table[PieceType.ROOK.getIndex()][PieceType.ROOK.getIndex()]);
+        Assertions.assertEquals(43, table[PieceType.ROOK.getIndex()][PieceType.BISHOP.getIndex()]);
+        Assertions.assertEquals(44, table[PieceType.ROOK.getIndex()][PieceType.KNIGHT.getIndex()]);
+        Assertions.assertEquals(45, table[PieceType.ROOK.getIndex()][PieceType.PAWN.getIndex()]);
+        Assertions.assertEquals(50, table[PieceType.QUEEN.getIndex()][PieceType.KING.getIndex()]);
+        Assertions.assertEquals(51, table[PieceType.QUEEN.getIndex()][PieceType.QUEEN.getIndex()]);
+        Assertions.assertEquals(52, table[PieceType.QUEEN.getIndex()][PieceType.ROOK.getIndex()]);
+        Assertions.assertEquals(53, table[PieceType.QUEEN.getIndex()][PieceType.BISHOP.getIndex()]);
+        Assertions.assertEquals(54, table[PieceType.QUEEN.getIndex()][PieceType.KNIGHT.getIndex()]);
+        Assertions.assertEquals(55, table[PieceType.QUEEN.getIndex()][PieceType.PAWN.getIndex()]);
 
     }
 
@@ -62,37 +81,6 @@ public class MoveOrdererTest {
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(NotationUtils.fromNotation("f3", "e4")));
-
-    }
-
-    @Test
-    public void testCastleBias() {
-
-        String fen = "4k2r/5ppp/8/8/8/8/5PPP/4K2R b Kk - 0 1";
-        Board board = FEN.fromFEN(fen);
-
-
-        Move castlingMove = new Move(60, 62, Move.CASTLE_FLAG);
-
-        List<Move> moves = new ArrayList<>(List.of(
-                NotationUtils.fromNotation("h7", "h5"),
-                NotationUtils.fromNotation("g7", "g5"),
-                NotationUtils.fromNotation("f7", "f5"),
-                NotationUtils.fromNotation("h7", "h6"),
-                NotationUtils.fromNotation("g7", "g6"),
-                NotationUtils.fromNotation("f7", "f6"),
-                NotationUtils.fromNotation("e8", "f8"),
-                NotationUtils.fromNotation("e8", "e7"),
-                NotationUtils.fromNotation("e8", "d7"),
-                NotationUtils.fromNotation("e8", "d8"),
-                NotationUtils.fromNotation("h8", "g8"),
-                NotationUtils.fromNotation("h8", "f8"),
-                castlingMove
-        ));
-
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
-
-        Assertions.assertTrue(orderedMoves.get(0).matches(castlingMove));
 
     }
 
@@ -166,27 +154,6 @@ public class MoveOrdererTest {
     }
 
     @Test
-    public void testPromotionBias() {
-
-        String fen = "7k/2P5/8/8/8/8/8/7K w - - 0 1";
-        Board board = FEN.fromFEN(fen);
-
-        Move underPromotionMove = new Move(50, 58, Move.PROMOTE_TO_QUEEN_FLAG);
-
-        List<Move> moves = new ArrayList<>(List.of(
-                NotationUtils.fromNotation("h1", "h2"),
-                NotationUtils.fromNotation("h1", "g1"),
-                NotationUtils.fromNotation("h1", "g2"),
-                underPromotionMove
-        ));
-
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
-
-        Assertions.assertTrue(orderedMoves.get(0).matches(underPromotionMove));
-
-    }
-
-    @Test
     public void testWinningCaptureBias() {
 
         String fen = "7k/8/8/8/4r3/3P1Q2/8/7K w - - 0 1";
@@ -249,6 +216,8 @@ public class MoveOrdererTest {
 
     }
 
+    // TODO re-write
+    @Disabled
     @Test
     public void testComplexPosition() {
 

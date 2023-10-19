@@ -4,6 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Stores the metadata for a given chess position - that is, the castling rights, en passant rights, the fifty-move counter
+ * (the number of half-moves since the last capture or pawn move), and the last captured piece.
+ * The game state history is stored by the {@link Board} to easily 'unmake' moves during search + evaluation.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

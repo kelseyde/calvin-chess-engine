@@ -98,7 +98,7 @@ public class MoveOrderer {
     }
 
     public void addKillerMove(int ply, Move newKiller) {
-        if (ply > MAX_KILLER_MOVE_PLY_DEPTH) {
+        if (ply >= MAX_KILLER_MOVE_PLY_DEPTH) {
             return;
         }
         Move firstKiller = killerMoves[ply][0];

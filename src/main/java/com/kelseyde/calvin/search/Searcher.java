@@ -142,6 +142,7 @@ public class Searcher implements Search {
          }
          Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
+         // TODO move transposition logic to TranspositionTable
          // Handle possible transposition
          TranspositionNode transposition = transpositionTable.get();
          if (transposition != null) {
@@ -176,7 +177,7 @@ public class Searcher implements Search {
          }
 
          // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
-         if (legalMoves.size() == 0) {
+         if (legalMoves.isEmpty()) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
                 statistics.incrementNodes();
                 // Found checkmate: favour checkmates closer to the root node.
@@ -231,7 +232,7 @@ public class Searcher implements Search {
                  // already have other options which will prevent us from reaching this position.
                  transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, move, beta);
 
-                 if (!isCapture && plyFromRoot <= MoveOrderer.MAX_KILLER_MOVE_PLY_DEPTH) {
+                 if (!isCapture) {
                      // Non-captures which cause a beta cut-off are 'killer moves', and are stored so that in our move
                      // ordering we can prioritise examining them early, on the basis that they are likely to be similarly
                      // effective in sibling nodes.

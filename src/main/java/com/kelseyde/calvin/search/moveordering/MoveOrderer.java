@@ -4,8 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
-import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
-import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -22,23 +20,30 @@ public class MoveOrderer {
     private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int CASTLE_BIAS = 4 * MILLION;
     private static final int LOSING_CAPTURE_BIAS = 3 * MILLION;
     private static final int UNDER_PROMOTION_BIAS = 2 * MILLION;
 
-    public static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
+    private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 2;
+
+    public static final int[][] MVV_LVA_TABLE = new int[][] {
+            new int[] {15, 14, 13, 12, 11, 10},  // victim P, attacker P, N, B, R, Q, K
+            new int[] {25, 24, 23, 22, 21, 20},  // victim N, attacker P, N, B, R, Q, K
+            new int[] {35, 34, 33, 32, 31, 30},  // victim B, attacker P, N, B, R, Q, K
+            new int[] {45, 44, 43, 42, 41, 40},  // victim R, attacker P, N, B, R, Q, K
+            new int[] {55, 54, 53, 52, 51, 50},  // victim Q, attacker P, N, B, R, Q, K
+    };
 
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
     private int[][][] historyMoves = new int[2][64][64];
 
     public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
         List<Move> orderedMoves = new ArrayList<>(moves);
-        orderedMoves.sort(Comparator.comparing(move -> -calculateMoveScore(board, move, previousBestMove, includeKillers, depth)));
+        orderedMoves.sort(Comparator.comparing(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
         return orderedMoves;
     }
 
-    private int calculateMoveScore(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
+    private int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
 
         int moveScore = 0;
 
@@ -47,12 +52,12 @@ public class MoveOrderer {
             moveScore += PREVIOUS_BEST_MOVE_BIAS;
         }
 
-        // Give captures a high priority. 'Winning captures', where we capture a high-value piece with a low-value piece -
-        // e.g. winning a queen with a pawn - should be given a high priority. 'Losing captures', where we capture a low
-        // value piece with a high-value piece - e.g. going pawn-grabbing with the queen - are given a slightly lower priority.
+        // Sort captures according to MVV-LVA (most valuable victim, least valuable attacker)
+        PieceType pieceType = board.pieceAt(move.getStartSquare());
         PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
         boolean isCapture = capturedPieceType != null;
         if (isCapture) {
+            moveScore += MVV_LVA_TABLE[capturedPieceType.getIndex()][pieceType.getIndex()];
             int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(board.pieceAt(move.getStartSquare()));
             if (materialDelta > 0) {
                 moveScore += WINNING_CAPTURE_BIAS;
@@ -61,20 +66,8 @@ public class MoveOrderer {
             } else {
                 moveScore += LOSING_CAPTURE_BIAS;
             }
-            // TODO test SEE in move ordering
-//            int seeEval = seeEvaluator.evaluate(board, move);
-//            if (seeEval > 0) {
-//                moveScore += seeEval + WINNING_CAPTURE_BIAS;
-//            }
-//            else if (seeEval == 0) {
-//                moveScore += EQUAL_CAPTURE_BIAS;
-//            }
-//            else {
-//                moveScore += seeEval + LOSING_CAPTURE_BIAS;
-//            }
         }
 
-        // Prioritising pawn promotion
         if (move.isPromotion()) {
             int promotionBias = move.getPromotionPieceType().equals(PieceType.QUEEN) ? PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
             moveScore += promotionBias;
@@ -88,17 +81,12 @@ public class MoveOrderer {
             moveScore += historyMoves[colourIndex(board.isWhiteToMove())][move.getStartSquare()][move.getEndSquare()];
         }
 
-        // Castling likely to be good (king safety)
-        if (move.isCastling()) {
-            moveScore += CASTLE_BIAS;
-        }
-
         return moveScore;
 
     }
 
     public void addKillerMove(int ply, Move newKiller) {
-        if (ply > MAX_KILLER_MOVE_PLY_DEPTH) {
+        if (ply >= MAX_KILLER_MOVE_PLY_DEPTH) {
             return;
         }
         Move firstKiller = killerMoves[ply][0];

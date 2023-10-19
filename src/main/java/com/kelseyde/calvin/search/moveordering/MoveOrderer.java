@@ -11,12 +11,24 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Implementation of {@link MoveOrdering} using the following move-ordering strategy:
+ *  1. Previous best move found at an earlier ply.
+ *  2. Queen promotions
+ *  3. Winning captures (sub-ordered using MVV-LVA).
+ *  4. Equal captures (sub-ordered using MVV-LVA).
+ *  5. Killer moves
+ *  6. Losing captures
+ *  7. Under-promotions
+ *  8. History moves
+ *  9. Everything else.
+ */
 @Slf4j
-public class MoveOrderer {
+public class MoveOrderer implements MoveOrdering {
 
     private static final int MILLION = 1000000;
     private static final int PREVIOUS_BEST_MOVE_BIAS = 100 * MILLION;
-    private static final int PROMOTION_BIAS = 9 * MILLION;
+    private static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
     private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
@@ -69,8 +81,10 @@ public class MoveOrderer {
         }
 
         if (move.isPromotion()) {
-            int promotionBias = move.getPromotionPieceType().equals(PieceType.QUEEN) ? PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
+            int promotionBias = move.getPromotionPieceType().equals(PieceType.QUEEN) ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
             moveScore += promotionBias;
+            // After queen, order knight promotion second, then bishop, then rook
+            moveScore -= PieceValues.valueOf(move.getPromotionPieceType());
         }
 
         // Prioritise killers + history moves
@@ -85,6 +99,7 @@ public class MoveOrderer {
 
     }
 
+    // TODO how to handle colour in the killer moves?
     public void addKillerMove(int ply, Move newKiller) {
         if (ply >= MAX_KILLER_MOVE_PLY_DEPTH) {
             return;

@@ -27,13 +27,13 @@ import java.util.List;
 public class MoveOrderer implements MoveOrdering {
 
     private static final int MILLION = 1000000;
-    private static final int PREVIOUS_BEST_MOVE_BIAS = 100 * MILLION;
+    private static final int PREVIOUS_BEST_MOVE_BIAS = 10 * MILLION;
     private static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
     private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int LOSING_CAPTURE_BIAS = 3 * MILLION;
-    private static final int UNDER_PROMOTION_BIAS = 2 * MILLION;
+    private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
+    private static final int UNDER_PROMOTION_BIAS = 4 * MILLION;
 
     private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 2;

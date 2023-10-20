@@ -166,8 +166,8 @@ public class PiecePlacementEvaluator {
         int pieceTypeScore = 0;
         while (pieces != 0) {
             int square = BitboardUtils.getLSB(pieces);
-            pieceTypeScore += gamePhase * openingTable[square];
-            pieceTypeScore += (1 - gamePhase) * endgameTable[square];
+            pieceTypeScore += (int) (gamePhase * openingTable[square]);
+            pieceTypeScore += (int) ((1 - gamePhase) * endgameTable[square]);
             pieces = BitboardUtils.popLSB(pieces);
         }
         return pieceTypeScore;

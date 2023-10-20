@@ -15,9 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Generates all the legal moves in a given position. Using a hybrid of pseudo-legal and legal move generation: first
- * we calculate the bitboards for checking pieces and pinned pieces. If there is a check, we filter out all moves that
- * do not resolve the check. Finally we filter out all moves that leave the king in (a new) check.
+ * Generates all the legal moves in a given position.
+ * Using a hybrid of pseudo-legal and legal move generation: first we calculate the bitboards for checking pieces and
+ * pinned pieces. If there is a check, we filter out all moves that do not resolve the check. Finally, we filter out all
+ * moves that leave the king in (a new) check.
  */
 @Slf4j
 public class MoveGenerator implements MoveGeneration {
@@ -33,7 +34,7 @@ public class MoveGenerator implements MoveGeneration {
     private final RayCalculator rayCalculator = new RayCalculator();
 
     /**
-     * A bitboard containing all the pieces that are currently pinned for the side to move.
+     * A bitboard containing all the pieces that are currently pinned, for the side to move.
      */
     private long pinMask;
 

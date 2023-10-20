@@ -56,25 +56,15 @@ public abstract class SlidingMoveGenerator implements PseudoLegalMoveGenerator {
     @Override
     public long generateAttackMaskFromSquare(Board board, int square, boolean isWhite) {
         long attackMask = 0L;
+        long occ = board.getOccupied();
+        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
         if (isOrthogonal()) {
-            attackMask |= calculateOrthogonalMoves(board, square, isWhite);
+            attackMask |= Magics.getRookAttacks(square, occ) &~ friendlies;
         }
         if (isDiagonal()) {
-            attackMask |= calculateDiagonalMoves(board, square, isWhite);
+            attackMask |= Magics.getBishopAttacks(square, occ) &~ friendlies;
         }
         return attackMask;
-    }
-
-    private long calculateOrthogonalMoves(Board board, int s, boolean isWhite) {
-        long occ = board.getOccupied();
-        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
-        return Magics.getRookAttacks(s, occ) &~ friendlies;
-    }
-
-    private long calculateDiagonalMoves(Board board, int s, boolean isWhite) {
-        long occ = board.getOccupied();
-        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
-        return Magics.getBishopAttacks(s, occ) &~ friendlies;
     }
 
 }

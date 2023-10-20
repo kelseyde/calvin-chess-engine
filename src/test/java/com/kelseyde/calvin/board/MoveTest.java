@@ -1,11 +1,7 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.utils.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.time.Instant;
 
 public class MoveTest {
 

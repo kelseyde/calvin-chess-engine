@@ -35,10 +35,8 @@ public class Evaluator implements Evaluation {
     private final Deque<EvaluationResult> whiteEvalHistory = new ArrayDeque<>();
     private final Deque<EvaluationResult> blackEvalHistory = new ArrayDeque<>();
 
-    private @Getter
-    EvaluationResult whiteEval;
-    private @Getter
-    EvaluationResult blackEval;
+    private @Getter EvaluationResult whiteEval;
+    private @Getter EvaluationResult blackEval;
 
     private Board board;
 

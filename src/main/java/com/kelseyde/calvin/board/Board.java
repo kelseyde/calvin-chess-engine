@@ -11,8 +11,12 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**
- * Represents the current state of the board, including the position of the pieces, the side to move, castling and
- * en passant rights, and the move history.
+ * Represents the current state of the chess board, including the positions of the pieces, the side to move, en passant
+ * rights, fifty-move counter, and the move counter. Includes functions to 'make' and 'unmake' moves on the board, which
+ * are fundamental to both the search and evaluation algorithms. Uses bitboards to represent the pieces and 'toggling'
+ * functions to set and unset pieces.
+ *
+ * @see <a href="https://www.chessprogramming.org/Board_Representation">Chess Programming Wiki</a>
  */
 @Data
 public class Board {

@@ -34,8 +34,8 @@ public class TranspositionTable {
         entries = new LinkedHashMap<>();
     }
 
-    public void logTableSize() {
-        System.out.println("Transposition table size: " + entries.size());
+    public int size() {
+        return entries.size();
     }
 
 }

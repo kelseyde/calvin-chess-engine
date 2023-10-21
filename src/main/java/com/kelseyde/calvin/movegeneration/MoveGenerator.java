@@ -34,21 +34,6 @@ public class MoveGenerator implements MoveGeneration {
     private final RayCalculator rayCalculator = new RayCalculator();
 
     /**
-     * The current board state.
-     */
-    private Board board;
-
-    /**
-     * Which side is to move.
-     */
-    private boolean isWhite;
-
-    /**
-     * The square of the king for the side to move.
-     */
-    private int kingSquare;
-
-    /**
      * A bitboard containing all the pieces that are currently pinned, for the side to move.
      */
     private long pinMask;
@@ -58,32 +43,25 @@ public class MoveGenerator implements MoveGeneration {
      */
     private long checkersMask;
 
-    /**
-     * How many pieces are currently checking the king.
-     */
-    private int checkersCount;
-
-    /**
-     * The pseudo-legal moves in the current position.
-     */
-    private List<Move> pseudoLegalMoves;
-
-    /**
-     * The legal moves in the current position.
-     */
-    private List<Move> legalMoves;
-
     @Override
     public List<Move> generateMoves(Board board, boolean capturesOnly) {
 
-        init(board);
+        boolean isWhite = board.isWhiteToMove();
+        int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
 
-        pseudoLegalMoves = kingMoveGenerator.generatePseudoLegalMoves(board, capturesOnly);
+        checkersMask = calculateAttackerMask(board, isWhite, 1L << kingSquare);
+        pinMask = pinCalculator.calculatePinMask(board, isWhite);
+        int checkersCount = Long.bitCount(checkersMask);
 
-        if (checkersCount == 2) {
-            // If we are in double-check, the only legal moves are king moves.
-            for (Move move : pseudoLegalMoves) {
-                if (doesNotLeaveKingInCheck(move)) {
+        List<Move> allMoves = kingMoveGenerator.generatePseudoLegalMoves(board, capturesOnly);
+        List<Move> legalMoves = new ArrayList<>();
+
+        // If we are in double-check, the only legal moves are king moves
+        boolean isDoubleCheck = checkersCount == 2;
+        if (isDoubleCheck) {
+            for (Move move : allMoves) {
+                // Filter out moves that leave the king in check
+                if (doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)) {
                     legalMoves.add(move);
                 }
             }
@@ -91,19 +69,19 @@ public class MoveGenerator implements MoveGeneration {
         }
 
         // Otherwise, generate all the other pseudo-legal moves
-        pseudoLegalMoves.addAll(pawnMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
-        pseudoLegalMoves.addAll(knightMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
-        pseudoLegalMoves.addAll(bishopMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
-        pseudoLegalMoves.addAll(rookMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
-        pseudoLegalMoves.addAll(queenMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(pawnMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(knightMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(bishopMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(rookMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        allMoves.addAll(queenMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
 
         boolean isCheck = checkersCount == 1;
 
-        for (Move move : pseudoLegalMoves) {
+        for (Move move : allMoves) {
             // If we are in single-check, filter out all moves that do not resolve the check
-            if ((!isCheck || resolvesCheck(move) &&
+            if ((!isCheck || resolvesCheck(board, move, kingSquare, isWhite)) &&
                 // Additionally, filter out moves that leave the king in (a new) check
-                doesNotLeaveKingInCheck(move))) {
+                doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)) {
                 legalMoves.add(move);
             }
         }
@@ -113,23 +91,11 @@ public class MoveGenerator implements MoveGeneration {
 
     @Override
     public boolean isCheck(Board board, boolean isWhite) {
-        init(board);
         long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
         return isAttacked(board, isWhite, kingMask);
     }
 
-    private void init(Board board) {
-        this.board = board;
-        this.isWhite = board.isWhiteToMove();
-        this.kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
-        this.checkersMask = calculateAttackerMask(1L << kingSquare);
-        this.pinMask = pinCalculator.calculatePinMask(board, isWhite);
-        this.checkersCount = Long.bitCount(checkersMask);
-        this.pseudoLegalMoves = new ArrayList<>();
-        this.legalMoves = new ArrayList<>();
-    }
-
-    private boolean resolvesCheck(Move move) {
+    private boolean resolvesCheck(Board board, Move move, int kingSquare, boolean isWhite) {
         int checkerSquare = BitboardUtils.getLSB(checkersMask);
         int endSquare = move.getEndSquare();
 
@@ -153,18 +119,13 @@ public class MoveGenerator implements MoveGeneration {
         return board.pieceAt(move.getStartSquare()).equals(PieceType.KING);
     }
 
-    private boolean doesNotLeaveKingInCheck(Move move) {
+    private boolean doesNotLeaveKingInCheck(Board board, Move move, int kingSquare, boolean isWhite) {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
 
         // Check that none of the squares the king travels through to castle are attacked.
         if (move.isCastling()) {
-            long kingMask;
-            if (BoardUtils.getFile(move.getEndSquare()) == 6) {
-                kingMask = isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
-            } else {
-                kingMask = isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
-            }
+            long kingMask = getCastlingKingTravelSquares(move, isWhite);
             return !isAttacked(board, isWhite, kingMask);
         }
         // For en passant and king moves, just make the move on the board and check the king is not attacked.
@@ -183,7 +144,7 @@ public class MoveGenerator implements MoveGeneration {
 
     }
 
-    private long calculateAttackerMask(long squareMask) {
+    private long calculateAttackerMask(Board board, boolean isWhite, long squareMask) {
         long attackerMask = 0L;
         while (squareMask != 0) {
             int square = BitboardUtils.getLSB(squareMask);
@@ -218,7 +179,22 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private boolean isAttacked(Board board, boolean isWhite, long squareMask) {
-        return calculateAttackerMask(squareMask) != 0;
+        return calculateAttackerMask(board, isWhite, squareMask) != 0;
+    }
+
+    private boolean isCapture(Board board, Move move) {
+        boolean isWhite = board.isWhiteToMove();
+        int endSquare = move.getEndSquare();
+        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
+        return (opponents & (1L << endSquare)) != 0;
+    }
+
+    private long getCastlingKingTravelSquares(Move move, boolean isWhite) {
+        if (BoardUtils.getFile(move.getEndSquare()) == 6) {
+            return isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+        } else {
+            return isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+        }
     }
 
 }

@@ -34,6 +34,9 @@ public class Searcher implements Search {
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
 
+    private static final int ASPIRATION_WINDOW_BUFFER = 50;
+    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
+
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
 
@@ -51,7 +54,6 @@ public class Searcher implements Search {
     private SearchResult result;
     private SearchResult resultCurrentDepth;
 
-    private boolean hasResultAtCurrentDepth;
     private SearchStatistics statistics;
 
     public Searcher(Board board) {
@@ -69,32 +71,51 @@ public class Searcher implements Search {
 
         evaluator = new Evaluator(board);
         timeout = Instant.now().plus(duration);
-        int currentDepth = 1;
         result = null;
         resultCurrentDepth = null;
         statistics = new SearchStatistics();
         statistics.setStart(Instant.now());
 
+        int currentDepth = 1;
+        int alpha = MIN_EVAL;
+        int beta = MAX_EVAL;
+        int retryMultiplier = 0;
+
         while (!isTimeoutExceeded()) {
 
             Instant depthStart = Instant.now();
 
-            hasResultAtCurrentDepth = false;
+            resultCurrentDepth = null;
 
-            search(currentDepth, 0, MIN_EVAL, MAX_EVAL);
+            int eval = search(currentDepth, 0, alpha, beta);
 
-            if (isTimeoutExceeded()) {
-                if (hasResultAtCurrentDepth) {
-                    result = resultCurrentDepth;
-                    break;
-                }
-            } else {
+            if (resultCurrentDepth != null) {
                 result = resultCurrentDepth;
-                if (isCheckmateFoundAtCurrentDepth(result.eval(), currentDepth)) {
-                    // Exit early if we have found the fastest mate at the current depth
-                    break;
-                }
             }
+
+            if (isTimeoutExceeded() || isCheckmateFoundAtCurrentDepth(result.eval(), currentDepth)) {
+                // Exit early if time runs out, or we already found forced mate
+                break;
+            }
+
+            if (eval <= alpha) {
+                // The result is less than alpha, so search again at the same depth with an expanded aspiration window.
+                retryMultiplier += 1;
+                alpha -= ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
+                beta += ASPIRATION_WINDOW_BUFFER;
+                continue;
+            }
+            if (eval >= beta) {
+                // The result is greater than alpha, so search again at the same depth with an expanded aspiration window.
+                retryMultiplier += 1;
+                beta += ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
+                alpha -= ASPIRATION_WINDOW_BUFFER;
+                continue;
+            }
+
+            alpha = eval - ASPIRATION_WINDOW_BUFFER;
+            beta = eval + ASPIRATION_WINDOW_BUFFER;
+            retryMultiplier = 0;
 
             statistics.incrementDepth(currentDepth, depthStart, Instant.now());
             currentDepth++;
@@ -253,7 +274,6 @@ public class Searcher implements Search {
                  alpha = eval;
                  if (plyFromRoot == 0) {
                      resultCurrentDepth = new SearchResult(eval, move);
-                     hasResultAtCurrentDepth = true;
                  }
              }
          }
@@ -337,7 +357,7 @@ public class Searcher implements Search {
 
     @Override
     public void logStatistics() {
-//        transpositionTable.logTableSize();
+        log.info(statistics.generateReport());
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {

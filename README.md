@@ -44,9 +44,9 @@ Calvin is rated about ~1850 on Lichess as of October 2023.
 | 1     | 20        | PT0.000016S  |
 | 2     | 400       | PT0.000052S  |
 | 3     | 8902      | PT0.010105S  |
-| 4     | 197281    | PT0.024139S  |
-| 5     | 4865609   | PT1.114394S  |
-| 6     | 119060324 | PT8.162227S |
+| 4     | 197281    | PT0.018618S  |
+| 5     | 4865609   | PT0.929968S  |
+| 6     | 119060324 | PT6.719023S |
 
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 

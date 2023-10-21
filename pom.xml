@@ -5,7 +5,7 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>1.12.0-MVV_LVA</version>
+    <version>1.13.1-GradualWidening</version>
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 

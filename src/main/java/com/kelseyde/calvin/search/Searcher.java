@@ -191,13 +191,12 @@ public class Searcher implements Search {
 
          List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
+         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
          if (plyRemaining == 0) {
              // In the case that max depth is reached, begin the quiescence search
              statistics.incrementNodes();
              return quiescenceSearch(alpha, beta, 1);
          }
-
-         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
          if (legalMoves.isEmpty()) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
                 statistics.incrementNodes();

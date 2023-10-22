@@ -57,38 +57,48 @@ public class StaticExchangeEvaluator {
         boolean isWhite = board.isWhiteToMove();
 
         long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
-        long pawnAttackMask = PAWN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
-        if ((pawnAttackMask & pawns) != 0) {
-            int pawnStartSquare = BitboardUtils.getLSB(pawnAttackMask & pawns);
-            return new Move(pawnStartSquare, square);
+        if (pawns > 0) {
+            long pawnAttackMask = PAWN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
+            if ((pawnAttackMask & pawns) != 0) {
+                int pawnStartSquare = BitboardUtils.getLSB(pawnAttackMask & pawns);
+                return new Move(pawnStartSquare, square);
+            }
         }
 
         long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
-        long knightAttackMask = KNIGHT_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
-        if ((knightAttackMask & knights) != 0) {
-            int knightStartSquare = BitboardUtils.getLSB(knightAttackMask & knights);
-            return new Move(knightStartSquare, square);
+        if (knights > 0) {
+            long knightAttackMask = KNIGHT_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
+            if ((knightAttackMask & knights) != 0) {
+                int knightStartSquare = BitboardUtils.getLSB(knightAttackMask & knights);
+                return new Move(knightStartSquare, square);
+            }
         }
 
         long bishops = isWhite ? board.getWhiteBishops() : board.getBlackBishops();
-        long bishopAttackMask = BISHOP_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
-        if ((bishopAttackMask & bishops) != 0) {
-            int bishopStartSquare = BitboardUtils.getLSB(bishopAttackMask & bishops);
-            return new Move(bishopStartSquare, square);
+        if (bishops > 0) {
+            long bishopAttackMask = BISHOP_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
+            if ((bishopAttackMask & bishops) != 0) {
+                int bishopStartSquare = BitboardUtils.getLSB(bishopAttackMask & bishops);
+                return new Move(bishopStartSquare, square);
+            }
         }
 
         long rooks = isWhite ? board.getWhiteRooks() : board.getBlackRooks();
-        long rookAttackMask = ROOK_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
-        if ((rookAttackMask & rooks) != 0) {
-            int rookStartSquare = BitboardUtils.getLSB(rookAttackMask & rooks);
-            return new Move(rookStartSquare, square);
+        if (rooks > 0) {
+            long rookAttackMask = ROOK_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
+            if ((rookAttackMask & rooks) != 0) {
+                int rookStartSquare = BitboardUtils.getLSB(rookAttackMask & rooks);
+                return new Move(rookStartSquare, square);
+            }
         }
 
         long queens = isWhite ? board.getWhiteQueens() : board.getBlackQueens();
-        long queenAttackMask = QUEEN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
-        if ((queenAttackMask & queens) != 0) {
-            int queenStartSquare = BitboardUtils.getLSB(queenAttackMask & queens);
-            return new Move(queenStartSquare, square);
+        if (queens > 0) {
+            long queenAttackMask = QUEEN_MOVE_GENERATOR.generateAttackMaskFromSquare(board, square, !isWhite);
+            if ((queenAttackMask & queens) != 0) {
+                int queenStartSquare = BitboardUtils.getLSB(queenAttackMask & queens);
+                return new Move(queenStartSquare, square);
+            }
         }
 
         long king = isWhite ? board.getWhiteKing() : board.getBlackKing();

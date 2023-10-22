@@ -8,10 +8,12 @@ import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.movegeneration.check.PinCalculator;
 import com.kelseyde.calvin.movegeneration.check.RayCalculator;
 import com.kelseyde.calvin.movegeneration.generator.*;
+import com.kelseyde.calvin.movegeneration.magic.Magics;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,19 +35,16 @@ public class MoveGenerator implements MoveGeneration {
     private final PinCalculator pinCalculator = new PinCalculator();
     private final RayCalculator rayCalculator = new RayCalculator();
 
-    /**
-     * A bitboard containing all the pieces that are currently pinned, for the side to move.
-     */
     private long pinMask;
-
-    /**
-     * A bitboard containing all the enemy pieces that are currently checking the king.
-     */
     private long checkersMask;
+
+    private List<Move> pseudoLegalMoves;
 
     @Override
     public List<Move> generateMoves(Board board, boolean capturesOnly) {
 
+        pseudoLegalMoves = new ArrayList<>();
+        List<Move> legalMoves = new ArrayList<>();
         boolean isWhite = board.isWhiteToMove();
         int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
 
@@ -53,13 +52,12 @@ public class MoveGenerator implements MoveGeneration {
         pinMask = pinCalculator.calculatePinMask(board, isWhite);
         int checkersCount = Long.bitCount(checkersMask);
 
-        List<Move> allMoves = kingMoveGenerator.generatePseudoLegalMoves(board, capturesOnly);
-        List<Move> legalMoves = new ArrayList<>();
+        generateKingMoves(board, capturesOnly);
 
         // If we are in double-check, the only legal moves are king moves
         boolean isDoubleCheck = checkersCount == 2;
         if (isDoubleCheck) {
-            for (Move move : allMoves) {
+            for (Move move : pseudoLegalMoves) {
                 // Filter out moves that leave the king in check
                 if (doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)) {
                     legalMoves.add(move);
@@ -69,15 +67,15 @@ public class MoveGenerator implements MoveGeneration {
         }
 
         // Otherwise, generate all the other pseudo-legal moves
-        allMoves.addAll(pawnMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
-        allMoves.addAll(knightMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
-        allMoves.addAll(bishopMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
-        allMoves.addAll(rookMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
-        allMoves.addAll(queenMoveGenerator.generatePseudoLegalMoves(board, capturesOnly));
+        generatePawnMoves(board, capturesOnly);
+        generateKnightMoves(board, capturesOnly);
+        generateBishopMoves(board, capturesOnly);
+        generateRookMoves(board, capturesOnly);
+        generateQueenMoves(board, capturesOnly);
 
         boolean isCheck = checkersCount == 1;
 
-        for (Move move : allMoves) {
+        for (Move move : pseudoLegalMoves) {
             // If we are in single-check, filter out all moves that do not resolve the check
             if ((!isCheck || resolvesCheck(board, move, kingSquare, isWhite)) &&
                 // Additionally, filter out moves that leave the king in (a new) check
@@ -166,8 +164,7 @@ public class MoveGenerator implements MoveGeneration {
             attackerMask |= rookAttackMask & opponentRooks;
 
             long opponentQueens = isWhite ? board.getBlackQueens() : board.getWhiteQueens();
-            long queenAttackMask = queenMoveGenerator.generateAttackMaskFromSquare(board, square, isWhite);
-            attackerMask |= queenAttackMask & opponentQueens;
+            attackerMask |= (bishopAttackMask | rookAttackMask) & opponentQueens;
 
             long opponentKing = isWhite ? board.getBlackKing() : board.getWhiteKing();
             long kingAttackMask = kingMoveGenerator.generateAttackMaskFromSquare(board, square, isWhite);
@@ -182,19 +179,229 @@ public class MoveGenerator implements MoveGeneration {
         return calculateAttackerMask(board, isWhite, squareMask) != 0;
     }
 
-    private boolean isCapture(Board board, Move move) {
-        boolean isWhite = board.isWhiteToMove();
-        int endSquare = move.getEndSquare();
-        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
-        return (opponents & (1L << endSquare)) != 0;
-    }
-
     private long getCastlingKingTravelSquares(Move move, boolean isWhite) {
         if (BoardUtils.getFile(move.getEndSquare()) == 6) {
             return isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
         } else {
             return isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
         }
+    }
+
+    public void generatePawnMoves(Board board, boolean capturesOnly) {
+
+        boolean isWhite = board.isWhiteToMove();
+
+        long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
+        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
+        long occupied = board.getOccupied();
+        long enPassantFile = BitboardUtils.getFileBitboard(board.getGameState().getEnPassantFile());
+
+        if (!capturesOnly) {
+            long singleAdvances = isWhite ?
+                    BitboardUtils.shiftNorth(pawns) &~ occupied &~ Bits.RANK_8 :
+                    BitboardUtils.shiftSouth(pawns) &~ occupied &~ Bits.RANK_1;
+
+            long singleAdvancesCopy = singleAdvances;
+            while (singleAdvancesCopy != 0) {
+                int endSquare = BitboardUtils.getLSB(singleAdvancesCopy);
+                int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
+                pseudoLegalMoves.add(new Move(startSquare, endSquare));
+                singleAdvancesCopy = BitboardUtils.popLSB(singleAdvancesCopy);
+            }
+
+            long doubleAdvances = isWhite ?
+                    BitboardUtils.shiftNorth(singleAdvances) &~ occupied & Bits.RANK_4 :
+                    BitboardUtils.shiftSouth(singleAdvances) &~ occupied & Bits.RANK_5;
+            while (doubleAdvances != 0) {
+                int endSquare = BitboardUtils.getLSB(doubleAdvances);
+                int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
+                pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
+                doubleAdvances = BitboardUtils.popLSB(doubleAdvances);
+            }
+
+            long advancePromotions = isWhite ?
+                    BitboardUtils.shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
+                    BitboardUtils.shiftSouth(pawns) &~ occupied & Bits.RANK_1;
+            while (advancePromotions != 0) {
+                int endSquare = BitboardUtils.getLSB(advancePromotions);
+                int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
+                pseudoLegalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                advancePromotions = BitboardUtils.popLSB(advancePromotions);
+            }
+        }
+
+        long leftCaptures = isWhite ?
+                BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_8 :
+                BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_1;
+        while (leftCaptures != 0) {
+            int endSquare = BitboardUtils.getLSB(leftCaptures);
+            int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
+            pseudoLegalMoves.add(new Move(startSquare, endSquare));
+            leftCaptures = BitboardUtils.popLSB(leftCaptures);
+        }
+
+        long rightCaptures = isWhite ?
+                BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8:
+                BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
+        while (rightCaptures != 0) {
+            int endSquare = BitboardUtils.getLSB(rightCaptures);
+            int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
+            pseudoLegalMoves.add(new Move(startSquare, endSquare));
+            rightCaptures = BitboardUtils.popLSB(rightCaptures);
+        }
+
+        long enPassantLeftCaptures = isWhite ?
+                BitboardUtils.shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 &~ Bits.FILE_H :
+                BitboardUtils.shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 &~ Bits.FILE_H;
+        while (enPassantLeftCaptures != 0) {
+            int endSquare = BitboardUtils.getLSB(enPassantLeftCaptures);
+            int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
+            pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
+            enPassantLeftCaptures = BitboardUtils.popLSB(enPassantLeftCaptures);
+        }
+
+        long enPassantRightCaptures = isWhite ?
+                BitboardUtils.shiftNorthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_6 :
+                BitboardUtils.shiftSouthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_3;
+        while (enPassantRightCaptures != 0) {
+            int endSquare = BitboardUtils.getLSB(enPassantRightCaptures);
+            int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
+            pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
+            enPassantRightCaptures = BitboardUtils.popLSB(enPassantRightCaptures);
+        }
+
+        long captureLeftPromotions = isWhite ?
+                BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_8 :
+                BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_1;
+        while (captureLeftPromotions != 0) {
+            int endSquare = BitboardUtils.getLSB(captureLeftPromotions);
+            int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
+            pseudoLegalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+            captureLeftPromotions = BitboardUtils.popLSB(captureLeftPromotions);
+        }
+
+        long captureRightPromotions = isWhite ?
+                BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_8 :
+                BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
+        while (captureRightPromotions != 0) {
+            int endSquare = BitboardUtils.getLSB(captureRightPromotions);
+            int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
+            pseudoLegalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+            captureRightPromotions = BitboardUtils.popLSB(captureRightPromotions);
+        }
+
+    }
+
+    public void generateKnightMoves(Board board, boolean capturesOnly) {
+        long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
+        long friendlies = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
+        long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
+
+        while (knights != 0) {
+            int startSquare = BitboardUtils.getLSB(knights);
+            long possibleMoves = Bits.KNIGHT_ATTACKS[startSquare] &~ friendlies;
+            if (capturesOnly) {
+                possibleMoves = possibleMoves & opponents;
+            }
+            while (possibleMoves != 0) {
+                int endSquare = BitboardUtils.getLSB(possibleMoves);
+                pseudoLegalMoves.add(new Move(startSquare, endSquare));
+                possibleMoves = BitboardUtils.popLSB(possibleMoves);
+            }
+            knights = BitboardUtils.popLSB(knights);
+        }
+    }
+
+    public void generateKingMoves(Board board, boolean capturesOnly) {
+
+        long king = board.isWhiteToMove() ? board.getWhiteKing() : board.getBlackKing();
+        if (king == 0L) {
+            return;
+        }
+        long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
+        long occupied = board.getOccupied();
+
+        int startSquare = BitboardUtils.getLSB(king);
+
+        long kingMoves = Bits.KING_ATTACKS[startSquare] &~ friendlyPieces;
+        if (capturesOnly) {
+            long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
+            kingMoves = kingMoves & opponents;
+        }
+        while (kingMoves != 0) {
+            int endSquare = BitboardUtils.getLSB(kingMoves);
+            pseudoLegalMoves.add(new Move(startSquare, endSquare));
+            kingMoves = BitboardUtils.popLSB(kingMoves);
+        }
+        if (!capturesOnly) {
+            boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
+            if (isKingsideAllowed) {
+                long travelSquares = board.isWhiteToMove() ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
+                long blockedSquares = travelSquares & occupied;
+                if (blockedSquares == 0) {
+                    int endSquare = board.isWhiteToMove() ? 6 : 62;
+                    pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+                }
+            }
+            boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
+            if (isQueensideAllowed) {
+                long travelSquares = board.isWhiteToMove() ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
+                long blockedSquares = travelSquares & occupied;
+                if (blockedSquares == 0) {
+                    int endSquare = board.isWhiteToMove() ? 2 : 58;
+                    pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+                }
+            }
+        }
+    }
+
+    public void generateSlidingMoves(Board board, boolean capturesOnly, long sliders, boolean isOrthogonal, boolean isDiagonal) {
+        boolean isWhite = board.isWhiteToMove();
+        while (sliders != 0) {
+            int startSquare = BitboardUtils.getLSB(sliders);
+            long attackMask = 0L;
+            long occ = board.getOccupied();
+            long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
+            if (isOrthogonal) {
+                attackMask |= Magics.getRookAttacks(startSquare, occ) &~ friendlies;
+            }
+            if (isDiagonal) {
+                attackMask |= Magics.getBishopAttacks(startSquare, occ) &~ friendlies;
+            }
+            if (capturesOnly) {
+                long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
+                attackMask = attackMask & opponents;
+            }
+            sliders = BitboardUtils.popLSB(sliders);
+            while (attackMask != 0) {
+                int endSquare = BitboardUtils.getLSB(attackMask);
+                pseudoLegalMoves.add(new Move(startSquare, endSquare));
+                attackMask = BitboardUtils.popLSB(attackMask);
+            }
+        }
+    }
+
+    public void generateBishopMoves(Board board, boolean capturesOnly) {
+        long bishops = board.isWhiteToMove() ? board.getWhiteBishops() : board.getBlackBishops();
+        generateSlidingMoves(board, capturesOnly, bishops, false, true);
+    }
+
+    public void generateRookMoves(Board board, boolean capturesOnly) {
+        long rooks = board.isWhiteToMove() ? board.getWhiteRooks() : board.getBlackRooks();
+        generateSlidingMoves(board, capturesOnly, rooks, true, false);
+    }
+
+    public void generateQueenMoves(Board board, boolean capturesOnly) {
+        long queens = board.isWhiteToMove() ? board.getWhiteQueens() : board.getBlackQueens();
+        generateSlidingMoves(board, capturesOnly, queens, true, true);
+    }
+
+    private List<Move> getPromotionMoves(int startSquare, int endSquare) {
+        return List.of(
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
     }
 
 }

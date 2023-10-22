@@ -67,6 +67,9 @@ public class Bits {
                     ANTI_DIAGONAL_MASK_11, ANTI_DIAGONAL_MASK_12, ANTI_DIAGONAL_MASK_13, ANTI_DIAGONAL_MASK_14, ANTI_DIAGONAL_MASK_15
             };
 
+    public static final long KINGSIDE_MASK = FILE_F | FILE_G | FILE_H;
+    public static final long QUEENSIDE_MASK = FILE_A | FILE_B | FILE_C;
+
     // Masks for the squares that must be unoccupied for legal castling
     public static final long WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK = 0x000000000000000EL;
     public static final long WHITE_KINGSIDE_CASTLE_TRAVEL_MASK = 0x0000000000000060L;

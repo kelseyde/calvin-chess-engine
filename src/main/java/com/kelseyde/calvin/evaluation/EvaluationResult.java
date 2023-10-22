@@ -17,10 +17,12 @@ public class EvaluationResult {
 
     int pawnStructureScore;
 
+    int kingPawnShieldScore;
+
     int mopUpEval;
 
     public int sum() {
-        return material.eval() + piecePlacementScore.sum() + pawnStructureScore + mopUpEval;
+        return material.eval() + piecePlacementScore.sum() + pawnStructureScore + kingPawnShieldScore + mopUpEval;
     }
 
 }

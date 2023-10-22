@@ -170,95 +170,40 @@ public class Board {
     }
 
     public void toggleSquares(PieceType type, boolean isWhite, int startSquare, int endSquare) {
-        switch (type) {
-            case PAWN -> {
-                if (isWhite) {
-                    whitePawns ^= (1L << startSquare | 1L << endSquare);
-                } else {
-                    blackPawns ^= (1L << startSquare | 1L << endSquare);
-                }
-            }
-            case KNIGHT -> {
-                if (isWhite) {
-                    whiteKnights ^= (1L << startSquare | 1L << endSquare);
-                } else {
-                    blackKnights ^= (1L << startSquare | 1L << endSquare);
-                }
-            }
-            case BISHOP -> {
-                if (isWhite) {
-                    whiteBishops ^= (1L << startSquare | 1L << endSquare);
-                } else {
-                    blackBishops ^= (1L << startSquare | 1L << endSquare);
-                }
-            }
-            case ROOK -> {
-                if (isWhite) {
-                    whiteRooks ^= (1L << startSquare | 1L << endSquare);
-                } else {
-                    blackRooks ^= (1L << startSquare | 1L << endSquare);
-                }
-            }
-            case QUEEN -> {
-                if (isWhite) {
-                    whiteQueens ^= (1L << startSquare | 1L << endSquare);
-                } else {
-                    blackQueens ^= (1L << startSquare | 1L << endSquare);
-                }
-            }
-            case KING -> {
-                if (isWhite) {
-                    whiteKing ^= (1L << startSquare | 1L << endSquare);
-                } else {
-                    blackKing ^= (1L << startSquare | 1L << endSquare);
-                }
-            }
-        }
+        long toggleMask = (1L << startSquare | 1L << endSquare);
+        toggle(type, isWhite, toggleMask);
     }
 
     public void toggleSquare(PieceType type, boolean isWhite, int square) {
+        long toggleMask = 1L << square;
+        toggle(type, isWhite, toggleMask);
+    }
+
+    private void toggle(PieceType type, boolean isWhite, long toggleMask) {
         switch (type) {
             case PAWN -> {
-                if (isWhite) {
-                    whitePawns ^= 1L << square;
-                } else {
-                    blackPawns ^= 1L << square;
-                }
+                if (isWhite) whitePawns ^= toggleMask;
+                else blackPawns ^= toggleMask;
             }
             case KNIGHT -> {
-                if (isWhite) {
-                    whiteKnights ^= 1L << square;
-                } else {
-                    blackKnights ^= 1L << square;
-                }
+                if (isWhite) whiteKnights ^= toggleMask;
+                else blackKnights ^= toggleMask;
             }
             case BISHOP -> {
-                if (isWhite) {
-                    whiteBishops ^= 1L << square;
-                } else {
-                    blackBishops ^= 1L << square;
-                }
+                if (isWhite) whiteBishops ^= toggleMask;
+                else blackBishops ^= toggleMask;
             }
             case ROOK -> {
-                if (isWhite) {
-                    whiteRooks ^= 1L << square;
-                } else {
-                    blackRooks ^= 1L << square;
-                }
+                if (isWhite) whiteRooks ^= toggleMask;
+                else blackRooks ^= toggleMask;
             }
             case QUEEN -> {
-                if (isWhite) {
-                    whiteQueens ^= 1L << square;
-                } else {
-                    blackQueens ^= 1L << square;
-                }
+                if (isWhite) whiteQueens ^= toggleMask;
+                else blackQueens ^= toggleMask;
             }
             case KING -> {
-                if (isWhite) {
-                    whiteKing ^= 1L << square;
-                } else {
-                    blackKing ^= 1L << square;
-                }
+                if (isWhite) whiteKing ^= toggleMask;
+                else blackKing ^= toggleMask;
             }
         }
     }
@@ -295,25 +240,13 @@ public class Board {
 
     public PieceType pieceAt(int square) {
         long squareMask = 1L << square;
-        if ((squareMask & (whitePawns | blackPawns)) != 0) {
-            return PieceType.PAWN;
-        }
-        if ((squareMask & (whiteKnights | blackKnights)) != 0) {
-            return PieceType.KNIGHT;
-        }
-        if ((squareMask & (whiteBishops | blackBishops)) != 0) {
-            return PieceType.BISHOP;
-        }
-        if ((squareMask & (whiteRooks | blackRooks)) != 0) {
-            return PieceType.ROOK;
-        }
-        if ((squareMask & (whiteQueens | blackQueens)) != 0) {
-            return PieceType.QUEEN;
-        }
-        if ((squareMask & (whiteKing | blackKing)) != 0) {
-            return PieceType.KING;
-        }
-        return null;
+        if ((squareMask & (whitePawns | blackPawns)) != 0)          return PieceType.PAWN;
+        else if ((squareMask & (whiteKnights | blackKnights)) != 0) return PieceType.KNIGHT;
+        else if ((squareMask & (whiteBishops | blackBishops)) != 0) return PieceType.BISHOP;
+        else if ((squareMask & (whiteRooks | blackRooks)) != 0)     return PieceType.ROOK;
+        else if ((squareMask & (whiteQueens | blackQueens)) != 0)   return PieceType.QUEEN;
+        else if ((squareMask & (whiteKing | blackKing)) != 0)       return PieceType.KING;
+        else return null;
     }
 
 }

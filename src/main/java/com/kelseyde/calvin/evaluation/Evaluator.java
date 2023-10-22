@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.evaluation.kingsafety.KingPawnShieldEvaluator;
 import com.kelseyde.calvin.evaluation.material.Material;
 import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
 import com.kelseyde.calvin.evaluation.mopup.MopUpEvaluator;
@@ -29,6 +30,8 @@ public class Evaluator implements Evaluation {
     private final PiecePlacementEvaluator piecePlacementEvaluator = new PiecePlacementEvaluator();
 
     private final PawnStructureEvaluator pawnStructureEvaluator = new PawnStructureEvaluator();
+
+    private final KingPawnShieldEvaluator kingPawnShieldEvaluator = new KingPawnShieldEvaluator();
 
     private final MopUpEvaluator mopUpEvaluator = new MopUpEvaluator();
 
@@ -59,6 +62,9 @@ public class Evaluator implements Evaluation {
         whiteEval.setPawnStructureScore(pawnStructureEvaluator.evaluate(board, true));
         blackEval.setPawnStructureScore(pawnStructureEvaluator.evaluate(board, false));
 
+        whiteEval.setKingPawnShieldScore(kingPawnShieldEvaluator.evaluate(board, blackEval.getMaterial(), true));
+        blackEval.setKingPawnShieldScore(kingPawnShieldEvaluator.evaluate(board, whiteEval.getMaterial(), false));
+
         whiteEval.setMopUpEval(mopUpEvaluator.evaluate(board, whiteEval.getMaterial(), blackEval.getMaterial(), true));
         blackEval.setMopUpEval(mopUpEvaluator.evaluate(board, blackEval.getMaterial(), whiteEval.getMaterial(), false));
     }
@@ -81,15 +87,19 @@ public class Evaluator implements Evaluation {
         boolean updateBlackCapture = false;
         boolean updateWhiteWeightedPieces = false;
         boolean updateBlackWeightedPieces = false;
+        boolean updateWhiteKingPawnShield = false;
+        boolean updateBlackKingPawnShield = false;
 
         if (move.isPromotion()) {
             updatePawnStructure = true;
             if (board.isWhiteToMove()) {
                 updateBlackMaterial = true;
                 updateBlackWeightedPieces = true;
+                updateWhiteKingPawnShield = true;
             } else {
                 updateWhiteMaterial = true;
                 updateWhiteWeightedPieces = true;
+                updateBlackKingPawnShield = true;
             }
         }
 
@@ -99,6 +109,7 @@ public class Evaluator implements Evaluation {
                 updateWhiteMaterial = true;
                 updateWhiteCapture = true;
                 updateBlackWeightedPieces = true;
+                updateBlackKingPawnShield = true;
                 if (capturedPiece == PieceType.PAWN) {
                     updatePawnStructure = true;
                 }
@@ -106,15 +117,30 @@ public class Evaluator implements Evaluation {
                 updateBlackMaterial = true;
                 updateBlackCapture = true;
                 updateWhiteWeightedPieces = true;
+                updateWhiteKingPawnShield = true;
                 if (capturedPiece == PieceType.PAWN) {
                     updatePawnStructure = true;
                 }
+            }
+            if (capturedPiece == PieceType.PAWN) {
+                updateWhiteKingPawnShield = true;
+                updateBlackKingPawnShield = true;
+            }
+        }
+
+        if (pieceType == PieceType.KING) {
+            if (board.isWhiteToMove()) {
+                updateBlackKingPawnShield = true;
+            } else {
+                updateWhiteKingPawnShield = true;
             }
         }
 
         if (pieceType == PieceType.PAWN) {
             // Any pawn move can create passed/backward/doubled pawns for either side.
             updatePawnStructure = true;
+            updateWhiteKingPawnShield = true;
+            updateBlackKingPawnShield = true;
         }
 
         Material whiteMaterial = whiteEval.getMaterial();
@@ -123,6 +149,8 @@ public class Evaluator implements Evaluation {
         PiecePlacementScore blackPieceScore = blackEval.getPiecePlacementScore();
         int whitePawnStructureScore = whiteEval.getPawnStructureScore();
         int blackPawnStructureScore = blackEval.getPawnStructureScore();
+        int whiteKingPawnShieldScore = whiteEval.getKingPawnShieldScore();
+        int blackKingPawnShieldScore = blackEval.getKingPawnShieldScore();
 
         if (updatePawnStructure) {
             whitePawnStructureScore = pawnStructureEvaluator.evaluate(board, true);
@@ -154,12 +182,18 @@ public class Evaluator implements Evaluation {
         if (updateBlackCapture) {
             blackPieceScore = piecePlacementEvaluator.handleCapture(board, whiteMaterial.phase(), blackPieceScore, capturedPiece);
         }
+        if (updateWhiteKingPawnShield) {
+            whiteKingPawnShieldScore = kingPawnShieldEvaluator.evaluate(board, blackMaterial, true);
+        }
+        if (updateBlackKingPawnShield) {
+            blackKingPawnShieldScore = kingPawnShieldEvaluator.evaluate(board, whiteMaterial, false);
+        }
 
         int whiteMopUpScore = mopUpEvaluator.evaluate(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = mopUpEvaluator.evaluate(board, blackMaterial, whiteMaterial, false);
 
-        this.whiteEval = new EvaluationResult(whiteMaterial, whitePieceScore, whitePawnStructureScore, whiteMopUpScore);
-        this.blackEval = new EvaluationResult(blackMaterial, blackPieceScore, blackPawnStructureScore, blackMopUpScore);
+        this.whiteEval = new EvaluationResult(whiteMaterial, whitePieceScore, whitePawnStructureScore, whiteKingPawnShieldScore, whiteMopUpScore);
+        this.blackEval = new EvaluationResult(blackMaterial, blackPieceScore, blackPawnStructureScore, blackKingPawnShieldScore, blackMopUpScore);
 
     }
 

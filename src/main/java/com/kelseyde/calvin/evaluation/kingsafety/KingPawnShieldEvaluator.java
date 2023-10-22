@@ -28,14 +28,28 @@ public class KingPawnShieldEvaluator {
         long friendlyPawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
         long opponentPawns = isWhite ? board.getBlackPawns() : board.getWhitePawns();
 
-        int pawnShieldPenalty = 0;
+        int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
 
+        int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
+
+        float endgameWeight = opponentMaterial.phase();
+        if (opponentMaterial.queens() == 0) {
+            // King safety matters less without opponent queen
+            endgameWeight *= 0.6f;
+        }
+
+        return (int) -((pawnShieldPenalty + openKingFilePenalty) * endgameWeight);
+
+    }
+
+    private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {
+        int pawnShieldPenalty = 0;
         if (kingFile <= 2 || kingFile >= 5) {
 
             long tripleFileMask = PawnBits.TRIPLE_FILE_MASK[kingFile];
 
             // Add penalty for a castled king with pawns far away from their starting squares.
-            long pawnShieldMask =  tripleFileMask & friendlyPawns;
+            long pawnShieldMask =  tripleFileMask & pawns;
             while (pawnShieldMask != 0) {
                 int pawn = BitboardUtils.getLSB(pawnShieldMask);
                 int distance = Distance.chebyshev(kingSquare, pawn);
@@ -43,7 +57,10 @@ public class KingPawnShieldEvaluator {
                 pawnShieldMask = BitboardUtils.popLSB(pawnShieldMask);
             }
         }
+        return pawnShieldPenalty;
+    }
 
+    private int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial) {
         int openKingFilePenalty = 0;
         if (opponentMaterial.rooks() > 0 || opponentMaterial.queens() > 0) {
 
@@ -66,15 +83,7 @@ public class KingPawnShieldEvaluator {
             }
 
         }
-
-        float endgameWeight = opponentMaterial.phase();
-        if (opponentMaterial.queens() == 0) {
-            // King safety matters less without opponent queen
-            endgameWeight *= 0.6f;
-        }
-
-        return (int) -((pawnShieldPenalty + openKingFilePenalty) * endgameWeight);
-
+        return openKingFilePenalty;
     }
 
 }

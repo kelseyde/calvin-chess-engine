@@ -62,7 +62,7 @@ public class Board {
 
         int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
         int newEnPassantFile = -1;
-        boolean resetFiftyMoveCounter = capturedPieceType != null|| PieceType.PAWN.equals(pieceType);
+        boolean resetFiftyMoveCounter = capturedPieceType != null || PieceType.PAWN.equals(pieceType);
         newFiftyMoveCounter = resetFiftyMoveCounter ? 0 :  ++newFiftyMoveCounter;
 
         if (move.isPawnDoubleMove()) {
@@ -216,6 +216,10 @@ public class Board {
 
     private int calculateCastlingRights(int startSquare, int endSquare, PieceType pieceType) {
         int newCastlingRights = gameState.getCastlingRights();
+        if (newCastlingRights == 0b0000) {
+            // Both sides already lost castling rights, so nothing to calculate.
+            return newCastlingRights;
+        }
         // Any move by the king removes castling rights.
         if (PieceType.KING.equals(pieceType)) {
             newCastlingRights &= isWhiteToMove ? GameState.CLEAR_WHITE_CASTLING_MASK : GameState.CLEAR_BLACK_CASTLING_MASK;

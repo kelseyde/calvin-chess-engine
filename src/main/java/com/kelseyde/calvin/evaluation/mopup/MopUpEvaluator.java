@@ -30,7 +30,6 @@ public class MopUpEvaluator {
 
             // Bonus for moving king closer to opponent king
             mopUpEval += (14 - Distance.manhattan(friendlyKing, opponentKing)) * KING_MANHATTAN_DISTANCE_MULTIPLIER;
-
             mopUpEval += (7 - Distance.chebyshev(friendlyKing, opponentKing)) * KING_CHEBYSHEV_DISTANCE_MULTIPLIER;
 
             // Bonus for pushing opponent king to the edges of the board

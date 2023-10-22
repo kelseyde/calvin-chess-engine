@@ -13,12 +13,12 @@ import java.util.List;
 
 /**
  * Implementation of {@link MoveOrdering} using the following move-ordering strategy:
- *  1. Previous best move found at an earlier ply.
+ *  1. Previous best move found at an earlier ply
  *  2. Queen promotions
- *  3. Winning captures (sub-ordered using MVV-LVA).
- *  4. Equal captures (sub-ordered using MVV-LVA).
+ *  3. Winning captures (sub-ordered using MVV-LVA)
+ *  4. Equal captures (sub-ordered using MVV-LVA)
  *  5. Killer moves
- *  6. Losing captures
+ *  6. Losing captures (sub-ordered using MVV-LVA)
  *  7. Under-promotions
  *  8. History moves
  *  9. Everything else.

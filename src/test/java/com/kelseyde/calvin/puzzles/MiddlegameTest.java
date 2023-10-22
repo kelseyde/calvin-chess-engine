@@ -124,4 +124,15 @@ public class MiddlegameTest {
 
     }
 
+    @Test
+    public void testKingSafetyDuringPawnStorm() {
+
+        String fen = "3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(5000);
+        System.out.println(NotationUtils.toNotation(move));
+
+    }
+
 }

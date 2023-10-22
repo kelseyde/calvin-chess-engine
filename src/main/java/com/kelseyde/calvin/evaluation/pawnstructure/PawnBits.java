@@ -7,6 +7,7 @@ import com.kelseyde.calvin.utils.BoardUtils;
 public class PawnBits {
 
     public static final long[] ADJACENT_FILE_MASK = generateAdjacentFileMask();
+    public static final long[] TRIPLE_FILE_MASK = generateTripleFileMask();
 
     public static final long[] WHITE_PASSED_PAWN_MASK = generatePassedPawnMask(true);
     public static final long[] BLACK_PASSED_PAWN_MASK = generatePassedPawnMask(false);
@@ -22,6 +23,18 @@ public class PawnBits {
             adjacentFileMasks[i] = left | right;
         }
         return adjacentFileMasks;
+    }
+
+    private static long[] generateTripleFileMask() {
+
+        long[] tripleFileMasks = new long[8];
+        for (int i = 0; i < 8; i++) {
+            long fileMask = Bits.FILE_MASKS[i];
+            long adjacentFileMask = ADJACENT_FILE_MASK[i];
+            tripleFileMasks[i] = fileMask | adjacentFileMask;
+        }
+        return tripleFileMasks;
+
     }
 
     private static long[] generatePassedPawnMask(boolean isWhite) {

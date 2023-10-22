@@ -84,7 +84,6 @@ public class Searcher implements Search {
         while (!isTimeoutExceeded()) {
 
             Instant depthStart = Instant.now();
-
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta);
@@ -124,7 +123,7 @@ public class Searcher implements Search {
         if (result == null) {
             // If we did not find a single move during search (almost impossible), just return a random
             // legal move as a last resort.
-            log.warn("Time expired before a move was found");
+            log.warn("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }

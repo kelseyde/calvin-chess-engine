@@ -107,9 +107,9 @@ public class MoveGenerator implements MoveGeneration {
             long singleAdvances = isWhite ?
                     BitboardUtils.shiftNorth(pawns) &~ occupied &~ Bits.RANK_8 :
                     BitboardUtils.shiftSouth(pawns) &~ occupied &~ Bits.RANK_1;
-            singleAdvances &= pushMask;
 
             long singleAdvancesCopy = singleAdvances;
+            singleAdvancesCopy &= pushMask;
             while (singleAdvancesCopy != 0) {
                 int endSquare = BitboardUtils.getLSB(singleAdvancesCopy);
                 int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
@@ -488,7 +488,7 @@ public class MoveGenerator implements MoveGeneration {
     private boolean leavesKingInCheck(Board board, Move move, boolean isWhite) {
         board.makeMove(move);
         int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
-        boolean isAttacked = isAttacked(board, isWhite, kingSquare);
+        boolean isAttacked = isAttacked(board, isWhite, 1L << kingSquare);
         board.unmakeMove();
         return isAttacked;
     }

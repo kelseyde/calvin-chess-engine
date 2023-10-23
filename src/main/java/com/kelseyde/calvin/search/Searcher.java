@@ -54,7 +54,7 @@ public class Searcher implements Search {
     private SearchResult result;
     private SearchResult resultCurrentDepth;
 
-    private SearchStatistics statistics;
+    private SearchStatistics statistics = new SearchStatistics();
 
     public Searcher(Board board) {
         this.board = board;
@@ -364,6 +364,10 @@ public class Searcher implements Search {
 
     private boolean isTimeoutExceeded() {
         return !Instant.now().isBefore(timeout);
+    }
+
+    public void setTimeout(Instant timeout) {
+        this.timeout = timeout;
     }
 
 }

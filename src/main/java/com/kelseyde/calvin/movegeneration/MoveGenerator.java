@@ -138,7 +138,7 @@ public class MoveGenerator implements MoveGeneration {
 
     }
 
-    public void generatePawnMoves(Board board, boolean capturesOnly) {
+    private void generatePawnMoves(Board board, boolean capturesOnly) {
 
         boolean isWhite = board.isWhiteToMove();
 
@@ -243,7 +243,7 @@ public class MoveGenerator implements MoveGeneration {
 
     }
 
-    public void generateKnightMoves(Board board, boolean capturesOnly) {
+    private void generateKnightMoves(Board board, boolean capturesOnly) {
         long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
         long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
 
@@ -262,7 +262,7 @@ public class MoveGenerator implements MoveGeneration {
         }
     }
 
-    public void generateKingMoves(Board board, boolean capturesOnly) {
+    private void generateKingMoves(Board board, boolean capturesOnly) {
 
         long king = board.isWhiteToMove() ? board.getWhiteKing() : board.getBlackKing();
         if (king == 0L) {
@@ -305,7 +305,7 @@ public class MoveGenerator implements MoveGeneration {
         }
     }
 
-    public void generateSlidingMoves(Board board, boolean capturesOnly, long sliders, boolean isOrthogonal, boolean isDiagonal) {
+    private void generateSlidingMoves(Board board, boolean capturesOnly, long sliders, boolean isOrthogonal, boolean isDiagonal) {
         boolean isWhite = board.isWhiteToMove();
         while (sliders != 0) {
             int startSquare = BitboardUtils.getLSB(sliders);
@@ -323,17 +323,17 @@ public class MoveGenerator implements MoveGeneration {
         }
     }
 
-    public void generateBishopMoves(Board board, boolean capturesOnly) {
+    private void generateBishopMoves(Board board, boolean capturesOnly) {
         long bishops = board.isWhiteToMove() ? board.getWhiteBishops() : board.getBlackBishops();
         generateSlidingMoves(board, capturesOnly, bishops, false, true);
     }
 
-    public void generateRookMoves(Board board, boolean capturesOnly) {
+    private void generateRookMoves(Board board, boolean capturesOnly) {
         long rooks = board.isWhiteToMove() ? board.getWhiteRooks() : board.getBlackRooks();
         generateSlidingMoves(board, capturesOnly, rooks, true, false);
     }
 
-    public void generateQueenMoves(Board board, boolean capturesOnly) {
+    private void generateQueenMoves(Board board, boolean capturesOnly) {
         long queens = board.isWhiteToMove() ? board.getWhiteQueens() : board.getBlackQueens();
         generateSlidingMoves(board, capturesOnly, queens, true, true);
     }

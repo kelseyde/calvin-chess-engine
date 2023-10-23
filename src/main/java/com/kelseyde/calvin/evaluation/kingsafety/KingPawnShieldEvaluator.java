@@ -15,6 +15,7 @@ public class KingPawnShieldEvaluator {
     private static final int SEMI_OPEN_ADJACENT_FILE_PENALTY = 10;
     private static final int OPEN_KING_FILE_PENALTY = 25;
     private static final int OPEN_ADJACENT_FILE_PENALTY = 15;
+    private static final int LOST_CASTLING_RIGHTS_PENALTY = 80;
 
     public int evaluate(Board board, Material opponentMaterial, boolean isWhite) {
 
@@ -31,13 +32,15 @@ public class KingPawnShieldEvaluator {
 
         int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
 
+        int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(board, isWhite, kingFile);
+
         float endgameWeight = opponentMaterial.phase();
         if (opponentMaterial.queens() == 0) {
             // King safety matters less without opponent queen
             endgameWeight *= 0.6f;
         }
 
-        return (int) -((pawnShieldPenalty + openKingFilePenalty) * endgameWeight);
+        return (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * endgameWeight);
 
     }
 
@@ -83,6 +86,22 @@ public class KingPawnShieldEvaluator {
 
         }
         return openKingFilePenalty;
+    }
+
+    private int calculateLostCastlingRightsPenalty(Board board, boolean isWhite, int kingFile) {
+        if (kingFile <= 2 || kingFile >= 5) {
+            return 0;
+        }
+        int penalty = 0;
+        boolean hasCastlingRights = board.getGameState().hasCastlingRights(isWhite);
+        if (!hasCastlingRights) {
+            penalty += LOST_CASTLING_RIGHTS_PENALTY;
+            boolean opponentHasCastlingRights = board.getGameState().hasCastlingRights(!isWhite);
+            if (!opponentHasCastlingRights) {
+                penalty = penalty / 2;
+            }
+        }
+        return penalty;
     }
 
 }

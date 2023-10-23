@@ -26,4 +26,17 @@ public class OpeningTest {
 
     }
 
+    @Test
+    public void doesNotMoveTheKingBeforeCastling2() {
+
+        String fen = "r3kb1r/p1ppqppp/b1p5/3nP3/2P5/8/PP2QPPP/RNB1KB1R w KQkq - 1 9";
+        Bot bot = new CalvinBot();
+        bot.newGame();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(3000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertNotEquals(NotationUtils.fromNotation("e1", "d1"), move);
+
+    }
+
 }

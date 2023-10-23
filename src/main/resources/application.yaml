@@ -14,10 +14,6 @@ server:
     context-path: /${spring.application.name}
 
 logging:
-  file:
-    name: calvin_debug.log
-    max-size: 1
-    clean-history-on-start: true
   level:
     root: WARN
     com.kelseyde.calvin: DEBUG

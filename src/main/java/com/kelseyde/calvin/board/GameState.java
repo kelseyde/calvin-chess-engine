@@ -28,6 +28,10 @@ public class GameState {
     int castlingRights = INITIAL_CASTLING_RIGHTS;
     int fiftyMoveCounter = 0;
 
+    public boolean hasCastlingRights(boolean isWhite) {
+        return isKingsideCastlingAllowed(isWhite) || isQueensideCastlingAllowed(isWhite);
+    }
+
     public boolean isKingsideCastlingAllowed(boolean isWhite) {
         long kingsideMask = isWhite ? 0b0001 : 0b0100;
         return (castlingRights & kingsideMask) == kingsideMask;

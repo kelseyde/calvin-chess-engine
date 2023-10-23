@@ -362,4 +362,13 @@ public class CheckTest {
         TestUtils.getLegalMove(board, "g4", "e2");
     }
 
+    @Test
+    public void canBlockCheckWithPawnPush() {
+
+        Board board = FEN.fromFEN("rnbqkbnr/ppp1pppp/3p4/8/Q7/2P5/PP1PPPPP/RNB1KBNR b KQkq - 1 2");
+
+        TestUtils.getLegalMove(board, "b7", "b5");
+
+    }
+
 }

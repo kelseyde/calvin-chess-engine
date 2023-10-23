@@ -5,7 +5,6 @@ import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.evaluation.material.Material;
 import com.kelseyde.calvin.evaluation.pawnstructure.PawnBits;
-import com.kelseyde.calvin.evaluation.placement.PiecePlacementScore;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 

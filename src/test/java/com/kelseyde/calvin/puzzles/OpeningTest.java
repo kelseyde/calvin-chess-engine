@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.utils.NotationUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -13,26 +14,15 @@ import java.util.Collections;
 public class OpeningTest {
 
     @Test
-    public void openingMove() {
+    public void doesNotMoveTheKingBeforeCastling() {
 
-        String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        String fen = "rnbqk2r/ppp2ppp/3bpn2/1B1p4/3P1B2/2P1PN2/PP3PPP/RN1QK2R b KQkq - 2 6";
         Bot bot = new CalvinBot();
         bot.newGame();
         bot.setPosition(fen, Collections.emptyList());
         Move move = bot.think(3000);
         System.out.println(NotationUtils.toNotation(move));
-
-    }
-
-    @Test
-    public void test() {
-
-        String fen = "r2qkbnr/pppnp2p/4b1p1/1B1p1pN1/3P4/2N1P3/PPP2PPP/R1BQK2R b KQkq - 5 6";
-        Bot bot = new CalvinBot();
-        bot.newGame();
-        bot.setPosition(fen, Collections.emptyList());
-        Move move = bot.think(400);
-        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertNotEquals(NotationUtils.fromNotation("e8", "f8"), move);
 
     }
 

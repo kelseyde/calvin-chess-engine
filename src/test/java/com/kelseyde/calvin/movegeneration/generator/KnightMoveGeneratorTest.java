@@ -3,6 +3,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class KnightMoveGeneratorTest {
 
-    private final KnightMoveGenerator generator = new KnightMoveGenerator();
+    private final MoveGenerator generator = new MoveGenerator();
 
     private Board board;
 
@@ -96,6 +97,8 @@ public class KnightMoveGeneratorTest {
     @Test
     public void canCaptureOpponentPieces() {
 
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 3);
         board.toggleSquare(PieceType.KNIGHT, true, 43);
         board.toggleSquare(PieceType.PAWN, false, 26);
         board.toggleSquare(PieceType.PAWN, false, 28);
@@ -107,7 +110,7 @@ public class KnightMoveGeneratorTest {
         board.toggleSquare(PieceType.QUEEN, false, 60);
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(m -> m.getStartSquare() == 43)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -121,7 +124,7 @@ public class KnightMoveGeneratorTest {
         String fen = "2R1R3/1P3Q2/3N4/1B3B2/2P1P3/8/8/K6k w - - 0 1";
         board = FEN.fromFEN(fen);
 
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(m -> m.getStartSquare() == 43)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -131,7 +134,7 @@ public class KnightMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(PieceType.KNIGHT, true, startSquare);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(m -> m.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

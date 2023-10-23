@@ -3,6 +3,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class RookMoveGeneratorTest {
 
-    private final RookMoveGenerator generator = new RookMoveGenerator();
+    private final MoveGenerator generator = new MoveGenerator();
 
     private Board board;
     
@@ -58,7 +59,7 @@ public class RookMoveGeneratorTest {
         String fen = "k7/8/4p3/8/2n1R1b1/8/4q3/K7 w - - 0 1";
         board = FEN.fromFEN(fen);
 
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == 28)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -71,7 +72,9 @@ public class RookMoveGeneratorTest {
 
         Board board = FEN.fromFEN("K7/1R6/8/8/8/8/6r1/7k w - - 0 1");
 
-        List<Move> moves = generator.generatePseudoLegalMoves(board, false);
+        List<Move> moves = generator.generateMoves(board, false).stream()
+                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.ROOK)
+                .toList();
 
         Assertions.assertEquals(14, moves.size());
 
@@ -94,7 +97,7 @@ public class RookMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(PieceType.ROOK, true, startSquare);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

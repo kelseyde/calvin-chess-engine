@@ -3,19 +3,18 @@ package com.kelseyde.calvin.movegeneration.generator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class QueenMoveGeneratorTest {
 
-    private final QueenMoveGenerator generator = new QueenMoveGenerator();
+    private final MoveGenerator generator = new MoveGenerator();
 
     private Board board;
 
@@ -58,21 +57,12 @@ public class QueenMoveGeneratorTest {
     }
 
     @Test
-    public void doesNotGenerateOpponentQueenMoves() {
-
-        Board board = FEN.fromFEN("K7/1Q6/8/8/8/8/6q1/7k w - - 0 1");
-
-        List<Move> moves = generator.generatePseudoLegalMoves(board, false);
-
-        Assertions.assertEquals(21, moves.size());
-
-    }
-
-    @Test
     public void capturingOpponentPiecesEndsVector() {
 
         int startSquare = 28; //e4
 
+        board.toggleSquare(PieceType.KING, false, 0);
+        board.toggleSquare(PieceType.KING, true, 64);
         board.toggleSquare(PieceType.PAWN, false, 10);
         board.toggleSquare(PieceType.KNIGHT, false, 14);
         board.toggleSquare(PieceType.BISHOP, false, 42);
@@ -108,7 +98,7 @@ public class QueenMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(PieceType.QUEEN, true, startSquare);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

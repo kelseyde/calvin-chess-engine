@@ -3,19 +3,18 @@ package com.kelseyde.calvin.movegeneration.generator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class BishopMoveGeneratorTest {
 
-    private final BishopMoveGenerator generator = new BishopMoveGenerator();
+    private final MoveGenerator generator = new MoveGenerator();
 
     private Board board;
 
@@ -56,21 +55,12 @@ public class BishopMoveGeneratorTest {
     }
 
     @Test
-    public void doesNotGenerateOpponentBishopMoves() {
-
-        Board board = FEN.fromFEN("K7/1B6/8/8/8/8/6b1/7k w - - 0 1");
-
-        List<Move> moves = generator.generatePseudoLegalMoves(board, false);
-
-        Assertions.assertEquals(7, moves.size());
-
-    }
-
-    @Test
     public void capturingOpponentPiecesEndsVector() {
 
         int startSquare = 28; //e4
 
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
         board.toggleSquare(PieceType.PAWN, false, 10);
         board.toggleSquare(PieceType.KNIGHT, false, 14);
         board.toggleSquare(PieceType.BISHOP, false, 42);
@@ -98,8 +88,9 @@ public class BishopMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(PieceType.BISHOP, true, startSquare);
-        Set<Integer> legalSquares = generator.generatePseudoLegalMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.BISHOP)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);

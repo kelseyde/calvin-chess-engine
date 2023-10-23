@@ -17,10 +17,6 @@ public class ResultCalculator {
 
     public GameResult calculateResult(Board board) {
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
-        return calculateResult(board, legalMoves);
-    }
-
-    public GameResult calculateResult(Board board, List<Move> legalMoves) {
         if (legalMoves.isEmpty()) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
                 return board.isWhiteToMove() ? GameResult.BLACK_WINS_BY_CHECKMATE : GameResult.WHITE_WINS_BY_CHECKMATE;

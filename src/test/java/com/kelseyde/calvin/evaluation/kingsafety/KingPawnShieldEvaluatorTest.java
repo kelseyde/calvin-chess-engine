@@ -2,7 +2,6 @@ package com.kelseyde.calvin.evaluation.kingsafety;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.evaluation.material.Material;
-import com.kelseyde.calvin.evaluation.placement.PiecePlacementScore;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

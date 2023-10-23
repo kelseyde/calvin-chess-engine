@@ -6,6 +6,8 @@ package com.kelseyde.calvin.board.bitboard;
  */
 public class Bits {
 
+    public static final long ALL_SQUARES = ~0L;
+
     public static final long RANK_1 = 0b0000000000000000000000000000000000000000000000000000000011111111L;
     public static final long RANK_2 = BitboardUtils.shiftNorth(RANK_1);
     public static final long RANK_3 = BitboardUtils.shiftNorth(RANK_2);

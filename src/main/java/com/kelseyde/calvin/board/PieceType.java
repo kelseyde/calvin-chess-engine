@@ -16,4 +16,8 @@ public enum PieceType {
         this.index = index;
     }
 
+    public boolean isSlider() {
+        return this == BISHOP || this == ROOK || this == QUEEN;
+    }
+
 }

@@ -43,15 +43,7 @@ public class CheckTest {
     @Test
     public void cannotEnPassantWithPinnedPawn() {
 
-        Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e5", "d4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e4", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d8", "e7"));
-        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
-        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
+        Board board = FEN.fromFEN("rnb1kbnr/ppp1qppp/8/3pP3/3p4/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 1");
 
         // black tries to en-passant with pinned e-pawn
         Assertions.assertThrows(IllegalMoveException.class,
@@ -321,6 +313,53 @@ public class CheckTest {
         Assertions.assertThrows(IllegalMoveException.class,
                 () -> TestUtils.getLegalMove(board, "g8", "f6"));
 
+    }
+
+    @Test
+    public void testDiagonallyPinnedPawnCannotMove() {
+
+        String fen = "6k1/8/8/8/6b1/8/4P3/3K4 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+        Assertions.assertThrows(IllegalMoveException.class,
+                () -> TestUtils.getLegalMove(board, "e2", "e3"));
+        Assertions.assertThrows(IllegalMoveException.class,
+                () -> TestUtils.getLegalMove(board, "e2", "e4"));
+    }
+
+    @Test
+    public void testPinnedOrthogonalSliderCanStepForwardInThePinRay() {
+
+        String fen = "6k1/8/3r4/8/8/8/3R4/3K4 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+        TestUtils.getLegalMove(board, "d2", "d3");
+        TestUtils.getLegalMove(board, "d2", "d6");
+    }
+
+    @Test
+    public void testPinnedOrthogonalSliderCanStepBackwardInThePinRay() {
+
+        String fen = "6k1/8/3r4/3R4/8/8/8/3K4 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+        TestUtils.getLegalMove(board, "d5", "d4");
+        TestUtils.getLegalMove(board, "d5", "d3");
+    }
+
+    @Test
+    public void testPinnedDiagonalSliderCanStepForwardInThePinRay() {
+
+        String fen = "6k1/8/8/7q/8/5B2/8/3K4 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+        TestUtils.getLegalMove(board, "f3", "g4");
+        TestUtils.getLegalMove(board, "f3", "h5");
+    }
+
+    @Test
+    public void testPinnedDiagonalSliderCanStepBackwardInThePinRay() {
+
+        String fen = "6k1/8/8/7q/6B1/8/8/3K4 w - - 0 1";
+        Board board = FEN.fromFEN(fen);
+        TestUtils.getLegalMove(board, "g4", "f3");
+        TestUtils.getLegalMove(board, "g4", "e2");
     }
 
 }

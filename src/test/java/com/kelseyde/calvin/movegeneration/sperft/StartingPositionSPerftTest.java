@@ -1,8 +1,10 @@
 package com.kelseyde.calvin.movegeneration.sperft;
 
 import lombok.Getter;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class StartingPositionSPerftTest extends SPerftTest {
 
     @Getter

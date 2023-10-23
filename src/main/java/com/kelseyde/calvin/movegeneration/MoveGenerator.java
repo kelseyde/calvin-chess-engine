@@ -2,13 +2,12 @@ package com.kelseyde.calvin.movegeneration;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.movegeneration.check.PinCalculator;
+import com.kelseyde.calvin.movegeneration.check.PinCalculator.PinData;
 import com.kelseyde.calvin.movegeneration.check.RayCalculator;
 import com.kelseyde.calvin.movegeneration.magic.Magics;
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -26,35 +25,55 @@ public class MoveGenerator implements MoveGeneration {
     private final PinCalculator pinCalculator = new PinCalculator();
     private final RayCalculator rayCalculator = new RayCalculator();
 
-    private long pinMask;
     private long checkersMask;
+    private long checkersCount;
 
-    private List<Move> pseudoLegalMoves;
+    private long pinMask;
+    private long[] pinRayMasks;
+
+    private long captureMask;
+    private long pushMask;
+
+    private List<Move> legalMoves;
 
     @Override
     public List<Move> generateMoves(Board board, boolean capturesOnly) {
 
-        pseudoLegalMoves = new ArrayList<>();
-        List<Move> legalMoves = new ArrayList<>();
         boolean isWhite = board.isWhiteToMove();
         int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
 
+        captureMask = Bits.ALL_SQUARES;
+        pushMask = Bits.ALL_SQUARES;
+
+        PinData pinData = pinCalculator.calculatePinMask(board, isWhite);
+        pinMask = pinData.pinMask();
+        pinRayMasks = pinData.pinRayMasks();
+
         checkersMask = calculateAttackerMask(board, isWhite, 1L << kingSquare);
-        pinMask = pinCalculator.calculatePinMask(board, isWhite);
-        int checkersCount = Long.bitCount(checkersMask);
+        checkersCount = Long.bitCount(checkersMask);
+
+        legalMoves = new ArrayList<>();
 
         generateKingMoves(board, capturesOnly);
 
         // If we are in double-check, the only legal moves are king moves
-        boolean isDoubleCheck = checkersCount == 2;
-        if (isDoubleCheck) {
-            for (Move move : pseudoLegalMoves) {
-                // Filter out moves that leave the king in check
-                if (doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)) {
-                    legalMoves.add(move);
-                }
-            }
+        if (checkersCount == 2) {
             return legalMoves;
+        }
+
+        if (checkersCount == 1) {
+            // If only one checker, we can evade check by capturing it
+            captureMask = checkersMask;
+
+            int checkerSquare = BitboardUtils.getLSB(checkersMask);
+            if (board.pieceAt(checkerSquare).isSlider()) {
+                // If the piece giving check is a slider, we can evade check by blocking it
+                pushMask = rayCalculator.rayBetween(checkerSquare, kingSquare);
+            } else {
+                // If the piece is not a slider, we can only evade check by capturing it
+                // Therefore all non-capture 'push' moves are illegal.
+                pushMask = 0L;
+            }
         }
 
         // Otherwise, generate all the other pseudo-legal moves
@@ -64,16 +83,6 @@ public class MoveGenerator implements MoveGeneration {
         generateRookMoves(board, capturesOnly);
         generateQueenMoves(board, capturesOnly);
 
-        boolean isCheck = checkersCount == 1;
-
-        for (Move move : pseudoLegalMoves) {
-            // If we are in single-check, filter out all moves that do not resolve the check
-            if ((!isCheck || resolvesCheck(board, move, kingSquare, isWhite)) &&
-                // Additionally, filter out moves that leave the king in (a new) check
-                doesNotLeaveKingInCheck(board, move, kingSquare, isWhite)) {
-                legalMoves.add(move);
-            }
-        }
         return legalMoves;
 
     }
@@ -84,65 +93,12 @@ public class MoveGenerator implements MoveGeneration {
         return isAttacked(board, isWhite, kingMask);
     }
 
-    private boolean resolvesCheck(Board board, Move move, int kingSquare, boolean isWhite) {
-        int checkerSquare = BitboardUtils.getLSB(checkersMask);
-        int endSquare = move.getEndSquare();
-
-        // Three options to resolve a single check:
-
-        // 1. Capture the piece checking the king
-        boolean isCapturingChecker = checkerSquare == endSquare
-                || move.isEnPassant() && (isWhite ? endSquare - 8 : endSquare + 8) == checkerSquare;
-        if (isCapturingChecker) {
-            return true;
-        }
-
-        // 2. Block the check with another piece
-        long checkingRay = rayCalculator.rayBetween(kingSquare, checkerSquare);
-        boolean isBlockingCheck = (checkingRay & 1L << endSquare) != 0;
-        if (isBlockingCheck) {
-            return true;
-        }
-
-        // 3. Move the king (the legality of the king destination square is checked later).
-        return board.pieceAt(move.getStartSquare()).equals(PieceType.KING);
-    }
-
-    private boolean doesNotLeaveKingInCheck(Board board, Move move, int kingSquare, boolean isWhite) {
-        int startSquare = move.getStartSquare();
-        int endSquare = move.getEndSquare();
-
-        // Check that none of the squares the king travels through to castle are attacked.
-        if (move.isCastling()) {
-            long castlingMask;
-            if (BoardUtils.getFile(move.getEndSquare()) == 6) {
-                castlingMask = isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
-            } else {
-                castlingMask = isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
-            }
-            return !isAttacked(board, isWhite, castlingMask);
-        }
-        // For en passant and king moves, just make the move on the board and check the king is not attacked.
-        else if (move.isEnPassant() || board.pieceAt(startSquare).equals(PieceType.KING)) {
-            board.makeMove(move);
-            long kingMask = isWhite ? board.getWhiteKing() : board.getBlackKing();
-            boolean isAttacked = isAttacked(board, isWhite, kingMask);
-            board.unmakeMove();
-            return !isAttacked;
-        }
-        // All other moves are legal if and only if the piece is not pinned (or is pinned, but is moving along the pin ray)
-        else {
-            boolean isPinned = (pinMask & 1L << startSquare) != 0;
-            return !isPinned || BoardUtils.isAligned(kingSquare, startSquare, endSquare);
-        }
-
-    }
-
     private void generatePawnMoves(Board board, boolean capturesOnly) {
 
         boolean isWhite = board.isWhiteToMove();
 
         long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
+
         long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
         long occupied = board.getOccupied();
         long enPassantFile = BitboardUtils.getFileBitboard(board.getGameState().getEnPassantFile());
@@ -151,32 +107,41 @@ public class MoveGenerator implements MoveGeneration {
             long singleAdvances = isWhite ?
                     BitboardUtils.shiftNorth(pawns) &~ occupied &~ Bits.RANK_8 :
                     BitboardUtils.shiftSouth(pawns) &~ occupied &~ Bits.RANK_1;
+            singleAdvances &= pushMask;
 
             long singleAdvancesCopy = singleAdvances;
             while (singleAdvancesCopy != 0) {
                 int endSquare = BitboardUtils.getLSB(singleAdvancesCopy);
                 int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
-                pseudoLegalMoves.add(new Move(startSquare, endSquare));
+                if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                    legalMoves.add(new Move(startSquare, endSquare));
+                }
                 singleAdvancesCopy = BitboardUtils.popLSB(singleAdvancesCopy);
             }
 
             long doubleAdvances = isWhite ?
                     BitboardUtils.shiftNorth(singleAdvances) &~ occupied & Bits.RANK_4 :
                     BitboardUtils.shiftSouth(singleAdvances) &~ occupied & Bits.RANK_5;
+            doubleAdvances &= pushMask;
             while (doubleAdvances != 0) {
                 int endSquare = BitboardUtils.getLSB(doubleAdvances);
                 int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
-                pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
+                if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                    legalMoves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
+                }
                 doubleAdvances = BitboardUtils.popLSB(doubleAdvances);
             }
 
             long advancePromotions = isWhite ?
                     BitboardUtils.shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
                     BitboardUtils.shiftSouth(pawns) &~ occupied & Bits.RANK_1;
+            advancePromotions &= pushMask;
             while (advancePromotions != 0) {
                 int endSquare = BitboardUtils.getLSB(advancePromotions);
                 int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
-                pseudoLegalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                if (!isPinned(startSquare)) {
+                    legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                }
                 advancePromotions = BitboardUtils.popLSB(advancePromotions);
             }
         }
@@ -184,61 +149,83 @@ public class MoveGenerator implements MoveGeneration {
         long leftCaptures = isWhite ?
                 BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_8 :
                 BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_1;
+        leftCaptures &= captureMask;
         while (leftCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(leftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            pseudoLegalMoves.add(new Move(startSquare, endSquare));
+            if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                legalMoves.add(new Move(startSquare, endSquare));
+            }
             leftCaptures = BitboardUtils.popLSB(leftCaptures);
         }
 
         long rightCaptures = isWhite ?
                 BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8:
                 BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
+        rightCaptures &= captureMask;
         while (rightCaptures != 0) {
             int endSquare = BitboardUtils.getLSB(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            pseudoLegalMoves.add(new Move(startSquare, endSquare));
+            if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                legalMoves.add(new Move(startSquare, endSquare));
+            }
             rightCaptures = BitboardUtils.popLSB(rightCaptures);
         }
 
-        long enPassantLeftCaptures = isWhite ?
+        long leftEnPassants = isWhite ?
                 BitboardUtils.shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 &~ Bits.FILE_H :
                 BitboardUtils.shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 &~ Bits.FILE_H;
-        while (enPassantLeftCaptures != 0) {
-            int endSquare = BitboardUtils.getLSB(enPassantLeftCaptures);
+        while (leftEnPassants != 0) {
+            int endSquare = BitboardUtils.getLSB(leftEnPassants);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
-            enPassantLeftCaptures = BitboardUtils.popLSB(enPassantLeftCaptures);
+            // En passant is complicated; just test legality by making the move on the board and checking
+            // whether the king is attacked.
+            Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+            if (!leavesKingInCheck(board, move, isWhite)) {
+                legalMoves.add(move);
+            }
+            leftEnPassants = BitboardUtils.popLSB(leftEnPassants);
         }
 
-        long enPassantRightCaptures = isWhite ?
+        long rightEnPassants = isWhite ?
                 BitboardUtils.shiftNorthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_6 :
                 BitboardUtils.shiftSouthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_3;
-        while (enPassantRightCaptures != 0) {
-            int endSquare = BitboardUtils.getLSB(enPassantRightCaptures);
+        while (rightEnPassants != 0) {
+            int endSquare = BitboardUtils.getLSB(rightEnPassants);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG));
-            enPassantRightCaptures = BitboardUtils.popLSB(enPassantRightCaptures);
+            // En passant is complicated; just test legality by making the move on the board and checking
+            // whether the king is attacked.
+            Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+            if (!leavesKingInCheck(board, move, isWhite)) {
+                legalMoves.add(move);
+            }
+            rightEnPassants = BitboardUtils.popLSB(rightEnPassants);
         }
 
-        long captureLeftPromotions = isWhite ?
+        long leftCapturePromotions = isWhite ?
                 BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_8 :
                 BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_1;
-        while (captureLeftPromotions != 0) {
-            int endSquare = BitboardUtils.getLSB(captureLeftPromotions);
+        leftCapturePromotions &= (captureMask | pushMask);
+        while (leftCapturePromotions != 0) {
+            int endSquare = BitboardUtils.getLSB(leftCapturePromotions);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            pseudoLegalMoves.addAll(getPromotionMoves(startSquare, endSquare));
-            captureLeftPromotions = BitboardUtils.popLSB(captureLeftPromotions);
+            if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+            }
+            leftCapturePromotions = BitboardUtils.popLSB(leftCapturePromotions);
         }
 
-        long captureRightPromotions = isWhite ?
+        long rightCapturePromotions = isWhite ?
                 BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_8 :
                 BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
-        while (captureRightPromotions != 0) {
-            int endSquare = BitboardUtils.getLSB(captureRightPromotions);
+        rightCapturePromotions &= (captureMask | pushMask);
+        while (rightCapturePromotions != 0) {
+            int endSquare = BitboardUtils.getLSB(rightCapturePromotions);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            pseudoLegalMoves.addAll(getPromotionMoves(startSquare, endSquare));
-            captureRightPromotions = BitboardUtils.popLSB(captureRightPromotions);
+            if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+            }
+            rightCapturePromotions = BitboardUtils.popLSB(rightCapturePromotions);
         }
 
     }
@@ -246,60 +233,72 @@ public class MoveGenerator implements MoveGeneration {
     private void generateKnightMoves(Board board, boolean capturesOnly) {
         long knights = board.isWhiteToMove() ? board.getWhiteKnights() : board.getBlackKnights();
         long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
+        long unpinnedKnights = knights &~ pinMask;
 
-        while (knights != 0) {
-            int startSquare = BitboardUtils.getLSB(knights);
-            long possibleMoves = getKnightAttacks(board, startSquare, board.isWhiteToMove());
+        while (unpinnedKnights != 0) {
+            int startSquare = BitboardUtils.getLSB(unpinnedKnights);
+            long possibleMoves = getKnightAttacks(board, startSquare, board.isWhiteToMove()) & (pushMask | captureMask);
             if (capturesOnly) {
                 possibleMoves = possibleMoves & opponents;
             }
             while (possibleMoves != 0) {
                 int endSquare = BitboardUtils.getLSB(possibleMoves);
-                pseudoLegalMoves.add(new Move(startSquare, endSquare));
+                legalMoves.add(new Move(startSquare, endSquare));
                 possibleMoves = BitboardUtils.popLSB(possibleMoves);
             }
-            knights = BitboardUtils.popLSB(knights);
+            unpinnedKnights = BitboardUtils.popLSB(unpinnedKnights);
         }
     }
 
     private void generateKingMoves(Board board, boolean capturesOnly) {
+        boolean isWhite = board.isWhiteToMove();
 
         long king = board.isWhiteToMove() ? board.getWhiteKing() : board.getBlackKing();
         if (king == 0L) {
             return;
         }
-        long friendlyPieces = board.isWhiteToMove() ? board.getWhitePieces() : board.getBlackPieces();
+        long friendlyPieces = isWhite ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupied();
 
         int startSquare = BitboardUtils.getLSB(king);
 
         long kingMoves = Bits.KING_ATTACKS[startSquare] &~ friendlyPieces;
         if (capturesOnly) {
-            long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
+            long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
             kingMoves = kingMoves & opponents;
         }
         while (kingMoves != 0) {
             int endSquare = BitboardUtils.getLSB(kingMoves);
-            pseudoLegalMoves.add(new Move(startSquare, endSquare));
+            Move move = new Move(startSquare, endSquare);
+            board.makeMove(move);
+            boolean isAttacked = isAttacked(board, isWhite, 1L << endSquare);
+            board.unmakeMove();
+            if (!isAttacked) {
+                legalMoves.add(move);
+            }
             kingMoves = BitboardUtils.popLSB(kingMoves);
         }
-        if (!capturesOnly) {
+        if (!capturesOnly && checkersCount == 0) {
             boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
             if (isKingsideAllowed) {
                 long travelSquares = board.isWhiteToMove() ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
                 long blockedSquares = travelSquares & occupied;
-                if (blockedSquares == 0) {
+                long safeSquares = isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+                boolean isAttacked = isAttacked(board, isWhite, safeSquares);
+                if (blockedSquares == 0 && !isAttacked) {
                     int endSquare = board.isWhiteToMove() ? 6 : 62;
-                    pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+                    legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
                 }
             }
             boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
             if (isQueensideAllowed) {
                 long travelSquares = board.isWhiteToMove() ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
                 long blockedSquares = travelSquares & occupied;
-                if (blockedSquares == 0) {
+                long safeSquares = isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+                boolean isAttacked = isAttacked(board, isWhite, safeSquares);
+                if (blockedSquares == 0 && !isAttacked) {
                     int endSquare = board.isWhiteToMove() ? 2 : 58;
-                    pseudoLegalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+                    legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
                 }
             }
         }
@@ -310,14 +309,18 @@ public class MoveGenerator implements MoveGeneration {
         while (sliders != 0) {
             int startSquare = BitboardUtils.getLSB(sliders);
             long attackMask = getSlidingAttacks(board, startSquare, isWhite, isDiagonal, isOrthogonal);
+            attackMask &= pushMask | captureMask;
             if (capturesOnly) {
                 long opponents = board.isWhiteToMove() ? board.getBlackPieces() : board.getWhitePieces();
                 attackMask = attackMask & opponents;
             }
+            if (isPinned(startSquare)) {
+                attackMask &= (pinRayMasks[startSquare]);
+            }
             sliders = BitboardUtils.popLSB(sliders);
             while (attackMask != 0) {
                 int endSquare = BitboardUtils.getLSB(attackMask);
-                pseudoLegalMoves.add(new Move(startSquare, endSquare));
+                legalMoves.add(new Move(startSquare, endSquare));
                 attackMask = BitboardUtils.popLSB(attackMask);
             }
         }
@@ -480,6 +483,23 @@ public class MoveGenerator implements MoveGeneration {
                 new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
                 new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
                 new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
+    }
+
+    private boolean leavesKingInCheck(Board board, Move move, boolean isWhite) {
+        board.makeMove(move);
+        int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
+        boolean isAttacked = isAttacked(board, isWhite, kingSquare);
+        board.unmakeMove();
+        return isAttacked;
+    }
+
+    private boolean isPinned(int startSquare) {
+        return (1L << startSquare & pinMask) != 0;
+    }
+
+    private boolean isMovingAlongPinRay(int startSquare, int endSquare) {
+        long pinRay = pinRayMasks[startSquare];
+        return (1L << endSquare & pinRay) != 0;
     }
 
 }

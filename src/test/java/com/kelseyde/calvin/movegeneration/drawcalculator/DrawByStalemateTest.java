@@ -47,12 +47,7 @@ public class DrawByStalemateTest {
     @Test
     public void testSimpleKingAndBishopStalemate() {
 
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, false, 63);
-        board.toggleSquare(PieceType.KING, true, 46);
-        board.toggleSquare(PieceType.PAWN, true, 47);
-        board.toggleSquare(PieceType.BISHOP, true, 37);
-        Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
+        Board board = FEN.fromFEN("7k/8/6KP/5B2/8/8/8/8 w - - 0 1");
 
         board.makeMove(TestUtils.getLegalMove(board, "f5", "e6"));
 

@@ -115,32 +115,32 @@ public class PiecePlacementEvaluator {
     }
 
     private int scorePawns(Board board, float gamePhase, boolean isWhite) {
-        long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
+        long pawns = board.getPawns(isWhite);
         int[] pawnStartTable = isWhite ? PieceSquareTable.WHITE_PAWN_START_TABLE : PieceSquareTable.BLACK_PAWN_START_TABLE;
         int[] pawnEndTable = isWhite ? PieceSquareTable.WHITE_PAWN_END_TABLE : PieceSquareTable.BLACK_PAWN_END_TABLE;
         return scoreMultiTablePieces(pawns, gamePhase, pawnStartTable, pawnEndTable);
     }
 
     private int scoreKnights(Board board, boolean isWhite) {
-        long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
+        long knights = board.getKnights(isWhite);
         int[] knightTable = isWhite ? PieceSquareTable.WHITE_KNIGHT_TABLE : PieceSquareTable.BLACK_KNIGHT_TABLE;
         return scoreSingleTablePieces(knights, knightTable);
     }
 
     private int scoreBishops(Board board, boolean isWhite) {
-        long bishops = isWhite ? board.getWhiteBishops() : board.getBlackBishops();
+        long bishops = board.getBishops(isWhite);
         int[] bishopTable = isWhite ? PieceSquareTable.WHITE_BISHOP_TABLE : PieceSquareTable.BLACK_BISHOP_TABLE;
         return scoreSingleTablePieces(bishops, bishopTable);
     }
 
     private int scoreRooks(Board board, boolean isWhite) {
-        long rooks = isWhite ? board.getWhiteRooks() : board.getBlackRooks();
+        long rooks = board.getRooks(isWhite);
         int[] rookTable = isWhite ? PieceSquareTable.WHITE_ROOK_TABLE : PieceSquareTable.BLACK_ROOK_TABLE;
         return scoreSingleTablePieces(rooks, rookTable);
     }
 
     private int scoreQueens(Board board, boolean isWhite) {
-        long queens = isWhite ? board.getWhiteQueens() : board.getBlackQueens();
+        long queens = board.getQueens(isWhite);
         int[] queenTable = isWhite ? PieceSquareTable.WHITE_QUEEN_TABLE : PieceSquareTable.BLACK_QUEEN_TABLE;
         return scoreSingleTablePieces(queens, queenTable);
     }
@@ -148,7 +148,7 @@ public class PiecePlacementEvaluator {
     private int scoreKing(Board board, float gamePhase, boolean isWhite) {
         int[] kingStartTable = isWhite ? PieceSquareTable.WHITE_KING_START_TABLE : PieceSquareTable.BLACK_KING_START_TABLE;
         int[] kingEndTable = isWhite ? PieceSquareTable.WHITE_KING_END_TABLE : PieceSquareTable.BLACK_KING_END_TABLE;
-        long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
+        long king = board.getKing(isWhite);
         return scoreMultiTablePieces(king, gamePhase, kingStartTable, kingEndTable);
     }
 

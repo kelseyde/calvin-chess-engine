@@ -18,19 +18,19 @@ public class PinCalculator {
         pinMask = 0L;
         pinRayMasks = new long[64];
 
-        int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
-        long friendlies = isWhite ? board.getWhitePieces() : board.getBlackPieces();
-        long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
+        int kingSquare = BitboardUtils.getLSB(board.getKing(isWhite));
+        long friendlies = board.getPieces(isWhite);
+        long opponents = board.getPieces(!isWhite);
 
         // Calculate possible orthogonal (queen or rook) pins
-        long opponentOrthogonalSliders = isWhite ? board.getBlackQueens() | board.getBlackRooks() : board.getWhiteQueens() | board.getWhiteRooks();
+        long opponentOrthogonalSliders = board.getRooks(!isWhite) | board.getQueens(!isWhite);
         if (opponentOrthogonalSliders != 0) {
             long possibleOrthogonalPinners = Magics.getRookAttacks(kingSquare, opponentOrthogonalSliders) & opponentOrthogonalSliders;
             calculatePins(kingSquare, friendlies, opponents, possibleOrthogonalPinners);
         }
 
         // Calculate possible diagonal (queen or bishop) pins
-        long opponentDiagonalSliders = isWhite ? board.getBlackQueens() | board.getBlackBishops() : board.getWhiteQueens() | board.getWhiteBishops();
+        long opponentDiagonalSliders = board.getBishops(!isWhite) | board.getQueens(!isWhite);
         if (opponentDiagonalSliders != 0) {
             long possibleDiagonalPinners = Magics.getBishopAttacks(kingSquare, opponentDiagonalSliders) & opponentDiagonalSliders;
             calculatePins(kingSquare, friendlies, opponents, possibleDiagonalPinners);

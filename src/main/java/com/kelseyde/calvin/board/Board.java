@@ -253,4 +253,32 @@ public class Board {
         else return null;
     }
 
+    public long getPawns(boolean isWhite) {
+        return isWhite ? whitePawns : blackPawns;
+    }
+
+    public long getKnights(boolean isWhite) {
+        return isWhite ? whiteKnights : blackKnights;
+    }
+
+    public long getBishops(boolean isWhite) {
+        return isWhite ? whiteBishops : blackBishops;
+    }
+
+    public long getRooks(boolean isWhite) {
+        return isWhite ? whiteRooks : blackRooks;
+    }
+
+    public long getQueens(boolean isWhite) {
+        return isWhite ? whiteQueens : blackQueens;
+    }
+
+    public long getKing(boolean isWhite) {
+        return isWhite ? whiteKing : blackKing;
+    }
+
+    public long getPieces(boolean isWhite) {
+        return isWhite ? whitePieces : blackPieces;
+    }
+
 }

@@ -57,6 +57,8 @@ public class PawnMoveGeneratorTest {
     public void testWhitePawnCannotMoveThroughPiece() {
 
         board = TestUtils.emptyBoard();
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
         board.toggleSquare(PieceType.ROOK, true, 16);
         assertMovesFromSquare(board, 8, Set.of());
         board.toggleSquare(PieceType.ROOK, true, 16);
@@ -96,6 +98,9 @@ public class PawnMoveGeneratorTest {
     public void testWhitePawnsNotOnStartingSquares() {
 
         board = TestUtils.emptyBoard();
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
+
         board.toggleSquare(PieceType.PAWN, true, 16);
         assertMovesFromSquare(board, 16, Set.of(new Move(16, 24)));
         board.toggleSquare(PieceType.PAWN, true, 16);
@@ -116,6 +121,8 @@ public class PawnMoveGeneratorTest {
         board = TestUtils.emptyBoard();
         board.setWhiteToMove(false);
 
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
         board.toggleSquare(PieceType.PAWN, false, 45);
         assertMovesFromSquare(board, 45, Set.of(new Move(45, 37)));
         board.toggleSquare(PieceType.PAWN, true, 45);
@@ -187,11 +194,16 @@ public class PawnMoveGeneratorTest {
     public void testWhiteEnPassant() {
 
         board = TestUtils.emptyBoard();
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
+
         board.toggleSquare(PieceType.PAWN, true, 35);
         board.toggleSquare(PieceType.PAWN, false, 34);
         board.getGameState().setEnPassantFile(BoardUtils.getFile(42));
 
-        List<Move> legalWhiteMoves = generator.generateMoves(board, false);
+        List<Move> legalWhiteMoves = generator.generateMoves(board, false).stream()
+                .filter(m -> board.pieceAt(m.getStartSquare()) == PieceType.PAWN)
+                .toList();
 
         Move standardMove = new Move(35, 43);
         Move enPassantCapture = new Move(35, 42, Move.EN_PASSANT_FLAG);
@@ -228,6 +240,8 @@ public class PawnMoveGeneratorTest {
     public void testWhiteDoubleEnPassantIsImpossible() {
 
         board = TestUtils.emptyBoard();
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
 
         board.toggleSquare(PieceType.PAWN, true, 35);
         // we need another white piece to spend a move in between black's pawn moves
@@ -262,6 +276,8 @@ public class PawnMoveGeneratorTest {
 
     @Test
     public void testBlackEnPassant() {
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
 
         board.toggleSquare(PieceType.PAWN, false, 29);
         board.toggleSquare(PieceType.PAWN, true, 30);
@@ -302,6 +318,9 @@ public class PawnMoveGeneratorTest {
 
     @Test
     public void testBlackDoubleEnPassantIsImpossible() {
+
+        board.toggleSquare(PieceType.KING, true, 12);
+        board.toggleSquare(PieceType.KING, false, 15);
 
         board.toggleSquare(PieceType.PAWN, false, 25);
         // we need another black piece to spend a move in between black's pawn moves
@@ -353,6 +372,8 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhiteStandardPromotion() {
         board = TestUtils.emptyBoard();
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
         board.toggleSquare(PieceType.PAWN, true, 51);
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
@@ -368,6 +389,8 @@ public class PawnMoveGeneratorTest {
 
     @Test
     public void testBlackStandardPromotion() {
+        board.toggleSquare(PieceType.KING, true, 61);
+        board.toggleSquare(PieceType.KING, false, 63);
         board.toggleSquare(PieceType.PAWN, false, 8);
         board.setWhiteToMove(false);
         List<Move> legalMoves = generator.generateMoves(board, false).stream()

@@ -45,7 +45,7 @@ public class BitboardUtils {
     public static long pawnDoubleMoves(long pawns, long occupied, boolean isWhite) {
         return isWhite ?
                 shiftNorth(shiftNorth(pawns)) &~ occupied & Bits.RANK_4 :
-                shiftSouth(shiftNorth(pawns)) &~ occupied & Bits.RANK_5;
+                shiftSouth(shiftSouth(pawns)) &~ occupied & Bits.RANK_5;
     }
 
     public static long pawnPushPromotions(long pawns, long occupied, boolean isWhite) {

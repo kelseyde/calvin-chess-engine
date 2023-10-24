@@ -165,14 +165,12 @@ public class PawnMoveGeneratorTest {
 
         String fen = "k7/1p6/P1P5/8/8/8/8/K7 b - - 0 1";
         board = FEN.fromFEN(fen);
-        assertMovesFromSquare(board, 49,
-                Set.of(new Move(49, 40), new Move(49, 41), new Move(49, 42), new Move(49, 33)));
+        assertMovesFromSquare(board, 49, Set.of(new Move(49, 40), new Move(49, 41), new Move(49, 42), new Move(49, 33)));
 
         fen = "k7/8/8/p7/1P5P/8/8/K7 b - - 0 1";
         board = FEN.fromFEN(fen);
         // should not capture the wrapped piece
-        assertMovesFromSquare(board, 32,
-                Set.of(new Move(32, 24), new Move(32, 25)));
+        assertMovesFromSquare(board, 32, Set.of(new Move(32, 24), new Move(32, 25)));
 
     }
 

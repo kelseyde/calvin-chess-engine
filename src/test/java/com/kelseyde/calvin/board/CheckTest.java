@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.utils.IllegalMoveException;
+import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -368,6 +369,16 @@ public class CheckTest {
         Board board = FEN.fromFEN("rnbqkbnr/ppp1pppp/3p4/8/Q7/2P5/PP1PPPPP/RNB1KBNR b KQkq - 1 2");
 
         TestUtils.getLegalMove(board, "b7", "b5");
+
+    }
+
+    @Test
+    public void kingCannotMoveIntoRookCheck() {
+
+        Board board = FEN.fromFEN("r5k1/5b2/q2p4/p2nn1P1/2p5/P3P3/1PB2PK1/2BR3R b - - 2 42");
+
+        Assertions.assertThrows(IllegalMoveException.class, () ->
+                TestUtils.getLegalMove(board, NotationUtils.fromNotation("g8", "h8")));
 
     }
 

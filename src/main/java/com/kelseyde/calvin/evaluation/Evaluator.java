@@ -31,7 +31,7 @@ public class Evaluator implements Evaluation {
 
     private final PawnStructureEvaluator pawnStructureEvaluator = new PawnStructureEvaluator();
 
-//    private final KingPawnShieldEvaluator kingPawnShieldEvaluator = new KingPawnShieldEvaluator();
+    private final KingPawnShieldEvaluator kingPawnShieldEvaluator = new KingPawnShieldEvaluator();
 
     private final MopUpEvaluator mopUpEvaluator = new MopUpEvaluator();
 
@@ -61,9 +61,9 @@ public class Evaluator implements Evaluation {
 
         whiteEval.setPawnStructureScore(pawnStructureEvaluator.evaluate(board, true));
         blackEval.setPawnStructureScore(pawnStructureEvaluator.evaluate(board, false));
-//
-//        whiteEval.setKingPawnShieldScore(kingPawnShieldEvaluator.evaluate(board, blackEval.getMaterial(), true));
-//        blackEval.setKingPawnShieldScore(kingPawnShieldEvaluator.evaluate(board, whiteEval.getMaterial(), false));
+
+        whiteEval.setKingPawnShieldScore(kingPawnShieldEvaluator.evaluate(board, blackEval.getMaterial(), true));
+        blackEval.setKingPawnShieldScore(kingPawnShieldEvaluator.evaluate(board, whiteEval.getMaterial(), false));
 
         whiteEval.setMopUpEval(mopUpEvaluator.evaluate(board, whiteEval.getMaterial(), blackEval.getMaterial(), true));
         blackEval.setMopUpEval(mopUpEvaluator.evaluate(board, blackEval.getMaterial(), whiteEval.getMaterial(), false));
@@ -182,12 +182,12 @@ public class Evaluator implements Evaluation {
         if (updateBlackCapture) {
             blackPieceScore = piecePlacementEvaluator.handleCapture(board, whiteMaterial.phase(), blackPieceScore, capturedPiece);
         }
-//        if (updateWhiteKingPawnShield) {
-//            whiteKingPawnShieldScore = kingPawnShieldEvaluator.evaluate(board, blackMaterial, true);
-//        }
-//        if (updateBlackKingPawnShield) {
-//            blackKingPawnShieldScore = kingPawnShieldEvaluator.evaluate(board, whiteMaterial, false);
-//        }
+        if (updateWhiteKingPawnShield) {
+            whiteKingPawnShieldScore = kingPawnShieldEvaluator.evaluate(board, blackMaterial, true);
+        }
+        if (updateBlackKingPawnShield) {
+            blackKingPawnShieldScore = kingPawnShieldEvaluator.evaluate(board, whiteMaterial, false);
+        }
 
         int whiteMopUpScore = mopUpEvaluator.evaluate(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = mopUpEvaluator.evaluate(board, blackMaterial, whiteMaterial, false);

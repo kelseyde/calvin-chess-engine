@@ -26,11 +26,8 @@ public class MoveGenerator implements MoveGeneration {
     private final RayCalculator rayCalculator = new RayCalculator();
 
     private long checkersMask;
-    private long checkersCount;
-
     private long pinMask;
     private long[] pinRayMasks;
-
     private long captureMask;
     private long pushMask;
 
@@ -50,14 +47,14 @@ public class MoveGenerator implements MoveGeneration {
         pinRayMasks = pinData.pinRayMasks();
 
         checkersMask = calculateAttackerMask(board, isWhite, 1L << kingSquare);
-        checkersCount = Long.bitCount(checkersMask);
+        long checkersCount = Long.bitCount(checkersMask);
 
         legalMoves = new ArrayList<>();
 
         generateKingMoves(board, capturesOnly);
 
-        // If we are in double-check, the only legal moves are king moves
         if (checkersCount == 2) {
+            // If we are in double-check, the only legal moves are king moves
             return legalMoves;
         }
 
@@ -76,7 +73,7 @@ public class MoveGenerator implements MoveGeneration {
             }
         }
 
-        // Otherwise, generate all the other pseudo-legal moves
+        // Generate all the other legal moves using the capture and push masks
         generatePawnMoves(board, capturesOnly);
         generateKnightMoves(board, capturesOnly);
         generateBishopMoves(board, capturesOnly);
@@ -97,9 +94,7 @@ public class MoveGenerator implements MoveGeneration {
     private void generatePawnMoves(Board board, boolean capturesOnly) {
 
         boolean isWhite = board.isWhiteToMove();
-
         long pawns = board.getPawns(isWhite);
-
         long opponents = board.getPieces(!isWhite);
         long occupied = board.getOccupied();
         long enPassantFile = BitboardUtils.getFileBitboard(board.getGameState().getEnPassantFile());
@@ -243,7 +238,6 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private void generateCastlingMoves(Board board, boolean capturesOnly) {
-
         boolean isWhite = board.isWhiteToMove();
         long king = board.getKing(isWhite);
         int startSquare = BitboardUtils.getLSB(king);
@@ -274,7 +268,6 @@ public class MoveGenerator implements MoveGeneration {
                 }
             }
         }
-
     }
 
     private void generateSlidingMoves(Board board, boolean capturesOnly, long sliders, boolean isOrthogonal, boolean isDiagonal) {

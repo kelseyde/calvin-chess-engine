@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.movegeneration.sperft;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.utils.fen.FEN;
 

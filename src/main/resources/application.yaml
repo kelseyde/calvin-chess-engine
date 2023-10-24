@@ -9,7 +9,7 @@ http:
   enabled: true
 
 server:
-  port: 8081
+  port: 8084
   servlet:
     context-path: /${spring.application.name}
 

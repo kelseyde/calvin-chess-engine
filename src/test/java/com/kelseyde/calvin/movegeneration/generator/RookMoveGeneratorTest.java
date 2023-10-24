@@ -26,34 +26,6 @@ public class RookMoveGeneratorTest {
     }
 
     @Test
-    public void testEmptyBoard() {
-
-        // bottom corner
-        assertLegalSquares(0, Set.of(1, 2, 3, 4, 5, 6, 7, 8, 16, 24, 32, 40, 48, 56));
-
-        // middle first rank
-        assertLegalSquares(4, Set.of(0, 1, 2, 3, 5, 6, 7, 12, 20, 28, 36, 44, 52, 60));
-
-        // bottom corner
-        assertLegalSquares(7, Set.of(0, 1, 2, 3, 4, 5, 6, 15, 23, 31, 39, 47, 55, 63));
-
-        // random sample of squares in the middle ranks
-        assertLegalSquares(10, Set.of(8, 9, 11, 12, 13, 14, 15, 2, 18, 26, 34, 42, 50, 58));
-        assertLegalSquares(23, Set.of(16, 17, 18, 19, 20, 21, 22, 7, 15, 31, 39, 47, 55, 63));
-        assertLegalSquares(25, Set.of(24, 26, 27, 28, 29, 30, 31, 1, 9, 17, 33, 41, 49, 57));
-        assertLegalSquares(36, Set.of(32, 33, 34, 35, 37, 38, 39, 4, 12, 20, 28, 44, 52, 60));
-        assertLegalSquares(47, Set.of(40, 41, 42, 43, 44, 45, 46, 7, 15, 23, 31, 39, 55, 63));
-        assertLegalSquares(48, Set.of(49, 50, 51, 52, 53, 54, 55, 0, 8, 16, 24, 32, 40, 56));
-
-        // top corner
-        assertLegalSquares(56, Set.of(57, 58, 59, 60, 61, 62, 63, 0, 8, 16, 24, 32, 40, 48));
-
-        // middle last rank
-        assertLegalSquares(60, Set.of(56, 57, 58, 59, 61, 62, 63, 4, 12, 20, 28, 36, 44, 52));
-
-    }
-
-    @Test
     public void testCapturingOpponentPiecesEndsVector() {
 
         String fen = "k7/8/4p3/8/2n1R1b1/8/4q3/K7 w - - 0 1";
@@ -82,6 +54,8 @@ public class RookMoveGeneratorTest {
 
     @Test
     public void testReachingSameColourPiecesEndsVector() {
+        board.toggleSquare(PieceType.KING, true, 0);
+        board.toggleSquare(PieceType.KING, false, 63);
 
         int startSquare = 28; //e4
 

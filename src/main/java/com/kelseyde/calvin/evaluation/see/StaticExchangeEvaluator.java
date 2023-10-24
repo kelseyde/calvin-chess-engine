@@ -51,7 +51,7 @@ public class StaticExchangeEvaluator {
 
         boolean isWhite = board.isWhiteToMove();
 
-        long pawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
+        long pawns = board.getPawns(isWhite);
         if (pawns > 0) {
             long pawnAttackMask = moveGenerator.getPawnAttacks(board, square, !isWhite);
             if ((pawnAttackMask & pawns) != 0) {
@@ -60,7 +60,7 @@ public class StaticExchangeEvaluator {
             }
         }
 
-        long knights = isWhite ? board.getWhiteKnights() : board.getBlackKnights();
+        long knights = board.getKnights(isWhite);
         if (knights > 0) {
             long knightAttackMask = moveGenerator.getKnightAttacks(board, square, !isWhite);
             if ((knightAttackMask & knights) != 0) {
@@ -69,7 +69,7 @@ public class StaticExchangeEvaluator {
             }
         }
 
-        long bishops = isWhite ? board.getWhiteBishops() : board.getBlackBishops();
+        long bishops = board.getBishops(isWhite);
         if (bishops > 0) {
             long bishopAttackMask = moveGenerator.getBishopAttacks(board, square, !isWhite);
             if ((bishopAttackMask & bishops) != 0) {
@@ -78,7 +78,7 @@ public class StaticExchangeEvaluator {
             }
         }
 
-        long rooks = isWhite ? board.getWhiteRooks() : board.getBlackRooks();
+        long rooks = board.getRooks(isWhite);
         if (rooks > 0) {
             long rookAttackMask = moveGenerator.getRookAttacks(board, square, !isWhite);
             if ((rookAttackMask & rooks) != 0) {
@@ -87,7 +87,7 @@ public class StaticExchangeEvaluator {
             }
         }
 
-        long queens = isWhite ? board.getWhiteQueens() : board.getBlackQueens();
+        long queens = board.getQueens(isWhite);
         if (queens > 0) {
             long queenAttackMask = moveGenerator.getQueenAttacks(board, square, !isWhite);
             if ((queenAttackMask & queens) != 0) {
@@ -96,7 +96,7 @@ public class StaticExchangeEvaluator {
             }
         }
 
-        long king = isWhite ? board.getWhiteKing() : board.getBlackKing();
+        long king = board.getKing(isWhite);
         long kingAttackMask = moveGenerator.getKingAttacks(board, square, !isWhite);
         if ((kingAttackMask & king) != 0) {
             int kingStartSquare = BitboardUtils.getLSB(kingAttackMask & king);

@@ -18,11 +18,11 @@ public class MaterialEvaluator {
 
     public Material evaluate(Board board, boolean isWhite) {
 
-        int pawns = Long.bitCount(isWhite ? board.getWhitePawns() : board.getBlackPawns());
-        int knights = Long.bitCount(isWhite ? board.getWhiteKnights() : board.getBlackKnights());
-        int bishops = Long.bitCount(isWhite ? board.getWhiteBishops() : board.getBlackBishops());
-        int rooks = Long.bitCount(isWhite ? board.getWhiteRooks() : board.getBlackRooks());
-        int queens = Long.bitCount(isWhite ? board.getWhiteQueens() : board.getBlackQueens());
+        int pawns = Long.bitCount(board.getPawns(isWhite));
+        int knights = Long.bitCount(board.getKnights(isWhite));
+        int bishops = Long.bitCount(board.getBishops(isWhite));
+        int rooks = Long.bitCount(board.getRooks(isWhite));
+        int queens = Long.bitCount(board.getQueens(isWhite));
 
         // Get the summed value of the pieces * piece values
         int eval = calculateEval(pawns, knights, bishops, rooks, queens);

@@ -26,8 +26,8 @@ public class PawnStructureEvaluator {
 
     public int evaluate(Board board, boolean isWhite) {
 
-        long friendlyPawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
-        long opponentPawns = isWhite ? board.getBlackPawns() : board.getWhitePawns();
+        long friendlyPawns = board.getPawns(isWhite);
+        long opponentPawns = board.getPawns(!isWhite);
 
         int passedPawnsBonus = 0;
         int isolatedPawnCount = 0;

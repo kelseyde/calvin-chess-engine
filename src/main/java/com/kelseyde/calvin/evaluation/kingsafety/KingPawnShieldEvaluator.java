@@ -22,11 +22,11 @@ public class KingPawnShieldEvaluator {
         if (opponentMaterial.phase() <= 0.5) {
             return 0;
         }
-        int kingSquare = isWhite ? BitboardUtils.getLSB(board.getWhiteKing()) : BitboardUtils.getLSB(board.getBlackKing());
+        int kingSquare = BitboardUtils.getLSB(board.getKing(isWhite));
         int kingFile = BoardUtils.getFile(kingSquare);
 
-        long friendlyPawns = isWhite ? board.getWhitePawns() : board.getBlackPawns();
-        long opponentPawns = isWhite ? board.getBlackPawns() : board.getWhitePawns();
+        long friendlyPawns = board.getPawns(isWhite);
+        long opponentPawns = board.getPawns(!isWhite);
 
         int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
 

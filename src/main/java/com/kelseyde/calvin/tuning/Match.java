@@ -24,8 +24,8 @@ public class Match {
     private final Random random;
 
     public Match(MatchConfig config) {
-        this.player1 = config.getPlayer1();
-        this.player2 = config.getPlayer2();
+        this.player1 = config.getPlayer1().get();
+        this.player2 = config.getPlayer2().get();
         this.config = config;
         this.resultCalculator = new ResultCalculator();
         this.random = new Random();
@@ -46,7 +46,6 @@ public class Match {
 
         while (gameCount <= config.getGameCount()) {
 
-            log.info("Starting game {}...", gameCount);
             board = new Board();
 
             int whitePlayerRandom = new Random().nextInt(2);
@@ -64,8 +63,6 @@ public class Match {
             int moveCount = 1;
 
             while (moveCount <= config.getMaxMoves()) {
-
-                log.trace("White ({}) plays {}", whitePlayer.getName(), NotationUtils.toNotation(whiteMove));
 
                 board.makeMove(whiteMove);
                 whitePlayer.getBot().applyMove(whiteMove);
@@ -106,29 +103,20 @@ public class Match {
                     }
                     break;
                 }
-                log.trace("Black ({}) plays {}", blackPlayer.getName(), NotationUtils.toNotation(blackMove));
 
                 whiteMove = whitePlayer.getBot().think(getThinkTime());
 
                 moveCount++;
                 if (moveCount > config.getMaxMoves()) {
-                    log.info("Terminating game after 100 moves.");
                     draws++;
                 }
             }
-            log.info("Game over! Move count {}, Result: {}", moveCount, result);
-            log.info("Current standings: {} wins {}, {} wins {}, draws {}",
-                    player1.getName(), player1Wins, player2.getName(), player2Wins, draws);
             whitePlayer.getBot().gameOver();
             blackPlayer.getBot().gameOver();
             gameCount++;
 
         }
 
-        log.info("Match over! Results:");
-        log.info("{} wins: {}", player1.getName(), player1Wins);
-        log.info("{} wins: {}", player2.getName(), player2Wins);
-        log.info("Draws: {}", draws);
         return new MatchResult(player1Wins, player2Wins, draws);
     }
 

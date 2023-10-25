@@ -6,7 +6,7 @@ import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.Search;
-import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.tuning.SearchResult;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.utils.NotationUtils;
 import com.kelseyde.calvin.utils.fen.FEN;

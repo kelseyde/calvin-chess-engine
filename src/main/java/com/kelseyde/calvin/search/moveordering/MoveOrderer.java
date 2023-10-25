@@ -99,7 +99,6 @@ public class MoveOrderer implements MoveOrdering {
 
     }
 
-    // TODO how to handle colour in the killer moves?
     public void addKillerMove(int ply, Move newKiller) {
         if (ply >= MAX_KILLER_MOVE_PLY_DEPTH) {
             return;

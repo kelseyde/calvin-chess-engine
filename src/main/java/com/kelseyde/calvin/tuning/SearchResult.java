@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search;
+package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Move;
 

@@ -6,6 +6,7 @@ import com.kelseyde.calvin.api.http.request.PlayRequest;
 import com.kelseyde.calvin.api.http.request.PlayResponse;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
+import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
@@ -29,8 +30,7 @@ import java.util.Optional;
 @Slf4j
 public class GameController {
 
-    @Resource
-    private Bot bot;
+    private final Bot bot = new CalvinBot();
 
     @Resource
     private ResultCalculator resultCalculator;

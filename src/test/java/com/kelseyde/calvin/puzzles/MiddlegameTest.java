@@ -135,4 +135,15 @@ public class MiddlegameTest {
 
     }
 
+    @Test
+    public void testDontPushPawnShield() {
+
+        String fen = "r1bq2k1/ppp1nppp/5b2/3pN3/3P1B2/2PB4/P1P2PPP/1R2Q1K1 b - - 2 14";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(500);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(move.matches(NotationUtils.fromCombinedNotation("g7g5")));
+    }
+
 }

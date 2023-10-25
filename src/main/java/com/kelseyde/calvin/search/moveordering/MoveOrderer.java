@@ -69,6 +69,9 @@ public class MoveOrderer implements MoveOrdering {
         PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
         boolean isCapture = capturedPieceType != null;
         if (isCapture) {
+            if (capturedPieceType == PieceType.KING) {
+                System.out.println("uhoh");
+            }
             moveScore += MVV_LVA_TABLE[capturedPieceType.getIndex()][pieceType.getIndex()];
             int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(board.pieceAt(move.getStartSquare()));
             if (materialDelta > 0) {

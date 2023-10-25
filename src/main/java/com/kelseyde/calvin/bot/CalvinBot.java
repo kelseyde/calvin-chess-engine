@@ -18,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @Data
-@Component
 @Slf4j
 public class CalvinBot implements Bot {
 
@@ -38,6 +37,14 @@ public class CalvinBot implements Bot {
     private boolean maxThinkTimeEnabled;
     private int maxThinkTimeMs = 2500;
 
+    public CalvinBot() {
+        this.search = new Searcher();
+    }
+
+    public CalvinBot(Search search) {
+        this.search = search;
+    }
+
     @Override
     public void newGame() {
         gameInProgress = true;
@@ -50,7 +57,7 @@ public class CalvinBot implements Bot {
     public void setPosition(String fen, List<Move> moves) {
         if (board == null) {
             board = FEN.fromFEN(fen);
-            search = new Searcher(board);
+            search.init(board);
             moveGenerator = new MoveGenerator();
             moves.stream()
                     .map(this::getLegalMove)
@@ -133,7 +140,6 @@ public class CalvinBot implements Bot {
         }
 //        search.logStatistics();
         board = null;
-        search = null;
     }
 
     // TODO can be removed?

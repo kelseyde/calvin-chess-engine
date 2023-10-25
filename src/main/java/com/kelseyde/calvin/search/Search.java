@@ -1,5 +1,8 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.tuning.SearchResult;
+
 import java.time.Duration;
 
 /**
@@ -7,6 +10,8 @@ import java.time.Duration;
  * See {@link Searcher} for a concrete implementation, using an iterative deepening approach.
  */
 public interface Search {
+
+    void init(Board board);
 
     SearchResult search(Duration duration);
 

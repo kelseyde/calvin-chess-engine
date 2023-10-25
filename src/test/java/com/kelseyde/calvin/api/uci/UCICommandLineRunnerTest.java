@@ -30,7 +30,7 @@ public class UCICommandLineRunnerTest {
     public void setUp() {
         System.setOut(new PrintStream(outputStream));
         Bot bot = new CalvinBot();
-        runner = new UCICommandLineRunner(shutdownManager, bot);
+        runner = new UCICommandLineRunner(shutdownManager);
     }
 
     @Test

@@ -30,7 +30,7 @@ import java.util.List;
  */
 @Slf4j
 @NoArgsConstructor
-public class Searcher implements Search {
+public class Searcher2 implements Search {
 
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
@@ -57,7 +57,7 @@ public class Searcher implements Search {
 
     private SearchStatistics statistics = new SearchStatistics();
 
-    public Searcher(Board board) {
+    public Searcher2(Board board) {
         init(board);
     }
 

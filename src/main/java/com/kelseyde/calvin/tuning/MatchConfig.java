@@ -4,13 +4,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.function.Supplier;
+
 @Data
 @Builder
 @Slf4j
 public class MatchConfig {
 
-    private Player player1;
-    private Player player2;
+    private Supplier<Player> player1;
+    private Supplier<Player> player2;
 
     private int gameCount;
     private int threadCount;

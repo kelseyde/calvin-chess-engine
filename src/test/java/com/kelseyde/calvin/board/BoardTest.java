@@ -330,15 +330,14 @@ public class BoardTest {
     }
 
     @Test
-    public void test() {
+    public void testKnightMoveGenerationBug() {
         Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "a3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d4", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         List<String> moves = new MoveGenerator().generateMoves(board, false).stream().map(NotationUtils::toNotation).toList();
-        Assertions.assertEquals(31, moves.size());
-        Assertions.assertTrue(moves.contains("e1d2"));
+        System.out.println(moves.size());
+        System.out.println(moves);
+        Assertions.assertEquals(20, moves.size());
     }
 
     private Set<Integer> getPiecePositions(Board board, boolean isWhiteToMove) {

@@ -2,7 +2,6 @@ package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.Searcher2;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

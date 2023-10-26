@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search;
+package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
@@ -6,6 +6,8 @@ import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
+import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.SearchStatistics;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;

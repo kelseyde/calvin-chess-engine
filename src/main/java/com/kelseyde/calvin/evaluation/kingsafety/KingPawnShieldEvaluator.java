@@ -15,7 +15,7 @@ public class KingPawnShieldEvaluator {
     private static final int SEMI_OPEN_ADJACENT_FILE_PENALTY = 10;
     private static final int OPEN_KING_FILE_PENALTY = 25;
     private static final int OPEN_ADJACENT_FILE_PENALTY = 15;
-    private static final int LOST_CASTLING_RIGHTS_PENALTY = 80;
+    private static final int LOST_CASTLING_RIGHTS_PENALTY = 120;
 
     public int evaluate(Board board, Material opponentMaterial, boolean isWhite) {
 

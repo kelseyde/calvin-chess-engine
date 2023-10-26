@@ -11,6 +11,7 @@ import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.tuning.SearchResult;
+import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,10 @@ public class Searcher implements Search {
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
 
-    private static final int ASPIRATION_WINDOW_BUFFER = 150;
-    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 250;
+//    private static final int ASPIRATION_WINDOW_BUFFER = 150;
+//    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 250;
+    private static final int ASPIRATION_WINDOW_BUFFER = 50;
+    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -201,7 +204,9 @@ public class Searcher implements Search {
         if (plyRemaining == 0) {
             // In the case that max depth is reached, begin the quiescence search
             statistics.incrementNodes();
-            return quiescenceSearch(alpha, beta, 1);
+            int eval = quiescenceSearch(alpha, beta, 1);
+            log.trace("{} {} q eval {}", side(board), moveHistory(board), eval);
+            return eval;
         }
         if (legalMoves.isEmpty()) {
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -256,6 +261,8 @@ public class Searcher implements Search {
             if (isTimeoutExceeded()) {
                 return 0;
             }
+
+            log.trace("{} {} eval {}", side(board), moveHistory(board), eval);
 
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
@@ -379,6 +386,17 @@ public class Searcher implements Search {
 
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
+    }
+
+    private String side(Board board) {
+        return board.isWhiteToMove() ? "w" : "b";
+    }
+
+    private String moveHistory(Board board) {
+        return board.getMoveHistory().stream()
+                .map(NotationUtils::toNotation)
+                .toList()
+                .toString();
     }
 
 }

@@ -5,7 +5,7 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>2.0.0-FasterQuiescence</version>
+    <version>2.0.1-FasterQuiescence</version>
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 

@@ -4,13 +4,12 @@ import lombok.Getter;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Getter
 @Disabled
 public class StartingPositionMPerftTest extends MPerftTest {
 
-    @Getter
     private final String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    @Getter
     private final String subFolder = "starting_position";
 
     @Test

@@ -41,8 +41,8 @@ public class Distance {
             for (int sq2 = 0; sq2 < 64; sq2++) {
                 int file1 = sq1 & 7;
                 int file2 = sq2 & 7;
-                int rank1 = sq1 >> 3;
-                int rank2 = sq2 >> 3;
+                int rank1 = sq1 >>> 3;
+                int rank2 = sq2 >>> 3;
                 int rankDistance = Math.abs(rank2 - rank1);
                 int fileDistance = Math.abs(file2 - file1);
 

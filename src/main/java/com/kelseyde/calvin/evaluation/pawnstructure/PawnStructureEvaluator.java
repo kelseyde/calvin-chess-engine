@@ -38,14 +38,8 @@ public class PawnStructureEvaluator {
             int file = BoardUtils.getFile(pawn);
 
             if (isPassedPawn(pawn, opponentPawns, isWhite)) {
-                int rank = BoardUtils.getRank(pawn);
-                int squaresFromPromotion = isWhite ? 7 - rank : rank;
-                int passedPawnBonus = PASSED_PAWN_BONUS[squaresFromPromotion];
-                passedPawnsBonus += passedPawnBonus;
-
-                long protectionMask = isWhite ? PawnBits.WHITE_PROTECTED_PAWN_MASK[pawn] : PawnBits.BLACK_PROTECTED_PAWN_MASK[pawn];
-                int protectingPawnsBonus = Long.bitCount(protectionMask & friendlyPawns) * PROTECTED_PASSED_PAWN_BONUS;
-                passedPawnsBonus += protectingPawnsBonus;
+                passedPawnsBonus += calculatePassedPawnBonus(pawn, isWhite);
+                passedPawnsBonus += calculateProtectedPawnBonus(pawn, friendlyPawns, isWhite);
             }
             // Passed pawns are not penalised for being isolated
             else if (isIsolatedPawn(file, friendlyPawns)) {
@@ -75,6 +69,17 @@ public class PawnStructureEvaluator {
     private boolean isDoubledPawn(int file, long friendlyPawns) {
         long fileMask = Bits.FILE_MASKS[file];
         return Long.bitCount(friendlyPawns & fileMask) > 1;
+    }
+
+    private int calculatePassedPawnBonus(int pawn, boolean isWhite) {
+        int rank = BoardUtils.getRank(pawn);
+        int squaresFromPromotion = isWhite ? 7 - rank : rank;
+        return PASSED_PAWN_BONUS[squaresFromPromotion];
+    }
+
+    private int calculateProtectedPawnBonus(int pawn, long friendlyPawns, boolean isWhite) {
+        long protectionMask = isWhite ? PawnBits.WHITE_PROTECTED_PAWN_MASK[pawn] : PawnBits.BLACK_PROTECTED_PAWN_MASK[pawn];
+        return Long.bitCount(protectionMask & friendlyPawns) * PROTECTED_PASSED_PAWN_BONUS;
     }
 
 }

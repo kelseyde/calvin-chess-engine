@@ -4,10 +4,10 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
+import com.kelseyde.calvin.movegeneration.attacks.Attacks;
 import com.kelseyde.calvin.movegeneration.check.PinCalculator;
 import com.kelseyde.calvin.movegeneration.check.PinCalculator.PinData;
 import com.kelseyde.calvin.movegeneration.check.RayCalculator;
-import com.kelseyde.calvin.movegeneration.attacks.Attacks;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

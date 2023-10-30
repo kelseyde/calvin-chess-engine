@@ -4,11 +4,10 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.utils.NotationUtils;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
 import java.util.List;
@@ -315,6 +314,21 @@ public class BlunderTest {
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(
                 move.matches(NotationUtils.fromCombinedNotation("e8f8"))
+        );
+
+    }
+
+    @Test
+    public void testDontMoveKingBeforeCastling2() {
+
+        String fen = "rn2kb1r/pp4pp/2p1p3/3n4/1qNP1p2/2N5/PPP1Q1PP/R1B2RK1 b kq - 5 14";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        int thinkTime = bot.chooseThinkTime(463290, 441568, 1000, 1000);
+        Move move = bot.think(thinkTime);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("e8d8"))
         );
 
     }

@@ -58,12 +58,12 @@ public class Board {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         PieceType pieceType = pieceAt(startSquare);
-        PieceType capturedPieceType = pieceAt(move.getEndSquare());
+        PieceType capturedPieceType = move.isEnPassant() ? PieceType.PAWN : pieceAt(endSquare);
 
         int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
         int newEnPassantFile = -1;
         boolean resetFiftyMoveCounter = capturedPieceType != null || PieceType.PAWN.equals(pieceType);
-        newFiftyMoveCounter = resetFiftyMoveCounter ? 0 :  ++newFiftyMoveCounter;
+        newFiftyMoveCounter = resetFiftyMoveCounter ? 0 : ++newFiftyMoveCounter;
 
         if (move.isPawnDoubleMove()) {
             toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
@@ -91,7 +91,6 @@ public class Board {
             }
         }
         else if (move.isEnPassant()) {
-            capturedPieceType = PieceType.PAWN;
             toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
             int pawnSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
             toggleSquare(PieceType.PAWN, !isWhiteToMove, pawnSquare);
@@ -107,7 +106,7 @@ public class Board {
         PieceType newPieceType = move.getPromotionPieceType() == null ? pieceType : move.getPromotionPieceType();
 
         long newZobristKey =
-                ZobristKey.updateKey(gameState.getZobristKey(), isWhiteToMove, startSquare, endSquare, pieceType, newPieceType,
+                ZobristKey.updateKey(gameState.getZobristKey(), isWhiteToMove, startSquare, endSquare, pieceType, newPieceType, capturedPieceType,
                         gameState.getCastlingRights(), newCastlingRights, gameState.getEnPassantFile(), newEnPassantFile);
 
         GameState newGameState = new GameState(newZobristKey, capturedPieceType, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
@@ -127,9 +126,6 @@ public class Board {
         int startSquare = lastMove.getStartSquare();
         int endSquare = lastMove.getEndSquare();
         PieceType pieceType = pieceAt(endSquare);
-        if (pieceType == null) {
-            throw new NoSuchElementException("piece type is null! " + NotationUtils.toNotation(lastMove));
-        }
 
         if (lastMove.isCastling()) {
             toggleSquares(PieceType.KING, isWhiteToMove, endSquare, startSquare);

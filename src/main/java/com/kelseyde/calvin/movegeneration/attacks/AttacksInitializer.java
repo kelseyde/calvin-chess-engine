@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.movegeneration.magic;
+package com.kelseyde.calvin.movegeneration.attacks;
 
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.utils.BoardUtils;
@@ -12,7 +12,17 @@ import java.util.Set;
  *
  * @see <a href="https://www.chessprogramming.org/Magic_Bitboards">Chess Programming Wiki</a>
  */
-public class MagicInitializer {
+public class AttacksInitializer {
+
+    public static long[] generateWhitePawnAttacks() {
+        // TODO
+        return null;
+    }
+
+    public static long[] generateBlackPawnAttacks() {
+        // ODO
+        return null;
+    }
 
     public static long[] initMagicMask(boolean isOrthogonal) {
         long[] magicMasks = new long[64];

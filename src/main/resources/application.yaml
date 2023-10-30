@@ -9,11 +9,10 @@ http:
   enabled: true
 
 server:
-  port: 8081
+  port: 8082
   servlet:
     context-path: /${spring.application.name}
 
 logging:
   level:
-    root: WARN
-    com.kelseyde.calvin: DEBUG
+    com.kelseyde.calvin: INFO

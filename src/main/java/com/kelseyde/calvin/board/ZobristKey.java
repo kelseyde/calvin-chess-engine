@@ -112,9 +112,12 @@ public class ZobristKey {
     }
 
     public static long updateKey(long key, boolean isWhite, int startSquare, int endSquare, PieceType oldType, PieceType newType,
-                          int oldCastlingRights, int newCastlingRights, int oldEnPassantFile, int newEnPassantFile) {
+                          PieceType capturedType, int oldCastlingRights, int newCastlingRights, int oldEnPassantFile, int newEnPassantFile) {
 
         key ^= PIECE_SQUARE_HASH[startSquare][isWhite ? 0 : 1][oldType.getIndex()];
+        if (capturedType != null) {
+            key ^= PIECE_SQUARE_HASH[endSquare][isWhite ? 1 : 0][capturedType.getIndex()];
+        }
         key ^= PIECE_SQUARE_HASH[endSquare][isWhite ? 0 : 1][newType.getIndex()];
         key ^= CASTLING_RIGHTS[oldCastlingRights];
         key ^= CASTLING_RIGHTS[newCastlingRights];

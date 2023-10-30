@@ -7,7 +7,7 @@ import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.movegeneration.check.PinCalculator;
 import com.kelseyde.calvin.movegeneration.check.PinCalculator.PinData;
 import com.kelseyde.calvin.movegeneration.check.RayCalculator;
-import com.kelseyde.calvin.movegeneration.magic.Magics;
+import com.kelseyde.calvin.movegeneration.attacks.Attacks;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -219,7 +219,7 @@ public class MoveGenerator implements MoveGeneration {
         long king = board.getKing(isWhite);
         int startSquare = BitboardUtils.getLSB(king);
         long friendlies = board.getPieces(isWhite);
-        long kingMoves = Bits.KING_ATTACKS[startSquare] &~ friendlies;
+        long kingMoves = Attacks.kingAttacks(startSquare) &~ friendlies;
         if (capturesOnly) {
             long opponents = isWhite ? board.getBlackPieces() : board.getWhitePieces();
             kingMoves = kingMoves & opponents;
@@ -327,7 +327,7 @@ public class MoveGenerator implements MoveGeneration {
 
     public long getKnightAttacks(Board board, int square, boolean isWhite) {
         long friendlies = board.getPieces(isWhite);
-        return Bits.KNIGHT_ATTACKS[square] &~ friendlies;
+        return Attacks.knightAttacks(square) &~ friendlies;
     }
 
     public long getBishopAttacks(Board board, int square, boolean isWhite) {
@@ -344,7 +344,7 @@ public class MoveGenerator implements MoveGeneration {
 
     public long getKingAttacks(Board board, int square, boolean isWhite) {
         long friendlies = board.getPieces(isWhite);
-        return Bits.KING_ATTACKS[square] &~ friendlies;
+        return Attacks.kingAttacks(square) &~ friendlies;
     }
 
     private long getSlidingAttacks(Board board, int square, boolean isWhite, boolean isDiagonal, boolean isOrthogonal) {
@@ -352,10 +352,10 @@ public class MoveGenerator implements MoveGeneration {
         long occ = board.getOccupied();
         long friendlies = board.getPieces(isWhite);
         if (isOrthogonal) {
-            attackMask |= Magics.getRookAttacks(square, occ) &~ friendlies;
+            attackMask |= Attacks.rookAttacks(square, occ) &~ friendlies;
         }
         if (isDiagonal) {
-            attackMask |= Magics.getBishopAttacks(square, occ) &~ friendlies;
+            attackMask |= Attacks.bishopAttacks(square, occ) &~ friendlies;
         }
         return attackMask;
     }

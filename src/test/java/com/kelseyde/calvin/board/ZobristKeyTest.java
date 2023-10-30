@@ -5,6 +5,8 @@ import com.kelseyde.calvin.utils.fen.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.stream.Stream;
+
 public class ZobristKeyTest {
 
     @Test
@@ -53,6 +55,37 @@ public class ZobristKeyTest {
         Assertions.assertNotEquals(firstZobrist1, secondZobrist2);
         Assertions.assertNotEquals(firstZobrist2, secondZobrist1);
         Assertions.assertNotEquals(firstZobrist2, secondZobrist2);
+
+    }
+
+    @Test
+    public void testCapturedPieceChangesZobrist() {
+
+        String fen = "1rb3k1/p1q3pp/4pr2/5p2/2pP4/1PQ3P1/4PPBP/2R1K2R b K - 0 21";
+
+        Board board = FEN.fromFEN(fen);
+        long z1 = board.getGameState().getZobristKey();
+        board.makeMove(NotationUtils.fromNotation("b8", "b3"));
+        long z2 = board.getGameState().getZobristKey();
+        board.makeMove(NotationUtils.fromNotation("c3", "b3"));
+        long z3 = board.getGameState().getZobristKey();
+        board.makeMove(NotationUtils.fromNotation("c7", "a5"));
+        long z4 = board.getGameState().getZobristKey();
+        board.makeMove(NotationUtils.fromNotation("b3", "c3"));
+        long z5 = board.getGameState().getZobristKey();
+        board.makeMove(NotationUtils.fromNotation("a5", "c7"));
+        long z6 = board.getGameState().getZobristKey();
+        System.out.println(z1);
+        System.out.println(z2);
+        System.out.println(z3);
+        System.out.println(z4);
+        System.out.println(z5);
+        System.out.println(z6);
+
+        long distinctZobristCount = Stream.of(z1, z2, z3, z4, z5, z6)
+                .distinct()
+                .count();
+        Assertions.assertEquals(6, distinctZobristCount);
 
     }
 

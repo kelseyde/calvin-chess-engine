@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.check;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.movegeneration.magic.Magics;
+import com.kelseyde.calvin.movegeneration.attacks.Attacks;
 
 public class PinCalculator {
 
@@ -25,14 +25,14 @@ public class PinCalculator {
         // Calculate possible orthogonal (queen or rook) pins
         long opponentOrthogonalSliders = board.getRooks(!isWhite) | board.getQueens(!isWhite);
         if (opponentOrthogonalSliders != 0) {
-            long possibleOrthogonalPinners = Magics.getRookAttacks(kingSquare, opponentOrthogonalSliders) & opponentOrthogonalSliders;
+            long possibleOrthogonalPinners = Attacks.rookAttacks(kingSquare, opponentOrthogonalSliders) & opponentOrthogonalSliders;
             calculatePins(kingSquare, friendlies, opponents, possibleOrthogonalPinners);
         }
 
         // Calculate possible diagonal (queen or bishop) pins
         long opponentDiagonalSliders = board.getBishops(!isWhite) | board.getQueens(!isWhite);
         if (opponentDiagonalSliders != 0) {
-            long possibleDiagonalPinners = Magics.getBishopAttacks(kingSquare, opponentDiagonalSliders) & opponentDiagonalSliders;
+            long possibleDiagonalPinners = Attacks.bishopAttacks(kingSquare, opponentDiagonalSliders) & opponentDiagonalSliders;
             calculatePins(kingSquare, friendlies, opponents, possibleDiagonalPinners);
         }
 

@@ -7,13 +7,13 @@ import java.util.Optional;
 /**
  * Represents a single chess move.
  * All the information required to represent a move can be encoded in 16 bits.
- *
+ * <p>
  * bit 0 - 5: start square (0 - 63)
  * bit 6 - 11: end square (0 - 63
  * bit 12 - 15: special moves (promotion, castling, pawn double moves, en passant)
  *
  * @see <a href="https://www.chessprogramming.org/Encoding_Moves">Chess Programming Wiki</a>
- *
+ * <p>
  * Largely inspired by Sebastian Lague's Chess Coding Adventure:
  * @see <a href="https://github.com/SebLague/Chess-Coding-Adventure">Chess Coding Adventure</a>
  */

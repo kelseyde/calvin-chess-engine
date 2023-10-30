@@ -22,7 +22,7 @@ public class BoardUtils {
     }
 
     public static int getRank(int sq) {
-        return sq >> 3;
+        return sq >>> 3;
     }
 
     public static int getDiagonal(int sq) {

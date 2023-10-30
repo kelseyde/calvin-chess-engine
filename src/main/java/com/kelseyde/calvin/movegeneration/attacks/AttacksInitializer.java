@@ -71,7 +71,7 @@ public class AttacksInitializer {
 
         for (int patternIndex = 0; patternIndex < patternsCount; patternIndex++) {
             for (int bitIndex = 0; bitIndex < moveSquares.size(); bitIndex++) {
-                int bit = (patternIndex >> bitIndex) & 1;
+                int bit = (patternIndex >>> bitIndex) & 1;
                 blockerBitboards[patternIndex] |= (long) bit << moveSquares.get(bitIndex);
             }
         }

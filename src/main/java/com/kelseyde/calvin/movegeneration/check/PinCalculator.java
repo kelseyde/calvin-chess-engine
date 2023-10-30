@@ -11,7 +11,7 @@ public class PinCalculator {
     private long pinMask;
     private long[] pinRayMasks;
 
-    public record PinData (long pinMask, long[] pinRayMasks) {};
+    public record PinData (long pinMask, long[] pinRayMasks) {}
 
     public PinData calculatePinMask(Board board, boolean isWhite) {
 

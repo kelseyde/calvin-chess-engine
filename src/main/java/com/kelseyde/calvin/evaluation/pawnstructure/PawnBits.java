@@ -46,7 +46,7 @@ public class PawnBits {
             long fileMask = Bits.FILE_MASKS[file];
             long tripleFileMask = fileMask | ADJACENT_FILE_MASK[file];
 
-            long forwardMask = isWhite ? ~(Long.MAX_VALUE >> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
+            long forwardMask = isWhite ? ~(Long.MAX_VALUE >>> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
             passedPawnMask[square] = tripleFileMask & forwardMask;
         }
         return passedPawnMask;

@@ -18,9 +18,9 @@ import java.util.Deque;
 /**
  * Calculates a numeric score evaluating the board. The evaluation is relative to the side to move, meaning a positive
  * score indicates the side to move has an advantage, and vice versa, regardless of the colour of the pieces.
- *
+ * <p>
  * The score consists of the material score + the piece placement score + pawn structure bonuses/penalties + mop up eval.
- *
+ * <p>
  * The evaluation is incrementally updated as moves are made on the board, rather than re-calculated every time.
  */
 public class Evaluator implements Evaluation {
@@ -110,17 +110,14 @@ public class Evaluator implements Evaluation {
                 updateWhiteCapture = true;
                 updateBlackWeightedPieces = true;
                 updateBlackKingPawnShield = true;
-                if (capturedPiece == PieceType.PAWN) {
-                    updatePawnStructure = true;
-                }
             } else {
                 updateBlackMaterial = true;
                 updateBlackCapture = true;
                 updateWhiteWeightedPieces = true;
                 updateWhiteKingPawnShield = true;
-                if (capturedPiece == PieceType.PAWN) {
-                    updatePawnStructure = true;
-                }
+            }
+            if (capturedPiece == PieceType.PAWN) {
+                updatePawnStructure = true;
             }
             if (capturedPiece == PieceType.PAWN) {
                 updateWhiteKingPawnShield = true;

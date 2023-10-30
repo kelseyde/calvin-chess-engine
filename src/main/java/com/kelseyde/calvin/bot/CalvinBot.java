@@ -5,12 +5,11 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.utils.NotationUtils;
-import com.kelseyde.calvin.utils.fen.FEN;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.List;

@@ -5,15 +5,12 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.evaluation.Evaluator;
-import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.utils.NotationUtils;
-import com.kelseyde.calvin.utils.fen.FEN;
-import org.junit.jupiter.api.Assertions;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.List;
 
 @Disabled
 public class MiddlegameTest {

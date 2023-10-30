@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.mperft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.movegeneration.perft.MPerftService;
-import com.kelseyde.calvin.utils.fen.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;

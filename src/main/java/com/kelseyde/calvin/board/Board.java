@@ -2,12 +2,10 @@ package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.utils.BoardUtils;
-import com.kelseyde.calvin.utils.NotationUtils;
 import lombok.Data;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**

@@ -3,9 +3,9 @@ package com.kelseyde.calvin.board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
-import com.kelseyde.calvin.utils.NotationUtils;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.fen.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

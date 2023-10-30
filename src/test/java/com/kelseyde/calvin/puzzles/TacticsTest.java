@@ -2,10 +2,10 @@ package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.tuning.SearchResult;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.utils.NotationUtils;
-import com.kelseyde.calvin.utils.fen.FEN;
+import com.kelseyde.calvin.tuning.SearchResult;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 
 @Disabled
-public class PuzzlesTest {
+public class TacticsTest {
 
     private Searcher search;
 

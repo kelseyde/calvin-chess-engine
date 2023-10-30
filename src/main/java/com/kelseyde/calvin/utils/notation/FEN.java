@@ -1,9 +1,8 @@
-package com.kelseyde.calvin.utils.fen;
+package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.ZobristKey;
 import com.kelseyde.calvin.utils.BoardUtils;
-import com.kelseyde.calvin.utils.NotationUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,9 +95,8 @@ public class FEN {
             return board;
 
         } catch (Exception e) {
-            throw new InvalidFENException(fen, e);
+            throw new IllegalArgumentException(fen, e);
         }
-
 
     }
 
@@ -115,7 +113,7 @@ public class FEN {
             return null;
 
         } catch (Exception e) {
-            throw new InvalidFENException(board.toString(), e);
+            throw new IllegalArgumentException(board.toString(), e);
         }
     }
 

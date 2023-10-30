@@ -34,6 +34,7 @@ public class MoveOrderer implements MoveOrdering {
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
     private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
     private static final int UNDER_PROMOTION_BIAS = 4 * MILLION;
+    private static final int CASTLING_BIAS = 3 * MILLION;
 
     private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 2;
@@ -93,6 +94,10 @@ public class MoveOrderer implements MoveOrdering {
                 moveScore += KILLER_MOVE_BIAS;
             }
             moveScore += historyMoves[colourIndex(board.isWhiteToMove())][move.getStartSquare()][move.getEndSquare()];
+        }
+
+        if (move.isCastling()) {
+            moveScore += CASTLING_BIAS;
         }
 
         return moveScore;

@@ -32,13 +32,12 @@ public class PawnStructureEvaluator {
         int passedPawnsBonus = 0;
         int isolatedPawnCount = 0;
         int doubledPawnCount = 0;
-        long friendlyPawnsIterator = isWhite ? board.getWhitePawns() : board.getBlackPawns();
+        long friendlyPawnsIterator = friendlyPawns;
         while (friendlyPawnsIterator > 0) {
             int pawn = BitboardUtils.getLSB(friendlyPawnsIterator);
             int file = BoardUtils.getFile(pawn);
 
-            long passedPawnMask = isWhite ? PawnBits.WHITE_PASSED_PAWN_MASK[pawn] : PawnBits.BLACK_PASSED_PAWN_MASK[pawn];
-            if ((passedPawnMask & opponentPawns) == 0) {
+            if (isPassedPawn(pawn, opponentPawns, isWhite)) {
                 int rank = BoardUtils.getRank(pawn);
                 int squaresFromPromotion = isWhite ? 7 - rank : rank;
                 int passedPawnBonus = PASSED_PAWN_BONUS[squaresFromPromotion];
@@ -49,19 +48,33 @@ public class PawnStructureEvaluator {
                 passedPawnsBonus += protectingPawnsBonus;
             }
             // Passed pawns are not penalised for being isolated
-            else if ((PawnBits.ADJACENT_FILE_MASK[file] & friendlyPawns) == 0) {
+            else if (isIsolatedPawn(file, friendlyPawns)) {
                 isolatedPawnCount++;
             }
-
-            long fileMask = Bits.FILE_MASKS[file];
-            if (Long.bitCount(friendlyPawns & fileMask) > 1) {
+            if (isDoubledPawn(file, friendlyPawns)) {
                 doubledPawnCount++;
             }
 
             friendlyPawnsIterator = BitboardUtils.popLSB(friendlyPawnsIterator);
         }
-        return passedPawnsBonus + ISOLATED_PAWN_PENALTY[isolatedPawnCount] + DOUBLED_PAWN_PENALTY[doubledPawnCount];
+        int isolatedPawnPenalty = ISOLATED_PAWN_PENALTY[isolatedPawnCount];
+        int doubledPawnPenalty =  DOUBLED_PAWN_PENALTY[doubledPawnCount];
+        return passedPawnsBonus + isolatedPawnPenalty + doubledPawnPenalty;
 
+    }
+
+    private boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
+        long passedPawnMask = isWhite ? PawnBits.WHITE_PASSED_PAWN_MASK[pawn] : PawnBits.BLACK_PASSED_PAWN_MASK[pawn];
+        return (passedPawnMask & opponentPawns) == 0;
+    }
+
+    private boolean isIsolatedPawn(int file, long friendlyPawns) {
+        return (PawnBits.ADJACENT_FILE_MASK[file] & friendlyPawns) == 0;
+    }
+
+    private boolean isDoubledPawn(int file, long friendlyPawns) {
+        long fileMask = Bits.FILE_MASKS[file];
+        return Long.bitCount(friendlyPawns & fileMask) > 1;
     }
 
 }

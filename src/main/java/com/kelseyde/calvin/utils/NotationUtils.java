@@ -48,6 +48,9 @@ public class NotationUtils {
     }
 
     public static String toNotation(Move move) {
+        if (move == null) {
+            return "-";
+        }
         String notation = toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
         if (move.getPromotionPieceType() != null) {
             notation += PIECE_CODE_INDEX.get(move.getPromotionPieceType());

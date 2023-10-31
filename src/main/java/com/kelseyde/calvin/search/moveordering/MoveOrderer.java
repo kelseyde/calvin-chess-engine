@@ -6,10 +6,7 @@ import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Implementation of {@link MoveOrdering} using the following move-ordering strategy:
@@ -119,7 +116,8 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private boolean isKillerMove(int ply, Move move) {
-        return ply < MAX_KILLER_MOVE_PLY_DEPTH && Arrays.asList(killerMoves[ply]).contains(move);
+        return ply < MAX_KILLER_MOVE_PLY_DEPTH &&
+                (move.matches(killerMoves[ply][0]) || move.matches(killerMoves[ply][1]));
     }
 
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {

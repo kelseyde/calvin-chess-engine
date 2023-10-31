@@ -12,12 +12,15 @@ import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,8 +39,10 @@ public class Searcher2 implements Search {
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
 
-    private static final int ASPIRATION_WINDOW_BUFFER = 150;
-    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 250;
+    //    private static final int ASPIRATION_WINDOW_BUFFER = 150;
+//    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 250;
+    private static final int ASPIRATION_WINDOW_BUFFER = 50;
+    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -94,6 +99,7 @@ public class Searcher2 implements Search {
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta);
+//            log.info("depth {} eval: {}", currentDepth, eval);
 
             if (resultCurrentDepth != null) {
                 result = resultCurrentDepth;
@@ -107,6 +113,7 @@ public class Searcher2 implements Search {
             if (eval <= alpha) {
                 // The result is less than alpha, so search again at the same depth with an expanded aspiration window.
                 retryMultiplier += 1;
+//                log.info("depth {} eval {} failed aspiration window {} - {}, must research", currentDepth, eval, alpha, beta);
                 alpha -= ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
                 beta += ASPIRATION_WINDOW_BUFFER;
                 continue;
@@ -114,6 +121,7 @@ public class Searcher2 implements Search {
             if (eval >= beta) {
                 // The result is greater than alpha, so search again at the same depth with an expanded aspiration window.
                 retryMultiplier += 1;
+//                log.info("depth {} eval {} failed aspiration window {} - {}, must research", currentDepth, eval, alpha, beta);
                 beta += ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
                 alpha -= ASPIRATION_WINDOW_BUFFER;
                 continue;
@@ -150,25 +158,26 @@ public class Searcher2 implements Search {
      * @param alpha the lower bound for child nodes at the current search depth.
      * @param beta the upper bound for child nodes at the current search depth.
      */
-     public int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
+    public int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
 
-         if (isTimeoutExceeded()) {
-             return 0;
-         }
-         if (plyFromRoot > 0) {
-             if (resultCalculator.isEffectiveDraw(board)) {
-                 statistics.incrementNodes();
-                 return DRAW_SCORE;
-             }
-             // Exit early if we have already found a forced mate at an earlier ply
-             alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
-             beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
-             if (alpha >= beta) {
-                 statistics.incrementNodes();
-                 return alpha;
-             }
-         }
-         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
+        if (isTimeoutExceeded()) {
+            return 0;
+        }
+        if (plyFromRoot > 0) {
+            if (resultCalculator.isEffectiveDraw(board)) {
+                statistics.incrementNodes();
+//                 log.info("{} {} {} found draw", side(board), alphaBeta(alpha, beta), moveHistory(board));
+                return DRAW_SCORE;
+            }
+            // Exit early if we have already found a forced mate at an earlier ply
+            alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
+            beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
+            if (alpha >= beta) {
+                statistics.incrementNodes();
+                return alpha;
+            }
+        }
+        Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // TODO move transposition logic to TranspositionTable
         // Handle possible transposition
@@ -191,6 +200,7 @@ public class Searcher2 implements Search {
                     if (plyFromRoot == 0) {
                         resultCurrentDepth = new SearchResult(transposition.getValue(), transposition.getBestMove());
                     }
+//                    log.info("{} {} {} transposition eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), transposition.getValue());
                     return transposition.getValue();
                 }
             }
@@ -202,7 +212,9 @@ public class Searcher2 implements Search {
         if (plyRemaining == 0) {
             // In the case that max depth is reached, begin the quiescence search
             statistics.incrementNodes();
-            return quiescenceSearch(alpha, beta, 1);
+            int eval = quiescenceSearch(alpha, beta, 1);
+//            log.info("{} {} {} q eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
+            return eval;
         }
         if (legalMoves.isEmpty()) {
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -210,15 +222,19 @@ public class Searcher2 implements Search {
                 // Found checkmate: favour checkmates closer to the root node.
                 // This leads the engine to prefer e.g. mate in one over mate in two.
                 statistics.incrementNodes();
-                return -CHECKMATE_SCORE + plyFromRoot;
+                int checkmateEval = -CHECKMATE_SCORE + plyFromRoot;
+//                log.info("{} {} {} checkmate eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), checkmateEval);
+                return checkmateEval;
             } else {
                 // Found stalemate
                 statistics.incrementNodes();
+//                log.info("{} {} {} draw eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), DRAW_SCORE);
                 return DRAW_SCORE;
             }
         }
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
+//        log.info("{} {} {} moves: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), moves(orderedMoves));
 
         Move bestMoveInThisPosition = null;
         int originalAlpha = alpha;
@@ -241,22 +257,24 @@ public class Searcher2 implements Search {
 
             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
             int reductions = 0;
-            if (plyRemaining >= 3 && i >= 3 && !isCapture && !isCheck && !isPromotion) {
-                reductions = 1;
-            }
+//            if (plyRemaining >= 3 && i >= 3 && !isCapture && !isCheck && !isPromotion) {
+//                reductions = 1;
+//            }
 
             int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha);
 
-            if (reductions > 0 && eval > alpha) {
-                // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
-                eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
-            }
+//            if (reductions > 0 && eval > alpha) {
+//                // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
+//                eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
+//            }
             board.unmakeMove();
             evaluator.unmakeMove();
 
             if (isTimeoutExceeded()) {
                 return 0;
             }
+
+//            log.info("{} {} {} eval {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
 
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
@@ -270,7 +288,7 @@ public class Searcher2 implements Search {
                 }
                 statistics.incrementNodes();
                 statistics.incrementCutoffs();
-
+//                log.info("{} {} {} cutoff {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 return beta;
             }
 
@@ -278,6 +296,7 @@ public class Searcher2 implements Search {
                 // We have found a new best move
                 bestMoveInThisPosition = move;
                 alpha = eval;
+//                log.info("{} {} {} best move {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 if (plyFromRoot == 0) {
                     resultCurrentDepth = new SearchResult(eval, move);
                 }
@@ -307,18 +326,24 @@ public class Searcher2 implements Search {
         // captures. Since the player is not forced to capture and may have good non-capture moves available, they may
         // choose to stand pat. In that case, treat this node as a beta cut-off.
         int eval = evaluator.get();
-        alpha = Math.max(alpha, eval);
+//        log.info("{} {} {} q initial eval: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
         if (eval >= beta) {
             statistics.incrementNodes();
             statistics.incrementQuiescents();
             statistics.incrementCutoffs();
+//            log.info("{} {} {} q cutoff {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
             return beta;
+        }
+        if (eval > alpha) {
+            alpha = eval;
+//            log.info("{} {} {} q raising alpha {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
         }
 
         // Generate all legal captures
         List<Move> moves = moveGenerator.generateMoves(board, true);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
+//        log.info("{} {} {} q moves: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), moves(orderedMoves));
 
         for (Move move : orderedMoves) {
 
@@ -329,6 +354,7 @@ public class Searcher2 implements Search {
             if ((depth <= 4 && seeEval < 0) || (depth > 4 && seeEval <= 0)) {
                 // Up to depth 4 in quiescence, only considers captures with SEE eval >= 0.
                 // Past depth 4 in quiescence, only consider captures with SEE eval > 0.
+//                log.info("{} {} {} see skipping move: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move));
                 continue;
             }
 
@@ -338,13 +364,17 @@ public class Searcher2 implements Search {
             board.unmakeMove();
             evaluator.unmakeMove();
 
+//            log.info("{} {} {} q eval {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
+
             if (eval >= beta) {
                 statistics.incrementNodes();
                 statistics.incrementQuiescents();
                 statistics.incrementCutoffs();
+//                log.info("{} {} {} q cutoff {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 return beta;
             }
             if (eval > alpha) {
+//                log.info("{} {} {} q best move {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 alpha = eval;
             }
         }
@@ -380,6 +410,27 @@ public class Searcher2 implements Search {
 
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
+    }
+
+    private String side(Board board) {
+        return board.isWhiteToMove() ? "w" : "b";
+    }
+
+    private String alphaBeta(int alpha, int beta) {
+        return String.format("[%s, %s]", alpha, beta);
+    }
+
+    private String moveHistory(Board board) {
+        List<Move> moves = new ArrayList<>(board.getMoveHistory());
+        Collections.reverse(moves);
+        return moves(moves);
+    }
+
+    private String moves(List<Move> moves) {
+        return moves.stream()
+                .map(NotationUtils::toNotation)
+                .toList()
+                .toString();
     }
 
 }

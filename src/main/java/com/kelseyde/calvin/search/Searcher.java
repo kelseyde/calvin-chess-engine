@@ -41,7 +41,7 @@ public class Searcher implements Search {
     private static final int ASPIRATION_WINDOW_BUFFER = 50;
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
-    private static final boolean LATE_MOVE_REDUCTIONS_ENABLED = false;
+    private static final boolean LATE_MOVE_REDUCTIONS_ENABLED = true;
     private static final int LATE_MOVE_REDUCTIONS_MOVE_BUFFER = 3;
 
     private static final int CHECKMATE_SCORE = 1000000;
@@ -85,8 +85,6 @@ public class Searcher implements Search {
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;
-        statistics = new SearchStatistics();
-        statistics.setStart(Instant.now());
 
         int currentDepth = 1;
         int alpha = MIN_EVAL;
@@ -95,7 +93,6 @@ public class Searcher implements Search {
 
         while (!isTimeoutExceeded()) {
 
-            Instant depthStart = Instant.now();
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta);
@@ -130,8 +127,6 @@ public class Searcher implements Search {
             alpha = eval - ASPIRATION_WINDOW_BUFFER;
             beta = eval + ASPIRATION_WINDOW_BUFFER;
             retryMultiplier = 0;
-
-            statistics.incrementDepth(currentDepth, depthStart, Instant.now());
             currentDepth++;
         }
 
@@ -141,7 +136,6 @@ public class Searcher implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-        statistics.setEnd(Instant.now());
 //        log.info(statistics.generateReport());
 //        transpositionTable.logTableSize();
         return result;
@@ -164,7 +158,6 @@ public class Searcher implements Search {
          }
          if (plyFromRoot > 0) {
              if (resultCalculator.isEffectiveDraw(board)) {
-                 statistics.incrementNodes();
 //                 log.info("{} {} {} found draw", side(board), alphaBeta(alpha, beta), moveHistory(board));
                  return DRAW_SCORE;
              }
@@ -172,37 +165,22 @@ public class Searcher implements Search {
              alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
              beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
              if (alpha >= beta) {
-                 statistics.incrementNodes();
                  return alpha;
              }
          }
          Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
-        // TODO move transposition logic to TranspositionTable
         // Handle possible transposition
         TranspositionNode transposition = transpositionTable.get();
-        if (transposition != null) {
-            if (transposition.getBestMove() != null) {
-                previousBestMove = transposition.getBestMove();
+        if (hasBestMove(transposition)) {
+            previousBestMove = transposition.getBestMove();
+        }
+        if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
+            if (plyFromRoot == 0) {
+                resultCurrentDepth = new SearchResult(transposition.getValue(), transposition.getBestMove());
             }
-            if (transposition.getDepth() >= plyRemaining) {
-                NodeType type = transposition.getType();
-                // Previous search returned the exact evaluation for this position.
-                if ((type.equals(NodeType.EXACT))
-                        // Previous search failed low, beating alpha score; only use it if it beats the current alpha.
-                        || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha)
-                        // Previous search failed high, causing a beta cut-off; only use it if greater than current beta.
-                        || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta)) {
-
-                    if (plyFromRoot == 0) {
-                        resultCurrentDepth = new SearchResult(transposition.getValue(), transposition.getBestMove());
-                    }
-                    statistics.incrementTranspositions();
-
-//                    log.info("{} {} {} transposition eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), transposition.getValue());
-                    return transposition.getValue();
-                }
-            }
+            //log.info("{} {} {} transposition eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), transposition.getValue());
+            return transposition.getValue();
         }
 
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
@@ -210,7 +188,6 @@ public class Searcher implements Search {
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
         if (plyRemaining == 0) {
             // In the case that max depth is reached, begin the quiescence search
-            statistics.incrementNodes();
             int eval = quiescenceSearch(alpha, beta, 1);
 //            log.info("{} {} {} q eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
             return eval;
@@ -218,15 +195,11 @@ public class Searcher implements Search {
         if (legalMoves.isEmpty()) {
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             if (isCheck) {
-                // Found checkmate: favour checkmates closer to the root node.
-                // This leads the engine to prefer e.g. mate in one over mate in two.
-                statistics.incrementNodes();
-                int checkmateEval = -CHECKMATE_SCORE + plyFromRoot;
+                // Found checkmate
 //                log.info("{} {} {} checkmate eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), checkmateEval);
-                return checkmateEval;
+                return -CHECKMATE_SCORE + plyFromRoot;
             } else {
                 // Found stalemate
-                statistics.incrementNodes();
 //                log.info("{} {} {} draw eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), DRAW_SCORE);
                 return DRAW_SCORE;
             }
@@ -273,7 +246,6 @@ public class Searcher implements Search {
             if (isTimeoutExceeded()) {
                 return 0;
             }
-
 //            log.info("{} {} {} eval {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
 
             if (eval >= beta) {
@@ -284,10 +256,7 @@ public class Searcher implements Search {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(plyFromRoot, move);
                     moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
-                    statistics.incrementKillers();
                 }
-                statistics.incrementNodes();
-                statistics.incrementCutoffs();
 //                log.info("{} {} {} cutoff {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 return beta;
             }
@@ -305,8 +274,6 @@ public class Searcher implements Search {
 
         NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
         transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
-        statistics.incrementNodes();
-
         return alpha;
 
     }
@@ -328,9 +295,6 @@ public class Searcher implements Search {
         int eval = evaluator.get();
 //        log.info("{} {} {} q initial eval: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
         if (eval >= beta) {
-            statistics.incrementNodes();
-            statistics.incrementQuiescents();
-            statistics.incrementCutoffs();
 //            log.info("{} {} {} q cutoff {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
             return beta;
         }
@@ -341,7 +305,6 @@ public class Searcher implements Search {
 
         // Generate all legal captures
         List<Move> moves = moveGenerator.generateMoves(board, true);
-
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
 //        log.info("{} {} {} q moves: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), moves(orderedMoves));
 
@@ -363,13 +326,9 @@ public class Searcher implements Search {
             eval = -quiescenceSearch(-beta, -alpha, depth + 1);
             board.unmakeMove();
             evaluator.unmakeMove();
-
 //            log.info("{} {} {} q eval {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
 
             if (eval >= beta) {
-                statistics.incrementNodes();
-                statistics.incrementQuiescents();
-                statistics.incrementCutoffs();
 //                log.info("{} {} {} q cutoff {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 return beta;
             }
@@ -378,11 +337,26 @@ public class Searcher implements Search {
                 alpha = eval;
             }
         }
-        statistics.incrementNodes();
-        statistics.incrementQuiescents();
 
         return alpha;
 
+    }
+
+    private boolean hasBestMove(TranspositionNode transposition) {
+        return transposition != null && transposition.getBestMove() != null;
+    }
+
+    private boolean isUsefulTransposition(TranspositionNode transposition, int plyRemaining, int alpha, int beta) {
+        if (transposition == null || transposition.getDepth() < plyRemaining) {
+            return false;
+        }
+        NodeType type = transposition.getType();
+        // Previous search returned the exact evaluation for this position.
+        return ((type.equals(NodeType.EXACT))
+                // Previous search failed low, beating alpha score; only use it if it beats the current alpha.
+                || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha)
+                // Previous search failed high, causing a beta cut-off; only use it if greater than current beta.
+                || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta));
     }
 
     @Override
@@ -397,7 +371,7 @@ public class Searcher implements Search {
 
     @Override
     public void logStatistics() {
-        log.info(statistics.generateReport());
+        //log.info(statistics.generateReport());
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {

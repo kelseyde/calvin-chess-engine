@@ -146,10 +146,11 @@ public class Searcher implements Search {
      * Run a single iteration of the iterative deepening search for a specific depth. Since this function is called
      * recursively until the depth limit is reached, 'depth' needs to be split into two parameters: 'ply remaining' and
      * 'ply from root'.
-     * @param plyRemaining The number of ply deeper left to go in the current search
-     * @param plyFromRoot The number of ply already examined in this iteration of the search.
-     * @param alpha the lower bound for child nodes at the current search depth.
-     * @param beta the upper bound for child nodes at the current search depth.
+     *
+     * @param plyRemaining   The number of ply deeper left to go in the current search
+     * @param plyFromRoot    The number of ply already examined in this iteration of the search.
+     * @param alpha          the lower bound for child nodes at the current search depth.
+     * @param beta           the upper bound for child nodes at the current search depth.
      */
      public int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
 
@@ -253,9 +254,8 @@ public class Searcher implements Search {
                 transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, move, beta);
 
                 if (!isCapture) {
-                    // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
-                    moveOrderer.addKillerMove(plyFromRoot, move);
-                    moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
+                    // Non-captures which cause a beta cut-off are useful for future move ordering
+                    moveOrderer.updateMoveHeuristics(board, plyFromRoot, plyRemaining, move);
                 }
 //                log.info("{} {} {} cutoff {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 return beta;

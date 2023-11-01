@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
+import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -98,6 +99,28 @@ public class MoveOrdererTest {
 
         Move killerMove = new Move(21, 29);
         moveOrderer.addKillerMove(1, killerMove);
+
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
+
+        Assertions.assertTrue(orderedMoves.get(0).matches(NotationUtils.fromNotation("f3", "f4")));
+
+    }
+
+    @Test
+    public void testCounterMoveBias() {
+
+        String fen = "k7/8/5q2/8/8/5PP1/6BP/6K1 b - - 0 1";
+        Board board = FEN.fromFEN(fen);
+        board.makeMove(TestUtils.getLegalMove(board, "f6", "g5"));
+
+        List<Move> moves = new ArrayList<>(List.of(
+                NotationUtils.fromNotation("g1", "h1"),
+                NotationUtils.fromNotation("g1", "f1"),
+                NotationUtils.fromNotation("f3", "f4"),
+                NotationUtils.fromNotation("h2", "h4")));
+
+        Move counterMove = NotationUtils.fromNotation("f3", "f4");
+        moveOrderer.addCounterMove(board, counterMove);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 

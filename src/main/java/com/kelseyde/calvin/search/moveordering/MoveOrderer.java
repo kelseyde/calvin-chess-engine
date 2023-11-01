@@ -29,9 +29,10 @@ public class MoveOrderer implements MoveOrdering {
     private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
-    private static final int UNDER_PROMOTION_BIAS = 4 * MILLION;
-    private static final int CASTLING_BIAS = 3 * MILLION;
+    private static final int COUNTER_MOVE_BIAS = 5 * MILLION;
+    private static final int LOSING_CAPTURE_BIAS = 4 * MILLION;
+    private static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
+    private static final int CASTLING_BIAS = 2 * MILLION;
 
     private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 2;
@@ -45,6 +46,7 @@ public class MoveOrderer implements MoveOrdering {
     };
 
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
+    private Move[][][] counterMoves = new Move[2][64][64];
     private int[][][] historyMoves = new int[2][64][64];
 
     public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
@@ -85,10 +87,13 @@ public class MoveOrderer implements MoveOrdering {
             moveScore -= PieceValues.valueOf(move.getPromotionPieceType());
         }
 
-        // Prioritise killers + history moves
+        // Prioritise killers + counter moves + history moves
         if (!isCapture) {
             if (includeKillers && isKillerMove(depth, move)) {
                 moveScore += KILLER_MOVE_BIAS;
+            }
+            else if (isCounterMove(board, move)) {
+                moveScore += COUNTER_MOVE_BIAS;
             }
             moveScore += historyMoves[colourIndex(board.isWhiteToMove())][move.getStartSquare()][move.getEndSquare()];
         }
@@ -99,6 +104,12 @@ public class MoveOrderer implements MoveOrdering {
 
         return moveScore;
 
+    }
+
+    public void updateMoveHeuristics(Board board, int plyFromRoot, int plyRemaining, Move move) {
+        addKillerMove(plyFromRoot, move);
+        addCounterMove(board, move);
+        addHistoryMove(plyRemaining, move, board.isWhiteToMove());
     }
 
     public void addKillerMove(int ply, Move newKiller) {
@@ -115,9 +126,15 @@ public class MoveOrderer implements MoveOrdering {
         }
     }
 
-    private boolean isKillerMove(int ply, Move move) {
-        return ply < MAX_KILLER_MOVE_PLY_DEPTH &&
-                (move.matches(killerMoves[ply][0]) || move.matches(killerMoves[ply][1]));
+    public void addCounterMove(Board board, Move move) {
+        Move previousMove = board.getMoveHistory().peek();
+        if (previousMove == null) {
+            return;
+        }
+        int colourIndex = colourIndex(board.isWhiteToMove());
+        int startSquare = previousMove.getStartSquare();
+        int endSquare = previousMove.getEndSquare();
+        counterMoves[colourIndex][startSquare][endSquare] = move;
     }
 
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {
@@ -125,7 +142,24 @@ public class MoveOrderer implements MoveOrdering {
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int score = plyRemaining * plyRemaining;
-        historyMoves[colourIndex][startSquare][endSquare] = score;
+        historyMoves[colourIndex][startSquare][endSquare] += score;
+    }
+
+    private boolean isKillerMove(int ply, Move move) {
+        return ply < MAX_KILLER_MOVE_PLY_DEPTH &&
+                (move.matches(killerMoves[ply][0]) || move.matches(killerMoves[ply][1]));
+    }
+
+    private boolean isCounterMove(Board board, Move move) {
+        Move previousMove = board.getMoveHistory().peek();
+        if (previousMove == null) {
+            return false;
+        }
+        int colourIndex = colourIndex(board.isWhiteToMove());
+        int startSquare = previousMove.getStartSquare();
+        int endSquare = previousMove.getEndSquare();
+        Move counterMove =  counterMoves[colourIndex][startSquare][endSquare];
+        return move.matches(counterMove);
     }
 
     private int colourIndex(boolean isWhite) {

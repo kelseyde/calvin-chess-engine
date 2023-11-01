@@ -67,7 +67,7 @@ public class SearchTest {
         Mockito.when(evaluator.get())
                 .thenReturn(10);
 
-        int eval = search.search(3, 0, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, false);
+        int eval = search.search(3, 0, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
 
         Assertions.assertEquals(0, eval);
 

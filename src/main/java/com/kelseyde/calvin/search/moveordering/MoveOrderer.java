@@ -127,10 +127,10 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     public void addCounterMove(Board board, Move move) {
-        Move previousMove = board.getMoveHistory().peek();
-        if (previousMove == null) {
+        if (board.getMoveHistory().isEmpty()) {
             return;
         }
+        Move previousMove = board.getMoveHistory().peek();
         int colourIndex = colourIndex(board.isWhiteToMove());
         int startSquare = previousMove.getStartSquare();
         int endSquare = previousMove.getEndSquare();
@@ -151,10 +151,10 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private boolean isCounterMove(Board board, Move move) {
-        Move previousMove = board.getMoveHistory().peek();
-        if (previousMove == null) {
+        if (board.getMoveHistory().isEmpty()) {
             return false;
         }
+        Move previousMove = board.getMoveHistory().peek();
         int colourIndex = colourIndex(board.isWhiteToMove());
         int startSquare = previousMove.getStartSquare();
         int endSquare = previousMove.getEndSquare();

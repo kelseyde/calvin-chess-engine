@@ -3,9 +3,9 @@ package com.kelseyde.calvin.movegeneration.drawcalculator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
-import com.kelseyde.calvin.utils.notation.NotationUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

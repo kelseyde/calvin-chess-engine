@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation.placement;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.PieceType;
@@ -17,7 +17,7 @@ public record PiecePlacement(long pawns,
         long bishops = board.getBishops(isWhite);
         long rooks = board.getRooks(isWhite);
         long queens = board.getQueens(isWhite);
-        long king = board.getQueens(isWhite);
+        long king = board.getKing(isWhite);
         return new PiecePlacement(pawns, knights, bishops, rooks, queens, king);
     }
 

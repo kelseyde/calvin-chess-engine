@@ -1,9 +1,10 @@
-package com.kelseyde.calvin.evaluation.placement;
+package com.kelseyde.calvin.evaluation.old;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
+import com.kelseyde.calvin.evaluation.PieceSquareTable;
 import org.springframework.stereotype.Service;
 
 /**

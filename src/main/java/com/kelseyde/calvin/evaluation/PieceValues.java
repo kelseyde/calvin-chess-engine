@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation.material;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.PieceType;
 

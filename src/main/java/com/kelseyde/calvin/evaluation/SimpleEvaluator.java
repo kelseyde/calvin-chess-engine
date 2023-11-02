@@ -2,10 +2,6 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.material.Material;
-import com.kelseyde.calvin.evaluation.material.PieceValues;
-import com.kelseyde.calvin.evaluation.placement.PiecePlacement;
-import com.kelseyde.calvin.evaluation.placement.PieceSquareTable;
 
 public class SimpleEvaluator implements Evaluator {
 
@@ -20,6 +16,7 @@ public class SimpleEvaluator implements Evaluator {
     @Override
     public void init(Board board) {
 
+        this.board = board;
         int whiteMiddlegameScore = 0;
         int whiteEndgameScore = 0;
         int blackMiddlegameScore = 0;
@@ -42,9 +39,17 @@ public class SimpleEvaluator implements Evaluator {
         blackEndgameScore += blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
 
         float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
-
         int whiteScore = GamePhase.taperedEval(whiteMiddlegameScore, whiteEndgameScore, phase);
         int blackScore = GamePhase.taperedEval(blackMiddlegameScore, blackEndgameScore, phase);
+
+        whiteScore += PawnStructure.score(board.getPawns(true), board.getPawns(false), true);
+        blackScore += PawnStructure.score(board.getPawns(false), board.getPawns(true), false);
+
+        whiteScore += KingSafety.score(board, blackMaterial, phase, true);
+        blackScore += KingSafety.score(board, whiteMaterial, phase, false);
+
+        whiteScore += MopUp.score(board, whiteMaterial, blackMaterial, phase, true);
+        blackScore += MopUp.score(board, blackMaterial, whiteMaterial, phase, true);
 
         int modifier = board.isWhiteToMove() ? 1 : -1;
         eval = modifier * (whiteScore - blackScore);
@@ -63,7 +68,8 @@ public class SimpleEvaluator implements Evaluator {
 
     @Override
     public int get() {
-        return 0;
+        init(board);
+        return eval;
     }
 
 }

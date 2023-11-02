@@ -1,27 +1,24 @@
-package com.kelseyde.calvin.evaluation.mopup;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
-import com.kelseyde.calvin.evaluation.material.Material;
-import com.kelseyde.calvin.evaluation.material.PieceValues;
 import com.kelseyde.calvin.utils.Distance;
 
-/**
- * When one side has a material advantage, they start to receive a bonus for pushing the enemy king to the edge of the board.
- * This is useful for endgame checkmates, where the checkmating line is beyond the horizon of the search algorithm.
- * The mop up bonus will direct the engine to corner the enemy king, up to the point that the checkmate is found during search.
- */
-public class MopUpEvaluator {
+public class MopUp {
 
     private static final int KING_MANHATTAN_DISTANCE_MULTIPLIER = 4;
     private static final int KING_CHEBYSHEV_DISTANCE_MULTIPLIER = 4;
     private static final int KING_CENTER_MANHATTAN_DISTANCE_MULTIPLIER = 10;
 
-    public int evaluate(Board board, Material friendlyMaterial, Material opponentMaterial, boolean isWhite) {
+    public static int score(Board board, Material friendlyMaterial, Material opponentMaterial, float phase, boolean isWhite) {
 
-        boolean twoPawnAdvantage = friendlyMaterial.eval() > (opponentMaterial.eval() + 2 * PieceValues.PAWN);
+        int friendlyMaterialScore = friendlyMaterial.sum(PieceValues.SIMPLE_VALUES);
+        int opponentMaterialScore = opponentMaterial.sum(PieceValues.SIMPLE_VALUES);
 
-        if (twoPawnAdvantage && opponentMaterial.phase() < 1) {
+        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * PieceValues.valueOf(PieceType.PAWN));
+
+        if (twoPawnAdvantage && phase < 1) {
 
             int mopUpEval = 0;
 
@@ -35,8 +32,9 @@ public class MopUpEvaluator {
             // Bonus for pushing opponent king to the edges of the board
             mopUpEval += Distance.centerManhattan(opponentKing) * KING_CENTER_MANHATTAN_DISTANCE_MULTIPLIER;
 
-            // Taper the eval based on how much material the opponent has remaining
-            return mopUpEval * (int) (1 - opponentMaterial.phase());
+            // TODO is this correct?
+            // Taper the eval based on how much material is remaining
+            return mopUpEval * (int) (1 - phase);
 
         }
 

@@ -1,31 +1,26 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
-import com.kelseyde.calvin.evaluation.placement.PiecePlacementEvaluator;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PiecePlacementEvaluatorTest {
 
-    private final PiecePlacementEvaluator evaluator = new PiecePlacementEvaluator();
-    private final MaterialEvaluator materialCalculator = new MaterialEvaluator();
-
     @Test
     public void testStartingPosition() {
         Board board = new Board();
-        Assertions.assertEquals(0, score(board, 1));
+        Assertions.assertEquals(0, score(board));
     }
 
     @Test
     public void bigPawnCentreGivesAdvantageToBlack() {
 
         Board board = FEN.fromFEN("r1b2rk1/pp4pp/1qnb1n2/2pppp2/8/3PPN2/PPP1BPPP/RNBQ1R1K b - - 7 10");
-        Assertions.assertEquals(76, score(board, 1));
+        Assertions.assertEquals(76, score(board));
 
         board.setWhiteToMove(true);
-        Assertions.assertEquals(-76, score(board, 1));
+        Assertions.assertEquals(-76, score(board));
 
     }
 
@@ -35,8 +30,7 @@ public class PiecePlacementEvaluatorTest {
         String fen = "8/p7/8/8/8/3k4/P7/7K w - - 0 1";
         Board board = FEN.fromFEN(fen);
 
-        float gamePhase = phase(board);
-        Assertions.assertEquals(-58, score(board, gamePhase));
+        Assertions.assertEquals(-58, score(board));
 
     }
 
@@ -47,8 +41,7 @@ public class PiecePlacementEvaluatorTest {
 
         Board board = FEN.fromFEN(fen);
 
-        float gamePhase = phase(board);
-        Assertions.assertEquals(-124, score(board, gamePhase));
+        Assertions.assertEquals(-124, score(board));
 
     }
 
@@ -59,24 +52,36 @@ public class PiecePlacementEvaluatorTest {
         String ruyLopezReverseFen = "rnbqk2r/pppp1ppp/5n2/b3p3/4P3/P1N2N2/1PPP1PPP/R1BQKB1R b KQkq - 0 1";
 
         Board board1 = FEN.fromFEN(ruyLopezFen);
-        float gamePhase1 = phase(board1);
-        int score1 = score(board1, gamePhase1);
+        int score1 = score(board1);
 
         Board board2 = FEN.fromFEN(ruyLopezFen);
-        float gamePhase2 = phase(board2);
-        int score2 = score(board2, gamePhase2);
+        int score2 = score(board2);
 
         Assertions.assertEquals(score1, score2);
 
     }
 
-    private int score(Board board, float gamePhase) {
-        int modifier = board.isWhiteToMove() ? 1 : -1;
-        return modifier * (evaluator.evaluate(board, gamePhase, true).sum() - evaluator.evaluate(board, gamePhase, false).sum());
-    }
+    private int score(Board board) {
+        int whiteMiddlegameScore = 0;
+        int whiteEndgameScore = 0;
+        int blackMiddlegameScore = 0;
+        int blackEndgameScore = 0;
+        Material whiteMaterial = Material.fromBoard(board, true);
+        Material blackMaterial = Material.fromBoard(board, false);
 
-    private float phase(Board board) {
-        return (materialCalculator.evaluate(board, true).phase() + materialCalculator.evaluate(board, false).phase()) / 2;
+        PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
+        PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
+
+        whiteMiddlegameScore += whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
+        whiteEndgameScore += whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
+        blackMiddlegameScore += blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
+        blackEndgameScore += blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
+
+        float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
+        int whiteScore = GamePhase.taperedEval(whiteMiddlegameScore, whiteEndgameScore, phase);
+        int blackScore = GamePhase.taperedEval(blackMiddlegameScore, blackEndgameScore, phase);
+        int modifier = board.isWhiteToMove() ? 1 : -1;
+        return modifier * (whiteScore - blackScore);
     }
 
 }

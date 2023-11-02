@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation.material;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.PieceType;
@@ -23,6 +23,12 @@ public record Material(int pawns,
                 (knights * pieceValues[PieceType.KNIGHT.getIndex()]) +
                 (bishops * pieceValues[PieceType.BISHOP.getIndex()]) +
                 (rooks * pieceValues[PieceType.ROOK.getIndex()]) +
-                (queens * pieceValues[PieceType.QUEEN.getIndex()]);
+                (queens * pieceValues[PieceType.QUEEN.getIndex()]) +
+                bishopPairBonus(bishops);
     }
+
+    private int bishopPairBonus(int bishops) {
+        return bishops == 2 ? PieceValues.BISHOP_PAIR_BONUS : 0;
+    }
+
 }

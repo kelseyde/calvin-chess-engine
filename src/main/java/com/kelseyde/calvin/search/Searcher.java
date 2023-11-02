@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.ComplexEvaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
@@ -48,7 +48,7 @@ public class Searcher implements Search {
 
     private MoveGenerator moveGenerator;
     private MoveOrderer moveOrderer;
-    private Evaluator evaluator;
+    private ComplexEvaluator evaluator;
     private StaticExchangeEvaluator see;
     private TranspositionTable transpositionTable;
     private ResultCalculator resultCalculator;
@@ -73,14 +73,14 @@ public class Searcher implements Search {
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
-        this.evaluator = new Evaluator(board);
+        this.evaluator = new ComplexEvaluator(board);
         this.transpositionTable = new TranspositionTable(board);
     }
 
     @Override
     public SearchResult search(Duration duration) {
 
-        evaluator = new Evaluator(board);
+        evaluator = new ComplexEvaluator(board);
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;

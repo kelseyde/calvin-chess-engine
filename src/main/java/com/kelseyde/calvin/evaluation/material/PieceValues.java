@@ -10,24 +10,14 @@ import com.kelseyde.calvin.board.PieceType;
  */
 public class PieceValues {
 
-    public static final int PAWN = 100;
-    public static final int KNIGHT = 320;
-    public static final int BISHOP = 330;
-    public static final int ROOK = 500;
-    public static final int QUEEN = 900;
-    public static final int KING = 10000;
+    public static final int[] SIMPLE_VALUES = new int[] { 100, 320, 330, 500, 900, 0 };
+    public static final int[] MIDDLEGAME_VALUES = new int[] { 82, 337, 365, 477, 1025, 0 };
+    public static final int[] ENDGAME_VALUES = new int[] { 94, 281, 297, 512,  936,  0 };
 
-    public static final int BISHOP_PAIR = 50;
+    public static final int BISHOP_PAIR_BONUS = 50;
 
     public static int valueOf(PieceType pieceType) {
-        return switch (pieceType) {
-            case PAWN -> PAWN;
-            case KNIGHT -> KNIGHT;
-            case BISHOP -> BISHOP;
-            case ROOK -> ROOK;
-            case QUEEN -> QUEEN;
-            case KING -> KING;
-        };
+        return SIMPLE_VALUES[pieceType.getIndex()];
     }
 
 }

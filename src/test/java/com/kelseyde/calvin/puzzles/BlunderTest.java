@@ -324,11 +324,26 @@ public class BlunderTest {
         String fen = "rn2kb1r/pp4pp/2p1p3/3n4/1qNP1p2/2N5/PPP1Q1PP/R1B2RK1 b kq - 5 14";
         Bot bot = new CalvinBot();
         bot.setPosition(fen, Collections.emptyList());
-        int thinkTime = bot.chooseThinkTime(463290, 441568, 1000, 1000);
+        int thinkTime = bot.chooseThinkTime(43290, 41568, 1000, 1000);
         Move move = bot.think(thinkTime);
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(
                 move.matches(NotationUtils.fromCombinedNotation("e8d8"))
+        );
+
+    }
+
+    @Test
+    public void testDontSacExchangeForSpeculativeCompensation() {
+
+        String fen = "4r1k1/5pp1/7p/p3Bq2/Prb2P2/R1Q5/1P2p1PP/4R2K b - - 1 33";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        int thinkTime = bot.chooseThinkTime(22300, 22300, 1000, 1000);
+        Move move = bot.think(thinkTime);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("e8e5"))
         );
 
     }

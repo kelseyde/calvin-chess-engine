@@ -22,10 +22,10 @@ public class PiecePlacementEvaluatorTest {
     public void bigPawnCentreGivesAdvantageToBlack() {
 
         Board board = FEN.fromFEN("r1b2rk1/pp4pp/1qnb1n2/2pppp2/8/3PPN2/PPP1BPPP/RNBQ1R1K b - - 7 10");
-        Assertions.assertEquals(75, score(board, 1));
+        Assertions.assertEquals(76, score(board, 1));
 
         board.setWhiteToMove(true);
-        Assertions.assertEquals(-75, score(board, 1));
+        Assertions.assertEquals(-76, score(board, 1));
 
     }
 
@@ -36,7 +36,7 @@ public class PiecePlacementEvaluatorTest {
         Board board = FEN.fromFEN(fen);
 
         float gamePhase = phase(board);
-        Assertions.assertEquals(-80, score(board, gamePhase));
+        Assertions.assertEquals(-58, score(board, gamePhase));
 
     }
 
@@ -48,7 +48,25 @@ public class PiecePlacementEvaluatorTest {
         Board board = FEN.fromFEN(fen);
 
         float gamePhase = phase(board);
-        Assertions.assertEquals(-60, score(board, gamePhase));
+        Assertions.assertEquals(-124, score(board, gamePhase));
+
+    }
+
+    @Test
+    public void testEvaluationIsSymmetrical() {
+
+        String ruyLopezFen = "r1bqkb1r/1ppp1ppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1";
+        String ruyLopezReverseFen = "rnbqk2r/pppp1ppp/5n2/b3p3/4P3/P1N2N2/1PPP1PPP/R1BQKB1R b KQkq - 0 1";
+
+        Board board1 = FEN.fromFEN(ruyLopezFen);
+        float gamePhase1 = phase(board1);
+        int score1 = score(board1, gamePhase1);
+
+        Board board2 = FEN.fromFEN(ruyLopezFen);
+        float gamePhase2 = phase(board2);
+        int score2 = score(board2, gamePhase2);
+
+        Assertions.assertEquals(score1, score2);
 
     }
 

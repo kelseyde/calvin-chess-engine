@@ -73,6 +73,10 @@ public class BoardUtils {
         return squareIndex >= 0 && squareIndex < 64;
     }
 
+    public static int getColourIndex(boolean isWhite) {
+        return isWhite ? 1 : 0;
+    }
+
     public static boolean isAligned(int sq1, int sq2, int sq3) {
         int rank1 = getRank(sq1);
         int rank2 = getRank(sq2);

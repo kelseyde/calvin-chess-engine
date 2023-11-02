@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.evaluation.material.PieceValues;
+import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -93,7 +94,8 @@ public class MoveOrderer implements MoveOrdering {
             if (includeKillers && isKillerMove(depth, move)) {
                 moveScore += KILLER_MOVE_BIAS;
             }
-            moveScore += historyMoves[colourIndex(board.isWhiteToMove())][move.getStartSquare()][move.getEndSquare()];
+            int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
+            moveScore += historyMoves[colourIndex][move.getStartSquare()][move.getEndSquare()];
         }
 
         if (move.isCastling()) {
@@ -119,19 +121,16 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private boolean isKillerMove(int ply, Move move) {
-        return ply < MAX_KILLER_MOVE_PLY_DEPTH && Arrays.asList(killerMoves[ply]).contains(move);
+        return ply < MAX_KILLER_MOVE_PLY_DEPTH &&
+                (move.matches(killerMoves[ply][0]) || move.matches(killerMoves[ply][1]));
     }
 
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {
-        int colourIndex = colourIndex(isWhite);
+        int colourIndex = BoardUtils.getColourIndex(isWhite);
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int score = plyRemaining * plyRemaining;
         historyMoves[colourIndex][startSquare][endSquare] = score;
-    }
-
-    private int colourIndex(boolean isWhite) {
-        return isWhite ? 1 : 0;
     }
 
     public void clear() {

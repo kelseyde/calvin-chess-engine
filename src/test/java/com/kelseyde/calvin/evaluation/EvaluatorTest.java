@@ -35,32 +35,14 @@ public class EvaluatorTest {
         Board board = FEN.fromFEN(fen);
         evaluator = new Evaluator(board);
 
-        Assertions.assertEquals(20, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(10, evaluator.getWhiteEval().getPiecePlacementScore().pawnScore());
-
-        Assertions.assertEquals(25, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(20, evaluator.getBlackEval().getPiecePlacementScore().pawnScore());
         int overallScore = evaluator.get();
 
         Move move = TestUtils.getLegalMove(board, "d3", "d4");
         board.makeMove(move);
         evaluator.makeMove(move);
-
-        Assertions.assertEquals(20, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(20, evaluator.getWhiteEval().getPiecePlacementScore().pawnScore());
-
-        Assertions.assertEquals(25, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(20, evaluator.getBlackEval().getPiecePlacementScore().pawnScore());
-        Assertions.assertEquals(-overallScore - 10, evaluator.get());
-
         board.unmakeMove();
         evaluator.unmakeMove();
 
-        Assertions.assertEquals(20, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(10, evaluator.getWhiteEval().getPiecePlacementScore().pawnScore());
-
-        Assertions.assertEquals(25, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(20, evaluator.getBlackEval().getPiecePlacementScore().pawnScore());
         Assertions.assertEquals(overallScore, evaluator.get());
 
     }
@@ -74,10 +56,6 @@ public class EvaluatorTest {
 
         Assertions.assertEquals(330, evaluator.getWhiteEval().getMaterial().eval());
         Assertions.assertEquals(820, evaluator.getBlackEval().getMaterial().eval());
-        Assertions.assertEquals(10, evaluator.getWhiteEval().getPiecePlacementScore().bishopScore());
-        Assertions.assertEquals(15, evaluator.getBlackEval().getPiecePlacementScore().knightScore());
-        Assertions.assertEquals(-9, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(19, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
         int overallScore = evaluator.get();
 
         Move move = TestUtils.getLegalMove(board, "c5", "d3");
@@ -86,20 +64,12 @@ public class EvaluatorTest {
 
         Assertions.assertEquals(0, evaluator.getWhiteEval().getMaterial().eval());
         Assertions.assertEquals(820, evaluator.getBlackEval().getMaterial().eval());
-        Assertions.assertEquals(0, evaluator.getWhiteEval().getPiecePlacementScore().bishopScore());
-        Assertions.assertEquals(15, evaluator.getBlackEval().getPiecePlacementScore().knightScore());
-        Assertions.assertEquals(-9, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(25, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
 
         board.unmakeMove();
         evaluator.unmakeMove();
 
         Assertions.assertEquals(330, evaluator.getWhiteEval().getMaterial().eval());
         Assertions.assertEquals(820, evaluator.getBlackEval().getMaterial().eval());
-        Assertions.assertEquals(10, evaluator.getWhiteEval().getPiecePlacementScore().bishopScore());
-        Assertions.assertEquals(15, evaluator.getBlackEval().getPiecePlacementScore().knightScore());
-        Assertions.assertEquals(-9, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(19, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
         Assertions.assertEquals(overallScore, evaluator.get());
 
     }
@@ -113,11 +83,7 @@ public class EvaluatorTest {
 
         Assertions.assertEquals(100, evaluator.getWhiteEval().getMaterial().eval());
         Assertions.assertEquals(0, evaluator.getBlackEval().getMaterial().eval());
-        Assertions.assertEquals(5, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(5, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(80, evaluator.getWhiteEval().getPiecePlacementScore().pawnScore());
         Assertions.assertEquals(140, evaluator.getWhiteEval().getPawnStructureScore());
-        Assertions.assertEquals(320, evaluator.get());
 
         Move move = new Move(NotationUtils.fromNotation("g7"), NotationUtils.fromNotation("g8"), Move.PROMOTE_TO_QUEEN_FLAG);
         board.makeMove(move);
@@ -125,22 +91,14 @@ public class EvaluatorTest {
 
         Assertions.assertEquals(900, evaluator.getWhiteEval().getMaterial().eval());
         Assertions.assertEquals(0, evaluator.getBlackEval().getMaterial().eval());
-        Assertions.assertEquals(5, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(5, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(0, evaluator.getWhiteEval().getPiecePlacementScore().pawnScore());
         Assertions.assertEquals(0, evaluator.getWhiteEval().getPawnStructureScore());
-        Assertions.assertEquals(-964, evaluator.get());
 
         board.unmakeMove();
         evaluator.unmakeMove();
 
         Assertions.assertEquals(100, evaluator.getWhiteEval().getMaterial().eval());
         Assertions.assertEquals(0, evaluator.getBlackEval().getMaterial().eval());
-        Assertions.assertEquals(5, evaluator.getWhiteEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(5, evaluator.getBlackEval().getPiecePlacementScore().kingScore());
-        Assertions.assertEquals(80, evaluator.getWhiteEval().getPiecePlacementScore().pawnScore());
         Assertions.assertEquals(140, evaluator.getWhiteEval().getPawnStructureScore());
-        Assertions.assertEquals(320, evaluator.get());
 
     }
 

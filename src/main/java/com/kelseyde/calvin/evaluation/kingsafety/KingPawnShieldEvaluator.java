@@ -29,9 +29,7 @@ public class KingPawnShieldEvaluator {
         long opponentPawns = board.getPawns(!isWhite);
 
         int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
-
         int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
-
         int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(board, isWhite, kingFile);
 
         float endgameWeight = opponentMaterial.phase();

@@ -17,25 +17,10 @@ public class PiecePlacementEvaluator {
     public PiecePlacementScore evaluate(Board board, float gamePhase, boolean isWhite) {
         return new PiecePlacementScore(
                 scorePawns(board, gamePhase, isWhite),
-                scoreKnights(board, isWhite),
-                scoreBishops(board, isWhite),
-                scoreRooks(board, isWhite),
-                scoreQueens(board, isWhite),
-                scoreKing(board, gamePhase, isWhite)
-        );
-    }
-
-    /**
-     * Update only the pieces whose evaluation changes in relation to the endgame weight: pawns and kings.
-     * Used to efficiently recalculate piece placement scores as captures on the board change the endgame weight.
-     */
-    public PiecePlacementScore updateWeightedPieces(Board board, float gamePhase, PiecePlacementScore score, boolean isWhite) {
-        return new PiecePlacementScore(
-                scorePawns(board, gamePhase, isWhite),
-                score.knightScore(),
-                score.bishopScore(),
-                score.rookScore(),
-                score.queenScore(),
+                scoreKnights(board, gamePhase, isWhite),
+                scoreBishops(board, gamePhase, isWhite),
+                scoreRooks(board, gamePhase, isWhite),
+                scoreQueens(board, gamePhase, isWhite),
                 scoreKing(board, gamePhase, isWhite)
         );
     }
@@ -55,10 +40,10 @@ public class PiecePlacementEvaluator {
         PieceType pieceType = board.pieceAt(move.getEndSquare());
         switch (pieceType) {
             case PAWN -> pawnScore = scorePawns(board, gamePhase, isWhite);
-            case KNIGHT -> knightScore = scoreKnights(board, isWhite);
-            case BISHOP -> bishopScore = scoreBishops(board, isWhite);
-            case ROOK -> rookScore = scoreRooks(board, isWhite);
-            case QUEEN -> queenScore = scoreQueens(board, isWhite);
+            case KNIGHT -> knightScore = scoreKnights(board, gamePhase, isWhite);
+            case BISHOP -> bishopScore = scoreBishops(board, gamePhase, isWhite);
+            case ROOK -> rookScore = scoreRooks(board, gamePhase, isWhite);
+            case QUEEN -> queenScore = scoreQueens(board, gamePhase, isWhite);
             case KING -> kingScore = scoreKing(board, gamePhase, isWhite);
         }
 
@@ -68,106 +53,48 @@ public class PiecePlacementEvaluator {
         }
         else if (move.isCastling()) {
             // update the rook score
-            rookScore = scoreRooks(board, isWhite);
+            rookScore = scoreRooks(board, gamePhase, isWhite);
         }
 
        return new PiecePlacementScore(pawnScore, knightScore, bishopScore, rookScore, queenScore, kingScore);
 
     }
 
-    public PiecePlacementScore handleCapture(Board board, float gamePhase, PiecePlacementScore score, PieceType capturedPiece) {
-        // Assuming the move is already made on the board, so side to score != side to move
-        boolean isWhite = board.isWhiteToMove();
-
-        int pawnScore = score.pawnScore();
-        int knightScore = score.knightScore();
-        int bishopScore = score.bishopScore();
-        int rookScore = score.rookScore();
-        int queenScore = score.queenScore();
-        int kingScore = score.kingScore();
-
-        switch (capturedPiece) {
-            case PAWN -> pawnScore = scorePawns(board, gamePhase, isWhite);
-            case KNIGHT -> {
-                knightScore = scoreKnights(board, isWhite);
-                // With every captured piece, we need to re-evaluate the king and pawns score as the tapered evaluation will change
-                pawnScore = scorePawns(board, gamePhase, isWhite);
-                kingScore = scoreKing(board, gamePhase, isWhite);
-            }
-            case BISHOP -> {
-                bishopScore = scoreBishops(board, isWhite);
-                pawnScore = scorePawns(board, gamePhase, isWhite);
-                kingScore = scoreKing(board, gamePhase, isWhite);
-            }
-            case ROOK -> {
-                rookScore = scoreRooks(board, isWhite);
-                pawnScore = scorePawns(board, gamePhase, isWhite);
-                kingScore = scoreKing(board, gamePhase, isWhite);
-            }
-            case QUEEN -> {
-                queenScore = scoreQueens(board, isWhite);
-                pawnScore = scorePawns(board, gamePhase, isWhite);
-                kingScore = scoreKing(board, gamePhase, isWhite);
-            }
-            case KING -> kingScore = scoreKing(board, gamePhase, isWhite);
-        }
-        return new PiecePlacementScore(pawnScore, knightScore, bishopScore, rookScore, queenScore, kingScore);
-    }
-
     private int scorePawns(Board board, float gamePhase, boolean isWhite) {
         long pawns = board.getPawns(isWhite);
-        int[] pawnStartTable = isWhite ? PieceSquareTable.WHITE_PAWN_START_TABLE : PieceSquareTable.BLACK_PAWN_START_TABLE;
-        int[] pawnEndTable = isWhite ? PieceSquareTable.WHITE_PAWN_END_TABLE : PieceSquareTable.BLACK_PAWN_END_TABLE;
-        return scoreMultiTablePieces(pawns, gamePhase, pawnStartTable, pawnEndTable);
+        return scorePieces(pawns, PieceType.PAWN, isWhite, gamePhase);
     }
 
-    private int scoreKnights(Board board, boolean isWhite) {
+    private int scoreKnights(Board board, float gamePhase, boolean isWhite) {
         long knights = board.getKnights(isWhite);
-        int[] knightTable = isWhite ? PieceSquareTable.WHITE_KNIGHT_TABLE : PieceSquareTable.BLACK_KNIGHT_TABLE;
-        return scoreSingleTablePieces(knights, knightTable);
+        return scorePieces(knights, PieceType.KNIGHT, isWhite, gamePhase);
     }
 
-    private int scoreBishops(Board board, boolean isWhite) {
+    private int scoreBishops(Board board, float gamePhase, boolean isWhite) {
         long bishops = board.getBishops(isWhite);
-        int[] bishopTable = isWhite ? PieceSquareTable.WHITE_BISHOP_TABLE : PieceSquareTable.BLACK_BISHOP_TABLE;
-        return scoreSingleTablePieces(bishops, bishopTable);
+        return scorePieces(bishops, PieceType.BISHOP, isWhite, gamePhase);
     }
 
-    private int scoreRooks(Board board, boolean isWhite) {
+    private int scoreRooks(Board board, float gamePhase, boolean isWhite) {
         long rooks = board.getRooks(isWhite);
-        int[] rookTable = isWhite ? PieceSquareTable.WHITE_ROOK_TABLE : PieceSquareTable.BLACK_ROOK_TABLE;
-        return scoreSingleTablePieces(rooks, rookTable);
+        return scorePieces(rooks, PieceType.ROOK, isWhite, gamePhase);
     }
 
-    private int scoreQueens(Board board, boolean isWhite) {
+    private int scoreQueens(Board board, float gamePhase, boolean isWhite) {
         long queens = board.getQueens(isWhite);
-        int[] queenTable = isWhite ? PieceSquareTable.WHITE_QUEEN_TABLE : PieceSquareTable.BLACK_QUEEN_TABLE;
-        return scoreSingleTablePieces(queens, queenTable);
+        return scorePieces(queens, PieceType.QUEEN, isWhite, gamePhase);
     }
 
     private int scoreKing(Board board, float gamePhase, boolean isWhite) {
-        int[] kingStartTable = isWhite ? PieceSquareTable.WHITE_KING_START_TABLE : PieceSquareTable.BLACK_KING_START_TABLE;
-        int[] kingEndTable = isWhite ? PieceSquareTable.WHITE_KING_END_TABLE : PieceSquareTable.BLACK_KING_END_TABLE;
         long king = board.getKing(isWhite);
-        return scoreMultiTablePieces(king, gamePhase, kingStartTable, kingEndTable);
+        return scorePieces(king, PieceType.KING, isWhite, gamePhase);
     }
 
-    private int scoreSingleTablePieces(long pieces, int[] pieceTable) {
+    private int scorePieces(long pieces, PieceType pieceType, boolean isWhite, float gamePhase) {
         int pieceTypeScore = 0;
         while (pieces != 0) {
             int square = BitboardUtils.getLSB(pieces);
-            pieceTypeScore += pieceTable[square];
-            pieces = BitboardUtils.popLSB(pieces);
-        }
-        return pieceTypeScore;
-    }
-
-    private int scoreMultiTablePieces(long pieces, float gamePhase, int[] openingTable, int[] endgameTable) {
-        int pieceTypeScore = 0;
-        while (pieces != 0) {
-            int square = BitboardUtils.getLSB(pieces);
-            pieceTypeScore += (int) (gamePhase * openingTable[square]);
-            pieceTypeScore += (int) ((1 - gamePhase) * endgameTable[square]);
+            pieceTypeScore += PieceSquareTable.getScore(square, pieceType, isWhite, gamePhase);
             pieces = BitboardUtils.popLSB(pieces);
         }
         return pieceTypeScore;

@@ -32,6 +32,7 @@ public class PawnStructureEvaluator {
         int passedPawnsBonus = 0;
         int isolatedPawnCount = 0;
         int doubledPawnCount = 0;
+
         long friendlyPawnsIterator = friendlyPawns;
         while (friendlyPawnsIterator > 0) {
             int pawn = BitboardUtils.getLSB(friendlyPawnsIterator);

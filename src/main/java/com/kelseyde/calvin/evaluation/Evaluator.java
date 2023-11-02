@@ -83,10 +83,10 @@ public class Evaluator implements Evaluation {
         boolean updatePawnStructure = false;
         boolean updateWhiteMaterial = false;
         boolean updateBlackMaterial = false;
-        boolean updateWhiteCapture = false;
-        boolean updateBlackCapture = false;
-        boolean updateWhiteWeightedPieces = false;
-        boolean updateBlackWeightedPieces = false;
+        boolean updateWhiteCapturedPiece = false;
+        boolean updateBlackCapturedPiece = false;
+        boolean updateWhitePiecePlacement = false;
+        boolean updateBlackPiecePlacement = false;
         boolean updateWhiteKingPawnShield = false;
         boolean updateBlackKingPawnShield = false;
 
@@ -94,11 +94,11 @@ public class Evaluator implements Evaluation {
             updatePawnStructure = true;
             if (board.isWhiteToMove()) {
                 updateBlackMaterial = true;
-                updateBlackWeightedPieces = true;
+                updateWhitePiecePlacement = true;
                 updateWhiteKingPawnShield = true;
             } else {
                 updateWhiteMaterial = true;
-                updateWhiteWeightedPieces = true;
+                updateBlackPiecePlacement = true;
                 updateBlackKingPawnShield = true;
             }
         }
@@ -107,19 +107,21 @@ public class Evaluator implements Evaluation {
         if (capturedPiece != null) {
             if (board.isWhiteToMove()) {
                 updateWhiteMaterial = true;
-                updateWhiteCapture = true;
-                updateBlackWeightedPieces = true;
                 updateBlackKingPawnShield = true;
+                updateWhitePiecePlacement = true;
+                if (capturedPiece != PieceType.PAWN) {
+                    updateBlackCapturedPiece = true;
+                }
             } else {
                 updateBlackMaterial = true;
-                updateBlackCapture = true;
-                updateWhiteWeightedPieces = true;
                 updateWhiteKingPawnShield = true;
+                updateBlackPiecePlacement = true;
+                if (capturedPiece != PieceType.PAWN) {
+                    updateWhiteCapturedPiece = true;
+                }
             }
             if (capturedPiece == PieceType.PAWN) {
                 updatePawnStructure = true;
-            }
-            if (capturedPiece == PieceType.PAWN) {
                 updateWhiteKingPawnShield = true;
                 updateBlackKingPawnShield = true;
             }
@@ -160,24 +162,27 @@ public class Evaluator implements Evaluation {
         if (updateBlackMaterial) {
             blackMaterial = materialEvaluator.evaluate(board, false);
         }
-        if (updateWhiteWeightedPieces) {
-            whitePieceScore = piecePlacementEvaluator.updateWeightedPieces(board, blackMaterial.phase(), whitePieceScore, true);
-        }
-        if (updateBlackWeightedPieces) {
-            blackPieceScore = piecePlacementEvaluator.updateWeightedPieces(board, whiteMaterial.phase(), blackPieceScore, false);
+
+        if (updateWhitePiecePlacement) {
+            whitePieceScore = piecePlacementEvaluator.evaluate(board, blackMaterial.phase(), true);
         }
 
-        if (board.isWhiteToMove()) {
+        if (updateBlackPiecePlacement) {
+            blackPieceScore = piecePlacementEvaluator.evaluate(board, whiteMaterial.phase(), false);
+        }
+
+        if (board.isWhiteToMove() && !updateBlackPiecePlacement) {
             blackPieceScore = piecePlacementEvaluator.handleMove(board, whiteMaterial.phase(), blackPieceScore, move);
-        } else {
+        }
+        else if (!board.isWhiteToMove() && !updateWhitePiecePlacement) {
             whitePieceScore = piecePlacementEvaluator.handleMove(board, blackMaterial.phase(), whitePieceScore, move);
         }
 
-        if (updateWhiteCapture) {
-            whitePieceScore = piecePlacementEvaluator.handleCapture(board, blackMaterial.phase(), whitePieceScore, capturedPiece);
+        if (updateWhiteCapturedPiece) {
+            whitePieceScore = piecePlacementEvaluator.evaluate(board, blackMaterial.phase(), true);
         }
-        if (updateBlackCapture) {
-            blackPieceScore = piecePlacementEvaluator.handleCapture(board, whiteMaterial.phase(), blackPieceScore, capturedPiece);
+        if (updateBlackCapturedPiece) {
+            blackPieceScore = piecePlacementEvaluator.evaluate(board, whiteMaterial.phase(), false);
         }
         if (updateWhiteKingPawnShield) {
             whiteKingPawnShieldScore = kingPawnShieldEvaluator.evaluate(board, blackMaterial, true);

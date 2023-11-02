@@ -1,21 +1,18 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.material.MaterialEvaluator;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class MaterialEvaluatorTest {
-
-    private final MaterialEvaluator evaluator = new MaterialEvaluator();
-
+    
     @Test
     public void testStartingPosition() {
 
         Board board = new Board();
-        int whiteScore = evaluator.evaluate(board, true).eval();
-        int blackScore = evaluator.evaluate(board, false).eval();
+        int whiteScore = Material.fromBoard(board, true).sum(PieceValues.SIMPLE_VALUES);
+        int blackScore = Material.fromBoard(board, false).sum(PieceValues.SIMPLE_VALUES);
         Assertions.assertEquals(0, whiteScore - blackScore);
         // 900 (queen) + 1000 (rooks) + 660 (bishops) + 640 (knights) + 800 (pawns) + 50 (bishop pair) = 4050
         Assertions.assertEquals(4050, whiteScore);
@@ -47,8 +44,8 @@ public class MaterialEvaluatorTest {
         // white score: (8 * 100) + 650 + 1000 + 10000 = 12450
         // black score: (8 * 100) + 970 + 1000 + 10000 = 12770
         // score = 12450 - 12770 = -320
-        int whiteScore = evaluator.evaluate(board, true).eval();
-        int blackScore = evaluator.evaluate(board, false).eval();
+        int whiteScore = Material.fromBoard(board, true).sum(PieceValues.SIMPLE_VALUES);
+        int blackScore = Material.fromBoard(board, false).sum(PieceValues.SIMPLE_VALUES);
         Assertions.assertEquals(-320, whiteScore - blackScore);
 
     }

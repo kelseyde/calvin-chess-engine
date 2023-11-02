@@ -1,13 +1,12 @@
 package com.kelseyde.calvin.evaluation.pawnstructure;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.evaluation.PawnStructure;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PawnStructureEvaluatorTest {
-
-    private final PawnStructureEvaluator evaluator = new PawnStructureEvaluator();
 
     @Test
     public void testSinglePassedPawn() {
@@ -135,7 +134,11 @@ public class PawnStructureEvaluatorTest {
 
     private int score(Board board) {
         int modifier = board.isWhiteToMove() ? 1 : -1;
-        return modifier * (evaluator.evaluate(board, true) - evaluator.evaluate(board, false));
+        long whitePawns = board.getPawns(true);
+        long blackPawns = board.getPawns(false);
+        int whiteScore = PawnStructure.score(whitePawns, blackPawns, true);
+        int blackScore = PawnStructure.score(blackPawns, whitePawns, false);
+        return modifier * (whiteScore - blackScore);
     }
 
 }

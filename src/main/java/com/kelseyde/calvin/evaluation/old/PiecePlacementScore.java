@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation.placement;
+package com.kelseyde.calvin.evaluation.old;
 
 public record PiecePlacementScore(int pawnScore,
                                   int knightScore,

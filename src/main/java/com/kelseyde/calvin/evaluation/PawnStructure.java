@@ -1,15 +1,10 @@
-package com.kelseyde.calvin.evaluation.pawnstructure;
+package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.utils.BoardUtils;
 
-/**
- * Evaluate certain characteristics of the remaining pawns: bonuses for passed pawns, connected pawns; penalties for
- * isolated and doubled pawns.
- */
-public class PawnStructureEvaluator {
+public class PawnStructure {
 
     // The bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
     private static final int[] PASSED_PAWN_BONUS = { 0, 140, 100, 60, 30, 15, 15 };
@@ -24,18 +19,15 @@ public class PawnStructureEvaluator {
     // treated as 'separate' doubled pawns).
     private static final int[] DOUBLED_PAWN_PENALTY = { 0, -5, -10, -20, -40, -60, -75, -85, -95};
 
-    public int evaluate(Board board, boolean isWhite) {
-
-        long friendlyPawns = board.getPawns(isWhite);
-        long opponentPawns = board.getPawns(!isWhite);
+    public static int score(long friendlyPawns, long opponentPawns, boolean isWhite) {
 
         int passedPawnsBonus = 0;
         int isolatedPawnCount = 0;
         int doubledPawnCount = 0;
 
-        long friendlyPawnsIterator = friendlyPawns;
-        while (friendlyPawnsIterator > 0) {
-            int pawn = BitboardUtils.getLSB(friendlyPawnsIterator);
+        long pawnsIterator = friendlyPawns;
+        while (pawnsIterator > 0) {
+            int pawn = BitboardUtils.getLSB(pawnsIterator);
             int file = BoardUtils.getFile(pawn);
 
             if (isPassedPawn(pawn, opponentPawns, isWhite)) {
@@ -50,7 +42,7 @@ public class PawnStructureEvaluator {
                 doubledPawnCount++;
             }
 
-            friendlyPawnsIterator = BitboardUtils.popLSB(friendlyPawnsIterator);
+            pawnsIterator = BitboardUtils.popLSB(pawnsIterator);
         }
         int isolatedPawnPenalty = ISOLATED_PAWN_PENALTY[isolatedPawnCount];
         int doubledPawnPenalty =  DOUBLED_PAWN_PENALTY[doubledPawnCount];
@@ -58,28 +50,28 @@ public class PawnStructureEvaluator {
 
     }
 
-    private boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
-        long passedPawnMask = isWhite ? PawnBits.WHITE_PASSED_PAWN_MASK[pawn] : PawnBits.BLACK_PASSED_PAWN_MASK[pawn];
+    private static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
+        long passedPawnMask = isWhite ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];
         return (passedPawnMask & opponentPawns) == 0;
     }
 
-    private boolean isIsolatedPawn(int file, long friendlyPawns) {
-        return (PawnBits.ADJACENT_FILE_MASK[file] & friendlyPawns) == 0;
+    private static boolean isIsolatedPawn(int file, long friendlyPawns) {
+        return (Bits.ADJACENT_FILE_MASK[file] & friendlyPawns) == 0;
     }
 
-    private boolean isDoubledPawn(int file, long friendlyPawns) {
+    private static boolean isDoubledPawn(int file, long friendlyPawns) {
         long fileMask = Bits.FILE_MASKS[file];
         return Long.bitCount(friendlyPawns & fileMask) > 1;
     }
 
-    private int calculatePassedPawnBonus(int pawn, boolean isWhite) {
+    private static int calculatePassedPawnBonus(int pawn, boolean isWhite) {
         int rank = BoardUtils.getRank(pawn);
         int squaresFromPromotion = isWhite ? 7 - rank : rank;
         return PASSED_PAWN_BONUS[squaresFromPromotion];
     }
 
-    private int calculateProtectedPawnBonus(int pawn, long friendlyPawns, boolean isWhite) {
-        long protectionMask = isWhite ? PawnBits.WHITE_PROTECTED_PAWN_MASK[pawn] : PawnBits.BLACK_PROTECTED_PAWN_MASK[pawn];
+    private static int calculateProtectedPawnBonus(int pawn, long friendlyPawns, boolean isWhite) {
+        long protectionMask = isWhite ? Bits.WHITE_PROTECTED_PAWN_MASK[pawn] : Bits.BLACK_PROTECTED_PAWN_MASK[pawn];
         return Long.bitCount(protectionMask & friendlyPawns) * PROTECTED_PASSED_PAWN_BONUS;
     }
 

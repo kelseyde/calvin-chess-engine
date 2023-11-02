@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.utils.notation.NotationUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -1,14 +1,12 @@
-package com.kelseyde.calvin.evaluation.kingsafety;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.evaluation.material.Material;
-import com.kelseyde.calvin.evaluation.pawnstructure.PawnBits;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 
-public class KingPawnShieldEvaluator {
+public class KingSafety {
 
     private static final int[] PAWN_SHIELD_DISTANCE_PENALTY = new int[] {0, 0, 10, 25, 50, 50, 50};
     private static final int SEMI_OPEN_KING_FILE_PENALTY = 15;
@@ -17,9 +15,9 @@ public class KingPawnShieldEvaluator {
     private static final int OPEN_ADJACENT_FILE_PENALTY = 15;
     private static final int LOST_CASTLING_RIGHTS_PENALTY = 120;
 
-    public int evaluate(Board board, Material opponentMaterial, boolean isWhite) {
+    public static int score(Board board, Material opponentMaterial, float phase, boolean isWhite) {
 
-        if (opponentMaterial.phase() <= 0.5) {
+        if (phase <= 0.5) {
             return 0;
         }
         int kingSquare = BitboardUtils.getLSB(board.getKing(isWhite));
@@ -32,21 +30,20 @@ public class KingPawnShieldEvaluator {
         int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
         int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(board, isWhite, kingFile);
 
-        float endgameWeight = opponentMaterial.phase();
         if (opponentMaterial.queens() == 0) {
             // King safety matters less without opponent queen
-            endgameWeight *= 0.6f;
+            phase *= 0.6f;
         }
 
-        return (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * endgameWeight);
+        return (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
 
     }
 
-    private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {
+    private static int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {
         int pawnShieldPenalty = 0;
         if (kingFile <= 2 || kingFile >= 5) {
 
-            long tripleFileMask = PawnBits.TRIPLE_FILE_MASK[kingFile];
+            long tripleFileMask = Bits.TRIPLE_FILE_MASK[kingFile];
 
             // Add penalty for a castled king with pawns far away from their starting squares.
             long pawnShieldMask =  tripleFileMask & pawns;
@@ -60,7 +57,7 @@ public class KingPawnShieldEvaluator {
         return pawnShieldPenalty;
     }
 
-    private int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial) {
+    private static int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial) {
         int openKingFilePenalty = 0;
         if (opponentMaterial.rooks() > 0 || opponentMaterial.queens() > 0) {
 
@@ -86,20 +83,16 @@ public class KingPawnShieldEvaluator {
         return openKingFilePenalty;
     }
 
-    private int calculateLostCastlingRightsPenalty(Board board, boolean isWhite, int kingFile) {
+    private static int calculateLostCastlingRightsPenalty(Board board, boolean isWhite, int kingFile) {
         if (kingFile <= 2 || kingFile >= 5) {
             return 0;
         }
-        int penalty = 0;
         boolean hasCastlingRights = board.getGameState().hasCastlingRights(isWhite);
-        if (!hasCastlingRights) {
-            penalty += LOST_CASTLING_RIGHTS_PENALTY;
-            boolean opponentHasCastlingRights = board.getGameState().hasCastlingRights(!isWhite);
-            if (!opponentHasCastlingRights) {
-                penalty = penalty / 2;
-            }
+        boolean opponentHasCastlingRights = board.getGameState().hasCastlingRights(!isWhite);
+        if (!hasCastlingRights && opponentHasCastlingRights) {
+            return LOST_CASTLING_RIGHTS_PENALTY;
         }
-        return penalty;
+        return 0;
     }
 
 }

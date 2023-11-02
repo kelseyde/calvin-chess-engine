@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.ComplexEvaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
@@ -31,7 +31,7 @@ public class SearchTest {
     MoveOrderer moveOrderer = Mockito.mock(MoveOrderer.class);
 
 //    @Mock
-    Evaluator evaluator = Mockito.mock(Evaluator.class);
+    ComplexEvaluator evaluator = Mockito.mock(ComplexEvaluator.class);
 
 //    @Mock
     StaticExchangeEvaluator see = Mockito.mock(StaticExchangeEvaluator.class);

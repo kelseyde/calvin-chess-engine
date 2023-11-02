@@ -136,7 +136,7 @@ public class PieceSquareTable {
                 -53, -34, -21, -11, -28, -14, -24, -43
     };
 
-    private static final int[][] MIDDLEGAME_TABLES = new int[][] {
+    public static final int[][] MIDDLEGAME_TABLES = new int[][] {
             PAWN_MIDDLEGAME_TABLE,
             KNIGHT_MIDDLEGAME_TABLE,
             BISHOP_MIDDLEGAME_TABLE,
@@ -145,7 +145,7 @@ public class PieceSquareTable {
             KING_MIDDLEGAME_TABLE
     };
 
-    private static final int[][] ENDGAME_TABLES = new int[][] {
+    public static final int[][] ENDGAME_TABLES = new int[][] {
             PAWN_ENDGAME_TABLE,
             KNIGHT_ENDGAME_TABLE,
             BISHOP_ENDGAME_TABLE,

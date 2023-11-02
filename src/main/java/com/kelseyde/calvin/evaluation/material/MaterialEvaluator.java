@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.evaluation.material;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.PieceType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +35,7 @@ public class MaterialEvaluator {
 
     private int calculateEval(int pawns, int knights, int bishops, int rooks, int queens) {
         // small bonus for the bishop pair
-        int bishopPairBonus = bishops == 2 ? PieceValues.BISHOP_PAIR : 0;
+        int bishopPairBonus = bishops == 2 ? PieceValues.BISHOP_PAIR_BONUS : 0;
         return (pawns * PieceValues.PAWN) +
                 (knights * PieceValues.KNIGHT) +
                 (bishops * PieceValues.BISHOP) +

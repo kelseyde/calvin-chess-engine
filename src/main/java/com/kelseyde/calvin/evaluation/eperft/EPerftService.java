@@ -2,7 +2,7 @@ package com.kelseyde.calvin.evaluation.eperft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.ComplexEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 
 import java.util.List;
@@ -10,11 +10,11 @@ import java.util.List;
 public class EPerftService {
 
     private final MoveGenerator moveGenerator;
-    private final Evaluator boardEvaluator;
+    private final ComplexEvaluator boardEvaluator;
 
     public EPerftService(Board board) {
         moveGenerator = new MoveGenerator();
-        boardEvaluator = new Evaluator(board);
+        boardEvaluator = new ComplexEvaluator(board);
     }
 
     public void ePerft(Board board, int depth) {

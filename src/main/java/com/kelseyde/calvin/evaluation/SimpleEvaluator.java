@@ -3,17 +3,15 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.material.Material;
+import com.kelseyde.calvin.evaluation.material.PieceValues;
+import com.kelseyde.calvin.evaluation.placement.PiecePlacement;
+import com.kelseyde.calvin.evaluation.placement.PieceSquareTable;
 
-public class SimpleEvaluator implements Evaluation {
-
-    private static final int KNIGHT_PHASE = 1;
-    private static final int BISHOP_PHASE = 1;
-    private static final int ROOK_PHASE = 2;
-    private static final int QUEEN_PHASE = 4;
-    private static final float TOTAL_PHASE =
-            (KNIGHT_PHASE * 4) + (BISHOP_PHASE * 4) + (ROOK_PHASE * 4) + (QUEEN_PHASE * 2);
+public class SimpleEvaluator implements Evaluator {
 
     private Board board;
+
+    int eval;
 
     public SimpleEvaluator(Board board) {
         init(board);
@@ -22,8 +20,34 @@ public class SimpleEvaluator implements Evaluation {
     @Override
     public void init(Board board) {
 
-        boolean isWhite = board.isWhiteToMove();
-        float phase =
+        int whiteMiddlegameScore = 0;
+        int whiteEndgameScore = 0;
+        int blackMiddlegameScore = 0;
+        int blackEndgameScore = 0;
+
+        Material whiteMaterial = Material.fromBoard(board, true);
+        Material blackMaterial = Material.fromBoard(board, false);
+
+        whiteMiddlegameScore += whiteMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
+        whiteEndgameScore += whiteMaterial.sum(PieceValues.ENDGAME_VALUES);
+        blackMiddlegameScore += blackMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
+        blackEndgameScore += blackMaterial.sum(PieceValues.ENDGAME_VALUES);
+
+        PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
+        PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
+
+        whiteMiddlegameScore += whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
+        whiteEndgameScore += whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
+        blackMiddlegameScore += blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
+        blackEndgameScore += blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
+
+        float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
+
+        int whiteScore = GamePhase.taperedEval(whiteMiddlegameScore, whiteEndgameScore, phase);
+        int blackScore = GamePhase.taperedEval(blackMiddlegameScore, blackEndgameScore, phase);
+
+        int modifier = board.isWhiteToMove() ? 1 : -1;
+        eval = modifier * (whiteScore - blackScore);
 
     }
 
@@ -40,38 +64,6 @@ public class SimpleEvaluator implements Evaluation {
     @Override
     public int get() {
         return 0;
-    }
-
-    private Material countMaterial(boolean isWhite) {
-        int pawns = Long.bitCount(board.getPawns(isWhite));
-        int knights = Long.bitCount(board.getKnights(isWhite));
-        int bishops = Long.bitCount(board.getBishops(isWhite));
-        int rooks = Long.bitCount(board.getRooks(isWhite));
-        int queens = Long.bitCount(board.getQueens(isWhite));
-        return null;
-    }
-
-    private float calculatePhase(Board board) {
-        int whiteKnights = Long.bitCount(board.getKnights(true));
-        int blackKnights = Long.bitCount(board.getKnights(false));
-        int whiteBishops = Long.bitCount(board.getBishops(true));
-        int blackBishops = Long.bitCount(board.getBishops(false));
-        int whiteRooks = Long.bitCount(board.getRooks(true));
-        int blackRooks = Long.bitCount(board.getRooks(false));
-        int whiteQueens = Long.bitCount(board.getQueens(true));
-        int blackQueens = Long.bitCount(board.getQueens(false));
-
-        float phase = TOTAL_PHASE;
-        phase -= (whiteKnights * KNIGHT_PHASE);
-        phase -= (blackKnights * KNIGHT_PHASE);
-        phase -= (whiteBishops * BISHOP_PHASE);
-        phase -= (blackBishops * BISHOP_PHASE);
-        phase -= (whiteRooks * ROOK_PHASE);
-        phase -= (blackRooks * ROOK_PHASE);
-        phase -= (whiteQueens * QUEEN_PHASE);
-        phase -= (blackQueens * QUEEN_PHASE);
-
-        return (phase * 256 + (TOTAL_PHASE / 2)) / TOTAL_PHASE;
     }
 
 }

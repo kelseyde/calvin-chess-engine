@@ -129,12 +129,10 @@ public class Evaluator implements Evaluation {
         int whitePiecePlacementScore = score.getWhitePiecePlacementScore();
         int whitePawnStructureScore = score.getWhitePawnStructureScore();
         int whiteKingSafetyScore = score.getWhiteKingSafetyScore();
-        int whiteMopUpScore = score.getWhiteMopUpScore();
         int blackMaterialScore = score.getBlackMaterialScore();
         int blackPiecePlacementScore = score.getBlackPiecePlacementScore();
         int blackPawnStructureScore = score.getBlackPawnStructureScore();
         int blackKingSafetyScore = score.getBlackKingSafetyScore();
-        int blackMopUpScore = score.getBlackMopUpScore();
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
@@ -155,7 +153,6 @@ public class Evaluator implements Evaluation {
             int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
             whitePiecePlacementScore = GamePhase.taperedEval(whitePiecePlacementMiddlegameScore, whitePiecePlacementEndgameScore, phase);
         }
-
         if (updateBlackPiecePlacement) {
             PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
             int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
@@ -175,8 +172,8 @@ public class Evaluator implements Evaluation {
             blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
         }
 
-        whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
-        blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
+        int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
+        int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
 
         score = EvaluationScore.builder()
                 .whiteMaterialScore(whiteMaterialScore)

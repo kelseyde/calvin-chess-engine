@@ -1,10 +1,10 @@
 <img src="src/main/resources/calvin.png" width="120">
 
-A chess engine written in Java. Named after my favourite comic book character.
+Calvin is a chess engine written in Java. 
 
-This is a personal project. I am a Java developer and amateur chess player, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life.
+This is a personal project. I am a Java developer and amateur chess player, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life. 
 
-Calvin is rated about ~2000 on Lichess as of October 2023.
+Calvin is rated about ~2000 on Lichess as of November 2023.
 
 ## Features
 
@@ -21,6 +21,7 @@ Calvin is rated about ~2000 on Lichess as of October 2023.
 - [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) + [negamax](https://www.chessprogramming.org/Negamax).
 - [Quiescence search](https://www.chessprogramming.org/Quiescence_Search) to combat the horizon effect.
 - [Transposition table](https://www.chessprogramming.org/Transposition_Table) with [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing).
+- [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
 
 ### Move Ordering
 - [Previous best move](https://www.chessprogramming.org/Principal_Variation_Search), [MVV-LVA](https://www.chessprogramming.org/MVV-LVA), [killer move heuristic](https://www.chessprogramming.org/Killer_Move), [history heuristic](https://www.chessprogramming.org/History_Heuristic).
@@ -42,7 +43,7 @@ Calvin is rated about ~2000 on Lichess as of October 2023.
 
 | 	Depth	 | 	Nodes	 | 	Speed	 | 
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | 
-| 1     | 20        | PT0.000015S  |
+| 1     | 20        | PT0.000013S  |
 | 2     | 400       | PT0.000025S  |
 | 3     | 8902      | PT0.083512S  |
 | 4     | 197281    | PT0.01012S  |

@@ -5,7 +5,7 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>2.2.8-ImprovedEvaluation</version>
+    <version>2.2.9-ImprovedEvaluation</version>
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 

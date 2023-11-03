@@ -7,6 +7,9 @@ import lombok.Data;
 @Builder
 public class EvaluationScore {
 
+    Material whiteMaterial;
+    Material blackMaterial;
+
     int whiteMaterialScore;
     int blackMaterialScore;
 

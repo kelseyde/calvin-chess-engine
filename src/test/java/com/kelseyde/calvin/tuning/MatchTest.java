@@ -16,8 +16,8 @@ public class MatchTest {
                 .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
                 .gameCount(100)
                 .maxMoves(100)
-                .minThinkTimeMs(50)
-                .maxThinkTimeMs(100)
+                .minThinkTimeMs(40)
+                .maxThinkTimeMs(85)
                 .threadCount(1)
                 .build();
 

@@ -340,6 +340,50 @@ public class BoardTest {
         Assertions.assertEquals(20, moves.size());
     }
 
+    @Test
+    public void testMakeNullMoveChangesSideToMove() {
+
+        Board board = FEN.fromFEN("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R w KQkq - 1 6");
+        long initialZobrist = board.getGameState().getZobristKey();
+        Assertions.assertTrue(board.isWhiteToMove());
+        board.makeNullMove();
+        Assertions.assertFalse(board.isWhiteToMove());
+        Board board2 = FEN.fromFEN("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R b KQkq - 1 6");
+        Assertions.assertEquals(board.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
+        board.unmakeNullMove();
+        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertEquals(initialZobrist, board.getGameState().getZobristKey());
+
+    }
+
+    @Test
+    public void testUnmakeMoveResetsEnPassantFile() {
+
+        Board board = FEN.fromFEN("r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3");
+        long initialZobrist = board.getGameState().getZobristKey();
+        Assertions.assertEquals(3, board.getGameState().getEnPassantFile());
+        board.makeNullMove();
+        Assertions.assertEquals(-1, board.getGameState().getEnPassantFile());
+        board.unmakeNullMove();
+        Assertions.assertEquals(3, board.getGameState().getEnPassantFile());
+        Assertions.assertEquals(initialZobrist, board.getGameState().getZobristKey());
+
+    }
+
+    @Test
+    public void testUnmakeMoveResetsFiftyMoveCounter() {
+
+        Board board = FEN.fromFEN("8/4n3/2kn4/8/3B4/5K2/8/8 w - - 4 3");
+        long initialZobrist = board.getGameState().getZobristKey();
+        Assertions.assertEquals(4, board.getGameState().getFiftyMoveCounter());
+        board.makeNullMove();
+        Assertions.assertEquals(0, board.getGameState().getFiftyMoveCounter());
+        board.unmakeNullMove();
+        Assertions.assertEquals(4, board.getGameState().getFiftyMoveCounter());
+        Assertions.assertEquals(initialZobrist, board.getGameState().getZobristKey());
+
+    }
+
     private Set<Integer> getPiecePositions(Board board, boolean isWhiteToMove) {
         Set<Integer> positions = new HashSet<>();
         if (isWhiteToMove) {

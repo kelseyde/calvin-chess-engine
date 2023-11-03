@@ -55,11 +55,13 @@ public class Evaluator implements Evaluation {
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
 
         score = EvaluationScore.builder()
+                .whiteMaterial(whiteMaterial)
                 .whiteMaterialScore(whiteMaterialScore)
                 .whitePiecePlacementScore(whitePiecePlacementScore)
                 .whitePawnStructureScore(whitePawnStructureScore)
                 .whiteKingSafetyScore(whiteKingSafetyScore)
                 .whiteMopUpScore(whiteMopUpScore)
+                .blackMaterial(blackMaterial)
                 .blackMaterialScore(blackMaterialScore)
                 .blackPiecePlacementScore(blackPiecePlacementScore)
                 .blackPawnStructureScore(blackPawnStructureScore)
@@ -177,11 +179,13 @@ public class Evaluator implements Evaluation {
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
 
         score = EvaluationScore.builder()
+                .whiteMaterial(whiteMaterial)
                 .whiteMaterialScore(whiteMaterialScore)
                 .whitePiecePlacementScore(whitePiecePlacementScore)
                 .whitePawnStructureScore(whitePawnStructureScore)
                 .whiteKingSafetyScore(whiteKingSafetyScore)
                 .whiteMopUpScore(whiteMopUpScore)
+                .blackMaterial(blackMaterial)
                 .blackMaterialScore(blackMaterialScore)
                 .blackPiecePlacementScore(blackPiecePlacementScore)
                 .blackPawnStructureScore(blackPawnStructureScore)
@@ -199,6 +203,10 @@ public class Evaluator implements Evaluation {
     @Override
     public int get() {
         return score.sum(board.isWhiteToMove());
+    }
+
+    public Material getMaterial(boolean isWhite) {
+        return isWhite ? score.getWhiteMaterial() : score.getBlackMaterial();
     }
 
 }

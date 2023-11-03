@@ -128,4 +128,11 @@ public class ZobristKey {
 
     }
 
+    public static long updateKeyAfterNullMove(long key, int oldEnPassantFile) {
+        key ^= EN_PASSANT_FILE[oldEnPassantFile + 1];
+        key ^= EN_PASSANT_FILE[0];
+        key ^= BLACK_TO_MOVE;
+        return key;
+    }
+
 }

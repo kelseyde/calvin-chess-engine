@@ -168,6 +168,19 @@ public class Board {
 
     }
 
+    public void makeNullMove() {
+        isWhiteToMove = !isWhiteToMove;
+        long newZobristKey = ZobristKey.updateKeyAfterNullMove(gameState.getZobristKey(), gameState.getEnPassantFile());
+        GameState newGameState = new GameState(newZobristKey, null, -1, gameState.getCastlingRights(), 0);
+        gameStateHistory.push(gameState);
+        gameState = newGameState;
+    }
+
+    public void unmakeNullMove() {
+        isWhiteToMove = !isWhiteToMove;
+        gameState = gameStateHistory.pop();
+    }
+
     public void toggleSquares(PieceType type, boolean isWhite, int startSquare, int endSquare) {
         long toggleMask = (1L << startSquare | 1L << endSquare);
         toggle(type, isWhite, toggleMask);

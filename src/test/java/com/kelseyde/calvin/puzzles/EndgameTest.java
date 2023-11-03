@@ -94,6 +94,54 @@ public class EndgameTest {
 
     }
 
+    @Test
+    public void testZugzwang1() {
+
+        String fen = "8/8/p1p5/1p5p/1P5p/8/PPP2K1p/4R1rk w - - 0 1";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(3000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertEquals(NotationUtils.fromCombinedNotation("e1f1"), move);
+
+    }
+
+    @Test
+    public void testZugzwang2() {
+
+        String fen = "1q1k4/2Rr4/8/2Q3K1/8/8/8/8 w - - 0 1";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(3000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertEquals(NotationUtils.fromCombinedNotation("g5h6"), move);
+
+    }
+
+    @Test
+    public void testZugzwang3() {
+
+        String fen = "8/6B1/p5p1/Pp4kp/1P5r/5P1Q/4q1PK/8 w - - 0 32";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(3000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertEquals(NotationUtils.fromCombinedNotation("h3h4"), move);
+
+    }
+
+    @Test
+    public void testZugzwang4() {
+
+        String fen = "8/8/1p1r1k2/p1pPN1p1/P3KnP1/1P6/8/3R4 b - - 0 1";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(3000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertEquals(NotationUtils.fromCombinedNotation("f4d5"), move);
+
+    }
+
     private void assertMove(Move expected, Move actual) {
         boolean matches = expected.matches(actual);
         if (!matches) {

@@ -3,10 +3,10 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.Evaluator;
-import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
+import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
@@ -174,12 +174,11 @@ public class Searcher implements Search {
              return 0;
          }
          if (plyFromRoot > 0) {
-             // TODO null-move implications here
              if (resultCalculator.isEffectiveDraw(board)) {
 //                 log.info("{} {} {} found draw", side(board), alphaBeta(alpha, beta), moveHistory(board));
                  return DRAW_SCORE;
              }
-             // Exit early if we have already found a forced mate at an earlier ply
+             // Mate distance pruning: exit early if we have already found a forced mate at an earlier ply
              alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
              beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
              if (alpha >= beta) {
@@ -223,25 +222,28 @@ public class Searcher implements Search {
             }
         }
 
-        // Null-move pruning
-        if (allowNull &&
-                plyRemaining >= 3 &&
-                evaluator.get() >= beta &&
-                evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining() &&
-                !moveGenerator.isCheck(board, board.isWhiteToMove())) {
+        // Null-move pruning: if we suspect that the current position will fail-high, play a 'null move' and allow our
+        // opponent to play two moves in a row. Search the subsequent subtree to a shallower depth than a standard search.
+        // If the result is still a fail-high, we can confidently save time and effort by pruning this node.
+        if (allowNull && plyRemaining >= 3) {
+            // Only attempt null-move pruning when the static eval is greater than beta (fail-high).
+            boolean isAssumedFailHigh = evaluator.get() >= beta;
 
-            int r = 3;
-            int newPlyRemaining = plyRemaining - 1 - r;
-//            System.out.printf("null move initial depth %s reduction %s new depth %s%n", plyRemaining, r, newPlyRemaining);
-            board.makeNullMove();
-            int eval = -search(newPlyRemaining, plyFromRoot + 1, -beta, -beta + 1, false);
-            board.unmakeNullMove();
-            if (eval >= beta) {
-                nullCuts++;
-                return beta;
+            // It is impossible to pass a null-move when in check (we would be checkmated).
+            boolean isNotCheck = !moveGenerator.isCheck(board, board.isWhiteToMove());
+
+            // Do not attempt null-move in pawn endgames, due to zugzwang positions in which having the move is a disadvantage.
+            boolean isNotPawnEndgame = evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining();
+
+            if (isAssumedFailHigh && isNotCheck && isNotPawnEndgame) {
+                board.makeNullMove();
+                int reduction = 3;
+                int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
+                board.unmakeNullMove();
+                if (eval >= beta) {
+                    return eval;
+                }
             }
-            nullFails++;
-
         }
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
@@ -289,7 +291,6 @@ public class Searcher implements Search {
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
                 transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, move, beta);
-
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(plyFromRoot, move);

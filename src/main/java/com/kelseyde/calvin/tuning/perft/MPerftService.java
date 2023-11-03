@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.movegeneration.perft;
+package com.kelseyde.calvin.tuning.perft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;

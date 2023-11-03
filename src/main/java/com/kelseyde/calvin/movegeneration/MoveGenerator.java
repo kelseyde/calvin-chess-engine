@@ -76,9 +76,7 @@ public class MoveGenerator implements MoveGeneration {
         // Generate all the other legal moves using the capture and push masks
         generatePawnMoves(board, capturesOnly);
         generateKnightMoves(board, capturesOnly);
-        generateBishopMoves(board, capturesOnly);
-        generateRookMoves(board, capturesOnly);
-        generateQueenMoves(board, capturesOnly);
+        generateAllSlidingMoves(board, capturesOnly);
         generateCastlingMoves(board, capturesOnly);
 
         return legalMoves;
@@ -270,6 +268,17 @@ public class MoveGenerator implements MoveGeneration {
         }
     }
 
+    private void generateAllSlidingMoves(Board board, boolean capturesOnly) {
+        boolean isWhite = board.isWhiteToMove();
+        long bishops = board.getBishops(isWhite);
+        long rooks = board.getRooks(isWhite);
+        long queens = board.getQueens(isWhite);
+        long diagonalSliders = bishops | queens;
+        long orthogonalSliders = rooks | queens;
+        generateSlidingMoves(board, capturesOnly, diagonalSliders, false, true);
+        generateSlidingMoves(board, capturesOnly, orthogonalSliders, true, false);
+    }
+
     private void generateSlidingMoves(Board board, boolean capturesOnly, long sliders, boolean isOrthogonal, boolean isDiagonal) {
         boolean isWhite = board.isWhiteToMove();
         while (sliders != 0) {
@@ -290,21 +299,6 @@ public class MoveGenerator implements MoveGeneration {
                 attackMask = BitboardUtils.popLSB(attackMask);
             }
         }
-    }
-
-    private void generateBishopMoves(Board board, boolean capturesOnly) {
-        long bishops = board.getBishops(board.isWhiteToMove());
-        generateSlidingMoves(board, capturesOnly, bishops, false, true);
-    }
-
-    private void generateRookMoves(Board board, boolean capturesOnly) {
-        long rooks = board.getRooks(board.isWhiteToMove());
-        generateSlidingMoves(board, capturesOnly, rooks, true, false);
-    }
-
-    private void generateQueenMoves(Board board, boolean capturesOnly) {
-        long queens = board.getQueens(board.isWhiteToMove());
-        generateSlidingMoves(board, capturesOnly, queens, true, true);
     }
 
     public long getPawnAttacks(Board board, int square, boolean isWhite) {

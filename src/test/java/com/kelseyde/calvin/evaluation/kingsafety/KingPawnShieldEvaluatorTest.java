@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.evaluation.kingsafety;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.KingSafety;
-import com.kelseyde.calvin.evaluation.Material;
+import com.kelseyde.calvin.evaluation.score.KingSafety;
+import com.kelseyde.calvin.evaluation.score.Material;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

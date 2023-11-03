@@ -378,4 +378,19 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontLetOpponentBuildBigCenter() {
+
+        String fen = "4kb1r/3r1ppp/1q2p3/p2p1b2/2PP4/1P2P3/1B1NQPPP/R4RK1 b k - 0 17";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        int thinkTime = bot.chooseThinkTime(95300, 122599, 2000, 2000);
+        Move move = bot.think(thinkTime);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("d5c4"))
+        );
+
+    }
+
 }

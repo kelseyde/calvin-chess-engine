@@ -363,4 +363,19 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontSacExchangeForSpeculativeCompensation2() {
+
+        String fen = "5r2/kb4p1/p1p1p1qp/3pP3/3Pr3/1Q3NPP/PPR3K1/5R2 b - - 6 29";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        int thinkTime = bot.chooseThinkTime(95300, 122599, 2000, 2000);
+        Move move = bot.think(thinkTime);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("f8f3"))
+        );
+
+    }
+
 }

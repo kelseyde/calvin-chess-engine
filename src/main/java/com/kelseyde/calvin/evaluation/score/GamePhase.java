@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation;
+package com.kelseyde.calvin.evaluation.score;
 
 public class GamePhase {
 

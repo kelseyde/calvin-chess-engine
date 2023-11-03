@@ -3,7 +3,7 @@ package com.kelseyde.calvin.search.moveordering;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
-import com.kelseyde.calvin.evaluation.PieceValues;
+import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,11 +52,11 @@ public class MoveOrderer implements MoveOrdering {
 
     public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
         List<Move> orderedMoves = new ArrayList<>(moves);
-        orderedMoves.sort(Comparator.comparing(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
+        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
         return orderedMoves;
     }
 
-    private int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
+    public int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
 
         int moveScore = 0;
 

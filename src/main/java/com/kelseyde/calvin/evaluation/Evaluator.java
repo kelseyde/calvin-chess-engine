@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.evaluation.score.*;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

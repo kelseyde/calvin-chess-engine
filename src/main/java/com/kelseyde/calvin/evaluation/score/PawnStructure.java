@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation;
+package com.kelseyde.calvin.evaluation.score;
 
 import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;

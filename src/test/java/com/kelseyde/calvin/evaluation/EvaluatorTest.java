@@ -282,7 +282,6 @@ public class EvaluatorTest {
 
         Board board = FEN.fromFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
         evaluator = new Evaluator(board);
-        int startEval = evaluator.get();
 
         Move move = TestUtils.getLegalMove(board, "d2", "d4");
         board.makeMove(move);
@@ -299,7 +298,76 @@ public class EvaluatorTest {
         board.unmakeMove();
         evaluator.unmakeMove();
 
-        System.out.println(evaluator.get());
+        move = TestUtils.getLegalMove(board, "d2", "d3");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+
+        move = TestUtils.getLegalMove(board, "d7", "d6");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+
+        move = TestUtils.getLegalMove(board, "e1", "g1");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+
+        move = TestUtils.getLegalMove(board, "f8", "e7");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+
+        board.unmakeMove();
+        evaluator.unmakeMove();
+        board.unmakeMove();
+        evaluator.unmakeMove();
+        board.unmakeMove();
+        evaluator.unmakeMove();
+        board.unmakeMove();
+        evaluator.unmakeMove();
+
+        move = TestUtils.getLegalMove(board, "d2", "d4");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
+        move = TestUtils.getLegalMove(board, "e5", "d4");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
+        move = TestUtils.getLegalMove(board, "e4", "e5");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
+        move = TestUtils.getLegalMove(board, "d7", "d5");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
+        move = TestUtils.getLegalMove(board, "c4", "b5");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
+        move = TestUtils.getLegalMove(board, "f6", "e4");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
+        move = TestUtils.getLegalMove(board, "f3", "d4");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
+        move = TestUtils.getLegalMove(board, "c8", "d7");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
+        move = TestUtils.getLegalMove(board, "b5", "c6");
+        board.makeMove(move);
+        evaluator.makeMove(move);
+        Assertions.assertEquals(new Evaluator(board).get(), evaluator.get());
+
         Assertions.assertEquals(evaluator.get(), new Evaluator(board).get());
 
     }

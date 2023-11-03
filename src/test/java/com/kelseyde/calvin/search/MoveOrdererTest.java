@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.PieceType;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
+import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
@@ -96,7 +97,7 @@ public class MoveOrdererTest {
                 NotationUtils.fromNotation("f3", "f4"),
                 NotationUtils.fromNotation("h2", "h4")));
 
-        Move killerMove = new Move(21, 29);
+        Move killerMove = TestUtils.getLegalMove(board, "f3", "f4");
         moveOrderer.addKillerMove(1, killerMove);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);

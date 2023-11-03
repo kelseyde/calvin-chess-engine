@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
-import com.kelseyde.calvin.evaluation.SimpleEvaluator;
+import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Disabled;
@@ -21,7 +21,7 @@ public class MiddlegameTest {
         String fen = "k6K/1pp2P1P/p1p5/P7/8/8/5r2/2R5 w - - 1 51";
         Board board = FEN.fromFEN(fen);
 
-        SimpleEvaluator evaluator = new SimpleEvaluator(board);
+        Evaluator evaluator = new Evaluator(board);
         System.out.println(evaluator.get());
 
     }

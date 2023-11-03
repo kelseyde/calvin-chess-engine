@@ -348,4 +348,19 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testCastleOutOfDanger() {
+
+        String fen = "r3k2r/pppqppb1/4b2p/4P2Q/3pP3/2N4P/PPP1BP1P/2KR3R b kq - 2 14";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        int thinkTime = bot.chooseThinkTime(22300, 22300, 1000, 1000);
+        Move move = bot.think(thinkTime);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("a8d8"))
+        );
+
+    }
+
 }

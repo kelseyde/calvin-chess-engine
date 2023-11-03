@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.SimpleEvaluator;
+import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.see.StaticExchangeEvaluator;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
@@ -48,7 +48,7 @@ public class Searcher implements Search {
 
     private MoveGenerator moveGenerator;
     private MoveOrderer moveOrderer;
-    private SimpleEvaluator evaluator;
+    private Evaluator evaluator;
     private StaticExchangeEvaluator see;
     private TranspositionTable transpositionTable;
     private ResultCalculator resultCalculator;
@@ -73,14 +73,14 @@ public class Searcher implements Search {
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
-        this.evaluator = new SimpleEvaluator(board);
+        this.evaluator = new Evaluator(board);
         this.transpositionTable = new TranspositionTable(board);
     }
 
     @Override
     public SearchResult search(Duration duration) {
 
-        evaluator = new SimpleEvaluator(board);
+        evaluator.init(board);
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;
@@ -143,6 +143,7 @@ public class Searcher implements Search {
         statistics.setEnd(Instant.now());
 //        log.info(statistics.generateReport());
 //        transpositionTable.logTableSize();
+        System.out.println("eval: " + result.eval());
         return result;
 
     }
@@ -176,7 +177,6 @@ public class Searcher implements Search {
          }
          Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
-        // TODO move transposition logic to TranspositionTable
         // Handle possible transposition
         TranspositionNode transposition = transpositionTable.get();
         if (hasBestMove(transposition)) {

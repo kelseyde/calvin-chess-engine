@@ -121,7 +121,7 @@ public class MoveOrderer implements MoveOrdering {
 
     private boolean isKillerMove(int ply, Move move) {
         return ply < MAX_KILLER_MOVE_PLY_DEPTH &&
-                (move.matches(killerMoves[ply][0]) || move.matches(killerMoves[ply][1]));
+                (move.equals(killerMoves[ply][0]) || move.equals(killerMoves[ply][1]));
     }
 
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {

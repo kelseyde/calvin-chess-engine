@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.board;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.util.Optional;
 
@@ -90,9 +91,6 @@ public class Move {
     }
 
     public boolean matches(Move move) {
-        if (move == null) {
-            return false;
-        }
         boolean squareMatch = getStartSquare() == move.getStartSquare() && getEndSquare() == move.getEndSquare();
         boolean promotionMatch = Optional.ofNullable(getPromotionPieceType())
                 .map(piece -> piece.equals(move.getPromotionPieceType()))

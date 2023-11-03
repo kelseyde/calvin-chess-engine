@@ -38,10 +38,9 @@ public class Searcher implements Search {
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
 
-//    private static final int ASPIRATION_WINDOW_BUFFER = 150;
-//    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 250;
     private static final int ASPIRATION_WINDOW_BUFFER = 50;
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
+    private static final int NULL_MOVE_DEPTH_REDUCTION = 2;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -60,6 +59,9 @@ public class Searcher implements Search {
     private SearchResult result;
     private SearchResult resultCurrentDepth;
 
+    private int nullCuts;
+    private int nullFails;
+
     private SearchStatistics statistics = new SearchStatistics();
 
     public Searcher(Board board) {
@@ -75,6 +77,8 @@ public class Searcher implements Search {
         this.resultCalculator = new ResultCalculator();
         this.evaluator = new Evaluator(board);
         this.transpositionTable = new TranspositionTable(board);
+        nullCuts = 0;
+        nullFails = 0;
     }
 
     @Override
@@ -97,7 +101,7 @@ public class Searcher implements Search {
             Instant depthStart = Instant.now();
             resultCurrentDepth = null;
 
-            int eval = search(currentDepth, 0, alpha, beta);
+            int eval = search(currentDepth, 0, alpha, beta, true);
 //            log.info("depth {} eval: {}", currentDepth, eval);
 
             if (resultCurrentDepth != null) {
@@ -143,7 +147,12 @@ public class Searcher implements Search {
         statistics.setEnd(Instant.now());
 //        log.info(statistics.generateReport());
 //        transpositionTable.logTableSize();
-        System.out.println("eval: " + result.eval());
+//        if (nullCuts > 0 && nullFails > 0) {
+//            int total = nullCuts + nullFails;
+//            float ratio = (float)nullCuts / (float)total;
+//            float pct = ratio * 100;
+//            System.out.printf("null cuts: %s, null fails: %s, pct: %s%n", nullCuts, nullFails, pct);
+//        }
         return result;
 
     }
@@ -153,17 +162,19 @@ public class Searcher implements Search {
      * recursively until the depth limit is reached, 'depth' needs to be split into two parameters: 'ply remaining' and
      * 'ply from root'.
      *
-     * @param plyRemaining   The number of ply deeper left to go in the current search
-     * @param plyFromRoot    The number of ply already examined in this iteration of the search.
-     * @param alpha          the lower bound for child nodes at the current search depth.
-     * @param beta           the upper bound for child nodes at the current search depth.
+     * @param plyRemaining The number of ply deeper left to go in the current search
+     * @param plyFromRoot  The number of ply already examined in this iteration of the search.
+     * @param alpha        The lower bound for child nodes at the current search depth.
+     * @param beta         The upper bound for child nodes at the current search depth.
+     * @param allowNull    Whether to allow null-move pruning in this search iteration.
      */
-     public int search(int plyRemaining, int plyFromRoot, int alpha, int beta) {
+     public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNull) {
 
          if (isTimeoutExceeded()) {
              return 0;
          }
          if (plyFromRoot > 0) {
+             // TODO null-move implications here
              if (resultCalculator.isEffectiveDraw(board)) {
 //                 log.info("{} {} {} found draw", side(board), alphaBeta(alpha, beta), moveHistory(board));
                  return DRAW_SCORE;
@@ -193,7 +204,7 @@ public class Searcher implements Search {
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
-        if (plyRemaining == 0) {
+        if (plyRemaining <= 0) {
             // In the case that max depth is reached, begin the quiescence search
             int eval = quiescenceSearch(alpha, beta, 1);
 //            log.info("{} {} {} q eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
@@ -210,6 +221,27 @@ public class Searcher implements Search {
 //                log.info("{} {} {} draw eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), DRAW_SCORE);
                 return DRAW_SCORE;
             }
+        }
+
+        // Null-move pruning
+        if (allowNull &&
+                plyRemaining >= 3 &&
+                evaluator.get() >= beta &&
+                evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining() &&
+                !moveGenerator.isCheck(board, board.isWhiteToMove())) {
+
+            int r = 3;
+            int newPlyRemaining = plyRemaining - 1 - r;
+//            System.out.printf("null move initial depth %s reduction %s new depth %s%n", plyRemaining, r, newPlyRemaining);
+            board.makeNullMove();
+            int eval = -search(newPlyRemaining, plyFromRoot + 1, -beta, -beta + 1, false);
+            board.unmakeNullMove();
+            if (eval >= beta) {
+                nullCuts++;
+                return beta;
+            }
+            nullFails++;
+
         }
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
@@ -240,11 +272,11 @@ public class Searcher implements Search {
                 reductions = 1;
             }
 
-            int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha);
+            int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha, true);
 
             if (reductions > 0 && eval > alpha) {
                 // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
-                eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha);
+                eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
             }
             board.unmakeMove();
             evaluator.unmakeMove();

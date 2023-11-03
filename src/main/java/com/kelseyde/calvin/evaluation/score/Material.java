@@ -27,6 +27,10 @@ public record Material(int pawns,
                 bishopPairBonus(bishops);
     }
 
+    public boolean hasPiecesRemaining() {
+        return knights > 0 || bishops > 0 || rooks > 0 || queens > 0;
+    }
+
     private int bishopPairBonus(int bishops) {
         return bishops == 2 ? PieceValues.BISHOP_PAIR_BONUS : 0;
     }

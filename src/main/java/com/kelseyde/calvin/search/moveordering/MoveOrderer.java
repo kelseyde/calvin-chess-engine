@@ -70,6 +70,7 @@ public class MoveOrderer implements MoveOrdering {
         PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
         boolean isCapture = capturedPieceType != null;
         if (isCapture) {
+            // Captures are sorted using MVV-LVA
             moveScore += MVV_LVA_TABLE[capturedPieceType.getIndex()][pieceType.getIndex()];
             int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(board.pieceAt(move.getStartSquare()));
             if (materialDelta > 0) {
@@ -80,21 +81,20 @@ public class MoveOrderer implements MoveOrdering {
                 moveScore += LOSING_CAPTURE_BIAS;
             }
         }
+        else {
+            // Non-captures are sorted using history + killers
+            if (includeKillers && isKillerMove(depth, move)) {
+                moveScore += KILLER_MOVE_BIAS;
+            }
+            int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
+            moveScore += historyMoves[colourIndex][move.getStartSquare()][move.getEndSquare()];
+        }
 
         if (move.isPromotion()) {
             int promotionBias = move.getPromotionPieceType().equals(PieceType.QUEEN) ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
             moveScore += promotionBias;
             // After queen, order knight promotion second, then bishop, then rook
             moveScore -= PieceValues.valueOf(move.getPromotionPieceType());
-        }
-
-        // Prioritise killers + history moves
-        if (!isCapture) {
-            if (includeKillers && isKillerMove(depth, move)) {
-                moveScore += KILLER_MOVE_BIAS;
-            }
-            int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
-            moveScore += historyMoves[colourIndex][move.getStartSquare()][move.getEndSquare()];
         }
 
         if (move.isCastling()) {

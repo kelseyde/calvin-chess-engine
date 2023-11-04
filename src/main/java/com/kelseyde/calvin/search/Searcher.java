@@ -11,15 +11,12 @@ import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.tuning.SearchResult;
-import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,7 +37,6 @@ public class Searcher implements Search {
 
     private static final int ASPIRATION_WINDOW_BUFFER = 50;
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
-    private static final int NULL_MOVE_DEPTH_REDUCTION = 2;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -59,11 +55,6 @@ public class Searcher implements Search {
     private SearchResult result;
     private SearchResult resultCurrentDepth;
 
-    private int nullCuts;
-    private int nullFails;
-
-    private SearchStatistics statistics = new SearchStatistics();
-
     public Searcher(Board board) {
         init(board);
     }
@@ -77,8 +68,6 @@ public class Searcher implements Search {
         this.resultCalculator = new ResultCalculator();
         this.evaluator = new Evaluator(board);
         this.transpositionTable = new TranspositionTable(board);
-        nullCuts = 0;
-        nullFails = 0;
     }
 
     @Override
@@ -88,8 +77,6 @@ public class Searcher implements Search {
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;
-        statistics = new SearchStatistics();
-        statistics.setStart(Instant.now());
 
         int currentDepth = 1;
         int alpha = MIN_EVAL;
@@ -97,12 +84,9 @@ public class Searcher implements Search {
         int retryMultiplier = 0;
 
         while (!isTimeoutExceeded()) {
-
-            Instant depthStart = Instant.now();
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta, true);
-//            log.info("depth {} eval: {}", currentDepth, eval);
 
             if (resultCurrentDepth != null) {
                 result = resultCurrentDepth;
@@ -116,7 +100,6 @@ public class Searcher implements Search {
             if (eval <= alpha) {
                 // The result is less than alpha, so search again at the same depth with an expanded aspiration window.
                 retryMultiplier += 1;
-//                log.info("depth {} eval {} failed aspiration window {} - {}, must research", currentDepth, eval, alpha, beta);
                 alpha -= ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
                 beta += ASPIRATION_WINDOW_BUFFER;
                 continue;
@@ -124,7 +107,6 @@ public class Searcher implements Search {
             if (eval >= beta) {
                 // The result is greater than alpha, so search again at the same depth with an expanded aspiration window.
                 retryMultiplier += 1;
-//                log.info("depth {} eval {} failed aspiration window {} - {}, must research", currentDepth, eval, alpha, beta);
                 beta += ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
                 alpha -= ASPIRATION_WINDOW_BUFFER;
                 continue;
@@ -134,7 +116,6 @@ public class Searcher implements Search {
             beta = eval + ASPIRATION_WINDOW_BUFFER;
             retryMultiplier = 0;
 
-            statistics.incrementDepth(currentDepth, depthStart, Instant.now());
             currentDepth++;
         }
 
@@ -144,15 +125,7 @@ public class Searcher implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-        statistics.setEnd(Instant.now());
-//        log.info(statistics.generateReport());
-//        transpositionTable.logTableSize();
-//        if (nullCuts > 0 && nullFails > 0) {
-//            int total = nullCuts + nullFails;
-//            float ratio = (float)nullCuts / (float)total;
-//            float pct = ratio * 100;
-//            System.out.printf("null cuts: %s, null fails: %s, pct: %s%n", nullCuts, nullFails, pct);
-//        }
+        System.out.println("eval: " + result.eval());
         return result;
 
     }
@@ -175,7 +148,6 @@ public class Searcher implements Search {
          }
          if (plyFromRoot > 0) {
              if (resultCalculator.isEffectiveDraw(board)) {
-//                 log.info("{} {} {} found draw", side(board), alphaBeta(alpha, beta), moveHistory(board));
                  return DRAW_SCORE;
              }
              // Mate distance pruning: exit early if we have already found a forced mate at an earlier ply
@@ -196,7 +168,6 @@ public class Searcher implements Search {
             if (plyFromRoot == 0) {
                 resultCurrentDepth = new SearchResult(transposition.getValue(), transposition.getBestMove());
             }
-            //log.info("{} {} {} transposition eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), transposition.getValue());
             return transposition.getValue();
         }
 
@@ -205,19 +176,15 @@ public class Searcher implements Search {
         // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
         if (plyRemaining <= 0) {
             // In the case that max depth is reached, begin the quiescence search
-            int eval = quiescenceSearch(alpha, beta, 1);
-//            log.info("{} {} {} q eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
-            return eval;
+            return quiescenceSearch(alpha, beta, 1);
         }
         if (legalMoves.isEmpty()) {
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             if (isCheck) {
                 // Found checkmate
-//                log.info("{} {} {} checkmate eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), checkmateEval);
                 return -CHECKMATE_SCORE + plyFromRoot;
             } else {
                 // Found stalemate
-//                log.info("{} {} {} draw eval {}", side(board), alphaBeta(alpha, beta), moveHistory(board), DRAW_SCORE);
                 return DRAW_SCORE;
             }
         }
@@ -225,7 +192,7 @@ public class Searcher implements Search {
         // Null-move pruning: if we suspect that the current position will fail-high, play a 'null move' and allow our
         // opponent to play two moves in a row. Search the subsequent subtree to a shallower depth than a standard search.
         // If the result is still a fail-high, we can confidently save time and effort by pruning this node.
-        if (allowNull && plyRemaining >= 3) {
+        if (allowNull && plyRemaining >= 2) {
             // Only attempt null-move pruning when the static eval is greater than beta (fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta;
 
@@ -247,7 +214,6 @@ public class Searcher implements Search {
         }
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
-//        log.info("{} {} {} moves: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), moves(orderedMoves));
 
         Move bestMoveInThisPosition = null;
         int originalAlpha = alpha;
@@ -286,7 +252,6 @@ public class Searcher implements Search {
             if (isTimeoutExceeded()) {
                 return 0;
             }
-//            log.info("{} {} {} eval {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
 
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
@@ -296,7 +261,6 @@ public class Searcher implements Search {
                     moveOrderer.addKillerMove(plyFromRoot, move);
                     moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
                 }
-//                log.info("{} {} {} cutoff {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 return beta;
             }
 
@@ -304,7 +268,6 @@ public class Searcher implements Search {
                 // We have found a new best move
                 bestMoveInThisPosition = move;
                 alpha = eval;
-//                log.info("{} {} {} best move {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 if (plyFromRoot == 0) {
                     resultCurrentDepth = new SearchResult(eval, move);
                 }
@@ -328,35 +291,22 @@ public class Searcher implements Search {
         if (isTimeoutExceeded()) {
             return 0;
         }
-        // First check the 'stand pat' score, that is, the evaluation of the board if the player declines to make any more
-        // captures. Since the player is not forced to capture and may have good non-capture moves available, they may
-        // choose to stand pat. In that case, treat this node as a beta cut-off.
+        // First check stand-pat score.
         int eval = evaluator.get();
-//        log.info("{} {} {} q initial eval: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
         if (eval >= beta) {
-//            log.info("{} {} {} q cutoff {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
             return beta;
         }
         if (eval > alpha) {
             alpha = eval;
-//            log.info("{} {} {} q raising alpha {}", side(board), alphaBeta(alpha, beta), moveHistory(board), eval);
         }
 
-        // Generate all legal captures
         List<Move> moves = moveGenerator.generateMoves(board, true);
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
-//        log.info("{} {} {} q moves: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), moves(orderedMoves));
 
         for (Move move : orderedMoves) {
-
-            // Get the static exchange evaluation of the position ('see'). Equivalent to the human heuristic of 'counting
-            // the attackers and defenders' - if an exchange is obviously bad, like for giving up the queen for a pawn, don't
-            // bother searching that branch. This saves time at the expense of potentially missing some tactical combinations.
+            // Static exchange evaluation: try to filter out captures that are obviously bad (e.g. QxP -> PxQ)
             int seeEval = see.evaluate(board, move);
             if ((depth <= 4 && seeEval < 0) || (depth > 4 && seeEval <= 0)) {
-                // Up to depth 4 in quiescence, only considers captures with SEE eval >= 0.
-                // Past depth 4 in quiescence, only consider captures with SEE eval > 0.
-//                log.info("{} {} {} see skipping move: {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move));
                 continue;
             }
 
@@ -365,14 +315,11 @@ public class Searcher implements Search {
             eval = -quiescenceSearch(-beta, -alpha, depth + 1);
             board.unmakeMove();
             evaluator.unmakeMove();
-//            log.info("{} {} {} q eval {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
 
             if (eval >= beta) {
-//                log.info("{} {} {} q cutoff {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 return beta;
             }
             if (eval > alpha) {
-//                log.info("{} {} {} q best move {} {}", side(board), alphaBeta(alpha, beta), moveHistory(board), NotationUtils.toNotation(move), eval);
                 alpha = eval;
             }
         }
@@ -425,25 +372,5 @@ public class Searcher implements Search {
         this.timeout = timeout;
     }
 
-    private String side(Board board) {
-        return board.isWhiteToMove() ? "w" : "b";
-    }
-
-    private String alphaBeta(int alpha, int beta) {
-        return String.format("[%s, %s]", alpha, beta);
-    }
-
-    private String moveHistory(Board board) {
-        List<Move> moves = new ArrayList<>(board.getMoveHistory());
-        Collections.reverse(moves);
-        return moves(moves);
-    }
-
-    private String moves(List<Move> moves) {
-        return moves.stream()
-                .map(NotationUtils::toNotation)
-                .toList()
-                .toString();
-    }
 
 }

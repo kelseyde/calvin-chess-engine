@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -45,7 +45,7 @@ public class RookMoveGeneratorTest {
         Board board = FEN.fromFEN("K7/1R6/8/8/8/8/6r1/7k w - - 0 1");
 
         List<Move> moves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.ROOK)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.ROOK)
                 .toList();
 
         Assertions.assertEquals(14, moves.size());
@@ -54,15 +54,15 @@ public class RookMoveGeneratorTest {
 
     @Test
     public void testReachingSameColourPiecesEndsVector() {
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
 
         int startSquare = 28; //e4
 
-        board.toggleSquare(PieceType.PAWN, true, 12);
-        board.toggleSquare(PieceType.KNIGHT, true, 26);
-        board.toggleSquare(PieceType.BISHOP, true, 30);
-        board.toggleSquare(PieceType.ROOK, true, 44);
+        board.toggleSquare(Piece.PAWN, true, 12);
+        board.toggleSquare(Piece.KNIGHT, true, 26);
+        board.toggleSquare(Piece.BISHOP, true, 30);
+        board.toggleSquare(Piece.ROOK, true, 44);
         board.recalculatePieces();
 
         assertLegalSquares(startSquare, Set.of(20, 27, 29, 36));
@@ -70,13 +70,13 @@ public class RookMoveGeneratorTest {
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.toggleSquare(PieceType.ROOK, true, startSquare);
+        board.toggleSquare(Piece.ROOK, true, startSquare);
         Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.toggleSquare(PieceType.ROOK, true, startSquare);
+        board.toggleSquare(Piece.ROOK, true, startSquare);
     }
 
 }

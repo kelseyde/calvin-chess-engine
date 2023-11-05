@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.evaluation.score;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 
@@ -20,7 +20,7 @@ public class KingSafety {
         if (phase <= 0.5) {
             return 0;
         }
-        int kingSquare = BitboardUtils.getLSB(board.getKing(isWhite));
+        int kingSquare = Bitwise.getNextBit(board.getKing(isWhite));
         int kingFile = BoardUtils.getFile(kingSquare);
 
         long friendlyPawns = board.getPawns(isWhite);
@@ -48,10 +48,10 @@ public class KingSafety {
             // Add penalty for a castled king with pawns far away from their starting squares.
             long pawnShieldMask =  tripleFileMask & pawns;
             while (pawnShieldMask != 0) {
-                int pawn = BitboardUtils.getLSB(pawnShieldMask);
+                int pawn = Bitwise.getNextBit(pawnShieldMask);
                 int distance = Distance.chebyshev(kingSquare, pawn);
                 pawnShieldPenalty += PAWN_SHIELD_DISTANCE_PENALTY[distance];
-                pawnShieldMask = BitboardUtils.popLSB(pawnShieldMask);
+                pawnShieldMask = Bitwise.popBit(pawnShieldMask);
             }
         }
         return pawnShieldPenalty;

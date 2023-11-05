@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.check;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.BitboardUtils;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.movegeneration.attacks.Attacks;
 
 public class PinCalculator {
@@ -18,7 +18,7 @@ public class PinCalculator {
         pinMask = 0L;
         pinRayMasks = new long[64];
 
-        int kingSquare = BitboardUtils.getLSB(board.getKing(isWhite));
+        int kingSquare = Bitwise.getNextBit(board.getKing(isWhite));
         long friendlies = board.getPieces(isWhite);
         long opponents = board.getPieces(!isWhite);
 
@@ -44,21 +44,21 @@ public class PinCalculator {
     private void calculatePins(int kingSquare, long friendlies, long opponents, long possiblePinners) {
 
         while (possiblePinners != 0) {
-            int possiblePinner = BitboardUtils.getLSB(possiblePinners);
+            int possiblePinner = Bitwise.getNextBit(possiblePinners);
             long ray = rayCalculator.rayBetween(kingSquare, possiblePinner);
             long opponentsBetween = ray & opponents;
             if (opponentsBetween > 0) {
-                possiblePinners = BitboardUtils.popLSB(possiblePinners);
+                possiblePinners = Bitwise.popBit(possiblePinners);
                 continue;
             }
             long friendliesBetween = ray & friendlies;
-            boolean onlyPieceBetween = friendliesBetween > 0 && Long.bitCount(friendliesBetween) == 1;
+            boolean onlyPieceBetween = friendliesBetween > 0 && Bitwise.countBits(friendliesBetween) == 1;
             if (onlyPieceBetween) {
-                int friendlySquare = BitboardUtils.getLSB(friendliesBetween);
+                int friendlySquare = Bitwise.getNextBit(friendliesBetween);
                 pinMask |= friendliesBetween;
                 pinRayMasks[friendlySquare] = ray | 1L << possiblePinner;
             }
-            possiblePinners = BitboardUtils.popLSB(possiblePinners);
+            possiblePinners = Bitwise.popBit(possiblePinners);
         }
 
     }

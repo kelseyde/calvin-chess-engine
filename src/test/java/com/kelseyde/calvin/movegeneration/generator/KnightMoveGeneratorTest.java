@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -27,17 +27,17 @@ public class KnightMoveGeneratorTest {
     @Test
     public void canCaptureOpponentPieces() {
 
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 3);
-        board.toggleSquare(PieceType.KNIGHT, true, 43);
-        board.toggleSquare(PieceType.PAWN, false, 26);
-        board.toggleSquare(PieceType.PAWN, false, 28);
-        board.toggleSquare(PieceType.PAWN, false, 33);
-        board.toggleSquare(PieceType.KNIGHT, false, 37);
-        board.toggleSquare(PieceType.BISHOP, false, 49);
-        board.toggleSquare(PieceType.ROOK, false, 53);
-        board.toggleSquare(PieceType.QUEEN, false, 58);
-        board.toggleSquare(PieceType.QUEEN, false, 60);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 3);
+        board.toggleSquare(Piece.KNIGHT, true, 43);
+        board.toggleSquare(Piece.PAWN, false, 26);
+        board.toggleSquare(Piece.PAWN, false, 28);
+        board.toggleSquare(Piece.PAWN, false, 33);
+        board.toggleSquare(Piece.KNIGHT, false, 37);
+        board.toggleSquare(Piece.BISHOP, false, 49);
+        board.toggleSquare(Piece.ROOK, false, 53);
+        board.toggleSquare(Piece.QUEEN, false, 58);
+        board.toggleSquare(Piece.QUEEN, false, 60);
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
         Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
@@ -63,7 +63,7 @@ public class KnightMoveGeneratorTest {
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.toggleSquare(PieceType.KNIGHT, true, startSquare);
+        board.toggleSquare(Piece.KNIGHT, true, startSquare);
         Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(m -> m.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)

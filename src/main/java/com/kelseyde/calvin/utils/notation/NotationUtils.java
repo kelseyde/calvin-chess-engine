@@ -1,20 +1,23 @@
 package com.kelseyde.calvin.utils.notation;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.board.bitboard.Bits;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.*;
 
 public class NotationUtils {
 
-    private static final Map<PieceType, String> PIECE_CODE_INDEX = Map.of(
-            PieceType.PAWN, "p",
-            PieceType.KNIGHT, "n",
-            PieceType.BISHOP, "b",
-            PieceType.ROOK, "r",
-            PieceType.QUEEN, "q",
-            PieceType.KING, "k"
+    private static final Map<Piece, String> PIECE_CODE_INDEX = Map.of(
+            Piece.PAWN, "p",
+            Piece.KNIGHT, "n",
+            Piece.BISHOP, "b",
+            Piece.ROOK, "r",
+            Piece.QUEEN, "q",
+            Piece.KING, "k"
     );
 
     /**
@@ -39,7 +42,7 @@ public class NotationUtils {
         short flag = Move.NO_FLAG;
         if (notation.length() == 5) {
             String pieceCode = notation.substring(4, 5);
-            PieceType promotionPieceType = PIECE_CODE_INDEX.entrySet().stream()
+            Piece promotionPieceType = PIECE_CODE_INDEX.entrySet().stream()
                     .filter(entry -> entry.getValue().equalsIgnoreCase(pieceCode))
                     .findAny().orElseThrow().getKey();
             flag = Move.getPromotionFlag(promotionPieceType);
@@ -78,6 +81,85 @@ public class NotationUtils {
 
     public static String toNotation(int square) {
         return getFile(square) + getRank(square);
+    }
+
+    /**
+     * Convert move to Standard Algebraic Notation (SAN)
+     * Note: the move must not yet have been made on the board
+     */
+    public static String toStandardAlgebraicNotation(Move move, Board board) {
+        Piece pieceType = board.pieceAt(move.getStartSquare());
+        Piece capturedPieceType = board.pieceAt(move.getEndSquare());
+
+        if (move.isCastling()) {
+            int delta = move.getEndSquare() - move.getStartSquare();
+            return delta == 2 ? "O-O" : "O-O-O";
+        }
+
+        MoveGenerator moveGenerator = new MoveGenerator();
+        String notation = "";
+        if (pieceType != Piece.PAWN) {
+            notation += PIECE_CODE_INDEX.get(pieceType).toUpperCase();
+        }
+
+        // Check if any ambiguity exists in notation (e.g. if e2 can be reached via Nfe2 and Nbe2)
+        if (pieceType != Piece.PAWN && pieceType != Piece.KING) {
+            List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+
+            for (Move legalMove : legalMoves) {
+
+                if (legalMove.getStartSquare() != move.getStartSquare() && legalMove.getEndSquare() == move.getEndSquare()) {
+                    if (board.pieceAt(legalMove.getStartSquare()) == pieceType) {
+                        int fromFileIndex = BoardUtils.getFile(move.getStartSquare());
+                        int alternateFromFileIndex = BoardUtils.getFile(legalMove.getEndSquare());
+                        int fromRankIndex = BoardUtils.getRank(move.getStartSquare());
+                        int alternateFromRankIndex = BoardUtils.getRank(legalMove.getStartSquare());
+
+                        if (fromFileIndex != alternateFromFileIndex) {
+                            notation += getFile(fromFileIndex);
+                            break;
+                        }
+                        else if (fromRankIndex != alternateFromRankIndex)
+                        {
+                            notation += getRank(fromRankIndex);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (capturedPieceType != null) {
+            // add 'x' to indicate capture
+            if (pieceType == Piece.PAWN) {
+                notation += getFile(move.getStartSquare());
+            }
+            notation += "x";
+        }
+        else {
+            // Check if capturing en passant
+            if (move.isEnPassant()) {
+                notation += getFile(move.getStartSquare()) + "x";
+            }
+        }
+
+        notation += getFile(move.getEndSquare());
+        notation += getRank(move.getEndSquare());
+
+        // Add promotion piece type
+        if (move.isPromotion()) {
+            Piece promotionPieceType = move.getPromotionPieceType();
+            notation += "=" + PIECE_CODE_INDEX.get(promotionPieceType).toUpperCase();
+        }
+
+        board.makeMove(move);
+        if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
+            List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+            notation += legalMoves.isEmpty() ? "#" : "+";
+        }
+        board.unmakeMove();
+
+        return notation;
     }
 
     public static String getRank(int square) {

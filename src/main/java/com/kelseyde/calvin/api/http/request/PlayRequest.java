@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.api.http.request;
 
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,15 +16,15 @@ public class PlayRequest {
     private String promotion;
     private Integer thinkTimeMs;
 
-    public PieceType getPromotionPieceType() {
+    public Piece getPromotionPieceType() {
         if (promotion == null) {
             return null;
         }
         return switch (promotion) {
-            case "q" -> PieceType.QUEEN;
-            case "r" -> PieceType.ROOK;
-            case "b" -> PieceType.BISHOP;
-            case "n" -> PieceType.KNIGHT;
+            case "q" -> Piece.QUEEN;
+            case "r" -> Piece.ROOK;
+            case "b" -> Piece.BISHOP;
+            case "n" -> Piece.KNIGHT;
             default -> null;
         };
     }

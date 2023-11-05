@@ -1,5 +1,8 @@
 package com.kelseyde.calvin.movegeneration.attacks;
 
+import com.kelseyde.calvin.board.bitboard.Bits;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
+
 public class Attacks {
 
     public static final long[] WHITE_PAWN_ATTACKS = AttacksInitializer.generateWhitePawnAttacks();
@@ -108,6 +111,12 @@ public class Attacks {
 
     public static final long[][] ROOK_ATTACKS = AttacksInitializer.initMagicAttacks(true, ROOK_MAGICS, ROOK_SHIFTS);
     public static final long[][] BISHOP_ATTACKS = AttacksInitializer.initMagicAttacks(false, BISHOP_MAGICS, BISHOP_SHIFTS);
+
+    public static long pawnAttacks(long pawns, boolean isWhite) {
+        return isWhite ?
+                (Bitwise.shiftNorthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftNorthEast(pawns) &~ Bits.FILE_A) :
+                (Bitwise.shiftSouthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftSouthEast(pawns) &~ Bits.FILE_A);
+    }
 
     public static long kingAttacks(int square) {
         return KING_ATTACKS[square];

@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.bitboard.BitboardUtils;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -389,27 +389,27 @@ public class BoardTest {
         if (isWhiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
-                int position = BitboardUtils.getLSB(whitePieces);
+                int position = Bitwise.getNextBit(whitePieces);
                 positions.add(position);
-                whitePieces = BitboardUtils.popLSB(whitePieces);
+                whitePieces = Bitwise.popBit(whitePieces);
             }
         } else {
             long blackPieces = board.getBlackPieces();
             while (blackPieces != 0) {
-                int position = BitboardUtils.getLSB(blackPieces);
+                int position = Bitwise.getNextBit(blackPieces);
                 positions.add(position);
-                blackPieces = BitboardUtils.popLSB(blackPieces);
+                blackPieces = Bitwise.popBit(blackPieces);
             }
         }
         return positions;
     }
 
     private void assertSinglePieceBoard(Board board, int startSquare) {
-        board.toggleSquare(PieceType.ROOK, true, startSquare);
+        board.toggleSquare(Piece.ROOK, true, startSquare);
         board.recalculatePieces();
         Assertions.assertEquals(Set.of(startSquare), getPiecePositions(board, true));
         Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
-        board.toggleSquare(PieceType.ROOK, true, startSquare);
+        board.toggleSquare(Piece.ROOK, true, startSquare);
         board.recalculatePieces();
     }
 

@@ -2,7 +2,7 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.score.*;
 
 import java.util.ArrayDeque;
@@ -45,6 +45,9 @@ public class Evaluator implements Evaluation {
         int blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         int blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
 
+        int whiteMobilityScore = Mobility.score(board, true, phase);
+        int blackMobilityScore = Mobility.score(board, false, phase);
+
         int whitePawnStructureScore = PawnStructure.score(board.getPawns(true), board.getPawns(false), true);
         int blackPawnStructureScore = PawnStructure.score(board.getPawns(false), board.getPawns(true), false);
 
@@ -58,12 +61,14 @@ public class Evaluator implements Evaluation {
                 .whiteMaterial(whiteMaterial)
                 .whiteMaterialScore(whiteMaterialScore)
                 .whitePiecePlacementScore(whitePiecePlacementScore)
+                .whiteMobilityScore(whiteMobilityScore)
                 .whitePawnStructureScore(whitePawnStructureScore)
                 .whiteKingSafetyScore(whiteKingSafetyScore)
                 .whiteMopUpScore(whiteMopUpScore)
                 .blackMaterial(blackMaterial)
                 .blackMaterialScore(blackMaterialScore)
                 .blackPiecePlacementScore(blackPiecePlacementScore)
+                .blackMobilityScore(blackMobilityScore)
                 .blackPawnStructureScore(blackPawnStructureScore)
                 .blackKingSafetyScore(blackKingSafetyScore)
                 .blackMopUpScore(blackMopUpScore)
@@ -76,7 +81,7 @@ public class Evaluator implements Evaluation {
 
         evalHistory.push(score);
 
-        PieceType pieceType = board.pieceAt(move.getEndSquare());
+        Piece pieceType = board.pieceAt(move.getEndSquare());
 
         boolean updatePawnStructure = false;
         boolean updateMaterial = false;
@@ -91,7 +96,7 @@ public class Evaluator implements Evaluation {
             updateWhitePiecePlacement = true;
         }
 
-        PieceType capturedPiece = board.getGameState().getCapturedPiece();
+        Piece capturedPiece = board.getGameState().getCapturedPiece();
         if (capturedPiece != null) {
             updateMaterial = true;
             updateWhiteKingSafety = true;
@@ -101,7 +106,7 @@ public class Evaluator implements Evaluation {
             } else {
                 updateBlackPiecePlacement = true;
             }
-            if (capturedPiece == PieceType.PAWN) {
+            if (capturedPiece == Piece.PAWN) {
                 updatePawnStructure = true;
             }
         }
@@ -113,7 +118,7 @@ public class Evaluator implements Evaluation {
             updatePawnStructure = true;
         }
 
-        if (pieceType == PieceType.KING) {
+        if (pieceType == Piece.KING) {
             if (board.isWhiteToMove()) {
                 updateBlackKingSafety = true;
             } else {
@@ -121,7 +126,7 @@ public class Evaluator implements Evaluation {
             }
         }
 
-        if (pieceType == PieceType.PAWN) {
+        if (pieceType == Piece.PAWN) {
             // Any pawn move can create passed/backward/doubled pawns for either side.
             updatePawnStructure = true;
             updateWhiteKingSafety = true;
@@ -175,6 +180,9 @@ public class Evaluator implements Evaluation {
             blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
         }
 
+        int whiteMobilityScore = Mobility.score(board, true, phase);
+        int blackMobilityScore = Mobility.score(board, false, phase);
+
         int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
 
@@ -182,12 +190,14 @@ public class Evaluator implements Evaluation {
                 .whiteMaterial(whiteMaterial)
                 .whiteMaterialScore(whiteMaterialScore)
                 .whitePiecePlacementScore(whitePiecePlacementScore)
+                .whiteMobilityScore(whiteMobilityScore)
                 .whitePawnStructureScore(whitePawnStructureScore)
                 .whiteKingSafetyScore(whiteKingSafetyScore)
                 .whiteMopUpScore(whiteMopUpScore)
                 .blackMaterial(blackMaterial)
                 .blackMaterialScore(blackMaterialScore)
                 .blackPiecePlacementScore(blackPiecePlacementScore)
+                .blackMobilityScore(blackMobilityScore)
                 .blackPawnStructureScore(blackPawnStructureScore)
                 .blackKingSafetyScore(blackKingSafetyScore)
                 .blackMopUpScore(blackMopUpScore)

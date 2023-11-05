@@ -30,28 +30,28 @@ public class MoveTest {
     public void testPromotionPieceType() {
 
         Move move = new Move(45, 63, Move.PROMOTE_TO_QUEEN_FLAG);
-        Assertions.assertEquals(PieceType.QUEEN, move.getPromotionPieceType());
+        Assertions.assertEquals(Piece.QUEEN, move.getPromotionPieceType());
         Assertions.assertTrue(move.isPromotion());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());
         Assertions.assertFalse(move.isEnPassant());
 
         move = new Move(45, 63, Move.PROMOTE_TO_ROOK_FLAG);
-        Assertions.assertEquals(PieceType.ROOK, move.getPromotionPieceType());
+        Assertions.assertEquals(Piece.ROOK, move.getPromotionPieceType());
         Assertions.assertTrue(move.isPromotion());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());
         Assertions.assertFalse(move.isEnPassant());
 
         move = new Move(45, 63, Move.PROMOTE_TO_BISHOP_FLAG);
-        Assertions.assertEquals(PieceType.BISHOP, move.getPromotionPieceType());
+        Assertions.assertEquals(Piece.BISHOP, move.getPromotionPieceType());
         Assertions.assertTrue(move.isPromotion());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());
         Assertions.assertFalse(move.isEnPassant());
 
         move = new Move(45, 63, Move.PROMOTE_TO_KNIGHT_FLAG);
-        Assertions.assertEquals(PieceType.KNIGHT, move.getPromotionPieceType());
+        Assertions.assertEquals(Piece.KNIGHT, move.getPromotionPieceType());
         Assertions.assertTrue(move.isPromotion());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());

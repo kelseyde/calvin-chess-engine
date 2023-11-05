@@ -3,6 +3,7 @@ package com.kelseyde.calvin.movegeneration.result;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.Search;
 import org.springframework.stereotype.Service;
@@ -82,8 +83,8 @@ public class ResultCalculator {
         long whitePieces = board.getWhiteKnights() | board.getWhiteBishops();
         long blackPieces = board.getBlackKnights() |  board.getBlackBishops();
 
-        return (Long.bitCount(whitePieces) == 0 || Long.bitCount(whitePieces) == 1)
-                && (Long.bitCount(blackPieces) == 0 || Long.bitCount(blackPieces) == 1);
+        return (Bitwise.countBits(whitePieces) == 0 || Bitwise.countBits(whitePieces) == 1)
+                && (Bitwise.countBits(blackPieces) == 0 || Bitwise.countBits(blackPieces) == 1);
     }
 
     private boolean isFiftyMoveRule(Board board) {

@@ -142,6 +142,30 @@ public class EndgameTest {
 
     }
 
+    @Test
+    public void  testZugzwang5() {
+
+        String fen = "3R4/p5pk/K5np/2p4Q/2P5/8/8/8 w - - 0 1";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(3000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertEquals(NotationUtils.fromCombinedNotation("h5f5"), move);
+
+    }
+
+    @Test
+    public void  testZugzwang6() {
+
+        String fen = "2k5/2P5/4K3/8/8/8/8/8 w - - 0 1";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(500);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertEquals(NotationUtils.fromCombinedNotation("e6d6"), move);
+
+    }
+
     private void assertMove(Move expected, Move actual) {
         boolean matches = expected.matches(actual);
         if (!matches) {

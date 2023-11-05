@@ -60,12 +60,12 @@ public class Board {
 
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
-        PieceType pieceType = pieceAt(startSquare);
-        PieceType capturedPieceType = move.isEnPassant() ? PieceType.PAWN : pieceAt(endSquare);
+        Piece pieceType = pieceAt(startSquare);
+        Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : pieceAt(endSquare);
 
         int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
         int newEnPassantFile = -1;
-        boolean resetFiftyMoveCounter = capturedPieceType != null || PieceType.PAWN.equals(pieceType);
+        boolean resetFiftyMoveCounter = capturedPieceType != null || Piece.PAWN.equals(pieceType);
         newFiftyMoveCounter = resetFiftyMoveCounter ? 0 : ++newFiftyMoveCounter;
 
         if (move.isPawnDoubleMove()) {
@@ -73,7 +73,7 @@ public class Board {
             newEnPassantFile = BoardUtils.getFile(endSquare);
         }
         else if (move.isCastling()) {
-            toggleSquares(PieceType.KING, isWhiteToMove, startSquare, endSquare);
+            toggleSquares(Piece.KING, isWhiteToMove, startSquare, endSquare);
             boolean isKingside = BoardUtils.getFile(endSquare) == 6;
             int rookStartSquare;
             int rookEndSquare;
@@ -84,10 +84,10 @@ public class Board {
                 rookStartSquare = isWhiteToMove ? 0 : 56;
                 rookEndSquare = isWhiteToMove ? 3 : 59;
             }
-            toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
+            toggleSquares(Piece.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
         }
         else if (move.isPromotion()) {
-            toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
+            toggleSquare(Piece.PAWN, isWhiteToMove, startSquare);
             toggleSquare(move.getPromotionPieceType(), isWhiteToMove, endSquare);
             if (capturedPieceType != null) {
                 toggleSquare(capturedPieceType, !isWhiteToMove, endSquare);
@@ -96,7 +96,7 @@ public class Board {
         else if (move.isEnPassant()) {
             toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
             int pawnSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-            toggleSquare(PieceType.PAWN, !isWhiteToMove, pawnSquare);
+            toggleSquare(Piece.PAWN, !isWhiteToMove, pawnSquare);
         }
         else {
             toggleSquares(pieceType, isWhiteToMove, startSquare, endSquare);
@@ -106,7 +106,7 @@ public class Board {
         }
 
         int newCastlingRights = calculateCastlingRights(startSquare, endSquare, pieceType);
-        PieceType newPieceType = move.getPromotionPieceType() == null ? pieceType : move.getPromotionPieceType();
+        Piece newPieceType = move.getPromotionPieceType() == null ? pieceType : move.getPromotionPieceType();
 
         long newZobristKey =
                 ZobristKey.updateKey(gameState.getZobristKey(), isWhiteToMove, startSquare, endSquare, pieceType, newPieceType, capturedPieceType,
@@ -128,10 +128,10 @@ public class Board {
         Move lastMove = moveHistory.pop();
         int startSquare = lastMove.getStartSquare();
         int endSquare = lastMove.getEndSquare();
-        PieceType pieceType = pieceAt(endSquare);
+        Piece pieceType = pieceAt(endSquare);
 
         if (lastMove.isCastling()) {
-            toggleSquares(PieceType.KING, isWhiteToMove, endSquare, startSquare);
+            toggleSquares(Piece.KING, isWhiteToMove, endSquare, startSquare);
             boolean isKingside = BoardUtils.getFile(endSquare) == 6;
             int rookStartSquare;
             int rookEndSquare;
@@ -142,19 +142,19 @@ public class Board {
                 rookStartSquare = isWhiteToMove ? 3 : 59;
                 rookEndSquare = isWhiteToMove ? 0 : 56;
             }
-            toggleSquares(PieceType.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
+            toggleSquares(Piece.ROOK, isWhiteToMove, rookStartSquare, rookEndSquare);
         }
         else if (lastMove.isPromotion()) {
             toggleSquare(lastMove.getPromotionPieceType(), isWhiteToMove, endSquare);
-            toggleSquare(PieceType.PAWN, isWhiteToMove, startSquare);
+            toggleSquare(Piece.PAWN, isWhiteToMove, startSquare);
             if (gameState.getCapturedPiece() != null) {
                 toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
             }
         }
         else if (lastMove.isEnPassant()) {
-            toggleSquares(PieceType.PAWN, isWhiteToMove, endSquare, startSquare);
+            toggleSquares(Piece.PAWN, isWhiteToMove, endSquare, startSquare);
             int captureSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-            toggleSquare(PieceType.PAWN, !isWhiteToMove, captureSquare);
+            toggleSquare(Piece.PAWN, !isWhiteToMove, captureSquare);
         }
         else {
             toggleSquares(pieceType, isWhiteToMove, endSquare, startSquare);
@@ -181,17 +181,17 @@ public class Board {
         gameState = gameStateHistory.pop();
     }
 
-    public void toggleSquares(PieceType type, boolean isWhite, int startSquare, int endSquare) {
+    public void toggleSquares(Piece type, boolean isWhite, int startSquare, int endSquare) {
         long toggleMask = (1L << startSquare | 1L << endSquare);
         toggle(type, isWhite, toggleMask);
     }
 
-    public void toggleSquare(PieceType type, boolean isWhite, int square) {
+    public void toggleSquare(Piece type, boolean isWhite, int square) {
         long toggleMask = 1L << square;
         toggle(type, isWhite, toggleMask);
     }
 
-    private void toggle(PieceType type, boolean isWhite, long toggleMask) {
+    private void toggle(Piece type, boolean isWhite, long toggleMask) {
         switch (type) {
             case PAWN -> {
                 if (isWhite) whitePawns ^= toggleMask;
@@ -226,14 +226,14 @@ public class Board {
         occupied = whitePieces | blackPieces;
     }
 
-    private int calculateCastlingRights(int startSquare, int endSquare, PieceType pieceType) {
+    private int calculateCastlingRights(int startSquare, int endSquare, Piece pieceType) {
         int newCastlingRights = gameState.getCastlingRights();
         if (newCastlingRights == 0b0000) {
             // Both sides already lost castling rights, so nothing to calculate.
             return newCastlingRights;
         }
         // Any move by the king removes castling rights.
-        if (PieceType.KING.equals(pieceType)) {
+        if (Piece.KING.equals(pieceType)) {
             newCastlingRights &= isWhiteToMove ? GameState.CLEAR_WHITE_CASTLING_MASK : GameState.CLEAR_BLACK_CASTLING_MASK;
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.
@@ -254,14 +254,14 @@ public class Board {
         return newCastlingRights;
     }
 
-    public PieceType pieceAt(int square) {
+    public Piece pieceAt(int square) {
         long squareMask = 1L << square;
-        if ((squareMask & (whitePawns | blackPawns)) != 0)          return PieceType.PAWN;
-        else if ((squareMask & (whiteKnights | blackKnights)) != 0) return PieceType.KNIGHT;
-        else if ((squareMask & (whiteBishops | blackBishops)) != 0) return PieceType.BISHOP;
-        else if ((squareMask & (whiteRooks | blackRooks)) != 0)     return PieceType.ROOK;
-        else if ((squareMask & (whiteQueens | blackQueens)) != 0)   return PieceType.QUEEN;
-        else if ((squareMask & (whiteKing | blackKing)) != 0)       return PieceType.KING;
+        if ((squareMask & (whitePawns | blackPawns)) != 0)          return Piece.PAWN;
+        else if ((squareMask & (whiteKnights | blackKnights)) != 0) return Piece.KNIGHT;
+        else if ((squareMask & (whiteBishops | blackBishops)) != 0) return Piece.BISHOP;
+        else if ((squareMask & (whiteRooks | blackRooks)) != 0)     return Piece.ROOK;
+        else if ((squareMask & (whiteQueens | blackQueens)) != 0)   return Piece.QUEEN;
+        else if ((squareMask & (whiteKing | blackKing)) != 0)       return Piece.KING;
         else return null;
     }
 

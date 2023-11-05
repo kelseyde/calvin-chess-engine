@@ -11,23 +11,23 @@ public class Bits {
     public static final long ALL_SQUARES = ~0L;
 
     public static final long RANK_1 = 0b0000000000000000000000000000000000000000000000000000000011111111L;
-    public static final long RANK_2 = BitboardUtils.shiftNorth(RANK_1);
-    public static final long RANK_3 = BitboardUtils.shiftNorth(RANK_2);
-    public static final long RANK_4 = BitboardUtils.shiftNorth(RANK_3);
-    public static final long RANK_5 = BitboardUtils.shiftNorth(RANK_4);
-    public static final long RANK_6 = BitboardUtils.shiftNorth(RANK_5);
-    public static final long RANK_7 = BitboardUtils.shiftNorth(RANK_6);
-    public static final long RANK_8 = BitboardUtils.shiftNorth(RANK_7);
+    public static final long RANK_2 = Bitwise.shiftNorth(RANK_1);
+    public static final long RANK_3 = Bitwise.shiftNorth(RANK_2);
+    public static final long RANK_4 = Bitwise.shiftNorth(RANK_3);
+    public static final long RANK_5 = Bitwise.shiftNorth(RANK_4);
+    public static final long RANK_6 = Bitwise.shiftNorth(RANK_5);
+    public static final long RANK_7 = Bitwise.shiftNorth(RANK_6);
+    public static final long RANK_8 = Bitwise.shiftNorth(RANK_7);
     public static final long[] RANK_MASKS = {RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8};
 
     public static final long FILE_A = 0b0000000100000001000000010000000100000001000000010000000100000001L;
-    public static final long FILE_B = BitboardUtils.shiftEast(FILE_A);
-    public static final long FILE_C = BitboardUtils.shiftEast(FILE_B);
-    public static final long FILE_D = BitboardUtils.shiftEast(FILE_C);
-    public static final long FILE_E = BitboardUtils.shiftEast(FILE_D);
-    public static final long FILE_F = BitboardUtils.shiftEast(FILE_E);
-    public static final long FILE_G = BitboardUtils.shiftEast(FILE_F);
-    public static final long FILE_H = BitboardUtils.shiftEast(FILE_G);
+    public static final long FILE_B = Bitwise.shiftEast(FILE_A);
+    public static final long FILE_C = Bitwise.shiftEast(FILE_B);
+    public static final long FILE_D = Bitwise.shiftEast(FILE_C);
+    public static final long FILE_E = Bitwise.shiftEast(FILE_D);
+    public static final long FILE_F = Bitwise.shiftEast(FILE_E);
+    public static final long FILE_G = Bitwise.shiftEast(FILE_F);
+    public static final long FILE_H = Bitwise.shiftEast(FILE_G);
     public static final long[] FILE_MASKS = {FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H};
 
     public static final long DIAGONAL_1 =   0x1L;
@@ -153,8 +153,8 @@ public class Bits {
         for (int square = 0; square < 64; square++) {
             long squareBB = 1L << square;
             pawnProtectionMask[square] = isWhite ?
-                    BitboardUtils.shiftSouthEast(squareBB) | BitboardUtils.shiftSouthWest(squareBB) :
-                    BitboardUtils.shiftNorthEast(squareBB) | BitboardUtils.shiftNorthWest(squareBB);
+                    Bitwise.shiftSouthEast(squareBB) | Bitwise.shiftSouthWest(squareBB) :
+                    Bitwise.shiftNorthEast(squareBB) | Bitwise.shiftNorthWest(squareBB);
         }
         return pawnProtectionMask;
     }

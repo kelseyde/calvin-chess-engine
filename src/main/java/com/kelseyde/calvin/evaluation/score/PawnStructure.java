@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.evaluation.score;
 
-import com.kelseyde.calvin.board.bitboard.BitboardUtils;
 import com.kelseyde.calvin.board.bitboard.Bits;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 public class PawnStructure {
@@ -27,7 +27,7 @@ public class PawnStructure {
 
         long pawnsIterator = friendlyPawns;
         while (pawnsIterator > 0) {
-            int pawn = BitboardUtils.getLSB(pawnsIterator);
+            int pawn = Bitwise.getNextBit(pawnsIterator);
             int file = BoardUtils.getFile(pawn);
 
             if (isPassedPawn(pawn, opponentPawns, isWhite)) {
@@ -42,7 +42,7 @@ public class PawnStructure {
                 doubledPawnCount++;
             }
 
-            pawnsIterator = BitboardUtils.popLSB(pawnsIterator);
+            pawnsIterator = Bitwise.popBit(pawnsIterator);
         }
         int isolatedPawnPenalty = ISOLATED_PAWN_PENALTY[isolatedPawnCount];
         int doubledPawnPenalty =  DOUBLED_PAWN_PENALTY[doubledPawnCount];
@@ -61,7 +61,7 @@ public class PawnStructure {
 
     private static boolean isDoubledPawn(int file, long friendlyPawns) {
         long fileMask = Bits.FILE_MASKS[file];
-        return Long.bitCount(friendlyPawns & fileMask) > 1;
+        return Bitwise.countBits(friendlyPawns & fileMask) > 1;
     }
 
     private static int calculatePassedPawnBonus(int pawn, boolean isWhite) {
@@ -72,7 +72,7 @@ public class PawnStructure {
 
     private static int calculateProtectedPawnBonus(int pawn, long friendlyPawns, boolean isWhite) {
         long protectionMask = isWhite ? Bits.WHITE_PROTECTED_PAWN_MASK[pawn] : Bits.BLACK_PROTECTED_PAWN_MASK[pawn];
-        return Long.bitCount(protectionMask & friendlyPawns) * PROTECTED_PASSED_PAWN_BONUS;
+        return Bitwise.countBits(protectionMask & friendlyPawns) * PROTECTED_PASSED_PAWN_BONUS;
     }
 
 }

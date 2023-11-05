@@ -3,7 +3,8 @@ package com.kelseyde.calvin.board;
 import lombok.Getter;
 
 @Getter
-public enum PieceType {
+public enum Piece {
+
     PAWN(0),
     KNIGHT(1),
     BISHOP(2),
@@ -12,7 +13,8 @@ public enum PieceType {
     KING(5);
 
     final int index;
-    PieceType(int index) {
+
+    Piece(int index) {
         this.index = index;
     }
 

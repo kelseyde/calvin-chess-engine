@@ -38,7 +38,7 @@ public class ZobristKey {
         Random random = new Random();
 
         for (int square = 0; square < 64; square++) {
-            for (int pieceIndex : Arrays.stream(PieceType.values()).map(PieceType::getIndex).toList()) {
+            for (int pieceIndex : Arrays.stream(Piece.values()).map(Piece::getIndex).toList()) {
                 PIECE_SQUARE_HASH[square][WHITE][pieceIndex] = random.nextLong();
                 PIECE_SQUARE_HASH[square][BLACK][pieceIndex] = random.nextLong();
             }
@@ -62,40 +62,40 @@ public class ZobristKey {
 
         for (int square = 0; square < 64; square++) {
             if (((board.getWhitePawns() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.PAWN.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.PAWN.getIndex()];
             }
             else if (((board.getBlackPawns() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.PAWN.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.PAWN.getIndex()];
             }
             else if (((board.getWhiteKnights() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.KNIGHT.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.KNIGHT.getIndex()];
             }
             else if (((board.getBlackKnights() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.KNIGHT.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.KNIGHT.getIndex()];
             }
             else if (((board.getWhiteBishops() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.BISHOP.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.BISHOP.getIndex()];
             }
             else if (((board.getBlackBishops() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.BISHOP.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.BISHOP.getIndex()];
             }
             else if (((board.getWhiteRooks() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.ROOK.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.ROOK.getIndex()];
             }
             else if (((board.getBlackRooks() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.ROOK.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.ROOK.getIndex()];
             }
             else if (((board.getWhiteQueens() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.QUEEN.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.QUEEN.getIndex()];
             }
             else if (((board.getBlackQueens() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.QUEEN.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.QUEEN.getIndex()];
             }
             else if (((board.getWhiteKing() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][WHITE][PieceType.KING.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.KING.getIndex()];
             }
             else if (((board.getBlackKing() >>> square) & 1) == 1) {
-                key ^= PIECE_SQUARE_HASH[square][BLACK][PieceType.KING.getIndex()];
+                key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.KING.getIndex()];
             }
         }
 
@@ -111,8 +111,8 @@ public class ZobristKey {
         return key;
     }
 
-    public static long updateKey(long key, boolean isWhite, int startSquare, int endSquare, PieceType oldType, PieceType newType,
-                          PieceType capturedType, int oldCastlingRights, int newCastlingRights, int oldEnPassantFile, int newEnPassantFile) {
+    public static long updateKey(long key, boolean isWhite, int startSquare, int endSquare, Piece oldType, Piece newType,
+                                 Piece capturedType, int oldCastlingRights, int newCastlingRights, int oldEnPassantFile, int newEnPassantFile) {
 
         key ^= PIECE_SQUARE_HASH[startSquare][isWhite ? 0 : 1][oldType.getIndex()];
         if (capturedType != null) {

@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.evaluation.score;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.PieceType;
-import com.kelseyde.calvin.board.bitboard.BitboardUtils;
+import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
 
 public record PiecePlacement(long pawns,
                              long knights,
@@ -22,22 +22,22 @@ public record PiecePlacement(long pawns,
     }
 
     public int sum(int[][] pieceSquareTables, boolean isWhite) {
-        return scorePieces(pawns, PieceType.PAWN, isWhite, pieceSquareTables) +
-                scorePieces(knights, PieceType.KNIGHT, isWhite, pieceSquareTables) +
-                scorePieces(bishops, PieceType.BISHOP, isWhite, pieceSquareTables) +
-                scorePieces(rooks, PieceType.ROOK, isWhite, pieceSquareTables) +
-                scorePieces(queens, PieceType.QUEEN, isWhite, pieceSquareTables) +
-                scorePieces(king, PieceType.KING, isWhite, pieceSquareTables);
+        return scorePieces(pawns, Piece.PAWN, isWhite, pieceSquareTables) +
+                scorePieces(knights, Piece.KNIGHT, isWhite, pieceSquareTables) +
+                scorePieces(bishops, Piece.BISHOP, isWhite, pieceSquareTables) +
+                scorePieces(rooks, Piece.ROOK, isWhite, pieceSquareTables) +
+                scorePieces(queens, Piece.QUEEN, isWhite, pieceSquareTables) +
+                scorePieces(king, Piece.KING, isWhite, pieceSquareTables);
     }
 
-    private int scorePieces(long pieces, PieceType pieceType, boolean isWhite, int[][] pieceSquareTables) {
+    private int scorePieces(long pieces, Piece pieceType, boolean isWhite, int[][] pieceSquareTables) {
         int pieceTypeScore = 0;
         while (pieces != 0) {
-            int square = BitboardUtils.getLSB(pieces);
+            int square = Bitwise.getNextBit(pieces);
             int pieceIndex = pieceType.getIndex();
             int squareIndex = isWhite ? square ^ 56 : square;
             pieceTypeScore += pieceSquareTables[pieceIndex][squareIndex];
-            pieces = BitboardUtils.popLSB(pieces);
+            pieces = Bitwise.popBit(pieces);
         }
         return pieceTypeScore;
     }

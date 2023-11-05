@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -32,36 +32,36 @@ public class MoveOrdererTest {
 
         int[][] table = MoveOrderer.MVV_LVA_TABLE;
 
-        Assertions.assertEquals(10, table[PieceType.PAWN.getIndex()][PieceType.KING.getIndex()]);
-        Assertions.assertEquals(11, table[PieceType.PAWN.getIndex()][PieceType.QUEEN.getIndex()]);
-        Assertions.assertEquals(12, table[PieceType.PAWN.getIndex()][PieceType.ROOK.getIndex()]);
-        Assertions.assertEquals(13, table[PieceType.PAWN.getIndex()][PieceType.BISHOP.getIndex()]);
-        Assertions.assertEquals(14, table[PieceType.PAWN.getIndex()][PieceType.KNIGHT.getIndex()]);
-        Assertions.assertEquals(15, table[PieceType.PAWN.getIndex()][PieceType.PAWN.getIndex()]);
-        Assertions.assertEquals(20, table[PieceType.KNIGHT.getIndex()][PieceType.KING.getIndex()]);
-        Assertions.assertEquals(21, table[PieceType.KNIGHT.getIndex()][PieceType.QUEEN.getIndex()]);
-        Assertions.assertEquals(22, table[PieceType.KNIGHT.getIndex()][PieceType.ROOK.getIndex()]);
-        Assertions.assertEquals(23, table[PieceType.KNIGHT.getIndex()][PieceType.BISHOP.getIndex()]);
-        Assertions.assertEquals(24, table[PieceType.KNIGHT.getIndex()][PieceType.KNIGHT.getIndex()]);
-        Assertions.assertEquals(25, table[PieceType.KNIGHT.getIndex()][PieceType.PAWN.getIndex()]);
-        Assertions.assertEquals(30, table[PieceType.BISHOP.getIndex()][PieceType.KING.getIndex()]);
-        Assertions.assertEquals(31, table[PieceType.BISHOP.getIndex()][PieceType.QUEEN.getIndex()]);
-        Assertions.assertEquals(32, table[PieceType.BISHOP.getIndex()][PieceType.ROOK.getIndex()]);
-        Assertions.assertEquals(33, table[PieceType.BISHOP.getIndex()][PieceType.BISHOP.getIndex()]);
-        Assertions.assertEquals(34, table[PieceType.BISHOP.getIndex()][PieceType.KNIGHT.getIndex()]);
-        Assertions.assertEquals(35, table[PieceType.BISHOP.getIndex()][PieceType.PAWN.getIndex()]);
-        Assertions.assertEquals(40, table[PieceType.ROOK.getIndex()][PieceType.KING.getIndex()]);
-        Assertions.assertEquals(41, table[PieceType.ROOK.getIndex()][PieceType.QUEEN.getIndex()]);
-        Assertions.assertEquals(42, table[PieceType.ROOK.getIndex()][PieceType.ROOK.getIndex()]);
-        Assertions.assertEquals(43, table[PieceType.ROOK.getIndex()][PieceType.BISHOP.getIndex()]);
-        Assertions.assertEquals(44, table[PieceType.ROOK.getIndex()][PieceType.KNIGHT.getIndex()]);
-        Assertions.assertEquals(45, table[PieceType.ROOK.getIndex()][PieceType.PAWN.getIndex()]);
-        Assertions.assertEquals(50, table[PieceType.QUEEN.getIndex()][PieceType.KING.getIndex()]);
-        Assertions.assertEquals(51, table[PieceType.QUEEN.getIndex()][PieceType.QUEEN.getIndex()]);
-        Assertions.assertEquals(52, table[PieceType.QUEEN.getIndex()][PieceType.ROOK.getIndex()]);
-        Assertions.assertEquals(53, table[PieceType.QUEEN.getIndex()][PieceType.BISHOP.getIndex()]);
-        Assertions.assertEquals(54, table[PieceType.QUEEN.getIndex()][PieceType.KNIGHT.getIndex()]);
-        Assertions.assertEquals(55, table[PieceType.QUEEN.getIndex()][PieceType.PAWN.getIndex()]);
+        Assertions.assertEquals(10, table[Piece.PAWN.getIndex()][Piece.KING.getIndex()]);
+        Assertions.assertEquals(11, table[Piece.PAWN.getIndex()][Piece.QUEEN.getIndex()]);
+        Assertions.assertEquals(12, table[Piece.PAWN.getIndex()][Piece.ROOK.getIndex()]);
+        Assertions.assertEquals(13, table[Piece.PAWN.getIndex()][Piece.BISHOP.getIndex()]);
+        Assertions.assertEquals(14, table[Piece.PAWN.getIndex()][Piece.KNIGHT.getIndex()]);
+        Assertions.assertEquals(15, table[Piece.PAWN.getIndex()][Piece.PAWN.getIndex()]);
+        Assertions.assertEquals(20, table[Piece.KNIGHT.getIndex()][Piece.KING.getIndex()]);
+        Assertions.assertEquals(21, table[Piece.KNIGHT.getIndex()][Piece.QUEEN.getIndex()]);
+        Assertions.assertEquals(22, table[Piece.KNIGHT.getIndex()][Piece.ROOK.getIndex()]);
+        Assertions.assertEquals(23, table[Piece.KNIGHT.getIndex()][Piece.BISHOP.getIndex()]);
+        Assertions.assertEquals(24, table[Piece.KNIGHT.getIndex()][Piece.KNIGHT.getIndex()]);
+        Assertions.assertEquals(25, table[Piece.KNIGHT.getIndex()][Piece.PAWN.getIndex()]);
+        Assertions.assertEquals(30, table[Piece.BISHOP.getIndex()][Piece.KING.getIndex()]);
+        Assertions.assertEquals(31, table[Piece.BISHOP.getIndex()][Piece.QUEEN.getIndex()]);
+        Assertions.assertEquals(32, table[Piece.BISHOP.getIndex()][Piece.ROOK.getIndex()]);
+        Assertions.assertEquals(33, table[Piece.BISHOP.getIndex()][Piece.BISHOP.getIndex()]);
+        Assertions.assertEquals(34, table[Piece.BISHOP.getIndex()][Piece.KNIGHT.getIndex()]);
+        Assertions.assertEquals(35, table[Piece.BISHOP.getIndex()][Piece.PAWN.getIndex()]);
+        Assertions.assertEquals(40, table[Piece.ROOK.getIndex()][Piece.KING.getIndex()]);
+        Assertions.assertEquals(41, table[Piece.ROOK.getIndex()][Piece.QUEEN.getIndex()]);
+        Assertions.assertEquals(42, table[Piece.ROOK.getIndex()][Piece.ROOK.getIndex()]);
+        Assertions.assertEquals(43, table[Piece.ROOK.getIndex()][Piece.BISHOP.getIndex()]);
+        Assertions.assertEquals(44, table[Piece.ROOK.getIndex()][Piece.KNIGHT.getIndex()]);
+        Assertions.assertEquals(45, table[Piece.ROOK.getIndex()][Piece.PAWN.getIndex()]);
+        Assertions.assertEquals(50, table[Piece.QUEEN.getIndex()][Piece.KING.getIndex()]);
+        Assertions.assertEquals(51, table[Piece.QUEEN.getIndex()][Piece.QUEEN.getIndex()]);
+        Assertions.assertEquals(52, table[Piece.QUEEN.getIndex()][Piece.ROOK.getIndex()]);
+        Assertions.assertEquals(53, table[Piece.QUEEN.getIndex()][Piece.BISHOP.getIndex()]);
+        Assertions.assertEquals(54, table[Piece.QUEEN.getIndex()][Piece.KNIGHT.getIndex()]);
+        Assertions.assertEquals(55, table[Piece.QUEEN.getIndex()][Piece.PAWN.getIndex()]);
 
     }
 

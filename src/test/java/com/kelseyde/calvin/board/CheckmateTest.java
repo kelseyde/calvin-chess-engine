@@ -184,9 +184,9 @@ public class CheckmateTest {
     public void testSimpleQueenCheckmate() {
 
         Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, false, 48);
-        board.toggleSquare(PieceType.KING, true, 42);
-        board.toggleSquare(PieceType.QUEEN, true, 1);
+        board.toggleSquare(Piece.KING, false, 48);
+        board.toggleSquare(Piece.KING, true, 42);
+        board.toggleSquare(Piece.QUEEN, true, 1);
         
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         GameResult result = evaluator.calculateResult(board);

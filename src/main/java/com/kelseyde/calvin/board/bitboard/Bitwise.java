@@ -2,8 +2,32 @@ package com.kelseyde.calvin.board.bitboard;
 
 import com.kelseyde.calvin.utils.BoardUtils;
 
-public class BitboardUtils {
+/**
+ * Contains utility methods for performing bitwise operations on bitboards.
+ */
+public class Bitwise {
 
+    /**
+     * Get the index of the least-significant bit in the bitboard. Used for iterating through all the set bits.
+     */
+    public static int getNextBit(long board) {
+        return Long.numberOfTrailingZeros(board);
+    }
+
+    /**
+     * Returns the bitboard with the least-significant bit removed. Used for iterating through all the set bits.
+     */
+    public static long popBit(long board) {
+        return board & (board - 1);
+    }
+
+    /**
+     * Count the number of set bits in the bitboard.
+     */
+    public static int countBits(long board) {
+        return Long.bitCount(board);
+    }
+    
     public static long shiftNorth(long board) {
         return board << 8;
     }
@@ -50,58 +74,44 @@ public class BitboardUtils {
 
     public static long pawnPushPromotions(long pawns, long occupied, boolean isWhite) {
         return isWhite ?
-                BitboardUtils.shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
-                BitboardUtils.shiftSouth(pawns) &~ occupied & Bits.RANK_1;
+                Bitwise.shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
+                Bitwise.shiftSouth(pawns) &~ occupied & Bits.RANK_1;
     }
 
     public static long pawnLeftCaptures(long pawns, long opponents, boolean isWhite) {
         return isWhite ?
-                BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_8 :
-                BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_1;
+                Bitwise.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_8 :
+                Bitwise.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_1;
     }
 
     public static long pawnRightCaptures(long pawns, long opponents, boolean isWhite) {
         return isWhite ?
-                BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8:
-                BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
+                Bitwise.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8:
+                Bitwise.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
     }
 
     public static long pawnLeftEnPassants(long pawns, long enPassantFile, boolean isWhite) {
         return isWhite ?
-                BitboardUtils.shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 &~ Bits.FILE_H :
-                BitboardUtils.shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 &~ Bits.FILE_H;
+                Bitwise.shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 &~ Bits.FILE_H :
+                Bitwise.shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 &~ Bits.FILE_H;
     }
 
     public static long pawnRightEnPassants(long pawns, long enPassantFile, boolean isWhite) {
         return isWhite ?
-                BitboardUtils.shiftNorthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_6 :
-                BitboardUtils.shiftSouthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_3;
+                Bitwise.shiftNorthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_6 :
+                Bitwise.shiftSouthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_3;
     }
 
     public static long pawnLeftCapturePromotions(long pawns, long opponents, boolean isWhite) {
         return isWhite ?
-                BitboardUtils.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_8 :
-                BitboardUtils.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_1;
+                Bitwise.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_8 :
+                Bitwise.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_1;
     }
 
     public static long pawnRightCapturePromotions(long pawns, long opponents, boolean isWhite) {
         return isWhite ?
-                BitboardUtils.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_8 :
-                BitboardUtils.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
-    }
-
-    /**
-     * Get the index of the least-significant bit in the bitboard
-     */
-    public static int getLSB(long board) {
-        return Long.numberOfTrailingZeros(board);
-    }
-
-    /**
-     * Get a bitboard with the least-significant bit removed from the given bitboard.
-     */
-    public static long popLSB(long board) {
-        return board & (board - 1);
+                Bitwise.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_8 :
+                Bitwise.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
     }
 
     public static void print(long board) {

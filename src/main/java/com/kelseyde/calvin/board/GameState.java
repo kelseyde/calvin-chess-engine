@@ -23,7 +23,7 @@ public class GameState {
     public static final int CLEAR_BLACK_QUEENSIDE_MASK = 0b0111;
 
     long zobristKey = 0L;
-    PieceType capturedPiece;
+    Piece capturedPiece;
     int enPassantFile = -1;
     int castlingRights = INITIAL_CASTLING_RIGHTS;
     int fiftyMoveCounter = 0;

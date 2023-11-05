@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
@@ -28,12 +28,12 @@ public class BishopMoveGeneratorTest {
 
         int startSquare = 28; //e4
 
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
-        board.toggleSquare(PieceType.PAWN, false, 10);
-        board.toggleSquare(PieceType.KNIGHT, false, 14);
-        board.toggleSquare(PieceType.BISHOP, false, 42);
-        board.toggleSquare(PieceType.ROOK, false, 46);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
+        board.toggleSquare(Piece.PAWN, false, 10);
+        board.toggleSquare(Piece.KNIGHT, false, 14);
+        board.toggleSquare(Piece.BISHOP, false, 42);
+        board.toggleSquare(Piece.ROOK, false, 46);
         board.recalculatePieces();
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
@@ -43,15 +43,15 @@ public class BishopMoveGeneratorTest {
     @Test
     public void reachingSameColourPiecesEndsVector() {
 
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
 
         int startSquare = 28; //e4
 
-        board.toggleSquare(PieceType.PAWN, true, 10);
-        board.toggleSquare(PieceType.KNIGHT, true, 14);
-        board.toggleSquare(PieceType.BISHOP, true, 42);
-        board.toggleSquare(PieceType.ROOK, true, 46);
+        board.toggleSquare(Piece.PAWN, true, 10);
+        board.toggleSquare(Piece.KNIGHT, true, 14);
+        board.toggleSquare(Piece.BISHOP, true, 42);
+        board.toggleSquare(Piece.ROOK, true, 46);
         board.recalculatePieces();
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37));
@@ -59,14 +59,14 @@ public class BishopMoveGeneratorTest {
     }
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.toggleSquare(PieceType.BISHOP, true, startSquare);
+        board.toggleSquare(Piece.BISHOP, true, startSquare);
         Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.BISHOP)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.BISHOP)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board.toggleSquare(PieceType.BISHOP, true, startSquare);
+        board.toggleSquare(Piece.BISHOP, true, startSquare);
     }
 
 }

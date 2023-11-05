@@ -141,23 +141,23 @@ public class Searcher implements Search {
      * @param beta         The upper bound for child nodes at the current search depth.
      * @param allowNull    Whether to allow null-move pruning in this search iteration.
      */
-     public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNull) {
+    public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNull) {
 
-         if (isTimeoutExceeded()) {
-             return 0;
-         }
-         if (plyFromRoot > 0) {
-             if (resultCalculator.isEffectiveDraw(board)) {
-                 return DRAW_SCORE;
-             }
-             // Mate distance pruning: exit early if we have already found a forced mate at an earlier ply
-             alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
-             beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
-             if (alpha >= beta) {
-                 return alpha;
-             }
-         }
-         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
+        if (isTimeoutExceeded()) {
+            return 0;
+        }
+        if (plyFromRoot > 0) {
+            if (resultCalculator.isEffectiveDraw(board)) {
+                return DRAW_SCORE;
+            }
+            // Mate distance pruning: exit early if we have already found a forced mate at an earlier ply
+            alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
+            beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
+            if (alpha >= beta) {
+                return alpha;
+            }
+        }
+        Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
         TranspositionNode transposition = transpositionTable.get();
@@ -173,25 +173,17 @@ public class Searcher implements Search {
 
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
-        // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
-        if (plyRemaining <= 0) {
-            // In the case that max depth is reached, begin the quiescence search
-            return quiescenceSearch(alpha, beta, 1);
-        }
         if (legalMoves.isEmpty()) {
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-            if (isCheck) {
-                // Found checkmate
-                return -CHECKMATE_SCORE + plyFromRoot;
-            } else {
-                // Found stalemate
-                return DRAW_SCORE;
-            }
+            // Found checkmate / stalemate
+            return isCheck ? -CHECKMATE_SCORE + plyFromRoot : DRAW_SCORE;
+        }
+        if (plyRemaining <= 0) {
+            // In the case that max depth is reached, begin quiescence search
+            return quiescenceSearch(alpha, beta, 1);
         }
 
-        // Null-move pruning: if we suspect that the current position will fail-high, play a 'null move' and allow our
-        // opponent to play two moves in a row. Search the subsequent subtree to a shallower depth than a standard search.
-        // If the result is still a fail-high, we can confidently save time and effort by pruning this node.
+        // Null-move pruning: give the opponent an extra move to try produce a cut-off
         if (allowNull && plyRemaining >= 2) {
             // Only attempt null-move pruning when the static eval is greater than beta (fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta;

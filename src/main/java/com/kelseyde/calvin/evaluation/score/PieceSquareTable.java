@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.evaluation.score;
 
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 
 public class PieceSquareTable {
 
@@ -154,7 +154,7 @@ public class PieceSquareTable {
             KING_ENDGAME_TABLE
     };
 
-    public static int getScore(int square, PieceType pieceType, boolean isWhite, float gamePhase) {
+    public static int getScore(int square, Piece pieceType, boolean isWhite, float gamePhase) {
         int pieceIndex = pieceType.getIndex();
         int squareIndex = isWhite ? square ^ 56 : square;
         int middlegameScore = MIDDLEGAME_TABLES[pieceIndex][squareIndex];

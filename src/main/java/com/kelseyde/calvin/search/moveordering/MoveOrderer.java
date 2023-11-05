@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -66,8 +66,8 @@ public class MoveOrderer implements MoveOrdering {
         }
 
         // Sort captures according to MVV-LVA (most valuable victim, least valuable attacker)
-        PieceType pieceType = board.pieceAt(move.getStartSquare());
-        PieceType capturedPieceType = board.pieceAt(move.getEndSquare());
+        Piece pieceType = board.pieceAt(move.getStartSquare());
+        Piece capturedPieceType = board.pieceAt(move.getEndSquare());
         boolean isCapture = capturedPieceType != null;
         if (isCapture) {
             // Captures are sorted using MVV-LVA
@@ -91,7 +91,7 @@ public class MoveOrderer implements MoveOrdering {
         }
 
         if (move.isPromotion()) {
-            int promotionBias = move.getPromotionPieceType().equals(PieceType.QUEEN) ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
+            int promotionBias = move.getPromotionPieceType().equals(Piece.QUEEN) ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
             moveScore += promotionBias;
             // After queen, order knight promotion second, then bishop, then rook
             moveScore -= PieceValues.valueOf(move.getPromotionPieceType());

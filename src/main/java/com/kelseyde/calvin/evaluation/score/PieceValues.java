@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.evaluation.score;
 
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 
 /**
  * The relative material value of each piece type, measured in centipawns (hundredths of a pawn). Using the widely popular
@@ -16,7 +16,7 @@ public class PieceValues {
 
     public static final int BISHOP_PAIR_BONUS = 50;
 
-    public static int valueOf(PieceType pieceType) {
+    public static int valueOf(Piece pieceType) {
         return SIMPLE_VALUES[pieceType.getIndex()];
     }
 

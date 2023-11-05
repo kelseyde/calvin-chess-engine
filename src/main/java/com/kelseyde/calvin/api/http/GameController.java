@@ -12,6 +12,7 @@ import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.PGN;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,6 +40,9 @@ public class GameController {
 
     @RequestMapping(value = "/new/white", method = RequestMethod.GET)
     public ResponseEntity<NewGameResponse> getNewWhiteGame() {
+        if (bot.getBoard() != null) {
+            log.info(PGN.toPGN(bot.getBoard()));
+        }
         log.info("GET /game/new/white");
         bot.gameOver();
         bot.newGame();
@@ -53,6 +57,9 @@ public class GameController {
 
     @RequestMapping(value = "/new/black", method = RequestMethod.GET)
     public ResponseEntity<NewGameResponse> getNewBlackGame() {
+        if (bot.getBoard() != null) {
+            log.info(PGN.toPGN(bot.getBoard()));
+        }
         log.info("GET /game/new/black");
         bot.gameOver();
         bot.newGame();

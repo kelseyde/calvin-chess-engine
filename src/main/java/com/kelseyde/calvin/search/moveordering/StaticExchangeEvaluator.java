@@ -2,8 +2,8 @@ package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
-import com.kelseyde.calvin.board.bitboard.BitboardUtils;
+import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 
@@ -28,7 +28,7 @@ public class StaticExchangeEvaluator {
 
         int score = 0;
         int square = move.getEndSquare();
-        PieceType capturedPieceType = move.isEnPassant() ? PieceType.PAWN : board.pieceAt(square);
+        Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
         if (capturedPieceType == null) {
             throw new NoSuchElementException("No piece to capture on square " + square);
         }
@@ -55,7 +55,7 @@ public class StaticExchangeEvaluator {
         if (pawns > 0) {
             long pawnAttackMask = moveGenerator.getPawnAttacks(board, square, !isWhite);
             if ((pawnAttackMask & pawns) != 0) {
-                int pawnStartSquare = BitboardUtils.getLSB(pawnAttackMask & pawns);
+                int pawnStartSquare = Bitwise.getNextBit(pawnAttackMask & pawns);
                 return new Move(pawnStartSquare, square);
             }
         }
@@ -64,7 +64,7 @@ public class StaticExchangeEvaluator {
         if (knights > 0) {
             long knightAttackMask = moveGenerator.getKnightAttacks(board, square, !isWhite);
             if ((knightAttackMask & knights) != 0) {
-                int knightStartSquare = BitboardUtils.getLSB(knightAttackMask & knights);
+                int knightStartSquare = Bitwise.getNextBit(knightAttackMask & knights);
                 return new Move(knightStartSquare, square);
             }
         }
@@ -73,7 +73,7 @@ public class StaticExchangeEvaluator {
         if (bishops > 0) {
             long bishopAttackMask = moveGenerator.getBishopAttacks(board, square, !isWhite);
             if ((bishopAttackMask & bishops) != 0) {
-                int bishopStartSquare = BitboardUtils.getLSB(bishopAttackMask & bishops);
+                int bishopStartSquare = Bitwise.getNextBit(bishopAttackMask & bishops);
                 return new Move(bishopStartSquare, square);
             }
         }
@@ -82,7 +82,7 @@ public class StaticExchangeEvaluator {
         if (rooks > 0) {
             long rookAttackMask = moveGenerator.getRookAttacks(board, square, !isWhite);
             if ((rookAttackMask & rooks) != 0) {
-                int rookStartSquare = BitboardUtils.getLSB(rookAttackMask & rooks);
+                int rookStartSquare = Bitwise.getNextBit(rookAttackMask & rooks);
                 return new Move(rookStartSquare, square);
             }
         }
@@ -91,7 +91,7 @@ public class StaticExchangeEvaluator {
         if (queens > 0) {
             long queenAttackMask = moveGenerator.getQueenAttacks(board, square, !isWhite);
             if ((queenAttackMask & queens) != 0) {
-                int queenStartSquare = BitboardUtils.getLSB(queenAttackMask & queens);
+                int queenStartSquare = Bitwise.getNextBit(queenAttackMask & queens);
                 return new Move(queenStartSquare, square);
             }
         }
@@ -99,7 +99,7 @@ public class StaticExchangeEvaluator {
         long king = board.getKing(isWhite);
         long kingAttackMask = moveGenerator.getKingAttacks(board, square, !isWhite);
         if ((kingAttackMask & king) != 0) {
-            int kingStartSquare = BitboardUtils.getLSB(kingAttackMask & king);
+            int kingStartSquare = Bitwise.getNextBit(kingAttackMask & king);
             return new Move(kingStartSquare, square);
         }
         return null;

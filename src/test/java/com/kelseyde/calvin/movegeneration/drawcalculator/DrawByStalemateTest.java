@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegeneration.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -17,9 +17,9 @@ public class DrawByStalemateTest {
     public void testSimpleQueenStalemate() {
 
         Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, false, 56);
-        board.toggleSquare(PieceType.KING, true, 42);
-        board.toggleSquare(PieceType.QUEEN, true, 1);
+        board.toggleSquare(Piece.KING, false, 56);
+        board.toggleSquare(Piece.KING, true, 42);
+        board.toggleSquare(Piece.QUEEN, true, 1);
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b6"));

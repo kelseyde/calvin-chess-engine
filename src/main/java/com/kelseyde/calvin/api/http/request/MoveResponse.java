@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.api.http.request;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +21,7 @@ public class MoveResponse {
                 .build();
     }
 
-    public static String getPromotion(PieceType pieceType) {
+    public static String getPromotion(Piece pieceType) {
         if (pieceType == null) {
             return null;
         }

@@ -50,17 +50,17 @@ public class Move {
         return (value & END_SQUARE_MASK) >>> 6;
     }
 
-    public PieceType getPromotionPieceType() {
+    public Piece getPromotionPieceType() {
         return switch (value >>> 12) {
-            case PROMOTE_TO_QUEEN_FLAG -> PieceType.QUEEN;
-            case PROMOTE_TO_ROOK_FLAG -> PieceType.ROOK;
-            case PROMOTE_TO_BISHOP_FLAG -> PieceType.BISHOP;
-            case PROMOTE_TO_KNIGHT_FLAG -> PieceType.KNIGHT;
+            case PROMOTE_TO_QUEEN_FLAG -> Piece.QUEEN;
+            case PROMOTE_TO_ROOK_FLAG -> Piece.ROOK;
+            case PROMOTE_TO_BISHOP_FLAG -> Piece.BISHOP;
+            case PROMOTE_TO_KNIGHT_FLAG -> Piece.KNIGHT;
             default -> null;
         };
     }
 
-    public static short getPromotionFlag(PieceType pieceType) {
+    public static short getPromotionFlag(Piece pieceType) {
         if (pieceType == null) {
             return NO_FLAG;
         }

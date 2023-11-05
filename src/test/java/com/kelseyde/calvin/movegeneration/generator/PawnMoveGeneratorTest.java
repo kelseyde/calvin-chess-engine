@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.generator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -58,39 +58,39 @@ public class PawnMoveGeneratorTest {
     public void testWhitePawnCannotMoveThroughPiece() {
 
         board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
-        board.toggleSquare(PieceType.ROOK, true, 16);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
+        board.toggleSquare(Piece.ROOK, true, 16);
         assertMovesFromSquare(board, 8, Set.of());
-        board.toggleSquare(PieceType.ROOK, true, 16);
+        board.toggleSquare(Piece.ROOK, true, 16);
 
-        board.toggleSquare(PieceType.PAWN, false, 17);
+        board.toggleSquare(Piece.PAWN, false, 17);
         assertMovesFromSquare(board, 9, Set.of());
-        board.toggleSquare(PieceType.PAWN, true, 17);
+        board.toggleSquare(Piece.PAWN, true, 17);
 
-        board.toggleSquare(PieceType.KING, true, 18);
+        board.toggleSquare(Piece.KING, true, 18);
         assertMovesFromSquare(board, 10, Set.of());
-        board.toggleSquare(PieceType.KING, true, 8);
+        board.toggleSquare(Piece.KING, true, 8);
 
-        board.toggleSquare(PieceType.QUEEN, false, 19);
+        board.toggleSquare(Piece.QUEEN, false, 19);
         assertMovesFromSquare(board, 11, Set.of());
-        board.toggleSquare(PieceType.QUEEN, true, 19);
+        board.toggleSquare(Piece.QUEEN, true, 19);
 
-        board.toggleSquare(PieceType.BISHOP, false, 44);
+        board.toggleSquare(Piece.BISHOP, false, 44);
         assertMovesFromSquare(board, 52, Set.of());
-        board.toggleSquare(PieceType.BISHOP, true, 44);
+        board.toggleSquare(Piece.BISHOP, true, 44);
 
-        board.toggleSquare(PieceType.PAWN, false, 45);
+        board.toggleSquare(Piece.PAWN, false, 45);
         assertMovesFromSquare(board, 53, Set.of());
-        board.toggleSquare(PieceType.PAWN, true, 45);
+        board.toggleSquare(Piece.PAWN, true, 45);
 
-        board.toggleSquare(PieceType.KNIGHT, false, 46);
+        board.toggleSquare(Piece.KNIGHT, false, 46);
         assertMovesFromSquare(board, 54, Set.of());
-        board.toggleSquare(PieceType.KNIGHT, true, 46);
+        board.toggleSquare(Piece.KNIGHT, true, 46);
 
-        board.toggleSquare(PieceType.ROOK, false, 47);
+        board.toggleSquare(Piece.ROOK, false, 47);
         assertMovesFromSquare(board, 55, Set.of());
-        board.toggleSquare(PieceType.ROOK, true, 47);
+        board.toggleSquare(Piece.ROOK, true, 47);
 
     }
 
@@ -99,20 +99,20 @@ public class PawnMoveGeneratorTest {
     public void testWhitePawnsNotOnStartingSquares() {
 
         board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
 
-        board.toggleSquare(PieceType.PAWN, true, 16);
+        board.toggleSquare(Piece.PAWN, true, 16);
         assertMovesFromSquare(board, 16, Set.of(new Move(16, 24)));
-        board.toggleSquare(PieceType.PAWN, true, 16);
+        board.toggleSquare(Piece.PAWN, true, 16);
 
-        board.toggleSquare(PieceType.PAWN, true, 34);
+        board.toggleSquare(Piece.PAWN, true, 34);
         assertMovesFromSquare(board, 34, Set.of(new Move(34, 42)));
-        board.toggleSquare(PieceType.PAWN, true, 34);
+        board.toggleSquare(Piece.PAWN, true, 34);
 
-        board.toggleSquare(PieceType.PAWN, true, 45);
+        board.toggleSquare(Piece.PAWN, true, 45);
         assertMovesFromSquare(board, 45, Set.of(new Move(45, 53)));
-        board.toggleSquare(PieceType.PAWN, true, 45);
+        board.toggleSquare(Piece.PAWN, true, 45);
 
     }
 
@@ -122,19 +122,19 @@ public class PawnMoveGeneratorTest {
         board = TestUtils.emptyBoard();
         board.setWhiteToMove(false);
 
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
-        board.toggleSquare(PieceType.PAWN, false, 45);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
+        board.toggleSquare(Piece.PAWN, false, 45);
         assertMovesFromSquare(board, 45, Set.of(new Move(45, 37)));
-        board.toggleSquare(PieceType.PAWN, true, 45);
+        board.toggleSquare(Piece.PAWN, true, 45);
 
-        board.toggleSquare(PieceType.PAWN, false, 35);
+        board.toggleSquare(Piece.PAWN, false, 35);
         assertMovesFromSquare(board, 35, Set.of(new Move(35, 27)));
-        board.toggleSquare(PieceType.PAWN, true, 35);
+        board.toggleSquare(Piece.PAWN, true, 35);
 
-        board.toggleSquare(PieceType.PAWN, false, 31);
+        board.toggleSquare(Piece.PAWN, false, 31);
         assertMovesFromSquare(board, 31, Set.of(new Move(31, 23)));
-        board.toggleSquare(PieceType.PAWN, true, 31);
+        board.toggleSquare(Piece.PAWN, true, 31);
 
     }
 
@@ -193,15 +193,15 @@ public class PawnMoveGeneratorTest {
     public void testWhiteEnPassant() {
 
         board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
 
-        board.toggleSquare(PieceType.PAWN, true, 35);
-        board.toggleSquare(PieceType.PAWN, false, 34);
+        board.toggleSquare(Piece.PAWN, true, 35);
+        board.toggleSquare(Piece.PAWN, false, 34);
         board.getGameState().setEnPassantFile(BoardUtils.getFile(42));
 
         List<Move> legalWhiteMoves = generator.generateMoves(board, false).stream()
-                .filter(m -> board.pieceAt(m.getStartSquare()) == PieceType.PAWN)
+                .filter(m -> board.pieceAt(m.getStartSquare()) == Piece.PAWN)
                 .toList();
 
         Move standardMove = new Move(35, 43);
@@ -222,7 +222,7 @@ public class PawnMoveGeneratorTest {
         board.makeMove(TestUtils.getLegalMove(board, NotationUtils.fromNotation("e7", "e5")));
 
         List<Move> legalWhiteMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
         Move standardMove = new Move(35, 43);
@@ -239,15 +239,15 @@ public class PawnMoveGeneratorTest {
     public void testWhiteDoubleEnPassantIsImpossible() {
 
         board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
 
-        board.toggleSquare(PieceType.PAWN, true, 35);
+        board.toggleSquare(Piece.PAWN, true, 35);
         // we need another white piece to spend a move in between black's pawn moves
-        board.toggleSquare(PieceType.ROOK, true, 0);
+        board.toggleSquare(Piece.ROOK, true, 0);
         // two black pawns on starting positions
-        board.toggleSquare(PieceType.PAWN, false, 50);
-        board.toggleSquare(PieceType.PAWN, false, 52);
+        board.toggleSquare(Piece.PAWN, false, 50);
+        board.toggleSquare(Piece.PAWN, false, 52);
 
         board.setWhiteToMove(false);
 
@@ -261,7 +261,7 @@ public class PawnMoveGeneratorTest {
         board.makeMove(new Move(52, 36, Move.PAWN_DOUBLE_MOVE_FLAG));
 
         List<Move> legalWhiteMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
         Move standardMove = new Move(35, 43);
@@ -275,16 +275,16 @@ public class PawnMoveGeneratorTest {
 
     @Test
     public void testBlackEnPassant() {
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
 
-        board.toggleSquare(PieceType.PAWN, false, 29);
-        board.toggleSquare(PieceType.PAWN, true, 30);
+        board.toggleSquare(Piece.PAWN, false, 29);
+        board.toggleSquare(Piece.PAWN, true, 30);
         board.getGameState().setEnPassantFile(BoardUtils.getFile(22));
         board.setWhiteToMove(false);
 
         List<Move> legalBlackMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
         Move standardMove = new Move(29, 21);
@@ -304,7 +304,7 @@ public class PawnMoveGeneratorTest {
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
 
         List<Move> legalBlackMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
         Move standardMove = new Move(29, 21);
@@ -318,15 +318,15 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testBlackDoubleEnPassantIsImpossible() {
 
-        board.toggleSquare(PieceType.KING, true, 12);
-        board.toggleSquare(PieceType.KING, false, 15);
+        board.toggleSquare(Piece.KING, true, 12);
+        board.toggleSquare(Piece.KING, false, 15);
 
-        board.toggleSquare(PieceType.PAWN, false, 25);
+        board.toggleSquare(Piece.PAWN, false, 25);
         // we need another black piece to spend a move in between black's pawn moves
-        board.toggleSquare(PieceType.ROOK, false, 63);
+        board.toggleSquare(Piece.ROOK, false, 63);
         // two black pawns on starting positions
-        board.toggleSquare(PieceType.PAWN, true, 8);
-        board.toggleSquare(PieceType.PAWN, true, 10);
+        board.toggleSquare(Piece.PAWN, true, 8);
+        board.toggleSquare(Piece.PAWN, true, 10);
         board.setWhiteToMove(true);
 
         // white first double pawn advance
@@ -339,7 +339,7 @@ public class PawnMoveGeneratorTest {
         board.makeMove(new Move(8, 24, Move.PAWN_DOUBLE_MOVE_FLAG));
 
         List<Move> legalBlackMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
         Move standardMove = new Move(25, 17);
@@ -371,11 +371,11 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhiteStandardPromotion() {
         board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 0);
-        board.toggleSquare(PieceType.KING, false, 63);
-        board.toggleSquare(PieceType.PAWN, true, 51);
+        board.toggleSquare(Piece.KING, true, 0);
+        board.toggleSquare(Piece.KING, false, 63);
+        board.toggleSquare(Piece.PAWN, true, 51);
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(
                 new Move(51, 59, Move.PROMOTE_TO_QUEEN_FLAG),
@@ -388,12 +388,12 @@ public class PawnMoveGeneratorTest {
 
     @Test
     public void testBlackStandardPromotion() {
-        board.toggleSquare(PieceType.KING, true, 61);
-        board.toggleSquare(PieceType.KING, false, 63);
-        board.toggleSquare(PieceType.PAWN, false, 8);
+        board.toggleSquare(Piece.KING, true, 61);
+        board.toggleSquare(Piece.KING, false, 63);
+        board.toggleSquare(Piece.PAWN, false, 8);
         board.setWhiteToMove(false);
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(
                 new Move(8, 0, Move.PROMOTE_TO_QUEEN_FLAG),
@@ -409,7 +409,7 @@ public class PawnMoveGeneratorTest {
         String fen = "k1q5/3P4/8/8/8/8/8/K7 w - - 0 1";
         board = FEN.fromFEN(fen);
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(
                 new Move(51, 58, Move.PROMOTE_TO_QUEEN_FLAG),
@@ -429,7 +429,7 @@ public class PawnMoveGeneratorTest {
         String fen = "k7/8/8/8/8/8/7p/K5B1 b - - 0 1";
         board = FEN.fromFEN(fen);
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(
                 new Move(15, 7, Move.PROMOTE_TO_QUEEN_FLAG),
@@ -451,7 +451,7 @@ public class PawnMoveGeneratorTest {
         Board board = FEN.fromFEN(fen);
 
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(new Move(23, 31));
         Assertions.assertEquals(1, legalMoves.size());
@@ -461,7 +461,7 @@ public class PawnMoveGeneratorTest {
 
     private void assertMoves(Board board, Set<Move> expected) {
         List<Move> actual = generator.generateMoves(board, false).stream()
-                .filter(move -> board.pieceAt(move.getStartSquare()) == PieceType.PAWN)
+                .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
         Assertions.assertEquals(

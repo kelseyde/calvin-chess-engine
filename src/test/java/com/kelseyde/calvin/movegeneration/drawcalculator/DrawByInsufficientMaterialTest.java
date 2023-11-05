@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegeneration.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.PieceType;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -18,10 +18,10 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKing() {
 
         Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 28);
+        board.toggleSquare(Piece.KING, true, 28);
 
-        board.toggleSquare(PieceType.KING, false, 44);
-        board.toggleSquare(PieceType.QUEEN, false, 27);
+        board.toggleSquare(Piece.KING, false, 44);
+        board.toggleSquare(Piece.QUEEN, false, 27);
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "e4", "d4"));
@@ -36,11 +36,11 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingBishop() {
 
         Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 28);
-        board.toggleSquare(PieceType.BISHOP, true, 25);
+        board.toggleSquare(Piece.KING, true, 28);
+        board.toggleSquare(Piece.BISHOP, true, 25);
 
-        board.toggleSquare(PieceType.KING, false, 44);
-        board.toggleSquare(PieceType.QUEEN, false, 43);
+        board.toggleSquare(Piece.KING, false, 44);
+        board.toggleSquare(Piece.QUEEN, false, 43);
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
@@ -55,11 +55,11 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingKnight() {
 
         Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 28);
-        board.toggleSquare(PieceType.KNIGHT, true, 26);
+        board.toggleSquare(Piece.KING, true, 28);
+        board.toggleSquare(Piece.KNIGHT, true, 26);
 
-        board.toggleSquare(PieceType.KING, false, 44);
-        board.toggleSquare(PieceType.QUEEN, false, 43);
+        board.toggleSquare(Piece.KING, false, 44);
+        board.toggleSquare(Piece.QUEEN, false, 43);
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
@@ -74,12 +74,12 @@ public class DrawByInsufficientMaterialTest {
     public void testKingBishopVersusKingBishop() {
 
         Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 28);
-        board.toggleSquare(PieceType.BISHOP, true, 25);
+        board.toggleSquare(Piece.KING, true, 28);
+        board.toggleSquare(Piece.BISHOP, true, 25);
 
-        board.toggleSquare(PieceType.KING, false, 44);
-        board.toggleSquare(PieceType.QUEEN, false, 43);
-        board.toggleSquare(PieceType.BISHOP, false, 52);
+        board.toggleSquare(Piece.KING, false, 44);
+        board.toggleSquare(Piece.QUEEN, false, 43);
+        board.toggleSquare(Piece.BISHOP, false, 52);
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
@@ -94,12 +94,12 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightVersusKingKnight() {
 
         Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 28);
-        board.toggleSquare(PieceType.KNIGHT, true, 26);
+        board.toggleSquare(Piece.KING, true, 28);
+        board.toggleSquare(Piece.KNIGHT, true, 26);
 
-        board.toggleSquare(PieceType.KING, false, 44);
-        board.toggleSquare(PieceType.QUEEN, false, 43);
-        board.toggleSquare(PieceType.KNIGHT, false, 52);
+        board.toggleSquare(Piece.KING, false, 44);
+        board.toggleSquare(Piece.QUEEN, false, 43);
+        board.toggleSquare(Piece.KNIGHT, false, 52);
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
@@ -114,13 +114,13 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightKnightVersusKingKnightIsNotInsufficientMaterial() {
 
         Board board = TestUtils.emptyBoard();
-        board.toggleSquare(PieceType.KING, true, 28);
-        board.toggleSquare(PieceType.KNIGHT, true, 26);
+        board.toggleSquare(Piece.KING, true, 28);
+        board.toggleSquare(Piece.KNIGHT, true, 26);
 
-        board.toggleSquare(PieceType.KING, false, 44);
-        board.toggleSquare(PieceType.QUEEN, false, 43);
-        board.toggleSquare(PieceType.KNIGHT, false, 52);
-        board.toggleSquare(PieceType.KNIGHT, false, 0);
+        board.toggleSquare(Piece.KING, false, 44);
+        board.toggleSquare(Piece.QUEEN, false, 43);
+        board.toggleSquare(Piece.KNIGHT, false, 52);
+        board.toggleSquare(Piece.KNIGHT, false, 0);
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));

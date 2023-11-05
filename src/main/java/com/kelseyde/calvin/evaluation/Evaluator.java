@@ -45,8 +45,10 @@ public class Evaluator implements Evaluation {
         int blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         int blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
 
-        int whiteMobilityScore = Mobility.score(board, true, phase);
-        int blackMobilityScore = Mobility.score(board, false, phase);
+        //int whiteMobilityScore = Mobility.score(board, true, phase);
+        //int blackMobilityScore = Mobility.score(board, false, phase);
+        int whiteMobilityScore = 0;
+        int blackMobilityScore = 0;
 
         int whitePawnStructureScore = PawnStructure.score(board.getPawns(true), board.getPawns(false), true);
         int blackPawnStructureScore = PawnStructure.score(board.getPawns(false), board.getPawns(true), false);
@@ -180,8 +182,10 @@ public class Evaluator implements Evaluation {
             blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
         }
 
-        int whiteMobilityScore = Mobility.score(board, true, phase);
-        int blackMobilityScore = Mobility.score(board, false, phase);
+        //int whiteMobilityScore = Mobility.score(board, true, phase);
+        //int blackMobilityScore = Mobility.score(board, false, phase);
+        int whiteMobilityScore = 0;
+        int blackMobilityScore = 0;
 
         int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);

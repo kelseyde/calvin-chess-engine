@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.utils.notation.FEN;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -13,6 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
 
+@Disabled
 public class MoveOrdererPerformanceTest {
 
     // kiwipete

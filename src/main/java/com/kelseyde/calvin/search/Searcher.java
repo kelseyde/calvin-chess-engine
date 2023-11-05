@@ -38,6 +38,8 @@ public class Searcher implements Search {
     private static final int ASPIRATION_WINDOW_BUFFER = 50;
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
+    private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 200, 300, 500 };
+
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
 
@@ -205,6 +207,17 @@ public class Searcher implements Search {
             }
         }
 
+        // Futility pruning: in nodes close to the horizon, discard moves which have no potential of raising alpha.
+        boolean isFutilityPruningEnabled = false;
+        if (plyRemaining <= 3) {
+            boolean isAssumedFutile = evaluator.get() + FUTILITY_PRUNING_MARGIN[plyRemaining] < alpha;
+            boolean isNotCheck = !moveGenerator.isCheck(board, board.isWhiteToMove());
+            boolean isNotMateHunting = Math.abs(alpha) < 990000;
+            if (isAssumedFutile && isNotCheck && isNotMateHunting) {
+                isFutilityPruningEnabled = true;
+            }
+        }
+
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
         Move bestMoveInThisPosition = null;
@@ -219,6 +232,12 @@ public class Searcher implements Search {
             board.makeMove(move);
             evaluator.makeMove(move);
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+
+            if (isFutilityPruningEnabled && !isCheck && !isCapture && !isPromotion) {
+                board.unmakeMove();
+                evaluator.unmakeMove();
+                continue;
+            }
 
             // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
             int extensions = 0;

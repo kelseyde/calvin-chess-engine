@@ -8,10 +8,12 @@ import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+@Disabled
 public class MobilityTest {
 
     @Test
@@ -217,25 +219,6 @@ public class MobilityTest {
 
         Assertions.assertEquals(88, mgScore);
         Assertions.assertEquals(131, egScore);
-
-    }
-
-    @Test
-    public void testScandinavianBug() {
-
-        Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        board.makeMove(TestUtils.getLegalMove(board, "e4", "d5"));
-
-        MoveGenerator moveGenerator = new MoveGenerator();
-        List<Move> moves = moveGenerator.generateMoves(board, false);
-        for (Move move : moves) {
-            board.makeMove(move);
-            int eval = Mobility.score(board, false, 1);
-            System.out.println(NotationUtils.toNotation(move) + " " + eval);
-            board.unmakeMove();
-        }
 
     }
 

@@ -2,7 +2,9 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
@@ -39,6 +41,7 @@ public class Searcher implements Search {
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 200, 300, 500 };
+    private static final int DELTA_PRUNING_MARGIN = 200;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -127,7 +130,7 @@ public class Searcher implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-        System.out.println("eval: " + result.eval());
+//        System.out.println("eval: " + result.eval());
         return result;
 
     }
@@ -210,9 +213,12 @@ public class Searcher implements Search {
         // Futility pruning: in nodes close to the horizon, discard moves which have no potential of raising alpha.
         boolean isFutilityPruningEnabled = false;
         if (plyRemaining <= 3) {
+            // If the static evaluation + futility margin is still less than alpha then we assume this position to be futile
             boolean isAssumedFutile = evaluator.get() + FUTILITY_PRUNING_MARGIN[plyRemaining] < alpha;
+            // Do not prune positions where we are in check.
             boolean isNotCheck = !moveGenerator.isCheck(board, board.isWhiteToMove());
-            boolean isNotMateHunting = Math.abs(alpha) < 990000;
+            // Do not prune positions where we are hunting for checkmate.
+            boolean isNotMateHunting = Math.abs(alpha) < 900000;
             if (isAssumedFutile && isNotCheck && isNotMateHunting) {
                 isFutilityPruningEnabled = true;
             }
@@ -304,6 +310,7 @@ public class Searcher implements Search {
         }
         // First check stand-pat score.
         int eval = evaluator.get();
+        int standPat = eval;
         if (eval >= beta) {
             return beta;
         }
@@ -318,6 +325,13 @@ public class Searcher implements Search {
             // Static exchange evaluation: try to filter out captures that are obviously bad (e.g. QxP -> PxQ)
             int seeEval = see.evaluate(board, move);
             if ((depth <= 4 && seeEval < 0) || (depth > 4 && seeEval <= 0)) {
+                continue;
+            }
+
+            // More futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
+            Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
+            int delta = standPat + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
+            if (delta < alpha && !move.isPromotion()) {
                 continue;
             }
 

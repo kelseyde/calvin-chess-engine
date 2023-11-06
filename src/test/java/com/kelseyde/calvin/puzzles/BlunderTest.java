@@ -393,18 +393,4 @@ public class BlunderTest {
 
     }
 
-    @Test
-    public void testPlayground() {
-
-        String fen = "rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
-        Bot bot = new CalvinBot();
-        bot.setPosition(fen, Collections.emptyList());
-        Move move = bot.think(1000);
-        System.out.println(NotationUtils.toNotation(move));
-        Assertions.assertFalse(
-                move.matches(NotationUtils.fromCombinedNotation("e7e6"))
-        );
-
-    }
-
 }

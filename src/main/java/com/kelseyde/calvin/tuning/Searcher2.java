@@ -2,7 +2,9 @@ package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.Search;
@@ -37,6 +39,9 @@ public class Searcher2 implements Search {
 
     private static final int ASPIRATION_WINDOW_BUFFER = 50;
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
+
+    private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 200, 300, 500 };
+    private static final int DELTA_PRUNING_MARGIN = 200;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -84,12 +89,9 @@ public class Searcher2 implements Search {
         int retryMultiplier = 0;
 
         while (!isTimeoutExceeded()) {
-
-            Instant depthStart = Instant.now();
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta, true);
-//            log.info("depth {} eval: {}", currentDepth, eval);
 
             if (resultCurrentDepth != null) {
                 result = resultCurrentDepth;
@@ -128,6 +130,7 @@ public class Searcher2 implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
+//        System.out.println("eval: " + result.eval());
         return result;
 
     }
@@ -175,25 +178,17 @@ public class Searcher2 implements Search {
 
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
-        // Handle terminal nodes, where search is ended either due to checkmate, draw, or reaching max depth.
-        if (plyRemaining <= 0) {
-            // In the case that max depth is reached, begin the quiescence search
-            return quiescenceSearch(alpha, beta, 1);
-        }
         if (legalMoves.isEmpty()) {
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-            if (isCheck) {
-                // Found checkmate
-                return -CHECKMATE_SCORE + plyFromRoot;
-            } else {
-                // Found stalemate
-                return DRAW_SCORE;
-            }
+            // Found checkmate / stalemate
+            return isCheck ? -CHECKMATE_SCORE + plyFromRoot : DRAW_SCORE;
+        }
+        if (plyRemaining <= 0) {
+            // In the case that max depth is reached, begin quiescence search
+            return quiescenceSearch(alpha, beta, 1);
         }
 
-        // Null-move pruning: if we suspect that the current position will fail-high, play a 'null move' and allow our
-        // opponent to play two moves in a row. Search the subsequent subtree to a shallower depth than a standard search.
-        // If the result is still a fail-high, we can confidently save time and effort by pruning this node.
+        // Null-move pruning: give the opponent an extra move to try produce a cut-off
         if (allowNull && plyRemaining >= 2) {
             // Only attempt null-move pruning when the static eval is greater than beta (fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta;
@@ -215,6 +210,20 @@ public class Searcher2 implements Search {
             }
         }
 
+        // Futility pruning: in nodes close to the horizon, discard moves which have no potential of raising alpha.
+        boolean isFutilityPruningEnabled = false;
+        if (plyRemaining <= 3) {
+            // If the static evaluation + futility margin is still less than alpha then we assume this position to be futile
+            boolean isAssumedFutile = evaluator.get() + FUTILITY_PRUNING_MARGIN[plyRemaining] < alpha;
+            // Do not prune positions where we are in check.
+            boolean isNotCheck = !moveGenerator.isCheck(board, board.isWhiteToMove());
+            // Do not prune positions where we are hunting for checkmate.
+            boolean isNotMateHunting = Math.abs(alpha) < 900000;
+            if (isAssumedFutile && isNotCheck && isNotMateHunting) {
+                isFutilityPruningEnabled = true;
+            }
+        }
+
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
         Move bestMoveInThisPosition = null;
@@ -229,6 +238,12 @@ public class Searcher2 implements Search {
             board.makeMove(move);
             evaluator.makeMove(move);
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+
+            if (isFutilityPruningEnabled && !isCheck && !isCapture && !isPromotion) {
+                board.unmakeMove();
+                evaluator.unmakeMove();
+                continue;
+            }
 
             // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
             int extensions = 0;
@@ -250,6 +265,10 @@ public class Searcher2 implements Search {
             }
             board.unmakeMove();
             evaluator.unmakeMove();
+
+            if (isTimeoutExceeded()) {
+                return 0;
+            }
 
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
@@ -291,6 +310,7 @@ public class Searcher2 implements Search {
         }
         // First check stand-pat score.
         int eval = evaluator.get();
+        int standPat = eval;
         if (eval >= beta) {
             return beta;
         }
@@ -305,6 +325,13 @@ public class Searcher2 implements Search {
             // Static exchange evaluation: try to filter out captures that are obviously bad (e.g. QxP -> PxQ)
             int seeEval = see.evaluate(board, move);
             if ((depth <= 4 && seeEval < 0) || (depth > 4 && seeEval <= 0)) {
+                continue;
+            }
+
+            // Delta pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
+            Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
+            int delta = standPat + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
+            if (delta < alpha && !move.isPromotion()) {
                 continue;
             }
 

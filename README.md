@@ -4,7 +4,7 @@ Calvin is a chess engine written in Java.
 
 This is a personal project. I am a Java developer and amateur chess player, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life. 
 
-Calvin is rated about ~2000 on Lichess as of November 2023.
+Calvin is rated about ~2100 on Lichess as of November 2023.
 
 ## Features
 
@@ -24,7 +24,7 @@ Calvin is rated about ~2000 on Lichess as of November 2023.
 - [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
 
 ### Move Ordering
-- [Previous best move](https://www.chessprogramming.org/Principal_Variation_Search), [MVV-LVA](https://www.chessprogramming.org/MVV-LVA), [killer move heuristic](https://www.chessprogramming.org/Killer_Move), [history heuristic](https://www.chessprogramming.org/History_Heuristic).
+- TT-move ordering, [MVV-LVA](https://www.chessprogramming.org/MVV-LVA), [killer move heuristic](https://www.chessprogramming.org/Killer_Move), [history heuristic](https://www.chessprogramming.org/History_Heuristic).
 
 ### Evaluation
 - Basic material count

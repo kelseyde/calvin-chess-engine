@@ -41,6 +41,7 @@ public class Searcher implements Search {
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 200, 300, 500 };
+    private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360 };
     private static final int DELTA_PRUNING_MARGIN = 200;
 
     private static final int CHECKMATE_SCORE = 1000000;
@@ -210,16 +211,31 @@ public class Searcher implements Search {
             }
         }
 
-        // Futility pruning: in nodes close to the horizon, discard moves which have no potential of raising alpha.
+        // Futility pruning: in nodes close to the horizon, discard moves which have no potential of falling within the window.
         boolean isFutilityPruningEnabled = false;
         if (plyRemaining <= 3) {
-            // If the static evaluation + futility margin is still less than alpha then we assume this position to be futile
-            boolean isAssumedFutile = evaluator.get() + FUTILITY_PRUNING_MARGIN[plyRemaining] < alpha;
             // Do not prune positions where we are in check.
             boolean isNotCheck = !moveGenerator.isCheck(board, board.isWhiteToMove());
             // Do not prune positions where we are hunting for checkmate.
-            boolean isNotMateHunting = Math.abs(alpha) < 900000;
-            if (isAssumedFutile && isNotCheck && isNotMateHunting) {
+            boolean isNotMateHunting = Math.abs(alpha) < CHECKMATE_SCORE - 100;
+
+            int staticEval = evaluator.get();
+
+            int reverseFutilityMargin = REVERSE_FUTILITY_PRUNING_MARGIN[plyRemaining];
+            boolean isAssumedFailHigh = staticEval - reverseFutilityMargin > beta;
+            if (isAssumedFailHigh && isNotCheck && isNotMateHunting) {
+                // In 'reverse futility pruning', we check if the static evaluation - some margin is still > beta.
+                // If so, then let's assume there's no point searching any moves in this position, since it's likely to
+                // produce a cut-off no matter what we do.
+                return staticEval - reverseFutilityMargin;
+            }
+
+            int futilityMargin = FUTILITY_PRUNING_MARGIN[plyRemaining];
+            boolean isAssumedFailLow = staticEval + futilityMargin < alpha;
+            if (isAssumedFailLow && isNotCheck && isNotMateHunting) {
+                // In standard futility pruning, we check if the static evaluation + some margin is still below alpha.
+                // If so, we still need to search interesting moves (checks, captures, promotions), in case we have a
+                // saving move, but we assume that all quiet moves can be skipped.
                 isFutilityPruningEnabled = true;
             }
         }

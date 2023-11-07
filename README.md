@@ -43,12 +43,12 @@ Calvin is rated about ~2100 on Lichess as of November 2023.
 
 | 	Depth	 | 	Nodes	 | 	Speed	 | 
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | 
-| 1     | 20        | PT0.000013S  |
-| 2     | 400       | PT0.000025S  |
-| 3     | 8902      | PT0.083512S  |
-| 4     | 197281    | PT0.01012S  |
-| 5     | 4865609   | PT0.462609S  |
-| 6     | 119060324 | PT4.088233S |
+| 1     | 20        | PT0.000004S  |
+| 2     | 400       | PT0.000009S  |
+| 3     | 8902      | PT0.003844S  |
+| 4     | 197281    | PT0.025309S  |
+| 5     | 4865609   | PT0.123557S  |
+| 6     | 119060324 | PT1.363415S |
 
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 

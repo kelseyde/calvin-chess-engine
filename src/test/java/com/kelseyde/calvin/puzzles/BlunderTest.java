@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.puzzles;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
@@ -389,6 +390,90 @@ public class BlunderTest {
         System.out.println(NotationUtils.toNotation(move));
         Assertions.assertFalse(
                 move.matches(NotationUtils.fromCombinedNotation("d5c4"))
+        );
+
+    }
+
+    @Test
+    public void testDontLosePawnInDrawnEndgame() {
+
+        String fen = "8/8/4k3/6p1/1R2Bb1p/5P1P/1p1r1P2/4K3 b - - 9 57";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("g5g4"))
+        );
+
+    }
+
+    @Test
+    public void testOneMoveToPreventMateThreat() {
+
+        String fen = "4Q3/5p1k/5Pp1/5bP1/p7/3p1Nb1/q2B4/6K1 b - - 5 65";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(200);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertTrue(
+                move.matches(NotationUtils.fromCombinedNotation("g3d6"))
+        );
+
+    }
+
+    @Test
+    public void testDontSacExchangeAgain() {
+
+        String fen = "5r2/kb4p1/p1p1p1qp/3pP3/3Pr3/1Q3NPP/PPR3K1/5R2 b - - 6 29";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("f8f3"))
+        );
+
+    }
+
+    @Test
+    public void testAvoidForcedDraw() {
+
+        String fen = "R7/2p1k2p/1r1pBpqb/3P4/1P2bP2/2P3P1/1B5K/4Q3 w - - 5 51";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("h2g1"))
+        );
+
+    }
+
+    @Test
+    public void testDontSacBishopOnF3() {
+
+        String fen = "7k/1b2Bp1p/5p2/p3pq2/1pP5/1r3P2/1P3QPP/4R1K1 b - - 1 33";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("b7f3"))
+        );
+
+    }
+
+    @Test
+    public void testDontMoveBishopWhereItCanBeKicked() {
+
+        String fen = "r1b1kb1r/ppp2ppp/2n2n2/q3p3/4P3/P1NP1N2/1P3PPP/R1BQKB1R b KQkq - 2 7";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("f8c5"))
         );
 
     }

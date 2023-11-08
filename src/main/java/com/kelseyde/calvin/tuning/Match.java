@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.PGN;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
@@ -41,7 +42,7 @@ public class Match {
         int draws = 0;
 
         int gameCount = 1;
-        Board board = new Board();
+        Board board;
 
         while (gameCount <= config.getGameCount()) {
 
@@ -56,7 +57,7 @@ public class Match {
             whitePlayer.getBot().setPosition(FEN.STARTING_POSITION, Collections.emptyList());
             blackPlayer.getBot().setPosition(FEN.STARTING_POSITION, Collections.emptyList());
 
-            GameResult result = GameResult.IN_PROGRESS;
+            GameResult result;
 
             Move whiteMove = whitePlayer.getBot().think(getThinkTime());
             int moveCount = 1;

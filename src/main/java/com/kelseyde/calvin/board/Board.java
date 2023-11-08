@@ -38,11 +38,6 @@ public class Board {
     private long whitePieces;
     private long blackPieces;
 
-    private final long[][] pieces = new long[][] {
-            new long[] {whitePawns, whiteKnights, whiteBishops, whiteRooks, whiteQueens, whiteKnights},
-            new long[] {blackPawns, blackKnights, blackBishops, blackRooks, blackQueens, blackKing}
-    };
-
     private long occupied;
 
     private boolean isWhiteToMove = true;

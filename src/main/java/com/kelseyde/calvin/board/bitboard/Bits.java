@@ -9,6 +9,7 @@ import com.kelseyde.calvin.utils.BoardUtils;
 public class Bits {
 
     public static final long ALL_SQUARES = ~0L;
+    public static final long NO_SQUARES = 0L;
 
     public static final long RANK_1 = 0b0000000000000000000000000000000000000000000000000000000011111111L;
     public static final long RANK_2 = Bitwise.shiftNorth(RANK_1);

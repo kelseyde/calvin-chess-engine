@@ -69,7 +69,7 @@ public class MoveGenerator implements MoveGeneration {
             } else {
                 // If the piece is not a slider, we can only evade check by capturing it
                 // Therefore all non-capture 'push' moves are illegal.
-                pushMask = 0L;
+                pushMask = Bits.NO_SQUARES;
             }
         }
 

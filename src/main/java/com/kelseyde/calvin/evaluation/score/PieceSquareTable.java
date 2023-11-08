@@ -154,13 +154,4 @@ public class PieceSquareTable {
             KING_ENDGAME_TABLE
     };
 
-    public static int getScore(int square, Piece pieceType, boolean isWhite, float gamePhase) {
-        int pieceIndex = pieceType.getIndex();
-        int squareIndex = isWhite ? square ^ 56 : square;
-        int middlegameScore = MIDDLEGAME_TABLES[pieceIndex][squareIndex];
-        int endgameScore = ENDGAME_TABLES[pieceIndex][squareIndex];
-        return (int) (gamePhase * middlegameScore) +
-                (int) ((1 - gamePhase) * endgameScore);
-    }
-
 }

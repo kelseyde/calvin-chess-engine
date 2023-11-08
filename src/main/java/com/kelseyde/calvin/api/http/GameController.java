@@ -13,7 +13,6 @@ import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import com.kelseyde.calvin.utils.notation.PGN;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +32,7 @@ public class GameController {
 
     private final Bot bot = new CalvinBot();
 
-    @Resource
-    private ResultCalculator resultCalculator;
+    private final ResultCalculator resultCalculator = new ResultCalculator();
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 

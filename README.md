@@ -22,6 +22,10 @@ Calvin is rated about ~2100 on Lichess as of November 2023.
 - [Quiescence search](https://www.chessprogramming.org/Quiescence_Search) to combat the horizon effect.
 - [Transposition table](https://www.chessprogramming.org/Transposition_Table) with [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing).
 - [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
+- [Futility Pruning](https://www.chessprogramming.org/Futility_Pruning)
+- [Reverse Futility Pruning](https://www.chessprogramming.org/Reverse_Futility_Pruning)
+- [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions)
+- [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
 
 ### Move Ordering
 - TT-move ordering, [MVV-LVA](https://www.chessprogramming.org/MVV-LVA), [killer move heuristic](https://www.chessprogramming.org/Killer_Move), [history heuristic](https://www.chessprogramming.org/History_Heuristic).

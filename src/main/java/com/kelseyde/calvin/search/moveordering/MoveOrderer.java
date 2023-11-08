@@ -72,7 +72,7 @@ public class MoveOrderer implements MoveOrdering {
         if (isCapture) {
             // Captures are sorted using MVV-LVA
             moveScore += MVV_LVA_TABLE[capturedPieceType.getIndex()][pieceType.getIndex()];
-            int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(board.pieceAt(move.getStartSquare()));
+            int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(pieceType);
             if (materialDelta > 0) {
                 moveScore += WINNING_CAPTURE_BIAS;
             } else if (materialDelta == 0) {

@@ -37,6 +37,8 @@ public class Searcher implements Search {
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
 
+    private static final int MAX_DEPTH = 256;
+
     private static final int ASPIRATION_WINDOW_BUFFER = 50;
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
@@ -94,7 +96,7 @@ public class Searcher implements Search {
         int beta = MAX_EVAL;
         int retryMultiplier = 0;
 
-        while (!isTimeoutExceeded()) {
+        while (!isTimeoutExceeded() && currentDepth < MAX_DEPTH) {
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta, true);
@@ -136,7 +138,7 @@ public class Searcher implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-//        System.out.println("eval: " + result.eval());
+        //System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
         return result;
 
     }
@@ -158,7 +160,7 @@ public class Searcher implements Search {
             return 0;
         }
         if (plyRemaining <= 0) {
-            // In the case that max depth is reached, begin quiescence search
+            // In the case that search depth is reached, begin quiescence search
             return quiescenceSearch(alpha, beta, 1);
         }
         if (plyFromRoot > 0) {
@@ -441,6 +443,5 @@ public class Searcher implements Search {
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
     }
-
 
 }

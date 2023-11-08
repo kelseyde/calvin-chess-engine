@@ -15,8 +15,8 @@ Calvin is rated about ~2100 on Lichess as of November 2023.
 ### Move Generation
 
 - [Legal move generation](https://www.chessprogramming.org/Move_Generation): check, pin and attack masks are generated first. If double-check, only king moves are generated. Pseudo-legal moves which leave the king in check are not generated.
-- [Magic bitboards](https://www.chessprogramming.org/Magic_Bitboards) are used for sliding piece move generatiton.
-- Incremental updates: evaluation is updated incrementally with make/unmake move
+- [Magic bitboards](https://www.chessprogramming.org/Magic_Bitboards): magic bitboards are used for sliding piece move generatiton.
+- [Incremental updates](https://www.chessprogramming.org/Incremental_Updates): Evaluation is updated incrementally with make/unmake move
 
 ### Search
 - [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) + [negamax](https://www.chessprogramming.org/Negamax).

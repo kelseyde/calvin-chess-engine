@@ -37,11 +37,13 @@ public class Searcher2 implements Search {
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
 
+    private static final int MAX_DEPTH = 256;
+
     private static final int ASPIRATION_WINDOW_BUFFER = 50;
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
-    private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 200, 300, 500 };
-    private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360 };
+    private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
+    private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
     private static final int DELTA_PRUNING_MARGIN = 200;
 
     private static final int CHECKMATE_SCORE = 1000000;
@@ -76,6 +78,11 @@ public class Searcher2 implements Search {
         this.transpositionTable = new TranspositionTable(board);
     }
 
+    /**
+     * Search for the best move in the current {@link Board} position.
+     * @param duration How long we should search
+     * @return A {@link SearchResult} containing the best move and the current evaluation.
+     */
     @Override
     public SearchResult search(Duration duration) {
 
@@ -89,7 +96,7 @@ public class Searcher2 implements Search {
         int beta = MAX_EVAL;
         int retryMultiplier = 0;
 
-        while (!isTimeoutExceeded()) {
+        while (!isTimeoutExceeded() && currentDepth < MAX_DEPTH) {
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta, true);
@@ -105,14 +112,14 @@ public class Searcher2 implements Search {
 
             if (eval <= alpha) {
                 // The result is less than alpha, so search again at the same depth with an expanded aspiration window.
-                retryMultiplier += 1;
+                retryMultiplier++;
                 alpha -= ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
                 beta += ASPIRATION_WINDOW_BUFFER;
                 continue;
             }
             if (eval >= beta) {
                 // The result is greater than alpha, so search again at the same depth with an expanded aspiration window.
-                retryMultiplier += 1;
+                retryMultiplier++;
                 beta += ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
                 alpha -= ASPIRATION_WINDOW_BUFFER;
                 continue;
@@ -131,7 +138,7 @@ public class Searcher2 implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-//        System.out.println("eval: " + result.eval());
+        //System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
         return result;
 
     }
@@ -141,16 +148,20 @@ public class Searcher2 implements Search {
      * recursively until the depth limit is reached, 'depth' needs to be split into two parameters: 'ply remaining' and
      * 'ply from root'.
      *
-     * @param plyRemaining The number of ply deeper left to go in the current search
-     * @param plyFromRoot  The number of ply already examined in this iteration of the search.
-     * @param alpha        The lower bound for child nodes at the current search depth.
-     * @param beta         The upper bound for child nodes at the current search depth.
-     * @param allowNull    Whether to allow null-move pruning in this search iteration.
+     * @param plyRemaining        The number of ply deeper left to go in the current search
+     * @param plyFromRoot         The number of ply already examined in this iteration of the search.
+     * @param alpha               The lower bound for child nodes at the current search depth.
+     * @param beta                The upper bound for child nodes at the current search depth.
+     * @param allowNullPruning    Whether to allow null-move pruning in this search iteration.
      */
-    public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNull) {
+    public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNullPruning) {
 
         if (isTimeoutExceeded()) {
             return 0;
+        }
+        if (plyRemaining <= 0) {
+            // In the case that search depth is reached, begin quiescence search
+            return quiescenceSearch(alpha, beta, 1);
         }
         if (plyFromRoot > 0) {
             if (resultCalculator.isEffectiveDraw(board)) {
@@ -178,19 +189,14 @@ public class Searcher2 implements Search {
         }
 
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
-
         if (legalMoves.isEmpty()) {
-            boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             // Found checkmate / stalemate
+            boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             return isCheck ? -CHECKMATE_SCORE + plyFromRoot : DRAW_SCORE;
-        }
-        if (plyRemaining <= 0) {
-            // In the case that max depth is reached, begin quiescence search
-            return quiescenceSearch(alpha, beta, 1);
         }
 
         // Null-move pruning: give the opponent an extra move to try produce a cut-off
-        if (allowNull && plyRemaining >= 2) {
+        if (allowNullPruning && plyRemaining >= 2) {
             // Only attempt null-move pruning when the static eval is greater than beta (fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta;
 
@@ -213,7 +219,7 @@ public class Searcher2 implements Search {
 
         // Futility pruning: in nodes close to the horizon, discard moves which have no potential of falling within the window.
         boolean isFutilityPruningEnabled = false;
-        if (plyRemaining <= 3) {
+        if (plyRemaining <= 4) {
             // Do not prune positions where we are in check.
             boolean isNotCheck = !moveGenerator.isCheck(board, board.isWhiteToMove());
             // Do not prune positions where we are hunting for checkmate.
@@ -242,7 +248,7 @@ public class Searcher2 implements Search {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
-        Move bestMoveInThisPosition = null;
+        Move bestMove = null;
         int originalAlpha = alpha;
 
         for (int i = 0; i < orderedMoves.size(); i++) {
@@ -251,13 +257,11 @@ public class Searcher2 implements Search {
             boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
             boolean isPromotion = move.getPromotionPieceType() != null;
 
-            board.makeMove(move);
-            evaluator.makeMove(move);
+            makeMove(move);
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
             if (isFutilityPruningEnabled && !isCheck && !isCapture && !isPromotion) {
-                board.unmakeMove();
-                evaluator.unmakeMove();
+                unmakeMove();
                 continue;
             }
 
@@ -279,8 +283,7 @@ public class Searcher2 implements Search {
                 // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
                 eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
             }
-            board.unmakeMove();
-            evaluator.unmakeMove();
+            unmakeMove();
 
             if (isTimeoutExceeded()) {
                 return 0;
@@ -299,7 +302,7 @@ public class Searcher2 implements Search {
 
             if (eval > alpha) {
                 // We have found a new best move
-                bestMoveInThisPosition = move;
+                bestMove = move;
                 alpha = eval;
                 if (plyFromRoot == 0) {
                     resultCurrentDepth = new SearchResult(eval, move);
@@ -308,7 +311,7 @@ public class Searcher2 implements Search {
         }
 
         NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
-        transpositionTable.put(transpositionType, plyRemaining, bestMoveInThisPosition, alpha);
+        transpositionTable.put(transpositionType, plyRemaining, bestMove, alpha);
         return alpha;
 
     }
@@ -324,7 +327,13 @@ public class Searcher2 implements Search {
         if (isTimeoutExceeded()) {
             return 0;
         }
-        // First check stand-pat score.
+        // First exit if we have already stored an accurate eval in the TT
+        TranspositionNode transposition = transpositionTable.get();
+        if (isUsefulTransposition(transposition, alpha, beta)) {
+            return transposition.getValue();
+        }
+
+        // Then check stand-pat score.
         int eval = evaluator.get();
         int standPat = eval;
         if (eval >= beta) {
@@ -351,11 +360,9 @@ public class Searcher2 implements Search {
                 continue;
             }
 
-            board.makeMove(move);
-            evaluator.makeMove(move);
+            makeMove(move);
             eval = -quiescenceSearch(-beta, -alpha, depth + 1);
-            board.unmakeMove();
-            evaluator.unmakeMove();
+            unmakeMove();
 
             if (eval >= beta) {
                 return beta;
@@ -369,21 +376,45 @@ public class Searcher2 implements Search {
 
     }
 
-    private boolean hasBestMove(TranspositionNode transposition) {
-        return transposition != null && transposition.getBestMove() != null;
+    private void makeMove(Move move) {
+        board.makeMove(move);
+        evaluator.makeMove(move);
     }
 
+    private void unmakeMove() {
+        board.unmakeMove();
+        evaluator.unmakeMove();
+    }
+
+    /**
+     * Check if the hit from the transposition table is 'useful' in the current search. A TT-hit is useful either if it
+     * 1) contains an exact evaluation, so we don't need to search any further, 2) contains a fail-high greater than our
+     * current beta value, or 3) contains a fail-low lesser than our current alpha value.
+     */
     private boolean isUsefulTransposition(TranspositionNode transposition, int plyRemaining, int alpha, int beta) {
-        if (transposition == null || transposition.getDepth() < plyRemaining) {
+        return isUsefulTransposition(transposition, alpha, beta) && transposition.getDepth() >= plyRemaining;
+    }
+
+    private boolean isUsefulTransposition(TranspositionNode transposition, int alpha, int beta) {
+        if (transposition == null) {
             return false;
         }
         NodeType type = transposition.getType();
+
         // Previous search returned the exact evaluation for this position.
-        return ((type.equals(NodeType.EXACT))
-                // Previous search failed low, beating alpha score; only use it if it beats the current alpha.
-                || (type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha)
-                // Previous search failed high, causing a beta cut-off; only use it if greater than current beta.
-                || (type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta));
+        boolean isInWindow = type.equals(NodeType.EXACT);
+
+        // Previous search failed low, beating alpha score; only use it if it beats the current alpha.
+        boolean isFailLow = type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha;
+
+        // Previous search failed high, causing a beta cut-off; only use it if greater than current beta.
+        boolean isFailHigh = type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta;
+
+        return isInWindow || isFailLow || isFailHigh;
+    }
+
+    private boolean hasBestMove(TranspositionNode transposition) {
+        return transposition != null && transposition.getBestMove() != null;
     }
 
     @Override
@@ -412,4 +443,5 @@ public class Searcher2 implements Search {
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
     }
+
 }

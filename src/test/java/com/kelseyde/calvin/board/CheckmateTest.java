@@ -198,14 +198,14 @@ public class CheckmateTest {
     public void testReturnsCheckmateResultForCorrectSide() {
 
         String fen = "8/k7/2K5/8/8/8/8/1Q6 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         GameResult result = evaluator.calculateResult(board);
         Assertions.assertEquals(GameResult.WHITE_WINS_BY_CHECKMATE, result);
 
         fen = "8/K7/2k5/8/8/8/8/1q6 b - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         result = evaluator.calculateResult(board);

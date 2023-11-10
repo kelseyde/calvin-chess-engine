@@ -15,7 +15,7 @@ public class FEN {
 
     public static final String STARTING_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    public static Board fromFEN(String fen) {
+    public static Board toBoard(String fen) {
 
         try {
 

@@ -192,7 +192,7 @@ public class DrawByRepetitionTest {
     public void testGameExampleDrawRepetition() {
 
         String fen = "7r/4b1p1/8/3BkP2/4N3/8/PPn2PP1/1R1R2K1 b - - 0 26";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         board.makeMove(NotationUtils.fromNotation("h8", "b8"));
         board.makeMove(NotationUtils.fromNotation("e4", "c3"));

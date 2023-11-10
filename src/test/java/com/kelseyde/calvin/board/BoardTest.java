@@ -318,7 +318,7 @@ public class BoardTest {
     public void testRookCannotJumpToOtherSide() {
 
         String fen = "r1b1k2r/1p3p2/8/8/1n6/2Q5/4P2p/5KNR w kq - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b4"));
         Move queenPromotion = NotationUtils.fromNotation("h2", "g1", Move.PROMOTE_TO_QUEEN_FLAG);
         board.makeMove(TestUtils.getLegalMove(board, queenPromotion));
@@ -343,12 +343,12 @@ public class BoardTest {
     @Test
     public void testMakeNullMoveChangesSideToMove() {
 
-        Board board = FEN.fromFEN("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R w KQkq - 1 6");
+        Board board = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R w KQkq - 1 6");
         long initialZobrist = board.getGameState().getZobristKey();
         Assertions.assertTrue(board.isWhiteToMove());
         board.makeNullMove();
         Assertions.assertFalse(board.isWhiteToMove());
-        Board board2 = FEN.fromFEN("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R b KQkq - 1 6");
+        Board board2 = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R b KQkq - 1 6");
         Assertions.assertEquals(board.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
         board.unmakeNullMove();
         Assertions.assertTrue(board.isWhiteToMove());
@@ -359,7 +359,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveResetsEnPassantFile() {
 
-        Board board = FEN.fromFEN("r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3");
+        Board board = FEN.toBoard("r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3");
         long initialZobrist = board.getGameState().getZobristKey();
         Assertions.assertEquals(3, board.getGameState().getEnPassantFile());
         board.makeNullMove();
@@ -373,7 +373,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveResetsFiftyMoveCounter() {
 
-        Board board = FEN.fromFEN("8/4n3/2kn4/8/3B4/5K2/8/8 w - - 4 3");
+        Board board = FEN.toBoard("8/4n3/2kn4/8/3B4/5K2/8/8 w - - 4 3");
         long initialZobrist = board.getGameState().getZobristKey();
         Assertions.assertEquals(4, board.getGameState().getFiftyMoveCounter());
         board.makeNullMove();

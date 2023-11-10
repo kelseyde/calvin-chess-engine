@@ -2,7 +2,6 @@ package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.movegeneration.result.GameResult;
 
 import java.util.ArrayList;
 import java.util.Collections;

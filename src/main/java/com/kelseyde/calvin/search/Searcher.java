@@ -23,8 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Deque;
 import java.util.List;
 
 /**
@@ -145,7 +143,7 @@ public class Searcher implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-        System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
+        //System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
         return result;
 
     }

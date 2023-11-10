@@ -12,7 +12,7 @@ public class FENTest {
     @Test
     public void testStartingPosition() {
 
-        Board fenBoard = FEN.fromFEN(FEN.STARTING_POSITION);
+        Board fenBoard = FEN.toBoard(FEN.STARTING_POSITION);
         Board newBoard = new Board();
         Assertions.assertEquals(newBoard.getWhitePawns(), fenBoard.getWhitePawns());
         Assertions.assertEquals(newBoard.getWhiteKnights(), fenBoard.getWhiteKnights());

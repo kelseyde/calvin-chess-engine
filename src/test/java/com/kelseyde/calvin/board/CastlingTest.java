@@ -290,7 +290,7 @@ public class CastlingTest {
     public void cannotCastleIfKingsideRookIsCaptured() {
 
         String fen = "r1b1k2r/1p3p2/8/3n4/1P6/2Q5/4P3/6KR b kq - 0 9";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         // black rook captures white rook
         board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));

@@ -52,7 +52,7 @@ public class KnightMoveGeneratorTest {
     public void cannotCaptureSameColourPieces() {
 
         String fen = "2R1R3/1P3Q2/3N4/1B3B2/2P1P3/8/8/K6k w - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
 
         Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(m -> m.getStartSquare() == 43)

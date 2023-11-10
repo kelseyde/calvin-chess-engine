@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.evaluation.score;
 
-import com.kelseyde.calvin.board.Piece;
-
 public class PieceSquareTable {
 
     public static final int[] PAWN_MIDDLEGAME_TABLE = new int[] {

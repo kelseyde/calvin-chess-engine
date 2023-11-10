@@ -19,7 +19,7 @@ public abstract class EPerftTest {
     protected abstract String getSubFolder();
 
     protected void ePerft(int depth) {
-        Board board = FEN.fromFEN(getFen());
+        Board board = FEN.toBoard(getFen());
         EPerftService ePerftService = new EPerftService(board);
         Instant start = Instant.now();
         ePerftService.ePerft(board, depth);

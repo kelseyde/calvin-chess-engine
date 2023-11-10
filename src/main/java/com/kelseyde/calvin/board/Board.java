@@ -51,6 +51,10 @@ public class Board {
         recalculatePieces();
     }
 
+    /**
+     * Updates the internal board representation with the {@link Move} just made. Toggles the piece bitboards to move the
+     * piece + remove the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
+     */
     public void makeMove(Move move) {
 
         int startSquare = move.getStartSquare();
@@ -117,6 +121,10 @@ public class Board {
         recalculatePieces();
     }
 
+    /**
+     * Reverts the internal board representation to the state before the last move. Toggles the piece bitboards to move the
+     * piece + reinstate the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
+     */
     public void unmakeMove() {
 
         isWhiteToMove = !isWhiteToMove;
@@ -163,6 +171,10 @@ public class Board {
 
     }
 
+    /**
+     * Make a 'null' move, meaning the side to move passes their turn and gives the opponent a double-move. Used exclusively
+     * during null-move pruning during search.
+     */
     public void makeNullMove() {
         isWhiteToMove = !isWhiteToMove;
         long newZobristKey = ZobristKey.updateKeyAfterNullMove(gameState.getZobristKey(), gameState.getEnPassantFile());
@@ -171,6 +183,9 @@ public class Board {
         gameState = newGameState;
     }
 
+    /**
+     * Unmake the 'null' move used during null-move pruning to try and prove a beta cut-off.
+     */
     public void unmakeNullMove() {
         isWhiteToMove = !isWhiteToMove;
         gameState = gameStateHistory.pop();
@@ -188,30 +203,12 @@ public class Board {
 
     private void toggle(Piece type, boolean isWhite, long toggleMask) {
         switch (type) {
-            case PAWN -> {
-                if (isWhite) whitePawns ^= toggleMask;
-                else blackPawns ^= toggleMask;
-            }
-            case KNIGHT -> {
-                if (isWhite) whiteKnights ^= toggleMask;
-                else blackKnights ^= toggleMask;
-            }
-            case BISHOP -> {
-                if (isWhite) whiteBishops ^= toggleMask;
-                else blackBishops ^= toggleMask;
-            }
-            case ROOK -> {
-                if (isWhite) whiteRooks ^= toggleMask;
-                else blackRooks ^= toggleMask;
-            }
-            case QUEEN -> {
-                if (isWhite) whiteQueens ^= toggleMask;
-                else blackQueens ^= toggleMask;
-            }
-            case KING -> {
-                if (isWhite) whiteKing ^= toggleMask;
-                else blackKing ^= toggleMask;
-            }
+            case PAWN ->    { if (isWhite) whitePawns ^= toggleMask;    else blackPawns ^= toggleMask; }
+            case KNIGHT ->  { if (isWhite) whiteKnights ^= toggleMask;  else blackKnights ^= toggleMask; }
+            case BISHOP ->  { if (isWhite) whiteBishops ^= toggleMask;  else blackBishops ^= toggleMask; }
+            case ROOK ->    { if (isWhite) whiteRooks ^= toggleMask;    else blackRooks ^= toggleMask; }
+            case QUEEN ->   { if (isWhite) whiteQueens ^= toggleMask;   else blackQueens ^= toggleMask; }
+            case KING ->    { if (isWhite) whiteKing ^= toggleMask;     else blackKing ^= toggleMask; }
         }
     }
 
@@ -229,22 +226,22 @@ public class Board {
         }
         // Any move by the king removes castling rights.
         if (Piece.KING.equals(pieceType)) {
-            newCastlingRights &= isWhiteToMove ? GameState.CLEAR_WHITE_CASTLING_MASK : GameState.CLEAR_BLACK_CASTLING_MASK;
+            newCastlingRights &= isWhiteToMove ? Bits.CLEAR_WHITE_CASTLING_MASK : Bits.CLEAR_BLACK_CASTLING_MASK;
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.
         // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
         // another rook in starting position; in that case, both sides lose castling rights!
         if (startSquare == 7 || endSquare == 7) {
-            newCastlingRights &= GameState.CLEAR_WHITE_KINGSIDE_MASK;
+            newCastlingRights &= Bits.CLEAR_WHITE_KINGSIDE_MASK;
         }
         if (startSquare == 63 || endSquare == 63) {
-            newCastlingRights &= GameState.CLEAR_BLACK_KINGSIDE_MASK;
+            newCastlingRights &= Bits.CLEAR_BLACK_KINGSIDE_MASK;
         }
         if (startSquare == 0 || endSquare == 0) {
-            newCastlingRights &= GameState.CLEAR_WHITE_QUEENSIDE_MASK;
+            newCastlingRights &= Bits.CLEAR_WHITE_QUEENSIDE_MASK;
         }
         if (startSquare == 56 || endSquare == 56) {
-            newCastlingRights &= GameState.CLEAR_BLACK_QUEENSIDE_MASK;
+            newCastlingRights &= Bits.CLEAR_BLACK_QUEENSIDE_MASK;
         }
         return newCastlingRights;
     }

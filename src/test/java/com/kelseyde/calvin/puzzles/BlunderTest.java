@@ -478,4 +478,32 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontOpenHFileToKing() {
+
+        String fen = "4rrk1/p4pp1/1p5p/5PP1/2P5/P1PQpq2/4R1R1/2K5 b - - 0 35";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertTrue(
+                move.matches(NotationUtils.fromCombinedNotation("h6h5"))
+        );
+
+    }
+
+    @Test
+    public void testDefendAgainstHeavyPieceMatingAttack() {
+
+        String fen = "4r1k1/p4pp1/1p6/5P2/2P1rq2/P1PQp3/4R3/1K5R b - - 6 39";
+        Bot bot = new CalvinBot();
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertTrue(
+                move.matches(NotationUtils.fromCombinedNotation("f4f5"))
+        );
+
+    }
+
 }

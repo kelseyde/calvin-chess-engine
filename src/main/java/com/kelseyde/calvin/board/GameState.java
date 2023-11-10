@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.bitboard.Bits;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,18 +15,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GameState {
 
-    public static final int INITIAL_CASTLING_RIGHTS = 0b1111;
-    public static final int CLEAR_WHITE_CASTLING_MASK = 0b1100;
-    public static final int CLEAR_BLACK_CASTLING_MASK = 0b0011;
-    public static final int CLEAR_WHITE_KINGSIDE_MASK = 0b1110;
-    public static final int CLEAR_BLACK_KINGSIDE_MASK = 0b1011;
-    public static final int CLEAR_WHITE_QUEENSIDE_MASK = 0b1101;
-    public static final int CLEAR_BLACK_QUEENSIDE_MASK = 0b0111;
-
     long zobristKey = 0L;
     Piece capturedPiece;
     int enPassantFile = -1;
-    int castlingRights = INITIAL_CASTLING_RIGHTS;
+    int castlingRights = Bits.INITIAL_CASTLING_RIGHTS;
     int fiftyMoveCounter = 0;
 
     public boolean hasCastlingRights(boolean isWhite) {

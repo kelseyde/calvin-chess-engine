@@ -145,7 +145,7 @@ public class Searcher implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-        //System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
+        System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
         return result;
 
     }

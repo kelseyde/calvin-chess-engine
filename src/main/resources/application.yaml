@@ -14,5 +14,7 @@ server:
     context-path: /${spring.application.name}
 
 logging:
+  pattern:
+    console:
   level:
     com.kelseyde.calvin: INFO

@@ -1,8 +1,9 @@
-package com.kelseyde.calvin.evaluation;
+package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.score.*;
 
 import java.util.ArrayDeque;
@@ -17,7 +18,7 @@ import java.util.Deque;
  * search procedure.
  * @see <a href="https://www.chessprogramming.org/Evaluation">Chess Programming Wiki</a>
  */
-public class Evaluator implements Evaluation {
+public class Evaluator2 implements Evaluation {
 
     private Board board;
 
@@ -25,7 +26,7 @@ public class Evaluator implements Evaluation {
 
     private final Deque<EvaluationScore> evalHistory = new ArrayDeque<>();
 
-    public Evaluator(Board board) {
+    public Evaluator2(Board board) {
         init(board);
     }
 

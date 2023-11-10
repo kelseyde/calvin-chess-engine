@@ -1,5 +1,12 @@
 package com.kelseyde.calvin.evaluation.score;
 
+/**
+ * Calculates a tapered evaluation value indicating what game 'phase' we are in. A value of 1 indicates we are in the opening/
+ * early middlegame with all the pieces still on the board; a value of 0 indicates there are only kings and pawns remaining.
+ * This is used during evaluation to taper the evaluation to reflect the differing values for opening/middlegame and endgame.
+ *
+ * @see <a href="https://www.chessprogramming.org/Tapered_Eval">Chess Programming Wiki</a>
+ */
 public class GamePhase {
 
     private static final int KNIGHT_PHASE = 10;

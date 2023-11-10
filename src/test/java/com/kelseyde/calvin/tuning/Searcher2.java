@@ -3,16 +3,20 @@ package com.kelseyde.calvin.tuning;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
+import com.kelseyde.calvin.movegeneration.MoveGeneration;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
+import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,14 +48,14 @@ public class Searcher2 implements Search {
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
     private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
-    private static final int DELTA_PRUNING_MARGIN = 200;
+    private static final int DELTA_PRUNING_MARGIN = 140;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
 
-    private MoveGenerator moveGenerator;
-    private MoveOrderer moveOrderer;
-    private Evaluator evaluator;
+    private MoveGeneration moveGenerator;
+    private MoveOrdering moveOrderer;
+    private Evaluation evaluator;
     private StaticExchangeEvaluator see;
     private TranspositionTable transpositionTable;
     private ResultCalculator resultCalculator;
@@ -62,6 +66,7 @@ public class Searcher2 implements Search {
 
     private SearchResult result;
     private SearchResult resultCurrentDepth;
+    private int currentDepth;
 
     public Searcher2(Board board) {
         init(board);
@@ -71,10 +76,10 @@ public class Searcher2 implements Search {
     public void init(Board board) {
         this.board = board;
         this.moveGenerator = new MoveGenerator();
-        this.moveOrderer = new MoveOrderer();
+        this.moveOrderer = new MoveOrderer2();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
-        this.evaluator = new Evaluator(board);
+        this.evaluator = new Evaluator2(board);
         this.transpositionTable = new TranspositionTable(board);
     }
 
@@ -273,8 +278,11 @@ public class Searcher2 implements Search {
 
             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
             int reductions = 0;
-            if (plyRemaining >= 3 && i >= 3 && !isCapture && !isCheck && !isPromotion) {
+            if (plyRemaining >= 4 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
                 reductions = 1;
+                if (i >= 5) {
+                    reductions = plyRemaining / 3;
+                }
             }
 
             int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha, true);
@@ -349,7 +357,7 @@ public class Searcher2 implements Search {
         for (Move move : orderedMoves) {
             // Static exchange evaluation: try to filter out captures that are obviously bad (e.g. QxP -> PxQ)
             int seeEval = see.evaluate(board, move);
-            if ((depth <= 4 && seeEval < 0) || (depth > 4 && seeEval <= 0)) {
+            if ((depth <= 3 && seeEval < 0) || (depth > 3 && seeEval <= 0)) {
                 continue;
             }
 
@@ -442,6 +450,29 @@ public class Searcher2 implements Search {
 
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
+    }
+
+    private String side() {
+        return board.isWhiteToMove() ? "w" : "b";
+    }
+
+    private String alphaBeta(int alpha, int beta) {
+        return String.format("(%s, %s)", alpha, beta);
+    }
+
+    private String move(Move move) {
+        return NotationUtils.toNotation(move);
+    }
+
+    private String history() {
+        return NotationUtils.toNotation(board.getMoveHistory());
+    }
+
+    private String moves(List<Move> moves) {
+        return moves.stream()
+                .map(NotationUtils::toNotation)
+                .toList()
+                .toString();
     }
 
 }

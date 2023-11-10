@@ -103,6 +103,14 @@ public class Bits {
     public static final long BLACK_QUEENS_START = 0b0000100000000000000000000000000000000000000000000000000000000000L;
     public static final long BLACK_KING_START = 0b0001000000000000000000000000000000000000000000000000000000000000L;
 
+    public static final int INITIAL_CASTLING_RIGHTS = 0b1111;
+    public static final int CLEAR_WHITE_CASTLING_MASK = 0b1100;
+    public static final int CLEAR_BLACK_CASTLING_MASK = 0b0011;
+    public static final int CLEAR_WHITE_KINGSIDE_MASK = 0b1110;
+    public static final int CLEAR_BLACK_KINGSIDE_MASK = 0b1011;
+    public static final int CLEAR_WHITE_QUEENSIDE_MASK = 0b1101;
+    public static final int CLEAR_BLACK_QUEENSIDE_MASK = 0b0111;
+
     public static final long[] ADJACENT_FILE_MASK = generateAdjacentFileMask();
     public static final long[] TRIPLE_FILE_MASK = generateTripleFileMask();
 

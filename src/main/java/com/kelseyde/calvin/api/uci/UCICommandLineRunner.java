@@ -29,7 +29,6 @@ public class UCICommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        System.out.println("Initialising UCI command line runner...");
         String command = "";
         while (!command.equals("quit")) {
             command = readCommand();

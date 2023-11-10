@@ -18,7 +18,7 @@ public class SearchUtilTest {
     @Test
     public void testBestMove() {
 
-        Board board = FEN.fromFEN(FEN_STRING);
+        Board board = FEN.toBoard(FEN_STRING);
         Searcher search = new Searcher(board);
 
         SearchResult result = search.search(THINK_TIME);
@@ -42,7 +42,7 @@ public class SearchUtilTest {
     @Test
     public void testKiwiPete() {
 
-        Board board = FEN.fromFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
+        Board board = FEN.toBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
         Searcher search = new Searcher(board);
 
         SearchResult result = search.search(THINK_TIME);

@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.puzzles;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;

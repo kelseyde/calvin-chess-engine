@@ -22,7 +22,7 @@ public class RepetitionTest {
     public void testCorrectlyIdentifyRepetition() {
 
         String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         board.makeMove(NotationUtils.fromNotation("g1", "f3"));
         board.makeMove(NotationUtils.fromNotation("g8", "f6"));
         board.makeMove(NotationUtils.fromNotation("f3", "g1"));

@@ -29,7 +29,7 @@ public class RookMoveGeneratorTest {
     public void testCapturingOpponentPiecesEndsVector() {
 
         String fen = "k7/8/4p3/8/2n1R1b1/8/4q3/K7 w - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
 
         Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
                 .filter(move -> move.getStartSquare() == 28)
@@ -42,7 +42,7 @@ public class RookMoveGeneratorTest {
     @Test
     public void doesNotGenerateOpponentRookMoves() {
 
-        Board board = FEN.fromFEN("K7/1R6/8/8/8/8/6r1/7k w - - 0 1");
+        Board board = FEN.toBoard("K7/1R6/8/8/8/8/6r1/7k w - - 0 1");
 
         List<Move> moves = generator.generateMoves(board, false).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.ROOK)

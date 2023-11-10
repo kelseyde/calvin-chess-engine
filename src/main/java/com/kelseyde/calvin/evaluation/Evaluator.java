@@ -65,6 +65,9 @@ public class Evaluator implements Evaluation {
         int whiteKingSafetyScore = KingSafety.score(board, blackMaterial, phase, true);
         int blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
 
+        int whiteRookScore = RookEvaluation.score(board, phase, true);
+        int blackRookScore = RookEvaluation.score(board, phase, false);
+
         int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
 
@@ -75,6 +78,7 @@ public class Evaluator implements Evaluation {
                 .whiteMobilityScore(whiteMobilityScore)
                 .whitePawnStructureScore(whitePawnStructureScore)
                 .whiteKingSafetyScore(whiteKingSafetyScore)
+                .whiteRookScore(whiteRookScore)
                 .whiteMopUpScore(whiteMopUpScore)
                 .blackMaterial(blackMaterial)
                 .blackMaterialScore(blackMaterialScore)
@@ -82,6 +86,7 @@ public class Evaluator implements Evaluation {
                 .blackMobilityScore(blackMobilityScore)
                 .blackPawnStructureScore(blackPawnStructureScore)
                 .blackKingSafetyScore(blackKingSafetyScore)
+                .blackRookScore(blackRookScore)
                 .blackMopUpScore(blackMopUpScore)
                 .build();
 
@@ -196,6 +201,9 @@ public class Evaluator implements Evaluation {
         int whiteMobilityScore = 0;
         int blackMobilityScore = 0;
 
+        int whiteRookScore = RookEvaluation.score(board, phase, true);
+        int blackRookScore = RookEvaluation.score(board, phase, false);
+
         int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
 
@@ -206,6 +214,7 @@ public class Evaluator implements Evaluation {
                 .whiteMobilityScore(whiteMobilityScore)
                 .whitePawnStructureScore(whitePawnStructureScore)
                 .whiteKingSafetyScore(whiteKingSafetyScore)
+                .whiteRookScore(whiteRookScore)
                 .whiteMopUpScore(whiteMopUpScore)
                 .blackMaterial(blackMaterial)
                 .blackMaterialScore(blackMaterialScore)
@@ -213,6 +222,7 @@ public class Evaluator implements Evaluation {
                 .blackMobilityScore(blackMobilityScore)
                 .blackPawnStructureScore(blackPawnStructureScore)
                 .blackKingSafetyScore(blackKingSafetyScore)
+                .blackRookScore(blackRookScore)
                 .blackMopUpScore(blackMopUpScore)
                 .build();
 

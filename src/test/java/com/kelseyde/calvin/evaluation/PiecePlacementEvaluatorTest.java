@@ -20,7 +20,7 @@ public class PiecePlacementEvaluatorTest {
     @Test
     public void bigPawnCentreGivesAdvantageToBlack() {
 
-        Board board = FEN.fromFEN("r1b2rk1/pp4pp/1qnb1n2/2pppp2/8/3PPN2/PPP1BPPP/RNBQ1R1K b - - 7 10");
+        Board board = FEN.toBoard("r1b2rk1/pp4pp/1qnb1n2/2pppp2/8/3PPN2/PPP1BPPP/RNBQ1R1K b - - 7 10");
         Assertions.assertEquals(76, score(board));
 
         board.setWhiteToMove(true);
@@ -32,7 +32,7 @@ public class PiecePlacementEvaluatorTest {
     public void testKingActivityInEndgame() {
 
         String fen = "8/p7/8/8/8/3k4/P7/7K w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         Assertions.assertEquals(-58, score(board));
 
@@ -43,7 +43,7 @@ public class PiecePlacementEvaluatorTest {
 
         String fen = "7k/8/8/8/1p6/p6P/6P1/7K w - - 0 1";
 
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         Assertions.assertEquals(-124, score(board));
 
@@ -55,10 +55,10 @@ public class PiecePlacementEvaluatorTest {
         String ruyLopezFen = "r1bqkb1r/1ppp1ppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1";
         String ruyLopezReverseFen = "rnbqk2r/pppp1ppp/5n2/b3p3/4P3/P1N2N2/1PPP1PPP/R1BQKB1R b KQkq - 0 1";
 
-        Board board1 = FEN.fromFEN(ruyLopezFen);
+        Board board1 = FEN.toBoard(ruyLopezFen);
         int score1 = score(board1);
 
-        Board board2 = FEN.fromFEN(ruyLopezFen);
+        Board board2 = FEN.toBoard(ruyLopezFen);
         int score2 = score(board2);
 
         Assertions.assertEquals(score1, score2);

@@ -142,17 +142,17 @@ public class PawnMoveGeneratorTest {
     public void testWhitePawnCaptures() {
 
         String fen = "k7/8/8/8/8/p1p5/1P6/K7 w - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
         assertMovesFromSquare(board, 9,
                 Set.of(new Move(9, 16), new Move(9, 17), new Move(9, 18), new Move(9, 25)));
 
         fen = "k7/8/p7/6p1/7P/8/8/K7 w - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
         assertMovesFromSquare(board, 31,
                 Set.of(new Move(31, 38), new Move(31, 39)));
 
         fen = "k7/p1p5/1P6/8/8/8/8/K7 w - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
         assertMovesFromSquare(board, 41,
                 Set.of(new Move(41, 48),
                         new Move(41, 49),
@@ -165,11 +165,11 @@ public class PawnMoveGeneratorTest {
     public void testBlackPawnCaptures() {
 
         String fen = "k7/1p6/P1P5/8/8/8/8/K7 b - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
         assertMovesFromSquare(board, 49, Set.of(new Move(49, 40), new Move(49, 41), new Move(49, 42), new Move(49, 33)));
 
         fen = "k7/8/8/p7/1P5P/8/8/K7 b - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
         // should not capture the wrapped piece
         assertMovesFromSquare(board, 32, Set.of(new Move(32, 24), new Move(32, 25)));
 
@@ -217,7 +217,7 @@ public class PawnMoveGeneratorTest {
     public void testWhiteEnPassantWithOtherCapture() {
 
         String fen = "k7/4p3/2q5/3P4/8/8/8/K7 b - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, NotationUtils.fromNotation("e7", "e5")));
 
@@ -300,7 +300,7 @@ public class PawnMoveGeneratorTest {
     public void testBlackEnPassantWithOtherCapture() {
 
         String fen = "k7/8/8/8/5p2/6P1/4P3/K7 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
 
         List<Move> legalBlackMoves = generator.generateMoves(board, false).stream()
@@ -407,7 +407,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testWhiteCapturePromotion() {
         String fen = "k1q5/3P4/8/8/8/8/8/K7 w - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
@@ -427,7 +427,7 @@ public class PawnMoveGeneratorTest {
     @Test
     public void testBlackCapturePromotion() {
         String fen = "k7/8/8/8/8/8/7p/K5B1 b - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
@@ -448,7 +448,7 @@ public class PawnMoveGeneratorTest {
 
         String fen = "4k3/8/8/8/n7/7P/8/4K3 w - - 0 1";
 
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> legalMoves = generator.generateMoves(board, false).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)

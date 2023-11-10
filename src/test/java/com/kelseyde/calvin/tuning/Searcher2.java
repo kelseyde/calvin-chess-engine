@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.movegeneration.MoveGeneration;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;

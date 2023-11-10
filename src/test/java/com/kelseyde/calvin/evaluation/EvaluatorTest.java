@@ -32,7 +32,7 @@ public class EvaluatorTest {
     public void testPiecePlacementUpdate() {
 
         String fen = "8/8/3k4/3p4/8/3P1K2/8/8 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         evaluator = new Evaluator(board);
 
         int overallScore = evaluator.get();
@@ -51,7 +51,7 @@ public class EvaluatorTest {
     public void testCapture() {
 
         String fen = "r7/8/3k4/2n5/8/3B4/8/6K1 b - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         evaluator = new Evaluator(board);
 
         int overallScore = evaluator.get();
@@ -77,7 +77,7 @@ public class EvaluatorTest {
     public void testPromotion() {
 
         String fen = "8/5KP1/8/8/8/8/5k2/8 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         evaluator = new Evaluator(board);
 
         int score = evaluator.get();
@@ -280,7 +280,7 @@ public class EvaluatorTest {
     @Test
     public void testMultipleUnmakeMove() {
 
-        Board board = FEN.fromFEN("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+        Board board = FEN.toBoard("r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
         evaluator = new Evaluator(board);
 
         Move move = TestUtils.getLegalMove(board, "d2", "d4");
@@ -559,7 +559,7 @@ public class EvaluatorTest {
 
         String fen = "7r/4b1p1/8/3BkP2/4N3/8/PPn2PP1/1R1R2K1 b - - 0 26";
 
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         evaluator = new Evaluator(board);
 
         Move move = TestUtils.getLegalMove(board, "h8", "b8");

@@ -28,7 +28,7 @@ public class EndgameTest {
     public void testQueenMateInOneBetterThanMateInTwo() {
 
         String fen = "k7/8/2K5/8/8/8/1Q6/8 w - - 1 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         Searcher search = new Searcher(board);
 
@@ -88,7 +88,7 @@ public class EndgameTest {
     public void testRookVsTwoConnectedPawns() {
 
         String fen = "8/8/2k5/6KP/6P1/8/3r4/8 b - - 1 46";
-        Search search = new Searcher(FEN.fromFEN(fen));
+        Search search = new Searcher(FEN.toBoard(fen));
         Move move = search.search(Duration.ofSeconds(2)).move();
         System.out.println(NotationUtils.toNotation(move));
 

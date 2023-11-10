@@ -13,7 +13,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testSimpleCastledKingFullPawnShield() {
 
         String fen = "rnbq1rk1/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 w - - 6 5";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -25,7 +25,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testH3Hook() {
 
         String fen = "rnbq1rk1/pppp1ppp/5n2/2b1p3/2B1P3/5N1P/PPPP1PP1/RNBQ1RK1 b - - 0 5";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -37,7 +37,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testG4Push() {
 
         String fen = "rnbq1rk1/pppp1ppp/5n2/2b1p3/2B1P1P1/5N2/PPPP1P1P/RNBQ1RK1 b - g3 0 5";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -49,7 +49,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testPawnShieldPawnPushedToFifthRank() {
 
         String fen = "2kr1bnr/pppq1ppp/2n1p3/1P1p1b2/3P1B2/2N5/P1PQPPPP/2KR1BNR b - - 0 7";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -62,7 +62,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testQueensideCastleKb1IncreasesKingSafety() {
 
         String fen = "1k1r1bnr/pppq1ppp/2n1p3/1P1p1b2/3P1B2/2N5/P1PQPPPP/1K1R1BNR b - - 2 8";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -76,7 +76,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testAdjacentSemiOpenFile() {
 
         String fen = "rnbq1rk1/pp1pbppp/2p2n2/4p3/2B1P3/3P1N2/PPP3PP/RNBQ1RK1 w Qq - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -89,7 +89,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testKingSemiOpenFile() {
 
         String fen = "rnbq1rk1/pp1pbppp/2p2n2/4p3/2B1P3/3P1N2/PPP2P1P/RNBQ1RK1 w Qq - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(8, 2, 2, 2, 1), 1.0f, true);
 
@@ -102,7 +102,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testAdjacentOpenFile() {
 
         String fen = "rnbqkr2/pp1pbp1p/2p2n2/4p3/2B1P3/3P1N2/PPP2P1P/RNBQ1R1K w Qq - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -115,7 +115,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testKingOpenFile() {
 
         String fen = "rnbqkr2/pp1pbp1p/2p2n2/4p3/2B1P3/3P1N2/PPP2P1P/RNBQ1RK1 w Qq - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -127,7 +127,7 @@ public class KingPawnShieldEvaluatorTest {
     @Test
     public void testThreeOpenFiles() {
         String fen = "rnbq1r2/ppkpb3/2p2n2/4p3/2B1P3/3P1N2/PPP5/RNBQ1RK1 w Qa - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int eval = KingSafety.score(board, new Material(1, 1, 1, 1, 1), 1.0f, true);
 
@@ -139,7 +139,7 @@ public class KingPawnShieldEvaluatorTest {
     public void testEndgameWeight() {
 
         String fen = "rn1qkbnr/pbp1p3/1p1p4/6pp/8/2P2NP1/PP1PP1BP/RNBQ1RK1 w Qkq - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         float phase = 0.75f;
 

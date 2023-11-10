@@ -69,7 +69,7 @@ public class MoveOrdererTest {
     public void testLosingCaptureBias() {
 
         String fen = "7k/8/8/8/4r3/3P1Q2/8/7K w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> moves = new ArrayList<>(List.of(
                 NotationUtils.fromNotation("h1", "h2"),
@@ -89,7 +89,7 @@ public class MoveOrdererTest {
     public void testKillerMoveBias() {
 
         String fen = "k7/8/8/6q1/8/5PP1/6BP/6K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> moves = new ArrayList<>(List.of(
                 NotationUtils.fromNotation("g1", "h1"),
@@ -110,7 +110,7 @@ public class MoveOrdererTest {
     public void testIgnoreKillersAtDifferentPly() {
 
         String fen = "1k6/8/8/6q1/8/5PP1/6BP/6K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> moves = new ArrayList<>(List.of(
                 NotationUtils.fromNotation("g1", "h1"),
@@ -132,7 +132,7 @@ public class MoveOrdererTest {
     public void testHistoryHeuristicOrdering() {
 
         String fen = "5rk1/5ppp/8/8/8/8/4QPPP/5RK1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> moves = new ArrayList<>(List.of(
                 NotationUtils.fromNotation("g1", "h1"),
@@ -158,7 +158,7 @@ public class MoveOrdererTest {
     public void testWinningCaptureBias() {
 
         String fen = "7k/8/8/8/4r3/3P1Q2/8/7K w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> moves = new ArrayList<>(List.of(
                 NotationUtils.fromNotation("h1", "h2"),
@@ -178,7 +178,7 @@ public class MoveOrdererTest {
     public void testWinningCaptureBeatsLosingCapture() {
 
         String fen = "7k/8/8/5p2/4r3/3P1Q2/8/7K w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> moves = new ArrayList<>(List.of(
                 NotationUtils.fromNotation("h1", "h2"),
@@ -199,7 +199,7 @@ public class MoveOrdererTest {
     public void testPreviousBestMoveBias() {
 
         String fen = "2b1r1k1/5pp1/B5Np/8/8/8/3R1PPP/6K1 b - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> moves = new ArrayList<>(List.of(
                 NotationUtils.fromNotation("c8", "a6"),
@@ -223,7 +223,7 @@ public class MoveOrdererTest {
     public void testComplexPosition() {
 
         String fen = "1k6/3p2pp/rnb1P3/8/N3Q3/1P5p/P1PPPpN1/1K6 b - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 

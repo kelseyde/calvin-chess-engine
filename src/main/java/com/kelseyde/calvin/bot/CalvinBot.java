@@ -55,7 +55,7 @@ public class CalvinBot implements Bot {
     @Override
     public void setPosition(String fen, List<Move> moves) {
         if (board == null) {
-            board = FEN.fromFEN(fen);
+            board = FEN.toBoard(fen);
             search.init(board);
             moveGenerator = new MoveGenerator();
             moves.stream()

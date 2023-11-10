@@ -22,7 +22,7 @@ public abstract class MPerftTest {
     protected abstract String getSubFolder();
 
     protected void perft(int depth, int expectedTotalMoves) {
-        Board board = FEN.fromFEN(getFen());
+        Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
         int totalMoveCount = mPerftService.perft(board, depth);
         Instant end = Instant.now();

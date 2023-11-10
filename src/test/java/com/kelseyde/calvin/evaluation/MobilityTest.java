@@ -1,17 +1,11 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.score.Mobility;
-import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 @Disabled
 public class MobilityTest {
@@ -20,7 +14,7 @@ public class MobilityTest {
     public void testTrappedKnight() {
 
         String fen = "6k1/8/8/8/2p5/3p4/8/N5K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -34,7 +28,7 @@ public class MobilityTest {
     public void testKnightCannotMoveToPawnAttacks() {
 
         String fen = "5k2/1p3p2/8/8/3N4/8/8/6K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -48,7 +42,7 @@ public class MobilityTest {
     public void testOctopusKnight() {
 
         String fen = "6k1/8/4N3/8/8/8/8/6K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -62,7 +56,7 @@ public class MobilityTest {
     public void testTrappedBishop() {
 
         String fen = "6k1/8/8/7p/6pP/4KpP1/5P1B/8 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -76,7 +70,7 @@ public class MobilityTest {
     public void testMonsterBishop() {
 
         String fen = "5k2/8/8/8/4B3/8/8/6K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -90,7 +84,7 @@ public class MobilityTest {
     public void testBishopCannotMoveToPawnAttacks() {
 
         String fen = "5k2/1p3p2/8/3B4/8/8/8/6K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -104,7 +98,7 @@ public class MobilityTest {
     public void testMonsterRook() {
 
         String fen = "5k2/8/8/4R3/8/8/8/6K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -118,7 +112,7 @@ public class MobilityTest {
     public void testRookTrappedInCorner() {
 
         String fen = "5k2/8/8/8/8/8/PPP5/R1K5 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -132,7 +126,7 @@ public class MobilityTest {
     public void testRookCannotMoveToPawnAttacks() {
 
         String fen = "5k2/2pPp3/1p3p2/1P1R1P2/3P4/8/8/2K5 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -146,7 +140,7 @@ public class MobilityTest {
     public void testMonsterQueen() {
 
         String fen = "6k1/8/8/4q3/8/8/8/7K b - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, false, 1);
         int egScore = Mobility.score(board, false, 0);
@@ -160,7 +154,7 @@ public class MobilityTest {
     public void testTrappedQueen() {
 
         String fen = "q1k5/2P5/pPP5/3P4/8/8/8/7K b - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, false, 1);
         int egScore = Mobility.score(board, false, 0);
@@ -174,7 +168,7 @@ public class MobilityTest {
     public void testBishopsCanMoveThroughFriendlyPieces() {
 
         String fen = "7k/8/8/8/8/1B6/B7/7K w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         int mgScore = Mobility.score(board, true, 1);
         int egScore = Mobility.score(board, true, 0);
@@ -188,7 +182,7 @@ public class MobilityTest {
     public void testKasparovOctopusKnight() {
 
         String fen = "2r1r1k1/3n1p2/5q1p/3P1bp1/Np6/1P1n2P1/3Q1PBP/1N1R1RK1 w - - 0 27";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         /*
         wn1 = 3 (-7, -5)

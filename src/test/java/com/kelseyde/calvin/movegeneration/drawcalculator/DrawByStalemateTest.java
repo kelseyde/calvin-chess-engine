@@ -33,7 +33,7 @@ public class DrawByStalemateTest {
     @Test
     public void testSimpleKingAndPawnStalemate() {
 
-        Board board = FEN.fromFEN("4k3/4P3/3K4/8/8/8/8/8 w - - 0 1");
+        Board board = FEN.toBoard("4k3/4P3/3K4/8/8/8/8/8 w - - 0 1");
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "d6", "e6"));
@@ -47,7 +47,7 @@ public class DrawByStalemateTest {
     @Test
     public void testSimpleKingAndBishopStalemate() {
 
-        Board board = FEN.fromFEN("7k/8/6KP/5B2/8/8/8/8 w - - 0 1");
+        Board board = FEN.toBoard("7k/8/6KP/5B2/8/8/8/8 w - - 0 1");
 
         board.makeMove(TestUtils.getLegalMove(board, "f5", "e6"));
 
@@ -60,7 +60,7 @@ public class DrawByStalemateTest {
     @Test
     public void testStalemateWithPinnedPawn() {
 
-        Board board = FEN.fromFEN("7k/6p1/7P/4BBK1/8/8/1Q6/8 w - - 0 1");
+        Board board = FEN.toBoard("7k/6p1/7P/4BBK1/8/8/1Q6/8 w - - 0 1");
         Assertions.assertFalse(resultEvaluator.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b2", "a2"));

@@ -35,7 +35,7 @@ public class ZobristKeyTest {
 
         String fen = "k6K/1pp2P1P/p1p5/P7/8/8/5r2/2R5 w - - 1 51";
 
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         long firstZobrist1 = board.getGameState().getZobristKey();
 
         board.makeMove(NotationUtils.fromNotation("h8", "g8"));
@@ -63,7 +63,7 @@ public class ZobristKeyTest {
 
         String fen = "1rb3k1/p1q3pp/4pr2/5p2/2pP4/1PQ3P1/4PPBP/2R1K2R b K - 0 21";
 
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
         long z1 = board.getGameState().getZobristKey();
         board.makeMove(NotationUtils.fromNotation("b8", "b3"));
         long z2 = board.getGameState().getZobristKey();

@@ -24,7 +24,7 @@ public class GamePhaseTest {
     public void testOnlyKingsLeft() {
 
         String fen = "4k3/8/8/8/8/8/8/4K3 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         float value = score(board);
 
@@ -36,7 +36,7 @@ public class GamePhaseTest {
     public void testOnlyKingAndPawnsLeft() {
 
         String fen = "4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         float value = score(board);
 
@@ -48,7 +48,7 @@ public class GamePhaseTest {
     public void testRook() {
 
         String fen = "1kr5/8/8/8/8/8/8/5KR1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         float value = score(board);
 
@@ -63,7 +63,7 @@ public class GamePhaseTest {
     public void testMinorPieces() {
 
         String fen = "8/8/3bpk2/4Np2/3P1P2/4K3/8/8 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         float value = score(board);
 
@@ -78,7 +78,7 @@ public class GamePhaseTest {
     public void testMiddlegame() {
 
         String fen = "3q1rk1/2pb1pp1/p1p4p/3pP3/3P1P2/1Q6/PP1B2PP/2R3K1 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         float value = score(board);
 

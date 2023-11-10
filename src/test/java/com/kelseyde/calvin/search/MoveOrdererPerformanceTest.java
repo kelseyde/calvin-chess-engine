@@ -26,7 +26,7 @@ public class MoveOrdererPerformanceTest {
     @Test
     public void tesSortingAlgorithms() {
 
-        Board board1 = FEN.fromFEN(fen);
+        Board board1 = FEN.toBoard(fen);
 
         Instant start = Instant.now();
         IntStream.range(0, 100000).forEach(i -> {

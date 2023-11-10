@@ -22,7 +22,7 @@ public abstract class SPerftTest {
     protected abstract String getSubFolder();
 
     protected void sPerft(int depth) {
-        Board board = FEN.fromFEN(getFen());
+        Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
         Searcher search = new Searcher(board);
         search.setTimeout(Instant.now().plus(Duration.ofHours(1)));

@@ -14,7 +14,7 @@ public class MopUpTest {
     public void testBonusForMovingKingCloser() {
 
         String fen = "8/8/8/4k3/8/8/8/3QK3 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         Material friendlyMaterial = Material.fromBoard(board, true);
         Material opponentMaterial = Material.fromBoard(board, false);
@@ -34,7 +34,7 @@ public class MopUpTest {
     public void testEvalTaperedBasedOnOpponentMaterial() {
 
         String fen = "8/8/8/4k3/8/8/8/3QK3 w - - 0 1";
-        Board board = FEN.fromFEN(fen);
+        Board board = FEN.toBoard(fen);
 
         Material friendlyMaterial = Material.fromBoard(board, true);
         Material opponentMaterial = Material.fromBoard(board, false);
@@ -43,7 +43,7 @@ public class MopUpTest {
 
         // give black an extra couple of knights
         fen = "8/8/4n3/3nk3/8/8/8/3QK3 w - - 0 1";
-        board = FEN.fromFEN(fen);
+        board = FEN.toBoard(fen);
 
         friendlyMaterial = Material.fromBoard(board, true);
         opponentMaterial = Material.fromBoard(board, false);

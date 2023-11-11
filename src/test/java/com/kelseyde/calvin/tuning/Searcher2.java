@@ -47,7 +47,7 @@ public class Searcher2 implements Search {
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
     private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
-    private static final int DELTA_PRUNING_MARGIN = 180;
+    private static final int DELTA_PRUNING_MARGIN = 190;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -351,13 +351,13 @@ public class Searcher2 implements Search {
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
 
         for (Move move : orderedMoves) {
-            // Static exchange evaluation: try to filter out captures that are obviously bad (e.g. QxP -> PxQ)
+            // Static exchange evaluation: filter out likely bad captures (e.g. QxP -> PxQ)
             int seeEval = see.evaluate(board, move);
             if ((depth <= 3 && seeEval < 0) || (depth > 3 && seeEval <= 0)) {
                 continue;
             }
 
-            // More futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
+            // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
             Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
             int delta = standPat + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
             if (delta < alpha && !move.isPromotion()) {

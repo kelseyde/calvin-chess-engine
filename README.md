@@ -4,7 +4,7 @@ Calvin is a chess engine written in Java.
 
 This is a personal project. I am a Java developer and amateur chess player, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life. 
 
-Calvin is rated about ~2100 on Lichess as of November 2023.
+Calvin is rated about ~2200 on Lichess as of November 2023.
 
 ## Features
 
@@ -15,22 +15,28 @@ Calvin is rated about ~2100 on Lichess as of November 2023.
 ### Move Generation
 
 - [Legal move generation](https://www.chessprogramming.org/Move_Generation): check, pin and attack masks are generated first. If double-check, only king moves are generated. Pseudo-legal moves which leave the king in check are not generated.
-- [Magic bitboards](https://www.chessprogramming.org/Magic_Bitboards) are used for sliding piece move generatiton.
+- [Magic bitboards](https://www.chessprogramming.org/Magic_Bitboards): magic bitboards are used for sliding piece move generatiton.
+- [Incremental updates](https://www.chessprogramming.org/Incremental_Updates): Evaluation is updated incrementally with make/unmake move
 
 ### Search
 - [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) + [negamax](https://www.chessprogramming.org/Negamax).
 - [Quiescence search](https://www.chessprogramming.org/Quiescence_Search) to combat the horizon effect.
 - [Transposition table](https://www.chessprogramming.org/Transposition_Table) with [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing).
 - [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
+- [Futility Pruning](https://www.chessprogramming.org/Futility_Pruning)
+- [Reverse Futility Pruning](https://www.chessprogramming.org/Reverse_Futility_Pruning)
+- [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions)
+- [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
 
 ### Move Ordering
 - TT-move ordering, [MVV-LVA](https://www.chessprogramming.org/MVV-LVA), [killer move heuristic](https://www.chessprogramming.org/Killer_Move), [history heuristic](https://www.chessprogramming.org/History_Heuristic).
 
 ### Evaluation
-- Basic material count
-- [Piece square tables](https://www.chessprogramming.org/Piece-Square_Tables): start- and end- tables for king and pawns, with [tapered eval](https://www.chessprogramming.org/Tapered_Eval) based on the 'endgame weight'.
-- Pawn structure: passed pawn bonuses, isolated/doubled pawn penalties.
-- King safety: bonus for a pawn shield around the king, penalty for a pawn storm towards the king, penalty for open file around the king.
+- [Material](https://www.chessprogramming.org/Material): basic material count, bishop pair bonus
+- [Piece square tables](https://www.chessprogramming.org/Piece-Square_Tables): asymettrical PSTs
+- [Tapered eval](https://www.chessprogramming.org/Tapered_Eval): evaluation tapered based on opening/middlegame/endgame phase
+- [Pawn structure](https://www.chessprogramming.org/Pawn_Structure): passed pawn bonuses, isolated/doubled pawn penalties.
+- [King safety](https://www.chessprogramming.org/King_Safety): bonus for a pawn shield around the king, penalty for a pawn storm towards the king, penalty for open file around the king.
 
 ### Opening Book / Endgame Tablebase
 - Not yet! I would like to implement these soon.
@@ -43,12 +49,12 @@ Calvin is rated about ~2100 on Lichess as of November 2023.
 
 | 	Depth	 | 	Nodes	 | 	Speed	 | 
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | 
-| 1     | 20        | PT0.000013S  |
-| 2     | 400       | PT0.000025S  |
-| 3     | 8902      | PT0.083512S  |
-| 4     | 197281    | PT0.01012S  |
-| 5     | 4865609   | PT0.462609S  |
-| 6     | 119060324 | PT4.088233S |
+| 1     | 20        | PT0.000004S  |
+| 2     | 400       | PT0.000009S  |
+| 3     | 8902      | PT0.003844S  |
+| 4     | 197281    | PT0.025309S  |
+| 5     | 4865609   | PT0.123557S  |
+| 6     | 119060324 | PT1.363415S |
 
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 

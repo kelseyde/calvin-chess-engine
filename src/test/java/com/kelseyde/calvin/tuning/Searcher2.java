@@ -47,7 +47,7 @@ public class Searcher2 implements Search {
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
     private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
-    private static final int DELTA_PRUNING_MARGIN = 140;
+    private static final int DELTA_PRUNING_MARGIN = 180;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -278,10 +278,7 @@ public class Searcher2 implements Search {
             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
             int reductions = 0;
             if (plyRemaining >= 4 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
-                reductions = 1;
-                if (i >= 5) {
-                    reductions = plyRemaining / 3;
-                }
+                reductions = i < 5 ? 1 : plyRemaining / 3;
             }
 
             int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha, true);

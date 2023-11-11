@@ -16,6 +16,7 @@ import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionNode;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.tuning.SearchResult;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,7 +49,7 @@ public class Searcher implements Search {
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
     private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
-    private static final int DELTA_PRUNING_MARGIN = 180;
+    private static final int DELTA_PRUNING_MARGIN = 140;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -66,7 +67,6 @@ public class Searcher implements Search {
 
     private SearchResult result;
     private SearchResult resultCurrentDepth;
-    private int currentDepth;
 
     public Searcher(Board board) {
         init(board);
@@ -213,7 +213,7 @@ public class Searcher implements Search {
 
             if (isAssumedFailHigh && isNotCheck && isNotPawnEndgame) {
                 board.makeNullMove();
-                int reduction = 3;
+                int reduction = 3 + (plyRemaining / 7);
                 int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
@@ -235,18 +235,17 @@ public class Searcher implements Search {
             int reverseFutilityMargin = REVERSE_FUTILITY_PRUNING_MARGIN[plyRemaining];
             boolean isAssumedFailHigh = staticEval - reverseFutilityMargin > beta;
             if (isAssumedFailHigh && isNotCheck && isNotMateHunting) {
-                // In 'reverse futility pruning', we check if the static evaluation - some margin is still > beta.
-                // If so, then let's assume there's no point searching any moves in this position, since it's likely to
-                // produce a cut-off no matter what we do.
+                // Reverse futility pruning: if the static evaluation - some margin is still > beta, then let's assume
+                // there's no point searching any moves, since it's likely to produce a cut-off no matter what we do.
                 return staticEval - reverseFutilityMargin;
             }
 
             int futilityMargin = FUTILITY_PRUNING_MARGIN[plyRemaining];
             boolean isAssumedFailLow = staticEval + futilityMargin < alpha;
             if (isAssumedFailLow && isNotCheck && isNotMateHunting) {
-                // In standard futility pruning, we check if the static evaluation + some margin is still below alpha.
-                // If so, we still need to search interesting moves (checks, captures, promotions), in case we have a
-                // saving move, but we assume that all quiet moves can be skipped.
+                // Standard futility pruning: if the static evaluation + some margin is still < alpha, we still need to
+                // search interesting moves (checks, captures, promotions), in case we have a saving move, but we assume
+                // that all quiet moves can be skipped.
                 isFutilityPruningEnabled = true;
             }
         }
@@ -447,6 +446,14 @@ public class Searcher implements Search {
 
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
+    }
+
+    private boolean isPawnOnSeventh(Move move) {
+        int endSquare = move.getEndSquare();
+        boolean isPawn = board.pieceAt(endSquare) == Piece.PAWN;
+        if (!isPawn) return false;
+        int rank = BoardUtils.getRank(endSquare);
+        return rank == 1 || rank == 6;
     }
 
     private String side() {

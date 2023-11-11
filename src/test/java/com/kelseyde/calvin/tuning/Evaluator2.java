@@ -66,8 +66,8 @@ public class Evaluator2 implements Evaluation {
         int whiteKingSafetyScore = KingSafety.score(board, blackMaterial, phase, true);
         int blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
 
-        int whiteRookScore = RookEvaluation.score(board, phase, true);
-        int blackRookScore = RookEvaluation.score(board, phase, false);
+        int whiteRookScore = 0;
+        int blackRookScore = 0;
 
         int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
@@ -202,8 +202,8 @@ public class Evaluator2 implements Evaluation {
         int whiteMobilityScore = 0;
         int blackMobilityScore = 0;
 
-        int whiteRookScore = RookEvaluation.score(board, phase, true);
-        int blackRookScore = RookEvaluation.score(board, phase, false);
+        int whiteRookScore = 0;
+        int blackRookScore = 0;
 
         int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);

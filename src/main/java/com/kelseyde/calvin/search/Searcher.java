@@ -44,11 +44,11 @@ public class Searcher implements Search {
     private static final int MAX_DEPTH = 256;
 
     private static final int ASPIRATION_WINDOW_BUFFER = 50;
-    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
+    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 250;
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
-    private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
-    private static final int DELTA_PRUNING_MARGIN = 180;
+    private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 80, 200, 320, 440 };
+    private static final int DELTA_PRUNING_MARGIN = 190;
 
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
@@ -213,7 +213,7 @@ public class Searcher implements Search {
 
             if (isAssumedFailHigh && isNotCheck && isNotPawnEndgame) {
                 board.makeNullMove();
-                int reduction = 3;
+                int reduction = 3 + (plyRemaining / 7);
                 int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {

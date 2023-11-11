@@ -21,8 +21,6 @@ public class MatchManager {
 
     public MatchResult run() {
 
-        config.setGameCount(50);
-
         List<CompletableFuture<MatchResult>> futures = IntStream.range(0, 9)
                 .mapToObj(i -> CompletableFuture.supplyAsync(new Match(config)::run))
                 .toList();

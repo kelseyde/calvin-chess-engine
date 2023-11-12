@@ -25,13 +25,13 @@ public class ResultCalculator {
                 return GameResult.DRAW_BY_STALEMATE;
             }
         }
-        if (isThreefoldRepetition(board)) {
+        else if (isThreefoldRepetition(board)) {
             return GameResult.DRAW_BY_REPETITION;
         }
-        if (isInsufficientMaterial(board)) {
+        else if (isInsufficientMaterial(board)) {
             return GameResult.DRAW_BY_INSUFFICIENT_MATERIAL;
         }
-        if (isFiftyMoveRule(board)) {
+        else if (isFiftyMoveRule(board)) {
             return GameResult.DRAW_BY_FIFTY_MOVE_RULE;
         }
         return GameResult.IN_PROGRESS;

@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.bot.EngineConfiguration;
 import com.kelseyde.calvin.evaluation.score.*;
 
 import java.util.ArrayDeque;
@@ -21,11 +22,19 @@ public class Evaluator implements Evaluation {
 
     private Board board;
 
+    private EngineConfiguration config;
+
     private EvaluationScore score;
 
     private final Deque<EvaluationScore> evalHistory = new ArrayDeque<>();
 
+    public Evaluator(Board board, EngineConfiguration config) {
+        this.config = config;
+        init(board);
+    }
+
     public Evaluator(Board board) {
+        this.config = EngineConfiguration.builder().build();
         init(board);
     }
 

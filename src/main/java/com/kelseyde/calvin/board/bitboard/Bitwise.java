@@ -74,44 +74,44 @@ public class Bitwise {
 
     public static long pawnPushPromotions(long pawns, long occupied, boolean isWhite) {
         return isWhite ?
-                Bitwise.shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
-                Bitwise.shiftSouth(pawns) &~ occupied & Bits.RANK_1;
+                shiftNorth(pawns) &~ occupied & Bits.RANK_8 :
+                shiftSouth(pawns) &~ occupied & Bits.RANK_1;
     }
 
     public static long pawnLeftCaptures(long pawns, long opponents, boolean isWhite) {
         return isWhite ?
-                Bitwise.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_8 :
-                Bitwise.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_1;
+                shiftNorthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_8 :
+                shiftSouthWest(pawns) & opponents &~ Bits.FILE_H &~ Bits.RANK_1;
     }
 
     public static long pawnRightCaptures(long pawns, long opponents, boolean isWhite) {
         return isWhite ?
-                Bitwise.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8:
-                Bitwise.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
+                shiftNorthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_8:
+                shiftSouthEast(pawns) & opponents &~ Bits.FILE_A &~ Bits.RANK_1;
     }
 
     public static long pawnLeftEnPassants(long pawns, long enPassantFile, boolean isWhite) {
         return isWhite ?
-                Bitwise.shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 &~ Bits.FILE_H :
-                Bitwise.shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 &~ Bits.FILE_H;
+                shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 &~ Bits.FILE_H :
+                shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 &~ Bits.FILE_H;
     }
 
     public static long pawnRightEnPassants(long pawns, long enPassantFile, boolean isWhite) {
         return isWhite ?
-                Bitwise.shiftNorthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_6 :
-                Bitwise.shiftSouthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_3;
+                shiftNorthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_6 :
+                shiftSouthEast(pawns) & enPassantFile &~ Bits.FILE_A & Bits.RANK_3;
     }
 
     public static long pawnLeftCapturePromotions(long pawns, long opponents, boolean isWhite) {
         return isWhite ?
-                Bitwise.shiftNorthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_8 :
-                Bitwise.shiftSouthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_1;
+                shiftNorthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_8 :
+                shiftSouthWest(pawns) & opponents &~ Bits.FILE_H & Bits.RANK_1;
     }
 
     public static long pawnRightCapturePromotions(long pawns, long opponents, boolean isWhite) {
         return isWhite ?
-                Bitwise.shiftNorthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_8 :
-                Bitwise.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
+                shiftNorthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_8 :
+                shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
     }
 
     public static void print(long board) {

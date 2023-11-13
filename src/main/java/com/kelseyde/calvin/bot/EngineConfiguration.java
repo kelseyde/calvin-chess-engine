@@ -157,4 +157,12 @@ public class EngineConfiguration {
             -53, -34, -21, -11, -28, -14, -24, -43
     };
 
+    public int[][] getPieceSquareMgTables() {
+        return new int[][] { pawnMgTable, knightMgTable, bishopMgTable, rookMgTable, queenMgTable, kingMgTable };
+    }
+
+    public int[][] getPieceSquareEgTables() {
+        return new int[][] { pawnEgTable, knightEgTable, bishopEgTable, rookEgTable, queenEgTable, kingEgTable };
+    }
+
 }

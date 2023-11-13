@@ -11,8 +11,6 @@ import com.kelseyde.calvin.board.Piece;
 public class PieceValues {
 
     public static final int[] SIMPLE_VALUES = new int[] { 100, 320, 330, 500, 900, 0 };
-    public static final int[] MIDDLEGAME_VALUES = new int[] { 82, 337, 365, 477, 1025, 0 };
-    public static final int[] ENDGAME_VALUES = new int[] { 94, 281, 297, 512,  936,  0 };
 
     public static final int BISHOP_PAIR_BONUS = 50;
 

@@ -25,6 +25,8 @@ public class CalvinBot implements Bot {
     @Getter
     private Board board;
 
+    private EngineConfiguration config;
+
     private MoveGenerator moveGenerator;
 
     private Search search;
@@ -37,10 +39,12 @@ public class CalvinBot implements Bot {
     private int maxThinkTimeMs = 2500;
 
     public CalvinBot() {
-        this.search = new Searcher();
+        this.config = EngineConfiguration.builder().build();
+        this.search = new Searcher(config);
     }
 
-    public CalvinBot(Search search) {
+    public CalvinBot(EngineConfiguration config, Search search) {
+        this.config = config;
         this.search = search;
     }
 

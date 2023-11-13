@@ -45,17 +45,17 @@ public class Evaluator implements Evaluation {
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
-        int whiteMaterialMiddlegameScore = whiteMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-        int whiteMaterialEndgameScore = whiteMaterial.sum(PieceValues.ENDGAME_VALUES);
-        int blackMaterialMiddlegameScore = blackMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-        int blackMaterialEndgameScore = blackMaterial.sum(PieceValues.ENDGAME_VALUES);
+        int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValuesMg());
+        int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValuesEg());
+        int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValuesMg());
+        int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValuesEg());
 
         PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
         PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
-        int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
-        int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
-        int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
-        int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
+        int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(config.getPieceSquareMgTables(), true);
+        int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(config.getPieceSquareEgTables(), true);
+        int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(config.getPieceSquareMgTables(), false);
+        int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(config.getPieceSquareEgTables(), false);
 
         float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
         int whiteMaterialScore = GamePhase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
@@ -172,24 +172,24 @@ public class Evaluator implements Evaluation {
         float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
 
         if (updateMaterial) {
-            int whiteMaterialMiddlegameScore = whiteMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-            int whiteMaterialEndgameScore = whiteMaterial.sum(PieceValues.ENDGAME_VALUES);
+            int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValuesMg());
+            int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValuesEg());
             whiteMaterialScore = GamePhase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
-            int blackMaterialMiddlegameScore = blackMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-            int blackMaterialEndgameScore = blackMaterial.sum(PieceValues.ENDGAME_VALUES);
+            int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValuesMg());
+            int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValuesEg());
             blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         }
 
         if (updateWhitePiecePlacement) {
             PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
-            int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
-            int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
+            int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(config.getPieceSquareMgTables(), true);
+            int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(config.getPieceSquareEgTables(), true);
             whitePiecePlacementScore = GamePhase.taperedEval(whitePiecePlacementMiddlegameScore, whitePiecePlacementEndgameScore, phase);
         }
         if (updateBlackPiecePlacement) {
             PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
-            int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
-            int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
+            int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(config.getPieceSquareMgTables(), false);
+            int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(config.getPieceSquareEgTables(), false);
             blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
         }
 

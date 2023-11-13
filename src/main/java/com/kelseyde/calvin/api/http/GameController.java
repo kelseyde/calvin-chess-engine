@@ -7,9 +7,11 @@ import com.kelseyde.calvin.api.http.request.PlayResponse;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
+import com.kelseyde.calvin.bot.EngineConfiguration;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
+import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import com.kelseyde.calvin.utils.notation.PGN;
@@ -30,7 +32,7 @@ import java.util.Optional;
 @Slf4j
 public class GameController {
 
-    private final Bot bot = new CalvinBot();
+    private final Bot bot = new CalvinBot(EngineConfiguration.builder().build(), new Searcher(EngineConfiguration.builder().build()));
 
     private final ResultCalculator resultCalculator = new ResultCalculator();
 

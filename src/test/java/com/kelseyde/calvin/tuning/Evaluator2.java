@@ -3,6 +3,7 @@ package com.kelseyde.calvin.tuning;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.bot.EngineConfiguration;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.score.*;
 
@@ -22,11 +23,19 @@ public class Evaluator2 implements Evaluation {
 
     private Board board;
 
+    private EngineConfiguration config;
+
     private EvaluationScore score;
 
     private final Deque<EvaluationScore> evalHistory = new ArrayDeque<>();
 
+    public Evaluator2(Board board, EngineConfiguration config) {
+        this.config = config;
+        init(board);
+    }
+
     public Evaluator2(Board board) {
+        this.config = EngineConfiguration.builder().build();
         init(board);
     }
 
@@ -37,17 +46,17 @@ public class Evaluator2 implements Evaluation {
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
-        int whiteMaterialMiddlegameScore = whiteMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-        int whiteMaterialEndgameScore = whiteMaterial.sum(PieceValues.ENDGAME_VALUES);
-        int blackMaterialMiddlegameScore = blackMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-        int blackMaterialEndgameScore = blackMaterial.sum(PieceValues.ENDGAME_VALUES);
+        int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValuesMg());
+        int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValuesEg());
+        int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValuesMg());
+        int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValuesEg());
 
         PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
         PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
-        int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
-        int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
-        int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
-        int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
+        int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(config.getPieceSquareMgTables(), true);
+        int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(config.getPieceSquareEgTables(), true);
+        int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(config.getPieceSquareMgTables(), false);
+        int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(config.getPieceSquareEgTables(), false);
 
         float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
         int whiteMaterialScore = GamePhase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
@@ -55,10 +64,10 @@ public class Evaluator2 implements Evaluation {
         int blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         int blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
 
-        //int whiteMobilityScore = Mobility.score(board, true, phase);
-        //int blackMobilityScore = Mobility.score(board, false, phase);
-        int whiteMobilityScore = 0;
-        int blackMobilityScore = 0;
+        int whiteMobilityScore = Mobility.score(board, true, phase);
+        int blackMobilityScore = Mobility.score(board, false, phase);
+//        int whiteMobilityScore = 0;
+//        int blackMobilityScore = 0;
 
         int whitePawnStructureScore = PawnStructure.score(board.getPawns(true), board.getPawns(false), true);
         int blackPawnStructureScore = PawnStructure.score(board.getPawns(false), board.getPawns(true), false);
@@ -164,24 +173,24 @@ public class Evaluator2 implements Evaluation {
         float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
 
         if (updateMaterial) {
-            int whiteMaterialMiddlegameScore = whiteMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-            int whiteMaterialEndgameScore = whiteMaterial.sum(PieceValues.ENDGAME_VALUES);
+            int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValuesMg());
+            int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValuesEg());
             whiteMaterialScore = GamePhase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
-            int blackMaterialMiddlegameScore = blackMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-            int blackMaterialEndgameScore = blackMaterial.sum(PieceValues.ENDGAME_VALUES);
+            int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValuesMg());
+            int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValuesEg());
             blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         }
 
         if (updateWhitePiecePlacement) {
             PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
-            int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
-            int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
+            int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(config.getPieceSquareMgTables(), true);
+            int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(config.getPieceSquareEgTables(), true);
             whitePiecePlacementScore = GamePhase.taperedEval(whitePiecePlacementMiddlegameScore, whitePiecePlacementEndgameScore, phase);
         }
         if (updateBlackPiecePlacement) {
             PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
-            int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
-            int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
+            int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(config.getPieceSquareMgTables(), false);
+            int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(config.getPieceSquareEgTables(), false);
             blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
         }
 
@@ -197,10 +206,10 @@ public class Evaluator2 implements Evaluation {
             blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
         }
 
-        //int whiteMobilityScore = Mobility.score(board, true, phase);
-        //int blackMobilityScore = Mobility.score(board, false, phase);
-        int whiteMobilityScore = 0;
-        int blackMobilityScore = 0;
+        int whiteMobilityScore = Mobility.score(board, true, phase);
+        int blackMobilityScore = Mobility.score(board, false, phase);
+//        int whiteMobilityScore = 0;
+//        int blackMobilityScore = 0;
 
         int whiteRookScore = RookEvaluation.score(board, phase, true);
         int blackRookScore = RookEvaluation.score(board, phase, false);

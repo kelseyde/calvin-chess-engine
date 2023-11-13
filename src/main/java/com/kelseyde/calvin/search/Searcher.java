@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.bot.EngineConfiguration;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
@@ -54,6 +55,7 @@ public class Searcher implements Search {
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
 
+    private EngineConfiguration config;
     private MoveGeneration moveGenerator;
     private MoveOrdering moveOrderer;
     private Evaluation evaluator;
@@ -69,7 +71,12 @@ public class Searcher implements Search {
     private SearchResult resultCurrentDepth;
 
     public Searcher(Board board) {
+        this.config = EngineConfiguration.builder().build();
         init(board);
+    }
+
+    public Searcher(EngineConfiguration config) {
+        this.config = config;
     }
 
     @Override
@@ -79,7 +86,7 @@ public class Searcher implements Search {
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
-        this.evaluator = new Evaluator(board);
+        this.evaluator = new Evaluator(board, config);
         this.transpositionTable = new TranspositionTable(board);
     }
 

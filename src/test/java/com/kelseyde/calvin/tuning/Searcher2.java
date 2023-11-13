@@ -3,8 +3,8 @@ package com.kelseyde.calvin.tuning;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.bot.EngineConfiguration;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.movegeneration.MoveGeneration;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
@@ -54,6 +54,7 @@ public class Searcher2 implements Search {
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
 
+    private EngineConfiguration config;
     private MoveGeneration moveGenerator;
     private MoveOrdering moveOrderer;
     private Evaluation evaluator;
@@ -69,7 +70,12 @@ public class Searcher2 implements Search {
     private SearchResult resultCurrentDepth;
 
     public Searcher2(Board board) {
+        this.config = EngineConfiguration.builder().build();
         init(board);
+    }
+
+    public Searcher2(EngineConfiguration config) {
+        this.config = config;
     }
 
     @Override
@@ -79,7 +85,7 @@ public class Searcher2 implements Search {
         this.moveOrderer = new MoveOrderer2();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
-        this.evaluator = new Evaluator2(board);
+        this.evaluator = new Evaluator2(board, config);
         this.transpositionTable = new TranspositionTable(board);
     }
 
@@ -213,7 +219,7 @@ public class Searcher2 implements Search {
 
             if (isAssumedFailHigh && isNotCheck && isNotPawnEndgame) {
                 board.makeNullMove();
-                int reduction = 3;
+                int reduction = 3 + (plyRemaining / 7);
                 int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
@@ -446,6 +452,14 @@ public class Searcher2 implements Search {
 
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
+    }
+
+    private boolean isPawnOnSeventh(Move move) {
+        int endSquare = move.getEndSquare();
+        boolean isPawn = board.pieceAt(endSquare) == Piece.PAWN;
+        if (!isPawn) return false;
+        int rank = BoardUtils.getRank(endSquare);
+        return rank == 1 || rank == 6;
     }
 
     private String side() {

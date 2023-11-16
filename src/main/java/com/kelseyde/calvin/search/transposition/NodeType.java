@@ -21,6 +21,23 @@ public enum NodeType {
      * I have already discovered an alternative move I can use to avoid reaching this position at all. The node value is
      * an upper bound because it is the maximum score you can hope to achieve from all the moves this position.
      */
-    UPPER_BOUND
+    UPPER_BOUND;
+
+    public static int value(NodeType nodeType) {
+        return switch (nodeType) {
+            case EXACT -> 0;
+            case LOWER_BOUND -> 1;
+            case UPPER_BOUND -> 2;
+        };
+    }
+
+    public static NodeType valueOf(int value) {
+        return switch (value) {
+            case 0 -> EXACT;
+            case 1 -> LOWER_BOUND;
+            case 2 -> UPPER_BOUND;
+            default -> throw new IllegalArgumentException();
+        };
+    }
 
 }

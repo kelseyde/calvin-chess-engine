@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class TranspositionNode {
+public class Transposition {
 
     /**
      * The zobrist hash for this position.

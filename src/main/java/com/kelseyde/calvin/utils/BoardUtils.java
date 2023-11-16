@@ -1,8 +1,13 @@
 package com.kelseyde.calvin.utils;
 
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.GameState;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.bitboard.Bits;
 
+import java.util.ArrayDeque;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BoardUtils {
 
@@ -100,6 +105,31 @@ public class BoardUtils {
         int antiDiagonal2 = getAntiDiagonal(sq2);
         int antiDiagonal3 = getAntiDiagonal(sq3);
         return antiDiagonal1 == antiDiagonal2 && antiDiagonal2 == antiDiagonal3;
+    }
+
+    public static Board copy(Board board) {
+        Board newBoard = new Board();
+        newBoard.setWhitePawns(board.getWhitePawns());
+        newBoard.setWhiteKnights(board.getWhiteKnights());
+        newBoard.setWhiteBishops(board.getWhiteBishops());
+        newBoard.setWhiteRooks(board.getWhiteRooks());
+        newBoard.setWhiteQueens(board.getWhiteQueens());
+        newBoard.setWhiteKing(board.getWhiteKing());
+        newBoard.setBlackPawns(board.getBlackPawns());
+        newBoard.setBlackKnights(board.getBlackKnights());
+        newBoard.setBlackBishops(board.getBlackBishops());
+        newBoard.setBlackRooks(board.getBlackRooks());
+        newBoard.setBlackQueens(board.getBlackQueens());
+        newBoard.setBlackKing(board.getBlackKing());
+        newBoard.setWhitePieces(board.getWhitePieces());
+        newBoard.setBlackPieces(board.getBlackPieces());
+        newBoard.setOccupied(board.getOccupied());
+        newBoard.setWhiteToMove(board.isWhiteToMove());
+        newBoard.setGameState(board.getGameState().copy());
+        newBoard.setGameStateHistory(board.getGameStateHistory().stream().map(GameState::copy).collect(Collectors.toCollection(ArrayDeque::new)));
+        newBoard.setMoveHistory(board.getMoveHistory().stream().map(move -> new Move(move.getValue())).collect(Collectors.toCollection(ArrayDeque::new)));
+        newBoard.recalculatePieces();
+        return newBoard;
     }
 
 }

@@ -9,6 +9,21 @@ import org.junit.jupiter.api.Test;
 public class MatchTest {
 
     @Test
+    public void testSingleMatch() {
+        MatchConfig config = MatchConfig.builder()
+                .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
+                .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
+                .gameCount(100)
+                .maxMoves(100)
+                .minThinkTimeMs(35)
+                .maxThinkTimeMs(75)
+                .threadCount(1)
+                .build();
+        MatchResult result = new Match(config).run();
+        System.out.println(result);
+    }
+
+    @Test
     public void testMatch() {
 
         MatchConfig config = MatchConfig.builder()

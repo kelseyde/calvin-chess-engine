@@ -35,4 +35,8 @@ public class GameState {
         return (castlingRights & queensideMask) == queensideMask;
     }
 
+    public GameState copy() {
+        return new GameState(zobristKey, capturedPiece, enPassantFile, castlingRights, fiftyMoveCounter);
+    }
+
 }

@@ -2,9 +2,12 @@ package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.PGN;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
@@ -20,6 +23,7 @@ public class Match {
     private final MatchConfig config;
 
     private final ResultCalculator resultCalculator;
+    private final MoveGenerator moveGenerator;
     private final Random random;
 
     public Match(MatchConfig config) {
@@ -27,6 +31,7 @@ public class Match {
         this.player2 = config.getPlayer2().get();
         this.config = config;
         this.resultCalculator = new ResultCalculator();
+        this.moveGenerator = new MoveGenerator();
         this.random = new Random();
         log.info("Creating new match with with {} games, {} threads, {} max moves per game, {} - {} think range",
                 config.getGameCount(), config.getThreadCount(), config.getMaxMoves(), config.getMinThinkTimeMs(), config.getMaxThinkTimeMs());
@@ -63,6 +68,12 @@ public class Match {
 
             while (moveCount <= config.getMaxMoves()) {
 
+                List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+                if (!legalMoves.contains(whiteMove)) {
+                    System.out.println("illegal move!");
+                    System.out.println(PGN.toPGN(board));
+                    System.out.println(NotationUtils.toNotation(whiteMove));
+                }
                 board.makeMove(whiteMove);
                 whitePlayer.getBot().applyMove(whiteMove);
                 blackPlayer.getBot().applyMove(whiteMove);
@@ -73,17 +84,26 @@ public class Match {
                     if (result.isWin()) {
                         if (whitePlayer.getName().equals(player1.getName())) {
                             player1Wins++;
+//                            printMatchReport(player1Wins, player2Wins, draws);
                         } else {
                             player2Wins++;
+//                            printMatchReport(player1Wins, player2Wins, draws);
                         }
                     } else {
                         draws++;
+//                        printMatchReport(player1Wins, player2Wins, draws);
                     }
                     break;
                 }
 
                 Move blackMove = blackPlayer.getBot().think(getThinkTime());
 
+                legalMoves = moveGenerator.generateMoves(board, false);
+                if (!legalMoves.contains(blackMove)) {
+                    System.out.println("illegal move!");
+                    System.out.println(PGN.toPGN(board));
+                    System.out.println(NotationUtils.toNotation(blackMove));
+                }
                 board.makeMove(blackMove);
                 whitePlayer.getBot().applyMove(blackMove);
                 blackPlayer.getBot().applyMove(blackMove);
@@ -94,11 +114,14 @@ public class Match {
                     if (result.isWin()) {
                         if (blackPlayer.getName().equals(player1.getName())) {
                             player1Wins++;
+//                            printMatchReport(player1Wins, player2Wins, draws);
                         } else {
                             player2Wins++;
+//                            printMatchReport(player1Wins, player2Wins, draws);
                         }
                     } else {
                         draws++;
+//                        printMatchReport(player1Wins, player2Wins, draws);
                     }
                     break;
                 }
@@ -108,6 +131,7 @@ public class Match {
                 moveCount++;
                 if (moveCount > config.getMaxMoves()) {
                     draws++;
+                    break;
                 }
             }
             whitePlayer.getBot().gameOver();
@@ -121,6 +145,13 @@ public class Match {
 
     private int getThinkTime() {
         return random.nextInt(config.getMinThinkTimeMs(), config.getMaxThinkTimeMs());
+    }
+
+    private void printMatchReport(int player1Wins, int player2Wins, int draws) {
+        System.out.println("player1 wins: " + player1Wins);
+        System.out.println("player2 wins: " + player2Wins);
+        System.out.println("draws: " + draws);
+        System.out.println("---");
     }
 
 }

@@ -13,10 +13,9 @@ import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.transposition.NodeType;
-import com.kelseyde.calvin.search.transposition.TranspositionNode;
+import com.kelseyde.calvin.search.transposition.Transposition;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.tuning.SearchResult;
-import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,6 +68,11 @@ public class Searcher implements Search {
     private SearchResult resultCurrentDepth;
 
     public Searcher(Board board) {
+        init(board);
+    }
+
+    public Searcher(Board board, TranspositionTable transpositionTable) {
+        this.transpositionTable = transpositionTable;
         init(board);
     }
 
@@ -143,7 +147,7 @@ public class Searcher implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-        //System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
+//        System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
         return result;
 
     }
@@ -182,12 +186,15 @@ public class Searcher implements Search {
         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
-        TranspositionNode transposition = transpositionTable.get();
+        Transposition transposition = transpositionTable.get();
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getBestMove();
         }
         if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
             if (plyFromRoot == 0) {
+                if (transposition.getBestMove() == null) {
+                    System.out.println("here we go2 " + transposition.getType());
+                }
                 resultCurrentDepth = new SearchResult(transposition.getValue(), transposition.getBestMove());
             }
             return transposition.getValue();
@@ -253,7 +260,7 @@ public class Searcher implements Search {
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
         Move bestMove = null;
-        int originalAlpha = alpha;
+        NodeType nodeType = NodeType.UPPER_BOUND;
 
         for (int i = 0; i < orderedMoves.size(); i++) {
 
@@ -308,14 +315,14 @@ public class Searcher implements Search {
                 // We have found a new best move
                 bestMove = move;
                 alpha = eval;
+                nodeType = NodeType.EXACT;
                 if (plyFromRoot == 0) {
                     resultCurrentDepth = new SearchResult(eval, move);
                 }
             }
         }
 
-        NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
-        transpositionTable.put(transpositionType, plyRemaining, bestMove, alpha);
+        transpositionTable.put(nodeType, plyRemaining, bestMove, alpha);
         return alpha;
 
     }
@@ -332,7 +339,7 @@ public class Searcher implements Search {
             return 0;
         }
         // First exit if we have already stored an accurate eval in the TT
-        TranspositionNode transposition = transpositionTable.get();
+        Transposition transposition = transpositionTable.get();
         if (isUsefulTransposition(transposition, alpha, beta)) {
             return transposition.getValue();
         }
@@ -395,11 +402,11 @@ public class Searcher implements Search {
      * 1) contains an exact evaluation, so we don't need to search any further, 2) contains a fail-high greater than our
      * current beta value, or 3) contains a fail-low lesser than our current alpha value.
      */
-    private boolean isUsefulTransposition(TranspositionNode transposition, int plyRemaining, int alpha, int beta) {
+    private boolean isUsefulTransposition(Transposition transposition, int plyRemaining, int alpha, int beta) {
         return isUsefulTransposition(transposition, alpha, beta) && transposition.getDepth() >= plyRemaining;
     }
 
-    private boolean isUsefulTransposition(TranspositionNode transposition, int alpha, int beta) {
+    private boolean isUsefulTransposition(Transposition transposition, int alpha, int beta) {
         if (transposition == null) {
             return false;
         }
@@ -417,7 +424,7 @@ public class Searcher implements Search {
         return isInWindow || isFailLow || isFailHigh;
     }
 
-    private boolean hasBestMove(TranspositionNode transposition) {
+    private boolean hasBestMove(Transposition transposition) {
         return transposition != null && transposition.getBestMove() != null;
     }
 
@@ -446,14 +453,6 @@ public class Searcher implements Search {
 
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
-    }
-
-    private boolean isPawnOnSeventh(Move move) {
-        int endSquare = move.getEndSquare();
-        boolean isPawn = board.pieceAt(endSquare) == Piece.PAWN;
-        if (!isPawn) return false;
-        int rank = BoardUtils.getRank(endSquare);
-        return rank == 1 || rank == 6;
     }
 
     private String side() {

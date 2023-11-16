@@ -3,6 +3,7 @@ package com.kelseyde.calvin.tuning;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
@@ -13,10 +14,7 @@ import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
-import com.kelseyde.calvin.search.transposition.NodeType;
-import com.kelseyde.calvin.search.transposition.TranspositionNode;
-import com.kelseyde.calvin.search.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.BoardUtils;
+import com.kelseyde.calvin.search.transposition.*;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,7 +56,7 @@ public class Searcher2 implements Search {
     private MoveOrdering moveOrderer;
     private Evaluation evaluator;
     private StaticExchangeEvaluator see;
-    private TranspositionTable transpositionTable;
+    private TranspositionTable4 transpositionTable;
     private ResultCalculator resultCalculator;
 
     private @Getter Board board;
@@ -76,11 +74,11 @@ public class Searcher2 implements Search {
     public void init(Board board) {
         this.board = board;
         this.moveGenerator = new MoveGenerator();
-        this.moveOrderer = new MoveOrderer2();
+        this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
-        this.evaluator = new Evaluator2(board);
-        this.transpositionTable = new TranspositionTable(board);
+        this.evaluator = new Evaluator(board);
+        this.transpositionTable = new TranspositionTable4(board);
     }
 
     /**
@@ -110,7 +108,7 @@ public class Searcher2 implements Search {
                 result = resultCurrentDepth;
             }
 
-            if (isTimeoutExceeded() || isCheckmateFoundAtCurrentDepth(result.eval(), currentDepth)) {
+            if (isTimeoutExceeded() || isCheckmateFoundAtCurrentDepth(result, currentDepth)) {
                 // Exit early if time runs out, or we already found forced mate
                 break;
             }
@@ -143,7 +141,7 @@ public class Searcher2 implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move);
         }
-        //System.out.printf("max depth: %s, eval: %s%n", currentDepth, result.eval());
+//        System.out.printf("max depth: %s, eval: %s, move: %s%n", currentDepth, result.eval(), NotationUtils.toNotation(result.move()));
         return result;
 
     }
@@ -166,7 +164,7 @@ public class Searcher2 implements Search {
         }
         if (plyRemaining <= 0) {
             // In the case that search depth is reached, begin quiescence search
-            return quiescenceSearch(alpha, beta, 1);
+            return quiescenceSearch(alpha, beta, 1, plyFromRoot);
         }
         if (plyFromRoot > 0) {
             if (resultCalculator.isEffectiveDraw(board)) {
@@ -182,18 +180,19 @@ public class Searcher2 implements Search {
         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
-        TranspositionNode transposition = transpositionTable.get();
+        TranspositionEntry transposition = transpositionTable.get(plyFromRoot);
         if (hasBestMove(transposition)) {
-            previousBestMove = transposition.getBestMove();
+            previousBestMove = transposition.getMove();
         }
         if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
-            if (plyFromRoot == 0) {
-                resultCurrentDepth = new SearchResult(transposition.getValue(), transposition.getBestMove());
+//            if (plyFromRoot == 0 && transposition.getMove() != null && legalMoves.contains(transposition.getMove())) {
+            if (plyFromRoot == 0 && transposition.getMove() != null) {
+                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove());
             }
-            return transposition.getValue();
+            return transposition.getScore();
         }
-
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+
         if (legalMoves.isEmpty()) {
             // Found checkmate / stalemate
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -213,7 +212,7 @@ public class Searcher2 implements Search {
 
             if (isAssumedFailHigh && isNotCheck && isNotPawnEndgame) {
                 board.makeNullMove();
-                int reduction = 3;
+                int reduction = 3 + (plyRemaining / 7);
                 int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
@@ -253,7 +252,7 @@ public class Searcher2 implements Search {
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
 
         Move bestMove = null;
-        int originalAlpha = alpha;
+        NodeType nodeType = NodeType.UPPER_BOUND;
 
         for (int i = 0; i < orderedMoves.size(); i++) {
 
@@ -295,7 +294,7 @@ public class Searcher2 implements Search {
 
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, move, beta);
+                transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, move, beta);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(plyFromRoot, move);
@@ -308,14 +307,14 @@ public class Searcher2 implements Search {
                 // We have found a new best move
                 bestMove = move;
                 alpha = eval;
+                nodeType = NodeType.EXACT;
                 if (plyFromRoot == 0) {
                     resultCurrentDepth = new SearchResult(eval, move);
                 }
             }
         }
 
-        NodeType transpositionType = alpha <= originalAlpha ? NodeType.UPPER_BOUND : NodeType.EXACT;
-        transpositionTable.put(transpositionType, plyRemaining, bestMove, alpha);
+        transpositionTable.put(nodeType, plyRemaining, plyFromRoot, bestMove, alpha);
         return alpha;
 
     }
@@ -327,14 +326,14 @@ public class Searcher2 implements Search {
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta, int depth) {
+    int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot) {
         if (isTimeoutExceeded()) {
             return 0;
         }
         // First exit if we have already stored an accurate eval in the TT
-        TranspositionNode transposition = transpositionTable.get();
+        TranspositionEntry transposition = transpositionTable.get(plyFromRoot);
         if (isUsefulTransposition(transposition, alpha, beta)) {
-            return transposition.getValue();
+            return transposition.getScore();
         }
 
         // Then check stand-pat score.
@@ -365,7 +364,7 @@ public class Searcher2 implements Search {
             }
 
             makeMove(move);
-            eval = -quiescenceSearch(-beta, -alpha, depth + 1);
+            eval = -quiescenceSearch(-beta, -alpha, depth + 1, plyFromRoot + 1);
             unmakeMove();
 
             if (eval >= beta) {
@@ -395,30 +394,30 @@ public class Searcher2 implements Search {
      * 1) contains an exact evaluation, so we don't need to search any further, 2) contains a fail-high greater than our
      * current beta value, or 3) contains a fail-low lesser than our current alpha value.
      */
-    private boolean isUsefulTransposition(TranspositionNode transposition, int plyRemaining, int alpha, int beta) {
+    private boolean isUsefulTransposition(TranspositionEntry transposition, int plyRemaining, int alpha, int beta) {
         return isUsefulTransposition(transposition, alpha, beta) && transposition.getDepth() >= plyRemaining;
     }
 
-    private boolean isUsefulTransposition(TranspositionNode transposition, int alpha, int beta) {
+    private boolean isUsefulTransposition(TranspositionEntry transposition, int alpha, int beta) {
         if (transposition == null) {
             return false;
         }
-        NodeType type = transposition.getType();
+        NodeType type = transposition.getFlag();
 
         // Previous search returned the exact evaluation for this position.
         boolean isInWindow = type.equals(NodeType.EXACT);
 
         // Previous search failed low, beating alpha score; only use it if it beats the current alpha.
-        boolean isFailLow = type.equals(NodeType.UPPER_BOUND) && transposition.getValue() <= alpha;
+        boolean isFailLow = type.equals(NodeType.UPPER_BOUND) && transposition.getScore() <= alpha;
 
         // Previous search failed high, causing a beta cut-off; only use it if greater than current beta.
-        boolean isFailHigh = type.equals(NodeType.LOWER_BOUND) && transposition.getValue() >= beta;
+        boolean isFailHigh = type.equals(NodeType.LOWER_BOUND) && transposition.getScore() >= beta;
 
         return isInWindow || isFailLow || isFailHigh;
     }
 
-    private boolean hasBestMove(TranspositionNode transposition) {
-        return transposition != null && transposition.getBestMove() != null;
+    private boolean hasBestMove(TranspositionEntry transposition) {
+        return transposition != null && transposition.getMove() != null;
     }
 
     @Override
@@ -436,8 +435,9 @@ public class Searcher2 implements Search {
         //log.info(statistics.generateReport());
     }
 
-    private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {
-        return Math.abs(bestEval) >= CHECKMATE_SCORE - currentDepth;
+    private boolean isCheckmateFoundAtCurrentDepth(SearchResult result, int currentDepth) {
+        if (result == null) return false;
+        return Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
     }
 
     private boolean isTimeoutExceeded() {

@@ -22,9 +22,9 @@ public class MatchManager {
     public MatchResult run() {
 
         List<CompletableFuture<MatchResult>> futures = IntStream.range(0, 9)
-                .mapToObj(i -> CompletableFuture.supplyAsync(new Match(config)::run))
+                .mapToObj(i -> CompletableFuture.supplyAsync(() -> new Match(config).run()))
                 .toList();
-        futures.forEach(f -> f.thenAccept(this::updateResults));
+        futures.forEach(f -> f.thenAccept((result) -> updateResults(result)));
         futures.forEach(CompletableFuture::join);
 
         log.info("Match over! Results:");

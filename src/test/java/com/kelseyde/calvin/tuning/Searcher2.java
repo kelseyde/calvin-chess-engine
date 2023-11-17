@@ -108,7 +108,7 @@ public class Searcher2 implements Search {
                 result = resultCurrentDepth;
             }
 
-            if (isTimeoutExceeded() || isCheckmateFoundAtCurrentDepth(result, currentDepth)) {
+            if (isTimeoutExceeded() || isCheckmateFoundAtCurrentDepth(result.eval(), currentDepth)) {
                 // Exit early if time runs out, or we already found forced mate
                 break;
             }
@@ -185,14 +185,13 @@ public class Searcher2 implements Search {
             previousBestMove = transposition.getMove();
         }
         if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
-//            if (plyFromRoot == 0 && transposition.getMove() != null && legalMoves.contains(transposition.getMove())) {
             if (plyFromRoot == 0 && transposition.getMove() != null) {
                 resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove());
             }
             return transposition.getScore();
         }
-        List<Move> legalMoves = moveGenerator.generateMoves(board, false);
 
+        List<Move> legalMoves = moveGenerator.generateMoves(board, false);
         if (legalMoves.isEmpty()) {
             // Found checkmate / stalemate
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -435,10 +434,13 @@ public class Searcher2 implements Search {
         //log.info(statistics.generateReport());
     }
 
-    private boolean isCheckmateFoundAtCurrentDepth(SearchResult result, int currentDepth) {
-        if (result == null) return false;
-        return Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
+    private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {
+        return Math.abs(bestEval) >= CHECKMATE_SCORE - currentDepth;
     }
+//    private boolean isCheckmateFoundAtCurrentDepth(SearchResult result, int currentDepth) {
+//        if (result == null) return false;
+//        return Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
+//    }
 
     private boolean isTimeoutExceeded() {
         return !Instant.now().isBefore(timeout);

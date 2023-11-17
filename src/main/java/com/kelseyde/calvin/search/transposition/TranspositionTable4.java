@@ -3,11 +3,14 @@ package com.kelseyde.calvin.search.transposition;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class TranspositionTable4 {
 
     private static final int ENTRY_SIZE_BYTES = 32;
 
-    private static final int TABLE_SIZE_MB = 1024;
+    private static final int TABLE_SIZE_MB = 2048;
 
     private static final int TABLE_SIZE = calculateTableSize();
 
@@ -17,18 +20,29 @@ public class TranspositionTable4 {
 
     private final Board board;
 
+    private int tries;
+    private int hits;
+    private int collisions;
+
     public TranspositionTable4(Board board) {
         this.board = board;
         entries = new TranspositionEntry[TABLE_SIZE];
+        tries = 0;
+        hits = 0;
+        collisions = 0;
     }
 
     public TranspositionEntry get(int ply) {
         long zobristKey = board.getGameState().getZobristKey();
         int index = getIndex(zobristKey);
         TranspositionEntry entry = entries[index];
-        if (entry != null && isMateScore(entry.getScore())) {
-            int score = retrieveCorrectedMateScore(entry.getScore(), ply);
-            entry = TranspositionEntry.withScore(entry, score);
+        tries++;
+        if (entry != null) {
+            hits++;
+            if (isMateScore(entry.getScore())) {
+                int score = retrieveMateScore(entry.getScore(), ply);
+                entry = TranspositionEntry.withScore(entry, score);
+            }
         }
         return entry;
     }
@@ -36,9 +50,12 @@ public class TranspositionTable4 {
     public void put(NodeType flag, int depth, int ply, Move move, int score) {
         long zobristKey = board.getGameState().getZobristKey();
         int index = getIndex(zobristKey);
-        if (isMateScore(score)) score = calculateCorrectedMateScore(score, ply);
+        if (isMateScore(score)) score = calculateMateScore(score, ply);
         TranspositionEntry newEntry = TranspositionEntry.of(zobristKey, score, move, flag, depth);
         TranspositionEntry existingEntry = entries[index];
+        if (existingEntry != null && existingEntry.key() != zobristKey) {
+            collisions++;
+        }
         if (existingEntry == null || (newEntry.key() == existingEntry.key() && newEntry.getDepth() > existingEntry.getDepth())) {
             entries[index] = newEntry;
         }
@@ -57,27 +74,25 @@ public class TranspositionTable4 {
         return Math.abs(score) >= CHECKMATE_BOUND;
     }
 
-    private int calculateCorrectedMateScore(int score, int plyFromRoot) {
-        int sign = score > 0 ? 1 : -1;
-        return (score * sign + plyFromRoot) * sign;
+    private int calculateMateScore(int score, int plyFromRoot) {
+        return score > 0 ? score - plyFromRoot : score + plyFromRoot;
     }
 
-    private int retrieveCorrectedMateScore(int score, int plyFromRoot) {
-        int sign = score > 0 ? 1 : -1;
-        return (score * sign - plyFromRoot) * sign;
+    private int retrieveMateScore(int score, int plyFromRoot) {
+        return score > 0 ? score + plyFromRoot : score - plyFromRoot;
     }
 
     private static int calculateTableSize() {
-        int tableSizeBytes = TABLE_SIZE_MB * 1024 * 1024;
-        return tableSizeBytes / ENTRY_SIZE_BYTES;
+        return (TABLE_SIZE_MB / ENTRY_SIZE_BYTES) * 1024 * 1024;
     }
 
     public void printStatistics() {
-//        int total = hits + collisions;
-////        System.out.println("hits: " + hits);
-////        System.out.println("collisions: " + collisions);
-//        float percentage = (float) (collisions / total) * 100;
-//        System.out.println("collision percentage: " + percentage);
+        float hitRate = ((float) hits / (float) tries) * 100;
+        float collisionRate = ((float) collisions / (float) tries) * 100;
+        System.out.printf("New: tries: %s, hits: %s (%s), collisions: %s (%s)%n", tries, hits, hitRate, collisions, collisionRate);
+//        System.out.printf("New size: %s%n", Arrays.stream(entries)
+//                .filter(Objects::nonNull)
+//                .count());
     }
 
 

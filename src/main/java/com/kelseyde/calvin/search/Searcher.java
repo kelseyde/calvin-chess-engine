@@ -192,9 +192,6 @@ public class Searcher implements Search {
         }
         if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
             if (plyFromRoot == 0) {
-                if (transposition.getBestMove() == null) {
-                    System.out.println("here we go2 " + transposition.getType());
-                }
                 resultCurrentDepth = new SearchResult(transposition.getValue(), transposition.getBestMove());
             }
             return transposition.getValue();

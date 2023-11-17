@@ -68,6 +68,10 @@ public class Match {
 
             while (moveCount <= config.getMaxMoves()) {
 
+                if (!PGN.toPGN(player1.getBot().getBoard()).equals(PGN.toPGN(player2.getBot().getBoard()))) {
+                    System.out.println("Boards not equal!");
+                }
+
                 List<Move> legalMoves = moveGenerator.generateMoves(board, false);
                 if (!legalMoves.contains(whiteMove)) {
                     System.out.println("illegal move!");

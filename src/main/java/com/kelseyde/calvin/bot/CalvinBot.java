@@ -21,6 +21,8 @@ import java.util.function.Consumer;
 @Slf4j
 public class CalvinBot implements Bot {
 
+    private static final int DEFAULT_THREAD_COUNT = 6;
+
     private static final int PONDER_DURATION_MS = 60 * 60 * 1000; // 1 hour
 
     @Getter
@@ -32,13 +34,8 @@ public class CalvinBot implements Bot {
 
     private CompletableFuture<Move> think;
 
-    private boolean gameInProgress;
-
-    private boolean maxThinkTimeEnabled;
-    private int maxThinkTimeMs = 2500;
-
     public CalvinBot() {
-        this.search = new ParallelSearcher(board, 4);
+        this.search = new ParallelSearcher(new Board(), DEFAULT_THREAD_COUNT);
     }
 
     public CalvinBot(Search search) {
@@ -47,7 +44,6 @@ public class CalvinBot implements Bot {
 
     @Override
     public void newGame() {
-        gameInProgress = true;
         if (search != null) {
             search.clearHistory();
         }
@@ -105,10 +101,6 @@ public class CalvinBot implements Bot {
 
         // A game lasts on average 40 moves, so start with a simple fraction of the remaining time.
         double thinkTimeMs = timeRemainingMs / 40.0;
-
-        if (maxThinkTimeEnabled) {
-            thinkTimeMs = Math.min(thinkTimeMs, maxThinkTimeMs);
-        }
 
         if (thinkTimeMs > incrementMs * 2) {
             thinkTimeMs += incrementMs * 0.8;

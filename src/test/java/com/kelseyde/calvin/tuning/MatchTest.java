@@ -13,8 +13,8 @@ public class MatchTest {
     @Test
     public void testSingleMatch() {
         MatchConfig config = MatchConfig.builder()
-                .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
-                .player2(() -> new Player("player2", new CalvinBot(new ParallelSearcher(new Board(), 3))))
+                .player1(() -> new Player("player1", new CalvinBot(new ParallelSearcher(new Board(), 4))))
+                .player2(() -> new Player("player2", new CalvinBot(new ParallelSearcher(new Board(), 6))))
                 .gameCount(100)
                 .maxMoves(100)
                 .minThinkTimeMs(35)

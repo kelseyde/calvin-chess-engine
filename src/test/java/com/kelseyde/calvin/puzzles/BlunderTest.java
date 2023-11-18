@@ -2,7 +2,6 @@ package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.ParallelSearcher;
@@ -22,7 +21,7 @@ import java.util.List;
 @Disabled
 public class BlunderTest {
 
-    private final CalvinBot bot = new CalvinBot(new Searcher2());
+    private final CalvinBot bot = new CalvinBot(new ParallelSearcher(new Board(), 3));
 
     @Test
     public void testDontSacKnightForCenterPawn() {

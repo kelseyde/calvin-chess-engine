@@ -2,7 +2,6 @@ package com.kelseyde.calvin.movegeneration.sperft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.tuning.Searcher2;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.io.IOException;
@@ -25,7 +24,7 @@ public abstract class SPerftTest {
     protected void sPerft(int depth) {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
-        Searcher2 search = new Searcher2(board);
+        Searcher search = new Searcher(board);
         search.setTimeout(Instant.now().plus(Duration.ofHours(1)));
         search.search(depth, 0, MIN_EVAL, MAX_EVAL, true);
         Instant end = Instant.now();

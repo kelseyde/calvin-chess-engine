@@ -3,6 +3,7 @@ package com.kelseyde.calvin.bot;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -37,7 +38,7 @@ public class CalvinBot implements Bot {
     private int maxThinkTimeMs = 2500;
 
     public CalvinBot() {
-        this.search = new Searcher();
+        this.search = new ParallelSearcher(board, 4);
     }
 
     public CalvinBot(Search search) {
@@ -72,6 +73,7 @@ public class CalvinBot implements Bot {
     @Override
     public void applyMove(Move move) {
         board.makeMove(move);
+        search.setPosition(board);
     }
 
     @Override

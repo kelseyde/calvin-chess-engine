@@ -88,14 +88,14 @@ public class Match {
                     if (result.isWin()) {
                         if (whitePlayer.getName().equals(player1.getName())) {
                             player1Wins++;
-//                            printMatchReport(player1Wins, player2Wins, draws);
+                            printMatchReport(player1Wins, player2Wins, draws);
                         } else {
                             player2Wins++;
-//                            printMatchReport(player1Wins, player2Wins, draws);
+                            printMatchReport(player1Wins, player2Wins, draws);
                         }
                     } else {
                         draws++;
-//                        printMatchReport(player1Wins, player2Wins, draws);
+                        printMatchReport(player1Wins, player2Wins, draws);
                     }
                     break;
                 }
@@ -118,14 +118,14 @@ public class Match {
                     if (result.isWin()) {
                         if (blackPlayer.getName().equals(player1.getName())) {
                             player1Wins++;
-//                            printMatchReport(player1Wins, player2Wins, draws);
+                            printMatchReport(player1Wins, player2Wins, draws);
                         } else {
                             player2Wins++;
-//                            printMatchReport(player1Wins, player2Wins, draws);
+                            printMatchReport(player1Wins, player2Wins, draws);
                         }
                     } else {
                         draws++;
-//                        printMatchReport(player1Wins, player2Wins, draws);
+                        printMatchReport(player1Wins, player2Wins, draws);
                     }
                     break;
                 }

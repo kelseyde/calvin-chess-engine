@@ -13,6 +13,8 @@ public interface Search {
 
     void init(Board board);
 
+    void setPosition(Board board);
+
     SearchResult search(Duration duration);
 
     void clearHistory();

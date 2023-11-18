@@ -3,7 +3,6 @@ package com.kelseyde.calvin.tuning;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
@@ -14,7 +13,9 @@ import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
-import com.kelseyde.calvin.search.transposition.*;
+import com.kelseyde.calvin.search.transposition.NodeType;
+import com.kelseyde.calvin.search.transposition.TranspositionEntry;
+import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,7 +57,7 @@ public class Searcher2 implements Search {
     private MoveOrdering moveOrderer;
     private Evaluation evaluator;
     private StaticExchangeEvaluator see;
-    private TranspositionTable4 transpositionTable;
+    private TranspositionTable transpositionTable;
     private ResultCalculator resultCalculator;
 
     private @Getter Board board;
@@ -70,15 +71,31 @@ public class Searcher2 implements Search {
         init(board);
     }
 
-    @Override
-    public void init(Board board) {
+    public Searcher2(Board board, TranspositionTable transpositionTable) {
         this.board = board;
+        this.transpositionTable = transpositionTable;
         this.moveGenerator = new MoveGenerator();
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
         this.evaluator = new Evaluator(board);
-        this.transpositionTable = new TranspositionTable4(board);
+    }
+
+    @Override
+    public void init(Board board) {
+        this.board = board;
+        this.transpositionTable = new TranspositionTable();
+        this.moveGenerator = new MoveGenerator();
+        this.moveOrderer = new MoveOrderer();
+        this.see = new StaticExchangeEvaluator();
+        this.resultCalculator = new ResultCalculator();
+        this.evaluator = new Evaluator(board);
+    }
+
+    @Override
+    public void setPosition(Board board) {
+        this.board = board;
+        this.evaluator = new Evaluator(board);
     }
 
     /**
@@ -180,7 +197,8 @@ public class Searcher2 implements Search {
         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
-        TranspositionEntry transposition = transpositionTable.get(plyFromRoot);
+        long key = board.getGameState().getZobristKey();
+        TranspositionEntry transposition = transpositionTable.get(key, plyFromRoot);
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
         }
@@ -293,7 +311,8 @@ public class Searcher2 implements Search {
 
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, move, beta);
+                key = board.getGameState().getZobristKey();
+                transpositionTable.put(key, NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, move, beta);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(plyFromRoot, move);
@@ -312,8 +331,8 @@ public class Searcher2 implements Search {
                 }
             }
         }
-
-        transpositionTable.put(nodeType, plyRemaining, plyFromRoot, bestMove, alpha);
+        key = board.getGameState().getZobristKey();
+        transpositionTable.put(key, nodeType, plyRemaining, plyFromRoot, bestMove, alpha);
         return alpha;
 
     }
@@ -330,7 +349,8 @@ public class Searcher2 implements Search {
             return 0;
         }
         // First exit if we have already stored an accurate eval in the TT
-        TranspositionEntry transposition = transpositionTable.get(plyFromRoot);
+        long zobristKey = board.getGameState().getZobristKey();
+        TranspositionEntry transposition = transpositionTable.get(zobristKey, plyFromRoot);
         if (isUsefulTransposition(transposition, alpha, beta)) {
             return transposition.getScore();
         }
@@ -437,10 +457,6 @@ public class Searcher2 implements Search {
     private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {
         return Math.abs(bestEval) >= CHECKMATE_SCORE - currentDepth;
     }
-//    private boolean isCheckmateFoundAtCurrentDepth(SearchResult result, int currentDepth) {
-//        if (result == null) return false;
-//        return Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
-//    }
 
     private boolean isTimeoutExceeded() {
         return !Instant.now().isBefore(timeout);

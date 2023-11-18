@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.bitboard.Bits;
 
 import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -126,8 +127,12 @@ public class BoardUtils {
         newBoard.setOccupied(board.getOccupied());
         newBoard.setWhiteToMove(board.isWhiteToMove());
         newBoard.setGameState(board.getGameState().copy());
-        newBoard.setGameStateHistory(board.getGameStateHistory().stream().map(GameState::copy).collect(Collectors.toCollection(ArrayDeque::new)));
-        newBoard.setMoveHistory(board.getMoveHistory().stream().map(move -> new Move(move.getValue())).collect(Collectors.toCollection(ArrayDeque::new)));
+        Deque<GameState> gameStateHistory = new ArrayDeque<>();
+        board.getGameStateHistory().forEach(gameState -> gameStateHistory.add(gameState.copy()));
+        newBoard.setGameStateHistory(gameStateHistory);
+        Deque<Move> moveHistory = new ArrayDeque<>();
+        board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.getValue())));
+        newBoard.setMoveHistory(moveHistory);
         newBoard.recalculatePieces();
         return newBoard;
     }

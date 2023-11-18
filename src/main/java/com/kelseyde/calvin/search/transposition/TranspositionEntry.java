@@ -1,8 +1,6 @@
 package com.kelseyde.calvin.search.transposition;
 
 import com.kelseyde.calvin.board.Move;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Individual entry in the hash table containing the 64-bit zobrist key, and a 64-bit encoding of the score, move,
@@ -11,10 +9,6 @@ import lombok.RequiredArgsConstructor;
  * - move: 16 bits      (0-5 = start square, 6-11 = end square, 12-15 = special move flag, see {@link Move})
  * - flag: 4 bits       (0-2, capturing three possible flag values + 1 bit padding)
  * - depth: 12 bits     (0-265, max depth = 256 = 8 bits + 4 bit padding)
- * SCORE_MASK =   0b1111111111111111111111111111111100000000000000000000000000000000L;
- * MOVE_MASK =    0b0000000000000000000000000000000011111111111111110000000000000000L;
- * FLAG_MASK =    0b0000000000000000000000000000000000000000000000001111000000000000L;
- * DEPTH_MASK =   0b0000000000000000000000000000000000000000000000000000111111111111L;
  */
 public record TranspositionEntry(long key, long value) {
 

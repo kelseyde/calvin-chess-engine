@@ -1,11 +1,13 @@
-package com.kelseyde.calvin.search.transposition;
+package com.kelseyde.calvin.tuning.copy;
 
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.search.transposition.NodeType;
+import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 
 import java.util.Arrays;
 import java.util.Objects;
 
-public class TranspositionTable {
+public class TranspositionTable2 {
 
     private static final int ENTRY_SIZE_BYTES = 32;
 
@@ -20,7 +22,7 @@ public class TranspositionTable {
     private int tries;
     private int hits;
 
-    public TranspositionTable() {
+    public TranspositionTable2() {
         entries = new TranspositionEntry[TABLE_SIZE];
         tries = 0;
         hits = 0;
@@ -127,7 +129,7 @@ public class TranspositionTable {
         long fill = Arrays.stream(entries).filter(Objects::nonNull).count();
         float fillPercentage = ((float) fill / (float) TABLE_SIZE) * 100;
         float hitPercentage = ((float) hits / (float) tries) * 100;
-//        System.out.printf("TT -- table size: %s / %s (%s), tries: %s, hits: %s (%s)%n", fill, TABLE_SIZE, fillPercentage, tries, hits, hitPercentage);
+//        System.out.printf("TT2 -- table size: %s / %s (%s), tries: %s, hits: %s (%s)%n", fill, TABLE_SIZE, fillPercentage, tries, hits, hitPercentage);
     }
 
 }

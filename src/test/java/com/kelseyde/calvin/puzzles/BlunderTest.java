@@ -5,8 +5,6 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.ParallelSearcher;
-import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.tuning.Searcher2;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -474,6 +472,40 @@ public class BlunderTest {
         Assertions.assertTrue(
                 move.matches(NotationUtils.fromCombinedNotation("f4f5"))
         );
+
+    }
+
+    @Test
+    public void testDontSacBishopTacticWhenKingIsInDanger() {
+
+        String fen = "3r2k1/5rp1/p1R3N1/1p2b2P/6Q1/P2q4/5PP1/5RK1 b - - 4 34";
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("e5h2"))
+        );
+
+    }
+
+    @Test
+    public void testDontBlunderRepetitionMissingMateInThree() {
+
+        String fen = "8/7k/5Q2/1P6/8/6P1/4KP1P/6R1 b - - 8 54";
+        bot.setPosition(fen, Collections.emptyList());
+        bot.applyMove(NotationUtils.fromNotation("h7", "g8"));
+        bot.applyMove(NotationUtils.fromNotation("e2", "d3"));
+        bot.applyMove(NotationUtils.fromNotation("g8", "h7"));
+        bot.applyMove(NotationUtils.fromNotation("d3", "e2"));
+        bot.applyMove(NotationUtils.fromNotation("h7", "g8"));
+        bot.applyMove(NotationUtils.fromNotation("g1", "g2"));
+        bot.applyMove(NotationUtils.fromNotation("g8", "h7"));
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("g2g1"))
+        );
+
 
     }
 

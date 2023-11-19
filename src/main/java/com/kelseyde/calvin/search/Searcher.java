@@ -15,7 +15,6 @@ import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
-import com.kelseyde.calvin.tuning.SearchResult;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -160,7 +159,7 @@ public class Searcher implements Search {
             // If we did not find a single move during search (almost impossible), just return a random legal move.
             log.warn("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board, false).get(0);
-            result = new SearchResult(0, move);
+            result = new SearchResult(0, move, currentDepth);
         }
 //        System.out.printf("max depth: %s, eval: %s, move: %s%n", currentDepth, result.eval(), NotationUtils.toNotation(result.move()));
         return result;
@@ -208,7 +207,7 @@ public class Searcher implements Search {
         }
         if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
             if (plyFromRoot == 0 && transposition.getMove() != null) {
-                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove());
+                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), plyRemaining);
             }
             return transposition.getScore();
         }
@@ -331,7 +330,7 @@ public class Searcher implements Search {
                 alpha = eval;
                 nodeType = NodeType.EXACT;
                 if (plyFromRoot == 0) {
-                    resultCurrentDepth = new SearchResult(eval, move);
+                    resultCurrentDepth = new SearchResult(eval, move, plyRemaining);
                 }
             }
         }

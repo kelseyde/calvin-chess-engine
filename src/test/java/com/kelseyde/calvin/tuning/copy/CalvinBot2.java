@@ -1,7 +1,8 @@
-package com.kelseyde.calvin.bot;
+package com.kelseyde.calvin.tuning.copy;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
@@ -18,7 +19,7 @@ import java.util.function.Consumer;
 
 @Data
 @Slf4j
-public class CalvinBot implements Bot {
+public class CalvinBot2 implements Bot {
 
     private static final int DEFAULT_THREAD_COUNT = 6;
 
@@ -33,11 +34,11 @@ public class CalvinBot implements Bot {
 
     private CompletableFuture<Move> think;
 
-    public CalvinBot() {
+    public CalvinBot2() {
         this.search = new ParallelSearcher(new Board(), DEFAULT_THREAD_COUNT);
     }
 
-    public CalvinBot(Search search) {
+    public CalvinBot2(Search search) {
         this.search = search;
     }
 
@@ -107,7 +108,7 @@ public class CalvinBot implements Bot {
 
         double minThinkTimeMs = Math.min(50, timeRemainingMs * 0.25);
 
-        thinkTimeMs = Math.max(thinkTimeMs, minThinkTimeMs);
+        thinkTimeMs =  Math.max(thinkTimeMs, minThinkTimeMs);
         log.trace("Selecting think time {}", Duration.ofMillis((int) thinkTimeMs));
         return (int) thinkTimeMs;
 

@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.tuning.SearchResult;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Disabled;

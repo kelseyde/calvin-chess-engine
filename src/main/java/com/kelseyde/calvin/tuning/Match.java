@@ -68,16 +68,6 @@ public class Match {
 
             while (moveCount <= config.getMaxMoves()) {
 
-                if (!PGN.toPGN(player1.getBot().getBoard()).equals(PGN.toPGN(player2.getBot().getBoard()))) {
-                    System.out.println("Boards not equal!");
-                }
-
-                List<Move> legalMoves = moveGenerator.generateMoves(board, false);
-                if (!legalMoves.contains(whiteMove)) {
-                    System.out.println("illegal move!");
-                    System.out.println(PGN.toPGN(board));
-                    System.out.println(NotationUtils.toNotation(whiteMove));
-                }
                 board.makeMove(whiteMove);
                 whitePlayer.getBot().applyMove(whiteMove);
                 blackPlayer.getBot().applyMove(whiteMove);
@@ -102,12 +92,6 @@ public class Match {
 
                 Move blackMove = blackPlayer.getBot().think(getThinkTime());
 
-                legalMoves = moveGenerator.generateMoves(board, false);
-                if (!legalMoves.contains(blackMove)) {
-                    System.out.println("illegal move!");
-                    System.out.println(PGN.toPGN(board));
-                    System.out.println(NotationUtils.toNotation(blackMove));
-                }
                 board.makeMove(blackMove);
                 whitePlayer.getBot().applyMove(blackMove);
                 blackPlayer.getBot().applyMove(blackMove);
@@ -135,6 +119,7 @@ public class Match {
                 moveCount++;
                 if (moveCount > config.getMaxMoves()) {
                     draws++;
+                    printMatchReport(player1Wins, player2Wins, draws);
                     break;
                 }
             }

@@ -3,8 +3,6 @@ package com.kelseyde.calvin.tuning.copy;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.time.Duration;

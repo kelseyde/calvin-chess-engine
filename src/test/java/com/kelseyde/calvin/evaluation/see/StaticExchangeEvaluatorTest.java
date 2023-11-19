@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation.see;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
@@ -168,6 +169,21 @@ public class StaticExchangeEvaluatorTest {
         int score = see.evaluate(board, move);
 
         Assertions.assertEquals(0, score);
+
+    }
+
+    @Test
+    public void testSeeAfterCheck() {
+
+        String fen = "4n1kb/5ppp/7P/8/8/8/1Q6/B5K1 w - - 0 1";
+
+        Board board = FEN.toBoard(fen);
+        Move move = NotationUtils.fromNotation("b2", "g7");
+        board.makeMove(TestUtils.getLegalMove(board, move));
+
+        int score = see.evaluateAfterMove(board, move);
+
+        Assertions.assertEquals(-580, score);
 
     }
 

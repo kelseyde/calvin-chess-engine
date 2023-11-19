@@ -29,10 +29,7 @@ public class StaticExchangeEvaluator {
         int score = 0;
         int square = move.getEndSquare();
         Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
-        if (capturedPieceType == null) {
-            throw new NoSuchElementException("No piece to capture on square " + square);
-        }
-        score += PieceValues.valueOf(capturedPieceType);
+        score += capturedPieceType != null ? PieceValues.valueOf(capturedPieceType) : 0;
 
         board.makeMove(move);
         Move leastValuableAttacker = getLeastValuableAttacker(board, square);
@@ -46,6 +43,29 @@ public class StaticExchangeEvaluator {
         return score;
 
     }
+
+    /**
+     * The same SEE evaluation, but with the first move already made on the board. Used during search to evaluate whether
+     * a check should be extended
+     */
+    public int evaluateAfterMove(Board board, Move move) {
+
+        int score = 0;
+        int square = move.getEndSquare();
+        Piece capturedPieceType = board.getGameState().getCapturedPiece();
+        score += capturedPieceType != null ? PieceValues.valueOf(capturedPieceType) : 0;
+
+        Move leastValuableAttacker = getLeastValuableAttacker(board, square);
+        if (leastValuableAttacker != null) {
+            /* The opponent should have the option of 'standing pat' - that is, declining to continue the capture
+             sequence if it would lead to a loss of material.
+             Therefore, we return the minimum of the stand-pat score and the capture score. */
+            score = Math.min(score, score - evaluate(board, leastValuableAttacker));
+        }
+        return score;
+
+    }
+
 
     private Move getLeastValuableAttacker(Board board, int square) {
 

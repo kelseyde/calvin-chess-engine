@@ -11,7 +11,6 @@ import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.transposition.NodeType;
@@ -30,7 +29,7 @@ import java.util.List;
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
  * then 3 ply and so on, until the time limit is exhausted. In case the timeout is reached in the middle of an iteration,
  * the search can still fall back on the best move found in the previous iteration. By prioritising searching the best
- * move found in the previous iteration, as well as the other ordering heuristics in the {@link MoveOrderer} -- and by
+ * move found in the previous iteration, as well as the other ordering heuristics in the {@link MoveOrderer2} -- and by
  * using a {@link TranspositionTable} -- the iterative approach is much more efficient than it might sound.
  *
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
@@ -76,10 +75,10 @@ public class Searcher2 implements Search {
         this.board = board;
         this.transpositionTable = transpositionTable;
         this.moveGenerator = new MoveGenerator();
-        this.moveOrderer = new MoveOrderer();
+        this.moveOrderer = new MoveOrderer2();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
-        this.evaluator = new Evaluator(board);
+        this.evaluator = new Evaluator2(board);
     }
 
     @Override
@@ -91,7 +90,7 @@ public class Searcher2 implements Search {
             this.transpositionTable.clear();
         }
         this.moveGenerator = new MoveGenerator();
-        this.moveOrderer = new MoveOrderer();
+        this.moveOrderer = new MoveOrderer2();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
         this.evaluator = new Evaluator(board);
@@ -292,7 +291,7 @@ public class Searcher2 implements Search {
 
             // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
             int extensions = 0;
-            if (isCheck || isPromotion) {
+            if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
                 extensions = 1;
             }
 

@@ -1,6 +1,9 @@
-package com.kelseyde.calvin.search;
+package com.kelseyde.calvin.tuning.copy;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 
@@ -10,26 +13,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
-/**
- * Implementation of {@link Search} that uses a parallel search strategy called 'Lazy SMP'. The idea is to have multiple
- * threads searching the same position simultaneously, but sharing a transposition table, so that each thread benefits
- * from the work of the others. Each thread is simply a {@link Searcher} that runs its own iterative deepening loop.
- *
- * @see <a href="https://www.chessprogramming.org/Lazy_SMP">Chess Programming Wiki</a>
- */
-public class ParallelSearcher implements Search {
+public class ParallelSearcher2 implements Search {
 
     private Board board;
 
-    private final TranspositionTable transpositionTable;
+    private final TranspositionTable2 transpositionTable;
 
-    private final List<Searcher> searchers;
+    private final List<Searcher2> searchers;
 
-    public ParallelSearcher(Board board, int threadCount) {
+    public ParallelSearcher2(Board board, int threadCount) {
         this.board = board;
-        this.transpositionTable = new TranspositionTable();
+        this.transpositionTable = new TranspositionTable2();
         this.searchers = IntStream.range(0, threadCount)
-                .mapToObj(i -> new Searcher(BoardUtils.copy(board), transpositionTable))
+                .mapToObj(i -> new Searcher2(BoardUtils.copy(board), transpositionTable))
                 .toList();
     }
 
@@ -53,7 +49,6 @@ public class ParallelSearcher implements Search {
                     .toList();
             SearchResult result = selectResult(threads).get();
             threads.forEach(thread -> thread.cancel(true));
-            System.out.println("eval: " + result.eval());
             return result;
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
@@ -77,7 +72,7 @@ public class ParallelSearcher implements Search {
         if (transpositionTable != null) {
             transpositionTable.clear();
         }
-        searchers.forEach(Searcher::clearHistory);
+        searchers.forEach(Searcher2::clearHistory);
     }
 
     @Override

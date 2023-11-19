@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.tuning;
+package com.kelseyde.calvin.tuning.copy;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
@@ -10,6 +10,7 @@ import com.kelseyde.calvin.movegeneration.MoveGeneration;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
@@ -57,7 +58,7 @@ public class Searcher2 implements Search {
     private MoveOrdering moveOrderer;
     private Evaluation evaluator;
     private StaticExchangeEvaluator see;
-    private TranspositionTable transpositionTable;
+    private TranspositionTable2 transpositionTable;
     private ResultCalculator resultCalculator;
 
     private @Getter Board board;
@@ -71,7 +72,7 @@ public class Searcher2 implements Search {
         init(board);
     }
 
-    public Searcher2(Board board, TranspositionTable transpositionTable) {
+    public Searcher2(Board board, TranspositionTable2 transpositionTable) {
         this.board = board;
         this.transpositionTable = transpositionTable;
         this.moveGenerator = new MoveGenerator();
@@ -84,7 +85,11 @@ public class Searcher2 implements Search {
     @Override
     public void init(Board board) {
         this.board = board;
-        this.transpositionTable = new TranspositionTable();
+        if (this.transpositionTable == null) {
+            this.transpositionTable = new TranspositionTable2();
+        } else {
+            this.transpositionTable.clear();
+        }
         this.moveGenerator = new MoveGenerator();
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
@@ -156,7 +161,7 @@ public class Searcher2 implements Search {
             // If we did not find a single move during search (almost impossible), just return a random legal move.
             log.warn("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board, false).get(0);
-            result = new SearchResult(0, move);
+            result = new SearchResult(0, move, currentDepth);
         }
 //        System.out.printf("max depth: %s, eval: %s, move: %s%n", currentDepth, result.eval(), NotationUtils.toNotation(result.move()));
         return result;
@@ -204,7 +209,7 @@ public class Searcher2 implements Search {
         }
         if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
             if (plyFromRoot == 0 && transposition.getMove() != null) {
-                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove());
+                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), plyRemaining);
             }
             return transposition.getScore();
         }
@@ -327,7 +332,7 @@ public class Searcher2 implements Search {
                 alpha = eval;
                 nodeType = NodeType.EXACT;
                 if (plyFromRoot == 0) {
-                    resultCurrentDepth = new SearchResult(eval, move);
+                    resultCurrentDepth = new SearchResult(eval, move, plyRemaining);
                 }
             }
         }

@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.tuning;
+package com.kelseyde.calvin.tuning.copy;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;

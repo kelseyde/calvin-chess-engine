@@ -6,8 +6,8 @@ import com.kelseyde.calvin.bot.Bot;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.tuning.SearchResult;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
@@ -55,6 +55,14 @@ public class EndgameTest {
 
     }
 
+    @Test
+    public void testMateInFour() {
+
+        String fen = "5k2/8/8/1P2Q3/8/6P1/5P1P/5K1R w - - 3 52";
+        assertCheckmate(fen, 5);
+
+    }
+
     private void assertCheckmate(String fen, int moveLimit) {
 
         bot.setPosition(fen, Collections.emptyList());
@@ -63,18 +71,21 @@ public class EndgameTest {
 
         boolean checkmate = false;
 
+        int moveCount = 0;
         while (moveLimit > 0) {
             Move move = bot.think(200);
             bot.applyMove(move);
             opponentBot.applyMove(move);
             if (resultCalculator.calculateResult(bot.getBoard()).isCheckmate()) {
                 checkmate = true;
+                System.out.printf("Found checkmate in %s moves%n", moveCount);
                 break;
             }
             Move opponentMove = opponentBot.think(200);
             bot.applyMove(opponentMove);
             opponentBot.applyMove(opponentMove);
             moveLimit--;
+            moveCount++;
         }
         if (!checkmate) {
             Assertions.fail(String.format("Could not checkmate in %s moves", moveLimit));

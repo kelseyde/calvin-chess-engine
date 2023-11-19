@@ -8,7 +8,6 @@ import com.kelseyde.calvin.board.bitboard.Bits;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class BoardUtils {
 

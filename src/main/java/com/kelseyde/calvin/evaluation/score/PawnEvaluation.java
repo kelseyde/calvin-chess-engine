@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.utils.BoardUtils;
 
-public class PawnStructure {
+public class PawnEvaluation {
 
     // The bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
     private static final int[] PASSED_PAWN_BONUS = { 0, 140, 100, 60, 30, 15, 15 };
@@ -50,7 +50,7 @@ public class PawnStructure {
 
     }
 
-    private static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
+    public static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
         long passedPawnMask = isWhite ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];
         return (passedPawnMask & opponentPawns) == 0;
     }

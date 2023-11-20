@@ -289,7 +289,7 @@ public class Searcher2 implements Search {
                 continue;
             }
 
-            // Search extensions: if the move meets particular criteria (e.g. is a check), then extend the search depth by one ply.
+            // Search extensions: if the move is a promotion, or a check that does not lose material, extend the search depth by one ply.
             int extensions = 0;
             if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
                 extensions = 1;

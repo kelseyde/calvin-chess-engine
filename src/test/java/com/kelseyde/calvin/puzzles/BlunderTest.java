@@ -9,6 +9,7 @@ import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.matchers.Not;
 
 import java.util.Collections;
 import java.util.List;
@@ -506,6 +507,19 @@ public class BlunderTest {
                 move.matches(NotationUtils.fromCombinedNotation("g2g1"))
         );
 
+    }
+
+    @Test
+    public void testDontLetOpponentBuildQueenBishopBattery() {
+
+        String fen = "5rk1/2q2pp1/b4b2/rpp2Q2/2P3P1/1B2PN1P/P5K1/3R1R2 b - - 2 25";
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertTrue(
+                move.matches(NotationUtils.fromCombinedNotation("c7c8")) ||
+                        move.matches(NotationUtils.fromCombinedNotation("a6a8"))
+        );
 
     }
 

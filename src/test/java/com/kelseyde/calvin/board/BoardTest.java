@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
@@ -382,6 +383,33 @@ public class BoardTest {
         Assertions.assertEquals(4, board.getGameState().getFiftyMoveCounter());
         Assertions.assertEquals(initialZobrist, board.getGameState().getZobristKey());
 
+    }
+
+    @Test
+    public void testRingMasks() {
+
+        assertRingMasks(Bits.INNER_RING_MASK[35], Set.of(43, 44, 36, 28, 27, 26, 34, 42));
+        assertRingMasks(Bits.INNER_RING_MASK[22], Set.of(29, 30, 31, 13, 14, 15, 21, 23));
+        assertRingMasks(Bits.INNER_RING_MASK[1], Set.of(0, 8, 9, 10, 2));
+        assertRingMasks(Bits.INNER_RING_MASK[62], Set.of(53, 54, 55, 61, 63));
+        assertRingMasks(Bits.INNER_RING_MASK[32], Set.of(40, 41, 33, 24, 25));
+        assertRingMasks(Bits.INNER_RING_MASK[23], Set.of(14, 15, 22, 30, 31));
+
+        assertRingMasks(Bits.OUTER_RING_MASK[35], Set.of(49, 50, 51, 52, 53, 41, 45, 33, 37, 25, 29, 17, 18, 19, 20, 21));
+        assertRingMasks(Bits.OUTER_RING_MASK[1], Set.of(16, 17, 18, 19, 11, 3));
+        assertRingMasks(Bits.OUTER_RING_MASK[56], Set.of(40, 41, 42, 50, 58));
+        assertRingMasks(Bits.OUTER_RING_MASK[24], Set.of(8, 9, 10, 18, 26, 34, 40, 41, 42));
+
+    }
+
+    private void assertRingMasks(long ringMask, Set<Integer> expectedSquares) {
+        Set<Integer> actualSquares = new HashSet<>();
+        while (ringMask != 0) {
+            int square = Bitwise.getNextBit(ringMask);
+            actualSquares.add(square);
+            ringMask = Bitwise.popBit(ringMask);
+        }
+        Assertions.assertEquals(actualSquares, expectedSquares);
     }
 
     private Set<Integer> getPiecePositions(Board board, boolean isWhiteToMove) {

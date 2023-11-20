@@ -55,13 +55,13 @@ public class Evaluator2 implements Evaluation {
         int blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         int blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
 
-        //int whiteMobilityScore = Mobility.score(board, true, phase);
-        //int blackMobilityScore = Mobility.score(board, false, phase);
+//        int whiteMobilityScore = Mobility.score(board, true, phase);
+//        int blackMobilityScore = Mobility.score(board, false, phase);
         int whiteMobilityScore = 0;
         int blackMobilityScore = 0;
 
-        int whitePawnStructureScore = PawnStructure.score(board.getPawns(true), board.getPawns(false), true);
-        int blackPawnStructureScore = PawnStructure.score(board.getPawns(false), board.getPawns(true), false);
+        int whitePawnStructureScore = PawnEvaluation2.score(board.getPawns(true), board.getPawns(false), true);
+        int blackPawnStructureScore = PawnEvaluation2.score(board.getPawns(false), board.getPawns(true), false);
 
         int whiteKingSafetyScore = KingSafety.score(board, blackMaterial, phase, true);
         int blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
@@ -186,8 +186,8 @@ public class Evaluator2 implements Evaluation {
         }
 
         if (updatePawnStructure) {
-            whitePawnStructureScore = PawnStructure.score(board.getPawns(true), board.getPawns(false), true);
-            blackPawnStructureScore = PawnStructure.score(board.getPawns(false), board.getPawns(true), false);
+            whitePawnStructureScore = PawnEvaluation2.score(board.getPawns(true), board.getPawns(false), true);
+            blackPawnStructureScore = PawnEvaluation2.score(board.getPawns(false), board.getPawns(true), false);
         }
 
         if (updateWhiteKingSafety) {
@@ -197,8 +197,8 @@ public class Evaluator2 implements Evaluation {
             blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
         }
 
-        //int whiteMobilityScore = Mobility.score(board, true, phase);
-        //int blackMobilityScore = Mobility.score(board, false, phase);
+//        MobilityData whiteMobilityScore = Mobility.score(board, true, phase);
+//        MobilityData blackMobilityScore = Mobility.score(board, false, phase);
         int whiteMobilityScore = 0;
         int blackMobilityScore = 0;
 

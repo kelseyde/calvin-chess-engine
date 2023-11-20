@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board.bitboard;
 
+import com.kelseyde.calvin.movegeneration.attacks.Attacks;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 /**
@@ -120,6 +121,9 @@ public class Bits {
     public static final long[] WHITE_PROTECTED_PAWN_MASK = generateProtectedPawnMask(true);
     public static final long[] BLACK_PROTECTED_PAWN_MASK = generateProtectedPawnMask(false);
 
+    public static final long[] INNER_RING_MASK = generateInnerRingMask();
+    public static final long[] OUTER_RING_MASK = generateOuterRingMask();
+
     private static long[] generateAdjacentFileMask() {
         long[] adjacentFileMasks = new long[8];
         for (int i = 0; i < 8; i++) {
@@ -166,6 +170,32 @@ public class Bits {
                     Bitwise.shiftNorthEast(squareBB) | Bitwise.shiftNorthWest(squareBB);
         }
         return pawnProtectionMask;
+    }
+
+    private static long[] generateInnerRingMask() {
+        long[] innerRinkMasks = new long[64];
+        for (int square = 0; square < 64; square++) {
+            long squareBB = 1L << square;
+            long mask = Bitwise.shiftNorth(squareBB) | Bitwise.shiftNorthEast(squareBB) | Bitwise.shiftEast(squareBB)
+                    | Bitwise.shiftSouthEast(squareBB) | Bitwise.shiftSouth(squareBB) | Bitwise.shiftSouthWest(squareBB)
+                    | Bitwise.shiftWest(squareBB) | Bitwise.shiftNorthWest(squareBB);
+            innerRinkMasks[square] = mask;
+        }
+        return innerRinkMasks;
+    }
+
+    private static long[] generateOuterRingMask() {
+        long[] outerRingMasks = new long[64];
+        for (int square = 0; square < 64; square++) {
+            long squareBB = 1L << square;
+            long mask = Bitwise.shiftNorth(Bitwise.shiftNorth(squareBB)) | Bitwise.shiftNorthEast(Bitwise.shiftNorthEast(squareBB))
+                    | Bitwise.shiftEast(Bitwise.shiftEast(squareBB)) | Bitwise.shiftSouthEast(Bitwise.shiftSouthEast(squareBB))
+                    | Bitwise.shiftSouth(Bitwise.shiftSouth(squareBB)) | Bitwise.shiftSouthWest(Bitwise.shiftSouthWest(squareBB))
+                    | Bitwise.shiftWest(Bitwise.shiftWest(squareBB)) | Bitwise.shiftNorthWest(Bitwise.shiftNorthWest(squareBB))
+                    | Attacks.knightAttacks(square);
+            outerRingMasks[square] = mask;
+        }
+        return outerRingMasks;
     }
 
 }

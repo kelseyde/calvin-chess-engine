@@ -11,6 +11,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
+/**
+ * Implementation of {@link Search} that uses a parallel search strategy called 'Lazy SMP'. The idea is to have multiple
+ * threads searching the same position simultaneously, but sharing a transposition table, so that each thread benefits
+ * from the work of the others. Each thread is simply a {@link Searcher} that runs its own iterative deepening loop.
+ *
+ * @see <a href="https://www.chessprogramming.org/Lazy_SMP">Chess Programming Wiki</a>
+ */
 public class ParallelSearcher2 implements Search {
 
     private Board board;

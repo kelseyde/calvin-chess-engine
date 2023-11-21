@@ -297,7 +297,7 @@ public class Searcher2 implements Search {
 
             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
             int reductions = 0;
-            if (plyRemaining >= 4 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
+            if (plyRemaining >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
                 reductions = i < 5 ? 1 : plyRemaining / 3;
             }
 

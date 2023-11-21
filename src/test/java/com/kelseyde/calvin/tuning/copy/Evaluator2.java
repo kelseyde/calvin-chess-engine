@@ -55,13 +55,13 @@ public class Evaluator2 implements Evaluation {
         int blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         int blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
 
-//        int whiteMobilityScore = Mobility.score(board, true, phase);
-//        int blackMobilityScore = Mobility.score(board, false, phase);
-        int whiteMobilityScore = 0;
-        int blackMobilityScore = 0;
+        int whiteMobilityScore = Mobility.score(board, true, phase);
+        int blackMobilityScore = Mobility.score(board, false, phase);
+//        int whiteMobilityScore = 0;
+//        int blackMobilityScore = 0;
 
-        int whitePawnStructureScore = PawnEvaluation2.score(board.getPawns(true), board.getPawns(false), true);
-        int blackPawnStructureScore = PawnEvaluation2.score(board.getPawns(false), board.getPawns(true), false);
+        int whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), true);
+        int blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), false);
 
         int whiteKingSafetyScore = KingSafety.score(board, blackMaterial, phase, true);
         int blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
@@ -186,8 +186,8 @@ public class Evaluator2 implements Evaluation {
         }
 
         if (updatePawnStructure) {
-            whitePawnStructureScore = PawnEvaluation2.score(board.getPawns(true), board.getPawns(false), true);
-            blackPawnStructureScore = PawnEvaluation2.score(board.getPawns(false), board.getPawns(true), false);
+            whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), true);
+            blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), false);
         }
 
         if (updateWhiteKingSafety) {
@@ -197,10 +197,10 @@ public class Evaluator2 implements Evaluation {
             blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
         }
 
-//        MobilityData whiteMobilityScore = Mobility.score(board, true, phase);
-//        MobilityData blackMobilityScore = Mobility.score(board, false, phase);
-        int whiteMobilityScore = 0;
-        int blackMobilityScore = 0;
+        int whiteMobilityScore = Mobility.score(board, true, phase);
+        int blackMobilityScore = Mobility.score(board, false, phase);
+//        int whiteMobilityScore = 0;
+//        int blackMobilityScore = 0;
 
         int whiteRookScore = RookEvaluation.score(board, phase, true);
         int blackRookScore = RookEvaluation.score(board, phase, false);

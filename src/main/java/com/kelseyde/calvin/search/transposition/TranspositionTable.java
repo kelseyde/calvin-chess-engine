@@ -9,7 +9,7 @@ public class TranspositionTable {
 
     private static final int ENTRY_SIZE_BYTES = 32;
 
-    private static final int TABLE_SIZE_MB = 2048;
+    private static final int TABLE_SIZE_MB = 512;
 
     private static final int TABLE_SIZE = calculateTableSize();
 

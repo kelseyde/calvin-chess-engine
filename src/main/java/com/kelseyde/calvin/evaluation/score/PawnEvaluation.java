@@ -50,7 +50,7 @@ public class PawnEvaluation {
 
     }
 
-    public static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
+    private static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
         long passedPawnMask = isWhite ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];
         return (passedPawnMask & opponentPawns) == 0;
     }

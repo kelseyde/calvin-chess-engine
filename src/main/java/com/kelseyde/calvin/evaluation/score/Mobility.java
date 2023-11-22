@@ -89,26 +89,4 @@ public class Mobility {
 
     }
 
-    public static int bishopScore(Board board, boolean isWhite, float phase) {
-
-        long bishops = board.getBishops(isWhite);
-        if (bishops == 0) return 0;
-        long friendlies = board.getPieces(isWhite);
-        long blockers = board.getOccupied();
-        int middlegameScore = 0;
-        int endgameScore = 0;
-
-        while (bishops != 0) {
-            int square = Bitwise.getNextBit(bishops);
-            long moves = Attacks.bishopAttacks(square, blockers) &~ friendlies;
-            int moveCount = Bitwise.countBits(moves);
-            middlegameScore += MG_PIECE_MOBILITY_BONUS[Piece.BISHOP.getIndex()][moveCount];
-            endgameScore += EG_PIECE_MOBILITY_BONUS[Piece.BISHOP.getIndex()][moveCount];
-            bishops = Bitwise.popBit(bishops);
-        }
-
-        return GamePhase.taperedEval(middlegameScore, endgameScore, phase);
-
-    }
-
 }

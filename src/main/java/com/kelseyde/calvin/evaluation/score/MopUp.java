@@ -7,9 +7,9 @@ import com.kelseyde.calvin.utils.Distance;
 
 public class MopUp {
 
-    private static final int KING_MANHATTAN_DISTANCE_MULTIPLIER = 4;
-    private static final int KING_CHEBYSHEV_DISTANCE_MULTIPLIER = 4;
-    private static final int KING_CENTER_MANHATTAN_DISTANCE_MULTIPLIER = 10;
+    private static final int KING_MANHATTAN_DISTANCE_MULTIPLIER = 10;
+    private static final int KING_CHEBYSHEV_DISTANCE_MULTIPLIER = 10;
+    private static final int KING_CENTER_MANHATTAN_DISTANCE_MULTIPLIER = 14;
 
     public static int score(Board board, Material friendlyMaterial, Material opponentMaterial, boolean isWhite) {
 

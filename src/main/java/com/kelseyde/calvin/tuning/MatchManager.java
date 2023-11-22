@@ -21,7 +21,7 @@ public class MatchManager {
 
     public MatchResult run() {
 
-        List<CompletableFuture<MatchResult>> futures = IntStream.range(0, 9)
+        List<CompletableFuture<MatchResult>> futures = IntStream.range(0, config.getThreadCount())
                 .mapToObj(i -> CompletableFuture.supplyAsync(() -> new Match(config).run()))
                 .toList();
         futures.forEach(f -> f.thenAccept(this::updateResults));

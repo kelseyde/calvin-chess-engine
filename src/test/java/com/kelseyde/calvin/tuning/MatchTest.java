@@ -1,11 +1,7 @@
 package com.kelseyde.calvin.tuning;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.bot.CalvinBot;
-import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.tuning.copy.CalvinBot2;
-import com.kelseyde.calvin.tuning.copy.ParallelSearcher2;
 import com.kelseyde.calvin.tuning.copy.Searcher2;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -72,7 +68,7 @@ public class MatchTest {
         MatchConfig config = MatchConfig.builder()
                 .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
                 .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
-                .gameCount(350)
+                .gameCount(200)
                 .maxMoves(100)
                 .minThinkTimeMs(15)
                 .maxThinkTimeMs(40)

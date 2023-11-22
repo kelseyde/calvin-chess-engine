@@ -58,8 +58,8 @@ public class Evaluator2 implements Evaluation {
         int whiteMobilityScore = Mobility.score(board, true, phase);
         int blackMobilityScore = Mobility.score(board, false, phase);
 
-        int whitePawnStructureScore = PawnEvaluation2.score(board.getPawns(true), board.getPawns(false), phase, true);
-        int blackPawnStructureScore = PawnEvaluation2.score(board.getPawns(false), board.getPawns(true), phase, false);
+        int whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), phase, true);
+        int blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), phase, false);
 
         int whiteKingSafetyScore = KingSafety.score(board, blackMaterial, phase, true);
         int blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
@@ -182,8 +182,8 @@ public class Evaluator2 implements Evaluation {
         }
 
         if (updatePawnStructure) {
-            whitePawnStructureScore = PawnEvaluation2.score(board.getPawns(true), board.getPawns(false), phase, true);
-            blackPawnStructureScore = PawnEvaluation2.score(board.getPawns(false), board.getPawns(true), phase, false);
+            whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), phase, true);
+            blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), phase, false);
         }
 
         if (updateWhiteKingSafety) {

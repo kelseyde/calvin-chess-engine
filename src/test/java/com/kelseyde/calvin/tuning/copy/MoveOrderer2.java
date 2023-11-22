@@ -51,18 +51,18 @@ public class MoveOrderer2 implements MoveOrdering {
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
     private int[][][] historyMoves = new int[2][64][64];
 
-    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
+    public List<Move> orderMoves(Board board, List<Move> moves, Move hashMove, Move previousMove, boolean includeKillers, int depth) {
         List<Move> orderedMoves = new ArrayList<>(moves);
-        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
+        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, hashMove, previousMove, includeKillers, depth)));
         return orderedMoves;
     }
 
-    public int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
+    public int scoreMove(Board board, Move move, Move hashMove, Move previousMove, boolean includeKillers, int depth) {
 
         int moveScore = 0;
 
         // Always search the best move from the previous iteration first.
-        if (move.equals(previousBestMove)) {
+        if (move.equals(hashMove)) {
             moveScore += PREVIOUS_BEST_MOVE_BIAS;
         }
 
@@ -131,6 +131,11 @@ public class MoveOrderer2 implements MoveOrdering {
         int endSquare = historyMove.getEndSquare();
         int score = plyRemaining * plyRemaining;
         historyMoves[colourIndex][startSquare][endSquare] = score;
+    }
+
+    @Override
+    public void addCounterMove(Move opponentMove, Move counterMove, boolean isWhite) {
+
     }
 
     public void clear() {

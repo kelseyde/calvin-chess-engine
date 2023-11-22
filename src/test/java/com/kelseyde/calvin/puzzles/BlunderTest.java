@@ -9,7 +9,6 @@ import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.matchers.Not;
 
 import java.util.Collections;
 import java.util.List;

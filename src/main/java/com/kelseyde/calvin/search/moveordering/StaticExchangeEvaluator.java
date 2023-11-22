@@ -7,8 +7,6 @@ import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 
-import java.util.NoSuchElementException;
-
 /**
  * SEE, or 'Static Exchange Evaluation' function, calculates the change in material balance after a series of exchanges
  * on a single square. Very similar to the human player's heuristic of 'counting the attackers and defenders', it returns

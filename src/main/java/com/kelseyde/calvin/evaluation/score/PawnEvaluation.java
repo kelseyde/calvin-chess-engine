@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.evaluation.score;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.utils.BoardUtils;

@@ -197,13 +197,13 @@ public class Searcher implements Search {
                 return alpha;
             }
         }
-        Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
+        Move hashMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
         long key = board.getGameState().getZobristKey();
         TranspositionEntry transposition = transpositionTable.get(key, plyFromRoot);
         if (hasBestMove(transposition)) {
-            previousBestMove = transposition.getMove();
+            hashMove = transposition.getMove();
         }
         if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
             if (plyFromRoot == 0 && transposition.getMove() != null) {
@@ -269,7 +269,8 @@ public class Searcher implements Search {
             }
         }
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
+        Move opponentMove = board.getMoveHistory().peek();
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, hashMove, opponentMove, true, plyFromRoot);
 
         Move bestMove = null;
         NodeType nodeType = NodeType.UPPER_BOUND;
@@ -320,6 +321,7 @@ public class Searcher implements Search {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(plyFromRoot, move);
                     moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
+                    moveOrderer.addCounterMove(opponentMove, move, board.isWhiteToMove());
                 }
                 return beta;
             }
@@ -369,7 +371,7 @@ public class Searcher implements Search {
         }
 
         List<Move> moves = moveGenerator.generateMoves(board, true);
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, null, false, 0);
 
         for (Move move : orderedMoves) {
             // Static exchange evaluation: filter out likely bad captures (e.g. QxP -> PxQ)

@@ -270,7 +270,7 @@ public class Searcher2 implements Search {
             }
         }
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, null, true, plyFromRoot);
 
         Move bestMove = null;
         NodeType nodeType = NodeType.UPPER_BOUND;
@@ -370,7 +370,7 @@ public class Searcher2 implements Search {
         }
 
         List<Move> moves = moveGenerator.generateMoves(board, true);
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, null, false, 0);
 
         for (Move move : orderedMoves) {
             // Static exchange evaluation: filter out likely bad captures (e.g. QxP -> PxQ)

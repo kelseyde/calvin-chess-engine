@@ -14,11 +14,13 @@ import java.util.List;
  */
 public interface MoveOrdering {
 
-    List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth);
+    List<Move> orderMoves(Board board, List<Move> moves, Move hashMove, Move previousMove, boolean includeKillers, int depth);
 
     void addKillerMove(int ply, Move newKiller);
 
     void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite);
+
+    void addCounterMove(Move opponentMove, Move counterMove, boolean isWhite);
 
     void clear();
 

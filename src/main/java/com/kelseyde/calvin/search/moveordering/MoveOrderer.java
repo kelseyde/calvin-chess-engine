@@ -27,14 +27,15 @@ import java.util.List;
 public class MoveOrderer implements MoveOrdering {
 
     private static final int MILLION = 1000000;
-    private static final int PREVIOUS_BEST_MOVE_BIAS = 10 * MILLION;
+    private static final int HASH_MOVE_BIAS = 10 * MILLION;
     private static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
     private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
-    private static final int UNDER_PROMOTION_BIAS = 4 * MILLION;
-    private static final int CASTLING_BIAS = 3 * MILLION;
+    private static final int COUNTER_MOVE_BIAS = 5 * MILLION;
+    private static final int LOSING_CAPTURE_BIAS = 4 * MILLION;
+    private static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
+    private static final int CASTLING_BIAS = 2 * MILLION;
 
     private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 2;
@@ -49,20 +50,21 @@ public class MoveOrderer implements MoveOrdering {
 
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
     private int[][][] historyMoves = new int[2][64][64];
+    private Move[][][] counterMoves = new Move[2][64][64];
 
-    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
+    public List<Move> orderMoves(Board board, List<Move> moves, Move hashMove, Move opponentMove, boolean includeKillers, int depth) {
         List<Move> orderedMoves = new ArrayList<>(moves);
-        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
+        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, hashMove, opponentMove, includeKillers, depth)));
         return orderedMoves;
     }
 
-    public int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
+    public int scoreMove(Board board, Move move, Move hashMove, Move opponentMove, boolean includeKillers, int depth) {
 
         int moveScore = 0;
 
         // Always search the best move from the previous iteration first.
-        if (move.equals(previousBestMove)) {
-            moveScore += PREVIOUS_BEST_MOVE_BIAS;
+        if (move.equals(hashMove)) {
+            moveScore += HASH_MOVE_BIAS;
         }
 
         // Sort captures according to MVV-LVA (most valuable victim, least valuable attacker)
@@ -86,6 +88,9 @@ public class MoveOrderer implements MoveOrdering {
             if (includeKillers && isKillerMove(depth, move)) {
                 moveScore += KILLER_MOVE_BIAS;
             }
+            else if (isCounterMove(opponentMove, move, board.isWhiteToMove())) {
+                moveScore += COUNTER_MOVE_BIAS;
+            }
             int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
             moveScore += historyMoves[colourIndex][move.getStartSquare()][move.getEndSquare()];
         }
@@ -105,6 +110,7 @@ public class MoveOrderer implements MoveOrdering {
 
     }
 
+    @Override
     public void addKillerMove(int ply, Move newKiller) {
         if (ply >= MAX_KILLER_MOVE_PLY_DEPTH) {
             return;
@@ -124,6 +130,7 @@ public class MoveOrderer implements MoveOrdering {
                 (move.equals(killerMoves[ply][0]) || move.equals(killerMoves[ply][1]));
     }
 
+    @Override
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {
         int colourIndex = BoardUtils.getColourIndex(isWhite);
         int startSquare = historyMove.getStartSquare();
@@ -132,9 +139,29 @@ public class MoveOrderer implements MoveOrdering {
         historyMoves[colourIndex][startSquare][endSquare] = score;
     }
 
+    private boolean isCounterMove(Move opponentMove, Move currentMove, boolean isWhite) {
+        if (opponentMove == null) {
+            return false;
+        }
+        int colourIndex = BoardUtils.getColourIndex(isWhite);
+        int startSquare = opponentMove.getStartSquare();
+        int endSquare = opponentMove.getEndSquare();
+        Move counterMove = counterMoves[colourIndex][startSquare][endSquare];
+        return currentMove.equals(counterMove);
+    }
+
+    @Override
+    public void addCounterMove(Move opponentMove, Move counterMove, boolean isWhite) {
+        int colourIndex = BoardUtils.getColourIndex(isWhite);
+        int startSquare = opponentMove.getStartSquare();
+        int endSquare = opponentMove.getEndSquare();
+        counterMoves[colourIndex][startSquare][endSquare] = counterMove;
+    }
+
     public void clear() {
         killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
         historyMoves = new int[2][64][64];
+        counterMoves = new Move[2][64][64];
     }
 
 }

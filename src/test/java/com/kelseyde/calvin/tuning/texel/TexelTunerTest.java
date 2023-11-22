@@ -1,13 +1,9 @@
 package com.kelseyde.calvin.tuning.texel;
 
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.Evaluator;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.function.Function;
 
 @Disabled
 public class TexelTunerTest {

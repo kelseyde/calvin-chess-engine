@@ -59,8 +59,8 @@ public class Evaluator implements Evaluation {
 //        int whiteMobilityScore = 0;
 //        int blackMobilityScore = 0;
 
-        int whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), true);
-        int blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), false);
+        int whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), phase, true);
+        int blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), phase, false);
 
         int whiteKingSafetyScore = KingSafety.score(board, blackMaterial, phase, true);
         int blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
@@ -117,13 +117,11 @@ public class Evaluator implements Evaluation {
             updateMaterial = true;
             updateWhiteKingSafety = true;
             updateBlackKingSafety = true;
+            updatePawnStructure = true;
             if (board.isWhiteToMove()) {
                 updateWhitePiecePlacement = true;
             } else {
                 updateBlackPiecePlacement = true;
-            }
-            if (capturedPiece == Piece.PAWN) {
-                updatePawnStructure = true;
             }
         }
 
@@ -185,8 +183,8 @@ public class Evaluator implements Evaluation {
         }
 
         if (updatePawnStructure) {
-            whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), true);
-            blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), false);
+            whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), phase, true);
+            blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), phase, false);
         }
 
         if (updateWhiteKingSafety) {

@@ -273,14 +273,22 @@ public class TacticsTest {
     public void testIgnoreScaryChecksForQueenRookMate() {
 
         String fen = "2k2b1r/3Rpppp/2p2q2/2Np4/3P4/4Qb2/r3nPPP/5R1K w - - 8 25";
-
         Board board = FEN.toBoard(fen);
-
         search = new ParallelSearcher(board, 3);
-
         SearchResult result = search.search(Duration.ofMillis(1000));
-
         Move bestMove = NotationUtils.fromNotation("e3", "b3");
+        assertMove(bestMove, result.move());
+
+    }
+
+    @Test
+    public void testGreekGiftSacrifice() {
+
+        String fen = "rnbq1rk1/pppn1ppp/4p3/3pP3/1b1P4/2NB1N2/PPP2PPP/R1BQK2R w KQ - 1 7";
+        Board board = FEN.toBoard(fen);
+        search = new ParallelSearcher(board, 3);
+        SearchResult result = search.search(Duration.ofMillis(4000));
+        Move bestMove = NotationUtils.fromNotation("d3", "h7");
         assertMove(bestMove, result.move());
 
     }

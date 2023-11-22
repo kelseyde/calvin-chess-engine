@@ -46,7 +46,7 @@ public class Searcher implements Search {
     private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
-    private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 100, 220, 340, 460 };
+    private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
     private static final int DELTA_PRUNING_MARGIN = 140;
 
     private static final int CHECKMATE_SCORE = 1000000;

@@ -1,24 +1,25 @@
-package com.kelseyde.calvin.evaluation.score;
+package com.kelseyde.calvin.tuning.copy;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.board.bitboard.Bitwise;
+import com.kelseyde.calvin.evaluation.score.GamePhase;
 import com.kelseyde.calvin.utils.BoardUtils;
 
-public class PawnEvaluation {
+public class PawnEvaluation2 {
 
-    // Bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
+    // The bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
     private static final int[] PASSED_PAWN_MG_BONUS = { 0, 140, 100, 60, 30, 15, 15 };
     private static final int[] PASSED_PAWN_EG_BONUS = { 0, 250, 140, 85, 45, 25, 25 };
 
-    // Bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
+    // The bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
     private static final int PROTECTED_PASSED_PAWN_BONUS = 25;
 
-    // Penalties for isolated pawns, indexed by the number of isolated pawns.
+    // The penalties for isolated pawns, indexed by the number of isolated pawns.
     private static final int[] ISOLATED_PAWN_MG_PENALTY = { 0, -10, -25, -50, -75, -75, -75, -75, -75 };
     private static final int[] ISOLATED_PAWN_EG_PENALTY = { 0, -20, -35, -65, -80, -80, -80, -80, -80 };
 
-    // Penalties for doubled pawns, indexed by the number of doubled pawns
+    // The penalties for doubled pawns, indexed by the number of doubled pawns (two pawns on the same rank are
+    // treated as 'separate' doubled pawns).
     private static final int[] DOUBLED_PAWN_MG_PENALTY = { 0, -5, -10, -20, -40, -60, -75, -85, -95};
     private static final int[] DOUBLED_PAWN_EG_PENALTY = { 0, -15, -25, -35, -55, -75, -90, -100, -110};
 

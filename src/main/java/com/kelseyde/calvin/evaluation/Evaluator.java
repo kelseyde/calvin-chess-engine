@@ -56,8 +56,6 @@ public class Evaluator implements Evaluation {
 
         int whiteMobilityScore = Mobility.score(board, true, phase);
         int blackMobilityScore = Mobility.score(board, false, phase);
-//        int whiteMobilityScore = 0;
-//        int blackMobilityScore = 0;
 
         int whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), phase, true);
         int blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), phase, false);
@@ -70,6 +68,9 @@ public class Evaluator implements Evaluation {
 
         int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
+
+        int whiteTempoBonus = board.isWhiteToMove() ? 10 : 0;
+        int blackTempoBonus = board.isWhiteToMove() ? 0 : 10;
 
         score = EvaluationScore.builder()
                 .whiteMaterial(whiteMaterial)
@@ -88,6 +89,8 @@ public class Evaluator implements Evaluation {
                 .blackKingSafetyScore(blackKingSafetyScore)
                 .blackRookScore(blackRookScore)
                 .blackMopUpScore(blackMopUpScore)
+                .whiteTempoBonus(whiteTempoBonus)
+                .blackTempoBonus(blackTempoBonus)
                 .build();
 
     }
@@ -196,14 +199,15 @@ public class Evaluator implements Evaluation {
 
         int whiteMobilityScore = Mobility.score(board, true, phase);
         int blackMobilityScore = Mobility.score(board, false, phase);
-//        int whiteMobilityScore = 0;
-//        int blackMobilityScore = 0;
 
         int whiteRookScore = RookEvaluation.score(board, phase, true);
         int blackRookScore = RookEvaluation.score(board, phase, false);
 
         int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
         int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
+
+        int whiteTempoBonus = board.isWhiteToMove() ? 10 : 0;
+        int blackTempoBonus = board.isWhiteToMove() ? 0 : 10;
 
         score = EvaluationScore.builder()
                 .whiteMaterial(whiteMaterial)
@@ -222,6 +226,8 @@ public class Evaluator implements Evaluation {
                 .blackKingSafetyScore(blackKingSafetyScore)
                 .blackRookScore(blackRookScore)
                 .blackMopUpScore(blackMopUpScore)
+                .whiteTempoBonus(whiteTempoBonus)
+                .blackTempoBonus(blackTempoBonus)
                 .build();
 
     }

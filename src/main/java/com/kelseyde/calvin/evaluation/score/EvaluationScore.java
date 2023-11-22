@@ -34,13 +34,16 @@ public class EvaluationScore {
     int whiteMopUpScore;
     int blackMopUpScore;
 
+    int whiteTempoBonus;
+    int blackTempoBonus;
+
     float phase;
 
     public int sum(boolean isWhite) {
-        int whiteScore = whiteMaterialScore + whitePiecePlacementScore + whiteMobilityScore +
-                whitePawnStructureScore + whiteKingSafetyScore + whiteBishopScore + whiteRookScore + whiteMopUpScore;
-        int blackScore = blackMaterialScore + blackPiecePlacementScore + blackMobilityScore +
-                blackPawnStructureScore + blackKingSafetyScore + blackBishopScore + blackRookScore + blackMopUpScore;
+        int whiteScore = whiteMaterialScore + whitePiecePlacementScore + whiteMobilityScore + whitePawnStructureScore +
+                whiteKingSafetyScore + whiteBishopScore + whiteRookScore + whiteMopUpScore + whiteTempoBonus;
+        int blackScore = blackMaterialScore + blackPiecePlacementScore + blackMobilityScore + blackPawnStructureScore +
+                blackKingSafetyScore + blackBishopScore + blackRookScore + blackMopUpScore + blackTempoBonus;
         int modifier = isWhite ? 1 : -1;
         return modifier * (whiteScore - blackScore);
     }

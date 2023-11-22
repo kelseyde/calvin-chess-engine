@@ -523,4 +523,21 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontBlockBishopAttackOnRookWithFreePawn() {
+
+        String fen = "r1bq1rk1/2pn1pp1/p3pb1p/8/Pp1PB3/2N1PN2/1P3PPP/R2QK2R b KQ - 1 13";
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(NotationUtils.fromCombinedNotation("c7c6"))
+        );
+        Assertions.assertTrue(
+                move.matches(NotationUtils.fromCombinedNotation("a8b8")) ||
+                        move.matches(NotationUtils.fromCombinedNotation("a8a7"))
+        );
+
+    }
+
 }

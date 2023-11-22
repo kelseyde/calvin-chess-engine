@@ -38,7 +38,7 @@ public class MoveOrderer2 implements MoveOrdering {
     private static final int CASTLING_BIAS = 3 * MILLION;
 
     private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
-    private static final int MAX_KILLER_MOVES_PER_PLY = 2;
+    private static final int MAX_KILLER_MOVES_PER_PLY = 3;
 
     public static final int[][] MVV_LVA_TABLE = new int[][] {
             new int[] {15, 14, 13, 12, 11, 10},  // victim P, attacker P, N, B, R, Q, K
@@ -111,10 +111,10 @@ public class MoveOrderer2 implements MoveOrdering {
             return;
         }
         Move firstKiller = killerMoves[ply][0];
-        // By ensuring that the new killer is not the same as the first existing killer, we guarantee
-        // that both killers at this ply are unique.
-        if (!newKiller.equals(firstKiller)) {
-            // Add the new killer at the start of the killer list for this ply.
+        Move secondKiller = killerMoves[ply][1];
+        Move thirdKiller = killerMoves[ply][2];
+        if (!newKiller.equals(firstKiller) && !newKiller.equals(secondKiller) && !newKiller.equals(thirdKiller)) {
+            killerMoves[ply][2] = secondKiller;
             killerMoves[ply][1] = firstKiller;
             killerMoves[ply][0] = newKiller;
         }
@@ -122,7 +122,7 @@ public class MoveOrderer2 implements MoveOrdering {
 
     private boolean isKillerMove(int ply, Move move) {
         return ply < MAX_KILLER_MOVE_PLY_DEPTH &&
-                (move.equals(killerMoves[ply][0]) || move.equals(killerMoves[ply][1]));
+                (move.equals(killerMoves[ply][0]) || move.equals(killerMoves[ply][1]) || move.equals(killerMoves[ply][2]));
     }
 
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {

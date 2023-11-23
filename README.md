@@ -30,7 +30,9 @@ Calvin is rated about ~2200 on Lichess as of November 2023.
 - [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
 
 ### Move Ordering
-- TT-move ordering, [MVV-LVA](https://www.chessprogramming.org/MVV-LVA), [killer move heuristic](https://www.chessprogramming.org/Killer_Move), [history heuristic](https://www.chessprogramming.org/History_Heuristic).
+- [MVV-LVA](https://www.chessprogramming.org/MVV-LVA)
+- [Killer move heuristic](https://www.chessprogramming.org/Killer_Move)
+- [History heuristic](https://www.chessprogramming.org/History_Heuristic).
 
 ### Evaluation
 - [Material](https://www.chessprogramming.org/Material): basic material count, bishop pair bonus

@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.function.Supplier;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @Slf4j
 public class MatchConfig {
 

@@ -225,7 +225,7 @@ public class MoveOrdererTest {
         String fen = "1k6/3p2pp/rnb1P3/8/N3Q3/1P5p/P1PPPpN1/1K6 b - - 0 1";
         Board board = FEN.toBoard(fen);
 
-        List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+        List<Move> legalMoves = moveGenerator.generateMoves(board);
 
         // Previous best move
         Move previousBestMove = new Move(NotationUtils.fromNotation("b8"), NotationUtils.fromNotation("c7"));

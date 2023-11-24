@@ -7,6 +7,7 @@ import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.movegeneration.MoveGeneration;
+import com.kelseyde.calvin.movegeneration.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
@@ -131,7 +132,7 @@ public class Searcher implements Search {
                 result = resultCurrentDepth;
             }
 
-            if (isCancelled() || isCheckmateFoundAtCurrentDepth(result.eval(), currentDepth)) {
+            if (isCancelled() || isCheckmateFoundAtCurrentDepth(result, currentDepth)) {
                 // Exit early if time runs out, or we already found forced mate
                 break;
             }
@@ -161,7 +162,7 @@ public class Searcher implements Search {
         if (result == null) {
             // If we did not find a single move during search (almost impossible), just return a random legal move.
             log.warn("Time expired before a move was found!");
-            Move move = moveGenerator.generateMoves(board, false).get(0);
+            Move move = moveGenerator.generateMoves(board).get(0);
             result = new SearchResult(0, move, currentDepth);
         }
         moveOrderer.clear();
@@ -188,7 +189,7 @@ public class Searcher implements Search {
         }
         if (plyRemaining <= 0) {
             // In the case that search depth is reached, begin quiescence search
-            return quiescenceSearch(alpha, beta, 1, plyFromRoot);
+            return quiescenceSearch(alpha, beta, 1, plyFromRoot, false);
         }
         if (plyFromRoot > 0) {
             if (resultCalculator.isEffectiveDraw(board)) {
@@ -217,7 +218,7 @@ public class Searcher implements Search {
             return transposition.getScore();
         }
 
-        List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+        List<Move> legalMoves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
         if (legalMoves.isEmpty()) {
@@ -233,7 +234,7 @@ public class Searcher implements Search {
         }
 
         // Null-move pruning: give the opponent an extra move to try produce a cut-off
-        if (allowNullPruning && plyRemaining >= 2) {
+        if (allowNullPruning && plyRemaining >= 1) {
             // Only attempt null-move pruning when the static eval is greater than beta - small margin (so likely to fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta - NULL_MOVE_PRUNING_MARGIN;
 
@@ -242,7 +243,7 @@ public class Searcher implements Search {
 
             if (isAssumedFailHigh && !isInCheck && isNotPawnEndgame) {
                 board.makeNullMove();
-                int reduction = 3 + (plyRemaining / 7);
+                int reduction = 4 + (plyRemaining / 7);
                 int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
@@ -355,7 +356,7 @@ public class Searcher implements Search {
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot) {
+    int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot, boolean isSingleReply) {
         if (isCancelled()) {
             return 0;
         }
@@ -366,35 +367,46 @@ public class Searcher implements Search {
             return transposition.getScore();
         }
 
-        // Then check stand-pat score.
         int eval = evaluator.get();
-        int standPat = eval;
-        if (eval >= beta) {
-            return beta;
-        }
-        if (eval > alpha) {
-            alpha = eval;
+        List<Move> moves;
+        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+        if (isInCheck) {
+            // If in check, simply generate all check evasions
+            moves = moveGenerator.generateMoves(board, MoveFilter.ALL);
+        } else {
+            // If not in check, get the stand-pat score and return if it causes a cut-off.
+            if (eval >= beta) {
+                return beta;
+            }
+            if (eval > alpha) {
+                alpha = eval;
+            }
+            MoveFilter filter = depth <= 1 || isSingleReply ? MoveFilter.CAPTURES_AND_CHECKS : MoveFilter.CAPTURES_ONLY;
+            moves = moveGenerator.generateMoves(board, filter);
         }
 
-        List<Move> moves = moveGenerator.generateMoves(board, true);
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
+        isSingleReply = isInCheck && orderedMoves.size() == 1;
 
         for (Move move : orderedMoves) {
-            // Static exchange evaluation: filter out likely bad captures (e.g. QxP -> PxQ)
-            int seeEval = see.evaluate(board, move);
-            if ((depth <= 3 && seeEval < 0) || (depth > 3 && seeEval <= 0)) {
-                continue;
-            }
 
-            // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
-            Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
-            int delta = standPat + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
-            if (delta < alpha && !move.isPromotion()) {
-                continue;
+            if (!isInCheck) {
+                // Static exchange evaluation: filter out likely bad captures (e.g. QxP -> PxQ)
+                int seeEval = see.evaluate(board, move);
+                if ((depth <= 3 && seeEval < 0) || (depth > 3 && seeEval <= 0)) {
+                    continue;
+                }
+                // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
+                Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
+                if (capturedPieceType != null) {
+                    int delta = eval + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
+                    if (delta < alpha && !move.isPromotion()) {
+                        continue;
+                    }
+                }
             }
-
             makeMove(move);
-            eval = -quiescenceSearch(-beta, -alpha, depth + 1, plyFromRoot + 1);
+            eval = -quiescenceSearch(-beta, -alpha, depth + 1, plyFromRoot + 1, isSingleReply);
             unmakeMove();
 
             if (eval >= beta) {
@@ -462,8 +474,8 @@ public class Searcher implements Search {
         //log.info(statistics.generateReport());
     }
 
-    private boolean isCheckmateFoundAtCurrentDepth(int bestEval, int currentDepth) {
-        return Math.abs(bestEval) >= CHECKMATE_SCORE - currentDepth;
+    private boolean isCheckmateFoundAtCurrentDepth(SearchResult result, int currentDepth) {
+        return result != null && Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
     }
 
     private boolean isTimeoutExceeded() {

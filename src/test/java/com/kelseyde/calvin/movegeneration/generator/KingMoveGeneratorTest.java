@@ -53,7 +53,7 @@ public class KingMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(Piece.KING, true, startSquare);
-        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

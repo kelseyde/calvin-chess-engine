@@ -54,7 +54,7 @@ public class Searcher2 implements Search {
     private static final int CHECKMATE_SCORE = 1000000;
     private static final int DRAW_SCORE = 0;
 
-    private MoveGeneration moveGenerator;
+    private MoveGenerator2 moveGenerator;
     private MoveOrdering moveOrderer;
     private Evaluation evaluator;
     private StaticExchangeEvaluator see;
@@ -76,7 +76,7 @@ public class Searcher2 implements Search {
     public Searcher2(Board board, TranspositionTable2 transpositionTable) {
         this.board = board;
         this.transpositionTable = transpositionTable;
-        this.moveGenerator = new MoveGenerator();
+        this.moveGenerator = new MoveGenerator2();
         this.moveOrderer = new MoveOrderer2();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();
@@ -91,7 +91,7 @@ public class Searcher2 implements Search {
         } else {
             this.transpositionTable.clear();
         }
-        this.moveGenerator = new MoveGenerator();
+        this.moveGenerator = new MoveGenerator2();
         this.moveOrderer = new MoveOrderer2();
         this.see = new StaticExchangeEvaluator();
         this.resultCalculator = new ResultCalculator();

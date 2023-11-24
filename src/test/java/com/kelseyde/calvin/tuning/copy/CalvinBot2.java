@@ -108,7 +108,7 @@ public class CalvinBot2 implements Bot {
 
         double minThinkTimeMs = Math.min(50, timeRemainingMs * 0.25);
 
-        thinkTimeMs =  Math.max(thinkTimeMs, minThinkTimeMs);
+        thinkTimeMs = Math.max(thinkTimeMs, minThinkTimeMs);
         log.trace("Selecting think time {}", Duration.ofMillis((int) thinkTimeMs));
         return (int) thinkTimeMs;
 

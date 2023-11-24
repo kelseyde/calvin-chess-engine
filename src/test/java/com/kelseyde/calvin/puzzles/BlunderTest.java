@@ -540,4 +540,30 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontHangKnightForTwoPawns() {
+
+        String fen = "3rrqk1/2pp1pp1/p6p/4P2Q/Bp2nP2/2P5/PP2R1PP/3R2K1 b - - 0 22";
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertTrue(
+                move.matches(NotationUtils.fromCombinedNotation("e4c5"))
+        );
+
+    }
+
+    @Test
+    public void testDontThrowDrawnOppositeBishopsEndgame() {
+
+        String fen = "8/8/1kp2P2/1p3K2/p1B5/P1P5/1b6/8 w - - 0 53";
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(1000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertTrue(
+                move.matches(NotationUtils.fromCombinedNotation("f6f7"))
+        );
+
+    }
+
 }

@@ -37,7 +37,7 @@ public class TestUtils {
 
     public static Move getLegalMove(Board board, String startSquare, String endSquare) {
         Move move = NotationUtils.fromNotation(startSquare, endSquare);
-        List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board, false);
+        List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board);
         Optional<Move> legalMove = legalMoves.stream()
                 .filter(m -> m.matches(move))
                 .findAny();
@@ -48,7 +48,7 @@ public class TestUtils {
     }
 
     public static Move getLegalMove(Board board, Move move) {
-        List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board, false);
+        List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board);
         Optional<Move> legalMove = legalMoves.stream()
                 .filter(m -> m.matches(move))
                 .findAny();

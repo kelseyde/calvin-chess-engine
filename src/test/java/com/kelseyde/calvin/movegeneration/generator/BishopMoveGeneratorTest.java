@@ -60,7 +60,7 @@ public class BishopMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(Piece.BISHOP, true, startSquare);
-        Set<Integer> legalSquares = generator.generateMoves(board, false).stream()
+        Set<Integer> legalSquares = generator.generateMoves(board).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.BISHOP)
                 .map(Move::getEndSquare)

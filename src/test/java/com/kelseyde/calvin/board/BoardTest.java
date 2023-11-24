@@ -148,7 +148,7 @@ public class BoardTest {
         board1.makeMove(new Move(13, 21));
         board1.makeMove(new Move(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
 
-        new MoveGenerator().generateMoves(board1, false);
+        new MoveGenerator().generateMoves(board1);
     }
 
     @Test
@@ -157,7 +157,7 @@ public class BoardTest {
         Board board1 = new Board();
         Board board2 = new Board();
 
-        new MoveGenerator().generateMoves(board1, false);
+        new MoveGenerator().generateMoves(board1);
 
         Assertions.assertEquals(board1.getWhitePawns(), board2.getWhitePawns());
         Assertions.assertEquals(board1.getWhiteKnights(), board2.getWhiteKnights());
@@ -335,7 +335,7 @@ public class BoardTest {
         Board board = new Board();
         board.makeMove(TestUtils.getLegalMove(board, "b1", "a3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        List<String> moves = new MoveGenerator().generateMoves(board, false).stream().map(NotationUtils::toNotation).toList();
+        List<String> moves = new MoveGenerator().generateMoves(board).stream().map(NotationUtils::toNotation).toList();
         System.out.println(moves.size());
         System.out.println(moves);
         Assertions.assertEquals(20, moves.size());

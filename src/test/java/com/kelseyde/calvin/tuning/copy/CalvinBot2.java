@@ -137,7 +137,7 @@ public class CalvinBot2 implements Bot {
 
     // TODO can be removed?
     private Move getLegalMove(Move move) {
-        return moveGenerator.generateMoves(board, false).stream()
+        return moveGenerator.generateMoves(board).stream()
                 .filter(move::matches)
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Illegal move " + NotationUtils.toNotation(move)));

@@ -72,11 +72,11 @@ public class MatchTest {
         MatchConfig config = MatchConfig.builder()
                 .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
                 .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
-                .gameCount(5000)
+                .gameCount(2000)
                 .maxMoves(100)
                 .minThinkTimeMs(15)
                 .maxThinkTimeMs(40)
-                .threadCount(10)
+                .threadCount(9)
                 .build();
 
         MatchManager match = new MatchManager(config);

@@ -21,8 +21,11 @@ public class MatchManager {
 
     public MatchResult run() {
 
+        MatchConfig configPerMatch = config.toBuilder()
+                .gameCount(config.getGameCount() / config.getThreadCount())
+                .build();
         List<CompletableFuture<MatchResult>> futures = IntStream.range(0, config.getThreadCount())
-                .mapToObj(i -> CompletableFuture.supplyAsync(() -> new Match(config).run()))
+                .mapToObj(i -> CompletableFuture.supplyAsync(() -> new Match(configPerMatch).run()))
                 .toList();
         futures.forEach(f -> f.thenAccept(this::updateResults));
         futures.forEach(CompletableFuture::join);

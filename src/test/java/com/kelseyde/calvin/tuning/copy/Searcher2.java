@@ -48,6 +48,7 @@ public class Searcher2 implements Search {
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
     private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
+    private static final int NULL_MOVE_PRUNING_MARGIN = 50;
     private static final int DELTA_PRUNING_MARGIN = 140;
 
     private static final int CHECKMATE_SCORE = 1000000;
@@ -234,8 +235,8 @@ public class Searcher2 implements Search {
 
         // Null-move pruning: give the opponent an extra move to try produce a cut-off
         if (allowNullPruning && plyRemaining >= 2) {
-            // Only attempt null-move pruning when the static eval is greater than beta (fail-high).
-            boolean isAssumedFailHigh = evaluator.get() >= beta - 50;
+            // Only attempt null-move pruning when the static eval is greater than beta - small margin (so likely to fail-high).
+            boolean isAssumedFailHigh = evaluator.get() >= beta - NULL_MOVE_PRUNING_MARGIN;
 
             // Do not attempt null-move in pawn endgames, due to zugzwang positions in which having the move is a disadvantage.
             boolean isNotPawnEndgame = evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining();

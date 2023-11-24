@@ -36,7 +36,7 @@ public enum NodeType {
             case 0 -> EXACT;
             case 1 -> LOWER_BOUND;
             case 2 -> UPPER_BOUND;
-            default -> throw new IllegalArgumentException();
+            default -> throw new IllegalArgumentException("Illegal node type " + value);
         };
     }
 

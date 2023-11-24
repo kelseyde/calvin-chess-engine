@@ -16,8 +16,8 @@ public class MatchTest {
     @Test
     public void testSingleMatch() {
         MatchConfig config = MatchConfig.builder()
-                .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
-                .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
+                .player1(() -> new Player("player1", new CalvinBot(new ParallelSearcher(new Board(), 6))))
+                .player2(() -> new Player("player2", new CalvinBot(new ParallelSearcher(new Board(), 10))))
                 .gameCount(300)
                 .maxMoves(100)
                 .minThinkTimeMs(15)
@@ -53,11 +53,11 @@ public class MatchTest {
         MatchConfig config = MatchConfig.builder()
                 .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
                 .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
-                .gameCount(16)
+                .gameCount(300)
                 .maxMoves(100)
                 .minThinkTimeMs(250)
                 .maxThinkTimeMs(550)
-                .threadCount(1)
+                .threadCount(3)
                 .build();
 
         MatchManager match = new MatchManager(config);
@@ -72,7 +72,7 @@ public class MatchTest {
         MatchConfig config = MatchConfig.builder()
                 .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
                 .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
-                .gameCount(200)
+                .gameCount(250)
                 .maxMoves(100)
                 .minThinkTimeMs(15)
                 .maxThinkTimeMs(40)

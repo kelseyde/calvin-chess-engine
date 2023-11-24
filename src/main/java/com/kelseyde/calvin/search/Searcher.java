@@ -47,6 +47,7 @@ public class Searcher implements Search {
 
     private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
     private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
+    private static final int NULL_MOVE_PRUNING_MARGIN = 50;
     private static final int DELTA_PRUNING_MARGIN = 140;
 
     private static final int CHECKMATE_SCORE = 1000000;
@@ -62,6 +63,7 @@ public class Searcher implements Search {
     private @Getter Board board;
 
     private Instant timeout;
+    private boolean isCancelled;
 
     private SearchResult result;
     private SearchResult resultCurrentDepth;
@@ -113,13 +115,14 @@ public class Searcher implements Search {
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;
+        isCancelled = false;
 
         int currentDepth = 1;
         int alpha = MIN_EVAL;
         int beta = MAX_EVAL;
         int retryMultiplier = 0;
 
-        while (!isTimeoutExceeded() && currentDepth < MAX_DEPTH) {
+        while (!isCancelled()  && currentDepth < MAX_DEPTH) {
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta, true);
@@ -128,7 +131,7 @@ public class Searcher implements Search {
                 result = resultCurrentDepth;
             }
 
-            if (isTimeoutExceeded() || isCheckmateFoundAtCurrentDepth(result.eval(), currentDepth)) {
+            if (isCancelled() || isCheckmateFoundAtCurrentDepth(result.eval(), currentDepth)) {
                 // Exit early if time runs out, or we already found forced mate
                 break;
             }
@@ -161,6 +164,7 @@ public class Searcher implements Search {
             Move move = moveGenerator.generateMoves(board, false).get(0);
             result = new SearchResult(0, move, currentDepth);
         }
+        moveOrderer.clear();
 //        System.out.printf("max depth: %s, eval: %s, move: %s%n", currentDepth, result.eval(), NotationUtils.toNotation(result.move()));
         return result;
 
@@ -179,7 +183,7 @@ public class Searcher implements Search {
      */
     public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNullPruning) {
 
-        if (isTimeoutExceeded()) {
+        if (isCancelled()) {
             return 0;
         }
         if (plyRemaining <= 0) {
@@ -200,6 +204,7 @@ public class Searcher implements Search {
         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
+        // TODO implement IID? See https://github.com/lynx-chess/Lynx/blob/main/src/Lynx/Search/NegaMax.cs
         long key = board.getGameState().getZobristKey();
         TranspositionEntry transposition = transpositionTable.get(key, plyFromRoot);
         if (hasBestMove(transposition)) {
@@ -213,24 +218,29 @@ public class Searcher implements Search {
         }
 
         List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+
         if (legalMoves.isEmpty()) {
             // Found checkmate / stalemate
-            boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-            return isCheck ? -CHECKMATE_SCORE + plyFromRoot : DRAW_SCORE;
+            return isInCheck ? -CHECKMATE_SCORE + plyFromRoot : DRAW_SCORE;
+        }
+        if (plyFromRoot == 0 && legalMoves.size() == 1) {
+            // Exit immediately if there is only one legal move at the root node
+            int eval = evaluator.get();
+            resultCurrentDepth = new SearchResult(eval, legalMoves.get(0), plyRemaining);
+            isCancelled = true;
+            return eval;
         }
 
         // Null-move pruning: give the opponent an extra move to try produce a cut-off
         if (allowNullPruning && plyRemaining >= 2) {
-            // Only attempt null-move pruning when the static eval is greater than beta (fail-high).
-            boolean isAssumedFailHigh = evaluator.get() >= beta;
-
-            // It is impossible to pass a null-move when in check (we would be checkmated).
-            boolean isNotCheck = !moveGenerator.isCheck(board, board.isWhiteToMove());
+            // Only attempt null-move pruning when the static eval is greater than beta - small margin (so likely to fail-high).
+            boolean isAssumedFailHigh = evaluator.get() >= beta - NULL_MOVE_PRUNING_MARGIN;
 
             // Do not attempt null-move in pawn endgames, due to zugzwang positions in which having the move is a disadvantage.
             boolean isNotPawnEndgame = evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining();
 
-            if (isAssumedFailHigh && isNotCheck && isNotPawnEndgame) {
+            if (isAssumedFailHigh && !isInCheck && isNotPawnEndgame) {
                 board.makeNullMove();
                 int reduction = 3 + (plyRemaining / 7);
                 int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
@@ -244,8 +254,6 @@ public class Searcher implements Search {
         // Futility pruning: in nodes close to the horizon, discard moves which have no potential of falling within the window.
         boolean isFutilityPruningEnabled = false;
         if (plyRemaining <= 4) {
-            // Do not prune positions where we are in check.
-            boolean isNotCheck = !moveGenerator.isCheck(board, board.isWhiteToMove());
             // Do not prune positions where we are hunting for checkmate.
             boolean isNotMateHunting = Math.abs(alpha) < CHECKMATE_SCORE - 100;
 
@@ -253,7 +261,7 @@ public class Searcher implements Search {
 
             int reverseFutilityMargin = REVERSE_FUTILITY_PRUNING_MARGIN[plyRemaining];
             boolean isAssumedFailHigh = staticEval - reverseFutilityMargin > beta;
-            if (isAssumedFailHigh && isNotCheck && isNotMateHunting) {
+            if (isAssumedFailHigh && !isInCheck && isNotMateHunting) {
                 // Reverse futility pruning: if the static evaluation - some margin is still > beta, then let's assume
                 // there's no point searching any moves, since it's likely to produce a cut-off no matter what we do.
                 return staticEval - reverseFutilityMargin;
@@ -261,7 +269,7 @@ public class Searcher implements Search {
 
             int futilityMargin = FUTILITY_PRUNING_MARGIN[plyRemaining];
             boolean isAssumedFailLow = staticEval + futilityMargin < alpha;
-            if (isAssumedFailLow && isNotCheck && isNotMateHunting) {
+            if (isAssumedFailLow && !isInCheck && isNotMateHunting) {
                 // Standard futility pruning: if the static evaluation + some margin is still < alpha, we still need to
                 // search interesting moves (checks, captures, promotions), in case we have a saving move, but we assume
                 // that all quiet moves can be skipped.
@@ -308,7 +316,7 @@ public class Searcher implements Search {
             }
             unmakeMove();
 
-            if (isTimeoutExceeded()) {
+            if (isCancelled()) {
                 return 0;
             }
 
@@ -348,7 +356,7 @@ public class Searcher implements Search {
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
     int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot) {
-        if (isTimeoutExceeded()) {
+        if (isCancelled()) {
             return 0;
         }
         // First exit if we have already stored an accurate eval in the TT
@@ -444,9 +452,6 @@ public class Searcher implements Search {
 
     @Override
     public void clearHistory() {
-        if (moveOrderer != null) {
-            moveOrderer.clear();
-        }
         if (transpositionTable != null) {
             transpositionTable.clear();
         }
@@ -463,6 +468,10 @@ public class Searcher implements Search {
 
     private boolean isTimeoutExceeded() {
         return !Instant.now().isBefore(timeout);
+    }
+
+    private boolean isCancelled() {
+        return isCancelled || isTimeoutExceeded();
     }
 
     public void setTimeout(Instant timeout) {

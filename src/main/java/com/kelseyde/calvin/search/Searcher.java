@@ -176,44 +176,44 @@ public class Searcher implements Search {
      * recursively until the depth limit is reached, 'depth' needs to be split into two parameters: 'ply remaining' and
      * 'ply from root'.
      *
-     * @param plyRemaining        The number of ply deeper left to go in the current search
-     * @param plyFromRoot         The number of ply already examined in this iteration of the search.
+     * @param depth               The number of ply deeper left to go in the current search
+     * @param ply                 The number of ply already examined in this iteration of the search.
      * @param alpha               The lower bound for child nodes at the current search depth.
      * @param beta                The upper bound for child nodes at the current search depth.
      * @param allowNullPruning    Whether to allow null-move pruning in this search iteration.
      */
-    public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNullPruning) {
+    public int search(int depth, int ply, int alpha, int beta, boolean allowNullPruning) {
 
         if (isCancelled()) {
             return 0;
         }
-        if (plyRemaining <= 0) {
+        if (depth <= 0) {
             // In the case that search depth is reached, begin quiescence search
-            return quiescenceSearch(alpha, beta, 1, plyFromRoot);
+            return quiescenceSearch(alpha, beta, 1, ply);
         }
-        if (plyFromRoot > 0) {
+        if (ply > 0) {
             if (resultCalculator.isEffectiveDraw(board)) {
                 return DRAW_SCORE;
             }
             // Mate distance pruning: exit early if we have already found a forced mate at an earlier ply
-            alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
-            beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
+            alpha = Math.max(alpha, -CHECKMATE_SCORE + ply);
+            beta = Math.min(beta, CHECKMATE_SCORE - ply);
             if (alpha >= beta) {
                 return alpha;
             }
         }
-        Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
+        Move previousBestMove = ply == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
         // TODO implement IID? See https://github.com/lynx-chess/Lynx/blob/main/src/Lynx/Search/NegaMax.cs
         long key = board.getGameState().getZobristKey();
-        TranspositionEntry transposition = transpositionTable.get(key, plyFromRoot);
+        TranspositionEntry transposition = transpositionTable.get(key, ply);
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
         }
-        if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
-            if (plyFromRoot == 0 && transposition.getMove() != null) {
-                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), plyRemaining);
+        if (isUsefulTransposition(transposition, depth, alpha, beta)) {
+            if (ply == 0 && transposition.getMove() != null) {
+                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), depth);
             }
             return transposition.getScore();
         }
@@ -223,18 +223,18 @@ public class Searcher implements Search {
 
         if (legalMoves.isEmpty()) {
             // Found checkmate / stalemate
-            return isInCheck ? -CHECKMATE_SCORE + plyFromRoot : DRAW_SCORE;
+            return isInCheck ? -CHECKMATE_SCORE + ply : DRAW_SCORE;
         }
-        if (plyFromRoot == 0 && legalMoves.size() == 1) {
+        if (ply == 0 && legalMoves.size() == 1) {
             // Exit immediately if there is only one legal move at the root node
             int eval = evaluator.get();
-            resultCurrentDepth = new SearchResult(eval, legalMoves.get(0), plyRemaining);
+            resultCurrentDepth = new SearchResult(eval, legalMoves.get(0), depth);
             isCancelled = true;
             return eval;
         }
 
         // Null-move pruning: give the opponent an extra move to try produce a cut-off
-        if (allowNullPruning && plyRemaining >= 1) {
+        if (allowNullPruning && depth >= 2) {
             // Only attempt null-move pruning when the static eval is greater than beta - small margin (so likely to fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta - NULL_MOVE_PRUNING_MARGIN;
 
@@ -243,8 +243,8 @@ public class Searcher implements Search {
 
             if (isAssumedFailHigh && !isInCheck && isNotPawnEndgame) {
                 board.makeNullMove();
-                int reduction = 4 + (plyRemaining / 7);
-                int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
+                int reduction = 4 + (depth / 7);
+                int eval = -search(depth - 1 - reduction, ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
                     return eval;
@@ -254,13 +254,13 @@ public class Searcher implements Search {
 
         // Futility pruning: in nodes close to the horizon, discard moves which have no potential of falling within the window.
         boolean isFutilityPruningEnabled = false;
-        if (plyRemaining <= 4) {
+        if (depth <= 4) {
             // Do not prune positions where we are hunting for checkmate.
             boolean isNotMateHunting = Math.abs(alpha) < CHECKMATE_SCORE - 100;
 
             int staticEval = evaluator.get();
 
-            int reverseFutilityMargin = REVERSE_FUTILITY_PRUNING_MARGIN[plyRemaining];
+            int reverseFutilityMargin = REVERSE_FUTILITY_PRUNING_MARGIN[depth];
             boolean isAssumedFailHigh = staticEval - reverseFutilityMargin > beta;
             if (isAssumedFailHigh && !isInCheck && isNotMateHunting) {
                 // Reverse futility pruning: if the static evaluation - some margin is still > beta, then let's assume
@@ -268,7 +268,7 @@ public class Searcher implements Search {
                 return staticEval - reverseFutilityMargin;
             }
 
-            int futilityMargin = FUTILITY_PRUNING_MARGIN[plyRemaining];
+            int futilityMargin = FUTILITY_PRUNING_MARGIN[depth];
             boolean isAssumedFailLow = staticEval + futilityMargin < alpha;
             if (isAssumedFailLow && !isInCheck && isNotMateHunting) {
                 // Standard futility pruning: if the static evaluation + some margin is still < alpha, we still need to
@@ -278,7 +278,7 @@ public class Searcher implements Search {
             }
         }
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, ply);
 
         Move bestMove = null;
         NodeType nodeType = NodeType.UPPER_BOUND;
@@ -305,15 +305,15 @@ public class Searcher implements Search {
 
             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
             int reductions = 0;
-            if (plyRemaining >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
-                reductions = i < 5 ? 1 : plyRemaining / 3;
+            if (depth >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
+                reductions = i < 5 ? 1 : depth / 3;
             }
 
-            int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha, true);
+            int eval = -search(depth - 1 + extensions - reductions, ply + 1, -beta, -alpha, true);
 
             if (reductions > 0 && eval > alpha) {
                 // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
-                eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
+                eval = -search(depth - 1 + extensions, ply + 1, -beta, -alpha, true);
             }
             unmakeMove();
 
@@ -324,11 +324,11 @@ public class Searcher implements Search {
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
                 key = board.getGameState().getZobristKey();
-                transpositionTable.put(key, NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, move, beta);
+                transpositionTable.put(key, NodeType.LOWER_BOUND, depth, ply, move, beta);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
-                    moveOrderer.addKillerMove(plyFromRoot, move);
-                    moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
+                    moveOrderer.addKillerMove(ply, move);
+                    moveOrderer.addHistoryMove(depth, move, board.isWhiteToMove());
                 }
                 return beta;
             }
@@ -338,13 +338,13 @@ public class Searcher implements Search {
                 bestMove = move;
                 alpha = eval;
                 nodeType = NodeType.EXACT;
-                if (plyFromRoot == 0) {
-                    resultCurrentDepth = new SearchResult(eval, move, plyRemaining);
+                if (ply == 0) {
+                    resultCurrentDepth = new SearchResult(eval, move, depth);
                 }
             }
         }
         key = board.getGameState().getZobristKey();
-        transpositionTable.put(key, nodeType, plyRemaining, plyFromRoot, bestMove, alpha);
+        transpositionTable.put(key, nodeType, depth, ply, bestMove, alpha);
         return alpha;
 
     }
@@ -356,26 +356,25 @@ public class Searcher implements Search {
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot) {
+    int quiescenceSearch(int alpha, int beta, int depth, int ply) {
         if (isCancelled()) {
             return 0;
         }
         // First exit if we have already stored an accurate eval in the TT
         long zobristKey = board.getGameState().getZobristKey();
-        TranspositionEntry transposition = transpositionTable.get(zobristKey, plyFromRoot);
+        TranspositionEntry transposition = transpositionTable.get(zobristKey, ply);
         if (isUsefulTransposition(transposition, alpha, beta)) {
             return transposition.getScore();
         }
 
         int eval = evaluator.get();
-        int standPat = eval;
         List<Move> moves;
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
         if (isInCheck) {
             // If in check, simply generate all check evasions
             moves = moveGenerator.generateMoves(board, MoveFilter.ALL);
         } else {
-            // If not in check, get the stand-pat score and return if it causes a cut-off.
+            // If not in check, check the stand-pat score.
             if (eval >= beta) {
                 return beta;
             }
@@ -399,14 +398,14 @@ public class Searcher implements Search {
                 // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
                 Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
                 if (capturedPieceType != null) {
-                    int delta = standPat + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
+                    int delta = eval + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
                     if (delta < alpha && !move.isPromotion()) {
                         continue;
                     }
                 }
             }
             makeMove(move);
-            eval = -quiescenceSearch(-beta, -alpha, depth + 1, plyFromRoot + 1);
+            eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             unmakeMove();
 
             if (eval >= beta) {

@@ -2,15 +2,12 @@ package com.kelseyde.calvin.movegeneration.quiescent;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.movegeneration.MoveGeneration;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.internal.matchers.Not;
 
 import java.util.List;
 
@@ -106,7 +103,6 @@ public class QuiescentTest {
     public void testKiwipete() {
 
         String fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
-
         Board board = FEN.toBoard(fen);
 
         List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
@@ -134,6 +130,63 @@ public class QuiescentTest {
                 NotationUtils.fromNotation("e5", "d7")
         );
         assertMoves(expected, moves);
+    }
+
+    @Test
+    public void testPawnAndPromotionMoves() {
+
+        String fen = "3k4/8/8/8/6pP/1p2p3/3B1p2/2K3R1 b - h3 0 1";
+        Board board = FEN.toBoard(fen);
+
+        List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
+        List<Move> expected = List.of(
+                NotationUtils.fromNotation("g4", "h3"),
+                NotationUtils.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
+                NotationUtils.fromNotation("e3", "d2")
+        );
+        assertMoves(expected, moves);
+
+        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
+        expected = List.of(
+                NotationUtils.fromNotation("g4", "h3"),
+                NotationUtils.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
+                NotationUtils.fromNotation("e3", "d2"),
+                NotationUtils.fromNotation("f2", "f1", Move.PROMOTE_TO_QUEEN_FLAG),
+                NotationUtils.fromNotation("b3", "b2")
+        );
+        assertMoves(expected, moves);
+
+    }
+
+    @Test
+    public void testRookMoves() {
+
+        String fen = "1bR2N1b/R3nk2/5p2/8/8/8/2K3R1/4R2R w - - 0 1";
+        Board board = FEN.toBoard(fen);
+
+        List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
+        List<Move> expected = List.of(
+                NotationUtils.fromNotation("h1", "h8"),
+                NotationUtils.fromNotation("e1", "e7"),
+                NotationUtils.fromNotation("a7", "e7"),
+                NotationUtils.fromNotation("c8", "b8")
+        );
+        assertMoves(expected, moves);
+
+        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
+        for (Move move : moves) {
+            System.out.println(NotationUtils.toNotation(move));
+        }
+        expected = List.of(
+                NotationUtils.fromNotation("h1", "h8"),
+                NotationUtils.fromNotation("e1", "e7"),
+                NotationUtils.fromNotation("a7", "e7"),
+                NotationUtils.fromNotation("c8", "b8"),
+                NotationUtils.fromNotation("h1", "h7"),
+                NotationUtils.fromNotation("g2", "g7")
+        );
+        assertMoves(expected, moves);
+
     }
 
     private void assertMoves(List<Move> expected, List<Move> actual) {

@@ -189,7 +189,7 @@ public class Searcher implements Search {
         }
         if (plyRemaining <= 0) {
             // In the case that search depth is reached, begin quiescence search
-            return quiescenceSearch(alpha, beta, 1, plyFromRoot, false);
+            return quiescenceSearch(alpha, beta, 1, plyFromRoot);
         }
         if (plyFromRoot > 0) {
             if (resultCalculator.isEffectiveDraw(board)) {
@@ -356,7 +356,7 @@ public class Searcher implements Search {
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot, boolean isSingleReply) {
+    int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot) {
         if (isCancelled()) {
             return 0;
         }
@@ -368,6 +368,7 @@ public class Searcher implements Search {
         }
 
         int eval = evaluator.get();
+        int standPat = eval;
         List<Move> moves;
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
         if (isInCheck) {
@@ -381,12 +382,11 @@ public class Searcher implements Search {
             if (eval > alpha) {
                 alpha = eval;
             }
-            MoveFilter filter = depth <= 1 || isSingleReply ? MoveFilter.CAPTURES_AND_CHECKS : MoveFilter.CAPTURES_ONLY;
+            MoveFilter filter = depth <= 1 ? MoveFilter.CAPTURES_AND_CHECKS : MoveFilter.CAPTURES_ONLY;
             moves = moveGenerator.generateMoves(board, filter);
         }
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
-        isSingleReply = isInCheck && orderedMoves.size() == 1;
 
         for (Move move : orderedMoves) {
 
@@ -399,14 +399,14 @@ public class Searcher implements Search {
                 // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
                 Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
                 if (capturedPieceType != null) {
-                    int delta = eval + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
+                    int delta = standPat + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
                     if (delta < alpha && !move.isPromotion()) {
                         continue;
                     }
                 }
             }
             makeMove(move);
-            eval = -quiescenceSearch(-beta, -alpha, depth + 1, plyFromRoot + 1, isSingleReply);
+            eval = -quiescenceSearch(-beta, -alpha, depth + 1, plyFromRoot + 1);
             unmakeMove();
 
             if (eval >= beta) {

@@ -117,6 +117,7 @@ public class MoveGenerator implements MoveGeneration {
 
             long singleMoves = Bitwise.pawnSingleMoves(pawns, occupied, isWhite) & pushMask & filterMask;
             long doubleMoves = Bitwise.pawnDoubleMoves(pawns, occupied, isWhite) & pushMask & filterMask;
+            long pushPromotions = Bitwise.pawnPushPromotions(pawns, occupied, isWhite) & pushMask & filterMask;
 
             while (singleMoves != 0) {
                 int endSquare = Bitwise.getNextBit(singleMoves);
@@ -134,13 +135,20 @@ public class MoveGenerator implements MoveGeneration {
                 }
                 doubleMoves = Bitwise.popBit(doubleMoves);
             }
+            while (pushPromotions != 0) {
+                int endSquare = Bitwise.getNextBit(pushPromotions);
+                int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
+                if (!isPinned(startSquare)) {
+                    legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                }
+                pushPromotions = Bitwise.popBit(pushPromotions);
+            }
         }
 
         long leftCaptures = Bitwise.pawnLeftCaptures(pawns, opponents, isWhite) & captureMask & filterMask;
         long rightCaptures = Bitwise.pawnRightCaptures(pawns, opponents, isWhite) & captureMask & filterMask;
         long leftEnPassants = Bitwise.pawnLeftEnPassants(pawns, enPassantFile, isWhite) & filterMask;
         long rightEnPassants = Bitwise.pawnRightEnPassants(pawns, enPassantFile, isWhite) & filterMask;
-        long pushPromotions = Bitwise.pawnPushPromotions(pawns, occupied, isWhite) & pushMask & filterMask;
         long leftCapturePromotions = Bitwise.pawnLeftCapturePromotions(pawns, opponents, isWhite) & (captureMask | pushMask) & filterMask;
         long rightCapturePromotions = Bitwise.pawnRightCapturePromotions(pawns, opponents, isWhite) & (captureMask | pushMask) & filterMask;
 
@@ -181,14 +189,6 @@ public class MoveGenerator implements MoveGeneration {
                 legalMoves.add(move);
             }
             rightEnPassants = Bitwise.popBit(rightEnPassants);
-        }
-        while (pushPromotions != 0) {
-            int endSquare = Bitwise.getNextBit(pushPromotions);
-            int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
-            if (!isPinned(startSquare)) {
-                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
-            }
-            pushPromotions = Bitwise.popBit(pushPromotions);
         }
         while (leftCapturePromotions != 0) {
             int endSquare = Bitwise.getNextBit(leftCapturePromotions);
@@ -469,12 +469,11 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private List<Move> getPromotionMoves(int startSquare, int endSquare) {
-        return filter != MoveFilter.ALL ?
-                List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG)) :
-                List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
+        return List.of(
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
     }
 
     private boolean leavesKingInCheck(Board board, Move move, boolean isWhite) {

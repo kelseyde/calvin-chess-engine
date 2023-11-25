@@ -2,6 +2,7 @@ package com.kelseyde.calvin.movegeneration.sperft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.search.Searcher;
+import com.kelseyde.calvin.tuning.copy.Searcher2;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.io.IOException;

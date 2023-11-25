@@ -23,7 +23,6 @@ public class QuiescentTest {
         Board board = FEN.toBoard(fen);
 
         List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
-
         List<Move> expected = List.of(
                 NotationUtils.fromNotation("a6", "b7"),
                 NotationUtils.fromNotation("f8", "d7"),
@@ -32,7 +31,6 @@ public class QuiescentTest {
         assertMoves(expected, moves);
 
         moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
-
         expected = List.of(
                 NotationUtils.fromNotation("a6", "b7"),
                 NotationUtils.fromNotation("f8", "d7"),
@@ -50,7 +48,6 @@ public class QuiescentTest {
         Board board = FEN.toBoard(fen);
 
         List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
-
         List<Move> expected = List.of(
                 NotationUtils.fromNotation("g3", "h4"),
                 NotationUtils.fromNotation("b3", "f7"),
@@ -84,9 +81,6 @@ public class QuiescentTest {
         assertMoves(expected, moves);
 
         moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
-        for (Move move : moves) {
-            System.out.println(NotationUtils.toNotation(move));
-        }
         expected = List.of(
                 NotationUtils.fromNotation("h2", "g4"),
                 NotationUtils.fromNotation("c6", "d6"),
@@ -174,9 +168,6 @@ public class QuiescentTest {
         assertMoves(expected, moves);
 
         moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
-        for (Move move : moves) {
-            System.out.println(NotationUtils.toNotation(move));
-        }
         expected = List.of(
                 NotationUtils.fromNotation("h1", "h8"),
                 NotationUtils.fromNotation("e1", "e7"),

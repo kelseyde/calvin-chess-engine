@@ -368,6 +368,7 @@ public class Searcher implements Search {
         }
 
         int eval = evaluator.get();
+        int standPat = eval;
         List<Move> moves;
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
         if (isInCheck) {
@@ -398,7 +399,7 @@ public class Searcher implements Search {
                 // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
                 Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
                 if (capturedPieceType != null) {
-                    int delta = eval + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
+                    int delta = standPat + PieceValues.valueOf(capturedPieceType) + DELTA_PRUNING_MARGIN;
                     if (delta < alpha && !move.isPromotion()) {
                         continue;
                     }

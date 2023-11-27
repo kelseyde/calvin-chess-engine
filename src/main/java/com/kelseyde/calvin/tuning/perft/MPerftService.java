@@ -13,7 +13,7 @@ public class MPerftService {
     private final MoveOrderer moveOrderer = new MoveOrderer();
 
     public int perft(Board board, int depth) {
-        List<Move> moves = moveGenerator.generateMoves(board, false);
+        List<Move> moves = moveGenerator.generateMoves(board);
         moves = moveOrderer.orderMoves(board, moves, null, true, 0);
         if (depth == 1) {
             return moves.size();

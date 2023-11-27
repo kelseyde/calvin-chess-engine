@@ -202,6 +202,7 @@ public class Searcher implements Search {
                 return alpha;
             }
         }
+
         boolean pvNode = beta - alpha > 1;
         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
@@ -298,32 +299,37 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Search extensions: in certain interesting cases (promotions, checks that do not immediately lose material),
+            // let's extend the search depth by one ply.
+            int extensions = 0;
+            if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
+                extensions = 1;
+            }
+
             int eval;
             if (pvNode && i == 0) {
-                eval = -search(plyRemaining - 1, plyFromRoot + 1, -beta, -alpha, true);
+                // Principal variation search: the first move must be searched with the full alpha-beta window. If our move
+                // ordering is any good then we expect this to be the best move, and so we need to retrieve the exact score.
+                eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
+
             } else {
-                // Search extensions: if the move is a promotion, or a check that does not lose material, extend the search depth by one ply.
-                int extensions = 0;
-                if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
-                    extensions = 1;
-                }
-                // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
+                // Late move reductions: if the move is ordered late in the list, and isn't a 'noisy' move like a check,
+                // capture or promotion, let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reductions = 0;
                 if (plyRemaining >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
                     reductions = i < 5 ? 1 : plyRemaining / 3;
                 }
 
+                // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
+                // to try and prove the move will fail low while saving the time spent on a full search.
                 eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -alpha - 1, -alpha, true);
 
-                if (eval > alpha && reductions > 0) {
-                    // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
-                    eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -alpha - 1, -alpha, true);
-                }
-                else if (eval > alpha && eval < beta) {
+                if (eval > alpha && (eval < beta || reductions > 0)) {
+                    // If we reduced the depth and/or used a null-window, and the score beat alpha, we need to do a
+                    // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
                     eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
                 }
             }
-
 
             unmakeMove();
 
@@ -368,7 +374,7 @@ public class Searcher implements Search {
         if (isCancelled()) {
             return alpha;
         }
-        // First exit if we have already stored an accurate eval in the TT
+        // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         Move previousBestMove = null;
         TranspositionEntry transposition = transpositionTable.get(getKey(), plyFromRoot);
         if (isUsefulTransposition(transposition, alpha, beta)) {
@@ -378,7 +384,6 @@ public class Searcher implements Search {
             previousBestMove = transposition.getMove();
         }
 
-        // Then check stand-pat score.
         int eval = evaluator.get();
         int standPat = eval;
 
@@ -386,11 +391,15 @@ public class Searcher implements Search {
 
         List<Move> moves;
         if (isInCheck) {
+            // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
+            // we risk missing simple mate threats.
             moves = moveGenerator.generateMoves(board, MoveFilter.ALL);
             if (moves.isEmpty()) {
                 return -CHECKMATE_SCORE + plyFromRoot;
             }
         } else {
+            // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
+            // if the static evaluation of the position is good enough.
             if (eval >= beta) {
                 return beta;
             }

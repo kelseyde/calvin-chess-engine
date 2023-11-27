@@ -202,6 +202,7 @@ public class Searcher implements Search {
                 return alpha;
             }
         }
+        boolean pvNode = beta - alpha > 1;
         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
@@ -233,7 +234,7 @@ public class Searcher implements Search {
         }
 
         // Null-move pruning: give the opponent an extra move to try produce a cut-off
-        if (allowNullPruning) {
+        if (allowNullPruning && !pvNode) {
             // Only attempt null-move pruning when the static eval is greater than beta - small margin (so likely to fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta - NULL_MOVE_PRUNING_MARGIN;
 
@@ -254,7 +255,7 @@ public class Searcher implements Search {
 
         // Futility pruning: in nodes close to the horizon, discard moves which have no potential of falling within the window.
         boolean isFutilityPruningEnabled = false;
-        if (plyRemaining <= 4) {
+        if (plyRemaining <= 4 && !pvNode) {
             // Do not prune positions where we are hunting for checkmate.
             boolean isNotMateHunting = Math.abs(alpha) < CHECKMATE_SCORE - 100;
 
@@ -297,24 +298,33 @@ public class Searcher implements Search {
                 continue;
             }
 
-            // Search extensions: if the move is a promotion, or a check that does not lose material, extend the search depth by one ply.
-            int extensions = 0;
-            if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
-                extensions = 1;
+            int eval;
+            if (pvNode && i == 0) {
+                eval = -search(plyRemaining - 1, plyFromRoot + 1, -beta, -alpha, true);
+            } else {
+                // Search extensions: if the move is a promotion, or a check that does not lose material, extend the search depth by one ply.
+                int extensions = 0;
+                if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
+                    extensions = 1;
+                }
+                // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
+                int reductions = 0;
+                if (plyRemaining >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
+                    reductions = i < 5 ? 1 : plyRemaining / 3;
+                }
+
+                eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -alpha - 1, -alpha, true);
+
+                if (eval > alpha && reductions > 0) {
+                    // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
+                    eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -alpha - 1, -alpha, true);
+                }
+                else if (eval > alpha && eval < beta) {
+                    eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
+                }
             }
 
-            // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
-            int reductions = 0;
-            if (plyRemaining >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
-                reductions = i < 5 ? 1 : plyRemaining / 3;
-            }
 
-            int eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -beta, -alpha, true);
-
-            if (reductions > 0 && eval > alpha) {
-                // In case we reduced the search but the move beat alpha, do a full-depth search to get a more accurate eval
-                eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
-            }
             unmakeMove();
 
             if (isCancelled()) {

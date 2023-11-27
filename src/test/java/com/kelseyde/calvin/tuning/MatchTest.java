@@ -4,8 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.tuning.copy.CalvinBot2;
-import com.kelseyde.calvin.tuning.copy.ParallelSearcher2;
 import com.kelseyde.calvin.tuning.copy.Searcher2;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

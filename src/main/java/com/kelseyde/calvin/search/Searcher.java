@@ -9,7 +9,6 @@ import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.movegeneration.MoveGeneration;
 import com.kelseyde.calvin.movegeneration.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.movegeneration.MoveGenerator2;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
@@ -18,14 +17,12 @@ import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
-import com.kelseyde.calvin.utils.notation.PGN;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -135,9 +132,6 @@ public class Searcher implements Search {
                 result = resultCurrentDepth;
             }
 
-            if (result == null) {
-                System.out.println(PGN.toPGN(board));
-            }
             if (isCancelled() || isCheckmateFoundAtCurrentDepth(currentDepth)) {
                 // Exit early if time runs out, or we already found forced mate
                 break;
@@ -167,7 +161,7 @@ public class Searcher implements Search {
 
         if (result == null) {
             // If we did not find a single move during search (almost impossible), just return a random legal move.
-            System.out.println("Time expired before a move was found!");
+            log.warn("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board).get(0);
             result = new SearchResult(0, move, currentDepth);
         }
@@ -311,7 +305,7 @@ public class Searcher implements Search {
 
             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
             int reductions = 0;
-            if (plyRemaining >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
+            if (plyRemaining >= 3 && i >= 2 && !isCapture && !isInCheck && !isCheck && !isPromotion) {
                 reductions = i < 5 ? 1 : plyRemaining / 3;
             }
 

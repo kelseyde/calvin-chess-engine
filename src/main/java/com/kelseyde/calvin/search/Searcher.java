@@ -207,16 +207,15 @@ public class Searcher implements Search {
         Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
 
         // Handle possible transposition
-        // TODO implement IID? See https://github.com/lynx-chess/Lynx/blob/main/src/Lynx/Search/NegaMax.cs
         TranspositionEntry transposition = transpositionTable.get(getKey(), plyFromRoot);
-        if (hasBestMove(transposition)) {
-            previousBestMove = transposition.getMove();
-        }
         if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
             if (plyFromRoot == 0 && transposition.getMove() != null) {
                 resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), plyRemaining);
             }
             return transposition.getScore();
+        }
+        if (hasBestMove(transposition)) {
+            previousBestMove = transposition.getMove();
         }
 
         List<Move> legalMoves = moveGenerator.generateMoves(board);
@@ -325,7 +324,7 @@ public class Searcher implements Search {
                 eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -alpha - 1, -alpha, true);
 
                 if (eval > alpha && (eval < beta || reductions > 0)) {
-                    // If we reduced the depth and/or used a null-window, and the score beat alpha, we need to do a
+                    // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
                     eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
                 }

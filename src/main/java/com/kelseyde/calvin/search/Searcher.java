@@ -233,7 +233,7 @@ public class Searcher implements Search {
         }
 
         // Null-move pruning: give the opponent an extra move to try produce a cut-off
-        if (allowNullPruning && plyRemaining >= 2) {
+        if (allowNullPruning) {
             // Only attempt null-move pruning when the static eval is greater than beta - small margin (so likely to fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta - NULL_MOVE_PRUNING_MARGIN;
 
@@ -305,7 +305,7 @@ public class Searcher implements Search {
 
             // Search reductions: if the move is ordered late in the list, so less likely to be good, reduce the search depth by one ply.
             int reductions = 0;
-            if (plyRemaining >= 3 && i >= 2 && !isCapture && !isInCheck && !isCheck && !isPromotion) {
+            if (plyRemaining >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
                 reductions = i < 5 ? 1 : plyRemaining / 3;
             }
 

@@ -234,7 +234,7 @@ public class Searcher2 implements Search {
         }
 
         // Null-move pruning: give the opponent an extra move to try produce a cut-off
-        if (allowNullPruning && plyRemaining >= 2) {
+        if (allowNullPruning) {
             // Only attempt null-move pruning when the static eval is greater than beta - small margin (so likely to fail-high).
             boolean isAssumedFailHigh = evaluator.get() >= beta - NULL_MOVE_PRUNING_MARGIN;
 

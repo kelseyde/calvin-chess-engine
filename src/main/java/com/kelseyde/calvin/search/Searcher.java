@@ -18,6 +18,7 @@ import com.kelseyde.calvin.search.transposition.NodeType;
 import com.kelseyde.calvin.search.transposition.TranspositionEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.PGN;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -134,6 +135,9 @@ public class Searcher implements Search {
                 result = resultCurrentDepth;
             }
 
+            if (result == null) {
+                System.out.println(PGN.toPGN(board));
+            }
             if (isCancelled() || isCheckmateFoundAtCurrentDepth(currentDepth)) {
                 // Exit early if time runs out, or we already found forced mate
                 break;
@@ -163,7 +167,7 @@ public class Searcher implements Search {
 
         if (result == null) {
             // If we did not find a single move during search (almost impossible), just return a random legal move.
-            log.warn("Time expired before a move was found!");
+            System.out.println("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board).get(0);
             result = new SearchResult(0, move, currentDepth);
         }
@@ -187,7 +191,7 @@ public class Searcher implements Search {
     public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNullPruning) {
 
         if (isCancelled()) {
-            return 0;
+            return alpha;
         }
         if (plyRemaining <= 0) {
             // In the case that search depth is reached, begin quiescence search
@@ -208,8 +212,7 @@ public class Searcher implements Search {
 
         // Handle possible transposition
         // TODO implement IID? See https://github.com/lynx-chess/Lynx/blob/main/src/Lynx/Search/NegaMax.cs
-        long key = board.getGameState().getZobristKey();
-        TranspositionEntry transposition = transpositionTable.get(key, plyFromRoot);
+        TranspositionEntry transposition = transpositionTable.get(getKey(), plyFromRoot);
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
         }
@@ -245,10 +248,11 @@ public class Searcher implements Search {
 
             if (isAssumedFailHigh && !isInCheck && isNotPawnEndgame) {
                 board.makeNullMove();
-                int reduction = 3 + (plyRemaining / 7);
+                int reduction = 2 + (plyRemaining / 7);
                 int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
+                    transpositionTable.put(getKey(), NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, previousBestMove, beta);
                     return eval;
                 }
             }
@@ -320,13 +324,12 @@ public class Searcher implements Search {
             unmakeMove();
 
             if (isCancelled()) {
-                return 0;
+                return alpha;
             }
 
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                key = board.getGameState().getZobristKey();
-                transpositionTable.put(key, NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, move, beta);
+                transpositionTable.put(getKey(), NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, move, beta);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(plyFromRoot, move);
@@ -345,8 +348,7 @@ public class Searcher implements Search {
                 }
             }
         }
-        key = board.getGameState().getZobristKey();
-        transpositionTable.put(key, nodeType, plyRemaining, plyFromRoot, bestMove, alpha);
+        transpositionTable.put(getKey(), nodeType, plyRemaining, plyFromRoot, bestMove, alpha);
         return alpha;
 
     }
@@ -360,13 +362,16 @@ public class Searcher implements Search {
      */
     int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot) {
         if (isCancelled()) {
-            return 0;
+            return alpha;
         }
         // First exit if we have already stored an accurate eval in the TT
-        long zobristKey = board.getGameState().getZobristKey();
-        TranspositionEntry transposition = transpositionTable.get(zobristKey, plyFromRoot);
+        Move previousBestMove = null;
+        TranspositionEntry transposition = transpositionTable.get(getKey(), plyFromRoot);
         if (isUsefulTransposition(transposition, alpha, beta)) {
             return transposition.getScore();
+        }
+        if (hasBestMove(transposition)) {
+            previousBestMove = transposition.getMove();
         }
 
         // Then check stand-pat score.
@@ -377,39 +382,39 @@ public class Searcher implements Search {
 
         List<Move> moves;
         if (isInCheck) {
-            // If in check, simply generate all check evasions
             moves = moveGenerator.generateMoves(board, MoveFilter.ALL);
+            if (moves.isEmpty()) {
+                return -CHECKMATE_SCORE + plyFromRoot;
+            }
         } else {
-            // If not in check, check the stand-pat score.
             if (eval >= beta) {
                 return beta;
             }
             if (eval > alpha) {
                 alpha = eval;
             }
-            MoveFilter filter = depth <= 1 ? MoveFilter.CAPTURES_AND_CHECKS : MoveFilter.CAPTURES_ONLY;
+            MoveFilter filter = depth == 1 ? MoveFilter.CAPTURES_AND_CHECKS : MoveFilter.CAPTURES_ONLY;
             moves = moveGenerator.generateMoves(board, filter);
         }
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, false, 0);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, previousBestMove, false, 0);
 
         for (Move move : orderedMoves) {
-            // Static exchange evaluation: skip captures that are likely to lose material
-            int seeEval = see.evaluate(board, move);
-            if ((depth <= 3 && seeEval < 0) || (depth > 3 && seeEval <= 0)) {
-                continue;
-            }
-
-            // Futility pruning: skip captures that likely have no chance of raising alpha
-            Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
-            if (capturedPiece != null) {
-                int delta = standPat + PieceValues.valueOf(capturedPiece) + DELTA_PRUNING_MARGIN;
-                if (delta < alpha && !move.isPromotion()) {
-                    if (isInCheck) {
+            if (!isInCheck) {
+                // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
+                Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
+                if (capturedPiece != null) {
+                    int pieceValue = PieceValues.valueOf(capturedPiece);
+                    int delta = standPat + pieceValue + DELTA_PRUNING_MARGIN;
+                    if (delta < alpha && !move.isPromotion()) {
                         continue;
-                    } else {
-                        break;
                     }
+                }
+
+                // Static exchange evaluation: filter out likely bad captures (e.g. QxP -> PxQ)
+                int seeEval = see.evaluate(board, move);
+                if ((depth <= 3 && seeEval < 0) || (depth > 3 && seeEval <= 0)) {
+                    continue;
                 }
             }
 
@@ -482,12 +487,8 @@ public class Searcher implements Search {
         //log.info(statistics.generateReport());
     }
 
-//    private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
-//        return Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
-//    }
-
     private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
-        return result != null && Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
+        return Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
     }
 
     private boolean isTimeoutExceeded() {
@@ -500,6 +501,10 @@ public class Searcher implements Search {
 
     public void setTimeout(Instant timeout) {
         this.timeout = timeout;
+    }
+
+    private long getKey() {
+        return board.getGameState().getZobristKey();
     }
 
     private String side() {

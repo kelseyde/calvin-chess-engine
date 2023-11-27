@@ -21,7 +21,7 @@ public class EPerftService {
         if (depth == 0) {
             return;
         }
-        List<Move> moves = moveGenerator.generateMoves(board, false);
+        List<Move> moves = moveGenerator.generateMoves(board);
         for (Move move : moves) {
             board.makeMove(move);
             evaluator.makeMove(move);

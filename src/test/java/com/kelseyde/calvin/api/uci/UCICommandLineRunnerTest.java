@@ -62,7 +62,7 @@ public class UCICommandLineRunnerTest {
         Move move = NotationUtils.fromCombinedNotation(moveResponse);
 
         Board testBoard = new Board();
-        List<Move> legalMoves = moveGenerator.generateMoves(testBoard, false);
+        List<Move> legalMoves = moveGenerator.generateMoves(testBoard);
         Assertions.assertTrue(legalMoves.stream().anyMatch(move::matches));
     }
 
@@ -84,7 +84,7 @@ public class UCICommandLineRunnerTest {
         Board testBoard = new Board();
         testBoard.makeMove(NotationUtils.fromNotation("e2", "e4"));
 
-        List<Move> legalMoves = moveGenerator.generateMoves(testBoard, false);
+        List<Move> legalMoves = moveGenerator.generateMoves(testBoard);
         Assertions.assertTrue(legalMoves.stream().anyMatch(move::matches));
 
         testBoard.makeMove(TestUtils.getLegalMove(testBoard, move));
@@ -100,7 +100,7 @@ public class UCICommandLineRunnerTest {
         move = NotationUtils.fromCombinedNotation(moveNotation);
 
         testBoard.makeMove(NotationUtils.fromNotation("e2", "e4"));
-        legalMoves = moveGenerator.generateMoves(testBoard, false);
+        legalMoves = moveGenerator.generateMoves(testBoard);
         Assertions.assertTrue(legalMoves.stream().anyMatch(move::matches));
 
     }

@@ -13,7 +13,7 @@ public class PerftService {
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
     public int perft(Board board, int depth) {
-        List<Move> moves = moveGenerator.generateMoves(board, false);
+        List<Move> moves = moveGenerator.generateMoves(board);
         if (depth == 1) {
             return moves.size();
         }

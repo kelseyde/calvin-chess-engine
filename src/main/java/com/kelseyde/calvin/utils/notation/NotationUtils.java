@@ -104,7 +104,7 @@ public class NotationUtils {
 
         // Check if any ambiguity exists in notation (e.g. if e2 can be reached via Nfe2 and Nbe2)
         if (pieceType != Piece.PAWN && pieceType != Piece.KING) {
-            List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+            List<Move> legalMoves = moveGenerator.generateMoves(board);
 
             for (Move legalMove : legalMoves) {
 
@@ -154,7 +154,7 @@ public class NotationUtils {
 
         board.makeMove(move);
         if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
-            List<Move> legalMoves = moveGenerator.generateMoves(board, false);
+            List<Move> legalMoves = moveGenerator.generateMoves(board);
             notation += legalMoves.isEmpty() ? "#" : "+";
         }
         board.unmakeMove();

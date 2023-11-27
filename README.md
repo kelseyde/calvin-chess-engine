@@ -16,11 +16,11 @@ Calvin is rated about ~2200 on Lichess as of November 2023.
 
 - [Legal move generation](https://www.chessprogramming.org/Move_Generation): check, pin and attack masks are generated first. If double-check, only king moves are generated. Pseudo-legal moves which leave the king in check are not generated.
 - [Magic bitboards](https://www.chessprogramming.org/Magic_Bitboards): magic bitboards are used for sliding piece move generation.
-- [Incremental updates](https://www.chessprogramming.org/Incremental_Updates): Evaluation is updated incrementally with make/unmake move
 
 ### Search
 - [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) + [negamax](https://www.chessprogramming.org/Negamax).
 - [Quiescence search](https://www.chessprogramming.org/Quiescence_Search) to combat the horizon effect.
+- [Lazy SMP](https://www.chessprogramming.org/Lazy_SMP) multi-threaded parallel search.
 - [Transposition table](https://www.chessprogramming.org/Transposition_Table) with [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing).
 - [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
 - [Futility Pruning](https://www.chessprogramming.org/Futility_Pruning)
@@ -29,7 +29,9 @@ Calvin is rated about ~2200 on Lichess as of November 2023.
 - [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
 
 ### Move Ordering
-- TT-move ordering, [MVV-LVA](https://www.chessprogramming.org/MVV-LVA), [killer move heuristic](https://www.chessprogramming.org/Killer_Move), [history heuristic](https://www.chessprogramming.org/History_Heuristic).
+- [MVV-LVA](https://www.chessprogramming.org/MVV-LVA)
+- [Killer move heuristic](https://www.chessprogramming.org/Killer_Move)
+- [History heuristic](https://www.chessprogramming.org/History_Heuristic).
 
 ### Evaluation
 - [Material](https://www.chessprogramming.org/Material): basic material count, bishop pair bonus
@@ -37,6 +39,7 @@ Calvin is rated about ~2200 on Lichess as of November 2023.
 - [Tapered eval](https://www.chessprogramming.org/Tapered_Eval): evaluation tapered based on opening/middlegame/endgame phase
 - [Pawn structure](https://www.chessprogramming.org/Pawn_Structure): passed pawn bonuses, isolated/doubled pawn penalties.
 - [King safety](https://www.chessprogramming.org/King_Safety): bonus for a pawn shield around the king, penalty for a pawn storm towards the king, penalty for open file around the king.
+- [Incremental updates](https://www.chessprogramming.org/Incremental_Updates): Evaluation is updated incrementally with make/unmake move
 
 ### Opening Book / Endgame Tablebase
 - Not yet! I would like to implement these soon.

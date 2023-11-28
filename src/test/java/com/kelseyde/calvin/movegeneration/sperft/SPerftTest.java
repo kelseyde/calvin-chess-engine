@@ -25,7 +25,6 @@ public abstract class SPerftTest {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
         Searcher search = new Searcher(board);
-        search.setTimeout(Instant.now().plus(Duration.ofHours(1)));
         search.search(depth, 0, MIN_EVAL, MAX_EVAL, true);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);

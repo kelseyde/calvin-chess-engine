@@ -565,4 +565,17 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontAllowDesperadoOnF7() {
+
+        String fen = "rnbqkb1r/pppp1ppp/8/4N3/4n3/8/PPPPQPPP/RNB1KB1R b KQkq - 1 4";
+        bot.setPosition(fen, Collections.emptyList());
+        Move move = bot.think(4000);
+        System.out.println(NotationUtils.toNotation(move));
+        Assertions.assertTrue(
+                move.matches(NotationUtils.fromCombinedNotation("d8e7"))
+        );
+
+    }
+
 }

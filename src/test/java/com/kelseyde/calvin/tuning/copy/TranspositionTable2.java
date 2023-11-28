@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.tuning.copy;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.search.transposition.NodeType;
-import com.kelseyde.calvin.search.transposition.TranspositionEntry;
+import com.kelseyde.calvin.search.transposition.HashFlag;
+import com.kelseyde.calvin.search.transposition.HashEntry;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -17,27 +17,27 @@ public class TranspositionTable2 {
 
     private static final int CHECKMATE_BOUND = 1000000 - 256;
 
-    private TranspositionEntry[] entries;
+    private HashEntry[] entries;
 
     private int tries;
     private int hits;
 
     public TranspositionTable2() {
-        entries = new TranspositionEntry[TABLE_SIZE];
+        entries = new HashEntry[TABLE_SIZE];
         tries = 0;
         hits = 0;
     }
 
-    public TranspositionEntry get(long zobristKey, int ply) {
+    public HashEntry get(long zobristKey, int ply) {
         int index = getIndex(zobristKey);
         tries++;
         for (int i = 0; i < 4; i++) {
-            TranspositionEntry entry = entries[index + i];
+            HashEntry entry = entries[index + i];
             if (entry != null && entry.key() == zobristKey) {
                 hits++;
                 if (isMateScore(entry.getScore())) {
                     int score = retrieveMateScore(entry.getScore(), ply);
-                    entry = TranspositionEntry.withScore(entry, score);
+                    entry = HashEntry.withScore(entry, score);
                 }
                 return entry;
             }
@@ -45,17 +45,17 @@ public class TranspositionTable2 {
         return null;
     }
 
-    public void put(long zobristKey, NodeType flag, int depth, int ply, Move move, int score) {
+    public void put(long zobristKey, HashFlag flag, int depth, int ply, Move move, int score) {
         int startIndex = getIndex(zobristKey);
         if (isMateScore(score)) score = calculateMateScore(score, ply);
-        TranspositionEntry newEntry = TranspositionEntry.of(zobristKey, score, move, flag, depth);
+        HashEntry newEntry = HashEntry.of(zobristKey, score, move, flag, depth);
 
         int replacedMinDepth = Integer.MAX_VALUE;
         int replacedIndex = -1;
 
         for (int i = startIndex; i < startIndex + 4; i++) {
 
-            TranspositionEntry storedEntry = entries[i];
+            HashEntry storedEntry = entries[i];
             // If there is an empty entry in the bucket, use that immediately
             if (storedEntry == null) {
                 replacedIndex = i;
@@ -91,7 +91,7 @@ public class TranspositionTable2 {
 
     public void clear() {
         printStatistics();
-        entries = new TranspositionEntry[TABLE_SIZE];
+        entries = new HashEntry[TABLE_SIZE];
     }
 
     /**

@@ -13,12 +13,12 @@ import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
-import com.kelseyde.calvin.search.transposition.NodeType;
-import com.kelseyde.calvin.search.transposition.TranspositionEntry;
+import com.kelseyde.calvin.search.transposition.HashFlag;
+import com.kelseyde.calvin.search.transposition.HashEntry;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.NotationUtils;
-import lombok.Getter;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -36,38 +36,37 @@ import java.util.List;
  */
 @Slf4j
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Searcher implements Search {
 
-    private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
-    private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
+    static final int MAX_DEPTH = 256;
+    static final int MIN_EVAL = Integer.MIN_VALUE + 1;
+    static final int MAX_EVAL = Integer.MAX_VALUE - 1;
+    static final int MATE_SCORE = 1000000;
+    static final int DRAW_SCORE = 0;
+    static final int ASP_MARGIN = 50;
+    static final int ASP_FAIL_MARGIN = 150;
+    static final int NMP_DEPTH = 3;
+    static final int FP_DEPTH = 4;
+    static final int RFP_DEPTH = 4;
+    static final int LMR_DEPTH = 3;
+    static final int NMP_MARGIN = 50;
+    static final int DP_MARGIN = 140;
+    static final int[] FP_MARGIN = new int[] { 0, 170, 260, 450, 575 };
+    static final int[] RFP_MARGIN = new int[] { 0, 120, 240, 360, 480 };
 
-    private static final int MAX_DEPTH = 256;
+    MoveGeneration moveGenerator;
+    MoveOrdering moveOrderer;
+    Evaluation evaluator;
+    StaticExchangeEvaluator see;
+    TranspositionTable transpositionTable;
+    ResultCalculator resultCalculator;
 
-    private static final int ASPIRATION_WINDOW_BUFFER = 50;
-    private static final int ASPIRATION_WINDOW_FAIL_BUFFER = 150;
-
-    private static final int[] FUTILITY_PRUNING_MARGIN = new int[] { 0, 170, 260, 450, 575 };
-    private static final int[] REVERSE_FUTILITY_PRUNING_MARGIN = new int[] { 0, 120, 240, 360, 480 };
-    private static final int NULL_MOVE_PRUNING_MARGIN = 50;
-    private static final int DELTA_PRUNING_MARGIN = 140;
-
-    private static final int CHECKMATE_SCORE = 1000000;
-    private static final int DRAW_SCORE = 0;
-
-    private MoveGeneration moveGenerator;
-    private MoveOrdering moveOrderer;
-    private Evaluation evaluator;
-    private StaticExchangeEvaluator see;
-    private TranspositionTable transpositionTable;
-    private ResultCalculator resultCalculator;
-
-    private @Getter Board board;
-
-    private Instant timeout;
-    private boolean isCancelled;
-
-    private SearchResult result;
-    private SearchResult resultCurrentDepth;
+    Board board;
+    Instant timeout;
+    boolean cancelled;
+    SearchResult resultCurrentDepth;
+    SearchResult result;
 
     public Searcher(Board board) {
         init(board);
@@ -116,7 +115,7 @@ public class Searcher implements Search {
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;
-        isCancelled = false;
+        cancelled = false;
 
         int currentDepth = 1;
         int alpha = MIN_EVAL;
@@ -140,20 +139,20 @@ public class Searcher implements Search {
             if (eval <= alpha) {
                 // The result is less than alpha, so search again at the same depth with an expanded aspiration window.
                 retryMultiplier++;
-                alpha -= ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
-                beta += ASPIRATION_WINDOW_BUFFER;
+                alpha -= ASP_FAIL_MARGIN * retryMultiplier;
+                beta += ASP_MARGIN;
                 continue;
             }
             if (eval >= beta) {
                 // The result is greater than alpha, so search again at the same depth with an expanded aspiration window.
                 retryMultiplier++;
-                beta += ASPIRATION_WINDOW_FAIL_BUFFER * retryMultiplier;
-                alpha -= ASPIRATION_WINDOW_BUFFER;
+                beta += ASP_FAIL_MARGIN * retryMultiplier;
+                alpha -= ASP_MARGIN;
                 continue;
             }
 
-            alpha = eval - ASPIRATION_WINDOW_BUFFER;
-            beta = eval + ASPIRATION_WINDOW_BUFFER;
+            alpha = eval - ASP_MARGIN;
+            beta = eval + ASP_MARGIN;
             retryMultiplier = 0;
 
             currentDepth++;
@@ -166,7 +165,6 @@ public class Searcher implements Search {
             result = new SearchResult(0, move, currentDepth);
         }
         moveOrderer.clear();
-//        System.out.printf("max depth: %s, eval: %s, move: %s%n", currentDepth, result.eval(), NotationUtils.toNotation(result.move()));
         return result;
 
     }
@@ -176,41 +174,38 @@ public class Searcher implements Search {
      * recursively until the depth limit is reached, 'depth' needs to be split into two parameters: 'ply remaining' and
      * 'ply from root'.
      *
-     * @param plyRemaining        The number of ply deeper left to go in the current search
-     * @param plyFromRoot         The number of ply already examined in this iteration of the search.
+     * @param depth               The number of ply deeper left to go in the current search
+     * @param ply                 The number of ply already examined in this iteration of the search.
      * @param alpha               The lower bound for child nodes at the current search depth.
      * @param beta                The upper bound for child nodes at the current search depth.
-     * @param allowNullPruning    Whether to allow null-move pruning in this search iteration.
+     * @param allowNull           Whether to allow null-move pruning in this search iteration.
      */
-    public int search(int plyRemaining, int plyFromRoot, int alpha, int beta, boolean allowNullPruning) {
+    public int search(int depth, int ply, int alpha, int beta, boolean allowNull) {
 
         if (isCancelled()) {
             return alpha;
         }
-        if (plyRemaining <= 0) {
-            // In the case that search depth is reached, begin quiescence search
-            return quiescenceSearch(alpha, beta, 1, plyFromRoot);
+        if (depth <= 0) {
+            return quiescenceSearch(alpha, beta, 1, ply);
         }
-        if (plyFromRoot > 0) {
-            if (resultCalculator.isEffectiveDraw(board)) {
-                return DRAW_SCORE;
-            }
-            // Mate distance pruning: exit early if we have already found a forced mate at an earlier ply
-            alpha = Math.max(alpha, -CHECKMATE_SCORE + plyFromRoot);
-            beta = Math.min(beta, CHECKMATE_SCORE - plyFromRoot);
-            if (alpha >= beta) {
-                return alpha;
-            }
+        if (ply > 0 && isDraw()) {
+            return DRAW_SCORE;
+        }
+
+        // Mate distance pruning: exit early if we have already found a forced mate at an earlier ply
+        alpha = Math.max(alpha, -MATE_SCORE + ply);
+        beta = Math.min(beta, MATE_SCORE - ply);
+        if (alpha >= beta) {
+            return alpha;
         }
 
         boolean pvNode = beta - alpha > 1;
-        Move previousBestMove = plyFromRoot == 0 && result != null ? result.move() : null;
+        Move previousBestMove = ply == 0 && result != null ? result.move() : null;
 
-        // Handle possible transposition
-        TranspositionEntry transposition = transpositionTable.get(getKey(), plyFromRoot);
-        if (isUsefulTransposition(transposition, plyRemaining, alpha, beta)) {
-            if (plyFromRoot == 0 && transposition.getMove() != null) {
-                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), plyRemaining);
+        HashEntry transposition = transpositionTable.get(getKey(), ply);
+        if (isUsefulTransposition(transposition, depth, alpha, beta)) {
+            if (ply == 0 && transposition.getMove() != null) {
+                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), depth);
             }
             return transposition.getScore();
         }
@@ -218,115 +213,95 @@ public class Searcher implements Search {
             previousBestMove = transposition.getMove();
         }
 
-        List<Move> legalMoves = moveGenerator.generateMoves(board);
+        List<Move> moves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+        int staticEval = evaluator.get();
 
-        if (legalMoves.isEmpty()) {
+        if (moves.isEmpty()) {
             // Found checkmate / stalemate
-            return isInCheck ? -CHECKMATE_SCORE + plyFromRoot : DRAW_SCORE;
+            return isInCheck ? -MATE_SCORE + ply : DRAW_SCORE;
         }
-        if (plyFromRoot == 0 && legalMoves.size() == 1) {
+        if (ply == 0 && moves.size() == 1) {
             // Exit immediately if there is only one legal move at the root node
-            int eval = evaluator.get();
-            resultCurrentDepth = new SearchResult(eval, legalMoves.get(0), plyRemaining);
-            isCancelled = true;
-            return eval;
+            resultCurrentDepth = new SearchResult(staticEval, moves.get(0), depth);
+            cancelled = true;
+            return staticEval;
         }
 
-        // Null-move pruning: give the opponent an extra move to try produce a cut-off
-        if (allowNullPruning && !pvNode) {
-            // Only attempt null-move pruning when the static eval is greater than beta - small margin (so likely to fail-high).
-            boolean isAssumedFailHigh = evaluator.get() >= beta - NULL_MOVE_PRUNING_MARGIN;
+        if (!pvNode && !isInCheck) {
 
-            // Do not attempt null-move in pawn endgames, due to zugzwang positions in which having the move is a disadvantage.
-            boolean isNotPawnEndgame = evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining();
+            // Reverse futility pruning: if the static evaluation - some margin is still > beta, then let's assume
+            // there's no point searching any moves, since it's likely to produce a cut-off no matter what we do.
+            boolean isMateHunting = Math.abs(alpha) >= MATE_SCORE - 100;
+            if (depth <= RFP_DEPTH && staticEval - RFP_MARGIN[depth] > beta && !isMateHunting) {
+                return staticEval - RFP_MARGIN[depth];
+            }
 
-            if (isAssumedFailHigh && !isInCheck && isNotPawnEndgame) {
+            // Null move pruning: if the static eval > beta - some margin, then let's test this theory by giving the
+            // opponent an extra move (making a 'null' move). If the result still fails high, prune this node.
+            boolean isPawnEndgame = !evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining();
+            if (allowNull && staticEval >= beta - NMP_MARGIN && !isPawnEndgame) {
                 board.makeNullMove();
-                int reduction = 2 + (plyRemaining / 7);
-                int eval = -search(plyRemaining - 1 - reduction, plyFromRoot + 1, -beta, -beta + 1, false);
+                int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
-                    transpositionTable.put(getKey(), NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, previousBestMove, beta);
+                    transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, beta);
                     return eval;
                 }
             }
+
         }
 
-        // Futility pruning: in nodes close to the horizon, discard moves which have no potential of falling within the window.
-        boolean isFutilityPruningEnabled = false;
-        if (plyRemaining <= 4 && !pvNode) {
-            // Do not prune positions where we are hunting for checkmate.
-            boolean isNotMateHunting = Math.abs(alpha) < CHECKMATE_SCORE - 100;
-
-            int staticEval = evaluator.get();
-
-            int reverseFutilityMargin = REVERSE_FUTILITY_PRUNING_MARGIN[plyRemaining];
-            boolean isAssumedFailHigh = staticEval - reverseFutilityMargin > beta;
-            if (isAssumedFailHigh && !isInCheck && isNotMateHunting) {
-                // Reverse futility pruning: if the static evaluation - some margin is still > beta, then let's assume
-                // there's no point searching any moves, since it's likely to produce a cut-off no matter what we do.
-                return staticEval - reverseFutilityMargin;
-            }
-
-            int futilityMargin = FUTILITY_PRUNING_MARGIN[plyRemaining];
-            boolean isAssumedFailLow = staticEval + futilityMargin < alpha;
-            if (isAssumedFailLow && !isInCheck && isNotMateHunting) {
-                // Standard futility pruning: if the static evaluation + some margin is still < alpha, we still need to
-                // search interesting moves (checks, captures, promotions), in case we have a saving move, but we assume
-                // that all quiet moves can be skipped.
-                isFutilityPruningEnabled = true;
-            }
-        }
-
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, plyFromRoot);
-
+        moves = moveOrderer.orderMoves(board, moves, previousBestMove, true, ply);
         Move bestMove = null;
-        NodeType nodeType = NodeType.UPPER_BOUND;
+        HashFlag flag = HashFlag.UPPER;
 
-        for (int i = 0; i < orderedMoves.size(); i++) {
+        for (int i = 0; i < moves.size(); i++) {
 
-            Move move = orderedMoves.get(i);
+            Move move = moves.get(i);
             boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
             boolean isPromotion = move.getPromotionPieceType() != null;
 
             makeMove(move);
+
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-            if (isFutilityPruningEnabled && !isCheck && !isCapture && !isPromotion) {
+            // Futility pruning: if the static eval + some margin is still < alpha, and the current move is not interesting
+            // (checks, captures, promotions), then let's assume it will fail low and prune this node.
+            if (!pvNode && depth <= FP_DEPTH && staticEval + FP_MARGIN[depth] < alpha && !isInCheck && !isCheck && !isCapture && !isPromotion) {
                 unmakeMove();
                 continue;
             }
 
             // Search extensions: in certain interesting cases (promotions, checks that do not immediately lose material),
             // let's extend the search depth by one ply.
-            int extensions = 0;
+            int extension = 0;
             if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
-                extensions = 1;
+                extension = 1;
             }
 
             int eval;
             if (pvNode && i == 0) {
                 // Principal variation search: the first move must be searched with the full alpha-beta window. If our move
                 // ordering is any good then we expect this to be the best move, and so we need to retrieve the exact score.
-                eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
+                eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
 
             } else {
                 // Late move reductions: if the move is ordered late in the list, and isn't a 'noisy' move like a check,
                 // capture or promotion, let's save time by assuming it's less likely to be good, and reduce the search depth.
-                int reductions = 0;
-                if (plyRemaining >= 3 && i >= 2 && !isCapture && !isCheck && !isPromotion) {
-                    reductions = i < 5 ? 1 : plyRemaining / 3;
+                int reduction = 0;
+                if (depth >= LMR_DEPTH && i >= 2 && !isCapture && !isCheck && !isPromotion) {
+                    reduction = i < 5 ? 1 : depth / 3;
                 }
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                eval = -search(plyRemaining - 1 + extensions - reductions, plyFromRoot + 1, -alpha - 1, -alpha, true);
+                eval = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha, true);
 
-                if (eval > alpha && (eval < beta || reductions > 0)) {
+                if (eval > alpha && (eval < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    eval = -search(plyRemaining - 1 + extensions, plyFromRoot + 1, -beta, -alpha, true);
+                    eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
                 }
             }
 
@@ -338,11 +313,11 @@ public class Searcher implements Search {
 
             if (eval >= beta) {
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(getKey(), NodeType.LOWER_BOUND, plyRemaining, plyFromRoot, move, beta);
+                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, beta);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
-                    moveOrderer.addKillerMove(plyFromRoot, move);
-                    moveOrderer.addHistoryMove(plyRemaining, move, board.isWhiteToMove());
+                    moveOrderer.addKillerMove(ply, move);
+                    moveOrderer.addHistoryMove(depth, move, board.isWhiteToMove());
                 }
                 return beta;
             }
@@ -351,13 +326,13 @@ public class Searcher implements Search {
                 // We have found a new best move
                 bestMove = move;
                 alpha = eval;
-                nodeType = NodeType.EXACT;
-                if (plyFromRoot == 0) {
-                    resultCurrentDepth = new SearchResult(eval, move, plyRemaining);
+                flag = HashFlag.EXACT;
+                if (ply == 0) {
+                    resultCurrentDepth = new SearchResult(eval, move, depth);
                 }
             }
         }
-        transpositionTable.put(getKey(), nodeType, plyRemaining, plyFromRoot, bestMove, alpha);
+        transpositionTable.put(getKey(), flag, depth, ply, bestMove, alpha);
         return alpha;
 
     }
@@ -375,8 +350,8 @@ public class Searcher implements Search {
         }
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         Move previousBestMove = null;
-        TranspositionEntry transposition = transpositionTable.get(getKey(), plyFromRoot);
-        if (isUsefulTransposition(transposition, alpha, beta)) {
+        HashEntry transposition = transpositionTable.get(getKey(), plyFromRoot);
+        if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
         if (hasBestMove(transposition)) {
@@ -394,7 +369,7 @@ public class Searcher implements Search {
             // we risk missing simple mate threats.
             moves = moveGenerator.generateMoves(board, MoveFilter.ALL);
             if (moves.isEmpty()) {
-                return -CHECKMATE_SCORE + plyFromRoot;
+                return -MATE_SCORE + plyFromRoot;
             }
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
@@ -415,17 +390,14 @@ public class Searcher implements Search {
             if (!isInCheck) {
                 // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
                 Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
-                if (capturedPiece != null) {
-                    int pieceValue = PieceValues.valueOf(capturedPiece);
-                    int delta = standPat + pieceValue + DELTA_PRUNING_MARGIN;
-                    if (delta < alpha && !move.isPromotion()) {
-                        continue;
-                    }
+                boolean isFutile = capturedPiece != null && (standPat + PieceValues.valueOf(capturedPiece) + DP_MARGIN < alpha) && !move.isPromotion();
+                if (isFutile) {
+                    continue;
                 }
-
                 // Static exchange evaluation: filter out likely bad captures (e.g. QxP -> PxQ)
-                int seeEval = see.evaluate(board, move);
-                if ((depth <= 3 && seeEval < 0) || (depth > 3 && seeEval <= 0)) {
+                int seeScore = see.evaluate(board, move);
+                boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);
+                if (isBadCapture) {
                     continue;
                 }
             }
@@ -461,30 +433,32 @@ public class Searcher implements Search {
      * 1) contains an exact evaluation, so we don't need to search any further, 2) contains a fail-high greater than our
      * current beta value, or 3) contains a fail-low lesser than our current alpha value.
      */
-    private boolean isUsefulTransposition(TranspositionEntry transposition, int plyRemaining, int alpha, int beta) {
-        return isUsefulTransposition(transposition, alpha, beta) && transposition.getDepth() >= plyRemaining;
+    private boolean isUsefulTransposition(HashEntry entry, int plyRemaining, int alpha, int beta) {
+        return entry != null &&
+                entry.getDepth() >= plyRemaining &&
+                ((entry.getFlag().equals(HashFlag.EXACT)) ||
+                 (entry.getFlag().equals(HashFlag.UPPER) && entry.getScore() <= alpha) ||
+                 (entry.getFlag().equals(HashFlag.LOWER) && entry.getScore() >= beta));
     }
 
-    private boolean isUsefulTransposition(TranspositionEntry transposition, int alpha, int beta) {
-        if (transposition == null) {
-            return false;
-        }
-        NodeType type = transposition.getFlag();
-
-        // Previous search returned the exact evaluation for this position.
-        boolean isInWindow = type.equals(NodeType.EXACT);
-
-        // Previous search failed low, beating alpha score; only use it if it beats the current alpha.
-        boolean isFailLow = type.equals(NodeType.UPPER_BOUND) && transposition.getScore() <= alpha;
-
-        // Previous search failed high, causing a beta cut-off; only use it if greater than current beta.
-        boolean isFailHigh = type.equals(NodeType.LOWER_BOUND) && transposition.getScore() >= beta;
-
-        return isInWindow || isFailLow || isFailHigh;
-    }
-
-    private boolean hasBestMove(TranspositionEntry transposition) {
+    private boolean hasBestMove(HashEntry transposition) {
         return transposition != null && transposition.getMove() != null;
+    }
+
+    private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
+        return Math.abs(result.eval()) >= MATE_SCORE - currentDepth;
+    }
+
+    private boolean isCancelled() {
+        return cancelled || (timeout != null && !Instant.now().isBefore(timeout));
+    }
+
+    private boolean isDraw() {
+        return resultCalculator.isEffectiveDraw(board);
+    }
+
+    private long getKey() {
+        return board.getGameState().getZobristKey();
     }
 
     @Override
@@ -497,49 +471,6 @@ public class Searcher implements Search {
     @Override
     public void logStatistics() {
         //log.info(statistics.generateReport());
-    }
-
-    private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
-        return Math.abs(result.eval()) >= CHECKMATE_SCORE - currentDepth;
-    }
-
-    private boolean isTimeoutExceeded() {
-        return !Instant.now().isBefore(timeout);
-    }
-
-    private boolean isCancelled() {
-        return isCancelled || isTimeoutExceeded();
-    }
-
-    public void setTimeout(Instant timeout) {
-        this.timeout = timeout;
-    }
-
-    private long getKey() {
-        return board.getGameState().getZobristKey();
-    }
-
-    private String side() {
-        return board.isWhiteToMove() ? "w" : "b";
-    }
-
-    private String alphaBeta(int alpha, int beta) {
-        return String.format("(%s, %s)", alpha, beta);
-    }
-
-    private String move(Move move) {
-        return NotationUtils.toNotation(move);
-    }
-
-    private String history() {
-        return NotationUtils.toNotation(board.getMoveHistory());
-    }
-
-    private String moves(List<Move> moves) {
-        return moves.stream()
-                .map(NotationUtils::toNotation)
-                .toList()
-                .toString();
     }
 
 }

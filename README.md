@@ -1,4 +1,4 @@
-<p align="center"><img src="src/main/resources/calvin.png" width="180"></p>
+<p align="center"><img src="src/main/resources/calvin.png" width="160"></p>
 
 Calvin is a UCI-compliant chess engine written in Java. 
 
@@ -64,4 +64,4 @@ Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 
-<p align="center"><img src="src/main/resources/hobbes.png" width="180"></p>
+<p align="center"><img src="src/main/resources/hobbes.png" width="160"></p>

@@ -18,6 +18,7 @@ Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 ### Search
 - [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) + [negamax](https://www.chessprogramming.org/Negamax).
 - [Quiescence search](https://www.chessprogramming.org/Quiescence_Search) to combat the horizon effect.
+- [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search)
 - [Lazy SMP](https://www.chessprogramming.org/Lazy_SMP) multi-threaded parallel search.
 - [Transposition table](https://www.chessprogramming.org/Transposition_Table) with [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing).
 - [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)

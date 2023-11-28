@@ -1,10 +1,8 @@
-<img src="src/main/resources/calvin.png" width="120">
+<img align="center" src="src/main/resources/calvin.png" width="120">
 
-Calvin is a chess engine written in Java. 
+Calvin is a UCI-compliant chess engine written in Java. 
 
-This is a personal project. I am a Java developer and amateur chess player, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life. 
-
-Calvin is rated about ~2300 on Lichess as of November 2023.
+Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 
 ## Features
 
@@ -58,6 +56,11 @@ Calvin is rated about ~2300 on Lichess as of November 2023.
 | 4     | 197281    | PT0.025309S  |
 | 5     | 4865609   | PT0.123557S  |
 | 6     | 119060324 | PT1.363415S |
+
+## Special Thanks To...
+
+- The [Chess Programming Wiki](https://www.chessprogramming.org)
+- The [TalkChess forums](https://talkchess.com/)
 
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 

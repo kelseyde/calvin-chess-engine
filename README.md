@@ -1,10 +1,8 @@
-<img src="src/main/resources/calvin.png" width="120">
+<p align="center"><img src="src/main/resources/calvin.png" width="160"></p>
 
-Calvin is a chess engine written in Java. 
+Calvin is a UCI-compliant chess engine written in Java. 
 
-This is a personal project. I am a Java developer and amateur chess player, and so I decided to combine these two things and dive into the world of chess programming. I have never had so much fun writing code in my life. 
-
-Calvin is rated about ~2200 on Lichess as of November 2023.
+Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 
 ## Features
 
@@ -20,6 +18,7 @@ Calvin is rated about ~2200 on Lichess as of November 2023.
 ### Search
 - [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) + [negamax](https://www.chessprogramming.org/Negamax).
 - [Quiescence search](https://www.chessprogramming.org/Quiescence_Search) to combat the horizon effect.
+- [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search)
 - [Lazy SMP](https://www.chessprogramming.org/Lazy_SMP) multi-threaded parallel search.
 - [Transposition table](https://www.chessprogramming.org/Transposition_Table) with [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing).
 - [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
@@ -59,6 +58,11 @@ Calvin is rated about ~2200 on Lichess as of November 2023.
 | 5     | 4865609   | PT0.123557S  |
 | 6     | 119060324 | PT1.363415S |
 
+## Special Thanks To...
+
+- The [Chess Programming Wiki](https://www.chessprogramming.org)
+- The [TalkChess forums](https://talkchess.com/)
+
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 
-<img src="src/main/resources/hobbes.png" width="140">
+<p align="center"><img src="src/main/resources/hobbes.png" width="160"></p>

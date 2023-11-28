@@ -64,4 +64,4 @@ Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 
-<img src="src/main/resources/hobbes.png" width="140">
+<p align="center"><img src="src/main/resources/hobbes.png" width="140"></p>

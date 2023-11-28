@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.api.uci;
+package com.kelseyde.calvin.api;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
@@ -6,37 +6,18 @@ import com.kelseyde.calvin.bot.CalvinBot;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 
-@Component
 @RequiredArgsConstructor
-@Slf4j
-public class UCICommandLineRunner implements CommandLineRunner {
+public class UCICommandLineRunner {
 
     private static final Scanner in = new Scanner(System.in);
 
     private static final String[] POSITION_LABELS = new String[] { "position", "fen", "moves" };
     private static final String[] GO_LABELS = new String[] { "go", "movetime", "wtime", "btime", "winc", "binc", "movestogo" };
 
-    private final ApplicationShutdownManager shutdownManager;
-
     private final Bot bot = new CalvinBot();
-
-    @Override
-    public void run(String... args) {
-        String command = "";
-        while (!command.equals("quit")) {
-            command = readCommand();
-            if (StringUtils.hasText(command)) {
-                handleCommand(command);
-            }
-        }
-    }
 
     public void handleCommand(String command) {
 
@@ -82,7 +63,7 @@ public class UCICommandLineRunner implements CommandLineRunner {
         List<Move> moves = new ArrayList<>();
         if (command.contains("moves")) {
             String moveString = getLabelString(command, "moves", POSITION_LABELS, "");
-            if (StringUtils.hasText(moveString)) {
+            if (!moveString.isBlank()) {
                 moves.addAll(new ArrayList<>(Arrays.stream(moveString.split(" "))
                         .map(NotationUtils::fromCombinedNotation)
                         .toList()));
@@ -120,7 +101,7 @@ public class UCICommandLineRunner implements CommandLineRunner {
 
     private void handleQuit() {
         bot.gameOver();
-        shutdownManager.initiateShutdown(0);
+        System.exit(0);
     }
 
     private void writeMove(Move move) {
@@ -147,13 +128,13 @@ public class UCICommandLineRunner implements CommandLineRunner {
 
     private int getLabelInt(String command, String label, String[] allLabels) {
         String valueString = getLabelString(command, label, allLabels, String.valueOf(0));
-        return StringUtils.hasText(valueString) ? Integer.parseInt(valueString) : 0;
+        return !valueString.isBlank() ? Integer.parseInt(valueString) : 0;
     }
 
-    private String readCommand() {
+    public String readCommand() {
         try {
             String line = in.nextLine();
-            if (StringUtils.hasText(line)) {
+            if (!line.isBlank()) {
                 return line;
             }
         } catch (NoSuchElementException e) {

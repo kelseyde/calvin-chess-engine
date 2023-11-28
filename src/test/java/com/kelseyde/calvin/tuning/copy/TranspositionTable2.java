@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.tuning.copy;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.search.transposition.HashFlag;
 import com.kelseyde.calvin.search.transposition.HashEntry;
+import com.kelseyde.calvin.search.transposition.HashFlag;
 
 import java.util.Arrays;
 import java.util.Objects;

@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.api.uci;
 
+import com.kelseyde.calvin.api.UCICommandLineRunner;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.bot.Bot;
@@ -24,13 +25,11 @@ public class UCICommandLineRunnerTest {
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
     private UCICommandLineRunner runner;
-    private ApplicationShutdownManager shutdownManager;
 
     @BeforeEach
     public void setUp() {
         System.setOut(new PrintStream(outputStream));
         Bot bot = new CalvinBot();
-        runner = new UCICommandLineRunner(shutdownManager);
     }
 
     @Test

@@ -1,12 +1,9 @@
 package com.kelseyde.calvin.tuning;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
-@Slf4j
 public class MatchManager {
 
     private final MatchConfig config;
@@ -27,13 +24,13 @@ public class MatchManager {
         List<CompletableFuture<MatchResult>> futures = IntStream.range(0, config.getThreadCount())
                 .mapToObj(i -> CompletableFuture.supplyAsync(() -> new Match(configPerMatch).run()))
                 .toList();
-        futures.forEach(f -> f.thenAccept(i -> updateResults(i)));
+        futures.forEach(f -> f.thenAccept(this::updateResults));
         futures.forEach(CompletableFuture::join);
 
-        log.info("Match over! Results:");
-        log.info("Player 1 wins: {}",  player1Wins);
-        log.info("Player 2 wins: {}", player2Wins);
-        log.info("Draws: {}", draws);
+        System.out.println("Match over! Results:");
+        System.out.printf("Player 1 wins: %s%n",  player1Wins);
+        System.out.printf("Player 2 wins: %s%n", player2Wins);
+        System.out.printf("Draws: %s%n", draws);
         return new MatchResult(player1Wins, player2Wins, draws);
     }
 
@@ -41,7 +38,7 @@ public class MatchManager {
         player1Wins += result.getPlayer1Wins();
         player2Wins += result.getPlayer2Wins();
         draws += result.getDraws();
-        log.info("Current standings: Player 1 wins: {}, Player 2 wins: {}, Draws: {}",
+        System.out.printf("Current standings: Player 1 wins: %s, Player 2 wins: %s, Draws: %s%n",
                 player1Wins, player2Wins, draws);
     }
 

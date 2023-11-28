@@ -8,7 +8,6 @@ import com.kelseyde.calvin.movegeneration.attacks.Attacks;
 import com.kelseyde.calvin.movegeneration.check.PinCalculator;
 import com.kelseyde.calvin.movegeneration.check.PinCalculator.PinData;
 import com.kelseyde.calvin.movegeneration.check.RayCalculator;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.List;
  * pinned pieces. If there is a check, we filter out all moves that do not resolve the check. Finally, we filter out all
  * moves that leave the king in (a new) check.
  */
-@Slf4j
 public class MoveGenerator implements MoveGeneration {
 
     private final PinCalculator pinCalculator = new PinCalculator();

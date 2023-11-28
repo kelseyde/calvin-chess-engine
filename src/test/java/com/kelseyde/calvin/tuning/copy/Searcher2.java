@@ -20,7 +20,6 @@ import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -35,7 +34,6 @@ import java.util.List;
  *
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
-@Slf4j
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Searcher2 implements Search {
@@ -161,7 +159,7 @@ public class Searcher2 implements Search {
 
         if (result == null) {
             // If we did not find a single move during search (almost impossible), just return a random legal move.
-            log.warn("Time expired before a move was found!");
+            System.out.println("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board).get(0);
             result = new SearchResult(0, move, currentDepth);
         }
@@ -471,7 +469,6 @@ public class Searcher2 implements Search {
 
     @Override
     public void logStatistics() {
-        //log.info(statistics.generateReport());
     }
 
 }

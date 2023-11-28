@@ -6,13 +6,11 @@ import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.movegeneration.result.GameResult;
 import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.utils.notation.FEN;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-@Slf4j
 public class Match {
 
     private final Player player1;
@@ -31,7 +29,7 @@ public class Match {
         this.resultCalculator = new ResultCalculator();
         this.moveGenerator = new MoveGenerator();
         this.random = new Random();
-        log.info("Creating new match with with {} games, {} threads, {} max moves per game, {} - {} think range",
+        System.out.printf("Creating new match with with %s games, %s threads, %s max moves per game, %s - %s think range %n",
                 config.getGameCount(), config.getThreadCount(), config.getMaxMoves(), config.getMinThinkTimeMs(), config.getMaxThinkTimeMs());
     }
 

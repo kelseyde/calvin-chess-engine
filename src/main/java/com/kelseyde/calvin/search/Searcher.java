@@ -13,13 +13,12 @@ import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
-import com.kelseyde.calvin.search.transposition.HashFlag;
 import com.kelseyde.calvin.search.transposition.HashEntry;
+import com.kelseyde.calvin.search.transposition.HashFlag;
 import com.kelseyde.calvin.search.transposition.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -34,7 +33,6 @@ import java.util.List;
  *
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
-@Slf4j
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Searcher implements Search {
@@ -158,7 +156,7 @@ public class Searcher implements Search {
         }
 
         if (result == null) {
-            log.warn("Time expired before a move was found!");
+            System.out.println("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board).get(0);
             result = new SearchResult(0, move, currentDepth);
         }

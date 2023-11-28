@@ -6,12 +6,10 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.movegeneration.MoveGenerator;
 import com.kelseyde.calvin.search.Search;
-import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
 import java.util.List;
 
-@Service
 public class ResultCalculator {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();

@@ -6,7 +6,6 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.utils.BoardUtils;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,7 +23,6 @@ import java.util.List;
  *  8. History moves
  *  9. Everything else.
  */
-@Slf4j
 public class MoveOrderer2 implements MoveOrdering {
 
     private static final int MILLION = 1000000;

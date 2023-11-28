@@ -10,7 +10,6 @@ import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.NotationUtils;
 import lombok.Data;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.List;
@@ -18,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @Data
-@Slf4j
 public class CalvinBot2 implements Bot {
 
     private static final int DEFAULT_THREAD_COUNT = 6;
@@ -109,7 +107,6 @@ public class CalvinBot2 implements Bot {
         double minThinkTimeMs = Math.min(50, timeRemainingMs * 0.25);
 
         thinkTimeMs = Math.max(thinkTimeMs, minThinkTimeMs);
-        log.trace("Selecting think time {}", Duration.ofMillis((int) thinkTimeMs));
         return (int) thinkTimeMs;
 
     }

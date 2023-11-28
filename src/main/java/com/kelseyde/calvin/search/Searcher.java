@@ -132,19 +132,18 @@ public class Searcher implements Search {
             }
 
             if (isCancelled() || isCheckmateFoundAtCurrentDepth(currentDepth)) {
-                // Exit early if time runs out, or we already found forced mate
                 break;
             }
 
             if (eval <= alpha) {
-                // The result is less than alpha, so search again at the same depth with an expanded aspiration window.
+                // If score <= alpha, re-search with an expanded aspiration window
                 retryMultiplier++;
                 alpha -= ASP_FAIL_MARGIN * retryMultiplier;
                 beta += ASP_MARGIN;
                 continue;
             }
             if (eval >= beta) {
-                // The result is greater than alpha, so search again at the same depth with an expanded aspiration window.
+                // If score >= beta, re-search with an expanded aspiration window
                 retryMultiplier++;
                 beta += ASP_FAIL_MARGIN * retryMultiplier;
                 alpha -= ASP_MARGIN;
@@ -159,7 +158,6 @@ public class Searcher implements Search {
         }
 
         if (result == null) {
-            // If we did not find a single move during search (almost impossible), just return a random legal move.
             log.warn("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board).get(0);
             result = new SearchResult(0, move, currentDepth);
@@ -170,12 +168,10 @@ public class Searcher implements Search {
     }
 
     /**
-     * Run a single iteration of the iterative deepening search for a specific depth. Since this function is called
-     * recursively until the depth limit is reached, 'depth' needs to be split into two parameters: 'ply remaining' and
-     * 'ply from root'.
+     * Run a single iteration of the iterative deepening search for a specific depth.
      *
-     * @param depth               The number of ply deeper left to go in the current search
-     * @param ply                 The number of ply already examined in this iteration of the search.
+     * @param depth               The number of ply deeper left to go in the current search ('ply remaining').
+     * @param ply                 The number of ply already examined in the current search ('ply from root').
      * @param alpha               The lower bound for child nodes at the current search depth.
      * @param beta                The upper bound for child nodes at the current search depth.
      * @param allowNull           Whether to allow null-move pruning in this search iteration.
@@ -344,13 +340,13 @@ public class Searcher implements Search {
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta, int depth, int plyFromRoot) {
+    int quiescenceSearch(int alpha, int beta, int depth, int ply) {
         if (isCancelled()) {
             return alpha;
         }
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         Move previousBestMove = null;
-        HashEntry transposition = transpositionTable.get(getKey(), plyFromRoot);
+        HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
@@ -369,7 +365,7 @@ public class Searcher implements Search {
             // we risk missing simple mate threats.
             moves = moveGenerator.generateMoves(board, MoveFilter.ALL);
             if (moves.isEmpty()) {
-                return -MATE_SCORE + plyFromRoot;
+                return -MATE_SCORE + ply;
             }
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
@@ -403,7 +399,7 @@ public class Searcher implements Search {
             }
 
             makeMove(move);
-            eval = -quiescenceSearch(-beta, -alpha, depth + 1, plyFromRoot + 1);
+            eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             unmakeMove();
 
             if (eval >= beta) {

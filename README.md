@@ -1,4 +1,4 @@
-<img align="center" src="src/main/resources/calvin.png" width="120">
+<p align="center"><img src="src/main/resources/calvin.png" width="120"></p>
 
 Calvin is a UCI-compliant chess engine written in Java. 
 

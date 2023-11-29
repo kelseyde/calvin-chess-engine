@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.score.GamePhase;
 import com.kelseyde.calvin.evaluation.score.Material;
+import com.kelseyde.calvin.evaluation.score.Phase;
 import com.kelseyde.calvin.evaluation.score.PiecePlacement;
 import com.kelseyde.calvin.evaluation.score.PieceSquareTable;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -81,9 +81,9 @@ public class PiecePlacementEvaluatorTest {
         blackMiddlegameScore += blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
         blackEndgameScore += blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
 
-        float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
-        int whiteScore = GamePhase.taperedEval(whiteMiddlegameScore, whiteEndgameScore, phase);
-        int blackScore = GamePhase.taperedEval(blackMiddlegameScore, blackEndgameScore, phase);
+        float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
+        int whiteScore = Phase.taperedEval(whiteMiddlegameScore, whiteEndgameScore, phase);
+        int blackScore = Phase.taperedEval(blackMiddlegameScore, blackEndgameScore, phase);
         int modifier = board.isWhiteToMove() ? 1 : -1;
         return modifier * (whiteScore - blackScore);
     }

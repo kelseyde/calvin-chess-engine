@@ -1,8 +1,9 @@
 package com.kelseyde.calvin.evaluation.score;
 
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 /**
@@ -11,13 +12,7 @@ import com.kelseyde.calvin.utils.BoardUtils;
  */
 public class RookEvaluation {
 
-    private static final int ROOK_OPEN_FILE_MG_BONUS = 42;
-    private static final int ROOK_OPEN_FILE_EG_BONUS = 22;
-
-    private static final int ROOK_SEMI_OPEN_FILE_MG_BONUS = 18;
-    private static final int ROOK_SEMI_OPEN_FILE_EG_BONUS = 16;
-
-    public static int score(Board board, float phase, boolean isWhite) {
+    public static int score(EngineConfig config, Board board, float phase, boolean isWhite) {
 
         long rooks = board.getRooks(isWhite);
         if (rooks == 0) return 0;
@@ -37,18 +32,18 @@ public class RookEvaluation {
             boolean hasSemiOpenFile = !hasFriendlyPawn && hasOpponentPawn;
 
             if (hasOpenFile) {
-                middlegameScore += ROOK_OPEN_FILE_MG_BONUS;
-                endgameScore += ROOK_OPEN_FILE_EG_BONUS;
+                middlegameScore += config.getRookOpenFileBonus()[0];
+                endgameScore += config.getRookOpenFileBonus()[1];
             }
             else if (hasSemiOpenFile) {
-                middlegameScore += ROOK_SEMI_OPEN_FILE_MG_BONUS;
-                endgameScore += ROOK_SEMI_OPEN_FILE_EG_BONUS;
+                middlegameScore += config.getRookSemiOpenFileBonus()[0];
+                endgameScore += config.getRookSemiOpenFileBonus()[1];
             }
 
             rooks = Bitwise.popBit(rooks);
         }
 
-        return GamePhase.taperedEval(middlegameScore, endgameScore, phase);
+        return Phase.taperedEval(middlegameScore, endgameScore, phase);
 
     }
 

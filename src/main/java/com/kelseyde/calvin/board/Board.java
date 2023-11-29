@@ -1,12 +1,12 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.bitboard.Bits;
 import com.kelseyde.calvin.utils.BoardUtils;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.UUID;
 
 /**
  * Represents the current state of the chess board, including the positions of the pieces, the side to move, en passant
@@ -17,37 +17,40 @@ import java.util.UUID;
  * @see <a href="https://www.chessprogramming.org/Board_Representation">Chess Programming Wiki</a>
  */
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Board {
 
-    private final String id = UUID.randomUUID().toString();
+// TODO
+//    long[][] pieceBoards = new long[][] {
+//            {Bits.WHITE_PAWNS_START, Bits.WHITE_KNIGHTS_START, Bits.WHITE_BISHOPS_START, Bits.WHITE_ROOKS_START, Bits.WHITE_QUEENS_START, Bits.WHITE_QUEENS_START},
+//            {Bits.BLACK_PAWNS_START, Bits.BLACK_KNIGHTS_START, Bits.BLACK_BISHOPS_START, Bits.BLACK_ROOKS_START, Bits.BLACK_QUEENS_START, Bits.BLACK_QUEENS_START},
+//    };
 
-    private long whitePawns =   Bits.WHITE_PAWNS_START;
-    private long whiteKnights = Bits.WHITE_KNIGHTS_START;
-    private long whiteBishops = Bits.WHITE_BISHOPS_START;
-    private long whiteRooks =   Bits.WHITE_ROOKS_START;
-    private long whiteQueens =  Bits.WHITE_QUEENS_START;
-    private long whiteKing =    Bits.WHITE_KING_START;
+    long whitePawns =   Bits.WHITE_PAWNS_START;
+    long whiteKnights = Bits.WHITE_KNIGHTS_START;
+    long whiteBishops = Bits.WHITE_BISHOPS_START;
+    long whiteRooks =   Bits.WHITE_ROOKS_START;
+    long whiteQueens =  Bits.WHITE_QUEENS_START;
+    long whiteKing =    Bits.WHITE_KING_START;
+    long blackPawns =   Bits.BLACK_PAWNS_START;
+    long blackKnights = Bits.BLACK_KNIGHTS_START;
+    long blackBishops = Bits.BLACK_BISHOPS_START;
+    long blackRooks =   Bits.BLACK_ROOKS_START;
+    long blackQueens =  Bits.BLACK_QUEENS_START;
+    long blackKing =    Bits.BLACK_KING_START;
 
-    private long blackPawns =   Bits.BLACK_PAWNS_START;
-    private long blackKnights = Bits.BLACK_KNIGHTS_START;
-    private long blackBishops = Bits.BLACK_BISHOPS_START;
-    private long blackRooks =   Bits.BLACK_ROOKS_START;
-    private long blackQueens =  Bits.BLACK_QUEENS_START;
-    private long blackKing =    Bits.BLACK_KING_START;
+    long whitePieces;
+    long blackPieces;
+    long occupied;
 
-    private long whitePieces;
-    private long blackPieces;
+    boolean isWhiteToMove = true;
 
-    private long occupied;
-
-    private boolean isWhiteToMove = true;
-
-    private GameState gameState = new GameState();
-    private Deque<GameState> gameStateHistory = new ArrayDeque<>();
-    private Deque<Move> moveHistory = new ArrayDeque<>();
+    GameState gameState = new GameState();
+    Deque<GameState> gameStateHistory = new ArrayDeque<>();
+    Deque<Move> moveHistory = new ArrayDeque<>();
 
     public Board() {
-        gameState.setZobristKey(ZobristKey.generateKey(this));
+        gameState.setZobristKey(Zobrist.generateKey(this));
         recalculatePieces();
     }
 
@@ -108,7 +111,7 @@ public class Board {
         Piece newPieceType = move.getPromotionPieceType() == null ? pieceType : move.getPromotionPieceType();
 
         long newZobristKey =
-                ZobristKey.updateKey(gameState.getZobristKey(), isWhiteToMove, startSquare, endSquare, pieceType, newPieceType, capturedPieceType,
+                Zobrist.updateKey(gameState.getZobristKey(), isWhiteToMove, startSquare, endSquare, pieceType, newPieceType, capturedPieceType,
                         gameState.getCastlingRights(), newCastlingRights, gameState.getEnPassantFile(), newEnPassantFile);
 
         GameState newGameState = new GameState(newZobristKey, capturedPieceType, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
@@ -177,7 +180,7 @@ public class Board {
      */
     public void makeNullMove() {
         isWhiteToMove = !isWhiteToMove;
-        long newZobristKey = ZobristKey.updateKeyAfterNullMove(gameState.getZobristKey(), gameState.getEnPassantFile());
+        long newZobristKey = Zobrist.updateKeyAfterNullMove(gameState.getZobristKey(), gameState.getEnPassantFile());
         GameState newGameState = new GameState(newZobristKey, null, -1, gameState.getCastlingRights(), 0);
         gameStateHistory.push(gameState);
         gameState = newGameState;

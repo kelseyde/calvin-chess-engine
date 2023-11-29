@@ -1,7 +1,9 @@
 package com.kelseyde.calvin.evaluation.pawnstructure;
 
 public class PawnEvaluationTest {
-
+//
+//    private final EngineConfig config = TestUtils.TEST_CONFIG;
+//
 //    @Test
 //    public void testSinglePassedPawn() {
 //
@@ -125,13 +127,13 @@ public class PawnEvaluationTest {
 //        Assertions.assertEquals(-170, score(board));
 //
 //    }
-
+//
 //    private int score(Board board) {
 //        int modifier = board.isWhiteToMove() ? 1 : -1;
 //        long whitePawns = board.getPawns(true);
 //        long blackPawns = board.getPawns(false);
-//        int whiteScore = PawnEvaluation.score(whitePawns, blackPawns, true);
-//        int blackScore = PawnEvaluation.score(blackPawns, whitePawns, false);
+//        int whiteScore = PawnEvaluation.score(config, whitePawns, blackPawns, true);
+//        int blackScore = PawnEvaluation.score(config, blackPawns, whitePawns, false);
 //        return modifier * (whiteScore - blackScore);
 //    }
 }

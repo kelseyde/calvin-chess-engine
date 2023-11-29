@@ -1,9 +1,9 @@
 package com.kelseyde.calvin.utils;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.bitboard.Bits;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

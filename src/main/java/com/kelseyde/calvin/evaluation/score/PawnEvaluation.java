@@ -1,27 +1,13 @@
 package com.kelseyde.calvin.evaluation.score;
 
-import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 public class PawnEvaluation {
 
-    // Bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
-    private static final int[] PASSED_PAWN_MG_BONUS = { 0, 140, 100, 60, 30, 15, 15 };
-    private static final int[] PASSED_PAWN_EG_BONUS = { 0, 250, 140, 85, 45, 25, 25 };
-
-    // Bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
-    private static final int PROTECTED_PASSED_PAWN_BONUS = 25;
-
-    // Penalties for isolated pawns, indexed by the number of isolated pawns.
-    private static final int[] ISOLATED_PAWN_MG_PENALTY = { 0, -10, -25, -50, -75, -75, -75, -75, -75 };
-    private static final int[] ISOLATED_PAWN_EG_PENALTY = { 0, -20, -35, -65, -80, -80, -80, -80, -80 };
-
-    // Penalties for doubled pawns, indexed by the number of doubled pawns
-    private static final int[] DOUBLED_PAWN_MG_PENALTY = { 0, -5, -10, -20, -40, -60, -75, -85, -95};
-    private static final int[] DOUBLED_PAWN_EG_PENALTY = { 0, -15, -25, -35, -55, -75, -90, -100, -110};
-
-    public static int score(long friendlyPawns, long opponentPawns, float phase, boolean isWhite) {
+    public static int score(EngineConfig config, long friendlyPawns, long opponentPawns, float phase, boolean isWhite) {
 
         int passedPawnsMgBonus = 0;
         int passedPawnsEgBonus = 0;
@@ -34,11 +20,13 @@ public class PawnEvaluation {
             int pawn = Bitwise.getNextBit(pawnsIterator);
             int file = BoardUtils.getFile(pawn);
 
+            // Bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
+            // Bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
             if (isPassedPawn(pawn, opponentPawns, isWhite)) {
-                passedPawnsMgBonus += calculatePassedPawnBonus(pawn, isWhite, PASSED_PAWN_MG_BONUS);
-                passedPawnsMgBonus += calculateProtectedPawnBonus(pawn, friendlyPawns, isWhite);
-                passedPawnsEgBonus += calculatePassedPawnBonus(pawn, isWhite, PASSED_PAWN_EG_BONUS);
-                passedPawnsEgBonus += calculateProtectedPawnBonus(pawn, friendlyPawns, isWhite);
+                passedPawnsMgBonus += calculatePassedPawnBonus(pawn, isWhite, config.getPassedPawnBonus()[0]);
+                passedPawnsMgBonus += calculateProtectedPawnBonus(config, pawn, friendlyPawns, isWhite);
+                passedPawnsEgBonus += calculatePassedPawnBonus(pawn, isWhite, config.getPassedPawnBonus()[1]);
+                passedPawnsEgBonus += calculateProtectedPawnBonus(config, pawn, friendlyPawns, isWhite);
             }
             // Passed pawns are not penalised for being isolated
             else if (isIsolatedPawn(file, friendlyPawns)) {
@@ -50,16 +38,18 @@ public class PawnEvaluation {
 
             pawnsIterator = Bitwise.popBit(pawnsIterator);
         }
-        int isolatedPawnMgPenalty = ISOLATED_PAWN_MG_PENALTY[isolatedPawnCount];
-        int isolatedPawnEgPenalty = ISOLATED_PAWN_EG_PENALTY[isolatedPawnCount];
+        // Penalties for isolated pawns, indexed by the number of isolated pawns.
+        int isolatedPawnMgPenalty = config.getIsolatedPawnPenalty()[0][isolatedPawnCount];
+        int isolatedPawnEgPenalty = config.getIsolatedPawnPenalty()[1][isolatedPawnCount];
 
-        int doubledPawnMgPenalty =  DOUBLED_PAWN_MG_PENALTY[doubledPawnCount];
-        int doubledPawnEgPenalty =  DOUBLED_PAWN_EG_PENALTY[doubledPawnCount];
+        // Penalties for doubled pawns, indexed by the number of doubled pawns
+        int doubledPawnMgPenalty =  config.getDoubledPawnPenalty()[0][doubledPawnCount];
+        int doubledPawnEgPenalty =  config.getDoubledPawnPenalty()[1][doubledPawnCount];
 
         int middlegameScore = passedPawnsMgBonus + isolatedPawnMgPenalty + doubledPawnMgPenalty;
         int endgameScore = passedPawnsEgBonus + isolatedPawnEgPenalty + doubledPawnEgPenalty;
 
-        return GamePhase.taperedEval(middlegameScore, endgameScore, phase);
+        return Phase.taperedEval(middlegameScore, endgameScore, phase);
 
     }
 
@@ -83,9 +73,9 @@ public class PawnEvaluation {
         return passedPawnBonuses[squaresFromPromotion];
     }
 
-    private static int calculateProtectedPawnBonus(int pawn, long friendlyPawns, boolean isWhite) {
+    private static int calculateProtectedPawnBonus(EngineConfig config, int pawn, long friendlyPawns, boolean isWhite) {
         long protectionMask = isWhite ? Bits.WHITE_PROTECTED_PAWN_MASK[pawn] : Bits.BLACK_PROTECTED_PAWN_MASK[pawn];
-        return Bitwise.countBits(protectionMask & friendlyPawns) * PROTECTED_PASSED_PAWN_BONUS;
+        return Bitwise.countBits(protectionMask & friendlyPawns) * config.getProtectedPassedPawnBonus();
     }
 
 }

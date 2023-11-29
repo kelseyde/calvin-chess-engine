@@ -1,9 +1,10 @@
 package com.kelseyde.calvin.evaluation.score;
 
+import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
-import com.kelseyde.calvin.movegeneration.attacks.Attacks;
+import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.generation.attacks.Attacks;
 
 /**
  * Mobility evaluation gives bonuses for the number of possible moves for each piece. Possible moves are defined as moves
@@ -31,7 +32,7 @@ public class Mobility {
             new int[] {}
     };
 
-    public static int score(Board board, boolean isWhite, float phase) {
+    public static int score(EngineConfig config, Board board, boolean isWhite, float phase) {
 
         long friendlyBlockers = board.getKing(isWhite) | board.getPawns(isWhite);
         long opponentBlockers = board.getPieces(!isWhite);
@@ -47,8 +48,9 @@ public class Mobility {
             long attacks = Attacks.knightAttacks(square);
             long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
             int moveCount = Bitwise.countBits(moves);
-            middlegameScore += MG_PIECE_MOBILITY_BONUS[Piece.KNIGHT.getIndex()][moveCount];
-            endgameScore += EG_PIECE_MOBILITY_BONUS[Piece.KNIGHT.getIndex()][moveCount];
+            int index = Piece.KNIGHT.getIndex();
+            middlegameScore += config.getMiddlegameMobilityBonus()[index][moveCount];
+            endgameScore += config.getEndgameMobilityBonus()[index][moveCount];
             knights = Bitwise.popBit(knights);
         }
 
@@ -58,8 +60,9 @@ public class Mobility {
             long attacks = Attacks.bishopAttacks(square, blockers);
             long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
             int moveCount = Bitwise.countBits(moves);
-            middlegameScore += MG_PIECE_MOBILITY_BONUS[Piece.BISHOP.getIndex()][moveCount];
-            endgameScore += EG_PIECE_MOBILITY_BONUS[Piece.BISHOP.getIndex()][moveCount];
+            int index = Piece.BISHOP.getIndex();
+            middlegameScore += config.getMiddlegameMobilityBonus()[index][moveCount];
+            endgameScore += config.getEndgameMobilityBonus()[index][moveCount];
             bishops = Bitwise.popBit(bishops);
         }
 
@@ -69,8 +72,9 @@ public class Mobility {
             long attacks = Attacks.rookAttacks(square, blockers);
             long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
             int moveCount = Bitwise.countBits(moves);
-            middlegameScore += MG_PIECE_MOBILITY_BONUS[Piece.ROOK.getIndex()][moveCount];
-            endgameScore += EG_PIECE_MOBILITY_BONUS[Piece.ROOK.getIndex()][moveCount];
+            int index = Piece.ROOK.getIndex();
+            middlegameScore += config.getMiddlegameMobilityBonus()[index][moveCount];
+            endgameScore += config.getEndgameMobilityBonus()[index][moveCount];
             rooks = Bitwise.popBit(rooks);
         }
 
@@ -80,12 +84,13 @@ public class Mobility {
             long attacks = Attacks.rookAttacks(square, blockers) | Attacks.bishopAttacks(square, blockers);
             long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
             int moveCount = Bitwise.countBits(moves);
-            middlegameScore += MG_PIECE_MOBILITY_BONUS[Piece.QUEEN.getIndex()][moveCount];
-            endgameScore += EG_PIECE_MOBILITY_BONUS[Piece.QUEEN.getIndex()][moveCount];
+            int index = Piece.QUEEN.getIndex();
+            middlegameScore += config.getMiddlegameMobilityBonus()[index][moveCount];
+            endgameScore += config.getEndgameMobilityBonus()[index][moveCount];
             queens = Bitwise.popBit(queens);
         }
 
-        return GamePhase.taperedEval(middlegameScore, endgameScore, phase);
+        return Phase.taperedEval(middlegameScore, endgameScore, phase);
 
     }
 

@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.evaluation.score;
 
+import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
 
 public record Material(int pawns,
                        int knights,

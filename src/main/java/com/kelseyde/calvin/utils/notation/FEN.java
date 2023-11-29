@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.ZobristKey;
+import com.kelseyde.calvin.board.Zobrist;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.Arrays;
@@ -90,7 +90,7 @@ public class FEN {
             board.getGameState().setCastlingRights(castlingRights);
             board.getGameState().setEnPassantFile(enPassantFile);
             board.getGameState().setFiftyMoveCounter(fiftyMoveCounter);
-            board.getGameState().setZobristKey(ZobristKey.generateKey(board));
+            board.getGameState().setZobristKey(Zobrist.generateKey(board));
 
             return board;
 
@@ -170,7 +170,7 @@ public class FEN {
         if (enPassantFile.equals("-")) {
             return -1;
         }
-        int square = NotationUtils.fromNotation(enPassantFile);
+        int square = Notation.fromNotation(enPassantFile);
         return BoardUtils.getFile(square);
     }
 
@@ -178,7 +178,7 @@ public class FEN {
         if (enPassantFile == -1) {
             return "-";
         }
-        return Integer.valueOf(NotationUtils.toNotation(enPassantFile)).toString();
+        return Integer.valueOf(Notation.toNotation(enPassantFile)).toString();
     }
 
     private static int parseFiftyMoveCounter(String fiftyMoveCounter) {

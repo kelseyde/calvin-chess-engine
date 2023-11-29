@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.score.Material;
 import com.kelseyde.calvin.evaluation.score.MopUp;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class MopUpTest {
+
+    private final EngineConfig config = TestUtils.TEST_CONFIG;
 
     @Test
     public void testBonusForMovingKingCloser() {
@@ -19,12 +22,12 @@ public class MopUpTest {
         Material friendlyMaterial = Material.fromBoard(board, true);
         Material opponentMaterial = Material.fromBoard(board, false);
 
-        int score = MopUp.score(board, friendlyMaterial, opponentMaterial, true);
+        int score = MopUp.score(config, board, friendlyMaterial, opponentMaterial, true);
         System.out.println(score);
 
         board.makeMove(TestUtils.getLegalMove(board, "e1", "e2"));
 
-        int score2 = MopUp.score(board, friendlyMaterial, opponentMaterial, true);
+        int score2 = MopUp.score(config, board, friendlyMaterial, opponentMaterial, true);
         System.out.println(score2);
 
         Assertions.assertTrue(score2 > score);
@@ -39,7 +42,7 @@ public class MopUpTest {
         Material friendlyMaterial = Material.fromBoard(board, true);
         Material opponentMaterial = Material.fromBoard(board, false);
 
-        int score = MopUp.score(board, friendlyMaterial, opponentMaterial, true);
+        int score = MopUp.score(config, board, friendlyMaterial, opponentMaterial, true);
 
         // give black an extra couple of knights
         fen = "8/8/4n3/3nk3/8/8/8/3QK3 w - - 0 1";
@@ -48,7 +51,7 @@ public class MopUpTest {
         friendlyMaterial = Material.fromBoard(board, true);
         opponentMaterial = Material.fromBoard(board, false);
 
-        int score2 = MopUp.score(board, friendlyMaterial, opponentMaterial, true);
+        int score2 = MopUp.score(config, board, friendlyMaterial, opponentMaterial, true);
         System.out.println(score);
         System.out.println(score2);
 

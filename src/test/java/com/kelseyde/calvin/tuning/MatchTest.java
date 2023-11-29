@@ -1,10 +1,10 @@
 package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.bot.CalvinBot;
-import com.kelseyde.calvin.search.ParallelSearcher;
+import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.tuning.copy.Searcher2;
+import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -12,64 +12,17 @@ import org.junit.jupiter.api.Test;
 public class MatchTest {
 
     @Test
-    public void testSingleMatch() {
-        MatchConfig config = MatchConfig.builder()
-                .player1(() -> new Player("player1", new CalvinBot(new ParallelSearcher(new Board(), 6))))
-                .player2(() -> new Player("player2", new CalvinBot(new ParallelSearcher(new Board(), 10))))
-                .gameCount(300)
-                .maxMoves(100)
-                .minThinkTimeMs(15)
-                .maxThinkTimeMs(40)
-                .threadCount(9)
-                .build();
-        MatchResult result = new Match(config).run();
-        System.out.println(result);
-    }
-
-    @Test
     public void testMatch() {
 
-        MatchConfig config = MatchConfig.builder()
-                .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
-                .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
-                .gameCount(50)
-                .maxMoves(100)
-                .minThinkTimeMs(35)
-                .maxThinkTimeMs(75)
-                .threadCount(1)
-                .build();
+        Engine engine1 = new Engine(TestUtils.TEST_CONFIG);
+        Engine engine2 = new Engine(TestUtils.TEST_CONFIG);
 
-        MatchManager match = new MatchManager(config);
-
-        match.run();
-
-    }
-
-    @Test
-    public void testSlowMatch() {
+        engine1.setSearch(new Searcher(TestUtils.TEST_CONFIG, new Board()));
+        engine2.setSearch(new Searcher2(TestUtils.TEST_CONFIG, new Board()));
 
         MatchConfig config = MatchConfig.builder()
-                .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
-                .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
-                .gameCount(300)
-                .maxMoves(100)
-                .minThinkTimeMs(250)
-                .maxThinkTimeMs(550)
-                .threadCount(3)
-                .build();
-
-        MatchManager match = new MatchManager(config);
-
-        match.run();
-
-    }
-
-    @Test
-    public void testLongMatch() {
-
-        MatchConfig config = MatchConfig.builder()
-                .player1(() -> new Player("player1", new CalvinBot(new Searcher())))
-                .player2(() -> new Player("player2", new CalvinBot(new Searcher2())))
+                .player1(() -> new Player("player1", engine1))
+                .player2(() -> new Player("player2", engine2))
                 .gameCount(1000)
                 .maxMoves(100)
                 .minThinkTimeMs(15)

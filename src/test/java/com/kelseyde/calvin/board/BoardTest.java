@@ -1,12 +1,10 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
-import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -321,7 +319,7 @@ public class BoardTest {
         String fen = "r1b1k2r/1p3p2/8/8/1n6/2Q5/4P2p/5KNR w kq - 0 1";
         Board board = FEN.toBoard(fen);
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b4"));
-        Move queenPromotion = NotationUtils.fromNotation("h2", "g1", Move.PROMOTE_TO_QUEEN_FLAG);
+        Move queenPromotion = Notation.fromNotation("h2", "g1", Move.PROMOTE_TO_QUEEN_FLAG);
         board.makeMove(TestUtils.getLegalMove(board, queenPromotion));
         board.makeMove(TestUtils.getLegalMove(board, "f1", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));
@@ -335,7 +333,7 @@ public class BoardTest {
         Board board = new Board();
         board.makeMove(TestUtils.getLegalMove(board, "b1", "a3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        List<String> moves = new MoveGenerator().generateMoves(board).stream().map(NotationUtils::toNotation).toList();
+        List<String> moves = new MoveGenerator().generateMoves(board).stream().map(Notation::toNotation).toList();
         System.out.println(moves.size());
         System.out.println(moves);
         Assertions.assertEquals(20, moves.size());

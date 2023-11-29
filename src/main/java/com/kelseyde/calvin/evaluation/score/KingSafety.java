@@ -1,21 +1,15 @@
 package com.kelseyde.calvin.evaluation.score;
 
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.bitboard.Bits;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 
 public class KingSafety {
 
-    private static final int[] PAWN_SHIELD_DISTANCE_PENALTY = new int[] {0, 0, 10, 25, 50, 50, 50};
-    private static final int SEMI_OPEN_KING_FILE_PENALTY = 15;
-    private static final int SEMI_OPEN_ADJACENT_FILE_PENALTY = 10;
-    private static final int OPEN_KING_FILE_PENALTY = 25;
-    private static final int OPEN_ADJACENT_FILE_PENALTY = 15;
-    private static final int LOST_CASTLING_RIGHTS_PENALTY = 120;
-
-    public static int score(Board board, Material opponentMaterial, float phase, boolean isWhite) {
+    public static int score(EngineConfig config, Board board, Material opponentMaterial, float phase, boolean isWhite) {
 
         if (phase <= 0.5) {
             return 0;
@@ -26,9 +20,9 @@ public class KingSafety {
         long friendlyPawns = board.getPawns(isWhite);
         long opponentPawns = board.getPawns(!isWhite);
 
-        int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
-        int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
-        int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(board, isWhite, kingFile);
+        int pawnShieldPenalty = calculatePawnShieldPenalty(config, kingSquare, kingFile, friendlyPawns);
+        int openKingFilePenalty = calculateOpenKingFilePenalty(config, kingFile, friendlyPawns, opponentPawns, opponentMaterial);
+        int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(config, board, isWhite, kingFile);
 
         if (opponentMaterial.queens() == 0) {
             // King safety matters less without opponent queen
@@ -39,7 +33,7 @@ public class KingSafety {
 
     }
 
-    private static int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {
+    private static int calculatePawnShieldPenalty(EngineConfig config, int kingSquare, int kingFile, long pawns) {
         int pawnShieldPenalty = 0;
         if (kingFile <= 2 || kingFile >= 5) {
 
@@ -50,14 +44,14 @@ public class KingSafety {
             while (pawnShieldMask != 0) {
                 int pawn = Bitwise.getNextBit(pawnShieldMask);
                 int distance = Distance.chebyshev(kingSquare, pawn);
-                pawnShieldPenalty += PAWN_SHIELD_DISTANCE_PENALTY[distance];
+                pawnShieldPenalty += config.getKingPawnShieldPenalty()[distance];
                 pawnShieldMask = Bitwise.popBit(pawnShieldMask);
             }
         }
         return pawnShieldPenalty;
     }
 
-    private static int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial) {
+    private static int calculateOpenKingFilePenalty(EngineConfig config, int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial) {
         int openKingFilePenalty = 0;
         if (opponentMaterial.rooks() > 0 || opponentMaterial.queens() > 0) {
 
@@ -71,11 +65,11 @@ public class KingSafety {
                 boolean isOpponentPawnMissing = (opponentPawns & fileMask) == 0;
                 if (isFriendlyPawnMissing || isOpponentPawnMissing) {
                     // Add penalty for semi-open file around the king
-                    openKingFilePenalty += isKingFile ? SEMI_OPEN_KING_FILE_PENALTY : SEMI_OPEN_ADJACENT_FILE_PENALTY;
+                    openKingFilePenalty += isKingFile ? config.getKingSemiOpenFilePenalty() : config.getKingSemiOpenAdjacentFilePenalty();
                 }
                 if (isFriendlyPawnMissing && isOpponentPawnMissing) {
                     // Add penalty for fully open file around king
-                    openKingFilePenalty += isKingFile ? OPEN_KING_FILE_PENALTY : OPEN_ADJACENT_FILE_PENALTY;
+                    openKingFilePenalty += isKingFile ? config.getKingOpenFilePenalty() : config.getKingSemiOpenFilePenalty();
                 }
             }
 
@@ -83,14 +77,14 @@ public class KingSafety {
         return openKingFilePenalty;
     }
 
-    private static int calculateLostCastlingRightsPenalty(Board board, boolean isWhite, int kingFile) {
+    private static int calculateLostCastlingRightsPenalty(EngineConfig config, Board board, boolean isWhite, int kingFile) {
         if (kingFile <= 2 || kingFile >= 5) {
             return 0;
         }
         boolean hasCastlingRights = board.getGameState().hasCastlingRights(isWhite);
         boolean opponentHasCastlingRights = board.getGameState().hasCastlingRights(!isWhite);
         if (!hasCastlingRights && opponentHasCastlingRights) {
-            return LOST_CASTLING_RIGHTS_PENALTY;
+            return config.getKingLostCastlingRightsPenalty();
         }
         return 0;
     }

@@ -1,15 +1,10 @@
 package com.kelseyde.calvin.evaluation.score;
 
+import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
 
-public record PiecePlacement(long pawns,
-                             long knights,
-                             long bishops,
-                             long rooks,
-                             long queens,
-                             long king) {
+public record PiecePlacement(long pawns, long knights, long bishops, long rooks, long queens, long king) {
 
     public static PiecePlacement fromBoard(Board board, boolean isWhite) {
         long pawns = board.getPawns(isWhite);

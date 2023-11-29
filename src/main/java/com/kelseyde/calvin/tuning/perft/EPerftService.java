@@ -2,8 +2,9 @@ package com.kelseyde.calvin.tuning.perft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Evaluator;
-import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.generation.MoveGenerator;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class EPerftService {
 
     public EPerftService(Board board) {
         moveGenerator = new MoveGenerator();
-        evaluator = new Evaluator(board);
+        evaluator = new Evaluator(EngineInitializer.loadDefaultConfig(), board);
     }
 
     public void ePerft(Board board, int depth) {

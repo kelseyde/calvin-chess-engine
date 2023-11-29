@@ -1,12 +1,12 @@
 package com.kelseyde.calvin.tuning;
 
-import com.kelseyde.calvin.bot.Bot;
+import com.kelseyde.calvin.engine.Engine;
 import lombok.Data;
 
 @Data
 public class Player {
 
     private final String name;
-    private final Bot bot;
+    private final Engine engine;
 
 }

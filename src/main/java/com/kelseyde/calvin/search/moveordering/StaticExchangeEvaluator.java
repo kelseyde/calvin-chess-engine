@@ -1,11 +1,11 @@
 package com.kelseyde.calvin.search.moveordering;
 
+import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.bitboard.Bitwise;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
-import com.kelseyde.calvin.movegeneration.MoveGenerator;
+import com.kelseyde.calvin.generation.MoveGenerator;
 
 /**
  * SEE, or 'Static Exchange Evaluation' function, calculates the change in material balance after a series of exchanges

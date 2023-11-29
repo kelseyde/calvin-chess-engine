@@ -45,7 +45,7 @@ Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 
 ### Communication
 - [UCI protocol](https://www.chessprogramming.org/UCI) implemented with time management support.
-- Calvin is connected to Lichess where he plays regularly in the bot pool: https://lichess.org/@/Calvin_Bot
+- Calvin is connected to Lichess where he plays regularly in the engine pool: https://lichess.org/@/Calvin_Bot
 
 ### Perft results (starting position):
 

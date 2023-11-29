@@ -3,7 +3,7 @@ package com.kelseyde.calvin.board;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -378,7 +378,7 @@ public class CheckTest {
         Board board = FEN.toBoard("r5k1/5b2/q2p4/p2nn1P1/2p5/P3P3/1PB2PK1/2BR3R b - - 2 42");
 
         Assertions.assertThrows(IllegalMoveException.class, () ->
-                TestUtils.getLegalMove(board, NotationUtils.fromNotation("g8", "h8")));
+                TestUtils.getLegalMove(board, Notation.fromNotation("g8", "h8")));
 
     }
 

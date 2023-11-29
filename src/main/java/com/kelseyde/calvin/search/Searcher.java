@@ -3,19 +3,20 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.evaluation.Arbiter;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.score.PieceValues;
-import com.kelseyde.calvin.movegeneration.MoveGeneration;
-import com.kelseyde.calvin.movegeneration.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.movegeneration.MoveGenerator;
-import com.kelseyde.calvin.movegeneration.result.ResultCalculator;
+import com.kelseyde.calvin.generation.MoveGeneration;
+import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
-import com.kelseyde.calvin.search.transposition.HashEntry;
-import com.kelseyde.calvin.search.transposition.HashFlag;
-import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.transposition.HashEntry;
+import com.kelseyde.calvin.transposition.HashFlag;
+import com.kelseyde.calvin.transposition.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -53,12 +54,12 @@ public class Searcher implements Search {
     static final int[] FP_MARGIN = new int[] { 0, 170, 260, 450, 575 };
     static final int[] RFP_MARGIN = new int[] { 0, 120, 240, 360, 480 };
 
+    EngineConfig config;
     MoveGeneration moveGenerator;
     MoveOrdering moveOrderer;
     Evaluation evaluator;
     StaticExchangeEvaluator see;
     TranspositionTable transpositionTable;
-    ResultCalculator resultCalculator;
 
     Board board;
     Instant timeout;
@@ -66,39 +67,39 @@ public class Searcher implements Search {
     SearchResult resultCurrentDepth;
     SearchResult result;
 
-    public Searcher(Board board) {
+    public Searcher(EngineConfig config, Board board) {
+        this.config = config;
         init(board);
     }
 
-    public Searcher(Board board, TranspositionTable transpositionTable) {
+    public Searcher(EngineConfig config, TranspositionTable transpositionTable, Board board) {
+        this.config = config;
         this.board = board;
         this.transpositionTable = transpositionTable;
         this.moveGenerator = new MoveGenerator();
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
-        this.resultCalculator = new ResultCalculator();
-        this.evaluator = new Evaluator(board);
+        this.evaluator = new Evaluator(config, board);
     }
 
     @Override
     public void init(Board board) {
         this.board = board;
         if (this.transpositionTable == null) {
-            this.transpositionTable = new TranspositionTable();
+            this.transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
         } else {
             this.transpositionTable.clear();
         }
         this.moveGenerator = new MoveGenerator();
         this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
-        this.resultCalculator = new ResultCalculator();
-        this.evaluator = new Evaluator(board);
+        this.evaluator = new Evaluator(config, board);
     }
 
     @Override
     public void setPosition(Board board) {
         this.board = board;
-        this.evaluator = new Evaluator(board);
+        this.evaluator = new Evaluator(config, board);
     }
 
     /**
@@ -448,7 +449,7 @@ public class Searcher implements Search {
     }
 
     private boolean isDraw() {
-        return resultCalculator.isEffectiveDraw(board);
+        return Arbiter.isEffectiveDraw(board);
     }
 
     private long getKey() {
@@ -465,6 +466,16 @@ public class Searcher implements Search {
     @Override
     public void logStatistics() {
         //log.info(statistics.generateReport());
+    }
+
+    @Override
+    public void setHashSize(int hashSizeMb) {
+        transpositionTable = new TranspositionTable(hashSizeMb);
+    }
+
+    @Override
+    public void setCores(int cores) {
+        // Do nothing, not a parallel search
     }
 
 }

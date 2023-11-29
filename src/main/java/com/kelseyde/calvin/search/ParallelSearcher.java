@@ -1,7 +1,8 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.search.transposition.TranspositionTable;
+import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.time.Duration;
@@ -19,17 +20,19 @@ import java.util.stream.IntStream;
  */
 public class ParallelSearcher implements Search {
 
+    private EngineConfig config;
     private Board board;
 
-    private final TranspositionTable transpositionTable;
+    private TranspositionTable transpositionTable;
 
-    private final List<Searcher> searchers;
+    private List<Searcher> searchers;
 
-    public ParallelSearcher(Board board, int threadCount) {
+    public ParallelSearcher(EngineConfig config, Board board) {
+        this.config = config;
         this.board = board;
-        this.transpositionTable = new TranspositionTable();
-        this.searchers = IntStream.range(0, threadCount)
-                .mapToObj(i -> new Searcher(BoardUtils.copy(board), transpositionTable))
+        this.transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
+        this.searchers = IntStream.range(0, config.getDefaultThreadCount())
+                .mapToObj(i -> new Searcher(config, transpositionTable, BoardUtils.copy(board)))
                 .toList();
     }
 
@@ -53,7 +56,6 @@ public class ParallelSearcher implements Search {
                     .toList();
             SearchResult result = selectResult(threads).get();
             threads.forEach(thread -> thread.cancel(true));
-            System.out.println("eval: " + result.eval());
             return result;
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
@@ -83,6 +85,18 @@ public class ParallelSearcher implements Search {
     @Override
     public void logStatistics() {
 
+    }
+
+    @Override
+    public void setHashSize(int hashSizeMb) {
+        transpositionTable = new TranspositionTable(hashSizeMb);
+    }
+
+    @Override
+    public void setCores(int cores) {
+        this.searchers = IntStream.range(0, cores)
+                .mapToObj(i -> new Searcher(config, transpositionTable, BoardUtils.copy(board)))
+                .toList();
     }
 
 }

@@ -26,7 +26,7 @@ public class PGN {
 
         for (int plyCount = 0; plyCount < moves.size(); plyCount++) {
             Move move = moves.get(plyCount);
-            String moveString = NotationUtils.toStandardAlgebraicNotation(move, boardCopy);
+            String moveString = SAN.fromMove(move, boardCopy);
             if (plyCount % 2 == 0) {
                 pgn.append((plyCount / 2 + 1)).append(". ");
             }

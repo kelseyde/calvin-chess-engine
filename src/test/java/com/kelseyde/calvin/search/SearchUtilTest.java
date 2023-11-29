@@ -1,8 +1,9 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.NotationUtils;
+import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -18,11 +19,11 @@ public class SearchUtilTest {
     public void testBestMove() {
 
         Board board = FEN.toBoard(FEN_STRING);
-        Searcher search = new Searcher(board);
+        Searcher search = new Searcher(TestUtils.TEST_CONFIG, board);
 
         SearchResult result = search.search(THINK_TIME);
 
-        System.out.printf("Eval %s, Move %s", result.eval(), NotationUtils.toNotation(result.move()));
+        System.out.printf("Eval %s, Move %s", result.eval(), Notation.toNotation(result.move()));
 
     }
 
@@ -30,11 +31,11 @@ public class SearchUtilTest {
     public void testStartingPosition() {
 
         Board board = new Board();
-        Searcher search = new Searcher(board);
+        Searcher search = new Searcher(TestUtils.TEST_CONFIG, board);
 
         SearchResult result = search.search(THINK_TIME);
 
-        System.out.printf("Eval %s, Move %s", result.eval(), NotationUtils.toNotation(result.move()));
+        System.out.printf("Eval %s, Move %s", result.eval(), Notation.toNotation(result.move()));
 
     }
 
@@ -42,11 +43,11 @@ public class SearchUtilTest {
     public void testKiwiPete() {
 
         Board board = FEN.toBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ");
-        Searcher search = new Searcher(board);
+        Searcher search = new Searcher(TestUtils.TEST_CONFIG, board);
 
         SearchResult result = search.search(THINK_TIME);
 
-        System.out.printf("Eval %s, Move %s", result.eval(), NotationUtils.toNotation(result.move()));
+        System.out.printf("Eval %s, Move %s", result.eval(), Notation.toNotation(result.move()));
 
     }
 

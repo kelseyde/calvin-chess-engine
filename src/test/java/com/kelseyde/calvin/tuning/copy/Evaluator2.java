@@ -3,8 +3,11 @@ package com.kelseyde.calvin.tuning.copy;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.score.*;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -18,15 +21,16 @@ import java.util.Deque;
  * search procedure.
  * @see <a href="https://www.chessprogramming.org/Evaluation">Chess Programming Wiki</a>
  */
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Evaluator2 implements Evaluation {
 
-    private Board board;
+    final EngineConfig config;
+    final Deque<Score> scoreHistory = new ArrayDeque<>();
+    Score score;
+    Board board;
 
-    private EvaluationScore score;
-
-    private final Deque<EvaluationScore> evalHistory = new ArrayDeque<>();
-
-    public Evaluator2(Board board) {
+    public Evaluator2(EngineConfig config, Board board) {
+        this.config = config;
         init(board);
     }
 
@@ -37,43 +41,43 @@ public class Evaluator2 implements Evaluation {
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
-        int whiteMaterialMiddlegameScore = whiteMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-        int whiteMaterialEndgameScore = whiteMaterial.sum(PieceValues.ENDGAME_VALUES);
-        int blackMaterialMiddlegameScore = blackMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-        int blackMaterialEndgameScore = blackMaterial.sum(PieceValues.ENDGAME_VALUES);
+        int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0]);
+        int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1]);
+        int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0]);
+        int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1]);
 
         PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
         PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
-        int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
-        int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
-        int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
-        int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
+        int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(config.getMiddlegameTables(), true);
+        int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(config.getEndgameTables(), true);
+        int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(config.getMiddlegameTables(), false);
+        int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(config.getEndgameTables(), false);
 
-        float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
-        int whiteMaterialScore = GamePhase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
-        int whitePiecePlacementScore = GamePhase.taperedEval(whitePiecePlacementMiddlegameScore, whitePiecePlacementEndgameScore, phase);
-        int blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
-        int blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
+        float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
+        int whiteMaterialScore = Phase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
+        int whitePiecePlacementScore = Phase.taperedEval(whitePiecePlacementMiddlegameScore, whitePiecePlacementEndgameScore, phase);
+        int blackMaterialScore = Phase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
+        int blackPiecePlacementScore = Phase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
 
-        int whiteMobilityScore = Mobility.score(board, true, phase);
-        int blackMobilityScore = Mobility.score(board, false, phase);
+        int whiteMobilityScore = Mobility.score(config, board, true, phase);
+        int blackMobilityScore = Mobility.score(config, board, false, phase);
 
-        int whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), phase, true);
-        int blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), phase, false);
+        int whitePawnStructureScore = PawnEvaluation.score(config, board.getPawns(true), board.getPawns(false), phase, true);
+        int blackPawnStructureScore = PawnEvaluation.score(config, board.getPawns(false), board.getPawns(true), phase, false);
 
-        int whiteKingSafetyScore = KingSafety.score(board, blackMaterial, phase, true);
-        int blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
+        int whiteKingSafetyScore = KingSafety.score(config, board, blackMaterial, phase, true);
+        int blackKingSafetyScore = KingSafety.score(config, board, whiteMaterial, phase, false);
 
-        int whiteRookScore = RookEvaluation.score(board, phase, true);
-        int blackRookScore = RookEvaluation.score(board, phase, false);
+        int whiteRookScore = RookEvaluation.score(config, board, phase, true);
+        int blackRookScore = RookEvaluation.score(config, board, phase, false);
 
-        int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
-        int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
+        int whiteMopUpScore = MopUp.score(config, board, whiteMaterial, blackMaterial, true);
+        int blackMopUpScore = MopUp.score(config, board, blackMaterial, whiteMaterial, false);
 
-        int whiteTempoBonus = board.isWhiteToMove() ? 10 : 0;
-        int blackTempoBonus = board.isWhiteToMove() ? 0 : 10;
+        int whiteTempoBonus = board.isWhiteToMove() ? config.getTempoBonus() : 0;
+        int blackTempoBonus = board.isWhiteToMove() ? 0 : config.getTempoBonus();
 
-        score = EvaluationScore.builder()
+        score = Score.builder()
                 .whiteMaterial(whiteMaterial)
                 .whiteMaterialScore(whiteMaterialScore)
                 .whitePiecePlacementScore(whitePiecePlacementScore)
@@ -99,7 +103,7 @@ public class Evaluator2 implements Evaluation {
     @Override
     public void makeMove(Move move) {
 
-        evalHistory.push(score);
+        scoreHistory.push(score);
 
         Piece pieceType = board.pieceAt(move.getEndSquare());
 
@@ -162,55 +166,55 @@ public class Evaluator2 implements Evaluation {
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
-        float phase = GamePhase.fromMaterial(whiteMaterial, blackMaterial);
+        float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
 
         if (updateMaterial) {
-            int whiteMaterialMiddlegameScore = whiteMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-            int whiteMaterialEndgameScore = whiteMaterial.sum(PieceValues.ENDGAME_VALUES);
-            whiteMaterialScore = GamePhase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
-            int blackMaterialMiddlegameScore = blackMaterial.sum(PieceValues.MIDDLEGAME_VALUES);
-            int blackMaterialEndgameScore = blackMaterial.sum(PieceValues.ENDGAME_VALUES);
-            blackMaterialScore = GamePhase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
+            int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0]);
+            int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1]);
+            whiteMaterialScore = Phase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
+            int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0]);
+            int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1]);
+            blackMaterialScore = Phase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         }
 
         if (updateWhitePiecePlacement) {
             PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
-            int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
-            int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
-            whitePiecePlacementScore = GamePhase.taperedEval(whitePiecePlacementMiddlegameScore, whitePiecePlacementEndgameScore, phase);
+            int whitePiecePlacementMiddlegameScore = whitePiecePlacement.sum(config.getMiddlegameTables(), true);
+            int whitePiecePlacementEndgameScore = whitePiecePlacement.sum(config.getEndgameTables(), true);
+            whitePiecePlacementScore = Phase.taperedEval(whitePiecePlacementMiddlegameScore, whitePiecePlacementEndgameScore, phase);
         }
         if (updateBlackPiecePlacement) {
             PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
-            int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
-            int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
-            blackPiecePlacementScore = GamePhase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
+            int blackPiecePlacementMiddlegameScore = blackPiecePlacement.sum(config.getMiddlegameTables(), false);
+            int blackPiecePlacementEndgameScore = blackPiecePlacement.sum(config.getEndgameTables(), false);
+            blackPiecePlacementScore = Phase.taperedEval(blackPiecePlacementMiddlegameScore, blackPiecePlacementEndgameScore, phase);
         }
 
         if (updatePawnStructure) {
-            whitePawnStructureScore = PawnEvaluation.score(board.getPawns(true), board.getPawns(false), phase, true);
-            blackPawnStructureScore = PawnEvaluation.score(board.getPawns(false), board.getPawns(true), phase, false);
+            whitePawnStructureScore = PawnEvaluation.score(config, board.getPawns(true), board.getPawns(false), phase, true);
+            blackPawnStructureScore = PawnEvaluation.score(config, board.getPawns(false), board.getPawns(true), phase, false);
         }
 
         if (updateWhiteKingSafety) {
-            whiteKingSafetyScore = KingSafety.score(board, blackMaterial, phase, true);
+            whiteKingSafetyScore = KingSafety.score(config, board, blackMaterial, phase, true);
         }
         if (updateBlackKingSafety) {
-            blackKingSafetyScore = KingSafety.score(board, whiteMaterial, phase, false);
+            blackKingSafetyScore = KingSafety.score(config, board, whiteMaterial, phase, false);
         }
 
-        int whiteMobilityScore = Mobility.score(board, true, phase);
-        int blackMobilityScore = Mobility.score(board, false, phase);
+        int whiteMobilityScore = Mobility.score(config, board, true, phase);
+        int blackMobilityScore = Mobility.score(config, board, false, phase);
 
-        int whiteRookScore = RookEvaluation.score(board, phase, true);
-        int blackRookScore = RookEvaluation.score(board, phase, false);
+        int whiteRookScore = RookEvaluation.score(config, board, phase, true);
+        int blackRookScore = RookEvaluation.score(config, board, phase, false);
 
-        int whiteMopUpScore = MopUp.score(board, whiteMaterial, blackMaterial, true);
-        int blackMopUpScore = MopUp.score(board, blackMaterial, whiteMaterial, false);
+        int whiteMopUpScore = MopUp.score(config, board, whiteMaterial, blackMaterial, true);
+        int blackMopUpScore = MopUp.score(config, board, blackMaterial, whiteMaterial, false);
 
-        int whiteTempoBonus = board.isWhiteToMove() ? 10 : 0;
-        int blackTempoBonus = board.isWhiteToMove() ? 0 : 10;
+        int whiteTempoBonus = board.isWhiteToMove() ? config.getTempoBonus() : 0;
+        int blackTempoBonus = board.isWhiteToMove() ? 0 : config.getTempoBonus();
 
-        score = EvaluationScore.builder()
+        score = Score.builder()
                 .whiteMaterial(whiteMaterial)
                 .whiteMaterialScore(whiteMaterialScore)
                 .whitePiecePlacementScore(whitePiecePlacementScore)
@@ -235,7 +239,7 @@ public class Evaluator2 implements Evaluation {
 
     @Override
     public void unmakeMove() {
-        score = evalHistory.pop();
+        score = scoreHistory.pop();
     }
 
     @Override

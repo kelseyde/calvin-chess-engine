@@ -12,8 +12,8 @@ Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 
 ### Move Generation
 
-- [Legal move generation](https://www.chessprogramming.org/Move_Generation): check, pin and attack masks are generated first. If double-check, only king moves are generated. Pseudo-legal moves which leave the king in check are not generated.
-- [Magic bitboards](https://www.chessprogramming.org/Magic_Bitboards): magic bitboards are used for sliding piece move generation.
+- [Legal move generation](https://www.chessprogramming.org/Move_Generation) - pseudo-legal moves are not generated.
+- [Magic bitboards](https://www.chessprogramming.org/Magic_Bitboards) are used for sliding piece move generation.
 
 ### Search
 - [Iterative deepening search](https://www.chessprogramming.org/Magic_Bitboards) + [negamax](https://www.chessprogramming.org/Negamax).

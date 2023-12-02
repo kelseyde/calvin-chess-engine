@@ -27,8 +27,4 @@ public enum Piece {
         return this == BISHOP || this == ROOK || this == QUEEN;
     }
 
-    public static int[] getSimplePieceValues() {
-        return Arrays.stream(Piece.values()).mapToInt(Piece::getValue).toArray();
-    }
-
 }

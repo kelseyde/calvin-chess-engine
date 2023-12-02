@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.generation.attacks.Attacks;
+import com.kelseyde.calvin.generation.Attacks;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 /**

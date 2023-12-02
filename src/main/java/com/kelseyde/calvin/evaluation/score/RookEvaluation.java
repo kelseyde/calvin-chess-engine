@@ -8,7 +8,7 @@ import com.kelseyde.calvin.utils.BoardUtils;
 
 /**
  * Gives rooks a small bonus for being placed on an open or semi-open file. A separate bonus for rooks on the seventh rank
- * is not needed, since this is captured in the rook's {@link PieceSquareTable}.
+ * is not needed, since this is captured in the rook's piece-square-table.
  */
 public class RookEvaluation {
 

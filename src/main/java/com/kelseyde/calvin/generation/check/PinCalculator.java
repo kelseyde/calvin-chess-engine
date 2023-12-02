@@ -2,7 +2,7 @@ package com.kelseyde.calvin.generation.check;
 
 import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.generation.attacks.Attacks;
+import com.kelseyde.calvin.generation.Attacks;
 
 public class PinCalculator {
 

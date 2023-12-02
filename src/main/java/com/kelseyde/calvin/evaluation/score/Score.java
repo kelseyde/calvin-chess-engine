@@ -7,6 +7,9 @@ import lombok.Data;
 @Builder
 public class Score {
 
+    public static final int MATE_SCORE = 1000000;
+    public static final int DRAW_SCORE = 0;
+
     Material whiteMaterial;
     Material blackMaterial;
 

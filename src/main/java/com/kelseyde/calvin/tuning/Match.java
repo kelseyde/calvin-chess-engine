@@ -7,7 +7,7 @@ import com.kelseyde.calvin.evaluation.result.ResultCalculator;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.notation.FEN;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -46,6 +46,9 @@ public class Match {
 
         while (gameCount <= config.getGameCount()) {
 
+            String fen = FEN.STARTING_POSITION;
+            List<Move> moves = new ArrayList<>();
+
             board = new Board();
 
             int whitePlayerRandom = new Random().nextInt(2);
@@ -54,8 +57,8 @@ public class Match {
 
             whitePlayer.getEngine().newGame();
             blackPlayer.getEngine().newGame();
-            whitePlayer.getEngine().setPosition(FEN.STARTING_POSITION, Collections.emptyList());
-            blackPlayer.getEngine().setPosition(FEN.STARTING_POSITION, Collections.emptyList());
+            whitePlayer.getEngine().setPosition(fen, moves);
+            blackPlayer.getEngine().setPosition(fen, moves);
 
             Result result;
 
@@ -65,8 +68,9 @@ public class Match {
             while (moveCount <= config.getMaxMoves()) {
 
                 board.makeMove(whiteMove);
-                whitePlayer.getEngine().applyMove(whiteMove);
-                blackPlayer.getEngine().applyMove(whiteMove);
+                moves.add(whiteMove);
+                whitePlayer.getEngine().setPosition(fen, moves);
+                blackPlayer.getEngine().setPosition(fen, moves);
 
                 result = resultCalculator.calculateResult(board);
 
@@ -89,8 +93,9 @@ public class Match {
                 Move blackMove = blackPlayer.getEngine().think(getThinkTime());
 
                 board.makeMove(blackMove);
-                whitePlayer.getEngine().applyMove(blackMove);
-                blackPlayer.getEngine().applyMove(blackMove);
+                moves.add(blackMove);
+                whitePlayer.getEngine().setPosition(fen, moves);
+                blackPlayer.getEngine().setPosition(fen, moves);
 
                 result = resultCalculator.calculateResult(board);
 

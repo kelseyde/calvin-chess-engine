@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 public class MopUpTest {
 
-    private final EngineConfig config = TestUtils.TEST_CONFIG;
+    private final EngineConfig config = TestUtils.TST_CONFIG;
 
     @Test
     public void testBonusForMovingKingCloser() {

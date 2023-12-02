@@ -5,7 +5,18 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.evaluation.Evaluation;
+import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.search.ParallelSearcher;
+import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.Searcher;
+import com.kelseyde.calvin.search.moveordering.MoveOrderer;
+import com.kelseyde.calvin.search.moveordering.MoveOrdering;
+import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.tuning.copy.Evaluator2;
+import com.kelseyde.calvin.tuning.copy.MoveOrderer2;
+import com.kelseyde.calvin.tuning.copy.Searcher2;
 import com.kelseyde.calvin.utils.notation.Notation;
 
 import java.io.IOException;
@@ -17,19 +28,30 @@ import java.util.Optional;
 
 public class TestUtils {
 
-    public static final String TEST_CONFIG_LOCATION = "src/test/resources/engine_config.json";
-    public static final EngineConfig TEST_CONFIG = loadConfig();
-
+    public static final String PRD_CONFIG_LOCATION = "src/main/resources/engine_config.json";
+    public static final String TST_CONFIG_LOCATION = "src/test/resources/engine_config.json";
+    public static final EngineConfig PRD_CONFIG = loadConfig(PRD_CONFIG_LOCATION);
+    public static final EngineConfig TST_CONFIG = loadConfig(TST_CONFIG_LOCATION);
     public static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
+    public static final MoveOrdering MOVE_ORDERER = new MoveOrderer();
+    public static final Evaluation EVALUATOR = new Evaluator(PRD_CONFIG);
+    public static final TranspositionTable TRANSPOSITION_TABLE = new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb());
+    public static final Search SEARCHER = new Searcher(PRD_CONFIG, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
+    public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), TRANSPOSITION_TABLE);
+    public static final Searcher SEARCHER_COPY = new Searcher(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb()));
 
-    public static Engine getTestEngine() {
-        return new Engine(TEST_CONFIG);
+    public static Engine getEngine() {
+        return new Engine(PRD_CONFIG, new MoveGenerator(), new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
     }
 
-    private static EngineConfig loadConfig() {
+    public static Engine getEngineCopy() {
+        return new Engine(TST_CONFIG, new MoveGenerator(), new Searcher2(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb())));
+    }
+
+    private static EngineConfig loadConfig(String configLocation) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            Path path = Paths.get(TEST_CONFIG_LOCATION);
+            Path path = Paths.get(configLocation);
             String json = Files.readString(path);
             return mapper.readValue(json, EngineConfig.class);
         } catch (IOException e) {

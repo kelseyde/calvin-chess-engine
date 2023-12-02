@@ -19,21 +19,17 @@ public record Material(int pawns,
         return new Material(pawns, knights, bishops, rooks, queens);
     }
 
-    public int sum(int[] pieceValues) {
+    public int sum(int[] pieceValues, int bishopPairBonus) {
         return (pawns * pieceValues[Piece.PAWN.getIndex()]) +
                 (knights * pieceValues[Piece.KNIGHT.getIndex()]) +
                 (bishops * pieceValues[Piece.BISHOP.getIndex()]) +
                 (rooks * pieceValues[Piece.ROOK.getIndex()]) +
                 (queens * pieceValues[Piece.QUEEN.getIndex()]) +
-                bishopPairBonus(bishops);
+                (bishops == 2 ? bishopPairBonus : 0);
     }
 
     public boolean hasPiecesRemaining() {
         return knights > 0 || bishops > 0 || rooks > 0 || queens > 0;
-    }
-
-    private int bishopPairBonus(int bishops) {
-        return bishops == 2 ? PieceValues.BISHOP_PAIR_BONUS : 0;
     }
 
 }

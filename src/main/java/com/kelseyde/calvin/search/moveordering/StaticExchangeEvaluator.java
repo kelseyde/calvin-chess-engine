@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.generation.MoveGenerator;
 
 /**
@@ -26,8 +25,8 @@ public class StaticExchangeEvaluator {
 
         int score = 0;
         int square = move.getEndSquare();
-        Piece capturedPieceType = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
-        score += capturedPieceType != null ? PieceValues.valueOf(capturedPieceType) : 0;
+        Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
+        score += capturedPiece != null ? capturedPiece.getValue() : 0;
 
         board.makeMove(move);
         Move leastValuableAttacker = getLeastValuableAttacker(board, square);
@@ -50,8 +49,8 @@ public class StaticExchangeEvaluator {
 
         int score = 0;
         int square = move.getEndSquare();
-        Piece capturedPieceType = board.getGameState().getCapturedPiece();
-        score += capturedPieceType != null ? PieceValues.valueOf(capturedPieceType) : 0;
+        Piece capturedPiece = board.getGameState().getCapturedPiece();
+        score += capturedPiece != null ? capturedPiece.getValue() : 0;
 
         Move leastValuableAttacker = getLeastValuableAttacker(board, square);
         if (leastValuableAttacker != null) {

@@ -3,7 +3,6 @@ package com.kelseyde.calvin.tuning.copy;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.evaluation.score.PieceValues;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.utils.BoardUtils;
 
@@ -65,13 +64,13 @@ public class MoveOrderer2 implements MoveOrdering {
         }
 
         // Sort captures according to MVV-LVA (most valuable victim, least valuable attacker)
-        Piece pieceType = board.pieceAt(move.getStartSquare());
-        Piece capturedPieceType = board.pieceAt(move.getEndSquare());
-        boolean isCapture = capturedPieceType != null;
+        Piece piece = board.pieceAt(move.getStartSquare());
+        Piece capturedPiece = board.pieceAt(move.getEndSquare());
+        boolean isCapture = capturedPiece != null;
         if (isCapture) {
             // Captures are sorted using MVV-LVA
-            moveScore += MVV_LVA_TABLE[capturedPieceType.getIndex()][pieceType.getIndex()];
-            int materialDelta = PieceValues.valueOf(capturedPieceType) - PieceValues.valueOf(pieceType);
+            moveScore += MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
+            int materialDelta = capturedPiece.getValue() - piece.getValue();
             if (materialDelta > 0) {
                 moveScore += WINNING_CAPTURE_BIAS;
             } else if (materialDelta == 0) {
@@ -93,7 +92,7 @@ public class MoveOrderer2 implements MoveOrdering {
             int promotionBias = move.getPromotionPieceType().equals(Piece.QUEEN) ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
             moveScore += promotionBias;
             // After queen, order knight promotion second, then bishop, then rook
-            moveScore -= PieceValues.valueOf(move.getPromotionPieceType());
+            moveScore -= move.getPromotionPieceType().getValue();
         }
 
         if (move.isCastling()) {

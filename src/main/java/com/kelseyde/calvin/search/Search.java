@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.transposition.TranspositionTable;
 
 import java.time.Duration;
 
@@ -14,6 +15,16 @@ public interface Search {
      * Set the position of the {@link Board}.
      */
     void setPosition(Board board);
+
+    /**
+     * Set the size of the {@link TranspositionTable}.
+     */
+    void setHashSize(int hashSizeMb);
+
+    /**
+     * Set the number of threads to use while searching.
+     */
+    void setThreadCount(int threadCount);
 
     /**
      * Search the current position for the best move.

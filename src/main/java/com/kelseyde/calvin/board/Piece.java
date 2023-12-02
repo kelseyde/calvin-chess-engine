@@ -2,8 +2,6 @@ package com.kelseyde.calvin.board;
 
 import lombok.Getter;
 
-import java.util.Arrays;
-
 @Getter
 public enum Piece {
 

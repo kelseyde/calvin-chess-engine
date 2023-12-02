@@ -24,29 +24,49 @@ import java.util.stream.IntStream;
  */
 public class ParallelSearcher implements Search {
 
-    private EngineConfig config;
-    private Board board;
-
+    private final EngineConfig config;
+    private final Supplier<MoveGeneration> moveGeneratorSupplier;
+    private final Supplier<MoveOrdering> moveOrdererSupplier;
+    private final Supplier<Evaluation> evaluatorSupplier;
     private TranspositionTable transpositionTable;
+    private int threadCount;
+    private int hashSize;
+    private Board board;
 
     private List<Searcher> searchers;
 
     public ParallelSearcher(EngineConfig config,
-                            Supplier<MoveGeneration> moveGenerator,
-                            Supplier<MoveOrdering> moveOrderer,
-                            Supplier<Evaluation> evaluator,
+                            Supplier<MoveGeneration> moveGeneratorSupplier,
+                            Supplier<MoveOrdering> moveOrdererSupplier,
+                            Supplier<Evaluation> evaluatorSupplier,
                             TranspositionTable transpositionTable) {
         this.config = config;
+        this.hashSize = config.getDefaultHashSizeMb();
+        this.threadCount = config.getDefaultThreadCount();
         this.transpositionTable = transpositionTable;
-        this.searchers = IntStream.range(0, config.getDefaultThreadCount())
-                .mapToObj(i -> new Searcher(config, moveGenerator.get(), moveOrderer.get(), evaluator.get(), transpositionTable))
-                .toList();
+        this.moveGeneratorSupplier = moveGeneratorSupplier;
+        this.moveOrdererSupplier = moveOrdererSupplier;
+        this.evaluatorSupplier = evaluatorSupplier;
+        this.searchers = IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
     }
 
     @Override
     public void setPosition(Board board) {
         this.board = board;
         searchers.forEach(searcher -> searcher.setPosition(BoardUtils.copy(board)));
+    }
+
+    @Override
+    public void setHashSize(int hashSizeMb) {
+        this.hashSize = hashSizeMb;
+        this.transpositionTable = new TranspositionTable(this.hashSize);
+        this.searchers = IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+    }
+
+    @Override
+    public void setThreadCount(int threadCount) {
+        this.threadCount = threadCount;
+        this.searchers = IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
     }
 
     @Override
@@ -74,6 +94,13 @@ public class ParallelSearcher implements Search {
             collector = collector.thenCombine(thread, (thread1, thread2) -> thread1.depth() > thread2.depth() ? thread1 : thread2);
         }
         return collector;
+    }
+
+    private Searcher initSearcher() {
+        MoveGeneration moveGenerator = this.moveGeneratorSupplier.get();
+        MoveOrdering moveOrderer = this.moveOrdererSupplier.get();
+        Evaluation evaluator = this.evaluatorSupplier.get();
+        return new Searcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
     }
 
     @Override

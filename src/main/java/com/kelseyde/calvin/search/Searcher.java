@@ -380,6 +380,16 @@ public class Searcher implements Search {
         this.evaluator.init(board);
     }
 
+    @Override
+    public void setHashSize(int hashSizeMb) {
+        this.transpositionTable = new TranspositionTable(hashSizeMb);
+    }
+
+    @Override
+    public void setThreadCount(int threadCount) {
+        // do nothing as this implementation is single-threaded
+    }
+
     private void makeMove(Move move) {
         board.makeMove(move);
         evaluator.makeMove(move);

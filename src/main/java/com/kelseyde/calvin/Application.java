@@ -11,6 +11,12 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.*;
 
+/**
+ * Entrypoint for the Calvin chess engine. Calvin communicates using the Universal Chess Interface protocol (UCI).
+ * This adapter acts as a UCI interface which translates the incoming commands to instructions for the {@link Engine},
+ * which is responsible for actually playing the game of chess.
+ * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
+ */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Application {
 
@@ -49,6 +55,7 @@ public class Application {
                 config.getDefaultHashSizeMb(), config.getMinHashSizeMb(), config.getMaxHashSizeMb()));
         write(String.format("option name Threads type spin default %s min %s max %s",
                 config.getDefaultThreadCount(), config.getMinThreadCount(), config.getMaxThreadCount()));
+        write(String.format("option name OwnBook type check default %s", config.isOwnBookEnabled()));
         write("uciok");
     }
 
@@ -61,6 +68,7 @@ public class Application {
         switch (optionType) {
             case "Hash":     setHashSize(command); break;
             case "Threads":  setThreadCount(command); break;
+            case "OwnBook":  setOwnBook(command); break;
             default:         write("unrecognised option name " + optionType);
         }
     }
@@ -133,7 +141,7 @@ public class Application {
         int maxHashSizeMb = ENGINE.getConfig().getMaxHashSizeMb();
         if (hashSizeMb >= minHashSizeMb && hashSizeMb <= maxHashSizeMb) {
             ENGINE.setHashSize(hashSizeMb);
-            write("info string hash size " + hashSizeMb);
+            write("info string Hash " + hashSizeMb);
         } else {
             write(String.format("hash size %s not in valid range %s - %s", hashSizeMb, minHashSizeMb, maxHashSizeMb));
         }
@@ -145,10 +153,16 @@ public class Application {
         int maxThreadCount = ENGINE.getConfig().getMaxThreadCount();
         if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
             ENGINE.setThreadCount(threadCount);
-            write("info string thread count " + threadCount);
+            write("info string Threads " + threadCount);
         } else {
             write(String.format("thread count %s not in valid range %s - %s", threadCount, minThreadCount, maxThreadCount));
         }
+    }
+
+    private static void setOwnBook(String command) {
+        boolean ownBookEnabled = Boolean.parseBoolean(getLabelString(command, "value", SETOPTION_LABELS, "false"));
+        ENGINE.setOwnBookEnabled(ownBookEnabled);
+        write("info string OwnBook " + ownBookEnabled);
     }
 
     private static String getLabelString(String command, String label, String[] allLabels, String defaultValue) {

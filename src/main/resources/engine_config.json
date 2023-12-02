@@ -7,6 +7,9 @@
   "maxHashSizeMb": 1024,
   "defaultHashSizeMb": 512,
 
+  "ownBookEnabled": true,
+  "maxBookMoves": 26,
+
   "maxDepth": 256,
   "aspMargin": 50,
   "aspFailMargin": 150,

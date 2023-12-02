@@ -6,11 +6,9 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Arbiter;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Evaluator;
-import com.kelseyde.calvin.evaluation.score.PieceValues;
+import com.kelseyde.calvin.evaluation.score.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
@@ -38,22 +36,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Searcher implements Search {
 
-    static final int MAX_DEPTH = 256;
-    static final int MIN_EVAL = Integer.MIN_VALUE + 1;
-    static final int MAX_EVAL = Integer.MAX_VALUE - 1;
-    static final int MATE_SCORE = 1000000;
-    static final int DRAW_SCORE = 0;
-    static final int ASP_MARGIN = 50;
-    static final int ASP_FAIL_MARGIN = 150;
-    static final int NMP_DEPTH = 3;
-    static final int FP_DEPTH = 4;
-    static final int RFP_DEPTH = 4;
-    static final int LMR_DEPTH = 3;
-    static final int NMP_MARGIN = 50;
-    static final int DP_MARGIN = 140;
-    static final int[] FP_MARGIN = new int[] { 0, 170, 260, 450, 575 };
-    static final int[] RFP_MARGIN = new int[] { 0, 120, 240, 360, 480 };
-
     EngineConfig config;
     MoveGeneration moveGenerator;
     MoveOrdering moveOrderer;
@@ -67,39 +49,17 @@ public class Searcher implements Search {
     SearchResult resultCurrentDepth;
     SearchResult result;
 
-    public Searcher(EngineConfig config, Board board) {
+    public Searcher(EngineConfig config,
+                    MoveGeneration moveGenerator,
+                    MoveOrdering moveOrderer,
+                    Evaluation evaluator,
+                    TranspositionTable transpositionTable) {
         this.config = config;
-        init(board);
-    }
-
-    public Searcher(EngineConfig config, TranspositionTable transpositionTable, Board board) {
-        this.config = config;
-        this.board = board;
+        this.moveGenerator = moveGenerator;
+        this.moveOrderer = moveOrderer;
+        this.evaluator = evaluator;
         this.transpositionTable = transpositionTable;
-        this.moveGenerator = new MoveGenerator();
-        this.moveOrderer = new MoveOrderer();
         this.see = new StaticExchangeEvaluator();
-        this.evaluator = new Evaluator(config, board);
-    }
-
-    @Override
-    public void init(Board board) {
-        this.board = board;
-        if (this.transpositionTable == null) {
-            this.transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
-        } else {
-            this.transpositionTable.clear();
-        }
-        this.moveGenerator = new MoveGenerator();
-        this.moveOrderer = new MoveOrderer();
-        this.see = new StaticExchangeEvaluator();
-        this.evaluator = new Evaluator(config, board);
-    }
-
-    @Override
-    public void setPosition(Board board) {
-        this.board = board;
-        this.evaluator = new Evaluator(config, board);
     }
 
     /**
@@ -117,11 +77,12 @@ public class Searcher implements Search {
         cancelled = false;
 
         int currentDepth = 1;
-        int alpha = MIN_EVAL;
-        int beta = MAX_EVAL;
+        int maxDepth = 256;
+        int alpha = Integer.MIN_VALUE + 1;
+        int beta = Integer.MAX_VALUE - 1;
         int retryMultiplier = 0;
 
-        while (!isCancelled()  && currentDepth < MAX_DEPTH) {
+        while (!isCancelled() && currentDepth < maxDepth) {
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta, true);
@@ -137,22 +98,21 @@ public class Searcher implements Search {
             if (eval <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
                 retryMultiplier++;
-                alpha -= ASP_FAIL_MARGIN * retryMultiplier;
-                beta += ASP_MARGIN;
+                alpha -= config.getAspFailMargin() * retryMultiplier;
+                beta += config.getAspMargin();
                 continue;
             }
             if (eval >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
                 retryMultiplier++;
-                beta += ASP_FAIL_MARGIN * retryMultiplier;
-                alpha -= ASP_MARGIN;
+                beta += config.getAspFailMargin() * retryMultiplier;
+                alpha -= config.getAspMargin();
                 continue;
             }
 
-            alpha = eval - ASP_MARGIN;
-            beta = eval + ASP_MARGIN;
+            alpha = eval - config.getAspMargin();
+            beta = eval + config.getAspMargin();
             retryMultiplier = 0;
-
             currentDepth++;
         }
 
@@ -184,12 +144,12 @@ public class Searcher implements Search {
             return quiescenceSearch(alpha, beta, 1, ply);
         }
         if (ply > 0 && isDraw()) {
-            return DRAW_SCORE;
+            return Score.DRAW_SCORE;
         }
 
         // Mate distance pruning: exit early if we have already found a forced mate at an earlier ply
-        alpha = Math.max(alpha, -MATE_SCORE + ply);
-        beta = Math.min(beta, MATE_SCORE - ply);
+        alpha = Math.max(alpha, -Score.MATE_SCORE + ply);
+        beta = Math.min(beta, Score.MATE_SCORE - ply);
         if (alpha >= beta) {
             return alpha;
         }
@@ -214,7 +174,7 @@ public class Searcher implements Search {
 
         if (moves.isEmpty()) {
             // Found checkmate / stalemate
-            return isInCheck ? -MATE_SCORE + ply : DRAW_SCORE;
+            return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
         }
         if (ply == 0 && moves.size() == 1) {
             // Exit immediately if there is only one legal move at the root node
@@ -227,15 +187,16 @@ public class Searcher implements Search {
 
             // Reverse futility pruning: if the static evaluation - some margin is still > beta, then let's assume
             // there's no point searching any moves, since it's likely to produce a cut-off no matter what we do.
-            boolean isMateHunting = Math.abs(alpha) >= MATE_SCORE - 100;
-            if (depth <= RFP_DEPTH && staticEval - RFP_MARGIN[depth] > beta && !isMateHunting) {
-                return staticEval - RFP_MARGIN[depth];
+            boolean isMateHunting = Math.abs(alpha) >= Score.MATE_SCORE - 100;
+            if (depth <= config.getRfpDepth() && staticEval - config.getRfpMargin()[depth] > beta && !isMateHunting) {
+                return staticEval - config.getRfpMargin()[depth];
             }
 
-            // Null move pruning: if the static eval > beta - some margin, then let's test this theory by giving the
-            // opponent an extra move (making a 'null' move). If the result still fails high, prune this node.
+            // Null move pruning: if the static eval > beta - some margin, and so is likely to fail high, then let's test
+            // this theory by giving the opponent an extra move (making a 'null' move), and searching the resulting position
+            // to a shallower depth. If the result still fails high, prune this node.
             boolean isPawnEndgame = !evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining();
-            if (allowNull && staticEval >= beta - NMP_MARGIN && !isPawnEndgame) {
+            if (depth >= config.getNmpDepth() && allowNull && staticEval >= beta - config.getNmpMargin() && !isPawnEndgame) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -263,7 +224,7 @@ public class Searcher implements Search {
 
             // Futility pruning: if the static eval + some margin is still < alpha, and the current move is not interesting
             // (checks, captures, promotions), then let's assume it will fail low and prune this node.
-            if (!pvNode && depth <= FP_DEPTH && staticEval + FP_MARGIN[depth] < alpha && !isInCheck && !isCheck && !isCapture && !isPromotion) {
+            if (!pvNode && depth <= config.getFpDepth() && staticEval + config.getFpMargin()[depth] < alpha && !isInCheck && !isCheck && !isCapture && !isPromotion) {
                 unmakeMove();
                 continue;
             }
@@ -285,7 +246,7 @@ public class Searcher implements Search {
                 // Late move reductions: if the move is ordered late in the list, and isn't a 'noisy' move like a check,
                 // capture or promotion, let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
-                if (depth >= LMR_DEPTH && i >= 2 && !isCapture && !isCheck && !isPromotion) {
+                if (depth >= config.getLmrDepth() && i >= 2 && !isCapture && !isCheck && !isPromotion) {
                     reduction = i < 5 ? 1 : depth / 3;
                 }
 
@@ -364,7 +325,7 @@ public class Searcher implements Search {
             // we risk missing simple mate threats.
             moves = moveGenerator.generateMoves(board, MoveFilter.ALL);
             if (moves.isEmpty()) {
-                return -MATE_SCORE + ply;
+                return -Score.MATE_SCORE + ply;
             }
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
@@ -385,7 +346,7 @@ public class Searcher implements Search {
             if (!isInCheck) {
                 // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
                 Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
-                boolean isFutile = capturedPiece != null && (standPat + PieceValues.valueOf(capturedPiece) + DP_MARGIN < alpha) && !move.isPromotion();
+                boolean isFutile = capturedPiece != null && (standPat + capturedPiece.getValue() + config.getDpMargin() < alpha) && !move.isPromotion();
                 if (isFutile) {
                     continue;
                 }
@@ -411,6 +372,12 @@ public class Searcher implements Search {
 
         return alpha;
 
+    }
+
+    @Override
+    public void setPosition(Board board) {
+        this.board = board;
+        this.evaluator.init(board);
     }
 
     private void makeMove(Move move) {
@@ -441,7 +408,7 @@ public class Searcher implements Search {
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
-        return Math.abs(result.eval()) >= MATE_SCORE - currentDepth;
+        return Math.abs(result.eval()) >= Score.MATE_SCORE - currentDepth;
     }
 
     private boolean isCancelled() {
@@ -458,24 +425,11 @@ public class Searcher implements Search {
 
     @Override
     public void clearHistory() {
-        if (transpositionTable != null) {
-            transpositionTable.clear();
-        }
+        transpositionTable.clear();
     }
 
     @Override
     public void logStatistics() {
         //log.info(statistics.generateReport());
     }
-
-    @Override
-    public void setHashSize(int hashSizeMb) {
-        transpositionTable = new TranspositionTable(hashSizeMb);
-    }
-
-    @Override
-    public void setCores(int cores) {
-        // Do nothing, not a parallel search
-    }
-
 }

@@ -18,7 +18,6 @@ public class Application {
 
     static final Engine ENGINE = EngineInitializer.loadEngine();
     static final Scanner SCANNER = new Scanner(System.in);
-    static final MoveGeneration MOVE_GENERATOR = new MoveGenerator();
     static final String[] POSITION_LABELS = new String[] { "position", "fen", "moves" };
     static final String[] GO_LABELS = new String[] { "go", "movetime", "wtime", "btime", "winc", "binc", "movestogo" };
 
@@ -27,8 +26,8 @@ public class Application {
         while (!command.equals("quit")) {
             command = readCommand();
             if (!command.isEmpty()) {
-                command = command.trim().toLowerCase().split(" ")[0];
-                switch (command) {
+                String commandType = command.trim().toLowerCase().split(" ")[0];
+                switch (commandType) {
                     case "uci" ->         handleUci();
                     case "isready" ->     handleIsReady();
                     case "ucinewgame" ->  handleNewGame();
@@ -58,7 +57,6 @@ public class Application {
     }
 
     private static void handlePosition(String command) {
-
         String fen;
         if (command.contains("startpos")) {
             fen = FEN.STARTING_POSITION;
@@ -76,7 +74,6 @@ public class Application {
             if (!moveString.isBlank()) {
                 moves.addAll(new ArrayList<>(Arrays.stream(moveString.split(" "))
                         .map(Notation::fromCombinedNotation)
-                        .map(move -> getLegalMove(ENGINE.getBoard(), move))
                         .toList()));
             }
             else {
@@ -89,7 +86,6 @@ public class Application {
     }
 
     private static void handleGo(String command) {
-
         if (command.contains("movetime")) {
             int moveTimeMs = getLabelInt(command, "movetime", GO_LABELS);
             ENGINE.think(moveTimeMs, Application::writeMove);
@@ -99,11 +95,8 @@ public class Application {
             int timeBlackMs = getLabelInt(command, "btime", GO_LABELS);
             int incrementWhiteMs = getLabelInt(command, "winc", GO_LABELS);
             int incrementBlackMs = getLabelInt(command, "binc", GO_LABELS);
-
-            int thinkTimeMs = ENGINE.chooseThinkTime(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
-            ENGINE.think(thinkTimeMs, Application::writeMove);
+            ENGINE.think(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs, Application::writeMove);
         }
-
     }
 
     private static void handleStop() {
@@ -156,13 +149,6 @@ public class Application {
 
     private static void write(String output) {
         System.out.println(output);
-    }
-
-    private static Move getLegalMove(Board board, Move move) {
-        return MOVE_GENERATOR.generateMoves(board).stream()
-                .filter(move::matches)
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Notation.toNotation(move)));
     }
 
 }

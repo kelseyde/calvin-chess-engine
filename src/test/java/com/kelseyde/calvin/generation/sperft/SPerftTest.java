@@ -25,7 +25,8 @@ public abstract class SPerftTest {
     protected void sPerft(int depth) {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
-        Searcher search = new Searcher(TestUtils.TEST_CONFIG, board);
+        Searcher search = (Searcher) TestUtils.getEngine().getSearcher();
+        search.setPosition(board);
         search.search(depth, 0, MIN_EVAL, MAX_EVAL, true);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);

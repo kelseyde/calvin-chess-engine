@@ -15,7 +15,8 @@ public class EPerftService {
 
     public EPerftService(Board board) {
         moveGenerator = new MoveGenerator();
-        evaluator = new Evaluator(EngineInitializer.loadDefaultConfig(), board);
+        evaluator = new Evaluator(EngineInitializer.loadDefaultConfig());
+        evaluator.init(board);
     }
 
     public void ePerft(Board board, int depth) {

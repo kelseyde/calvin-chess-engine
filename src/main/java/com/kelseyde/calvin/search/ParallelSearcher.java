@@ -2,6 +2,9 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.evaluation.Evaluation;
+import com.kelseyde.calvin.generation.MoveGeneration;
+import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 
@@ -9,6 +12,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -27,18 +31,16 @@ public class ParallelSearcher implements Search {
 
     private List<Searcher> searchers;
 
-    public ParallelSearcher(EngineConfig config, Board board) {
+    public ParallelSearcher(EngineConfig config,
+                            Supplier<MoveGeneration> moveGenerator,
+                            Supplier<MoveOrdering> moveOrderer,
+                            Supplier<Evaluation> evaluator,
+                            TranspositionTable transpositionTable) {
         this.config = config;
-        this.board = board;
-        this.transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
+        this.transpositionTable = transpositionTable;
         this.searchers = IntStream.range(0, config.getDefaultThreadCount())
-                .mapToObj(i -> new Searcher(config, transpositionTable, BoardUtils.copy(board)))
+                .mapToObj(i -> new Searcher(config, moveGenerator.get(), moveOrderer.get(), evaluator.get(), transpositionTable))
                 .toList();
-    }
-
-    @Override
-    public void init(Board board) {
-        this.board = board;
     }
 
     @Override
@@ -76,27 +78,13 @@ public class ParallelSearcher implements Search {
 
     @Override
     public void clearHistory() {
-        if (transpositionTable != null) {
-            transpositionTable.clear();
-        }
+        transpositionTable.clear();
         searchers.forEach(Searcher::clearHistory);
     }
 
     @Override
     public void logStatistics() {
 
-    }
-
-    @Override
-    public void setHashSize(int hashSizeMb) {
-        transpositionTable = new TranspositionTable(hashSizeMb);
-    }
-
-    @Override
-    public void setCores(int cores) {
-        this.searchers = IntStream.range(0, cores)
-                .mapToObj(i -> new Searcher(config, transpositionTable, BoardUtils.copy(board)))
-                .toList();
     }
 
 }

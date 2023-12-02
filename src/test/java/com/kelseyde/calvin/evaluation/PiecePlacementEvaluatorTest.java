@@ -1,15 +1,18 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.score.Material;
 import com.kelseyde.calvin.evaluation.score.Phase;
 import com.kelseyde.calvin.evaluation.score.PiecePlacement;
-import com.kelseyde.calvin.evaluation.score.PieceSquareTable;
+import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PiecePlacementEvaluatorTest {
+
+    EngineConfig config = TestUtils.PRD_CONFIG;
 
     @Test
     public void testStartingPosition() {
@@ -76,10 +79,10 @@ public class PiecePlacementEvaluatorTest {
         PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
         PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
 
-        whiteMiddlegameScore += whitePiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, true);
-        whiteEndgameScore += whitePiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, true);
-        blackMiddlegameScore += blackPiecePlacement.sum(PieceSquareTable.MIDDLEGAME_TABLES, false);
-        blackEndgameScore += blackPiecePlacement.sum(PieceSquareTable.ENDGAME_TABLES, false);
+        whiteMiddlegameScore += whitePiecePlacement.sum(config.getMiddlegameTables(), true);
+        whiteEndgameScore += whitePiecePlacement.sum(config.getEndgameTables(), true);
+        blackMiddlegameScore += blackPiecePlacement.sum(config.getMiddlegameTables(), false);
+        blackEndgameScore += blackPiecePlacement.sum(config.getEndgameTables(), false);
 
         float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
         int whiteScore = Phase.taperedEval(whiteMiddlegameScore, whiteEndgameScore, phase);

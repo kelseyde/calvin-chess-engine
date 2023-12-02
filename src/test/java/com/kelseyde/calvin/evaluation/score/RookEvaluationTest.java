@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 public class RookEvaluationTest {
 
-    private final EngineConfig config = TestUtils.TEST_CONFIG;
+    private final EngineConfig config = TestUtils.TST_CONFIG;
 
     @Test
     public void testBothPawnsThenNoBonus() {

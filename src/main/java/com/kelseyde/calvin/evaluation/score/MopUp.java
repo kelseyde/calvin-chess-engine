@@ -10,30 +10,28 @@ public class MopUp {
 
     public static int score(EngineConfig config, Board board, Material friendlyMaterial, Material opponentMaterial, boolean isWhite) {
 
-        int friendlyMaterialScore = friendlyMaterial.sum(PieceValues.SIMPLE_VALUES);
-        int opponentMaterialScore = opponentMaterial.sum(PieceValues.SIMPLE_VALUES);
+        int friendlyMaterialScore = friendlyMaterial.sum(Piece.getSimplePieceValues(), config.getBishopPairBonus());
+        int opponentMaterialScore = opponentMaterial.sum(Piece.getSimplePieceValues(), config.getBishopPairBonus());
 
-        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * PieceValues.valueOf(Piece.PAWN));
-
-        if (twoPawnAdvantage) {
-
-            int mopUpEval = 0;
-
-            int friendlyKing = Bitwise.getNextBit(board.getKing(isWhite));
-            int opponentKing = Bitwise.getNextBit(board.getKing(!isWhite));
-
-            // Bonus for moving king closer to opponent king
-            mopUpEval += (14 - Distance.manhattan(friendlyKing, opponentKing)) * config.getKingManhattanDistanceMultiplier();
-            mopUpEval += (7 - Distance.chebyshev(friendlyKing, opponentKing)) * config.getKingChebyshevDistanceMultiplier();
-
-            // Bonus for pushing opponent king to the edges of the board
-            mopUpEval += Distance.centerManhattan(opponentKing) * config.getKingCenterManhattanDistanceMultiplier();
-
-            // Taper the eval based on how much material the opponent has remaining
-            return (int) (mopUpEval * (1 - Phase.fromMaterial(opponentMaterial)));
+        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
+        if (!twoPawnAdvantage) {
+            return 0;
         }
 
-        return 0;
+        int mopUpEval = 0;
+        int friendlyKing = Bitwise.getNextBit(board.getKing(isWhite));
+        int opponentKing = Bitwise.getNextBit(board.getKing(!isWhite));
+
+        // Bonus for moving king closer to opponent king
+        mopUpEval += (14 - Distance.manhattan(friendlyKing, opponentKing)) * config.getKingManhattanDistanceMultiplier();
+        mopUpEval += (7 - Distance.chebyshev(friendlyKing, opponentKing)) * config.getKingChebyshevDistanceMultiplier();
+
+        // Bonus for pushing opponent king to the edges of the board
+        mopUpEval += Distance.centerManhattan(opponentKing) * config.getKingCenterManhattanDistanceMultiplier();
+
+        // Taper the eval based on how much material the opponent has remaining
+        return (int) (mopUpEval * (1 - Phase.fromMaterial(opponentMaterial)));
+
     }
 
 }

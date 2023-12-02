@@ -2,10 +2,11 @@ package com.kelseyde.calvin.engine;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -25,71 +26,52 @@ import java.util.function.Consumer;
 public class Engine {
 
     EngineConfig config;
-    Board board;
-    Search search;
-    MoveGenerator moveGenerator;
+    MoveGeneration moveGenerator;
+    Search searcher;
     CompletableFuture<Move> think;
+    Board board;
 
-    public Engine(EngineConfig config) {
-        this.search = new ParallelSearcher(config, board);
-        this.moveGenerator = new MoveGenerator();
+    public Engine(EngineConfig config, MoveGeneration moveGenerator, Search searcher) {
+        this.config = config;
+        this.moveGenerator = moveGenerator;
+        this.searcher = searcher;
     }
 
     public void newGame() {
-        if (search != null) {
-            search.clearHistory();
-        }
+        searcher.clearHistory();
     }
 
     public void setPosition(String fen, List<Move> moves) {
-        if (board == null) {
-            board = FEN.toBoard(fen);
-            search.init(board);
-            moveGenerator = new MoveGenerator();
-            moves.forEach(this::applyMove);
-        } else {
-            if (!moves.isEmpty()) {
-                Move lastMove = moves.get(moves.size() - 1);
-                board.makeMove(lastMove);
-            }
+        board = FEN.toBoard(fen);
+        for (Move move : moves) {
+            Move legalMove = getLegalMove(move);
+            board.makeMove(legalMove);
         }
+        searcher.setPosition(board);
     }
 
-    public void applyMove(Move move) {
-        board.makeMove(move);
-        search.setPosition(board);
+    public void setHashSize(int hashSizeMb) {
+        // TODO
+    }
+
+    public void setNumberOfCores(int cores) {
+        // TODO
+    }
+
+    public void think(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs, Consumer<Move> onThinkComplete) {
+        int thinkTimeMs = TimeManager.chooseThinkTime(board.isWhiteToMove(), timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
+        think(thinkTimeMs, onThinkComplete);
     }
 
     public void think(int thinkTimeMs, Consumer<Move> onThinkComplete) {
         stopThinking();
         think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
-        think.thenAccept((move -> {
-            applyMove(move);
-            onThinkComplete.accept(move);
-        }));
+        think.thenAccept(onThinkComplete);
     }
 
     public Move think(int thinkTimeMs) {
-        return search.search(Duration.ofMillis(thinkTimeMs)).move();
-    }
-
-    public int chooseThinkTime(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs) {
-
-        int timeRemainingMs = board.isWhiteToMove() ? timeWhiteMs : timeBlackMs;
-        int incrementMs = board.isWhiteToMove() ? incrementWhiteMs : incrementBlackMs;
-
-        // A game lasts on average 40 moves, so start with a simple fraction of the remaining time.
-        double thinkTimeMs = timeRemainingMs / 40.0;
-
-        if (thinkTimeMs > incrementMs * 2) {
-            thinkTimeMs += incrementMs * 0.8;
-        }
-
-        double minThinkTimeMs = Math.min(50, timeRemainingMs * 0.25);
-
-        thinkTimeMs = Math.max(thinkTimeMs, minThinkTimeMs);
-        return (int) thinkTimeMs;
-
+        Duration thinkTime = Duration.ofMillis(thinkTimeMs);
+        return searcher.search(thinkTime).move();
     }
 
     public boolean isThinking() {
@@ -103,10 +85,15 @@ public class Engine {
     }
 
     public void gameOver() {
-        if (isThinking()) {
-            stopThinking();
-        }
+        stopThinking();
         board = null;
+    }
+
+    private Move getLegalMove(Move move) {
+        return moveGenerator.generateMoves(board).stream()
+                .filter(move::matches)
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Notation.toNotation(move)));
     }
 
 }

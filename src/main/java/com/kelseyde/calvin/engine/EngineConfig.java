@@ -12,9 +12,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EngineConfig {
 
-    public static final int MIDDLEGAME = 0;
-    public static final int ENDGAME = 1;
-
     int minThreadCount;
     int maxThreadCount;
     int defaultThreadCount;

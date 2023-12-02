@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.generation.attacks.Attacks;
+import com.kelseyde.calvin.generation.Attacks;
 
 /**
  * Mobility evaluation gives bonuses for the number of possible moves for each piece. Possible moves are defined as moves
@@ -12,25 +12,10 @@ import com.kelseyde.calvin.generation.attacks.Attacks;
  * <p>
  * The bonus is a non-linear value that is zero-centered, meaning a piece gets zero for having its 'average' number of possible moves,
  * a scaled penalty for fewer moves and a scaled bonus for more moves. The values are also weighted based on game phase.
+ *
+ * @see <a href="https://www.chessprogramming.org/Mobility">Chess Programming Wiki</a>
  */
 public class Mobility {
-
-    private static final int[][] MG_PIECE_MOBILITY_BONUS = new int[][] {
-            new int[] {},
-            new int[] {-18, -14, -8, -4, 0, 4, 8, 12, 16},
-            new int[] {-26, -21, -16, -12, -8, -4, 0, 4, 8, 12, 16, 16, 16, 16},
-            new int[] {-14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 12},
-            new int[] {-13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 12},
-            new int[] {}
-    };
-    private static final int[][] EG_PIECE_MOBILITY_BONUS = new int[][] {
-            new int[] {},
-            new int[] {-18, -14, -8, -4, 0, 4, 8, 12, 16},
-            new int[] {-26, -21, -16, -12, -8, -4, 0, 4, 8, 12, 16, 16, 16, 16},
-            new int[] {-14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 12},
-            new int[] {-13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 12},
-            new int[] {}
-    };
 
     public static int score(EngineConfig config, Board board, boolean isWhite, float phase) {
 

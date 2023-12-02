@@ -7,6 +7,9 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 
+/**
+ * King safety evaluation gives bonuses for a castled king with a secure 'pawn shield' - that is the pawns infront
+ */
 public class KingSafety {
 
     public static int score(EngineConfig config, Board board, Material opponentMaterial, float phase, boolean isWhite) {
@@ -36,7 +39,6 @@ public class KingSafety {
     private static int calculatePawnShieldPenalty(EngineConfig config, int kingSquare, int kingFile, long pawns) {
         int pawnShieldPenalty = 0;
         if (kingFile <= 2 || kingFile >= 5) {
-
             long tripleFileMask = Bits.TRIPLE_FILE_MASK[kingFile];
 
             // Add penalty for a castled king with pawns far away from their starting squares.

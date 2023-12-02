@@ -4,8 +4,8 @@
   "defaultThreadCount": 6,
 
   "minHashSizeMb": 16,
-  "maxHashSizeMb": 512,
-  "defaultHashSizeMb": 256,
+  "maxHashSizeMb": 1024,
+  "defaultHashSizeMb": 512,
 
   "maxDepth": 256,
   "aspMargin": 50,

@@ -28,9 +28,8 @@ public class Evaluator implements Evaluation {
     Score score;
     Board board;
 
-    public Evaluator(EngineConfig config, Board board) {
+    public Evaluator(EngineConfig config) {
         this.config = config;
-        init(board);
     }
 
     @Override
@@ -40,10 +39,11 @@ public class Evaluator implements Evaluation {
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
-        int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0]);
-        int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1]);
-        int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0]);
-        int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1]);
+        int bishopPairBonus = config.getBishopPairBonus();
+        int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0], bishopPairBonus);
+        int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1], bishopPairBonus);
+        int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0], bishopPairBonus);
+        int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1], bishopPairBonus);
 
         PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
         PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
@@ -168,11 +168,12 @@ public class Evaluator implements Evaluation {
         float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
 
         if (updateMaterial) {
-            int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0]);
-            int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1]);
+            int bishopPairBonus = config.getBishopPairBonus();
+            int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0], bishopPairBonus);
+            int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1], bishopPairBonus);
             whiteMaterialScore = Phase.taperedEval(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, phase);
-            int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0]);
-            int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1]);
+            int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0], bishopPairBonus);
+            int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1], bishopPairBonus);
             blackMaterialScore = Phase.taperedEval(blackMaterialMiddlegameScore, blackMaterialEndgameScore, phase);
         }
 

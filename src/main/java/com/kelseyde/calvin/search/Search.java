@@ -11,11 +11,6 @@ import java.time.Duration;
 public interface Search {
 
     /**
-     * Initialise the searcher with a new {@link Board}.
-     */
-    void init(Board board);
-
-    /**
      * Set the position of the {@link Board}.
      */
     void setPosition(Board board);
@@ -36,15 +31,5 @@ public interface Search {
      * Print the current search statistics.
      */
     void logStatistics();
-
-    /**
-     * Configure the size of the transposition table.
-     */
-    void setHashSize(int hashSizeMb);
-
-    /**
-     * Configure the number of cores to use for parallel search.
-     */
-    void setCores(int cores);
 
 }

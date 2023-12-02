@@ -50,11 +50,11 @@ public class Engine {
     }
 
     public void setHashSize(int hashSizeMb) {
-        // TODO
+        this.searcher.setHashSize(hashSizeMb);
     }
 
     public void setThreadCount(int threadCount) {
-        // TODO
+        this.searcher.setThreadCount(threadCount);
     }
 
     public void think(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs, Consumer<Move> onThinkComplete) {

@@ -58,7 +58,6 @@ public class Application {
 
     private static void handleSetOption(String command) {
         String optionType = getLabelString(command, "name", SETOPTION_LABELS, "");
-        System.out.println("option: " + optionType);
         switch (optionType) {
             case "Hash":     setHashSize(command); break;
             case "Threads":  setThreadCount(command); break;

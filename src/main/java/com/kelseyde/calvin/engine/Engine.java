@@ -3,7 +3,6 @@ package com.kelseyde.calvin.engine;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -54,7 +53,7 @@ public class Engine {
         // TODO
     }
 
-    public void setNumberOfCores(int cores) {
+    public void setThreadCount(int threadCount) {
         // TODO
     }
 

@@ -1,11 +1,9 @@
 package com.kelseyde.calvin;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
-import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
@@ -20,6 +18,7 @@ public class Application {
     static final Scanner SCANNER = new Scanner(System.in);
     static final String[] POSITION_LABELS = new String[] { "position", "fen", "moves" };
     static final String[] GO_LABELS = new String[] { "go", "movetime", "wtime", "btime", "winc", "binc", "movestogo" };
+    static final String[] SETOPTION_LABELS = new String[] { "setoption", "name", "value" };
 
     public static void main(String[] args) {
         String command = "";
@@ -30,6 +29,7 @@ public class Application {
                 switch (commandType) {
                     case "uci" ->         handleUci();
                     case "isready" ->     handleIsReady();
+                    case "setoption" ->   handleSetOption(command);
                     case "ucinewgame" ->  handleNewGame();
                     case "position" ->    handlePosition(command);
                     case "go" ->          handleGo(command);
@@ -44,11 +44,26 @@ public class Application {
     private static void handleUci() {
         write("id name Calvin");
         write("id author Dan Kelsey");
+        EngineConfig config = ENGINE.getConfig();
+        write(String.format("option name Hash type spin default %s min %s max %s",
+                config.getDefaultHashSizeMb(), config.getMinHashSizeMb(), config.getMaxHashSizeMb()));
+        write(String.format("option name Threads type spin default %s min %s max %s",
+                config.getDefaultThreadCount(), config.getMinThreadCount(), config.getMaxThreadCount()));
         write("uciok");
     }
 
     private static void handleIsReady() {
         write("readyok");
+    }
+
+    private static void handleSetOption(String command) {
+        String optionType = getLabelString(command, "name", SETOPTION_LABELS, "");
+        System.out.println("option: " + optionType);
+        switch (optionType) {
+            case "Hash":     setHashSize(command); break;
+            case "Threads":  setThreadCount(command); break;
+            default:         write("unrecognised option name " + optionType);
+        }
     }
 
     private static void handleNewGame() {
@@ -111,6 +126,30 @@ public class Application {
     private static void writeMove(Move move) {
         String notation = Notation.toNotation(move);
         write("bestmove " + notation);
+    }
+
+    private static void setHashSize(String command) {
+        int hashSizeMb = getLabelInt(command, "value", SETOPTION_LABELS);
+        int minHashSizeMb = ENGINE.getConfig().getMinHashSizeMb();
+        int maxHashSizeMb = ENGINE.getConfig().getMaxHashSizeMb();
+        if (hashSizeMb >= minHashSizeMb && hashSizeMb <= maxHashSizeMb) {
+            ENGINE.setHashSize(hashSizeMb);
+            write("info string hash size " + hashSizeMb);
+        } else {
+            write(String.format("hash size %s not in valid range %s - %s", hashSizeMb, minHashSizeMb, maxHashSizeMb));
+        }
+    }
+
+    private static void setThreadCount(String command) {
+        int threadCount = getLabelInt(command, "value", SETOPTION_LABELS);
+        int minThreadCount = ENGINE.getConfig().getMinThreadCount();
+        int maxThreadCount = ENGINE.getConfig().getMaxThreadCount();
+        if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
+            ENGINE.setThreadCount(threadCount);
+            write("info string thread count " + threadCount);
+        } else {
+            write(String.format("thread count %s not in valid range %s - %s", threadCount, minThreadCount, maxThreadCount));
+        }
     }
 
     private static String getLabelString(String command, String label, String[] allLabels, String defaultValue) {

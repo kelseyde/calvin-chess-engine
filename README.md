@@ -6,7 +6,7 @@ Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 
 ## Strength
 
-The first version of Calvin submitted to the CCRL computer chess leaderboards was 2.6.2. The table below tracks the strength of subsequent releases in CCRL and on Lichess.
+The table below tracks the strength of release versions, on the CCRL computer chess leaderboards and on Lichess.
 
 | 	Version	 | 	Release date | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | 
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | :-----:	 | 

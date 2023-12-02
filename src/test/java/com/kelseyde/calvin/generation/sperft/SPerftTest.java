@@ -18,6 +18,7 @@ public abstract class SPerftTest {
 
     private static final int MIN_EVAL = Integer.MIN_VALUE + 1;
     private static final int MAX_EVAL = Integer.MAX_VALUE - 1;
+    private static final Searcher SEARCHER = TestUtils.SEARCHER;
 
     protected abstract String getFen();
     protected abstract String getSubFolder();
@@ -25,9 +26,8 @@ public abstract class SPerftTest {
     protected void sPerft(int depth) {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
-        Searcher search = (Searcher) TestUtils.getEngine().getSearcher();
-        search.setPosition(board);
-        search.search(depth, 0, MIN_EVAL, MAX_EVAL, true);
+        SEARCHER.setPosition(board);
+        SEARCHER.search(depth, 0, MIN_EVAL, MAX_EVAL, true);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
         writeResults(depth, performance);

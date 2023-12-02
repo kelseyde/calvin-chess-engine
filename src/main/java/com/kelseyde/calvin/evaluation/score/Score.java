@@ -1,7 +1,10 @@
 package com.kelseyde.calvin.evaluation.score;
 
+import com.kelseyde.calvin.board.Piece;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.Arrays;
 
 @Data
 @Builder
@@ -9,6 +12,7 @@ public class Score {
 
     public static final int MATE_SCORE = 1000000;
     public static final int DRAW_SCORE = 0;
+    public static final int[] SIMPLE_PIECE_VALUES = Arrays.stream(Piece.values()).mapToInt(Piece::getValue).toArray();
 
     Material whiteMaterial;
     Material blackMaterial;

@@ -10,8 +10,8 @@ public class MopUp {
 
     public static int score(EngineConfig config, Board board, Material friendlyMaterial, Material opponentMaterial, boolean isWhite) {
 
-        int friendlyMaterialScore = friendlyMaterial.sum(Piece.getSimplePieceValues(), config.getBishopPairBonus());
-        int opponentMaterialScore = opponentMaterial.sum(Piece.getSimplePieceValues(), config.getBishopPairBonus());
+        int friendlyMaterialScore = friendlyMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        int opponentMaterialScore = opponentMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
 
         boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
         if (!twoPawnAdvantage) {

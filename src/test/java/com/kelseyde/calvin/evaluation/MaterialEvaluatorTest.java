@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.score.Material;
+import com.kelseyde.calvin.evaluation.score.Score;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
@@ -17,8 +18,8 @@ public class MaterialEvaluatorTest {
     public void testStartingPosition() {
 
         Board board = new Board();
-        int whiteScore = Material.fromBoard(board, true).sum(Piece.getSimplePieceValues(), config.getBishopPairBonus());
-        int blackScore = Material.fromBoard(board, false).sum(Piece.getSimplePieceValues(), config.getBishopPairBonus());
+        int whiteScore = Material.fromBoard(board, true).sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        int blackScore = Material.fromBoard(board, false).sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
         Assertions.assertEquals(0, whiteScore - blackScore);
         // 900 (queen) + 1000 (rooks) + 660 (bishops) + 640 (knights) + 800 (pawns) + 50 (bishop pair) = 4050
         Assertions.assertEquals(4050, whiteScore);
@@ -50,8 +51,8 @@ public class MaterialEvaluatorTest {
         // white score: (8 * 100) + 650 + 1000 + 10000 = 12450
         // black score: (8 * 100) + 970 + 1000 + 10000 = 12770
         // score = 12450 - 12770 = -320
-        int whiteScore = Material.fromBoard(board, true).sum(Piece.getSimplePieceValues(), config.getBishopPairBonus());
-        int blackScore = Material.fromBoard(board, false).sum(Piece.getSimplePieceValues(), config.getBishopPairBonus());
+        int whiteScore = Material.fromBoard(board, true).sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        int blackScore = Material.fromBoard(board, false).sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
         Assertions.assertEquals(-320, whiteScore - blackScore);
 
     }

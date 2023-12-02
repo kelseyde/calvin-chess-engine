@@ -101,17 +101,13 @@ public class FEN {
     }
 
     public static String toFEN(Board board) {
-
         try {
-
             // TODO
             String isWhiteToMove = toSideToMove(board.isWhiteToMove());
             String castlingRights = toCastlingRights(board.getGameState().getCastlingRights());
             String enPassantFile = toEnPassantFile(board.getGameState().getEnPassantFile());
             String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getFiftyMoveCounter());
-
             return null;
-
         } catch (Exception e) {
             throw new IllegalArgumentException(board.toString(), e);
         }

@@ -5,9 +5,11 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.Searcher;
@@ -32,6 +34,7 @@ public class TestUtils {
     public static final String TST_CONFIG_LOCATION = "src/test/resources/engine_config.json";
     public static final EngineConfig PRD_CONFIG = loadConfig(PRD_CONFIG_LOCATION);
     public static final EngineConfig TST_CONFIG = loadConfig(TST_CONFIG_LOCATION);
+    public static final OpeningBook OPENING_BOOK = EngineInitializer.loadDefaultOpeningBook();
     public static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
     public static final MoveOrdering MOVE_ORDERER = new MoveOrderer();
     public static final Evaluation EVALUATOR = new Evaluator(PRD_CONFIG);
@@ -41,11 +44,11 @@ public class TestUtils {
     public static final Searcher SEARCHER_COPY = new Searcher(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb()));
 
     public static Engine getEngine() {
-        return new Engine(PRD_CONFIG, new MoveGenerator(), new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
+        return new Engine(PRD_CONFIG, OPENING_BOOK, new MoveGenerator(), new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
     }
 
     public static Engine getEngineCopy() {
-        return new Engine(TST_CONFIG, new MoveGenerator(), new Searcher2(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb())));
+        return new Engine(TST_CONFIG, OPENING_BOOK, new MoveGenerator(), new Searcher2(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb())));
     }
 
     private static EngineConfig loadConfig(String configLocation) {

@@ -20,6 +20,9 @@ public class EngineConfig {
     int maxHashSizeMb;
     int defaultHashSizeMb;
 
+    boolean ownBookEnabled;
+    int maxBookMoves;
+
     int maxDepth;
     int aspMargin;
     int aspFailMargin;

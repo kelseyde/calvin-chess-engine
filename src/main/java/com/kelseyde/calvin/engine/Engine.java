@@ -3,6 +3,7 @@ package com.kelseyde.calvin.engine;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration;
+import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -25,13 +26,15 @@ import java.util.function.Consumer;
 public class Engine {
 
     EngineConfig config;
+    OpeningBook book;
     MoveGeneration moveGenerator;
     Search searcher;
     CompletableFuture<Move> think;
     Board board;
 
-    public Engine(EngineConfig config, MoveGeneration moveGenerator, Search searcher) {
+    public Engine(EngineConfig config, OpeningBook book, MoveGeneration moveGenerator, Search searcher) {
         this.config = config;
+        this.book = book;
         this.moveGenerator = moveGenerator;
         this.searcher = searcher;
     }
@@ -57,12 +60,28 @@ public class Engine {
         this.searcher.setThreadCount(threadCount);
     }
 
+    public void setOwnBookEnabled(boolean ownBookEnabled) {
+        this.config.setOwnBookEnabled(ownBookEnabled);
+    }
+
     public void think(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs, Consumer<Move> onThinkComplete) {
+        long key = board.getGameState().getZobristKey();
+        int moveCount = board.getMoveHistory().size();
+        if (config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key)) {
+            onThinkComplete.accept(getLegalMove(book.getBookMove(key)));
+            return;
+        }
         int thinkTimeMs = TimeManager.chooseThinkTime(board.isWhiteToMove(), timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
         think(thinkTimeMs, onThinkComplete);
     }
 
     public void think(int thinkTimeMs, Consumer<Move> onThinkComplete) {
+        long key = board.getGameState().getZobristKey();
+        int moveCount = board.getMoveHistory().size();
+        if (config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key)) {
+            onThinkComplete.accept(getLegalMove(book.getBookMove(key)));
+            return;
+        }
         stopThinking();
         think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
         think.thenAccept(onThinkComplete);

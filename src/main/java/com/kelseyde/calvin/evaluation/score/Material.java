@@ -4,6 +4,9 @@ import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 
+/**
+ * Stores how much material one side has.
+ */
 public record Material(int pawns,
                        int knights,
                        int bishops,
@@ -19,6 +22,9 @@ public record Material(int pawns,
         return new Material(pawns, knights, bishops, rooks, queens);
     }
 
+    /**
+     * Based on a provided piece-value array, counts the material score in centipawns.
+     */
     public int sum(int[] pieceValues, int bishopPairBonus) {
         return (pawns * pieceValues[Piece.PAWN.getIndex()]) +
                 (knights * pieceValues[Piece.KNIGHT.getIndex()]) +

@@ -8,7 +8,15 @@ import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 
 /**
- * King safety evaluation gives bonuses for a castled king with a secure 'pawn shield' - that is the pawns infront
+ * King safety is a core feature in the evaluation function. An unsafe king often outweighs the material balance in
+ * deciding the outcome of a game. In this evaluation function the king is penalised for being uncastled; for being
+ * castled but with the pawns infront of the king (the 'pawn shield') pushed too far up the board; or for having open
+ * or semi-open files either infront of or adjacent to the king.
+ * </p>
+ * The king safety is tapered off towards the endgame, since it matters less when there are fewer pieces on the board,
+ * and the king becomes a more active piece.
+ * </p>
+ * @see <a href="https://www.chessprogramming.org/King_Safety">Chess Programming Wiki</a>
  */
 public class KingSafety {
 

@@ -23,6 +23,7 @@ import java.util.Random;
 public class OpeningBook {
 
     private final Map<Long, BookMove[]> movesByPosition;
+    private final Random random = new Random();
 
     public OpeningBook(String file) {
         String[] entries = file.trim().split("pos");
@@ -48,8 +49,11 @@ public class OpeningBook {
         if (bookMoves == null) {
             return null;
         }
+        if (bookMoves.length == 1) {
+            return bookMoves[0].move();
+        }
         int totalWeight = Arrays.stream(bookMoves).map(BookMove::frequency).reduce(0, Integer::sum);
-        int randomInt = new Random().nextInt(totalWeight);
+        int randomInt = random.nextInt(totalWeight);
         int cumulativeWeight = 0;
         for (BookMove bookMove : bookMoves) {
             cumulativeWeight += bookMove.frequency();

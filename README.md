@@ -4,6 +4,15 @@ Calvin is a UCI-compliant chess engine written in Java.
 
 Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
 
+## Strength
+
+The table below tracks the strength of release versions, on the CCRL computer chess leaderboards and on Lichess.
+
+| 	Version	 | 	Release date | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | 
+| 	:-----:	 | 	:-----:	 | 	:-----:	 | :-----:	 | 
+| [2.6.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/2.6.2) | 2023-11-12 | ~2300 | 2276 |
+| [3.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.0.0) | 2023-12-02 | ~2380 | tbd |
+
 ## Features
 
 ### Board representation

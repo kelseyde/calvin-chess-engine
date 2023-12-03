@@ -4,6 +4,13 @@ import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 
+/**
+ * Piece square tables (PSTs) are a simple way to assign values to pieces placed on specific squares. Each piece has its
+ * own PSTs - one for the middlegame and one for the endgame - and the evaluation score is tapered between the two based
+ * on the game phase.
+ * </p>
+ * @see <a href="https://www.chessprogramming.org/Piece-Square_Tables">Chess Programming Wiki</a>
+ */
 public record PiecePlacement(long pawns, long knights, long bishops, long rooks, long queens, long king) {
 
     public static PiecePlacement fromBoard(Board board, boolean isWhite) {
@@ -17,21 +24,20 @@ public record PiecePlacement(long pawns, long knights, long bishops, long rooks,
     }
 
     public int sum(int[][] pieceSquareTables, boolean isWhite) {
-        return scorePieces(pawns, Piece.PAWN, isWhite, pieceSquareTables) +
-                scorePieces(knights, Piece.KNIGHT, isWhite, pieceSquareTables) +
-                scorePieces(bishops, Piece.BISHOP, isWhite, pieceSquareTables) +
-                scorePieces(rooks, Piece.ROOK, isWhite, pieceSquareTables) +
-                scorePieces(queens, Piece.QUEEN, isWhite, pieceSquareTables) +
-                scorePieces(king, Piece.KING, isWhite, pieceSquareTables);
+        return scorePieces(pawns, isWhite, pieceSquareTables[Piece.PAWN.getIndex()]) +
+                scorePieces(knights, isWhite, pieceSquareTables[Piece.KNIGHT.getIndex()]) +
+                scorePieces(bishops, isWhite, pieceSquareTables[Piece.BISHOP.getIndex()]) +
+                scorePieces(rooks, isWhite, pieceSquareTables[Piece.ROOK.getIndex()]) +
+                scorePieces(queens, isWhite, pieceSquareTables[Piece.QUEEN.getIndex()]) +
+                scorePieces(king, isWhite, pieceSquareTables[Piece.KING.getIndex()]);
     }
 
-    private int scorePieces(long pieces, Piece pieceType, boolean isWhite, int[][] pieceSquareTables) {
+    private int scorePieces(long pieces, boolean isWhite, int[] pieceSquareTables) {
         int pieceTypeScore = 0;
         while (pieces != 0) {
             int square = Bitwise.getNextBit(pieces);
-            int pieceIndex = pieceType.getIndex();
             int squareIndex = isWhite ? square ^ 56 : square;
-            pieceTypeScore += pieceSquareTables[pieceIndex][squareIndex];
+            pieceTypeScore += pieceSquareTables[squareIndex];
             pieces = Bitwise.popBit(pieces);
         }
         return pieceTypeScore;

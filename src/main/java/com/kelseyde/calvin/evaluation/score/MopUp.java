@@ -6,6 +6,14 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.utils.Distance;
 
+/**
+ * A simple heuristic for positions when the side-to-move is up a decisive amount of material. Since simple mating sequences
+ * (such as queen mate or rook mate) are often beyond the horizon of the search algorithm, this function gives the winning
+ * side a small bonus for escorting the opponent king to the sides or corners of the board.
+ * Eventually, the search algorithm will find the mating sequence and will take over.
+ *
+ * @see <a href="https://www.chessprogramming.org/Mop-up_Evaluation">Chess Programming Wiki</a>
+ */
 public class MopUp {
 
     public static int score(EngineConfig config, Board board, Material friendlyMaterial, Material opponentMaterial, boolean isWhite) {

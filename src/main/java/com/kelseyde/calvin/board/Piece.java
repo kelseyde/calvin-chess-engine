@@ -2,6 +2,9 @@ package com.kelseyde.calvin.board;
 
 import lombok.Getter;
 
+/**
+ * Stores basic information for each chess piece type.
+ */
 @Getter
 public enum Piece {
 

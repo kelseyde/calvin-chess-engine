@@ -65,10 +65,8 @@ public class Engine {
     }
 
     public void think(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs, Consumer<Move> onThinkComplete) {
-        long key = board.getGameState().getZobristKey();
-        int moveCount = board.getMoveHistory().size();
-        if (config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key)) {
-            onThinkComplete.accept(getLegalMove(book.getBookMove(key)));
+        if (hasBookMove()) {
+            onThinkComplete.accept(getLegalMove(book.getBookMove(board.getGameState().getZobristKey())));
             return;
         }
         int thinkTimeMs = TimeManager.chooseThinkTime(board.isWhiteToMove(), timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
@@ -76,10 +74,8 @@ public class Engine {
     }
 
     public void think(int thinkTimeMs, Consumer<Move> onThinkComplete) {
-        long key = board.getGameState().getZobristKey();
-        int moveCount = board.getMoveHistory().size();
-        if (config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key)) {
-            onThinkComplete.accept(getLegalMove(book.getBookMove(key)));
+        if (hasBookMove()) {
+            onThinkComplete.accept(getLegalMove(book.getBookMove(board.getGameState().getZobristKey())));
             return;
         }
         stopThinking();
@@ -105,6 +101,12 @@ public class Engine {
     public void gameOver() {
         stopThinking();
         board = null;
+    }
+
+    private boolean hasBookMove() {
+        long key = board.getGameState().getZobristKey();
+        int moveCount = board.getMoveHistory().size();
+        return config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key);
     }
 
     private Move getLegalMove(Move move) {

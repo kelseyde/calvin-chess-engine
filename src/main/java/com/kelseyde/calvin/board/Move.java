@@ -12,7 +12,6 @@ import java.util.Optional;
  * bit 0 - 5: start square (0 - 63)
  * bit 6 - 11: end square (0 - 63)
  * bit 12 - 15: special moves (promotion, castling, pawn double moves, en passant)
- *
  * @see <a href="https://www.chessprogramming.org/Encoding_Moves">Chess Programming Wiki</a>
  * <p>
  * Largely inspired by Sebastian Lague's Chess Coding Adventure:

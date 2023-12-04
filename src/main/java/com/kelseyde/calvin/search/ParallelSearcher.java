@@ -7,6 +7,8 @@ import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.BoardUtils;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.util.List;
@@ -22,16 +24,17 @@ import java.util.stream.IntStream;
  *
  * @see <a href="https://www.chessprogramming.org/Lazy_SMP">Chess Programming Wiki</a>
  */
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ParallelSearcher implements Search {
 
-    private final EngineConfig config;
-    private final Supplier<MoveGeneration> moveGeneratorSupplier;
-    private final Supplier<MoveOrdering> moveOrdererSupplier;
-    private final Supplier<Evaluation> evaluatorSupplier;
-    private TranspositionTable transpositionTable;
-    private int threadCount;
-    private int hashSize;
-    private Board board;
+    final EngineConfig config;
+    final Supplier<MoveGeneration> moveGeneratorSupplier;
+    final Supplier<MoveOrdering> moveOrdererSupplier;
+    final Supplier<Evaluation> evaluatorSupplier;
+    TranspositionTable transpositionTable;
+    int threadCount;
+    int hashSize;
+    Board board;
 
     private List<Searcher> searchers;
 
@@ -47,7 +50,7 @@ public class ParallelSearcher implements Search {
         this.moveGeneratorSupplier = moveGeneratorSupplier;
         this.moveOrdererSupplier = moveOrdererSupplier;
         this.evaluatorSupplier = evaluatorSupplier;
-        this.searchers = IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+        this.searchers = initSearchers();
     }
 
     @Override
@@ -60,13 +63,13 @@ public class ParallelSearcher implements Search {
     public void setHashSize(int hashSizeMb) {
         this.hashSize = hashSizeMb;
         this.transpositionTable = new TranspositionTable(this.hashSize);
-        this.searchers = IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+        this.searchers = initSearchers();
     }
 
     @Override
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
-        this.searchers = IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+        this.searchers = initSearchers();
     }
 
     @Override
@@ -94,6 +97,10 @@ public class ParallelSearcher implements Search {
             collector = collector.thenCombine(thread, (thread1, thread2) -> thread1.depth() > thread2.depth() ? thread1 : thread2);
         }
         return collector;
+    }
+
+    private List<Searcher> initSearchers() {
+        return IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
     }
 
     private Searcher initSearcher() {

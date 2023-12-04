@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.result.Result;
 import com.kelseyde.calvin.evaluation.result.ResultCalculator;
-import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ public class Match {
     private final MatchConfig config;
 
     private final ResultCalculator resultCalculator;
-    private final MoveGenerator moveGenerator;
     private final Random random;
 
     public Match(MatchConfig config) {
@@ -27,7 +25,6 @@ public class Match {
         this.player2 = config.getPlayer2().get();
         this.config = config;
         this.resultCalculator = new ResultCalculator();
-        this.moveGenerator = new MoveGenerator();
         this.random = new Random();
         System.out.printf("Creating new match with with %s games, %s threads, %s max moves per game, %s - %s think range %n",
                 config.getGameCount(), config.getThreadCount(), config.getMaxMoves(), config.getMinThinkTimeMs(), config.getMaxThinkTimeMs());
@@ -55,28 +52,28 @@ public class Match {
             Player whitePlayer = players.get(whitePlayerRandom);
             Player blackPlayer = whitePlayerRandom == 1 ? players.get(0) : players.get(1);
 
-            whitePlayer.getEngine().newGame();
-            blackPlayer.getEngine().newGame();
-            whitePlayer.getEngine().setPosition(fen, moves);
-            blackPlayer.getEngine().setPosition(fen, moves);
+            whitePlayer.engine().newGame();
+            blackPlayer.engine().newGame();
+            whitePlayer.engine().setPosition(fen, moves);
+            blackPlayer.engine().setPosition(fen, moves);
 
             Result result;
 
-            Move whiteMove = whitePlayer.getEngine().think(getThinkTime());
+            Move whiteMove = whitePlayer.engine().think(getThinkTime());
             int moveCount = 1;
 
             while (moveCount <= config.getMaxMoves()) {
 
                 board.makeMove(whiteMove);
                 moves.add(whiteMove);
-                whitePlayer.getEngine().setPosition(fen, moves);
-                blackPlayer.getEngine().setPosition(fen, moves);
+                whitePlayer.engine().setPosition(fen, moves);
+                blackPlayer.engine().setPosition(fen, moves);
 
                 result = resultCalculator.calculateResult(board);
 
                 if (!result.equals(Result.IN_PROGRESS)) {
                     if (result.isWin()) {
-                        if (whitePlayer.getName().equals(player1.getName())) {
+                        if (whitePlayer.name().equals(player1.name())) {
                             player1Wins++;
                             printMatchReport(player1Wins, player2Wins, draws);
                         } else {
@@ -90,18 +87,18 @@ public class Match {
                     break;
                 }
 
-                Move blackMove = blackPlayer.getEngine().think(getThinkTime());
+                Move blackMove = blackPlayer.engine().think(getThinkTime());
 
                 board.makeMove(blackMove);
                 moves.add(blackMove);
-                whitePlayer.getEngine().setPosition(fen, moves);
-                blackPlayer.getEngine().setPosition(fen, moves);
+                whitePlayer.engine().setPosition(fen, moves);
+                blackPlayer.engine().setPosition(fen, moves);
 
                 result = resultCalculator.calculateResult(board);
 
                 if (!result.equals(Result.IN_PROGRESS)) {
                     if (result.isWin()) {
-                        if (blackPlayer.getName().equals(player1.getName())) {
+                        if (blackPlayer.name().equals(player1.name())) {
                             player1Wins++;
                             printMatchReport(player1Wins, player2Wins, draws);
                         } else {
@@ -115,7 +112,7 @@ public class Match {
                     break;
                 }
 
-                whiteMove = whitePlayer.getEngine().think(getThinkTime());
+                whiteMove = whitePlayer.engine().think(getThinkTime());
 
                 moveCount++;
                 if (moveCount > config.getMaxMoves()) {
@@ -124,8 +121,8 @@ public class Match {
                     break;
                 }
             }
-            whitePlayer.getEngine().gameOver();
-            blackPlayer.getEngine().gameOver();
+            whitePlayer.engine().gameOver();
+            blackPlayer.engine().gameOver();
             gameCount++;
 
         }

@@ -82,31 +82,6 @@ public class BoardUtils {
         return isWhite ? 1 : 0;
     }
 
-    public static boolean isAligned(int sq1, int sq2, int sq3) {
-        int rank1 = getRank(sq1);
-        int rank2 = getRank(sq2);
-        int rank3 = getRank(sq3);
-        if (rank1 == rank2 && rank2 == rank3) {
-            return true;
-        }
-        int file1 = getFile(sq1);
-        int file2 = getFile(sq2);
-        int file3 = getFile(sq3);
-        if (file1 == file2 && file2 == file3) {
-            return true;
-        }
-        int diagonal1 = getDiagonal(sq1);
-        int diagonal2 = getDiagonal(sq2);
-        int diagonal3 = getDiagonal(sq3);
-        if (diagonal1 == diagonal2 && diagonal2 == diagonal3) {
-            return true;
-        }
-        int antiDiagonal1 = getAntiDiagonal(sq1);
-        int antiDiagonal2 = getAntiDiagonal(sq2);
-        int antiDiagonal3 = getAntiDiagonal(sq3);
-        return antiDiagonal1 == antiDiagonal2 && antiDiagonal2 == antiDiagonal3;
-    }
-
     public static Board copy(Board board) {
         Board newBoard = new Board();
         newBoard.setWhitePawns(board.getWhitePawns());

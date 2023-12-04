@@ -69,24 +69,11 @@ public class PiecePlacementEvaluatorTest {
     }
 
     private int score(Board board) {
-        int whiteMiddlegameScore = 0;
-        int whiteEndgameScore = 0;
-        int blackMiddlegameScore = 0;
-        int blackEndgameScore = 0;
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
-
-        PiecePlacement whitePiecePlacement = PiecePlacement.fromBoard(board, true);
-        PiecePlacement blackPiecePlacement = PiecePlacement.fromBoard(board, false);
-
-        whiteMiddlegameScore += whitePiecePlacement.sum(config.getMiddlegameTables(), true);
-        whiteEndgameScore += whitePiecePlacement.sum(config.getEndgameTables(), true);
-        blackMiddlegameScore += blackPiecePlacement.sum(config.getMiddlegameTables(), false);
-        blackEndgameScore += blackPiecePlacement.sum(config.getEndgameTables(), false);
-
         float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
-        int whiteScore = Phase.taperedEval(whiteMiddlegameScore, whiteEndgameScore, phase);
-        int blackScore = Phase.taperedEval(blackMiddlegameScore, blackEndgameScore, phase);
+        int whiteScore = PiecePlacement.score(config, board, phase, true);
+        int blackScore = PiecePlacement.score(config, board, phase, false);
         int modifier = board.isWhiteToMove() ? 1 : -1;
         return modifier * (whiteScore - blackScore);
     }

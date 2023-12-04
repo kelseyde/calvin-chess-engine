@@ -554,4 +554,17 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontAllowBishopSacOnH6() {
+
+        String fen = "2rqbrk1/1p2bppp/4pn2/p3N3/1n1P1B2/2N4Q/PP3PPP/1BRR2K1 b - - 1 17";
+        engine.setPosition(fen, Collections.emptyList());
+        Move move = engine.think(4000);
+        System.out.println(Notation.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(Notation.fromCombinedNotation("h7h6"))
+        );
+
+    }
+
 }

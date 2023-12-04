@@ -20,12 +20,6 @@ import java.util.Deque;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Board {
 
-// TODO
-//    long[][] pieceBoards = new long[][] {
-//            {Bits.WHITE_PAWNS_START, Bits.WHITE_KNIGHTS_START, Bits.WHITE_BISHOPS_START, Bits.WHITE_ROOKS_START, Bits.WHITE_QUEENS_START, Bits.WHITE_QUEENS_START},
-//            {Bits.BLACK_PAWNS_START, Bits.BLACK_KNIGHTS_START, Bits.BLACK_BISHOPS_START, Bits.BLACK_ROOKS_START, Bits.BLACK_QUEENS_START, Bits.BLACK_QUEENS_START},
-//    };
-
     long whitePawns =   Bits.WHITE_PAWNS_START;
     long whiteKnights = Bits.WHITE_KNIGHTS_START;
     long whiteBishops = Bits.WHITE_BISHOPS_START;
@@ -134,7 +128,7 @@ public class Board {
         Move lastMove = moveHistory.pop();
         int startSquare = lastMove.getStartSquare();
         int endSquare = lastMove.getEndSquare();
-        Piece pieceType = pieceAt(endSquare);
+        Piece piece = pieceAt(endSquare);
 
         if (lastMove.isCastling()) {
             toggleSquares(Piece.KING, isWhiteToMove, endSquare, startSquare);
@@ -163,7 +157,7 @@ public class Board {
             toggleSquare(Piece.PAWN, !isWhiteToMove, captureSquare);
         }
         else {
-            toggleSquares(pieceType, isWhiteToMove, endSquare, startSquare);
+            toggleSquares(piece, isWhiteToMove, endSquare, startSquare);
             if (gameState.getCapturedPiece() != null) {
                 toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
             }

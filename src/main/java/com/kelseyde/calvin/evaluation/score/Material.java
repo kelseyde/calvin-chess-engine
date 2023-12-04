@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation.score;
 import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 
 /**
  * Stores how much material one side has.
@@ -20,6 +21,12 @@ public record Material(int pawns,
         int rooks = Bitwise.countBits(board.getRooks(isWhite));
         int queens = Bitwise.countBits(board.getQueens(isWhite));
         return new Material(pawns, knights, bishops, rooks, queens);
+    }
+
+    public int sum(EngineConfig config, float phase) {
+        int middlegameScore = sum(config.getPieceValues()[0], config.getBishopPairBonus());
+        int endgameScore = sum(config.getPieceValues()[1], config.getBishopPairBonus());
+        return Phase.taperedEval(middlegameScore, endgameScore, phase);
     }
 
     /**

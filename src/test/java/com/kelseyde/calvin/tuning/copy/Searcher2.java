@@ -71,7 +71,7 @@ public class Searcher2 implements Search {
     @Override
     public SearchResult search(Duration duration) {
 
-        evaluator.init(board);
+        evaluator.evaluate(board);
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;
@@ -171,7 +171,7 @@ public class Searcher2 implements Search {
 
         List<Move> moves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-        int staticEval = evaluator.get();
+        int staticEval = evaluator.evaluate(board);
 
         if (moves.isEmpty()) {
             // Found checkmate / stalemate
@@ -186,8 +186,8 @@ public class Searcher2 implements Search {
 
         if (!pvNode && !isInCheck) {
 
-            // Reverse futility pruning: if the static evaluation - some margin is still > beta, then let's assume
-            // there's no point searching any moves, since it's likely to produce a cut-off no matter what we do.
+            // Reverse futility pruning: if our position is so good that we don't need to move to beat beta + some small
+            // margin, then let's assume we don't need to search any further, and cut off early.
             boolean isMateHunting = Math.abs(alpha) >= Score.MATE_SCORE - 100;
             if (depth <= config.getRfpDepth() && staticEval - config.getRfpMargin()[depth] > beta && !isMateHunting) {
                 return staticEval - config.getRfpMargin()[depth];
@@ -219,14 +219,14 @@ public class Searcher2 implements Search {
             boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
             boolean isPromotion = move.getPromotionPieceType() != null;
 
-            makeMove(move);
+            board.makeMove(move);
 
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
             // Futility pruning: if the static eval + some margin is still < alpha, and the current move is not interesting
             // (checks, captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode && depth <= config.getFpDepth() && staticEval + config.getFpMargin()[depth] < alpha && !isInCheck && !isCheck && !isCapture && !isPromotion) {
-                unmakeMove();
+                board.unmakeMove();
                 continue;
             }
 
@@ -262,7 +262,7 @@ public class Searcher2 implements Search {
                 }
             }
 
-            unmakeMove();
+            board.unmakeMove();
 
             if (isCancelled()) {
                 return alpha;
@@ -315,7 +315,7 @@ public class Searcher2 implements Search {
             previousBestMove = transposition.getMove();
         }
 
-        int eval = evaluator.get();
+        int eval = evaluator.evaluate(board);
         int standPat = eval;
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -341,9 +341,9 @@ public class Searcher2 implements Search {
             moves = moveGenerator.generateMoves(board, filter);
         }
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, previousBestMove, false, 0);
+        moves = moveOrderer.orderMoves(board, moves, previousBestMove, false, 0);
 
-        for (Move move : orderedMoves) {
+        for (Move move : moves) {
             if (!isInCheck) {
                 // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
                 Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
@@ -359,9 +359,9 @@ public class Searcher2 implements Search {
                 }
             }
 
-            makeMove(move);
+            board.makeMove(move);
             eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
-            unmakeMove();
+            board.unmakeMove();
 
             if (eval >= beta) {
                 return beta;
@@ -378,7 +378,7 @@ public class Searcher2 implements Search {
     @Override
     public void setPosition(Board board) {
         this.board = board;
-        this.evaluator.init(board);
+        this.evaluator.evaluate(board);
     }
 
     @Override
@@ -389,16 +389,6 @@ public class Searcher2 implements Search {
     @Override
     public void setThreadCount(int threadCount) {
         // do nothing as this implementation is single-threaded
-    }
-
-    private void makeMove(Move move) {
-        board.makeMove(move);
-        evaluator.makeMove(move);
-    }
-
-    private void unmakeMove() {
-        board.unmakeMove();
-        evaluator.unmakeMove();
     }
 
     /**

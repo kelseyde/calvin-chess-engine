@@ -263,7 +263,6 @@ public class Attacks {
         boolean isHFile = (Bits.FILE_H & 1L << square) != 0;
         boolean isVectorAFileException = BoardUtils.A_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
         boolean isVectorHFileException = BoardUtils.H_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
-
         return (!isAFile || !isVectorAFileException) && (!isHFile || !isVectorHFileException);
     }
 

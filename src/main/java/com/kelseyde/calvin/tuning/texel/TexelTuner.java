@@ -3,6 +3,8 @@ package com.kelseyde.calvin.tuning.texel;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.utils.notation.FEN;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,21 +24,25 @@ public class TexelTuner {
 
     private final String positionsFileName;
 
+    private Delta[] deltas;
+
     public int[] tune(int[] initialParams, Function<int[], Evaluator> createEvaluatorFunction) throws IOException {
 
         List<String> positions = loadPositions();
+        initDeltas(initialParams.length);
         System.out.println("number of positions: " + positions.size());
         Evaluator evaluator = createEvaluatorFunction.apply(initialParams);
         int[] bestParams = initialParams;
         double bestError = meanSquareError(evaluator, positions);
-        int adjustValue = 1;
 
         boolean improved = true;
         while (improved) {
             improved = false;
+            int modifiedParams = 0;
             for (int i = 0; i < bestParams.length; i++) {
                 int[] newParams = Arrays.copyOf(bestParams, bestParams.length);
-                newParams[i] += adjustValue;
+                int delta = deltas[i].delta;
+                newParams[i] += delta;
                 evaluator = createEvaluatorFunction.apply(newParams);
                 double newError = meanSquareError(evaluator, positions);
                 System.out.printf("tuning param %s of %s, error %s%n", i, bestParams.length, newError);
@@ -45,20 +51,31 @@ public class TexelTuner {
                     improved = true;
                     bestError = newError;
                     bestParams = Arrays.copyOf(newParams, newParams.length);
-                    System.out.printf("++ improved param %s: %s%n", i, bestParams[i]);
+                    int newDelta = delta * 2;
+                    deltas[i].setDelta(newDelta);
+                    deltas[i].setHalvedOrDoubled(Delta.DOUBLED);
+                    System.out.printf("+%s improved param %s: %s%n", delta, i, bestParams[i]);
 
                 } else {
-                    newParams[i] -= adjustValue * 2;
+                    newParams[i] -= delta * 2;
                     evaluator = createEvaluatorFunction.apply(newParams);
                     newError = meanSquareError(evaluator, positions);
                     if (newError < bestError) {
                         improved = true;
                         bestError = newError;
                         bestParams = Arrays.copyOf(newParams, newParams.length);
-                        System.out.printf("-- improved param %s: %s%n", i, bestParams[i]);
+                        int newDelta = delta * 2;
+                        deltas[i].setDelta(newDelta);
+                        deltas[i].setHalvedOrDoubled(Delta.DOUBLED);
+                        System.out.printf("-%s improved param %s: %s%n", delta, i, bestParams[i]);
+                    } else {
+                        int newDelta = delta / 2;
+                        deltas[i].setDelta(newDelta);
+                        deltas[i].setHalvedOrDoubled(Delta.HALVED);
                     }
                 }
             }
+            System.out.printf("tuned %s params: %s%n", modifiedParams, Arrays.toString(bestParams));
 
         }
         System.out.printf("final params: %s, final error: %s%n", Arrays.toString(bestParams), bestError);
@@ -73,8 +90,7 @@ public class TexelTuner {
         for (String position : positions) {
             String fen = position.split("\\[")[0];
             Board board = FEN.toBoard(fen);
-            evaluator.init(board);
-            int eval = evaluator.get();
+            int eval = evaluator.evaluate(board);
             if (!board.isWhiteToMove()) eval = -eval;
             double prediction = prediction(eval);
             double actual = result(position);
@@ -98,11 +114,11 @@ public class TexelTuner {
     }
 
     private double result(String position) {
-        String result = position.split("\\[")[1];
+        String result = position.split("\"")[1];
         return switch (result) {
-            case "1.0]" -> 1.0;
-            case "0.5]" -> 0.5;
-            case "0.0]" -> 0.0;
+            case "1-0" -> 1.0;
+            case "1/2-1/2" -> 0.5;
+            case "0-1" -> 0.0;
             default -> throw new IllegalArgumentException("illegal result!");
         };
     }
@@ -111,6 +127,22 @@ public class TexelTuner {
         String fileName = String.format("src/test/resources/texel/" + positionsFileName);
         Path path = Paths.get(fileName);
         return Files.readAllLines(path);
+    }
+
+    private void initDeltas(int size) {
+        deltas = new Delta[size];
+        for (int i = 0; i < size; i++) {
+            deltas[i] = new Delta(1, Delta.DOUBLED);
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    private static class Delta {
+        private static final int HALVED = 0;
+        private static final int DOUBLED = 1;
+        private int delta;
+        private int halvedOrDoubled;
     }
 
 }

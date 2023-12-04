@@ -74,7 +74,6 @@ public class TranspositionTable {
 
             if (storedEntry.key() == zobristKey) {
                 if (depth >= storedDepth) {
-                    replacedMinDepth = storedDepth;
                     replacedIndex = i;
                     break;
                 } else {

@@ -2,8 +2,6 @@ package com.kelseyde.calvin.generation.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.evaluation.Arbiter;
-import com.kelseyde.calvin.evaluation.result.Result;
-import com.kelseyde.calvin.evaluation.result.ResultCalculator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -11,8 +9,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class DrawByRepetitionTest {
-    
-    private final ResultCalculator resultEvaluator = new ResultCalculator();
 
     @Test
     public void testSimpleDrawByRepetition() {
@@ -38,8 +34,7 @@ public class DrawByRepetitionTest {
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
         Assertions.assertTrue(Arbiter.isEffectiveDraw(board));
 
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_REPETITION, result);
+        Assertions.assertTrue(Arbiter.isThreefoldRepetition(board));
 
     }
 
@@ -74,8 +69,8 @@ public class DrawByRepetitionTest {
         Assertions.assertTrue(Arbiter.isEffectiveDraw(board));
 
         // position of pieces repeated thrice, but on the first occurrence castling rights were different
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertNotEquals(Result.DRAW_BY_REPETITION, result);
+        Assertions.assertFalse(Arbiter.isThreefoldRepetition(board));
+
 
     }
 
@@ -118,8 +113,8 @@ public class DrawByRepetitionTest {
         Assertions.assertTrue(Arbiter.isEffectiveDraw(board));
 
         // position of pieces repeated four times, three times with same castling rights
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_REPETITION, result);
+        Assertions.assertTrue(Arbiter.isThreefoldRepetition(board));
+
 
     }
 
@@ -150,8 +145,8 @@ public class DrawByRepetitionTest {
         Assertions.assertTrue(Arbiter.isEffectiveDraw(board));
 
         // position of pieces repeated thrice, but en passant rights different
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.IN_PROGRESS, result);
+        Assertions.assertFalse(Arbiter.isThreefoldRepetition(board));
+
 
     }
 
@@ -184,8 +179,8 @@ public class DrawByRepetitionTest {
         Assertions.assertTrue(Arbiter.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_REPETITION, result);
+        Assertions.assertTrue(Arbiter.isThreefoldRepetition(board));
+
 
     }
 
@@ -207,13 +202,12 @@ public class DrawByRepetitionTest {
         board.makeMove(Notation.fromNotation("c3", "e4"));
 
         Assertions.assertTrue(Arbiter.isEffectiveDraw(board));
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.IN_PROGRESS, result);
+        Assertions.assertFalse(Arbiter.isThreefoldRepetition(board));
 
         board.makeMove(Notation.fromNotation("c5", "e7"));
 
-        result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_REPETITION, result);
+        Assertions.assertTrue(Arbiter.isThreefoldRepetition(board));
+
 
     }
 

@@ -2,8 +2,8 @@ package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.result.Result;
-import com.kelseyde.calvin.evaluation.result.ResultCalculator;
+import com.kelseyde.calvin.evaluation.Arbiter;
+import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
@@ -17,14 +17,14 @@ public class Match {
 
     private final MatchConfig config;
 
-    private final ResultCalculator resultCalculator;
+    private final MoveGenerator moveGenerator;
     private final Random random;
 
     public Match(MatchConfig config) {
         this.player1 = config.getPlayer1().get();
         this.player2 = config.getPlayer2().get();
         this.config = config;
-        this.resultCalculator = new ResultCalculator();
+        this.moveGenerator = new MoveGenerator();
         this.random = new Random();
         System.out.printf("Creating new match with with %s games, %s threads, %s max moves per game, %s - %s think range %n",
                 config.getGameCount(), config.getThreadCount(), config.getMaxMoves(), config.getMinThinkTimeMs(), config.getMaxThinkTimeMs());
@@ -57,7 +57,7 @@ public class Match {
             whitePlayer.engine().setPosition(fen, moves);
             blackPlayer.engine().setPosition(fen, moves);
 
-            Result result;
+            GameResult result;
 
             Move whiteMove = whitePlayer.engine().think(getThinkTime());
             int moveCount = 1;
@@ -69,9 +69,9 @@ public class Match {
                 whitePlayer.engine().setPosition(fen, moves);
                 blackPlayer.engine().setPosition(fen, moves);
 
-                result = resultCalculator.calculateResult(board);
+                result = calculateResult(board);
 
-                if (!result.equals(Result.IN_PROGRESS)) {
+                if (!result.equals(GameResult.IN_PROGRESS)) {
                     if (result.isWin()) {
                         if (whitePlayer.name().equals(player1.name())) {
                             player1Wins++;
@@ -94,9 +94,9 @@ public class Match {
                 whitePlayer.engine().setPosition(fen, moves);
                 blackPlayer.engine().setPosition(fen, moves);
 
-                result = resultCalculator.calculateResult(board);
+                result = calculateResult(board);
 
-                if (!result.equals(Result.IN_PROGRESS)) {
+                if (!result.equals(GameResult.IN_PROGRESS)) {
                     if (result.isWin()) {
                         if (blackPlayer.name().equals(player1.name())) {
                             player1Wins++;
@@ -128,6 +128,27 @@ public class Match {
         }
 
         return new MatchResult(player1Wins, player2Wins, draws);
+    }
+
+    private GameResult calculateResult(Board board) {
+        List<Move> legalMoves = moveGenerator.generateMoves(board);
+        if (legalMoves.isEmpty()) {
+            if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
+                return board.isWhiteToMove() ? GameResult.BLACK_WINS_BY_CHECKMATE : GameResult.WHITE_WINS_BY_CHECKMATE;
+            } else {
+                return GameResult.DRAW_BY_STALEMATE;
+            }
+        }
+        if (Arbiter.isThreefoldRepetition(board)) {
+            return GameResult.DRAW_BY_REPETITION;
+        }
+        if (Arbiter.isInsufficientMaterial(board)) {
+            return GameResult.DRAW_BY_INSUFFICIENT_MATERIAL;
+        }
+        if (Arbiter.isFiftyMoveRule(board)) {
+            return GameResult.DRAW_BY_FIFTY_MOVE_RULE;
+        }
+        return GameResult.IN_PROGRESS;
     }
 
     private int getThinkTime() {

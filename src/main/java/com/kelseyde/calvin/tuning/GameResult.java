@@ -1,6 +1,6 @@
-package com.kelseyde.calvin.evaluation.result;
+package com.kelseyde.calvin.tuning;
 
-public enum Result {
+public enum GameResult {
 
     IN_PROGRESS,
     WHITE_WINS_BY_CHECKMATE,

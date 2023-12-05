@@ -3,15 +3,11 @@ package com.kelseyde.calvin.generation.drawcalculator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Arbiter;
-import com.kelseyde.calvin.evaluation.result.Result;
-import com.kelseyde.calvin.evaluation.result.ResultCalculator;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class DrawByFiftyMoveRuleTest {
-    
-    private final ResultCalculator resultEvaluator = new ResultCalculator();
 
     @Test
     public void testDrawByFiftyMovesSinceWhiteCapture() {
@@ -185,13 +181,11 @@ public class DrawByFiftyMoveRuleTest {
 
         // 50 move rule not yet reached
         board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertFalse(result.isDraw());
+        Assertions.assertFalse(Arbiter.isFiftyMoveRule(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
         // 50 move rule reached
-        result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_FIFTY_MOVE_RULE, result);
+        Assertions.assertTrue(Arbiter.isFiftyMoveRule(board));
 
     }
 
@@ -360,13 +354,11 @@ public class DrawByFiftyMoveRuleTest {
 
         // 50 move rule not yet reached
         board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertFalse(result.isDraw());
+        Assertions.assertFalse(Arbiter.isFiftyMoveRule(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
         // 50 move rule reached
-        result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_FIFTY_MOVE_RULE, result);
+        Assertions.assertTrue(Arbiter.isFiftyMoveRule(board));
 
     }
 
@@ -538,13 +530,11 @@ public class DrawByFiftyMoveRuleTest {
         // 50 move rule not yet reached
         board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
 
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertFalse(result.isDraw());
+        Assertions.assertFalse(Arbiter.isFiftyMoveRule(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
         // 50 move rule reached
-        result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_FIFTY_MOVE_RULE, result);
+        Assertions.assertTrue(Arbiter.isFiftyMoveRule(board));
 
     }
 
@@ -713,13 +703,11 @@ public class DrawByFiftyMoveRuleTest {
 
         // 50 move rule not yet reached
         board.makeMove(TestUtils.getLegalMove(board, "h1", "g1"));
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertFalse(result.isDraw());
+        Assertions.assertFalse(Arbiter.isFiftyMoveRule(board));
 
         // 50 move rule reached
         board.makeMove(TestUtils.getLegalMove(board, "a8", "b8"));
-        result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_FIFTY_MOVE_RULE, result);
+        Assertions.assertTrue(Arbiter.isFiftyMoveRule(board));
 
     }
 

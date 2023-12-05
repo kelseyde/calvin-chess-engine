@@ -3,7 +3,6 @@ package com.kelseyde.calvin.puzzles;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
-import com.kelseyde.calvin.evaluation.result.ResultCalculator;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -21,8 +20,6 @@ import java.util.Collections;
 public class EndgameTest {
 
     private final Engine engine = TestUtils.getEngine();
-
-    private final ResultCalculator resultCalculator = new ResultCalculator();
 
     private Search searcher;
 

@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.evaluation.result.Result;
-import com.kelseyde.calvin.evaluation.result.ResultCalculator;
+import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -9,8 +8,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class CheckmateTest {
-    
-    private final ResultCalculator evaluator = new ResultCalculator();
+
+    private final MoveGenerator moveGenerator = new MoveGenerator();
 
     @Test
     public void testFoolsMate() {
@@ -21,9 +20,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g2", "g4"));
 
         board.makeMove(TestUtils.getLegalMove(board, "d8", "h4"));
-        Result result = evaluator.calculateResult(board);
-        Assertions.assertTrue(result.isCheckmate());
-
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
     }
 
     @Test
@@ -38,8 +35,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d6"));
 
         board.makeMove(TestUtils.getLegalMove(board, "h5", "f7"));
-        Result result = evaluator.calculateResult(board);
-        Assertions.assertTrue(result.isCheckmate());
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
 
     }
 
@@ -85,8 +81,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g2", "g1"));
 
         board.makeMove(TestUtils.getLegalMove(board, "e1", "d2"));
-        Result result = evaluator.calculateResult(board);
-        Assertions.assertTrue(result.isCheckmate());
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
 
     }
 
@@ -133,8 +128,8 @@ public class CheckmateTest {
 
         // improving on Lasker's move, O-O-O#!
         board.makeMove(TestUtils.getLegalMove(board, "e1", "c1"));
-        Result result = evaluator.calculateResult(board);
-        Assertions.assertTrue(result.isCheckmate());
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+
 
     }
 
@@ -156,8 +151,8 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g7", "g5"));
 
         board.makeMove(TestUtils.getLegalMove(board, "f5", "g6"));
-        Result result = evaluator.calculateResult(board);
-        Assertions.assertTrue(result.isCheckmate());
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+
     }
 
     @Test
@@ -176,8 +171,8 @@ public class CheckmateTest {
 
         Move move = new Move(Notation.fromNotation("e2"), Notation.fromNotation("d1"), Move.PROMOTE_TO_KNIGHT_FLAG);
         board.makeMove(move);
-        Result result = evaluator.calculateResult(board);
-        Assertions.assertTrue(result.isCheckmate());
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+
     }
 
     @Test
@@ -189,8 +184,7 @@ public class CheckmateTest {
         board.toggleSquare(Piece.QUEEN, true, 1);
         
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
-        Result result = evaluator.calculateResult(board);
-        Assertions.assertTrue(result.isCheckmate());
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
 
     }
 
@@ -201,15 +195,14 @@ public class CheckmateTest {
         Board board = FEN.toBoard(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
-        Result result = evaluator.calculateResult(board);
-        Assertions.assertEquals(Result.WHITE_WINS_BY_CHECKMATE, result);
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
 
         fen = "8/K7/2k5/8/8/8/8/1q6 b - - 0 1";
         board = FEN.toBoard(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
-        result = evaluator.calculateResult(board);
-        Assertions.assertEquals(Result.BLACK_WINS_BY_CHECKMATE, result);
+        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+
 
     }
 

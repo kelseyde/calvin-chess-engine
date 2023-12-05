@@ -4,16 +4,13 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Arbiter;
-import com.kelseyde.calvin.evaluation.result.Result;
-import com.kelseyde.calvin.evaluation.result.ResultCalculator;
+import com.kelseyde.calvin.tuning.GameResult;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class DrawByInsufficientMaterialTest {
-
-    private final ResultCalculator resultEvaluator = new ResultCalculator();
 
     @Test
     public void testKingVersusKing() {
@@ -28,8 +25,7 @@ public class DrawByInsufficientMaterialTest {
         board.makeMove(TestUtils.getLegalMove(board, "e4", "d4"));
 
         // king captures queen -> K vs K
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_INSUFFICIENT_MATERIAL, result);
+        Assertions.assertTrue(Arbiter.isInsufficientMaterial(board));
 
     }
 
@@ -47,8 +43,7 @@ public class DrawByInsufficientMaterialTest {
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
         // bishop captures queen -> K vs KB
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_INSUFFICIENT_MATERIAL, result);
+        Assertions.assertTrue(Arbiter.isInsufficientMaterial(board));
 
     }
 
@@ -66,8 +61,7 @@ public class DrawByInsufficientMaterialTest {
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
         // knight captures queen -> K vs KN
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_INSUFFICIENT_MATERIAL, result);
+        Assertions.assertTrue(Arbiter.isInsufficientMaterial(board));
 
     }
 
@@ -86,8 +80,7 @@ public class DrawByInsufficientMaterialTest {
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
         // bishop captures queen -> KB vs KB
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_INSUFFICIENT_MATERIAL, result);
+        Assertions.assertTrue(Arbiter.isInsufficientMaterial(board));
 
     }
 
@@ -106,8 +99,7 @@ public class DrawByInsufficientMaterialTest {
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
         // knight captures queen -> KN vs KN
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertEquals(Result.DRAW_BY_INSUFFICIENT_MATERIAL, result);
+        Assertions.assertTrue(Arbiter.isInsufficientMaterial(board));
 
     }
 
@@ -127,8 +119,7 @@ public class DrawByInsufficientMaterialTest {
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
         // knight captures queen -> KNN vs KN
-        Result result = resultEvaluator.calculateResult(board);
-        Assertions.assertNotEquals(Result.DRAW_BY_INSUFFICIENT_MATERIAL, result);
+        Assertions.assertFalse(Arbiter.isInsufficientMaterial(board));
 
     }
 

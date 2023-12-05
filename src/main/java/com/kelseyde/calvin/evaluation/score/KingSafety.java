@@ -20,7 +20,7 @@ import com.kelseyde.calvin.utils.Distance;
  */
 public class KingSafety {
 
-    public static int score(EngineConfig config, Board board, Material opponentMaterial, float phase, boolean isWhite) {
+    public static int score(EngineConfig config, Board board, float phase, boolean isWhite) {
 
         if (phase <= 0.5) {
             return 0;
@@ -32,10 +32,10 @@ public class KingSafety {
         long opponentPawns = board.getPawns(!isWhite);
 
         int pawnShieldPenalty = calculatePawnShieldPenalty(config, kingSquare, kingFile, friendlyPawns);
-        int openKingFilePenalty = calculateOpenKingFilePenalty(config, kingFile, friendlyPawns, opponentPawns, opponentMaterial);
+        int openKingFilePenalty = calculateOpenKingFilePenalty(config, kingFile, friendlyPawns, opponentPawns, board, isWhite);
         int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(config, board, isWhite, kingFile);
 
-        if (opponentMaterial.queens() == 0) {
+        if (Bitwise.countBits(board.getQueens(!isWhite)) == 0) {
             // King safety matters less without opponent queen
             phase *= 0.6f;
         }
@@ -61,9 +61,9 @@ public class KingSafety {
         return pawnShieldPenalty;
     }
 
-    private static int calculateOpenKingFilePenalty(EngineConfig config, int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial) {
+    private static int calculateOpenKingFilePenalty(EngineConfig config, int kingFile, long friendlyPawns, long opponentPawns, Board board, boolean isWhite) {
         int openKingFilePenalty = 0;
-        if (opponentMaterial.rooks() > 0 || opponentMaterial.queens() > 0) {
+        if (Bitwise.countBits(board.getRooks(!isWhite)) > 0 || Bitwise.countBits(board.getQueens(!isWhite)) > 0) {
 
             for (int attackFile = kingFile - 1; attackFile <= kingFile + 1; attackFile++) {
                 if (attackFile < 0 || attackFile > 7) {

@@ -70,7 +70,6 @@ public class Searcher implements Search {
     @Override
     public SearchResult search(Duration duration) {
 
-        evaluator.evaluate(board);
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;

@@ -37,8 +37,8 @@ public class Evaluator2 implements Evaluation {
         int whiteMaterialScore = whiteMaterial.sum(config, phase);
         int blackMaterialScore = blackMaterial.sum(config, phase);
 
-        int whitePiecePlacementScore = PiecePlacement.score(config, board, phase, board.isWhiteToMove());
-        int blackPiecePlacementScore = PiecePlacement.score(config, board, phase, !board.isWhiteToMove());
+        int whitePiecePlacementScore = PiecePlacement.score(config, board, phase, true);
+        int blackPiecePlacementScore = PiecePlacement.score(config, board, phase, false);
 
         int whiteMobilityScore = Mobility.score(config, board, true, phase);
         int blackMobilityScore = Mobility.score(config, board, false, phase);
@@ -46,14 +46,14 @@ public class Evaluator2 implements Evaluation {
         int whitePawnStructureScore = PawnEvaluation.score(config, board.getPawns(true), board.getPawns(false), phase, true);
         int blackPawnStructureScore = PawnEvaluation.score(config, board.getPawns(false), board.getPawns(true), phase, false);
 
-        int whiteKingSafetyScore = KingSafety.score(config, board, blackMaterial, phase, true);
-        int blackKingSafetyScore = KingSafety.score(config, board, whiteMaterial, phase, false);
+        int whiteKingSafetyScore = KingSafety.score(config, board, phase, true);
+        int blackKingSafetyScore = KingSafety.score(config, board, phase, false);
 
         int whiteRookScore = RookEvaluation.score(config, board, phase, true);
         int blackRookScore = RookEvaluation.score(config, board, phase, false);
 
-        int whiteMopUpScore = MopUp.score(config, board, whiteMaterial, blackMaterial, true);
-        int blackMopUpScore = MopUp.score(config, board, blackMaterial, whiteMaterial, false);
+        int whiteMopUpScore = MopUp.score(config, board, whiteMaterialScore, blackMaterialScore, phase, true);
+        int blackMopUpScore = MopUp.score(config, board, whiteMaterialScore, blackMaterialScore, phase, false);
 
         int whiteTempoBonus = board.isWhiteToMove() ? config.getTempoBonus() : 0;
         int blackTempoBonus = board.isWhiteToMove() ? 0 : config.getTempoBonus();

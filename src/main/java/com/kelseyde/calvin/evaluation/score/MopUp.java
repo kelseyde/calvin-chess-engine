@@ -16,10 +16,10 @@ import com.kelseyde.calvin.utils.Distance;
  */
 public class MopUp {
 
-    public static int score(EngineConfig config, Board board, Material friendlyMaterial, Material opponentMaterial, boolean isWhite) {
+    public static int score(EngineConfig config, Board board, int whiteMaterialScore, int blackMaterialScore, float phase, boolean isWhite) {
 
-        int friendlyMaterialScore = friendlyMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
-        int opponentMaterialScore = opponentMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        int friendlyMaterialScore = isWhite ? whiteMaterialScore : blackMaterialScore;
+        int opponentMaterialScore = isWhite ? blackMaterialScore : whiteMaterialScore;
 
         boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
         if (!twoPawnAdvantage) {
@@ -38,7 +38,7 @@ public class MopUp {
         mopUpEval += Distance.centerManhattan(opponentKing) * config.getKingCenterManhattanDistanceMultiplier();
 
         // Taper the eval based on how much material the opponent has remaining
-        return (int) (mopUpEval * (1 - Phase.fromMaterial(opponentMaterial)));
+        return Phase.taperedEval(0, mopUpEval, phase);
 
     }
 

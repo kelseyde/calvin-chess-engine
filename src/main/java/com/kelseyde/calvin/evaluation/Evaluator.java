@@ -59,20 +59,9 @@ public class Evaluator implements Evaluation {
         long blackQueens = board.getBlackQueens();
         long blackKing = board.getBlackKing();
 
-        int whitePawnsCount = Bitwise.countBits(whitePawns);
-        int whiteKnightsCount = Bitwise.countBits(whiteKnights);
-        int whiteBishopsCount = Bitwise.countBits(whiteBishops);
-        int whiteRooksCount = Bitwise.countBits(whiteRooks);
-        int whiteQueensCount = Bitwise.countBits(whiteQueens);
+        Material whiteMaterial = Material.fromBoard(board, true);
+        Material blackMaterial = Material.fromBoard(board, false);
 
-        int blackPawnsCount = Bitwise.countBits(blackPawns);
-        int blackKnightsCount = Bitwise.countBits(blackKnights);
-        int blackBishopsCount = Bitwise.countBits(blackBishops);
-        int blackRooksCount = Bitwise.countBits(blackRooks);
-        int blackQueensCount = Bitwise.countBits(blackQueens);
-
-        Material whiteMaterial = new Material(whitePawnsCount, whiteKnightsCount, whiteBishopsCount, whiteRooksCount, whiteQueensCount);
-        Material blackMaterial = new Material(blackPawnsCount, blackKnightsCount, blackBishopsCount, blackRooksCount, blackQueensCount);
         float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
 
         int whiteMaterialMiddlegameScore = scoreMaterial(whiteMaterial, config.getPieceValues()[0], config.getBishopPairBonus());

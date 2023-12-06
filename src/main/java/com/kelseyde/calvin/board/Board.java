@@ -282,4 +282,13 @@ public class Board {
         return isWhite ? whitePieces : blackPieces;
     }
 
+    public boolean hasPiecesRemaining(boolean isWhite) {
+        if (isWhite && Bitwise.countBits(whiteKnights) > 0 || Bitwise.countBits(whiteBishops) > 0 ||
+                Bitwise.countBits(whiteRooks) > 0 || Bitwise.countBits(whiteQueens) > 0) {
+            return true;
+        }
+        else return Bitwise.countBits(blackKnights) > 0 || Bitwise.countBits(blackBishops) > 0 ||
+                Bitwise.countBits(blackRooks) > 0 || Bitwise.countBits(blackQueens) > 0;
+    }
+
 }

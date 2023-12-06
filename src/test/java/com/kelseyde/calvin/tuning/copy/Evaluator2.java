@@ -46,8 +46,8 @@ public class Evaluator2 implements Evaluation {
         int whitePawnStructureScore = PawnEvaluation.score(config, board.getPawns(true), board.getPawns(false), phase, true);
         int blackPawnStructureScore = PawnEvaluation.score(config, board.getPawns(false), board.getPawns(true), phase, false);
 
-        int whiteKingSafetyScore = KingSafety.score(config, board, phase, true);
-        int blackKingSafetyScore = KingSafety.score(config, board, phase, false);
+        int whiteKingSafetyScore = KingSafety.score(config, board, blackMaterial, phase, true);
+        int blackKingSafetyScore = KingSafety.score(config, board, whiteMaterial, phase, false);
 
         int whiteRookScore = RookEvaluation.score(config, board, phase, true);
         int blackRookScore = RookEvaluation.score(config, board, phase, false);

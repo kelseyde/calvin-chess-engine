@@ -196,7 +196,7 @@ public class Searcher2 implements Search {
             // Null move pruning: if the static eval > beta - some margin, and so is likely to fail high, then let's test
             // this theory by giving the opponent an extra move (making a 'null' move), and searching the resulting position
             // to a shallower depth. If the result still fails high, prune this node.
-            boolean isPawnEndgame = !evaluator.getMaterial(board.isWhiteToMove()).hasPiecesRemaining();
+            boolean isPawnEndgame = !board.hasPiecesRemaining(board.isWhiteToMove());
             if (depth >= config.getNmpDepth() && allowNull && staticEval >= beta - config.getNmpMargin() && !isPawnEndgame) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);

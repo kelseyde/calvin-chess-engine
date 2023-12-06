@@ -7,6 +7,7 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.EvaluatorCopy;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.notation.Notation;
 import com.kelseyde.calvin.utils.notation.PGN;
 
 import java.util.List;
@@ -34,8 +35,8 @@ public class EPerftService {
             int eval = evaluator.evaluate(board);
             int otherEval = evaluatorCopy.evaluate(board);
             int diff = Math.abs(eval - otherEval);
-            if (diff > 50) {
-                System.out.printf("%s / %s : %s %n", eval, otherEval, PGN.toPGN(board));
+            if (diff > 30) {
+                System.out.printf("%s / %s : %s %n", eval, otherEval, Notation.toNotation(board.getMoveHistory()));
             }
             ePerft(board, depth - 1);
             board.unmakeMove();

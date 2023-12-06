@@ -8,6 +8,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.score.KingSafety;
 import com.kelseyde.calvin.evaluation.score.Material;
 import com.kelseyde.calvin.evaluation.score.Phase;
+import com.kelseyde.calvin.evaluation.score.Score;
 import com.kelseyde.calvin.generation.Attacks;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
@@ -64,12 +65,12 @@ public class Evaluator implements Evaluation {
 
         float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
 
-        int whiteMaterialMiddlegameScore = scoreMaterial(whiteMaterial, config.getPieceValues()[0], config.getBishopPairBonus());
-        int whiteMaterialEndgameScore = scoreMaterial(whiteMaterial, config.getPieceValues()[1], config.getBishopPairBonus());
+        int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
+        int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
         updateScore(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, true);
 
-        int blackMaterialMiddlegameScore = scoreMaterial(blackMaterial, config.getPieceValues()[0], config.getBishopPairBonus());
-        int blackMaterialEndgameScore = scoreMaterial(blackMaterial, config.getPieceValues()[1], config.getBishopPairBonus());;
+        int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
+        int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
         updateScore(blackMaterialMiddlegameScore, blackMaterialEndgameScore, false);
 
         // Blockers used during mobility calculations
@@ -95,8 +96,8 @@ public class Evaluator implements Evaluation {
         scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
         scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
 
-        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, blackMaterial, whiteMaterialEndgameScore, blackMaterialEndgameScore, board, phase, true);
-        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, whiteMaterial, blackMaterialEndgameScore, whiteMaterialEndgameScore, board, phase, false);
+        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
+        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
 
         int whiteTempoBonus = board.isWhiteToMove() ? config.getTempoBonus() : 0;
         int blackTempoBonus = board.isWhiteToMove() ? 0 : config.getTempoBonus();
@@ -121,8 +122,8 @@ public class Evaluator implements Evaluation {
         int isolatedPawnCount = 0;
         int doubledPawnCount = 0;
 
-        int[] pawnMiddlegameTable = config.getMiddlegameTables()[Piece.PAWN.getIndex()];
-        int[] pawnEndgameTable = config.getEndgameTables()[Piece.PAWN.getIndex()];
+        int[] mgPieceSquareTable = config.getMiddlegameTables()[Piece.PAWN.getIndex()];
+        int[] egPieceSquareTable = config.getEndgameTables()[Piece.PAWN.getIndex()];
 
         long pawnsIterator = friendlyPawns;
         while (pawnsIterator > 0) {
@@ -130,8 +131,8 @@ public class Evaluator implements Evaluation {
             int file = BoardUtils.getFile(pawn);
 
             int squareIndex = isWhite ? pawn ^ 56 : pawn;
-            middlegameScore += pawnMiddlegameTable[squareIndex];
-            endgameScore += pawnEndgameTable[squareIndex];
+            middlegameScore += mgPieceSquareTable[squareIndex];
+            endgameScore += egPieceSquareTable[squareIndex];
 
             // Bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
             // Bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
@@ -327,9 +328,8 @@ public class Evaluator implements Evaluation {
                            long opponentKing,
                            long friendlyPawns,
                            long opponentPawns,
+                           Material friendlyMaterial,
                            Material opponentMaterial,
-                           int friendlyMaterialScore,
-                           int opponentMaterialScore,
                            Board board,
                            float phase,
                            boolean isWhite) {
@@ -361,6 +361,8 @@ public class Evaluator implements Evaluation {
         }
 
         // Mop-up evaluation
+        int friendlyMaterialScore = friendlyMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        int opponentMaterialScore = opponentMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
         boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
         if (twoPawnAdvantage) {
             int mopUpEval = 0;
@@ -376,18 +378,6 @@ public class Evaluator implements Evaluation {
         }
         updateScore(middlegameScore, endgameScore, isWhite);
 
-    }
-
-    /**
-     * Based on a provided piece-value array, counts the material score in centipawns.
-     */
-    private int scoreMaterial(Material material, int[] pieceValues, int bishopPairBonus) {
-        return (material.pawns() * pieceValues[Piece.PAWN.getIndex()]) +
-                (material.knights() * pieceValues[Piece.KNIGHT.getIndex()]) +
-                (material.bishops() * pieceValues[Piece.BISHOP.getIndex()]) +
-                (material.rooks() * pieceValues[Piece.ROOK.getIndex()]) +
-                (material.queens() * pieceValues[Piece.QUEEN.getIndex()]) +
-                (material.bishops() == 2 ? bishopPairBonus : 0);
     }
 
     private static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {

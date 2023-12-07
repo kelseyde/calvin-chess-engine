@@ -36,7 +36,6 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Searcher2 implements Search {
-
     EngineConfig config;
     MoveGeneration moveGenerator;
     MoveOrdering moveOrderer;
@@ -71,7 +70,6 @@ public class Searcher2 implements Search {
     @Override
     public SearchResult search(Duration duration) {
 
-        evaluator.evaluate(board);
         timeout = Instant.now().plus(duration);
         result = null;
         resultCurrentDepth = null;
@@ -400,8 +398,8 @@ public class Searcher2 implements Search {
         return entry != null &&
                 entry.getDepth() >= plyRemaining &&
                 ((entry.getFlag().equals(HashFlag.EXACT)) ||
-                 (entry.getFlag().equals(HashFlag.UPPER) && entry.getScore() <= alpha) ||
-                 (entry.getFlag().equals(HashFlag.LOWER) && entry.getScore() >= beta));
+                        (entry.getFlag().equals(HashFlag.UPPER) && entry.getScore() <= alpha) ||
+                        (entry.getFlag().equals(HashFlag.LOWER) && entry.getScore() >= beta));
     }
 
     private boolean hasBestMove(HashEntry transposition) {

@@ -9,7 +9,7 @@ import com.kelseyde.calvin.utils.BoardUtils;
  * Uses simple pawn heuristics to give bonuses for passed pawns, especially for passed pawns that are protected or else
  * close to promotion, and penalties for isolated or doubled pawns.
  */
-public class PawnEvaluation {
+public class PawnStructure {
 
     public static int score(EngineConfig config, long friendlyPawns, long opponentPawns, float phase, boolean isWhite) {
 
@@ -56,6 +56,7 @@ public class PawnEvaluation {
         return Phase.taperedEval(middlegameScore, endgameScore, phase);
 
     }
+
 
     private static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
         long passedPawnMask = isWhite ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];

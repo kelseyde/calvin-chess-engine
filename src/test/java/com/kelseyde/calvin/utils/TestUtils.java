@@ -44,7 +44,7 @@ public class TestUtils {
     public static final Searcher SEARCHER_COPY = new Searcher(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb()));
 
     public static Engine getEngine() {
-        return new Engine(PRD_CONFIG, OPENING_BOOK, new MoveGenerator(), new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
+        return new Engine(PRD_CONFIG, OPENING_BOOK, new MoveGenerator(), new Searcher(PRD_CONFIG, new MoveGenerator(), new MoveOrderer(), new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
     }
 
     public static Engine getEngineCopy() {

@@ -17,7 +17,7 @@ public class MatchTest {
                 .maxMoves(100)
                 .minThinkTimeMs(15)
                 .maxThinkTimeMs(40)
-                .threadCount(1)
+                .threadCount(9)
                 .build();
 
         MatchManager match = new MatchManager(config);

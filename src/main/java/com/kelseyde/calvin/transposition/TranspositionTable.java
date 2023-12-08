@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.transposition;
 
 import com.kelseyde.calvin.board.Move;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -16,16 +18,17 @@ import java.util.Objects;
  * </p>
  * @see <a href="https://www.chessprogramming.org/Transposition_Table">Chess Programming Wiki</a>
  */
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TranspositionTable {
 
-    private static final int ENTRY_SIZE_BYTES = 32;
-    private static final int CHECKMATE_BOUND = 1000000 - 256;
+    static final int ENTRY_SIZE_BYTES = 32;
+    static final int CHECKMATE_BOUND = 1000000 - 256;
 
-    private final int tableSize;
-    private HashEntry[] entries;
+    final int tableSize;
+    HashEntry[] entries;
 
-    private int tries;
-    private int hits;
+    int tries;
+    int hits;
 
     public TranspositionTable(int tableSizeMb) {
         this.tableSize = (tableSizeMb / ENTRY_SIZE_BYTES) * 1024 * 1024;
@@ -95,6 +98,8 @@ public class TranspositionTable {
 
     public void clear() {
         printStatistics();
+        tries = 0;
+        hits = 0;
         entries = new HashEntry[tableSize];
     }
 

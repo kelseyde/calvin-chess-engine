@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation.score;
+package com.kelseyde.calvin.evaluation;
 
 /**
  * Calculates a tapered evaluation value indicating what game 'phase' we are in. A value of 1 indicates we are in the opening/

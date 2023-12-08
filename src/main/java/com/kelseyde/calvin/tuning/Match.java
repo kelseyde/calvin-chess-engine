@@ -2,7 +2,7 @@ package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.Arbiter;
+import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.notation.FEN;
 
@@ -139,13 +139,13 @@ public class Match {
                 return GameResult.DRAW_BY_STALEMATE;
             }
         }
-        if (Arbiter.isThreefoldRepetition(board)) {
+        if (Result.isThreefoldRepetition(board)) {
             return GameResult.DRAW_BY_REPETITION;
         }
-        if (Arbiter.isInsufficientMaterial(board)) {
+        if (Result.isInsufficientMaterial(board)) {
             return GameResult.DRAW_BY_INSUFFICIENT_MATERIAL;
         }
-        if (Arbiter.isFiftyMoveRule(board)) {
+        if (Result.isFiftyMoveRule(board)) {
             return GameResult.DRAW_BY_FIFTY_MOVE_RULE;
         }
         return GameResult.IN_PROGRESS;

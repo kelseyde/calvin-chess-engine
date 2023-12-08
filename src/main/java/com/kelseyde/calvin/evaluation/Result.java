@@ -7,7 +7,7 @@ import com.kelseyde.calvin.search.Search;
 
 import java.util.Iterator;
 
-public class Arbiter {
+public class Result {
 
     /**
      * Check for an 'effective' draw, which treats a single repetition of the position as a draw.

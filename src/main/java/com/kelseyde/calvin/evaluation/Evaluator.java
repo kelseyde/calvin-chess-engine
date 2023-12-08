@@ -5,7 +5,9 @@ import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.score.*;
+import com.kelseyde.calvin.evaluation.score.Material;
+import com.kelseyde.calvin.evaluation.score.Phase;
+import com.kelseyde.calvin.evaluation.score.Score;
 import com.kelseyde.calvin.generation.Attacks;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
@@ -94,10 +96,11 @@ public class Evaluator implements Evaluation {
         scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
         scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
 
-        int whiteTempoBonus = board.isWhiteToMove() ? config.getTempoBonus() : 0;
-        int blackTempoBonus = board.isWhiteToMove() ? 0 : config.getTempoBonus();
-        score.setWhiteTempoBonus(whiteTempoBonus);
-        score.setBlackTempoBonus(blackTempoBonus);
+        if (board.isWhiteToMove()) {
+            score.setWhiteTempoBonus(config.getTempoBonus());
+        } else {
+            score.setBlackTempoBonus(config.getTempoBonus());
+        }
 
         return score.sum(isWhite);
 
@@ -132,17 +135,22 @@ public class Evaluator implements Evaluation {
 
             // Bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
             // Bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
-            if (isPassedPawn(pawn, opponentPawns, isWhite)) {
-                pawnStructureMgScore += calculatePassedPawnBonus(pawn, isWhite, config.getPassedPawnBonus()[0]);
-                pawnStructureMgScore += calculateProtectedPawnBonus(config, pawn, friendlyPawns, isWhite);
-                pawnStructureEgScore += calculatePassedPawnBonus(pawn, isWhite, config.getPassedPawnBonus()[1]);
-                pawnStructureEgScore += calculateProtectedPawnBonus(config, pawn, friendlyPawns, isWhite);
+            if (Bitwise.isPassedPawn(pawn, opponentPawns, isWhite)) {
+                int rank = BoardUtils.getRank(pawn);
+                int squaresFromPromotion = isWhite ? 7 - rank : rank;
+                pawnStructureMgScore += config.getPassedPawnBonus()[0][squaresFromPromotion];
+                pawnStructureEgScore += config.getPassedPawnBonus()[1][squaresFromPromotion];
+
+                int numberOfProtectors = Bitwise.countPawnProtectors(pawn, friendlyPawns, isWhite);
+                int protectedPawnBonus = numberOfProtectors * config.getProtectedPassedPawnBonus();
+                pawnStructureMgScore += protectedPawnBonus;
+                pawnStructureEgScore += protectedPawnBonus;
             }
             // Passed pawns are not penalised for being isolated
-            else if (isIsolatedPawn(file, friendlyPawns)) {
+            else if (Bitwise.isIsolatedPawn(file, friendlyPawns)) {
                 isolatedPawnCount++;
             }
-            if (isDoubledPawn(file, friendlyPawns)) {
+            if (Bitwise.isDoubledPawn(file, friendlyPawns)) {
                 doubledPawnCount++;
             }
 
@@ -350,11 +358,8 @@ public class Evaluator implements Evaluation {
                            Board board,
                            float phase,
                            boolean isWhite) {
-
         int piecePlacementMgScore = 0;
         int piecePlacementEgScore = 0;
-        int kingSafetyScore = 0;
-        int mopUpScore = 0;
 
         int[] mgPieceSquareTable = config.getMiddlegameTables()[Piece.KING.getIndex()];
         int[] egPieceSquareTable = config.getEndgameTables()[Piece.KING.getIndex()];
@@ -365,63 +370,118 @@ public class Evaluator implements Evaluation {
         int squareIndex = isWhite ? friendlyKingSquare ^ 56 : friendlyKingSquare;
         piecePlacementMgScore += mgPieceSquareTable[squareIndex];
         piecePlacementEgScore += egPieceSquareTable[squareIndex];
-
-        // King safety evaluation
-        if (phase > 0.5) {
-            int pawnShieldPenalty = KingSafety.calculatePawnShieldPenalty(config, friendlyKingSquare, friendlyKingFile, friendlyPawns);
-            int openKingFilePenalty = KingSafety.calculateOpenKingFilePenalty(config, friendlyKingFile, friendlyPawns, opponentPawns, opponentMaterial, isWhite);
-            int lostCastlingRightsPenalty = KingSafety.calculateLostCastlingRightsPenalty(config, board, isWhite, friendlyKingFile);
-            if (opponentMaterial.queens() == 0) {
-                phase *= 0.6f;
-            }
-            kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
-        }
-
-        // Mop-up evaluation
-        int friendlyMaterialScore = friendlyMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
-        int opponentMaterialScore = opponentMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
-        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
-        if (twoPawnAdvantage) {
-            int opponentKingSquare = Bitwise.getNextBit(opponentKing);
-
-            // Bonus for moving king closer to opponent king
-            mopUpScore += (14 - Distance.manhattan(friendlyKingSquare, opponentKingSquare)) * config.getKingManhattanDistanceMultiplier();
-            mopUpScore += (7 - Distance.chebyshev(friendlyKingSquare, opponentKingSquare)) * config.getKingChebyshevDistanceMultiplier();
-
-            // Bonus for pushing opponent king to the edges of the board
-            mopUpScore += Distance.centerManhattan(opponentKingSquare) * config.getKingCenterManhattanDistanceMultiplier();
-
-            mopUpScore = (int) (mopUpScore * (1 - Phase.fromMaterial(opponentMaterial)));
-        }
         score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, isWhite);
+
+        int kingSafetyScore = evaluateKingSafety(friendlyKingSquare, friendlyKingFile, friendlyPawns, opponentPawns, opponentMaterial, board, phase, isWhite);
         score.setKingSafetyScore(kingSafetyScore, isWhite);
+
+        int mopUpScore = evaluateMopUp(friendlyKingSquare, opponentKing, friendlyMaterial, opponentMaterial);
         score.setMopUpScore(mopUpScore, isWhite);
 
     }
 
-    private static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
-        long passedPawnMask = isWhite ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];
-        return (passedPawnMask & opponentPawns) == 0;
+    /**
+     * The king is penalised for being uncastled; for being castled but with the pawns infront of the king (the 'pawn shield')
+     * pushed too far up the board; or for having open or semi-open files either infront of or adjacent to the king. This
+     * evaluation matters less in the endgame, when there are fewer pieces on the board, and the king becomes a more active piece.
+     * </p>
+     * @see <a href="https://www.chessprogramming.org/King_Safety">Chess Programming Wiki</a>
+     */
+    private int evaluateKingSafety(int kingSquare,
+                                   int kingFile,
+                                   long friendlyPawns,
+                                   long opponentPawns,
+                                   Material opponentMaterial,
+                                   Board board,
+                                   float phase,
+                                   boolean isWhite) {
+        // King safety evaluation
+        if (phase <= 0.5) return 0;
+        int pawnShieldPenalty = calculatePawnShieldPenalty(config, kingSquare, kingFile, friendlyPawns);
+        int openKingFilePenalty = calculateOpenKingFilePenalty(config, kingFile, friendlyPawns, opponentPawns, opponentMaterial, isWhite);
+        int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(config, board, isWhite, kingFile);
+        if (opponentMaterial.queens() == 0) {
+            phase *= 0.6f;
+        }
+        return (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
     }
 
-    private static boolean isIsolatedPawn(int file, long friendlyPawns) {
-        return (Bits.ADJACENT_FILE_MASK[file] & friendlyPawns) == 0;
+    /**
+     * When the side-to-move is up a decisive amount of material, give a small bonus for escorting the opponent king to
+     * the sides or corners of the board. This assists the engine in finding forced mate.
+     * </p>
+     * @see <a href="https://www.chessprogramming.org/Mop-up_Evaluation">Chess Programming Wiki</a>
+     */
+    private int evaluateMopUp(int friendlyKingSquare,
+                              long opponentKing,
+                              Material friendlyMaterial,
+                              Material opponentMaterial) {
+        int mopUpScore = 0;
+        int friendlyMaterialScore = friendlyMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        int opponentMaterialScore = opponentMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
+        if (!twoPawnAdvantage) return 0;
+        int opponentKingSquare = Bitwise.getNextBit(opponentKing);
+
+        // Bonus for moving king closer to opponent king
+        mopUpScore += (14 - Distance.manhattan(friendlyKingSquare, opponentKingSquare)) * config.getKingManhattanDistanceMultiplier();
+        mopUpScore += (7 - Distance.chebyshev(friendlyKingSquare, opponentKingSquare)) * config.getKingChebyshevDistanceMultiplier();
+
+        // Bonus for pushing opponent king to the edges of the board
+        mopUpScore += Distance.centerManhattan(opponentKingSquare) * config.getKingCenterManhattanDistanceMultiplier();
+
+        return (int) (mopUpScore * (1 - Phase.fromMaterial(opponentMaterial)));
     }
 
-    private static boolean isDoubledPawn(int file, long friendlyPawns) {
-        long fileMask = Bits.FILE_MASKS[file];
-        return Bitwise.countBits(friendlyPawns & fileMask) > 1;
+    private static int calculatePawnShieldPenalty(EngineConfig config, int kingSquare, int kingFile, long pawns) {
+        boolean isCastled = kingFile <= 2 || kingFile >= 5;
+        if (!isCastled) return 0;
+        int pawnShieldPenalty = 0;
+        long pawnShield = Bitwise.getPawnShield(kingFile, pawns);
+        while (pawnShield != 0) {
+            int distance = Distance.chebyshev(kingSquare, Bitwise.getNextBit(pawnShield));
+            pawnShieldPenalty += config.getKingPawnShieldPenalty()[distance];
+            pawnShield = Bitwise.popBit(pawnShield);
+        }
+        return pawnShieldPenalty;
     }
 
-    private static int calculatePassedPawnBonus(int pawn, boolean isWhite, int[] passedPawnBonuses) {
-        int rank = BoardUtils.getRank(pawn);
-        int squaresFromPromotion = isWhite ? 7 - rank : rank;
-        return passedPawnBonuses[squaresFromPromotion];
+    private static int calculateOpenKingFilePenalty(EngineConfig config, int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial, boolean isWhite) {
+        if (opponentMaterial.rooks() == 0 && opponentMaterial.queens() == 0) {
+            return 0;
+        }
+        int openKingFilePenalty = 0;
+        for (int attackFile = kingFile - 1; attackFile <= kingFile + 1; attackFile++) {
+            if (attackFile < 0 || attackFile > 7) {
+                continue;
+            }
+            long fileMask = Bits.FILE_MASKS[attackFile];
+            boolean isKingFile = attackFile == kingFile;
+            boolean isFriendlyPawnMissing = (friendlyPawns & fileMask) == 0;
+            boolean isOpponentPawnMissing = (opponentPawns & fileMask) == 0;
+            if (isFriendlyPawnMissing || isOpponentPawnMissing) {
+                // Add penalty for semi-open file around the king
+                openKingFilePenalty += isKingFile ? config.getKingSemiOpenFilePenalty() : config.getKingSemiOpenAdjacentFilePenalty();
+            }
+            if (isFriendlyPawnMissing && isOpponentPawnMissing) {
+                // Add penalty for fully open file around king
+                openKingFilePenalty += isKingFile ? config.getKingOpenFilePenalty() : config.getKingSemiOpenFilePenalty();
+            }
+        }
+        return openKingFilePenalty;
     }
 
-    private static int calculateProtectedPawnBonus(EngineConfig config, int pawn, long friendlyPawns, boolean isWhite) {
-        long protectionMask = isWhite ? Bits.WHITE_PROTECTED_PAWN_MASK[pawn] : Bits.BLACK_PROTECTED_PAWN_MASK[pawn];
-        return Bitwise.countBits(protectionMask & friendlyPawns) * config.getProtectedPassedPawnBonus();
+    private static int calculateLostCastlingRightsPenalty(EngineConfig config, Board board, boolean isWhite, int kingFile) {
+        boolean isCastled = kingFile <= 2 || kingFile >= 5;
+        if (isCastled) return 0;
+        boolean hasCastlingRights = board.getGameState().hasCastlingRights(isWhite);
+        boolean opponentHasCastlingRights = board.getGameState().hasCastlingRights(!isWhite);
+        return !hasCastlingRights && opponentHasCastlingRights ? config.getKingLostCastlingRightsPenalty() : 0;
+    }
+
+    @Override
+    public Score getScore() {
+        return score;
     }
 
 }

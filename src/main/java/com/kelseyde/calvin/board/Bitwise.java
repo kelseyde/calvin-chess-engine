@@ -114,6 +114,30 @@ public class Bitwise {
                 Bitwise.shiftSouthEast(pawns) & opponents &~ Bits.FILE_A & Bits.RANK_1;
     }
 
+    public static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
+        long passedPawnMask = isWhite ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];
+        return (passedPawnMask & opponentPawns) == 0;
+    }
+
+    public static boolean isIsolatedPawn(int file, long friendlyPawns) {
+        return (Bits.ADJACENT_FILE_MASK[file] & friendlyPawns) == 0;
+    }
+
+    public static boolean isDoubledPawn(int file, long friendlyPawns) {
+        long fileMask = Bits.FILE_MASKS[file];
+        return countBits(friendlyPawns & fileMask) > 1;
+    }
+
+    public static long getPawnShield(int kingFile, long pawns) {
+        long tripleFileMask = Bits.TRIPLE_FILE_MASK[kingFile];
+        return tripleFileMask & pawns;
+    }
+
+    public static int countPawnProtectors(int pawn, long friendlyPawns, boolean isWhite) {
+        long protectionMask = isWhite ? Bits.WHITE_PROTECTED_PAWN_MASK[pawn] : Bits.BLACK_PROTECTED_PAWN_MASK[pawn];
+        return countBits(protectionMask & friendlyPawns);
+    }
+
     public static void print(long board) {
         String s = Long.toBinaryString(board);
         for (int i = 7; i >= 0; i--) {

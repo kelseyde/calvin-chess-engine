@@ -2,6 +2,8 @@ package com.kelseyde.calvin.evaluation.score;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.evaluation.Evaluation;
+import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -11,14 +13,21 @@ public class RookEvaluationTest {
 
     private final EngineConfig config = TestUtils.TST_CONFIG;
 
+    private final Evaluation evaluator = new Evaluator(config);
+
     @Test
     public void testBothPawnsThenNoBonus() {
 
         String fen = "k1r5/2p1p3/8/8/8/8/2P1P3/4R2K w - - 0 1";
         Board board = FEN.toBoard(fen);
+        evaluator.evaluate(board);
+        Score score = evaluator.getScore();
 
-        Assertions.assertEquals(0, RookEvaluation.score(config, board, 1, true));
-        Assertions.assertEquals(0, RookEvaluation.score(config, board, 1, false));
+        int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
+        int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
+
+        Assertions.assertEquals(0, whiteScore);
+        Assertions.assertEquals(0, blackScore);
 
     }
 
@@ -27,9 +36,14 @@ public class RookEvaluationTest {
 
         String fen = "k1r5/2p5/8/8/8/8/4P3/4R2K w - - 0 1";
         Board board = FEN.toBoard(fen);
+        evaluator.evaluate(board);
+        Score score = evaluator.getScore();
 
-        Assertions.assertEquals(0, RookEvaluation.score(config, board, 1, true));
-        Assertions.assertEquals(0, RookEvaluation.score(config, board, 1, false));
+        int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
+        int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
+
+        Assertions.assertEquals(0, whiteScore);
+        Assertions.assertEquals(0, blackScore);
 
     }
 
@@ -38,9 +52,14 @@ public class RookEvaluationTest {
 
         String fen = "k1r5/4p3/8/8/8/8/2P5/4R2K w - - 0 1";
         Board board = FEN.toBoard(fen);
+        evaluator.evaluate(board);
+        Score score = evaluator.getScore();
 
-        Assertions.assertEquals(18, RookEvaluation.score(config, board, 1, true));
-        Assertions.assertEquals(18, RookEvaluation.score(config, board, 1, false));
+        int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
+        int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
+
+        Assertions.assertEquals(15, whiteScore);
+        Assertions.assertEquals(15, blackScore);
 
     }
 
@@ -49,9 +68,14 @@ public class RookEvaluationTest {
 
         String fen = "k1r5/8/8/8/8/8/8/4R2K w - - 0 1";
         Board board = FEN.toBoard(fen);
+        evaluator.evaluate(board);
+        Score score = evaluator.getScore();
 
-        Assertions.assertEquals(42, RookEvaluation.score(config, board, 1, true));
-        Assertions.assertEquals(42, RookEvaluation.score(config, board, 1, false));
+        int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
+        int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
+
+        Assertions.assertEquals(24, whiteScore);
+        Assertions.assertEquals(24, blackScore);
 
     }
 
@@ -60,9 +84,14 @@ public class RookEvaluationTest {
 
         String fen = "k1r5/3p2p1/8/1p1P4/8/8/1p1P1PPP/4R2K w - - 0 1";
         Board board = FEN.toBoard(fen);
+        evaluator.evaluate(board);
+        Score score = evaluator.getScore();
 
-        Assertions.assertEquals(42, RookEvaluation.score(config, board, 1, true));
-        Assertions.assertEquals(42, RookEvaluation.score(config, board, 1, false));
+        int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
+        int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
+
+        Assertions.assertEquals(24, whiteScore);
+        Assertions.assertEquals(24, blackScore);
 
     }
 
@@ -71,9 +100,14 @@ public class RookEvaluationTest {
 
         String fen = "k1r5/3pp1p1/8/1p1P4/8/8/1pPP1PPP/4R2K w - - 0 1";
         Board board = FEN.toBoard(fen);
+        evaluator.evaluate(board);
+        Score score = evaluator.getScore();
 
-        Assertions.assertEquals(18, RookEvaluation.score(config, board, 1, true));
-        Assertions.assertEquals(18, RookEvaluation.score(config, board, 1, false));
+        int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
+        int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
+
+        Assertions.assertEquals(15, whiteScore);
+        Assertions.assertEquals(15, blackScore);
 
     }
 

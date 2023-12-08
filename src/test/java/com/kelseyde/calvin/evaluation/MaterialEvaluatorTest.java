@@ -2,8 +2,6 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.score.Material;
-import com.kelseyde.calvin.evaluation.score.Score;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;

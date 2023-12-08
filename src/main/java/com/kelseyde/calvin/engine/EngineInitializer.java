@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class EngineInitializer {
 
     static final String DEFAULT_CONFIG_LOCATION = "/engine_config.json";
-    static final String DEFAULT_OPENING_BOOK_LOCATION = "/opening_book.txt";
+    static final String DEFAULT_BOOK_LOCATION = "/opening_book.txt";
     static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static Engine loadEngine() {
@@ -53,7 +53,7 @@ public class EngineInitializer {
     }
 
     public static OpeningBook loadDefaultOpeningBook() {
-        return loadOpeningBook(DEFAULT_OPENING_BOOK_LOCATION);
+        return loadOpeningBook(DEFAULT_BOOK_LOCATION);
     }
 
     public static OpeningBook loadOpeningBook(String bookLocation) {

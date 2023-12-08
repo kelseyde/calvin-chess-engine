@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation.score;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;

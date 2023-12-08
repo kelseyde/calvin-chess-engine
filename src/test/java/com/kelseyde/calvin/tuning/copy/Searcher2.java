@@ -4,9 +4,9 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Arbiter;
+import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.score.Score;
+import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.Search;
@@ -415,7 +415,7 @@ public class Searcher2 implements Search {
     }
 
     private boolean isDraw() {
-        return Arbiter.isEffectiveDraw(board);
+        return Result.isEffectiveDraw(board);
     }
 
     private long getKey() {

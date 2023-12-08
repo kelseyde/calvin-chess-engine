@@ -2,7 +2,7 @@ package com.kelseyde.calvin.generation.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.evaluation.Arbiter;
+import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -20,7 +20,7 @@ public class DrawByStalemateTest {
         board.toggleSquare(Piece.KING, false, 56);
         board.toggleSquare(Piece.KING, true, 42);
         board.toggleSquare(Piece.QUEEN, true, 1);
-        Assertions.assertFalse(Arbiter.isEffectiveDraw(board));
+        Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b6"));
 
@@ -33,7 +33,7 @@ public class DrawByStalemateTest {
     public void testSimpleKingAndPawnStalemate() {
 
         Board board = FEN.toBoard("4k3/4P3/3K4/8/8/8/8/8 w - - 0 1");
-        Assertions.assertFalse(Arbiter.isEffectiveDraw(board));
+        Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "d6", "e6"));
 
@@ -58,7 +58,7 @@ public class DrawByStalemateTest {
     public void testStalemateWithPinnedPawn() {
 
         Board board = FEN.toBoard("7k/6p1/7P/4BBK1/8/8/1Q6/8 w - - 0 1");
-        Assertions.assertFalse(Arbiter.isEffectiveDraw(board));
+        Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b2", "a2"));
 

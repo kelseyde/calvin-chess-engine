@@ -138,6 +138,16 @@ public class Bitwise {
         return countBits(protectionMask & friendlyPawns);
     }
 
+    public static boolean isOpenFile(int file, long friendlyPawns, long opponentPawns) {
+        long fileMask = Bits.FILE_MASKS[file];
+        return (fileMask & friendlyPawns) == 0 && (fileMask & opponentPawns) == 0;
+    }
+
+    public static boolean isSemiOpenFile(int file, long friendlyPawns, long opponentPawns) {
+        long fileMask = Bits.FILE_MASKS[file];
+        return (fileMask & friendlyPawns) == 0 && (fileMask & opponentPawns) != 0;
+    }
+
     public static void print(long board) {
         String s = Long.toBinaryString(board);
         for (int i = 7; i >= 0; i--) {

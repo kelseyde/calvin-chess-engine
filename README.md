@@ -50,7 +50,8 @@ The table below tracks the strength of release versions, on the CCRL computer ch
 - [Incremental updates](https://www.chessprogramming.org/Incremental_Updates): Evaluation is updated incrementally with make/unmake move
 
 ### Opening Book / Endgame Tablebase
-- Not yet! I would like to implement these soon.
+- Simple opening book loaded from a .txt file on startup. Can be disabled using the 'OwnBook' UCI option
+- No endgame tablebases implemented yet.
 
 ### Communication
 - [UCI protocol](https://www.chessprogramming.org/UCI) implemented with time management support.

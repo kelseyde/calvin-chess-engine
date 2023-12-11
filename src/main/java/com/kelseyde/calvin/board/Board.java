@@ -245,12 +245,12 @@ public class Board {
 
     public Piece pieceAt(int square) {
         long squareMask = 1L << square;
-        if ((squareMask & (whitePawns | blackPawns)) != 0)          return Piece.PAWN;
-        else if ((squareMask & (whiteKnights | blackKnights)) != 0) return Piece.KNIGHT;
-        else if ((squareMask & (whiteBishops | blackBishops)) != 0) return Piece.BISHOP;
-        else if ((squareMask & (whiteRooks | blackRooks)) != 0)     return Piece.ROOK;
-        else if ((squareMask & (whiteQueens | blackQueens)) != 0)   return Piece.QUEEN;
-        else if ((squareMask & (whiteKing | blackKing)) != 0)       return Piece.KING;
+        if ((squareMask & whitePawns) != 0 || (squareMask & blackPawns) != 0)          return Piece.PAWN;
+        else if ((squareMask & whiteKnights) != 0 || (squareMask & blackKnights) != 0) return Piece.KNIGHT;
+        else if ((squareMask & whiteBishops) != 0 || (squareMask & blackBishops) != 0) return Piece.BISHOP;
+        else if ((squareMask & whiteRooks) != 0 || (squareMask & blackRooks) != 0)     return Piece.ROOK;
+        else if ((squareMask & whiteQueens) != 0 || (squareMask & blackQueens) != 0)   return Piece.QUEEN;
+        else if ((squareMask & whiteKing) != 0 || (squareMask & blackKing) != 0)       return Piece.KING;
         else return null;
     }
 

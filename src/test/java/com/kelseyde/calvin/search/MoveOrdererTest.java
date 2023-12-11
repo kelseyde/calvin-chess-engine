@@ -119,7 +119,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("h2", "h4")
                 ));
 
-        Move killerMove = new Move(21, 29);
+        Move killerMove = Move.of(21, 29);
         moveOrderer.addKillerMove(2, killerMove);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
@@ -228,31 +228,31 @@ public class MoveOrdererTest {
         List<Move> legalMoves = moveGenerator.generateMoves(board);
 
         // Previous best move
-        Move previousBestMove = new Move(Notation.fromNotation("b8"), Notation.fromNotation("c7"));
+        Move previousBestMove = Move.of(Notation.fromNotation("b8"), Notation.fromNotation("c7"));
         // Add killer move
-        moveOrderer.addKillerMove(3, new Move(Notation.fromNotation("d7"), Notation.fromNotation("d5"), Move.PAWN_DOUBLE_MOVE_FLAG));
+        moveOrderer.addKillerMove(3, Move.of(Notation.fromNotation("d7"), Notation.fromNotation("d5"), Move.PAWN_DOUBLE_MOVE_FLAG));
         // Add history moves
-        moveOrderer.addHistoryMove(2, new Move(Notation.fromNotation("h7"), Notation.fromNotation("h5"), Move.PAWN_DOUBLE_MOVE_FLAG), false);
-        moveOrderer.addHistoryMove(3, new Move(Notation.fromNotation("g7"), Notation.fromNotation("g5"), Move.PAWN_DOUBLE_MOVE_FLAG), false);
+        moveOrderer.addHistoryMove(2, Move.of(Notation.fromNotation("h7"), Notation.fromNotation("h5"), Move.PAWN_DOUBLE_MOVE_FLAG), false);
+        moveOrderer.addHistoryMove(3, Move.of(Notation.fromNotation("g7"), Notation.fromNotation("g5"), Move.PAWN_DOUBLE_MOVE_FLAG), false);
         // Add a white history move just to confirm it is not used
-        moveOrderer.addHistoryMove(2, new Move(Notation.fromNotation("h3"), Notation.fromNotation("h2")), true);
+        moveOrderer.addHistoryMove(2, Move.of(Notation.fromNotation("h3"), Notation.fromNotation("h2")), true);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, 3);
 
-        Assertions.assertEquals(orderedMoves.get(0), new Move(Notation.fromNotation("b8"), Notation.fromNotation("c7")));
-        Assertions.assertEquals(orderedMoves.get(1), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_QUEEN_FLAG));
-        Assertions.assertEquals(orderedMoves.get(2), new Move(Notation.fromNotation("c6"), Notation.fromNotation("e4")));
-        Assertions.assertEquals(orderedMoves.get(3), new Move(Notation.fromNotation("h3"), Notation.fromNotation("g2")));
-        Assertions.assertEquals(orderedMoves.get(4), new Move(Notation.fromNotation("b6"), Notation.fromNotation("a4")));
-        Assertions.assertEquals(orderedMoves.get(5), new Move(Notation.fromNotation("d7"), Notation.fromNotation("e6")));
-        Assertions.assertEquals(orderedMoves.get(6), new Move(Notation.fromNotation("d7"), Notation.fromNotation("d5"), Move.PAWN_DOUBLE_MOVE_FLAG));
-        Assertions.assertEquals(orderedMoves.get(7), new Move(Notation.fromNotation("c6"), Notation.fromNotation("a4")));
-        Assertions.assertEquals(orderedMoves.get(8), new Move(Notation.fromNotation("a6"), Notation.fromNotation("a4")));
-        Assertions.assertEquals(orderedMoves.get(9), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_KNIGHT_FLAG));
-        Assertions.assertEquals(orderedMoves.get(10), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_BISHOP_FLAG));
-        Assertions.assertEquals(orderedMoves.get(11), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_ROOK_FLAG));
-        Assertions.assertEquals(orderedMoves.get(12), new Move(Notation.fromNotation("g7"), Notation.fromNotation("g5"), Move.PAWN_DOUBLE_MOVE_FLAG));
-        Assertions.assertEquals(orderedMoves.get(13), new Move(Notation.fromNotation("h7"), Notation.fromNotation("h5"), Move.PAWN_DOUBLE_MOVE_FLAG));
+        Assertions.assertEquals(orderedMoves.get(0), Move.of(Notation.fromNotation("b8"), Notation.fromNotation("c7")));
+        Assertions.assertEquals(orderedMoves.get(1), Move.of(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_QUEEN_FLAG));
+        Assertions.assertEquals(orderedMoves.get(2), Move.of(Notation.fromNotation("c6"), Notation.fromNotation("e4")));
+        Assertions.assertEquals(orderedMoves.get(3), Move.of(Notation.fromNotation("h3"), Notation.fromNotation("g2")));
+        Assertions.assertEquals(orderedMoves.get(4), Move.of(Notation.fromNotation("b6"), Notation.fromNotation("a4")));
+        Assertions.assertEquals(orderedMoves.get(5), Move.of(Notation.fromNotation("d7"), Notation.fromNotation("e6")));
+        Assertions.assertEquals(orderedMoves.get(6), Move.of(Notation.fromNotation("d7"), Notation.fromNotation("d5"), Move.PAWN_DOUBLE_MOVE_FLAG));
+        Assertions.assertEquals(orderedMoves.get(7), Move.of(Notation.fromNotation("c6"), Notation.fromNotation("a4")));
+        Assertions.assertEquals(orderedMoves.get(8), Move.of(Notation.fromNotation("a6"), Notation.fromNotation("a4")));
+        Assertions.assertEquals(orderedMoves.get(9), Move.of(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_KNIGHT_FLAG));
+        Assertions.assertEquals(orderedMoves.get(10), Move.of(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_BISHOP_FLAG));
+        Assertions.assertEquals(orderedMoves.get(11), Move.of(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_ROOK_FLAG));
+        Assertions.assertEquals(orderedMoves.get(12), Move.of(Notation.fromNotation("g7"), Notation.fromNotation("g5"), Move.PAWN_DOUBLE_MOVE_FLAG));
+        Assertions.assertEquals(orderedMoves.get(13), Move.of(Notation.fromNotation("h7"), Notation.fromNotation("h5"), Move.PAWN_DOUBLE_MOVE_FLAG));
 
     }
 

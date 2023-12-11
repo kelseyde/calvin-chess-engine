@@ -121,7 +121,7 @@ public class MoveGenerator implements MoveGeneration {
                 int endSquare = Bitwise.getNextBit(singleMoves);
                 int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
                 if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                    legalMoves.add(new Move(startSquare, endSquare));
+                    legalMoves.add(Move.of(startSquare, endSquare));
                 }
                 singleMoves = Bitwise.popBit(singleMoves);
             }
@@ -129,7 +129,7 @@ public class MoveGenerator implements MoveGeneration {
                 int endSquare = Bitwise.getNextBit(doubleMoves);
                 int startSquare = isWhite ? endSquare - 16 : endSquare + 16;
                 if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                    legalMoves.add(new Move(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
+                    legalMoves.add(Move.of(startSquare, endSquare, Move.PAWN_DOUBLE_MOVE_FLAG));
                 }
                 doubleMoves = Bitwise.popBit(doubleMoves);
             }
@@ -147,7 +147,7 @@ public class MoveGenerator implements MoveGeneration {
             int endSquare = Bitwise.getNextBit(leftCaptures);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                legalMoves.add(new Move(startSquare, endSquare));
+                legalMoves.add(Move.of(startSquare, endSquare));
             }
             leftCaptures = Bitwise.popBit(leftCaptures);
         }
@@ -155,7 +155,7 @@ public class MoveGenerator implements MoveGeneration {
             int endSquare = Bitwise.getNextBit(rightCaptures);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                legalMoves.add(new Move(startSquare, endSquare));
+                legalMoves.add(Move.of(startSquare, endSquare));
             }
             rightCaptures = Bitwise.popBit(rightCaptures);
         }
@@ -164,7 +164,7 @@ public class MoveGenerator implements MoveGeneration {
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             // En passant is complicated; just test legality by making the move on the board and checking
             // whether the king is attacked.
-            Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+            Move move = Move.of(startSquare, endSquare, Move.EN_PASSANT_FLAG);
             if (!leavesKingInCheck(board, move, isWhite)) {
                 legalMoves.add(move);
             }
@@ -175,7 +175,7 @@ public class MoveGenerator implements MoveGeneration {
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             // En passant is complicated; just test legality by making the move on the board and checking
             // whether the king is attacked.
-            Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+            Move move = Move.of(startSquare, endSquare, Move.EN_PASSANT_FLAG);
             if (!leavesKingInCheck(board, move, isWhite)) {
                 legalMoves.add(move);
             }
@@ -228,7 +228,7 @@ public class MoveGenerator implements MoveGeneration {
             long possibleMoves = getKnightAttacks(board, startSquare, board.isWhiteToMove()) & (pushMask | captureMask) & filterMask;
             while (possibleMoves != 0) {
                 int endSquare = Bitwise.getNextBit(possibleMoves);
-                legalMoves.add(new Move(startSquare, endSquare));
+                legalMoves.add(Move.of(startSquare, endSquare));
                 possibleMoves = Bitwise.popBit(possibleMoves);
             }
             unpinnedKnights = Bitwise.popBit(unpinnedKnights);
@@ -245,7 +245,7 @@ public class MoveGenerator implements MoveGeneration {
         long kingMoves = Attacks.kingAttacks(startSquare) &~ friendlies & filterMask;
         while (kingMoves != 0) {
             int endSquare = Bitwise.getNextBit(kingMoves);
-            Move move = new Move(startSquare, endSquare);
+            Move move = Move.of(startSquare, endSquare);
             board.makeMove(move);
             boolean isAttacked = isAttacked(board, isWhite, 1L << endSquare);
             board.unmakeMove();
@@ -275,7 +275,7 @@ public class MoveGenerator implements MoveGeneration {
                 boolean isAttacked = isAttacked(board, isWhite, safeSquares);
                 if (blockedSquares == 0 && !isAttacked) {
                     int endSquare = board.isWhiteToMove() ? 6 : 62;
-                    legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+                    legalMoves.add(Move.of(startSquare, endSquare, Move.CASTLE_FLAG));
                 }
             }
             boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
@@ -286,7 +286,7 @@ public class MoveGenerator implements MoveGeneration {
                 boolean isAttacked = isAttacked(board, isWhite, safeSquares);
                 if (blockedSquares == 0 && !isAttacked) {
                     int endSquare = board.isWhiteToMove() ? 2 : 58;
-                    legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+                    legalMoves.add(Move.of(startSquare, endSquare, Move.CASTLE_FLAG));
                 }
             }
         }
@@ -333,7 +333,7 @@ public class MoveGenerator implements MoveGeneration {
             sliders = Bitwise.popBit(sliders);
             while (attackMask != 0) {
                 int endSquare = Bitwise.getNextBit(attackMask);
-                legalMoves.add(new Move(startSquare, endSquare));
+                legalMoves.add(Move.of(startSquare, endSquare));
                 attackMask = Bitwise.popBit(attackMask);
             }
         }
@@ -477,11 +477,11 @@ public class MoveGenerator implements MoveGeneration {
 
     private List<Move> getPromotionMoves(int startSquare, int endSquare) {
         return filter != MoveFilter.ALL ?
-                List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG)) :
-                List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
+                List.of(Move.of(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG)) :
+                List.of(Move.of(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
+                        Move.of(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
+                        Move.of(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
+                        Move.of(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
     }
 
     private boolean leavesKingInCheck(Board board, Move move, boolean isWhite) {

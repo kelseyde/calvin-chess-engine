@@ -1,8 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-
 import java.util.Optional;
 
 /**
@@ -17,9 +14,7 @@ import java.util.Optional;
  * Largely inspired by Sebastian Lague's Chess Coding Adventure:
  * @see <a href="https://github.com/SebLague/Chess-Coding-Adventure">Chess Coding Adventure</a>
  */
-@Getter
-@EqualsAndHashCode
-public class Move {
+public record Move(short value) {
 
     public static final short NO_FLAG = 0b0000;
     public static final short EN_PASSANT_FLAG = 0b0001;
@@ -32,19 +27,13 @@ public class Move {
 
     public static final int START_SQUARE_MASK = 0b0000000000111111;
     public static final int END_SQUARE_MASK = 0b0000111111000000;
-
-    private final short value;
-
-    public Move(short value) {
-        this.value = value;
+    
+    public static Move of(int startSquare, int endSquare) {
+        return new Move((short) (startSquare | endSquare << 6));
     }
-
-    public Move(int startSquare, int endSquare) {
-        this.value = (short) (startSquare | endSquare << 6);
-    }
-
-    public Move(int startSquare, int endSquare, short flag) {
-        this.value = (short) (startSquare | endSquare << 6 | flag << 12);
+    
+    public static Move of(int startSquare, int endSquare, short flag) {
+        return new Move((short) (startSquare | endSquare << 6 | flag << 12));
     }
 
     public int getStartSquare() {

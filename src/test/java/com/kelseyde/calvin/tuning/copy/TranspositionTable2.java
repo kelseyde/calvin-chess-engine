@@ -3,38 +3,29 @@ package com.kelseyde.calvin.tuning.copy;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 
 import java.util.Arrays;
 import java.util.Objects;
 
-/**
- * The transposition table is a database that stores the results of previously searched positions, as well as relevant
- * information about that position, such as the depth to which it was searched, and the best move found during the previous
- * search.
- * </p>
- * Since many positions can be arrived at by several different move orders, a simple brute-force search of the search tree
- * encounters the same positions again and again (via 'transposition'). A transposition table, therefore, greatly reduces
- * the size of the search tree, since subsequent arrivals at the position can re-use the results of previous searches.
- * </p>
- * @see <a href="https://www.chessprogramming.org/Transposition_Table">Chess Programming Wiki</a>
- */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TranspositionTable2 {
 
-    static final int ENTRY_SIZE_BYTES = 32;
-    static final int CHECKMATE_BOUND = 1000000 - 256;
+    private static final int ENTRY_SIZE_BYTES = 32;
 
-    final int tableSize;
-    HashEntry[] entries;
+    private static final int TABLE_SIZE_MB = 512;
 
-    int tries;
-    int hits;
+    private static final int TABLE_SIZE = calculateTableSize();
 
-    public TranspositionTable2(int tableSizeMb) {
-        this.tableSize = (tableSizeMb / ENTRY_SIZE_BYTES) * 1024 * 1024;
-        entries = new HashEntry[tableSize];
+    private static final int CHECKMATE_BOUND = 1000000 - 256;
+
+    private HashEntry[] entries;
+
+    private int tries;
+    private int hits;
+
+    public TranspositionTable2() {
+        entries = new HashEntry[TABLE_SIZE];
+        tries = 0;
+        hits = 0;
     }
 
     public HashEntry get(long zobristKey, int ply) {
@@ -100,9 +91,7 @@ public class TranspositionTable2 {
 
     public void clear() {
         printStatistics();
-        tries = 0;
-        hits = 0;
-        entries = new HashEntry[tableSize];
+        entries = new HashEntry[TABLE_SIZE];
     }
 
     /**
@@ -115,7 +104,7 @@ public class TranspositionTable2 {
         if (index < 0) {
             index = -index;
         }
-        index = index % (tableSize - 3);
+        index = index % (TABLE_SIZE - 3);
         index = 4 * (index / 4);
         return (int) index;
     }
@@ -132,11 +121,15 @@ public class TranspositionTable2 {
         return score > 0 ? score + plyFromRoot : score - plyFromRoot;
     }
 
+    private static int calculateTableSize() {
+        return (TABLE_SIZE_MB / ENTRY_SIZE_BYTES) * 1024 * 1024;
+    }
+
     public void printStatistics() {
         long fill = Arrays.stream(entries).filter(Objects::nonNull).count();
-        float fillPercentage = ((float) fill / (float) tableSize) * 100;
+        float fillPercentage = ((float) fill / (float) TABLE_SIZE) * 100;
         float hitPercentage = ((float) hits / (float) tries) * 100;
-//        System.out.printf("TT -- table size: %s / %s (%s), tries: %s, hits: %s (%s)%n", fill, TABLE_SIZE, fillPercentage, tries, hits, hitPercentage);
+//        System.out.printf("TT2 -- table size: %s / %s (%s), tries: %s, hits: %s (%s)%n", fill, TABLE_SIZE, fillPercentage, tries, hits, hitPercentage);
     }
 
 }

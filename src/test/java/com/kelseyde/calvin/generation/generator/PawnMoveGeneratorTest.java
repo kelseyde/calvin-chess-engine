@@ -33,22 +33,22 @@ public class PawnMoveGeneratorTest {
 
         board = new Board();
         Set<Move> expected = Set.of(
-                Move.of(8, 16),
-                Move.of(8, 24),
-                Move.of(9, 17),
-                Move.of(9, 25),
-                Move.of(10, 18),
-                Move.of(10, 26),
-                Move.of(11, 19),
-                Move.of(11, 27),
-                Move.of(12, 20),
-                Move.of(12, 28),
-                Move.of(13, 21),
-                Move.of(13, 29),
-                Move.of(14, 22),
-                Move.of(14, 30),
-                Move.of(15, 23),
-                Move.of(15, 31)
+                new Move(8, 16),
+                new Move(8, 24),
+                new Move(9, 17),
+                new Move(9, 25),
+                new Move(10, 18),
+                new Move(10, 26),
+                new Move(11, 19),
+                new Move(11, 27),
+                new Move(12, 20),
+                new Move(12, 28),
+                new Move(13, 21),
+                new Move(13, 29),
+                new Move(14, 22),
+                new Move(14, 30),
+                new Move(15, 23),
+                new Move(15, 31)
         );
         assertMoves(board, expected);
 
@@ -103,15 +103,15 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(Piece.KING, false, 63);
 
         board.toggleSquare(Piece.PAWN, true, 16);
-        assertMovesFromSquare(board, 16, Set.of(Move.of(16, 24)));
+        assertMovesFromSquare(board, 16, Set.of(new Move(16, 24)));
         board.toggleSquare(Piece.PAWN, true, 16);
 
         board.toggleSquare(Piece.PAWN, true, 34);
-        assertMovesFromSquare(board, 34, Set.of(Move.of(34, 42)));
+        assertMovesFromSquare(board, 34, Set.of(new Move(34, 42)));
         board.toggleSquare(Piece.PAWN, true, 34);
 
         board.toggleSquare(Piece.PAWN, true, 45);
-        assertMovesFromSquare(board, 45, Set.of(Move.of(45, 53)));
+        assertMovesFromSquare(board, 45, Set.of(new Move(45, 53)));
         board.toggleSquare(Piece.PAWN, true, 45);
 
     }
@@ -125,15 +125,15 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(Piece.KING, true, 0);
         board.toggleSquare(Piece.KING, false, 63);
         board.toggleSquare(Piece.PAWN, false, 45);
-        assertMovesFromSquare(board, 45, Set.of(Move.of(45, 37)));
+        assertMovesFromSquare(board, 45, Set.of(new Move(45, 37)));
         board.toggleSquare(Piece.PAWN, true, 45);
 
         board.toggleSquare(Piece.PAWN, false, 35);
-        assertMovesFromSquare(board, 35, Set.of(Move.of(35, 27)));
+        assertMovesFromSquare(board, 35, Set.of(new Move(35, 27)));
         board.toggleSquare(Piece.PAWN, true, 35);
 
         board.toggleSquare(Piece.PAWN, false, 31);
-        assertMovesFromSquare(board, 31, Set.of(Move.of(31, 23)));
+        assertMovesFromSquare(board, 31, Set.of(new Move(31, 23)));
         board.toggleSquare(Piece.PAWN, true, 31);
 
     }
@@ -144,19 +144,19 @@ public class PawnMoveGeneratorTest {
         String fen = "k7/8/8/8/8/p1p5/1P6/K7 w - - 0 1";
         board = FEN.toBoard(fen);
         assertMovesFromSquare(board, 9,
-                Set.of(Move.of(9, 16), Move.of(9, 17), Move.of(9, 18), Move.of(9, 25)));
+                Set.of(new Move(9, 16), new Move(9, 17), new Move(9, 18), new Move(9, 25)));
 
         fen = "k7/8/p7/6p1/7P/8/8/K7 w - - 0 1";
         board = FEN.toBoard(fen);
         assertMovesFromSquare(board, 31,
-                Set.of(Move.of(31, 38), Move.of(31, 39)));
+                Set.of(new Move(31, 38), new Move(31, 39)));
 
         fen = "k7/p1p5/1P6/8/8/8/8/K7 w - - 0 1";
         board = FEN.toBoard(fen);
         assertMovesFromSquare(board, 41,
-                Set.of(Move.of(41, 48),
-                        Move.of(41, 49),
-                        Move.of(41, 50)
+                Set.of(new Move(41, 48),
+                        new Move(41, 49),
+                        new Move(41, 50)
                 ));
 
     }
@@ -166,12 +166,12 @@ public class PawnMoveGeneratorTest {
 
         String fen = "k7/1p6/P1P5/8/8/8/8/K7 b - - 0 1";
         board = FEN.toBoard(fen);
-        assertMovesFromSquare(board, 49, Set.of(Move.of(49, 40), Move.of(49, 41), Move.of(49, 42), Move.of(49, 33)));
+        assertMovesFromSquare(board, 49, Set.of(new Move(49, 40), new Move(49, 41), new Move(49, 42), new Move(49, 33)));
 
         fen = "k7/8/8/p7/1P5P/8/8/K7 b - - 0 1";
         board = FEN.toBoard(fen);
         // should not capture the wrapped piece
-        assertMovesFromSquare(board, 32, Set.of(Move.of(32, 24), Move.of(32, 25)));
+        assertMovesFromSquare(board, 32, Set.of(new Move(32, 24), new Move(32, 25)));
 
     }
 
@@ -182,8 +182,8 @@ public class PawnMoveGeneratorTest {
         board.makeMove(TestUtils.getLegalMove(board, "f2", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         Set<Move> legalMoves = new HashSet<>(new MoveGenerator().generateMoves(board));
-        Move emptySpaceCaptureLeft = Move.of(21, 28);
-        Move emptySpaceCaptureRight = Move.of(21, 30);
+        Move emptySpaceCaptureLeft = new Move(21, 28);
+        Move emptySpaceCaptureRight = new Move(21, 30);
         Assertions.assertTrue(legalMoves.stream().noneMatch(emptySpaceCaptureLeft::matches));
         Assertions.assertTrue(legalMoves.stream().noneMatch(emptySpaceCaptureRight::matches));
 
@@ -204,8 +204,8 @@ public class PawnMoveGeneratorTest {
                 .filter(m -> board.pieceAt(m.getStartSquare()) == Piece.PAWN)
                 .toList();
 
-        Move standardMove = Move.of(35, 43);
-        Move enPassantCapture = Move.of(35, 42, Move.EN_PASSANT_FLAG);
+        Move standardMove = new Move(35, 43);
+        Move enPassantCapture = new Move(35, 42, Move.EN_PASSANT_FLAG);
 
         List<Move> expectedLegalMoves = List.of(standardMove, enPassantCapture);
 
@@ -225,9 +225,9 @@ public class PawnMoveGeneratorTest {
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
-        Move standardMove = Move.of(35, 43);
-        Move standardCapture = Move.of(35, 42);
-        Move enPassantCapture = Move.of(35, 44, Move.EN_PASSANT_FLAG);
+        Move standardMove = new Move(35, 43);
+        Move standardCapture = new Move(35, 42);
+        Move enPassantCapture = new Move(35, 44, Move.EN_PASSANT_FLAG);
 
         List<Move> expectedLegalMoves = List.of(standardMove, standardCapture, enPassantCapture);
 
@@ -252,20 +252,20 @@ public class PawnMoveGeneratorTest {
         board.setWhiteToMove(false);
 
         // black first double pawn advance
-        board.makeMove(Move.of(50, 34, Move.PAWN_DOUBLE_MOVE_FLAG));
+        board.makeMove(new Move(50, 34, Move.PAWN_DOUBLE_MOVE_FLAG));
 
         // white wastes a move with rook
-        board.makeMove(Move.of(0, 8));
+        board.makeMove(new Move(0, 8));
 
         // black second double pawn advance
-        board.makeMove(Move.of(52, 36, Move.PAWN_DOUBLE_MOVE_FLAG));
+        board.makeMove(new Move(52, 36, Move.PAWN_DOUBLE_MOVE_FLAG));
 
         List<Move> legalWhiteMoves = generator.generateMoves(board).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
-        Move standardMove = Move.of(35, 43);
-        Move enPassantCapture = Move.of(35, 44, Move.EN_PASSANT_FLAG);
+        Move standardMove = new Move(35, 43);
+        Move enPassantCapture = new Move(35, 44, Move.EN_PASSANT_FLAG);
 
         List<Move> expectedLegalMoves = List.of(standardMove, enPassantCapture);
 
@@ -287,8 +287,8 @@ public class PawnMoveGeneratorTest {
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
-        Move standardMove = Move.of(29, 21);
-        Move enPassantCapture = Move.of(29, 22, Move.EN_PASSANT_FLAG);
+        Move standardMove = new Move(29, 21);
+        Move enPassantCapture = new Move(29, 22, Move.EN_PASSANT_FLAG);
 
         List<Move> expectedLegalMoves = List.of(standardMove, enPassantCapture);
         Assertions.assertTrue(expectedLegalMoves.size() == legalBlackMoves.size() && expectedLegalMoves.containsAll(legalBlackMoves));
@@ -307,9 +307,9 @@ public class PawnMoveGeneratorTest {
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
-        Move standardMove = Move.of(29, 21);
-        Move standardCapture = Move.of(29, 22);
-        Move enPassantCapture = Move.of(29, 20, Move.EN_PASSANT_FLAG);
+        Move standardMove = new Move(29, 21);
+        Move standardCapture = new Move(29, 22);
+        Move enPassantCapture = new Move(29, 20, Move.EN_PASSANT_FLAG);
         List<Move> expectedMoves = List.of(standardMove, standardCapture, enPassantCapture);
         Assertions.assertTrue(expectedMoves.size() == legalBlackMoves.size() && expectedMoves.containsAll(legalBlackMoves));
 
@@ -330,20 +330,20 @@ public class PawnMoveGeneratorTest {
         board.setWhiteToMove(true);
 
         // white first double pawn advance
-        board.makeMove(Move.of(10, 26, Move.PAWN_DOUBLE_MOVE_FLAG));
+        board.makeMove(new Move(10, 26, Move.PAWN_DOUBLE_MOVE_FLAG));
 
         // black wastes move with rook
-        board.makeMove(Move.of(63, 62));
+        board.makeMove(new Move(63, 62));
 
         // second double pawn move from white, should make the first en-passant capture impossible
-        board.makeMove(Move.of(8, 24, Move.PAWN_DOUBLE_MOVE_FLAG));
+        board.makeMove(new Move(8, 24, Move.PAWN_DOUBLE_MOVE_FLAG));
 
         List<Move> legalBlackMoves = generator.generateMoves(board).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
 
-        Move standardMove = Move.of(25, 17);
-        Move enPassantCapture = Move.of(25, 16, Move.EN_PASSANT_FLAG);
+        Move standardMove = new Move(25, 17);
+        Move enPassantCapture = new Move(25, 16, Move.EN_PASSANT_FLAG);
 
         List<Move> expectedLegalMoves = List.of(standardMove, enPassantCapture);
 
@@ -378,10 +378,10 @@ public class PawnMoveGeneratorTest {
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(
-                Move.of(51, 59, Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.of(51, 59, Move.PROMOTE_TO_ROOK_FLAG),
-                Move.of(51, 59, Move.PROMOTE_TO_BISHOP_FLAG),
-                Move.of(51, 59, Move.PROMOTE_TO_KNIGHT_FLAG));
+                new Move(51, 59, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(51, 59, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(51, 59, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(51, 59, Move.PROMOTE_TO_KNIGHT_FLAG));
         Assertions.assertTrue(expectedLegalMoves.size() == legalMoves.size() && expectedLegalMoves.containsAll(legalMoves));
 
     }
@@ -396,10 +396,10 @@ public class PawnMoveGeneratorTest {
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(
-                Move.of(8, 0, Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.of(8, 0, Move.PROMOTE_TO_ROOK_FLAG),
-                Move.of(8, 0, Move.PROMOTE_TO_BISHOP_FLAG),
-                Move.of(8, 0, Move.PROMOTE_TO_KNIGHT_FLAG));
+                new Move(8, 0, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(8, 0, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(8, 0, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(8, 0, Move.PROMOTE_TO_KNIGHT_FLAG));
         Assertions.assertTrue(expectedLegalMoves.size() == legalMoves.size() && expectedLegalMoves.containsAll(legalMoves));
 
     }
@@ -412,14 +412,14 @@ public class PawnMoveGeneratorTest {
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(
-                Move.of(51, 58, Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.of(51, 58, Move.PROMOTE_TO_ROOK_FLAG),
-                Move.of(51, 58, Move.PROMOTE_TO_BISHOP_FLAG),
-                Move.of(51, 58, Move.PROMOTE_TO_KNIGHT_FLAG),
-                Move.of(51, 59, Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.of(51, 59, Move.PROMOTE_TO_ROOK_FLAG),
-                Move.of(51, 59, Move.PROMOTE_TO_BISHOP_FLAG),
-                Move.of(51, 59, Move.PROMOTE_TO_KNIGHT_FLAG));
+                new Move(51, 58, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(51, 58, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(51, 58, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(51, 58, Move.PROMOTE_TO_KNIGHT_FLAG),
+                new Move(51, 59, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(51, 59, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(51, 59, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(51, 59, Move.PROMOTE_TO_KNIGHT_FLAG));
         Assertions.assertTrue(expectedLegalMoves.size() == legalMoves.size() && expectedLegalMoves.containsAll(legalMoves));
 
     }
@@ -432,14 +432,14 @@ public class PawnMoveGeneratorTest {
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
         List<Move> expectedLegalMoves = List.of(
-                Move.of(15, 7, Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.of(15, 7, Move.PROMOTE_TO_ROOK_FLAG),
-                Move.of(15, 7, Move.PROMOTE_TO_BISHOP_FLAG),
-                Move.of(15, 7, Move.PROMOTE_TO_KNIGHT_FLAG),
-                Move.of(15, 6, Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.of(15, 6, Move.PROMOTE_TO_ROOK_FLAG),
-                Move.of(15, 6, Move.PROMOTE_TO_BISHOP_FLAG),
-                Move.of(15, 6, Move.PROMOTE_TO_KNIGHT_FLAG));
+                new Move(15, 7, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(15, 7, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(15, 7, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(15, 7, Move.PROMOTE_TO_KNIGHT_FLAG),
+                new Move(15, 6, Move.PROMOTE_TO_QUEEN_FLAG),
+                new Move(15, 6, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(15, 6, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(15, 6, Move.PROMOTE_TO_KNIGHT_FLAG));
         Assertions.assertTrue(expectedLegalMoves.size() == legalMoves.size() && expectedLegalMoves.containsAll(legalMoves));
     }
 
@@ -453,7 +453,7 @@ public class PawnMoveGeneratorTest {
         List<Move> legalMoves = generator.generateMoves(board).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
-        List<Move> expectedLegalMoves = List.of(Move.of(23, 31));
+        List<Move> expectedLegalMoves = List.of(new Move(23, 31));
         Assertions.assertEquals(1, legalMoves.size());
         Assertions.assertEquals(expectedLegalMoves, legalMoves);
 

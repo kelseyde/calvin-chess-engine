@@ -95,16 +95,16 @@ public class BoardTest {
     @Test
     public void testSimpleUnmakeMove() {
         Board board1 = new Board();
-        board1.makeMove(Move.of(12, 28));
-        board1.makeMove(Move.of(52, 36));
-        board1.makeMove(Move.of(11, 27));
-        board1.makeMove(Move.of(51, 35));
-        board1.makeMove(Move.of(10, 26));
-        board1.makeMove(Move.of(50, 34));
-        board1.makeMove(Move.of(9, 25));
-        board1.makeMove(Move.of(49, 33));
-        board1.makeMove(Move.of(8, 24));
-        board1.makeMove(Move.of(48, 32));
+        board1.makeMove(new Move(12, 28));
+        board1.makeMove(new Move(52, 36));
+        board1.makeMove(new Move(11, 27));
+        board1.makeMove(new Move(51, 35));
+        board1.makeMove(new Move(10, 26));
+        board1.makeMove(new Move(50, 34));
+        board1.makeMove(new Move(9, 25));
+        board1.makeMove(new Move(49, 33));
+        board1.makeMove(new Move(8, 24));
+        board1.makeMove(new Move(48, 32));
         board1.unmakeMove();
         board1.unmakeMove();
         board1.unmakeMove();
@@ -143,8 +143,8 @@ public class BoardTest {
     public void testEnPassantFileIsClearedAfterNextMove() {
         // TODO
         Board board1 = new Board();
-        board1.makeMove(Move.of(13, 21));
-        board1.makeMove(Move.of(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
+        board1.makeMove(new Move(13, 21));
+        board1.makeMove(new Move(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
 
         new MoveGenerator().generateMoves(board1);
     }
@@ -182,9 +182,9 @@ public class BoardTest {
     public void testUnmakeMoveRestoresCapturedPieces() {
 
         Board board = new Board();
-        board.makeMove(Move.of(12, 28));
-        board.makeMove(Move.of(51, 35));
-        board.makeMove(Move.of(28, 35));
+        board.makeMove(new Move(12, 28));
+        board.makeMove(new Move(51, 35));
+        board.makeMove(new Move(28, 35));
 
         Set<Integer> whitePiecePositions = getPiecePositions(board, true);
         Assertions.assertEquals(Set.of(35, 8, 9, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7), whitePiecePositions);
@@ -207,15 +207,15 @@ public class BoardTest {
 
         Board board = new Board();
         //d4d5
-        board.makeMove(Move.of(11, 27));
+        board.makeMove(new Move(11, 27));
         //e7e5
-        board.makeMove(Move.of(52, 36));
+        board.makeMove(new Move(52, 36));
         //d4e5
-        board.makeMove(Move.of(27, 36));
+        board.makeMove(new Move(27, 36));
         //d7d5
-        board.makeMove(Move.of(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
+        board.makeMove(new Move(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
         //e5d6
-        board.makeMove(Move.of(36, 43, Move.EN_PASSANT_FLAG));
+        board.makeMove(new Move(36, 43, Move.EN_PASSANT_FLAG));
 
         Set<Integer> blackPiecePositions = getPiecePositions(board, false);
         Assertions.assertFalse(blackPiecePositions.contains(35));
@@ -230,22 +230,22 @@ public class BoardTest {
     public void testUnmakeMoveRemovesCorrectMoveFromMoveHistory() {
 
         Board board = new Board();
-        board.makeMove(Move.of(12, 28));
-        board.makeMove(Move.of(51, 35));
-        board.makeMove(Move.of(28, 35));
+        board.makeMove(new Move(12, 28));
+        board.makeMove(new Move(51, 35));
+        board.makeMove(new Move(28, 35));
 
         List<Move> moveHistory = board.getMoveHistory().stream().toList();
         Assertions.assertEquals(3, moveHistory.size());
-        Assertions.assertTrue(Move.of(28, 35).matches(moveHistory.get(0)));
-        Assertions.assertTrue(Move.of(51, 35).matches(moveHistory.get(1)));
-        Assertions.assertTrue(Move.of(12, 28).matches(moveHistory.get(2)));
+        Assertions.assertTrue(new Move(28, 35).matches(moveHistory.get(0)));
+        Assertions.assertTrue(new Move(51, 35).matches(moveHistory.get(1)));
+        Assertions.assertTrue(new Move(12, 28).matches(moveHistory.get(2)));
 
         board.unmakeMove();
 
         moveHistory = board.getMoveHistory().stream().toList();
         Assertions.assertEquals(2, moveHistory.size());
-        Assertions.assertTrue(Move.of(51, 35).matches(moveHistory.get(0)));
-        Assertions.assertTrue(Move.of(12, 28).matches(moveHistory.get(1)));
+        Assertions.assertTrue(new Move(51, 35).matches(moveHistory.get(0)));
+        Assertions.assertTrue(new Move(12, 28).matches(moveHistory.get(1)));
 
     }
 
@@ -255,13 +255,13 @@ public class BoardTest {
         Board board = new Board();
         Assertions.assertTrue(board.isWhiteToMove());
 
-        board.makeMove(Move.of(12, 28));
+        board.makeMove(new Move(12, 28));
         Assertions.assertFalse(board.isWhiteToMove());
 
-        board.makeMove(Move.of(51, 35));
+        board.makeMove(new Move(51, 35));
         Assertions.assertTrue(board.isWhiteToMove());
 
-        board.makeMove(Move.of(28, 35));
+        board.makeMove(new Move(28, 35));
         Assertions.assertFalse(board.isWhiteToMove());
 
         board.unmakeMove();
@@ -273,14 +273,14 @@ public class BoardTest {
     public void testUnmakeMoveHandlesCastling() {
 
         Board board = new Board();
-        board.makeMove(Move.of(12, 28));
-        board.makeMove(Move.of(52, 44));
-        board.makeMove(Move.of(6, 21));
-        board.makeMove(Move.of(62, 45));
-        board.makeMove(Move.of(5, 12));
-        board.makeMove(Move.of(61, 52));
+        board.makeMove(new Move(12, 28));
+        board.makeMove(new Move(52, 44));
+        board.makeMove(new Move(6, 21));
+        board.makeMove(new Move(62, 45));
+        board.makeMove(new Move(5, 12));
+        board.makeMove(new Move(61, 52));
         // castles
-        board.makeMove(Move.of(4, 6, Move.CASTLE_FLAG));
+        board.makeMove(new Move(4, 6, Move.CASTLE_FLAG));
         Assertions.assertFalse(board.isWhiteToMove());
         Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
         Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));

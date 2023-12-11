@@ -16,7 +16,7 @@ public class ZobristTest {
         Board board2 = new Board();
         Assertions.assertEquals(board1.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
 
-        Move e4 = Move.of(12, 28, Move.PAWN_DOUBLE_MOVE_FLAG);
+        Move e4 = new Move(12, 28, Move.PAWN_DOUBLE_MOVE_FLAG);
         board1.makeMove(e4);
         board2.makeMove(e4);
 

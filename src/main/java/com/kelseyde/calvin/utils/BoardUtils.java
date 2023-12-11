@@ -105,7 +105,7 @@ public class BoardUtils {
         board.getGameStateHistory().forEach(gameState -> gameStateHistory.add(gameState.copy()));
         newBoard.setGameStateHistory(gameStateHistory);
         Deque<Move> moveHistory = new ArrayDeque<>();
-        board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.value())));
+        board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.getValue())));
         newBoard.setMoveHistory(moveHistory);
         newBoard.recalculatePieces();
         return newBoard;

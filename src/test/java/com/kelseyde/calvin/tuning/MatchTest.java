@@ -13,7 +13,7 @@ public class MatchTest {
         MatchConfig config = MatchConfig.builder()
                 .player1(() -> new Player("player1", TestUtils.getEngine()))
                 .player2(() -> new Player("player2", TestUtils.getEngineCopy()))
-                .gameCount(1000)
+                .gameCount(2000)
                 .maxMoves(100)
                 .minThinkTimeMs(15)
                 .maxThinkTimeMs(40)

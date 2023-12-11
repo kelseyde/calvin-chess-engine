@@ -254,6 +254,24 @@ public class Board {
         else return null;
     }
 
+    public Piece getHighestValuePiece(boolean isWhite) {
+        if (isWhite) {
+            if (whiteQueens != 0) return Piece.QUEEN;
+            else if (whiteRooks != 0) return Piece.ROOK;
+            else if (whiteBishops != 0) return Piece.BISHOP;
+            else if (whiteKnights != 0) return Piece.KNIGHT;
+            else if (whitePawns != 0) return Piece.PAWN;
+            else return null;
+        } else {
+            if (blackQueens != 0) return Piece.QUEEN;
+            else if (blackRooks != 0) return Piece.ROOK;
+            else if (blackBishops != 0) return Piece.BISHOP;
+            else if (blackKnights != 0) return Piece.KNIGHT;
+            else if (blackPawns != 0) return Piece.PAWN;
+            else return null;
+        }
+    }
+
     public long getPawns(boolean isWhite) {
         return isWhite ? whitePawns : blackPawns;
     }

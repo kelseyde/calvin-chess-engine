@@ -336,6 +336,13 @@ public class Searcher implements Search {
             if (eval > alpha) {
                 alpha = eval;
             }
+            // First futility pruning check: if capturing the highest-value remaining piece of the opponent would still not
+            // raise alpha, then let's assume that we can skip the entire quiescence search and stand pat.
+            Piece highestValueOpponentPiece = board.getHighestValuePiece(!board.isWhiteToMove());
+            boolean isFutile = highestValueOpponentPiece != null && (standPat + highestValueOpponentPiece.getValue() + config.getDpMargin() < alpha);
+            if (isFutile) {
+                return alpha;
+            }
             MoveFilter filter = depth == 1 ? MoveFilter.CAPTURES_AND_CHECKS : MoveFilter.CAPTURES_ONLY;
             moves = moveGenerator.generateMoves(board, filter);
         }

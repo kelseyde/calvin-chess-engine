@@ -169,7 +169,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "d3", "e2"));
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b2"));
 
-        Move move = Move.of(Notation.fromNotation("e2"), Notation.fromNotation("d1"), Move.PROMOTE_TO_KNIGHT_FLAG);
+        Move move = new Move(Notation.fromNotation("e2"), Notation.fromNotation("d1"), Move.PROMOTE_TO_KNIGHT_FLAG);
         board.makeMove(move);
         Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
 

@@ -18,14 +18,14 @@ public class Notation {
     );
 
     /**
-     * Generate a {@link Move} from algebraic notation of the start and end square (e.g. "e2", "e4" -> Move.of(12, 28))
+     * Generate a {@link Move} from algebraic notation of the start and end square (e.g. "e2", "e4" -> new Move(12, 28))
      */
     public static Move fromNotation(String startSquare, String endSquare) {
-        return Move.of(fromNotation(startSquare), fromNotation(endSquare));
+        return new Move(fromNotation(startSquare), fromNotation(endSquare));
     }
 
     public static Move fromNotation(String startSquare, String endSquare, short flag) {
-        return Move.of(fromNotation(startSquare), fromNotation(endSquare), flag);
+        return new Move(fromNotation(startSquare), fromNotation(endSquare), flag);
     }
 
     /**
@@ -44,7 +44,7 @@ public class Notation {
                     .findAny().orElseThrow().getKey();
             flag = Move.getPromotionFlag(promotionPieceType);
         }
-        return Move.of(startSquare, endSquare, flag);
+        return new Move(startSquare, endSquare, flag);
     }
 
     public static String toNotation(Move move) {

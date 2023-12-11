@@ -34,7 +34,7 @@ public record HashEntry(long key, long value) {
     }
 
     public static HashEntry of(long zobristKey, int score, Move move, HashFlag flag, int depth) {
-        long moveValue = move != null ? move.value() : 0;
+        long moveValue = move != null ? move.getValue() : 0;
         long flagValue = HashFlag.value(flag);
         long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
         return new HashEntry(zobristKey, value);

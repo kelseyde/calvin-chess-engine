@@ -3,6 +3,7 @@ package com.kelseyde.calvin.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
@@ -77,6 +78,7 @@ public class TestUtils {
         board.setBlackRooks(0L);
         board.setBlackQueens(0L);
         board.setBlackKing(0L);
+        board.setPieceList(new Piece[64]);
 
         board.getGameState().setCastlingRights(0b0000);
 

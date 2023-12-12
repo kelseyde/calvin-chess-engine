@@ -3,6 +3,7 @@ package com.kelseyde.calvin.generation.drawcalculator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Result;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ public class DrawByFiftyMoveRuleTest {
 
         board.toggleSquare(Piece.KING, true, 63);
         board.toggleSquare(Piece.KNIGHT, true, 18);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         board.setWhiteToMove(true);
 
@@ -198,6 +200,7 @@ public class DrawByFiftyMoveRuleTest {
 
         board.toggleSquare(Piece.KING, true, 63);
         board.toggleSquare(Piece.PAWN, true, 12);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         board.setWhiteToMove(true);
 
@@ -373,6 +376,7 @@ public class DrawByFiftyMoveRuleTest {
 
         board.toggleSquare(Piece.KING, false, 63);
         board.toggleSquare(Piece.KNIGHT, false, 18);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         board.setWhiteToMove(false);
 
@@ -547,6 +551,7 @@ public class DrawByFiftyMoveRuleTest {
 
         board.toggleSquare(Piece.KING, false, 63);
         board.toggleSquare(Piece.PAWN, false, 52);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         board.setWhiteToMove(false);
 

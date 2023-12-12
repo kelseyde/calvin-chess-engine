@@ -295,6 +295,7 @@ public class CastlingTest {
         // black rook captures white rook
         board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));
 
+        System.out.println("second move");
         // white king captures back
         board.makeMove(TestUtils.getLegalMove(board, "g1", "h1"));
 

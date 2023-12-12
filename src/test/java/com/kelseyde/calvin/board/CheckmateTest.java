@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -182,7 +183,8 @@ public class CheckmateTest {
         board.toggleSquare(Piece.KING, false, 48);
         board.toggleSquare(Piece.KING, true, 42);
         board.toggleSquare(Piece.QUEEN, true, 1);
-        
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
 

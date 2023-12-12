@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,7 @@ public class BishopMoveGeneratorTest {
         board.toggleSquare(Piece.BISHOP, false, 42);
         board.toggleSquare(Piece.ROOK, false, 46);
         board.recalculatePieces();
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
 
@@ -60,6 +62,7 @@ public class BishopMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(Piece.BISHOP, true, startSquare);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
         Set<Integer> legalSquares = generator.generateMoves(board).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.BISHOP)
@@ -67,6 +70,7 @@ public class BishopMoveGeneratorTest {
                 .collect(Collectors.toSet());
         Assertions.assertEquals(expectedLegalSquares, legalSquares);
         board.toggleSquare(Piece.BISHOP, true, startSquare);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
     }
 
 }

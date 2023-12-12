@@ -1,11 +1,9 @@
 package com.kelseyde.calvin.utils;
 
-import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.GameState;
-import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.*;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.Set;
 
@@ -21,6 +19,19 @@ public class BoardUtils {
     // These exceptions prevent the piece from 'wrapping' around to the other side of the board.
     public static final Set<Integer> A_FILE_OFFSET_EXCEPTIONS = Set.of(-9, -1, 7);
     public static final Set<Integer> H_FILE_OFFSET_EXCEPTIONS = Set.of(-7, 1, 9);
+
+    public static Piece[] getStartingPieceList() {
+        return new Piece[] {
+                Piece.ROOK, Piece.KNIGHT, Piece.BISHOP, Piece.QUEEN, Piece.KING, Piece.BISHOP, Piece.KNIGHT, Piece.ROOK,
+                Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN,
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null,
+                Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN, Piece.PAWN,
+                Piece.ROOK, Piece.KNIGHT, Piece.BISHOP, Piece.QUEEN, Piece.KING, Piece.BISHOP, Piece.KNIGHT, Piece.ROOK
+        };
+    }
 
     public static int getFile(int sq) {
         return sq & 0b000111;
@@ -82,6 +93,23 @@ public class BoardUtils {
         return isWhite ? 1 : 0;
     }
 
+    public static Piece[] calculatePieceList(Board board) {
+
+        Piece[] pieceList = new Piece[64];
+        for (int square = 0; square < 64; square++) {
+            long squareMask = 1L << square;
+            if ((squareMask & (board.getWhitePawns() | board.getBlackPawns())) != 0)          pieceList[square] = Piece.PAWN;
+            else if ((squareMask & (board.getWhiteKnights() | board.getBlackKnights())) != 0) pieceList[square] = Piece.KNIGHT;
+            else if ((squareMask & (board.getWhiteBishops() | board.getBlackBishops())) != 0) pieceList[square] = Piece.BISHOP;
+            else if ((squareMask & (board.getWhiteRooks() | board.getBlackRooks())) != 0)     pieceList[square] = Piece.ROOK;
+            else if ((squareMask & (board.getWhiteQueens() | board.getBlackQueens())) != 0)   pieceList[square] = Piece.QUEEN;
+            else if ((squareMask & (board.getWhiteKing() | board.getBlackKing())) != 0)       pieceList[square] = Piece.KING;
+        }
+        return pieceList;
+
+    }
+
+
     public static Board copy(Board board) {
         Board newBoard = new Board();
         newBoard.setWhitePawns(board.getWhitePawns());
@@ -107,6 +135,7 @@ public class BoardUtils {
         Deque<Move> moveHistory = new ArrayDeque<>();
         board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.getValue())));
         newBoard.setMoveHistory(moveHistory);
+        newBoard.setPieceList(Arrays.copyOf(board.getPieceList(), board.getPieceList().length));
         newBoard.recalculatePieces();
         return newBoard;
     }

@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -38,6 +39,7 @@ public class KnightMoveGeneratorTest {
         board.toggleSquare(Piece.ROOK, false, 53);
         board.toggleSquare(Piece.QUEEN, false, 58);
         board.toggleSquare(Piece.QUEEN, false, 60);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
         Set<Integer> legalSquares = generator.generateMoves(board).stream()

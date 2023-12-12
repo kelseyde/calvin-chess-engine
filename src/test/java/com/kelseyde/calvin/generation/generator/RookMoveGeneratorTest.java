@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -64,6 +65,7 @@ public class RookMoveGeneratorTest {
         board.toggleSquare(Piece.BISHOP, true, 30);
         board.toggleSquare(Piece.ROOK, true, 44);
         board.recalculatePieces();
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         assertLegalSquares(startSquare, Set.of(20, 27, 29, 36));
 

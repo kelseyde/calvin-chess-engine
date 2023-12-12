@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,6 +54,8 @@ public class KingMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(Piece.KING, true, startSquare);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         Set<Integer> legalSquares = generator.generateMoves(board).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)

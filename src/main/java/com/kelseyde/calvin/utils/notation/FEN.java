@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.board.Zobrist;
 import com.kelseyde.calvin.utils.BoardUtils;
 
@@ -86,6 +87,7 @@ public class FEN {
             board.setBlackQueens(blackQueens);
             board.setBlackKing(blackKing);
             board.recalculatePieces();
+            board.setPieceList(BoardUtils.calculatePieceList(board));
             board.setWhiteToMove(isWhiteToMove);
             board.getGameState().setCastlingRights(castlingRights);
             board.getGameState().setEnPassantFile(enPassantFile);

@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Result;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +20,8 @@ public class DrawByInsufficientMaterialTest {
 
         board.toggleSquare(Piece.KING, false, 44);
         board.toggleSquare(Piece.QUEEN, false, 27);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "e4", "d4"));
@@ -37,6 +40,8 @@ public class DrawByInsufficientMaterialTest {
 
         board.toggleSquare(Piece.KING, false, 44);
         board.toggleSquare(Piece.QUEEN, false, 43);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
@@ -55,6 +60,8 @@ public class DrawByInsufficientMaterialTest {
 
         board.toggleSquare(Piece.KING, false, 44);
         board.toggleSquare(Piece.QUEEN, false, 43);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
@@ -74,6 +81,8 @@ public class DrawByInsufficientMaterialTest {
         board.toggleSquare(Piece.KING, false, 44);
         board.toggleSquare(Piece.QUEEN, false, 43);
         board.toggleSquare(Piece.BISHOP, false, 52);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
@@ -93,6 +102,8 @@ public class DrawByInsufficientMaterialTest {
         board.toggleSquare(Piece.KING, false, 44);
         board.toggleSquare(Piece.QUEEN, false, 43);
         board.toggleSquare(Piece.KNIGHT, false, 52);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
@@ -113,6 +124,8 @@ public class DrawByInsufficientMaterialTest {
         board.toggleSquare(Piece.QUEEN, false, 43);
         board.toggleSquare(Piece.KNIGHT, false, 52);
         board.toggleSquare(Piece.KNIGHT, false, 0);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));

@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,7 @@ public class QueenMoveGeneratorTest {
         board.toggleSquare(Piece.BISHOP, false, 30);
         board.toggleSquare(Piece.ROOK, false, 44);
         board.recalculatePieces();
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46, 12, 20, 26, 27, 29, 30, 36, 44));
 
@@ -61,6 +63,7 @@ public class QueenMoveGeneratorTest {
         board.toggleSquare(Piece.BISHOP, true, 30);
         board.toggleSquare(Piece.ROOK, true, 44);
         board.recalculatePieces();
+        board.setPieceList(BoardUtils.calculatePieceList(board));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 27, 29, 20, 36));
 

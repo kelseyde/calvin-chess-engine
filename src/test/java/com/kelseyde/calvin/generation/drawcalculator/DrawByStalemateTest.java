@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -20,6 +21,8 @@ public class DrawByStalemateTest {
         board.toggleSquare(Piece.KING, false, 56);
         board.toggleSquare(Piece.KING, true, 42);
         board.toggleSquare(Piece.QUEEN, true, 1);
+        board.setPieceList(BoardUtils.calculatePieceList(board));
+
         Assertions.assertFalse(Result.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b6"));

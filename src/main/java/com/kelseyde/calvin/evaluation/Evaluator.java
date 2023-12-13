@@ -154,11 +154,11 @@ public class Evaluator implements Evaluation {
             pawnsIterator = Bitwise.popBit(pawnsIterator);
         }
 
-        // Penalties for isolated pawns, indexed by the number of isolated pawns.
+//        // Penalties for isolated pawns, indexed by the number of isolated pawns.
         pawnStructureMgScore += config.getIsolatedPawnPenalty()[0][isolatedPawnCount];
         pawnStructureEgScore += config.getIsolatedPawnPenalty()[1][isolatedPawnCount];
 
-        // Penalties for doubled pawns, indexed by the number of doubled pawns
+//        // Penalties for doubled pawns, indexed by the number of doubled pawns
         pawnStructureMgScore += config.getDoubledPawnPenalty()[0][doubledPawnCount];
         pawnStructureEgScore += config.getDoubledPawnPenalty()[1][doubledPawnCount];
 

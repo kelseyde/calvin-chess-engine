@@ -1,5 +1,8 @@
 package com.kelseyde.calvin.evaluation;
 
+import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Board;
+
 /**
  * Calculates a tapered evaluation value indicating what game 'phase' we are in. A value of 1 indicates we are in the opening/
  * early middlegame with all the pieces still on the board; a value of 0 indicates there are only kings and pawns remaining.
@@ -26,6 +29,15 @@ public class Phase {
             (whiteMaterial.queens() * QUEEN_PHASE) +
             (blackMaterial.queens() * QUEEN_PHASE);
         return currentMaterial / TOTAL_PHASE;
+    }
+
+    public static float fromBoard(Board board) {
+        int knights = Bitwise.countBits(board.getWhiteKnights() | board.getBlackKnights());
+        int bishops = Bitwise.countBits(board.getWhiteBishops() | board.getBlackBishops());
+        int rooks = Bitwise.countBits(board.getWhiteRooks() | board.getBlackRooks());
+        int queens = Bitwise.countBits(board.getWhiteQueens() | board.getBlackQueens());
+        int materialScore = (knights * KNIGHT_PHASE) + (bishops * BISHOP_PHASE) + (rooks * ROOK_PHASE) + (queens + QUEEN_PHASE);
+        return materialScore / TOTAL_PHASE;
     }
 
     public static float fromMaterial(Material material) {

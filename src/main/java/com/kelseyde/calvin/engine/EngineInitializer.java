@@ -2,7 +2,7 @@ package com.kelseyde.calvin.engine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.SimpleEvaluator;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.opening.OpeningBook;
@@ -34,7 +34,7 @@ public class EngineInitializer {
         OpeningBook book = loadDefaultOpeningBook();
         Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
-        Supplier<Evaluation> evaluator = () -> new Evaluator(config);
+        Supplier<Evaluation> evaluator = () -> new SimpleEvaluator(config);
         TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
         Search searcher = new ParallelSearcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
         return new Engine(config, book, moveGenerator.get(), searcher);

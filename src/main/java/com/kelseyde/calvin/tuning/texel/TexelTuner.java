@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.tuning.texel;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.SimpleEvaluator;
 import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,12 +26,12 @@ public class TexelTuner {
 
     private Delta[] deltas;
 
-    public int[] tune(int[] initialParams, Function<int[], Evaluator> createEvaluatorFunction) throws IOException {
+    public int[] tune(int[] initialParams, Function<int[], SimpleEvaluator> createEvaluatorFunction) throws IOException {
 
         List<String> positions = loadPositions();
         initDeltas(initialParams.length);
         System.out.println("number of positions: " + positions.size());
-        Evaluator evaluator = createEvaluatorFunction.apply(initialParams);
+        SimpleEvaluator evaluator = createEvaluatorFunction.apply(initialParams);
         int[] bestParams = initialParams;
         double bestError = meanSquareError(evaluator, positions);
 
@@ -83,7 +83,7 @@ public class TexelTuner {
 
     }
 
-    public double meanSquareError(Evaluator evaluator, List<String> positions) throws IOException {
+    public double meanSquareError(SimpleEvaluator evaluator, List<String> positions) throws IOException {
 
         int numberOfPositions = positions.size();
         double totalError = 0.0;

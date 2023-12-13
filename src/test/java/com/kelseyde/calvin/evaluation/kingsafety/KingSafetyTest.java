@@ -2,8 +2,8 @@ package com.kelseyde.calvin.evaluation.kingsafety;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.evaluation.SimpleEvaluator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 public class KingSafetyTest {
 
     private final EngineConfig config = TestUtils.TST_CONFIG;
-    private final Evaluator evaluator = new Evaluator(config);
+    private final SimpleEvaluator evaluator = new SimpleEvaluator(config);
 
     @Test
     public void testSimpleCastledKingFullPawnShield() {

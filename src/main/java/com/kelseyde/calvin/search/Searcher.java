@@ -183,7 +183,6 @@ public class Searcher implements Search {
         }
 
         if (!pvNode && !isInCheck) {
-
             // Reverse futility pruning: if our position is so good that we don't need to move to beat beta + some small
             // margin, then let's assume we don't need to search any further, and cut off early.
             boolean isMateHunting = Math.abs(alpha) >= Score.MATE_SCORE - 100;
@@ -191,9 +190,8 @@ public class Searcher implements Search {
                 return staticEval - config.getRfpMargin()[depth];
             }
 
-            // Null move pruning: if the static eval > beta - some margin, and so is likely to fail high, then let's test
-            // this theory by giving the opponent an extra move (making a 'null' move), and searching the resulting position
-            // to a shallower depth. If the result still fails high, prune this node.
+            // Null move pruning: if the static eval indicates a fail-high, then let's give the opponent an extra move
+            // (make a 'null' move), and searching to a shallower depth. If the result still fails high, skip this node.
             boolean isPawnEndgame = !board.hasPiecesRemaining(board.isWhiteToMove());
             if (depth >= config.getNmpDepth() && allowNull && staticEval >= beta - config.getNmpMargin() && !isPawnEndgame) {
                 board.makeNullMove();
@@ -204,7 +202,6 @@ public class Searcher implements Search {
                     return eval;
                 }
             }
-
         }
 
         moves = moveOrderer.orderMoves(board, moves, previousBestMove, true, ply);

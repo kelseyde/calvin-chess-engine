@@ -88,13 +88,6 @@ public class MoveOrderer2 implements MoveOrdering {
             moveScore += historyMoves[colourIndex][move.getStartSquare()][move.getEndSquare()];
         }
 
-        if (move.isPromotion()) {
-            int promotionBias = move.getPromotionPieceType().equals(Piece.QUEEN) ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
-            moveScore += promotionBias;
-            // After queen, order knight promotion second, then bishop, then rook
-            moveScore -= move.getPromotionPieceType().getValue();
-        }
-
         if (move.isCastling()) {
             moveScore += CASTLING_BIAS;
         }

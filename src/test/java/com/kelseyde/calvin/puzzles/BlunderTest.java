@@ -567,4 +567,17 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontBlunderKnight() {
+
+        String fen = "3rn3/1p3bpk/2nB3p/p1p1P3/8/1PP2P1P/P2R2P1/4R1K1 b - - 2 32";
+        engine.setPosition(fen, Collections.emptyList());
+        Move move = engine.think(1360);
+        System.out.println(Notation.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(Notation.fromCombinedNotation("c6e5"))
+        );
+
+    }
+
 }

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.Collections;
 
 @Disabled
 public class TacticsTest {
@@ -288,6 +289,18 @@ public class TacticsTest {
 
         SearchResult result = search.search(Duration.ofMillis(4000));
         Move bestMove = Notation.fromNotation("d3", "h7");
+        assertMove(bestMove, result.move());
+
+    }
+
+    @Test
+    public void testRidiculousRookF6Tactic() {
+
+        String fen = "2rrb3/5ppk/1q1bp2p/1pN5/pP1PP1N1/P2R3Q/6PP/5RK1 w - - 2 35";
+        Board board = FEN.toBoard(fen);
+        search.setPosition(board);
+        SearchResult result = search.search(Duration.ofMillis(4000));
+        Move bestMove = Notation.fromNotation("f1", "f6");
         assertMove(bestMove, result.move());
 
     }

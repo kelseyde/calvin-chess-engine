@@ -220,10 +220,11 @@ public class Searcher2 implements Search {
             board.makeMove(move);
 
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+            boolean isQuiet = !isCheck && !isCapture && !isPromotion;
 
             // Futility pruning: if the static eval + some margin is still < alpha, and the current move is not interesting
             // (checks, captures, promotions), then let's assume it will fail low and prune this node.
-            if (!pvNode && depth <= config.getFpDepth() && staticEval + config.getFpMargin()[depth] < alpha && !isInCheck && !isCheck && !isCapture && !isPromotion) {
+            if (!pvNode && depth <= config.getFpDepth() && staticEval + config.getFpMargin()[depth] < alpha && !isInCheck && isQuiet) {
                 board.unmakeMove();
                 continue;
             }
@@ -245,7 +246,7 @@ public class Searcher2 implements Search {
                 // Late move reductions: if the move is ordered late in the list, and isn't a 'noisy' move like a check,
                 // capture or promotion, let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
-                if (depth >= config.getLmrDepth() && i >= 2 && !isCapture && !isCheck && !isPromotion) {
+                if (depth >= config.getLmrDepth() && i >= 2 && isQuiet) {
                     reduction = i < 5 ? 1 : depth / 3;
                 }
 
@@ -398,8 +399,8 @@ public class Searcher2 implements Search {
         return entry != null &&
                 entry.getDepth() >= plyRemaining &&
                 ((entry.getFlag().equals(HashFlag.EXACT)) ||
-                        (entry.getFlag().equals(HashFlag.UPPER) && entry.getScore() <= alpha) ||
-                        (entry.getFlag().equals(HashFlag.LOWER) && entry.getScore() >= beta));
+                 (entry.getFlag().equals(HashFlag.UPPER) && entry.getScore() <= alpha) ||
+                 (entry.getFlag().equals(HashFlag.LOWER) && entry.getScore() >= beta));
     }
 
     private boolean hasBestMove(HashEntry transposition) {

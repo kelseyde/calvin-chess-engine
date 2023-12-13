@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.board.Zobrist;
 import com.kelseyde.calvin.utils.BoardUtils;
 

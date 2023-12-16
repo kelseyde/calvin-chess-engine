@@ -6,6 +6,7 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.evaluation.SimpleEvaluator;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.notation.Notation;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class EPerftService {
             int eval1 = evaluator.evaluate(board);
             int eval2 = simpleEvaluator.evaluate(board);
             if (eval1 != eval2) {
-                System.out.printf("%s != %s%n", eval1, eval2);
+                System.out.printf("%s %s != %s%n", Notation.toNotation(board.getMoveHistory()), eval1, eval2);
             }
             ePerft(board, depth - 1);
             board.unmakeMove();

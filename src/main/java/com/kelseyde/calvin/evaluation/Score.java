@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -117,6 +118,7 @@ public class Score {
         int whiteMaterialScore = Phase.taperedEval(whiteMaterialMgScore, whiteMaterialEgScore, phase);
         int blackMaterialScore = Phase.taperedEval(blackMaterialMgScore, blackMaterialEgScore, phase);
 
+//        System.out.printf("old wmob %s %s %n", whiteMobilityMgScore, whiteMobilityEgScore);
         int whiteMobilityScore = Phase.taperedEval(whiteMobilityMgScore, whiteMobilityEgScore, phase);
         int blackMobilityScore = Phase.taperedEval(blackMobilityMgScore, blackMobilityEgScore, phase);
 
@@ -132,6 +134,27 @@ public class Score {
         int blackScore = blackMaterialScore + blackPiecePlacementScore + blackMobilityScore + blackPawnStructureScore +
                 blackKingSafetyScore + blackRookScore + blackMopUpScore + blackTempoBonus;
 
+        System.out.printf("""
+                        [old]
+                        wm: %s
+                        bm: %s
+                        wpp: %s
+                        bpp: %s
+                        wmob: %s
+                        bmob: %s
+                        wpawn: %s
+                        bpawn: %s
+                        wrook: %s
+                        brook: %s
+                        wking: %s
+                        bking: %s
+                        wmop: %s
+                        bmop: %s
+                        wtemp: %s
+                        btemp: %s%n""",
+                whiteMaterialScore, blackMaterialScore, whitePiecePlacementScore, blackPiecePlacementScore, whiteMobilityScore,
+                blackMobilityScore, whitePawnStructureScore, blackPawnStructureScore, whiteRookScore, blackRookScore,
+                whiteKingSafetyScore, blackKingSafetyScore, whiteMopUpScore, blackMopUpScore, whiteTempoBonus, blackTempoBonus);
         int modifier = isWhite ? 1 : -1;
         return modifier * (whiteScore - blackScore);
 

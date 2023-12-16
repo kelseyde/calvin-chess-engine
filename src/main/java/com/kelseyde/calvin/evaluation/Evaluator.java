@@ -8,6 +8,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.generation.Attacks;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
+import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -57,6 +58,7 @@ public class Evaluator implements Evaluation {
         Material blackMaterial = Material.fromBoard(board, false);
 
         float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
+
         score.setPhase(phase);
 
         int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
@@ -99,6 +101,7 @@ public class Evaluator implements Evaluation {
             score.setBlackTempoBonus(config.getTempoBonus());
         }
 
+//        System.out.println(Notation.toNotation(board.getMoveHistory()));
         return score.sum(isWhite);
 
     }

@@ -36,7 +36,7 @@ public class Phase {
         int bishops = Bitwise.countBits(board.getWhiteBishops() | board.getBlackBishops());
         int rooks = Bitwise.countBits(board.getWhiteRooks() | board.getBlackRooks());
         int queens = Bitwise.countBits(board.getWhiteQueens() | board.getBlackQueens());
-        int materialScore = (knights * KNIGHT_PHASE) + (bishops * BISHOP_PHASE) + (rooks * ROOK_PHASE) + (queens + QUEEN_PHASE);
+        int materialScore = (knights * KNIGHT_PHASE) + (bishops * BISHOP_PHASE) + (rooks * ROOK_PHASE) + (queens * QUEEN_PHASE);
         return materialScore / TOTAL_PHASE;
     }
 

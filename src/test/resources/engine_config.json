@@ -1,7 +1,7 @@
 {
   "minThreadCount": 1,
-  "maxThreadCount": 8,
-  "defaultThreadCount": 6,
+  "maxThreadCount": 12,
+  "defaultThreadCount": 9,
 
   "minHashSizeMb": 16,
   "maxHashSizeMb": 1024,

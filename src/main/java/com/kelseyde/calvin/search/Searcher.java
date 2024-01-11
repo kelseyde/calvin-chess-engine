@@ -211,17 +211,20 @@ public class Searcher implements Search {
             }
         }
 
+        // Give each move a 'score' based on how interesting or promising it looks. These scores will be used to select
+        // the order in which moves are evaluated.
         int[] scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            Move move = moves.get(i);
-            scores[i] = moveOrderer.scoreMove(board, move, previousBestMove, true, ply);
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
         }
-//        moves = moveOrderer.orderMoves(board, moves, previousBestMove, true, ply);
+
         Move bestMove = null;
         HashFlag flag = HashFlag.UPPER;
 
         for (int i = 0; i < moves.size(); i++) {
 
+            // Incremental move ordering: it's unnecessary to sort the entire move list, since most of them are never evaluated.
+            // So just select the move with the best score that hasn't been tried yet
             for (int j = i + 1; j < moves.size(); j++) {
                 int firstScore = scores[i];
                 int secondScore = scores[j];
@@ -364,8 +367,7 @@ public class Searcher implements Search {
 
         int[] scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            Move move = moves.get(i);
-            scores[i] = moveOrderer.scoreMove(board, move, previousBestMove, true, ply);
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
         }
 
         for (int i = 0; i < moves.size(); i++) {

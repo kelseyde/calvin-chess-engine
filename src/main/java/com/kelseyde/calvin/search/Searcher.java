@@ -211,11 +211,29 @@ public class Searcher implements Search {
             }
         }
 
-        moves = moveOrderer.orderMoves(board, moves, previousBestMove, true, ply);
+        int[] scores = new int[moves.size()];
+        for (int i = 0; i < moves.size(); i++) {
+            Move move = moves.get(i);
+            scores[i] = moveOrderer.scoreMove(board, move, previousBestMove, true, ply);
+        }
+//        moves = moveOrderer.orderMoves(board, moves, previousBestMove, true, ply);
         Move bestMove = null;
         HashFlag flag = HashFlag.UPPER;
 
         for (int i = 0; i < moves.size(); i++) {
+
+            for (int j = i + 1; j < moves.size(); j++) {
+                int firstScore = scores[i];
+                int secondScore = scores[j];
+                Move firstMove = moves.get(i);
+                Move secondMove = moves.get(j);
+                if (scores[j] > scores[i]) {
+                    scores[i] = secondScore;
+                    scores[j] = firstScore;
+                    moves.set(i, secondMove);
+                    moves.set(j, firstMove);
+                }
+            }
 
             Move move = moves.get(i);
             boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
@@ -344,9 +362,26 @@ public class Searcher implements Search {
             moves = moveGenerator.generateMoves(board, filter);
         }
 
-        moves = moveOrderer.orderMoves(board, moves, previousBestMove, false, 0);
+        int[] scores = new int[moves.size()];
+        for (int i = 0; i < moves.size(); i++) {
+            Move move = moves.get(i);
+            scores[i] = moveOrderer.scoreMove(board, move, previousBestMove, true, ply);
+        }
 
-        for (Move move : moves) {
+        for (int i = 0; i < moves.size(); i++) {
+            for (int j = i + 1; j < moves.size(); j++) {
+                int firstScore = scores[i];
+                int secondScore = scores[j];
+                Move firstMove = moves.get(i);
+                Move secondMove = moves.get(j);
+                if (scores[j] > scores[i]) {
+                    scores[i] = secondScore;
+                    scores[j] = firstScore;
+                    moves.set(i, secondMove);
+                    moves.set(j, firstMove);
+                }
+            }
+            Move move = moves.get(i);
             if (!isInCheck) {
                 // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
                 Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());

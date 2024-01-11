@@ -16,6 +16,8 @@ public interface MoveOrdering {
 
     List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth);
 
+    int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth);
+
     void addKillerMove(int ply, Move newKiller);
 
     void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite);

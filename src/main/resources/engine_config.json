@@ -17,6 +17,7 @@
   "fpDepth": 4,
   "rfpDepth": 4,
   "lmrDepth": 3,
+  "iirDepth": 4,
   "nmpMargin": 50,
   "dpMargin": 140,
   "fpMargin": [0, 170, 260, 450, 575],

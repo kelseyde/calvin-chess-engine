@@ -167,6 +167,13 @@ public class Searcher implements Search {
             previousBestMove = transposition.getMove();
         }
 
+        // Internal iterative reduction: if the position doesn't exist in TT then it has never been searched before and
+        // the search will be potentially expensive. So let's search with a reduced depth for now expecting to record a
+        // TT move which we can later use for a full-depth search.
+        if (transposition == null && ply > 0 && depth >= config.getIirDepth()) {
+            --depth;
+        }
+
         List<Move> moves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
         int staticEval = evaluator.evaluate(board);

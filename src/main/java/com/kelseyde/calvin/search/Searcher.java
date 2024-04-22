@@ -176,14 +176,15 @@ public class Searcher implements Search {
 
         List<Move> moves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-        int staticEval = evaluator.evaluate(board);
 
         if (moves.isEmpty()) {
             // Found checkmate / stalemate
             return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
         }
-        if (ply == 0 && moves.size() == 1) {
-            // Exit immediately if there is only one legal move at the root node
+
+        int staticEval = evaluator.evaluate(board);
+        if (moves.size() == 1) {
+            // Exit immediately if there is only one legal move
             resultCurrentDepth = new SearchResult(staticEval, moves.get(0), depth);
             cancelled = true;
             return staticEval;

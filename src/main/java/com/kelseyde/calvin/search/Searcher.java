@@ -175,20 +175,22 @@ public class Searcher implements Search {
         }
 
         List<Move> moves = moveGenerator.generateMoves(board);
-        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
         if (moves.isEmpty()) {
             // Found checkmate / stalemate
+            boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
         }
-
-        int staticEval = evaluator.evaluate(board);
-        if (moves.size() == 1) {
-            // Exit immediately if there is only one legal move
+        if (ply == 0 && moves.size() == 1) {
+            // Exit immediately if there is only one legal move at the root node
+            int staticEval = evaluator.evaluate(board);
             resultCurrentDepth = new SearchResult(staticEval, moves.get(0), depth);
             cancelled = true;
             return staticEval;
         }
+
+        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+        int staticEval = evaluator.evaluate(board);
 
         if (!pvNode && !isInCheck) {
             // Reverse futility pruning: if our position is so good that we don't need to move to beat beta + some small
@@ -200,8 +202,7 @@ public class Searcher implements Search {
 
             // Null move pruning: if the static eval indicates a fail-high, then let's give the opponent an extra move
             // (make a 'null' move), and searching to a shallower depth. If the result still fails high, skip this node.
-            boolean isPawnEndgame = !board.hasPiecesRemaining(board.isWhiteToMove());
-            if (depth >= config.getNmpDepth() && allowNull && staticEval >= beta - config.getNmpMargin() && !isPawnEndgame) {
+            if (depth >= config.getNmpDepth() && allowNull && staticEval >= beta - config.getNmpMargin() && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -340,12 +341,9 @@ public class Searcher implements Search {
             previousBestMove = transposition.getMove();
         }
 
-        int eval = evaluator.evaluate(board);
-        int standPat = eval;
-
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-        List<Move> moves;
+        List<Move> moves = null;
         if (isInCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.
@@ -353,7 +351,12 @@ public class Searcher implements Search {
             if (moves.isEmpty()) {
                 return -Score.MATE_SCORE + ply;
             }
-        } else {
+        }
+
+        int eval = evaluator.evaluate(board);
+        int standPat = eval;
+
+        if (!isInCheck) {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
             if (eval >= beta) {

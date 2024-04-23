@@ -72,6 +72,10 @@ public class TranspositionTable {
             if (storedEntry.equals(newEntry)) {
                 return;
             }
+            // If the new entry has no move, use the move of the stored entry
+            if (newEntry.getMove() == null && storedEntry.getMove() != null) {
+                newEntry = HashEntry.of(newEntry.key(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
+            }
 
             int storedDepth = storedEntry.getDepth();
 

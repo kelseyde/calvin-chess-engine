@@ -124,7 +124,6 @@ public class MoveOrderer implements MoveOrdering {
 
     public void clear() {
         killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
-        historyMoves = new int[2][64][64];
     }
 
 }

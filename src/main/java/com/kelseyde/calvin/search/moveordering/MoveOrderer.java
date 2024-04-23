@@ -119,7 +119,7 @@ public class MoveOrderer implements MoveOrdering {
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int score = plyRemaining * plyRemaining;
-        historyMoves[colourIndex][startSquare][endSquare] = score;
+        historyMoves[colourIndex][startSquare][endSquare] += score;
     }
 
     public void clear() {

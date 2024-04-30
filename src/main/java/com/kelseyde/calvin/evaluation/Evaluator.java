@@ -362,6 +362,7 @@ public class Evaluator implements Evaluation {
         int[] egPieceSquareTable = config.getEndgameTables()[Piece.KING.getIndex()];
 
         int friendlyKingSquare = Bitwise.getNextBit(friendlyKing);
+        int friendlyKingFile = BoardUtils.getFile(friendlyKingSquare);
 
         int squareIndex = isWhite ? friendlyKingSquare ^ 56 : friendlyKingSquare;
         piecePlacementMgScore += mgPieceSquareTable[squareIndex];
@@ -370,6 +371,9 @@ public class Evaluator implements Evaluation {
 
         int kingSafetyScore = evaluateKingSafety(friendlyKingSquare, friendlyPawns, opponentPawns, opponentMaterial, board, phase, isWhite);
         score.setKingSafetyScore(kingSafetyScore, isWhite);
+
+        int mopUpScore = evaluateMopUp(friendlyKingSquare, opponentKing, friendlyMaterial, opponentMaterial);
+        score.setMopUpScore(mopUpScore, isWhite);
 
     }
 
@@ -397,6 +401,33 @@ public class Evaluator implements Evaluation {
             phase *= 0.6f;
         }
         return (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
+    }
+
+    /**
+     * When the side-to-move is up a decisive amount of material, give a small bonus for escorting the opponent king to
+     * the sides or corners of the board. This assists the engine in finding forced mate.
+     * </p>
+     * @see <a href="https://www.chessprogramming.org/Mop-up_Evaluation">Chess Programming Wiki</a>
+     */
+    private int evaluateMopUp(int friendlyKingSquare,
+                              long opponentKing,
+                              Material friendlyMaterial,
+                              Material opponentMaterial) {
+        int mopUpScore = 0;
+        int friendlyMaterialScore = friendlyMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        int opponentMaterialScore = opponentMaterial.sum(Score.SIMPLE_PIECE_VALUES, config.getBishopPairBonus());
+        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
+        if (!twoPawnAdvantage) return 0;
+        int opponentKingSquare = Bitwise.getNextBit(opponentKing);
+
+        // Bonus for moving king closer to opponent king
+        mopUpScore += (14 - Distance.manhattan(friendlyKingSquare, opponentKingSquare)) * config.getKingManhattanDistanceMultiplier();
+        mopUpScore += (7 - Distance.chebyshev(friendlyKingSquare, opponentKingSquare)) * config.getKingChebyshevDistanceMultiplier();
+
+        // Bonus for pushing opponent king to the edges of the board
+        mopUpScore += Distance.centerManhattan(opponentKingSquare) * config.getKingCenterManhattanDistanceMultiplier();
+
+        return (int) (mopUpScore * (1 - Phase.fromMaterial(opponentMaterial)));
     }
 
     private static int calculatePawnShieldPenalty(EngineConfig config, int kingSquare, int kingFile, long pawns) {

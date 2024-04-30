@@ -167,6 +167,13 @@ public class Searcher2 implements Search {
             previousBestMove = transposition.getMove();
         }
 
+        // Internal iterative reduction: if the position doesn't exist in TT then it has never been searched before and
+        // the search will be potentially expensive. So let's search with a reduced depth for now expecting to record a
+        // TT move which we can later use for a full-depth search.
+        if (transposition == null && ply > 0 && depth >= config.getIirDepth()) {
+            --depth;
+        }
+
         List<Move> moves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
         int staticEval = evaluator.evaluate(board);
@@ -183,7 +190,6 @@ public class Searcher2 implements Search {
         }
 
         if (!pvNode && !isInCheck) {
-
             // Reverse futility pruning: if our position is so good that we don't need to move to beat beta + some small
             // margin, then let's assume we don't need to search any further, and cut off early.
             boolean isMateHunting = Math.abs(alpha) >= Score.MATE_SCORE - 100;
@@ -191,9 +197,8 @@ public class Searcher2 implements Search {
                 return staticEval - config.getRfpMargin()[depth];
             }
 
-            // Null move pruning: if the static eval > beta - some margin, and so is likely to fail high, then let's test
-            // this theory by giving the opponent an extra move (making a 'null' move), and searching the resulting position
-            // to a shallower depth. If the result still fails high, prune this node.
+            // Null move pruning: if the static eval indicates a fail-high, then let's give the opponent an extra move
+            // (make a 'null' move), and searching to a shallower depth. If the result still fails high, skip this node.
             boolean isPawnEndgame = !board.hasPiecesRemaining(board.isWhiteToMove());
             if (depth >= config.getNmpDepth() && allowNull && staticEval >= beta - config.getNmpMargin() && !isPawnEndgame) {
                 board.makeNullMove();
@@ -204,14 +209,34 @@ public class Searcher2 implements Search {
                     return eval;
                 }
             }
-
         }
 
-        moves = moveOrderer.orderMoves(board, moves, previousBestMove, true, ply);
+        // Give each move a 'score' based on how interesting or promising it looks. These scores will be used to select
+        // the order in which moves are evaluated.
+        int[] scores = new int[moves.size()];
+        for (int i = 0; i < moves.size(); i++) {
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
+        }
+
         Move bestMove = null;
         HashFlag flag = HashFlag.UPPER;
 
         for (int i = 0; i < moves.size(); i++) {
+
+            // Incremental move ordering: it's unnecessary to sort the entire move list, since most of them are never evaluated.
+            // So just select the move with the best score that hasn't been tried yet
+            for (int j = i + 1; j < moves.size(); j++) {
+                int firstScore = scores[i];
+                int secondScore = scores[j];
+                Move firstMove = moves.get(i);
+                Move secondMove = moves.get(j);
+                if (scores[j] > scores[i]) {
+                    scores[i] = secondScore;
+                    scores[j] = firstScore;
+                    moves.set(i, secondMove);
+                    moves.set(j, firstMove);
+                }
+            }
 
             Move move = moves.get(i);
             boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
@@ -340,9 +365,25 @@ public class Searcher2 implements Search {
             moves = moveGenerator.generateMoves(board, filter);
         }
 
-        moves = moveOrderer.orderMoves(board, moves, previousBestMove, false, 0);
+        int[] scores = new int[moves.size()];
+        for (int i = 0; i < moves.size(); i++) {
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
+        }
 
-        for (Move move : moves) {
+        for (int i = 0; i < moves.size(); i++) {
+            for (int j = i + 1; j < moves.size(); j++) {
+                int firstScore = scores[i];
+                int secondScore = scores[j];
+                Move firstMove = moves.get(i);
+                Move secondMove = moves.get(j);
+                if (scores[j] > scores[i]) {
+                    scores[i] = secondScore;
+                    scores[j] = firstScore;
+                    moves.set(i, secondMove);
+                    moves.set(j, firstMove);
+                }
+            }
+            Move move = moves.get(i);
             if (!isInCheck) {
                 // Futility pruning: if the captured piece + a margin still has no potential of raising alpha, prune this node.
                 Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());

@@ -18,9 +18,9 @@
   "rfpDepth": 4,
   "lmrDepth": 3,
   "iirDepth": 4,
-  "nmpMargin": 50,
+  "nmpMargin": 0,
   "dpMargin": 140,
-  "fpMargin": [0, 170, 260, 450, 575],
+  "fpMargin": [0, 120, 210, 500, 525],
   "rfpMargin": [0, 120, 240, 360, 480],
 
   "pieceValues": [

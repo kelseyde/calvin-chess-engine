@@ -116,15 +116,6 @@ public class Evaluator implements Evaluation {
         if (hashEntry != null) {
             whiteScore = hashEntry.whiteScore();
             blackScore = hashEntry.blackScore();
-            PawnScore newWhiteScore = scorePawns(board.getPawns(true), board.getPawns(false), true);
-            PawnScore newBlackScore = scorePawns(board.getPawns(false), board.getPawns(true), false);
-            if (!whiteScore.equals(newWhiteScore)) {
-                System.out.println("oh noooo!");
-                System.out.printf("%s %s %s %s / %s %s %s %s\n",
-                        whiteScore.pawnPlacementMgScore(), whiteScore.pawnPlacementEgScore(), whiteScore.pawnStructureMgScore(), whiteScore.pawnStructureEgScore(),
-                        newWhiteScore.pawnPlacementMgScore(), newWhiteScore.pawnPlacementEgScore(), newWhiteScore.pawnStructureMgScore(), newWhiteScore.pawnStructureEgScore());
-                Bitwise.print(board.getPawns(true) | board.getPawns(false));
-            }
         } else {
             whiteScore = scorePawns(board.getPawns(true), board.getPawns(false), true);
             blackScore = scorePawns(board.getPawns(false), board.getPawns(true), false);

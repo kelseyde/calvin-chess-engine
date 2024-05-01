@@ -140,6 +140,26 @@ public class Zobrist {
         return key;
     }
 
+    public static long updatePiece(long key, int square, Piece pieceType, boolean isWhite) {
+        return key ^ PIECE_SQUARE_HASH[square][isWhite ? 0 : 1][pieceType.getIndex()];
+    }
+
+    public static long updateCastlingRights(long key, int oldCastlingRights, int newCastlingRights) {
+        key ^= CASTLING_RIGHTS[oldCastlingRights];
+        key ^= CASTLING_RIGHTS[newCastlingRights];
+        return key;
+    }
+
+    public static long updateEnPassantFile(long key, int oldEnPassantFile, int newEnPassantFile) {
+        key ^= EN_PASSANT_FILE[oldEnPassantFile + 1];
+        key ^= EN_PASSANT_FILE[newEnPassantFile + 1];
+        return key;
+    }
+
+    public static long updateSideToMove(long key) {
+        return key ^ BLACK_TO_MOVE;
+    }
+
     public static long updateKeyAfterNullMove(long key, int oldEnPassantFile) {
         key ^= EN_PASSANT_FILE[oldEnPassantFile + 1];
         key ^= EN_PASSANT_FILE[0];

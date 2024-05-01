@@ -89,4 +89,105 @@ public class ZobristTest {
 
     }
 
+    @Test
+    public void testPawnDoubleMove() {
+
+        String fenBeforeMove = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        String fenAfterMove = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+
+        Board board1 = FEN.toBoard(fenBeforeMove);
+        board1.makeMove(Notation.fromNotation("e2", "e4"));
+        long zobrist1 = board1.getGameState().getZobristKey();
+
+        Board board2 = FEN.toBoard(fenAfterMove);
+        long zobrist2 = board2.getGameState().getZobristKey();
+
+        Assertions.assertEquals(zobrist1, zobrist2);
+
+    }
+
+    @Test
+    public void testCapture() {
+
+        String fenBeforeMove = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+        String fenAfterMove = "rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2";
+
+        Board board1 = FEN.toBoard(fenBeforeMove);
+        board1.makeMove(Notation.fromNotation("e4", "d5"));
+        long zobrist1 = board1.getGameState().getZobristKey();
+
+        Board board2 = FEN.toBoard(fenAfterMove);
+        long zobrist2 = board2.getGameState().getZobristKey();
+
+        Assertions.assertEquals(zobrist1, zobrist2);
+
+    }
+
+    @Test
+    public void testCastlingRights() {
+
+        String fenBeforeMove = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+        String fenAfterMove = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 2";
+
+        Board board1 = FEN.toBoard(fenBeforeMove);
+        board1.makeMove(Notation.fromNotation("e1", "e2"));
+        long zobrist1 = board1.getGameState().getZobristKey();
+
+        Board board2 = FEN.toBoard(fenAfterMove);
+        long zobrist2 = board2.getGameState().getZobristKey();
+
+        Assertions.assertEquals(zobrist1, zobrist2);
+
+    }
+
+    @Test
+    public void testEnPassant() {
+
+        String fenBeforeCapture = "rnbqkb1r/ppp1pppp/5n2/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3";
+        String fenAfterCapture = "rnbqkb1r/ppp1pppp/3P1n2/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 3";
+
+        Board board1 = FEN.toBoard(fenBeforeCapture);
+        board1.makeMove(Notation.fromNotation("e5", "d6", Move.EN_PASSANT_FLAG));
+        long zobrist1 = board1.getGameState().getZobristKey();
+
+        Board board2 = FEN.toBoard(fenAfterCapture);
+        long zobrist2 = board2.getGameState().getZobristKey();
+
+        Assertions.assertEquals(zobrist1, zobrist2);
+    }
+
+    @Test
+    public void testCastling() {
+
+        String fenBeforeCastle = "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
+        String fenAfterCastle = "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4";
+
+        Board board1 = FEN.toBoard(fenBeforeCastle);
+        board1.makeMove(Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG));
+        long zobrist1 = board1.getGameState().getZobristKey();
+
+        Board board2 = FEN.toBoard(fenAfterCastle);
+        long zobrist2 = board2.getGameState().getZobristKey();
+
+        Assertions.assertEquals(zobrist1, zobrist2);
+
+    }
+
+    @Test
+    public void testPromotion() {
+
+        String fenBeforeCastle = "rnbqkb1r/pP3ppp/5n2/4p3/8/8/PPPP1PPP/RNBQKBNR w - - 0 7";
+        String fenAfterCastle = "Qnbqkb1r/p4ppp/5n2/4p3/8/8/PPPP1PPP/RNBQKBNR b - - 0 7";
+
+        Board board1 = FEN.toBoard(fenBeforeCastle);
+        board1.makeMove(Notation.fromNotation("b7", "a8", Move.PROMOTE_TO_QUEEN_FLAG));
+        long zobrist1 = board1.getGameState().getZobristKey();
+
+        Board board2 = FEN.toBoard(fenAfterCastle);
+        long zobrist2 = board2.getGameState().getZobristKey();
+
+        Assertions.assertEquals(zobrist1, zobrist2);
+
+    }
+
 }

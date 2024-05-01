@@ -6,6 +6,9 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.generation.Attacks;
+import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
+import com.kelseyde.calvin.transposition.pawn.PawnHashEntry;
+import com.kelseyde.calvin.transposition.pawn.PawnHashEntry.PawnScore;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 import lombok.AccessLevel;
@@ -24,11 +27,13 @@ import lombok.experimental.FieldDefaults;
 public class Evaluator implements Evaluation {
 
     final EngineConfig config;
+    final PawnHashTable pawnHash;
 
     Score score;
 
     public Evaluator(EngineConfig config) {
         this.config = config;
+        this.pawnHash = new PawnHashTable(32);
     }
 
     @Override
@@ -75,8 +80,7 @@ public class Evaluator implements Evaluation {
         long whitePawnAttacks = Attacks.pawnAttacks(whitePawns, true);
         long blackPawnAttacks = Attacks.pawnAttacks(blackPawns, false);
 
-        scorePawns(whitePawns, blackPawns, true);
-        scorePawns(blackPawns, whitePawns, false);
+        scorePawnsWithHash(board);
 
         scoreKnights(whiteKnights, friendlyWhiteBlockers, blackPawnAttacks, true);
         scoreKnights(blackKnights, friendlyBlackBlockers, whitePawnAttacks, false);
@@ -103,13 +107,43 @@ public class Evaluator implements Evaluation {
 
     }
 
+    private void scorePawnsWithHash(Board board) {
+
+        long pawnKey = board.getGameState().getPawnKey();
+        PawnHashEntry hashEntry = pawnHash.get(pawnKey);
+        PawnScore whiteScore;
+        PawnScore blackScore;
+        if (hashEntry != null) {
+            whiteScore = hashEntry.whiteScore();
+            blackScore = hashEntry.blackScore();
+            PawnScore newWhiteScore = scorePawns(board.getPawns(true), board.getPawns(false), true);
+            PawnScore newBlackScore = scorePawns(board.getPawns(false), board.getPawns(true), false);
+            if (!whiteScore.equals(newWhiteScore)) {
+                System.out.println("oh noooo!");
+                System.out.printf("%s %s %s %s / %s %s %s %s\n",
+                        whiteScore.pawnPlacementMgScore(), whiteScore.pawnPlacementEgScore(), whiteScore.pawnStructureMgScore(), whiteScore.pawnStructureEgScore(),
+                        newWhiteScore.pawnPlacementMgScore(), newWhiteScore.pawnPlacementEgScore(), newWhiteScore.pawnStructureMgScore(), newWhiteScore.pawnStructureEgScore());
+                Bitwise.print(board.getPawns(true) | board.getPawns(false));
+            }
+        } else {
+            whiteScore = scorePawns(board.getPawns(true), board.getPawns(false), true);
+            blackScore = scorePawns(board.getPawns(false), board.getPawns(true), false);
+            hashEntry = new PawnHashEntry(pawnKey, whiteScore, blackScore);
+            pawnHash.put(pawnKey, hashEntry);
+        }
+        score.addPiecePlacementScore(whiteScore.pawnPlacementMgScore(), whiteScore.pawnPlacementEgScore(), true);
+        score.addPawnStructureScore(whiteScore.pawnStructureMgScore(), whiteScore.pawnStructureEgScore(), true);
+        score.addPiecePlacementScore(blackScore.pawnPlacementMgScore(), blackScore.pawnPlacementEgScore(), false);
+        score.addPawnStructureScore(blackScore.pawnStructureMgScore(), blackScore.pawnStructureEgScore(), false);
+    }
+
     /**
      * Pawn evaluation consists of piece-placement eval + pawn structure considerations (bonuses for passed pawns,
      * penalties for isolated/doubled pawns).
      */
-    private void scorePawns(long friendlyPawns,
-                            long opponentPawns,
-                            boolean isWhite) {
+    private PawnScore scorePawns(long friendlyPawns,
+                                               long opponentPawns,
+                                               boolean isWhite) {
         int piecePlacementMgScore = 0;
         int piecePlacementEgScore = 0;
         int pawnStructureMgScore = 0;
@@ -164,6 +198,8 @@ public class Evaluator implements Evaluation {
 
         score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, isWhite);
         score.addPawnStructureScore(pawnStructureMgScore, pawnStructureEgScore, isWhite);
+
+        return new PawnScore(piecePlacementMgScore, piecePlacementEgScore, pawnStructureMgScore, pawnStructureEgScore);
     }
 
     /**

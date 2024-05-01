@@ -92,6 +92,7 @@ public class FEN {
             board.getGameState().setEnPassantFile(enPassantFile);
             board.getGameState().setFiftyMoveCounter(fiftyMoveCounter);
             board.getGameState().setZobristKey(Zobrist.generateKey(board));
+            board.getGameState().setPawnKey(Zobrist.generatePawnKey(board));
 
             return board;
 

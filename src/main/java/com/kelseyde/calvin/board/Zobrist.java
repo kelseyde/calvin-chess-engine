@@ -97,6 +97,19 @@ public class Zobrist {
         return key;
     }
 
+    public static long generatePawnKey(Board board) {
+        long key = 0L;
+        for (int square = 0; square < 64; square++) {
+            if (((board.getWhitePawns() >>> square) & 1) == 1) {
+                key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.PAWN.getIndex()];
+            }
+            else if (((board.getBlackPawns() >>> square) & 1) == 1) {
+                key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.PAWN.getIndex()];
+            }
+        }
+        return key;
+    }
+
     public static long updateKey(long key, boolean isWhite, int startSquare, int endSquare, Piece oldType, Piece newType,
                                  Piece capturedType, int oldCastlingRights, int newCastlingRights, int oldEnPassantFile, int newEnPassantFile) {
 
@@ -112,6 +125,19 @@ public class Zobrist {
         key ^= BLACK_TO_MOVE;
         return key;
 
+    }
+
+    public static long updatePawnKey(long key, boolean isWhite, int startSquare, int endSquare, Piece oldType, Piece newType, Piece capturedType) {
+        if (oldType == Piece.PAWN) {
+            key ^= PIECE_SQUARE_HASH[startSquare][isWhite ? 0 : 1][Piece.PAWN.getIndex()];
+        }
+        if (capturedType == Piece.PAWN) {
+            key ^= PIECE_SQUARE_HASH[endSquare][isWhite ? 1 : 0][Piece.PAWN.getIndex()];
+        }
+        if (newType == Piece.PAWN) {
+            key ^= PIECE_SQUARE_HASH[endSquare][isWhite ? 0 : 1][Piece.PAWN.getIndex()];
+        }
+        return key;
     }
 
     public static long updateKeyAfterNullMove(long key, int oldEnPassantFile) {

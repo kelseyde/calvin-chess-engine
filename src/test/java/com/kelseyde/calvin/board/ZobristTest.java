@@ -89,4 +89,20 @@ public class ZobristTest {
 
     }
 
+    @Test
+    public void testEnPassantCapturedPieceChangesZobrist() {
+
+        String fenBeforeCapture = "rnbqkb1r/ppp1pppp/5n2/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3";
+        String fenAfterCapture = "rnbqkb1r/ppp1pppp/3P1n2/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 3";
+
+        Board board1 = FEN.toBoard(fenBeforeCapture);
+        board1.makeMove(Notation.fromNotation("e5", "d6"));
+        long zobrist1 = board1.getGameState().getZobristKey();
+
+        Board board2 = FEN.toBoard(fenAfterCapture);
+        long zobrist2 = board2.getGameState().getZobristKey();
+
+        Assertions.assertEquals(zobrist1, zobrist2);
+    }
+
 }

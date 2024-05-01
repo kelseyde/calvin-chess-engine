@@ -5,7 +5,7 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>3.2.6-NullMoveTuning</version>
+    <version>3.2.7-PawnHash</version>
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 

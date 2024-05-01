@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class GameState {
 
     long zobristKey = 0L;
+    long pawnKey = 0L;
     Piece capturedPiece;
     int enPassantFile = -1;
     int castlingRights = Bits.INITIAL_CASTLING_RIGHTS;
@@ -35,7 +36,7 @@ public class GameState {
     }
 
     public GameState copy() {
-        return new GameState(zobristKey, capturedPiece, enPassantFile, castlingRights, fiftyMoveCounter);
+        return new GameState(zobristKey, pawnKey, capturedPiece, enPassantFile, castlingRights, fiftyMoveCounter);
     }
 
 }

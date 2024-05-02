@@ -110,19 +110,6 @@ public class Zobrist {
         return key;
     }
 
-    public static long updatePawnKey(long key, boolean isWhite, int startSquare, int endSquare, Piece oldType, Piece newType, Piece capturedType) {
-        if (oldType == Piece.PAWN) {
-            key ^= PIECE_SQUARE_HASH[startSquare][isWhite ? 0 : 1][Piece.PAWN.getIndex()];
-        }
-        if (capturedType == Piece.PAWN) {
-            key ^= PIECE_SQUARE_HASH[endSquare][isWhite ? 1 : 0][Piece.PAWN.getIndex()];
-        }
-        if (newType == Piece.PAWN) {
-            key ^= PIECE_SQUARE_HASH[endSquare][isWhite ? 0 : 1][Piece.PAWN.getIndex()];
-        }
-        return key;
-    }
-
     public static long updatePiece(long key, int square, Piece pieceType, boolean isWhite) {
         return key ^ PIECE_SQUARE_HASH[square][isWhite ? 0 : 1][pieceType.getIndex()];
     }

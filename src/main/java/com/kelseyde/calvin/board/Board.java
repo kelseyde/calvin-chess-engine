@@ -67,6 +67,7 @@ public class Board {
         boolean resetFiftyMoveCounter = capturedPiece != null || Piece.PAWN.equals(piece);
         newFiftyMoveCounter = resetFiftyMoveCounter ? 0 : ++newFiftyMoveCounter;
         long zobrist = gameState.getZobristKey();
+        long pawnZobrist = gameState.getPawnKey();
 
         if (move.isPawnDoubleMove()) {
             toggleSquares(piece, isWhiteToMove, startSquare, endSquare);
@@ -74,6 +75,8 @@ public class Board {
             pieceList[endSquare] = Piece.PAWN;
             zobrist = Zobrist.updatePiece(zobrist, startSquare, Piece.PAWN, isWhiteToMove);
             zobrist = Zobrist.updatePiece(zobrist, endSquare, Piece.PAWN, isWhiteToMove);
+            pawnZobrist = Zobrist.updatePiece(pawnZobrist, startSquare, Piece.PAWN, isWhiteToMove);
+            pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, Piece.PAWN, isWhiteToMove);
             newEnPassantFile = BoardUtils.getFile(endSquare);
         }
         else if (move.isCastling()) {
@@ -104,11 +107,16 @@ public class Board {
             pieceList[startSquare] = null;
             pieceList[endSquare] = move.getPromotionPieceType();
             zobrist = Zobrist.updatePiece(zobrist, startSquare, Piece.PAWN, isWhiteToMove);
+            pawnZobrist = Zobrist.updatePiece(pawnZobrist, startSquare, Piece.PAWN, isWhiteToMove);
             if (capturedPiece != null) {
                 toggleSquare(capturedPiece, !isWhiteToMove, endSquare);
                 zobrist = Zobrist.updatePiece(zobrist, endSquare, capturedPiece, !isWhiteToMove);
+                if (capturedPiece == Piece.PAWN) {
+                    pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, capturedPiece, !isWhiteToMove);
+                }
             }
             zobrist = Zobrist.updatePiece(zobrist, endSquare, move.getPromotionPieceType(), isWhiteToMove);
+            pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, move.getPromotionPieceType(), isWhiteToMove);
         }
         else if (move.isEnPassant()) {
             toggleSquares(piece, isWhiteToMove, startSquare, endSquare);
@@ -120,17 +128,27 @@ public class Board {
             zobrist = Zobrist.updatePiece(zobrist, startSquare, Piece.PAWN, isWhiteToMove);
             zobrist = Zobrist.updatePiece(zobrist, pawnSquare, Piece.PAWN, !isWhiteToMove);
             zobrist = Zobrist.updatePiece(zobrist, endSquare, Piece.PAWN, isWhiteToMove);
+            pawnZobrist = Zobrist.updatePiece(pawnZobrist, startSquare, Piece.PAWN, isWhiteToMove);
+            pawnZobrist = Zobrist.updatePiece(pawnZobrist, pawnSquare, Piece.PAWN, !isWhiteToMove);
+            pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, Piece.PAWN, isWhiteToMove);
         }
         else {
             toggleSquares(piece, isWhiteToMove, startSquare, endSquare);
             if (capturedPiece != null) {
                 toggleSquare(capturedPiece, !isWhiteToMove, endSquare);
                 zobrist = Zobrist.updatePiece(zobrist, endSquare, capturedPiece, !isWhiteToMove);
+                if (capturedPiece == Piece.PAWN) {
+                    pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, capturedPiece, !isWhiteToMove);
+                }
             }
             pieceList[startSquare] = null;
             pieceList[endSquare] = piece;
             zobrist = Zobrist.updatePiece(zobrist, startSquare, piece, isWhiteToMove);
             zobrist = Zobrist.updatePiece(zobrist, endSquare, piece, isWhiteToMove);
+            if (piece == Piece.PAWN) {
+                pawnZobrist = Zobrist.updatePiece(pawnZobrist, startSquare, piece, isWhiteToMove);
+                pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, piece, isWhiteToMove);
+            }
         }
 
         int newCastlingRights = calculateCastlingRights(startSquare, endSquare, piece);
@@ -140,10 +158,7 @@ public class Board {
         zobrist = Zobrist.updateEnPassantFile(zobrist, gameState.getEnPassantFile(), newEnPassantFile);
         zobrist = Zobrist.updateSideToMove(zobrist);
 
-        long newPawnKey =
-                Zobrist.updatePawnKey(gameState.getPawnKey(), isWhiteToMove, startSquare, endSquare, piece, newPieceType, capturedPiece);
-
-        GameState newGameState = new GameState(zobrist, newPawnKey, capturedPiece, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
+        GameState newGameState = new GameState(zobrist, pawnZobrist, capturedPiece, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
         gameStateHistory.push(gameState);
         gameState = newGameState;
 

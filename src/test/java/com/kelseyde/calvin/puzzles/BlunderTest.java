@@ -580,4 +580,17 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontSacKnightForPawn() {
+
+        String fen = "3r2k1/1p4p1/p2q3p/3P1p2/2QNp1b1/P5P1/1P3PPK/4R3 w - - 4 27";
+        engine.setPosition(fen, Collections.emptyList());
+        Move move = engine.think(1360);
+        System.out.println(Notation.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(Notation.fromCombinedNotation("d4c6"))
+        );
+
+    }
+
 }

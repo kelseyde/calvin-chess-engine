@@ -12,6 +12,7 @@ import com.kelseyde.calvin.transposition.pawn.PawnHashEntry.PawnScore;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 /**
@@ -27,13 +28,14 @@ import lombok.experimental.FieldDefaults;
 public class Evaluator implements Evaluation {
 
     final EngineConfig config;
+    @Getter
     final PawnHashTable pawnHash;
 
     Score score;
 
     public Evaluator(EngineConfig config) {
         this.config = config;
-        this.pawnHash = new PawnHashTable(32);
+        this.pawnHash = new PawnHashTable();
     }
 
     @Override
@@ -80,7 +82,7 @@ public class Evaluator implements Evaluation {
         long whitePawnAttacks = Attacks.pawnAttacks(whitePawns, true);
         long blackPawnAttacks = Attacks.pawnAttacks(blackPawns, false);
 
-        scorePawnsWithHash(board);
+        scorePawnsWithHash(board, whitePawns, blackPawns);
 
         scoreKnights(whiteKnights, friendlyWhiteBlockers, blackPawnAttacks, true);
         scoreKnights(blackKnights, friendlyBlackBlockers, whitePawnAttacks, false);
@@ -107,7 +109,7 @@ public class Evaluator implements Evaluation {
 
     }
 
-    private void scorePawnsWithHash(Board board) {
+    private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {
 
         long pawnKey = board.getGameState().getPawnKey();
         PawnHashEntry hashEntry = pawnHash.get(pawnKey);
@@ -117,8 +119,8 @@ public class Evaluator implements Evaluation {
             whiteScore = hashEntry.whiteScore();
             blackScore = hashEntry.blackScore();
         } else {
-            whiteScore = scorePawns(board.getPawns(true), board.getPawns(false), true);
-            blackScore = scorePawns(board.getPawns(false), board.getPawns(true), false);
+            whiteScore = scorePawns(whitePawns, blackPawns, true);
+            blackScore = scorePawns(blackPawns, whitePawns, false);
             hashEntry = new PawnHashEntry(pawnKey, whiteScore, blackScore);
             pawnHash.put(pawnKey, hashEntry);
         }
@@ -126,6 +128,7 @@ public class Evaluator implements Evaluation {
         score.addPawnStructureScore(whiteScore.pawnStructureMgScore(), whiteScore.pawnStructureEgScore(), true);
         score.addPiecePlacementScore(blackScore.pawnPlacementMgScore(), blackScore.pawnPlacementEgScore(), false);
         score.addPawnStructureScore(blackScore.pawnStructureMgScore(), blackScore.pawnStructureEgScore(), false);
+
     }
 
     /**
@@ -186,9 +189,6 @@ public class Evaluator implements Evaluation {
         // Penalties for doubled pawns, indexed by the number of doubled pawns
         pawnStructureMgScore += config.getDoubledPawnPenalty()[0][doubledPawnCount];
         pawnStructureEgScore += config.getDoubledPawnPenalty()[1][doubledPawnCount];
-
-        score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, isWhite);
-        score.addPawnStructureScore(pawnStructureMgScore, pawnStructureEgScore, isWhite);
 
         return new PawnScore(piecePlacementMgScore, piecePlacementEgScore, pawnStructureMgScore, pawnStructureEgScore);
     }

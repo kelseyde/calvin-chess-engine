@@ -152,7 +152,6 @@ public class Board {
         }
 
         int newCastlingRights = calculateCastlingRights(startSquare, endSquare, piece);
-        Piece newPieceType = move.getPromotionPieceType() == null ? piece : move.getPromotionPieceType();
 
         zobrist = Zobrist.updateCastlingRights(zobrist, gameState.getCastlingRights(), newCastlingRights);
         zobrist = Zobrist.updateEnPassantFile(zobrist, gameState.getEnPassantFile(), newEnPassantFile);

@@ -48,16 +48,16 @@ public class Evaluator implements Evaluation {
         long blackPieces = board.getBlackPieces();
 
         long whitePawns = board.getWhitePawns();
-        long whiteKnights = board.getWhiteKnights();
-        long whiteBishops = board.getWhiteBishops();
-        long whiteRooks = board.getWhiteRooks();
-        long whiteQueens = board.getWhiteQueens();
+//        long whiteKnights = board.getWhiteKnights();
+//        long whiteBishops = board.getWhiteBishops();
+//        long whiteRooks = board.getWhiteRooks();
+//        long whiteQueens = board.getWhiteQueens();
         long whiteKing = board.getWhiteKing();
         long blackPawns = board.getBlackPawns();
-        long blackKnights = board.getBlackKnights();
-        long blackBishops = board.getBlackBishops();
-        long blackRooks = board.getBlackRooks();
-        long blackQueens = board.getBlackQueens();
+//        long blackKnights = board.getBlackKnights();
+//        long blackBishops = board.getBlackBishops();
+//        long blackRooks = board.getBlackRooks();
+//        long blackQueens = board.getBlackQueens();
         long blackKing = board.getBlackKing();
 
         Material whiteMaterial = Material.fromBoard(board, true);
@@ -82,23 +82,166 @@ public class Evaluator implements Evaluation {
         long whitePawnAttacks = Attacks.pawnAttacks(whitePawns, true);
         long blackPawnAttacks = Attacks.pawnAttacks(blackPawns, false);
 
+        // Pawns are handled separately as their static evaluation is cached
         scorePawnsWithHash(board, whitePawns, blackPawns);
 
-        scoreKnights(whiteKnights, friendlyWhiteBlockers, blackPawnAttacks, true);
-        scoreKnights(blackKnights, friendlyBlackBlockers, whitePawnAttacks, false);
+        long pieces = (whitePieces | blackPieces) &~ (whitePawns | blackPawns);
+        Piece[] pieceList = board.getPieceList();
 
-        scoreBishops(whiteBishops, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreBishops(blackBishops, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        int whitePiecePlacementMgScore = 0;
+        int whitePiecePlacementEgScore = 0;
+        int blackPiecePlacementMgScore = 0;
+        int blackPiecePlacementEgScore = 0;
 
-        scoreRooks(whiteRooks, whitePawns, blackPawns, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreRooks(blackRooks, blackPawns, whitePawns, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        int whiteMobilityMgScore = 0;
+        int whiteMobilityEgScore = 0;
+        int blackMobilityMgScore = 0;
+        int blackMobilityEgScore = 0;
 
-        scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        while (pieces != 0) {
+            int square = Bitwise.getNextBit(pieces);
+            boolean isWhitePiece = (1L << square & whitePieces) != 0;
+            int pstIndex = isWhitePiece ? square ^ 56 : square;
 
-        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
-        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
+            int piecePlacementMgScore = 0;
+            int piecePlacementEgScore = 0;
+            int mobilityMgScore = 0;
+            int mobilityEgScore = 0;
 
+            Piece pieceType = pieceList[square];
+
+            if (pieceType == Piece.KNIGHT) {
+                long friendlyBlockers = isWhitePiece ? friendlyWhiteBlockers : friendlyBlackBlockers;
+                long opponentPawnAttacks = isWhitePiece ? blackPawnAttacks : whitePawnAttacks;
+
+                piecePlacementMgScore += config.getMiddlegameTables()[Piece.KNIGHT.getIndex()][pstIndex];
+                piecePlacementEgScore += config.getEndgameTables()[Piece.KNIGHT.getIndex()][pstIndex];
+
+                long attacks = Attacks.knightAttacks(square);
+                long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+                int moveCount = Bitwise.countBits(moves);
+                mobilityMgScore += config.getMiddlegameMobilityBonus()[Piece.KNIGHT.getIndex()][moveCount];
+                mobilityEgScore += config.getEndgameMobilityBonus()[Piece.KNIGHT.getIndex()][moveCount];
+            }
+            else if (pieceType == Piece.BISHOP) {
+                long friendlyBlockers = isWhitePiece ? friendlyWhiteBlockers : friendlyBlackBlockers;
+                long opponentBlockers = isWhitePiece ? friendlyBlackBlockers : friendlyWhiteBlockers;
+                long blockers = friendlyBlockers | opponentBlockers;
+                long opponentPawnAttacks = isWhitePiece ? blackPawnAttacks : whitePawnAttacks;
+
+                piecePlacementMgScore += config.getMiddlegameTables()[Piece.BISHOP.getIndex()][pstIndex];
+                piecePlacementEgScore += config.getEndgameTables()[Piece.BISHOP.getIndex()][pstIndex];
+
+                long attacks = Attacks.bishopAttacks(square, blockers);
+                long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+                int moveCount = Bitwise.countBits(moves);
+                mobilityMgScore += config.getMiddlegameMobilityBonus()[Piece.BISHOP.getIndex()][moveCount];
+                mobilityEgScore += config.getEndgameMobilityBonus()[Piece.BISHOP.getIndex()][moveCount];
+            }
+            else if (pieceType == Piece.ROOK) {
+                int file = BoardUtils.getFile(square);
+                long fileMask = Bits.FILE_MASKS[file];
+
+                long friendlyPawns = isWhitePiece ? whitePawns : blackPawns;
+                long opponentPawns = isWhitePiece ? blackPawns : whitePawns;
+                long friendlyBlockers = isWhitePiece ? friendlyWhiteBlockers : friendlyBlackBlockers;
+                long opponentBlockers = isWhitePiece ? friendlyBlackBlockers : friendlyWhiteBlockers;
+                long blockers = friendlyBlockers | opponentBlockers;
+                long opponentPawnAttacks = isWhitePiece ? blackPawnAttacks : whitePawnAttacks;
+
+                piecePlacementMgScore += config.getMiddlegameTables()[Piece.ROOK.getIndex()][pstIndex];
+                piecePlacementEgScore += config.getEndgameTables()[Piece.ROOK.getIndex()][pstIndex];
+
+                long attacks = Attacks.rookAttacks(square, blockers);
+                long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+                int moveCount = Bitwise.countBits(moves);
+                mobilityMgScore += config.getMiddlegameMobilityBonus()[Piece.ROOK.getIndex()][moveCount];
+                mobilityEgScore += config.getEndgameMobilityBonus()[Piece.ROOK.getIndex()][moveCount];
+
+                boolean hasFriendlyPawn = (fileMask & friendlyPawns) != 0;
+                boolean hasOpponentPawn = (fileMask & opponentPawns) != 0;
+                boolean hasOpenFile = !hasFriendlyPawn && !hasOpponentPawn;
+                boolean hasSemiOpenFile = !hasFriendlyPawn && hasOpponentPawn;
+
+                int rookMgScore = 0;
+                int rookEgScore = 0;
+                if (hasOpenFile) {
+                    rookMgScore += config.getRookOpenFileBonus()[0];
+                    rookEgScore += config.getRookOpenFileBonus()[1];
+                }
+                else if (hasSemiOpenFile) {
+                    rookMgScore += config.getRookSemiOpenFileBonus()[0];
+                    rookEgScore += config.getRookSemiOpenFileBonus()[1];
+                }
+                score.addRookScore(rookMgScore, rookEgScore, isWhitePiece);
+            }
+            else if (pieceType == Piece.QUEEN) {
+                long friendlyBlockers = isWhitePiece ? friendlyWhiteBlockers : friendlyBlackBlockers;
+                long opponentBlockers = isWhitePiece ? friendlyBlackBlockers : friendlyWhiteBlockers;
+                long blockers = friendlyBlockers | opponentBlockers;
+                long opponentPawnAttacks = isWhitePiece ? blackPawnAttacks : whitePawnAttacks;
+
+                piecePlacementMgScore += config.getMiddlegameTables()[Piece.QUEEN.getIndex()][pstIndex];
+                piecePlacementEgScore += config.getEndgameTables()[Piece.QUEEN.getIndex()][pstIndex];
+
+                long attacks = Attacks.bishopAttacks(square, blockers) | Attacks.rookAttacks(square, blockers);
+                long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+                int moveCount = Bitwise.countBits(moves);
+                mobilityMgScore += config.getMiddlegameMobilityBonus()[Piece.QUEEN.getIndex()][moveCount];
+                mobilityEgScore += config.getEndgameMobilityBonus()[Piece.QUEEN.getIndex()][moveCount];
+            }
+            else if (pieceType == Piece.KING) {
+                long opponentKing = isWhitePiece ? blackKing : whiteKing;
+                Material friendlyMaterial = isWhitePiece ? whiteMaterial : blackMaterial;
+                Material opponentMaterial = isWhitePiece ? blackMaterial : whiteMaterial;
+                long friendlyPawns = isWhitePiece ? whitePawns : blackPawns;
+                long opponentPawns = isWhitePiece ? blackPawns : whitePawns;
+                piecePlacementMgScore += config.getMiddlegameTables()[Piece.KING.getIndex()][pstIndex];
+                piecePlacementEgScore += config.getEndgameTables()[Piece.KING.getIndex()][pstIndex];
+                score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, isWhitePiece);
+
+                int kingSafetyScore = evaluateKingSafety(square, friendlyPawns, opponentPawns, opponentMaterial, board, phase, isWhitePiece);
+                score.setKingSafetyScore(kingSafetyScore, isWhitePiece);
+
+                int mopUpScore = evaluateMopUp(square, opponentKing, friendlyMaterial, opponentMaterial);
+                score.setMopUpScore(mopUpScore, isWhitePiece);
+            }
+
+            if (isWhitePiece) {
+                whitePiecePlacementMgScore += piecePlacementMgScore;
+                whitePiecePlacementEgScore += piecePlacementEgScore;
+                whiteMobilityMgScore += mobilityMgScore;
+                whiteMobilityEgScore += mobilityEgScore;
+            }
+            else {
+                blackPiecePlacementMgScore += piecePlacementMgScore;
+                blackPiecePlacementEgScore += piecePlacementEgScore;
+                blackMobilityMgScore += mobilityMgScore;
+                blackMobilityEgScore += mobilityEgScore;
+            }
+
+            pieces = Bitwise.popBit(pieces);
+        }
+
+//        scoreKnights(whiteKnights, friendlyWhiteBlockers, blackPawnAttacks, true);
+//        scoreKnights(blackKnights, friendlyBlackBlockers, whitePawnAttacks, false);
+//
+//        scoreBishops(whiteBishops, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
+//        scoreBishops(blackBishops, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+//
+//        scoreRooks(whiteRooks, whitePawns, blackPawns, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
+//        scoreRooks(blackRooks, blackPawns, whitePawns, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+//
+//        scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
+//        scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+//
+//        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
+//        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
+
+        score.addPiecePlacementScore(whitePiecePlacementMgScore, whitePiecePlacementEgScore, true);
+        score.addMobilityScore(whiteMobilityMgScore, whiteMobilityEgScore, true);
+        score.addPiecePlacementScore(blackPiecePlacementMgScore, blackPiecePlacementEgScore, false);
+        score.addMobilityScore(blackMobilityMgScore, blackMobilityEgScore, false);
         if (board.isWhiteToMove()) {
             score.setWhiteTempoBonus(config.getTempoBonus());
         } else {

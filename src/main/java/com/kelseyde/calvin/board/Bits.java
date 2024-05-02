@@ -112,6 +112,8 @@ public class Bits {
     public static final int CLEAR_WHITE_QUEENSIDE_MASK = 0b1101;
     public static final int CLEAR_BLACK_QUEENSIDE_MASK = 0b0111;
 
+    public static final long[] WEST_FILE_MASK = generateWestFileMask();
+    public static final long[] EAST_FILE_MASK = generateEastFileMask();
     public static final long[] ADJACENT_FILE_MASK = generateAdjacentFileMask();
     public static final long[] TRIPLE_FILE_MASK = generateTripleFileMask();
 
@@ -123,6 +125,22 @@ public class Bits {
 
     public static final long[] INNER_RING_MASK = generateInnerRingMask();
     public static final long[] OUTER_RING_MASK = generateOuterRingMask();
+
+    private static long[] generateWestFileMask() {
+        long[] westFileMasks = new long[8];
+        for (int i = 0; i < 8; i++) {
+            westFileMasks[i] = i > 0 ? Bits.FILE_A << (i - 1) : 0;
+        }
+        return westFileMasks;
+    }
+
+    private static long[] generateEastFileMask() {
+        long[] westFileMasks = new long[8];
+        for (int i = 0; i < 8; i++) {
+            westFileMasks[i] = i < 7 ? Bits.FILE_A << (i + 1) : 0;
+        }
+        return westFileMasks;
+    }
 
     private static long[] generateAdjacentFileMask() {
         long[] adjacentFileMasks = new long[8];

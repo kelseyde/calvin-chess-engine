@@ -436,8 +436,8 @@ public class Evaluator implements Evaluation {
         // King safety evaluation
         if (phase <= 0.5) return 0;
         int kingFile = BoardUtils.getFile(kingSquare);
-        int pawnShieldPenalty = calculatePawnShieldPenalty(config, kingSquare, kingFile, friendlyPawns);
-        int openKingFilePenalty = calculateOpenKingFilePenalty(config, kingFile, friendlyPawns, opponentPawns, opponentMaterial, isWhite);
+        int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
+        int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial, isWhite);
         int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(config, board, isWhite, kingFile);
         if (opponentMaterial.queens() == 0) {
             phase *= 0.6f;
@@ -472,7 +472,7 @@ public class Evaluator implements Evaluation {
         return (int) (mopUpScore * (1 - Phase.fromMaterial(opponentMaterial)));
     }
 
-    private static int calculatePawnShieldPenalty(EngineConfig config, int kingSquare, int kingFile, long pawns) {
+    private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {
         boolean isCastled = kingFile <= 2 || kingFile >= 5;
         if (!isCastled) return 0;
         int pawnShieldPenalty = 0;
@@ -485,32 +485,34 @@ public class Evaluator implements Evaluation {
         return pawnShieldPenalty;
     }
 
-    private static int calculateOpenKingFilePenalty(EngineConfig config, int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial, boolean isWhite) {
+    private int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial, boolean isWhite) {
         if (opponentMaterial.rooks() == 0 && opponentMaterial.queens() == 0) {
             return 0;
         }
+        return scoreFile(Bits.FILE_MASKS[kingFile], friendlyPawns, opponentPawns, true)
+            + scoreFile(Bits.WEST_FILE_MASK[kingFile], friendlyPawns, opponentPawns, false)
+            + scoreFile(Bits.EAST_FILE_MASK[kingFile], friendlyPawns, opponentPawns, false);
+    }
+
+    private int scoreFile(long fileMask, long friendlyPawns, long opponentPawns, boolean isKingFile) {
+        if (fileMask == 0) {
+            return 0;
+        }
         int penalty = 0;
-        for (int file = kingFile - 1; file <= kingFile + 1; file++) {
-            if (file < 0 || file > 7) {
-                continue;
-            }
-            long fileMask = Bits.FILE_MASKS[file];
-            boolean isKingFile = file == kingFile;
-            boolean isFriendlyPawnMissing = (friendlyPawns & fileMask) == 0;
-            boolean isOpponentPawnMissing = (opponentPawns & fileMask) == 0;
-            if (isFriendlyPawnMissing || isOpponentPawnMissing) {
-                // Add penalty for semi-open file around the king
-                penalty += isKingFile ? config.getKingSemiOpenFilePenalty() : config.getKingSemiOpenAdjacentFilePenalty();
-            }
-            if (isFriendlyPawnMissing && isOpponentPawnMissing) {
-                // Add penalty for fully open file around king
-                penalty += isKingFile ? config.getKingOpenFilePenalty() : config.getKingSemiOpenFilePenalty();
-            }
+        boolean isFriendlyPawnMissing = (friendlyPawns & fileMask) == 0;
+        boolean isOpponentPawnMissing = (opponentPawns & fileMask) == 0;
+        if (isFriendlyPawnMissing || isOpponentPawnMissing) {
+            // Add penalty for semi-open file around the king
+            penalty += isKingFile ? config.getKingSemiOpenFilePenalty() : config.getKingSemiOpenAdjacentFilePenalty();
+        }
+        if (isFriendlyPawnMissing && isOpponentPawnMissing) {
+            // Add penalty for fully open file around king
+            penalty += isKingFile ? config.getKingOpenFilePenalty() : config.getKingOpenAdjacentFilePenalty();
         }
         return penalty;
     }
 
-    private static int calculateLostCastlingRightsPenalty(EngineConfig config, Board board, boolean isWhite, int kingFile) {
+    private int calculateLostCastlingRightsPenalty(EngineConfig config, Board board, boolean isWhite, int kingFile) {
         boolean isCastled = kingFile <= 2 || kingFile >= 5;
         if (isCastled) return 0;
         boolean hasCastlingRights = board.getGameState().hasCastlingRights(isWhite);

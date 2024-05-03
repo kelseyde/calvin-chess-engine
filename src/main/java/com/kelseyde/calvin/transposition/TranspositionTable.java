@@ -72,15 +72,15 @@ public class TranspositionTable {
             if (storedEntry.equals(newEntry)) {
                 return;
             }
-            // If the new entry has no move, use the move of the stored entry
-            if (newEntry.getMove() == null && storedEntry.getMove() != null) {
-                newEntry = HashEntry.of(newEntry.key(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
-            }
 
             int storedDepth = storedEntry.getDepth();
 
             if (storedEntry.key() == zobristKey) {
                 if (depth >= storedDepth) {
+                    // If the new entry has no move, use the move of the stored entry
+                    if (newEntry.getMove() == null && storedEntry.getMove() != null) {
+                        newEntry = HashEntry.of(newEntry.key(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
+                    }
                     replacedMinDepth = storedDepth;
                     replacedIndex = i;
                     break;

@@ -56,6 +56,7 @@ public class Application {
         write(String.format("option name Threads type spin default %s min %s max %s",
                 config.getDefaultThreadCount(), config.getMinThreadCount(), config.getMaxThreadCount()));
         write(String.format("option name OwnBook type check default %s", config.isOwnBookEnabled()));
+        write(String.format("option name Ponder type check default %s", config.isPonderEnabled()));
         write("uciok");
     }
 
@@ -69,6 +70,7 @@ public class Application {
             case "Hash":     setHashSize(command); break;
             case "Threads":  setThreadCount(command); break;
             case "OwnBook":  setOwnBook(command); break;
+            case "Ponder":
             default:         write("unrecognised option name " + optionType);
         }
     }
@@ -163,6 +165,12 @@ public class Application {
         boolean ownBookEnabled = Boolean.parseBoolean(getLabelString(command, "value", SETOPTION_LABELS, "false"));
         ENGINE.setOwnBookEnabled(ownBookEnabled);
         write("info string OwnBook " + ownBookEnabled);
+    }
+
+    private static void setPonder(String command) {
+        boolean ponderEnabled = Boolean.parseBoolean(getLabelString(command, "value", SETOPTION_LABELS, "false"));
+        ENGINE.setPonderEnabled(ponderEnabled);
+        write("info string Ponder " + ponderEnabled);
     }
 
     private static String getLabelString(String command, String label, String[] allLabels, String defaultValue) {

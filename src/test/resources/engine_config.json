@@ -9,6 +9,7 @@
 
   "ownBookEnabled": true,
   "maxBookMoves": 26,
+  "ponderEnabled": true,
 
   "maxDepth": 256,
   "aspMargin": 50,

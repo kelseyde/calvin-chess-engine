@@ -116,7 +116,8 @@ public class Engine {
         if (entry.getMove() != null) {
             System.out.println("pondering...");
             board.makeMove(entry.getMove());
-            searcher.search(Duration.ofMillis(PONDER_TIME_MS));
+            think = CompletableFuture.supplyAsync(() -> think(PONDER_TIME_MS));
+            think.thenAccept(move -> System.out.println("finished pondering"));
         }
     }
 

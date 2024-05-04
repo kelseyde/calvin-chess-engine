@@ -42,4 +42,9 @@ public class StartingPositionPerftTest extends PerftTest {
         perft(6, 119060324);
     }
 
+    @Test
+    public void testDepthSeven() {
+        perft(7, 3195901860L);
+    }
+
 }

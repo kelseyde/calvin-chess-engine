@@ -5,8 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Search;
-import com.kelseyde.calvin.transposition.HashEntry;
-import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
@@ -27,14 +26,11 @@ import java.util.function.Consumer;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Engine {
 
-    // TODO ponder indefinitely
-    private static final int PONDER_TIME_MS = 3600000;
-
     EngineConfig config;
     OpeningBook book;
     MoveGeneration moveGenerator;
     Search searcher;
-    CompletableFuture<Move> think;
+    CompletableFuture<SearchResult> think;
     Board board;
 
     public Engine(EngineConfig config, OpeningBook book, MoveGeneration moveGenerator, Search searcher) {
@@ -73,18 +69,14 @@ public class Engine {
         this.config.setPonderEnabled(ponderEnabled);
     }
 
-    public void think(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs, Consumer<Move> onThinkComplete) {
-        if (hasBookMove()) {
-            onThinkComplete.accept(getLegalMove(book.getBookMove(board.getGameState().getZobristKey())));
-            return;
-        }
-        int thinkTimeMs = TimeManager.chooseThinkTime(board.isWhiteToMove(), timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
-        think(thinkTimeMs, onThinkComplete);
+    public void setPondering(boolean pondering) {
+        this.config.setPondering(pondering);
     }
 
-    public void think(int thinkTimeMs, Consumer<Move> onThinkComplete) {
+    public void think(int thinkTimeMs, Consumer<SearchResult> onThinkComplete) {
         if (hasBookMove()) {
-            onThinkComplete.accept(getLegalMove(book.getBookMove(board.getGameState().getZobristKey())));
+            Move bookMove = getLegalMove(book.getBookMove(board.getGameState().getZobristKey()));
+            onThinkComplete.accept(new SearchResult(0, bookMove, null, 0));
             return;
         }
         stopThinking();
@@ -92,9 +84,9 @@ public class Engine {
         think.thenAccept(onThinkComplete);
     }
 
-    public Move think(int thinkTimeMs) {
+    public SearchResult think(int thinkTimeMs) {
         Duration thinkTime = Duration.ofMillis(thinkTimeMs);
-        return searcher.search(thinkTime).move();
+        return searcher.search(thinkTime);
     }
 
     public boolean isThinking() {
@@ -107,23 +99,34 @@ public class Engine {
         }
     }
 
+    public int chooseThinkTime(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs) {
+
+        boolean isWhite = board.isWhiteToMove();
+        int timeRemainingMs = isWhite ? timeWhiteMs : timeBlackMs;
+        int incrementMs = isWhite ? incrementWhiteMs : incrementBlackMs;
+
+        // Add a small overhead to avoid timing out
+        int overheadMs = 50;
+
+        int minSearchTimeMs = 50;
+
+        // A game lasts on average 45 moves
+        int movesDivisor = config.getDefaultMovesToGo();
+
+        timeRemainingMs -= overheadMs;
+        timeRemainingMs = Math.clamp(timeRemainingMs, minSearchTimeMs, Integer.MAX_VALUE);
+
+        int thinkTimeHardLimitMs = (int) (timeRemainingMs * config.getHardTimeBoundMultiplier());
+
+        float softLimitBase = ((float) timeRemainingMs / movesDivisor) + (incrementMs * config.getSoftTimeBaseIncrementMultiplier());
+        int thinkTimeSoftLimitMs = Math.min(thinkTimeHardLimitMs, (int)(softLimitBase * config.getSoftTimeBoundMultiplier()));
+
+        return thinkTimeSoftLimitMs;
+    }
+
     public void gameOver() {
         stopThinking();
         board = null;
-    }
-
-    private void ponder() {
-        System.out.println("starting ponder");
-        TranspositionTable transpositionTable = searcher.getTranspositionTable();
-        transpositionTable.printStatistics();
-        long zobristKey = board.getGameState().getZobristKey();
-        HashEntry entry = transpositionTable.get(zobristKey, 0);
-        if (entry.getMove() != null) {
-            System.out.println("pondering...");
-            board.makeMove(entry.getMove());
-            think = CompletableFuture.supplyAsync(() -> think(PONDER_TIME_MS));
-            think.thenAccept(move -> System.out.println("finished pondering"));
-        }
     }
 
     private boolean hasBookMove() {

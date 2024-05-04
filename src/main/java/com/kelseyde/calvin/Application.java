@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
+import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
@@ -39,6 +40,7 @@ public class Application {
                     case "ucinewgame" ->  handleNewGame();
                     case "position" ->    handlePosition(command);
                     case "go" ->          handleGo(command);
+                    case "ponderhit" ->   handlePonderHit();
                     case "stop" ->        handleStop();
                     case "quit" ->        handleQuit();
                     default ->            write("Unrecognised command: " + command);
@@ -70,7 +72,7 @@ public class Application {
             case "Hash":     setHashSize(command); break;
             case "Threads":  setThreadCount(command); break;
             case "OwnBook":  setOwnBook(command); break;
-            case "Ponder":
+            case "Ponder":   setPonder(command); break;
             default:         write("unrecognised option name " + optionType);
         }
     }
@@ -110,21 +112,29 @@ public class Application {
     }
 
     private static void handleGo(String command) {
+        int thinkTime;
+        boolean ponder = command.contains("ponder");
+        ENGINE.setPondering(ponder);
         if (command.contains("movetime")) {
-            int moveTimeMs = getLabelInt(command, "movetime", GO_LABELS);
-            ENGINE.think(moveTimeMs, Application::writeMove);
+            thinkTime = getLabelInt(command, "movetime", GO_LABELS);
         }
         else {
             int timeWhiteMs = getLabelInt(command, "wtime", GO_LABELS);
             int timeBlackMs = getLabelInt(command, "btime", GO_LABELS);
             int incrementWhiteMs = getLabelInt(command, "winc", GO_LABELS);
             int incrementBlackMs = getLabelInt(command, "binc", GO_LABELS);
-            ENGINE.think(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs, Application::writeMove);
+            thinkTime = ENGINE.chooseThinkTime(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
         }
+        ENGINE.think(thinkTime, Application::writeMove);
+    }
+
+    private static void handlePonderHit() {
+        ENGINE.setPondering(false);
     }
 
     private static void handleStop() {
-        ENGINE.stopThinking();
+        ENGINE.setPondering(false);
+        //ENGINE.stopThinking();
     }
 
     private static void handleQuit() {
@@ -132,9 +142,14 @@ public class Application {
         System.exit(0);
     }
 
-    private static void writeMove(Move move) {
-        String notation = Notation.toNotation(move);
-        write("bestmove " + notation);
+    private static void writeMove(SearchResult searchResult) {
+        Move move = searchResult.move();
+        Move ponderMove = searchResult.ponderMove();
+        boolean ponder = ENGINE.getConfig().isPonderEnabled() && ponderMove != null;
+        String message = ponder ?
+                String.format("bestmove %s ponder %s", Notation.toNotation(move), Notation.toNotation(ponderMove)) :
+                String.format("bestmove %s", Notation.toNotation(move));
+        write(message);
     }
 
     private static void setHashSize(String command) {

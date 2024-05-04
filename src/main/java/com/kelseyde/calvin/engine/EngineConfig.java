@@ -23,6 +23,12 @@ public class EngineConfig {
     boolean ownBookEnabled;
     int maxBookMoves;
     boolean ponderEnabled;
+    boolean pondering = false;
+
+    float hardTimeBoundMultiplier;
+    float softTimeBoundMultiplier;
+    float softTimeBaseIncrementMultiplier;
+    int defaultMovesToGo;
 
     int maxDepth;
     int aspMargin;

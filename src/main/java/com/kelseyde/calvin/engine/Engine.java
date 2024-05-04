@@ -5,6 +5,8 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.transposition.HashEntry;
+import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
@@ -24,6 +26,9 @@ import java.util.function.Consumer;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Engine {
+
+    // TODO ponder indefinitely
+    private static final int PONDER_TIME_MS = 3600000;
 
     EngineConfig config;
     OpeningBook book;
@@ -81,6 +86,7 @@ public class Engine {
         stopThinking();
         think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
         think.thenAccept(onThinkComplete);
+        ponder();
     }
 
     public Move think(int thinkTimeMs) {
@@ -101,6 +107,17 @@ public class Engine {
     public void gameOver() {
         stopThinking();
         board = null;
+    }
+
+    private void ponder() {
+        TranspositionTable transpositionTable = searcher.getTranspositionTable();
+        long zobristKey = board.getGameState().getZobristKey();
+        HashEntry entry = transpositionTable.get(zobristKey, 0);
+        if (entry.getMove() != null) {
+            System.out.println("pondering...");
+            board.makeMove(entry.getMove());
+            searcher.search(Duration.ofMillis(PONDER_TIME_MS));
+        }
     }
 
     private boolean hasBookMove() {

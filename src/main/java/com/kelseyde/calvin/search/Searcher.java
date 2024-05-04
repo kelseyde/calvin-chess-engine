@@ -125,6 +125,11 @@ public class Searcher implements Search {
 
     }
 
+    @Override
+    public TranspositionTable getTranspositionTable() {
+        return transpositionTable;
+    }
+
     /**
      * Run a single iteration of the iterative deepening search for a specific depth.
      *

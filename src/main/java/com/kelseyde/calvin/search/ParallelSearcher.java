@@ -87,6 +87,11 @@ public class ParallelSearcher implements Search {
         }
     }
 
+    @Override
+    public TranspositionTable getTranspositionTable() {
+        return transpositionTable;
+    }
+
     /**
      * Combines the {@link SearchResult} results of the different threads and selects a final result to use.
      * Simply selects the result from the thread which searched to the greatest depth.

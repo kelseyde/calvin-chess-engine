@@ -11,6 +11,11 @@
   "maxBookMoves": 26,
   "ponderEnabled": true,
 
+  "hardTimeBoundMultiplier": 0.52,
+  "softTimeBoundMultiplier": 1,
+  "softTimeBaseIncrementMultiplier": 0.8,
+  "defaultMovesToGo": 45,
+
   "maxDepth": 256,
   "aspMargin": 50,
   "aspFailMargin": 150,

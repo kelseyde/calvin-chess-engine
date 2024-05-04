@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.transposition.pawn;
 
-import com.kelseyde.calvin.board.Bitwise;
-
 public record PawnHashEntry(long key,
                             PawnScore whiteScore,
                             PawnScore blackScore) {

@@ -6,13 +6,12 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.generation.Attacks;
-import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.transposition.pawn.PawnHashEntry;
 import com.kelseyde.calvin.transposition.pawn.PawnHashEntry.PawnScore;
+import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 /**

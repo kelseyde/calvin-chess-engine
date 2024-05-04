@@ -69,6 +69,10 @@ public class Engine {
         this.config.setOwnBookEnabled(ownBookEnabled);
     }
 
+    public void setPonderEnabled(boolean ponderEnabled) {
+        this.config.setPonderEnabled(ponderEnabled);
+    }
+
     public void think(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs, Consumer<Move> onThinkComplete) {
         if (hasBookMove()) {
             onThinkComplete.accept(getLegalMove(book.getBookMove(board.getGameState().getZobristKey())));
@@ -86,7 +90,6 @@ public class Engine {
         stopThinking();
         think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
         think.thenAccept(onThinkComplete);
-        ponder();
     }
 
     public Move think(int thinkTimeMs) {
@@ -110,7 +113,9 @@ public class Engine {
     }
 
     private void ponder() {
+        System.out.println("starting ponder");
         TranspositionTable transpositionTable = searcher.getTranspositionTable();
+        transpositionTable.printStatistics();
         long zobristKey = board.getGameState().getZobristKey();
         HashEntry entry = transpositionTable.get(zobristKey, 0);
         if (entry.getMove() != null) {

@@ -22,6 +22,7 @@ public class EngineConfig {
 
     boolean ownBookEnabled;
     int maxBookMoves;
+    boolean ponderEnabled;
 
     int maxDepth;
     int aspMargin;

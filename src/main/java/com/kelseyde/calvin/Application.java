@@ -112,9 +112,12 @@ public class Application {
     }
 
     private static void handleGo(String command) {
-        int thinkTime;
+
         boolean ponder = command.contains("ponder");
         ENGINE.setPondering(ponder);
+        ENGINE.setSearchCancelled(false);
+
+        int thinkTime;
         if (command.contains("movetime")) {
             thinkTime = getLabelInt(command, "movetime", GO_LABELS);
         }
@@ -134,7 +137,7 @@ public class Application {
 
     private static void handleStop() {
         ENGINE.setPondering(false);
-        //ENGINE.stopThinking();
+        ENGINE.setSearchCancelled(true);
     }
 
     private static void handleQuit() {
@@ -144,7 +147,7 @@ public class Application {
 
     private static void writeMove(SearchResult searchResult) {
         Move move = searchResult.move();
-        Move ponderMove = searchResult.ponderMove();
+        Move ponderMove = ENGINE.extractPonderMove(move);
         boolean ponder = ENGINE.getConfig().isPonderEnabled() && ponderMove != null;
         String message = ponder ?
                 String.format("bestmove %s ponder %s", Notation.toNotation(move), Notation.toNotation(ponderMove)) :

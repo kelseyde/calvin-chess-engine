@@ -118,7 +118,7 @@ public class Searcher2 implements Search {
         if (result == null) {
             System.out.println("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board).get(0);
-            result = new SearchResult(0, move, null, currentDepth);
+            result = new SearchResult(0, move, currentDepth);
         }
         moveOrderer.clear();
         return result;
@@ -164,7 +164,7 @@ public class Searcher2 implements Search {
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, depth, alpha, beta)) {
             if (ply == 0 && transposition.getMove() != null) {
-                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(),null,  depth);
+                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), depth);
             }
             return transposition.getScore();
         }
@@ -189,7 +189,7 @@ public class Searcher2 implements Search {
         }
         if (ply == 0 && moves.size() == 1) {
             // Exit immediately if there is only one legal move at the root node
-            resultCurrentDepth = new SearchResult(staticEval, moves.get(0), null, depth);
+            resultCurrentDepth = new SearchResult(staticEval, moves.get(0), depth);
             cancelled = true;
             return staticEval;
         }
@@ -314,7 +314,7 @@ public class Searcher2 implements Search {
                 alpha = eval;
                 flag = HashFlag.EXACT;
                 if (ply == 0) {
-                    resultCurrentDepth = new SearchResult(eval, move, null, depth);
+                    resultCurrentDepth = new SearchResult(eval, move, depth);
                 }
             }
         }

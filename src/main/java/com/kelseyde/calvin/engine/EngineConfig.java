@@ -23,7 +23,9 @@ public class EngineConfig {
     boolean ownBookEnabled;
     int maxBookMoves;
     boolean ponderEnabled;
+
     boolean pondering = false;
+    boolean searchCancelled = false;
 
     float hardTimeBoundMultiplier;
     float softTimeBoundMultiplier;

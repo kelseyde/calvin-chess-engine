@@ -116,7 +116,7 @@ public class Engine {
         }
         double minThinkTime = Math.min(50, (int) (timeRemainingMs * 0.25));
         double thinkTime = Math.max(optimalThinkTime, minThinkTime);
-        System.out.println("think time " + (int) thinkTime);
+        System.out.printf("time %s, inc %s, think time1 %s%n", timeRemainingMs, incrementMs, (int) thinkTime);
         return (int) thinkTime;
 
     }

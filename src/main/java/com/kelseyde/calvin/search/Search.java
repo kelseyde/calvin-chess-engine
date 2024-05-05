@@ -34,7 +34,7 @@ public interface Search {
     SearchResult search(Duration duration);
 
     /**
-     * @return the {@link TranspositionTable} the searcher is currently using.
+     * @return the {@link TranspositionTable} used by the search algorithm.
      */
     TranspositionTable getTranspositionTable();
 

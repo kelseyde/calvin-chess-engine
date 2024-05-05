@@ -6,6 +6,8 @@ import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.transposition.HashEntry;
+import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
@@ -69,6 +71,10 @@ public class Engine {
         this.config.setPonderEnabled(ponderEnabled);
     }
 
+    public void setSearchCancelled(boolean cancelled) {
+        this.config.setSearchCancelled(cancelled);
+    }
+
     public void setPondering(boolean pondering) {
         this.config.setPondering(pondering);
     }
@@ -76,7 +82,7 @@ public class Engine {
     public void think(int thinkTimeMs, Consumer<SearchResult> onThinkComplete) {
         if (hasBookMove()) {
             Move bookMove = getLegalMove(book.getBookMove(board.getGameState().getZobristKey()));
-            onThinkComplete.accept(new SearchResult(0, bookMove, null, 0));
+            onThinkComplete.accept(new SearchResult(0, bookMove, 0));
             return;
         }
         stopThinking();
@@ -104,29 +110,29 @@ public class Engine {
         boolean isWhite = board.isWhiteToMove();
         int timeRemainingMs = isWhite ? timeWhiteMs : timeBlackMs;
         int incrementMs = isWhite ? incrementWhiteMs : incrementBlackMs;
+        double optimalThinkTime = Math.min(timeRemainingMs * 0.5, timeRemainingMs * 0.03333 + incrementMs);
+        if (optimalThinkTime > incrementMs * 2) {
+            optimalThinkTime += incrementMs * 0.8;
+        }
+        double minThinkTime = Math.min(50, (int) (timeRemainingMs * 0.25));
+        double thinkTime = Math.max(optimalThinkTime, minThinkTime);
+        System.out.println("think time " + (int) thinkTime);
+        return (int) thinkTime;
 
-        // Add a small overhead to avoid timing out
-        int overheadMs = 50;
-
-        int minSearchTimeMs = 50;
-
-        // A game lasts on average 45 moves
-        int movesDivisor = config.getDefaultMovesToGo();
-
-        timeRemainingMs -= overheadMs;
-        timeRemainingMs = Math.clamp(timeRemainingMs, minSearchTimeMs, Integer.MAX_VALUE);
-
-        int thinkTimeHardLimitMs = (int) (timeRemainingMs * config.getHardTimeBoundMultiplier());
-
-        float softLimitBase = ((float) timeRemainingMs / movesDivisor) + (incrementMs * config.getSoftTimeBaseIncrementMultiplier());
-        int thinkTimeSoftLimitMs = Math.min(thinkTimeHardLimitMs, (int)(softLimitBase * config.getSoftTimeBoundMultiplier()));
-
-        return thinkTimeSoftLimitMs;
     }
 
     public void gameOver() {
         stopThinking();
         board = null;
+    }
+
+    public Move extractPonderMove(Move bestMove) {
+        TranspositionTable transpositionTable = searcher.getTranspositionTable();
+        board.makeMove(bestMove);
+        long zobristKey = board.getGameState().getZobristKey();
+        HashEntry entry = transpositionTable.get(zobristKey, 0);
+        board.unmakeMove();
+        return entry != null ? entry.getMove() : null;
     }
 
     private boolean hasBookMove() {

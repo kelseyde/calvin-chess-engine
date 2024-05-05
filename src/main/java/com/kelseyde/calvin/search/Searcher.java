@@ -118,16 +118,11 @@ public class Searcher implements Search {
         if (result == null) {
             System.out.println("Time expired before a move was found!");
             Move move = moveGenerator.generateMoves(board).get(0);
-            result = new SearchResult(0, move, extractPonderMove(move), currentDepth);
+            result = new SearchResult(0, move, currentDepth);
         }
         moveOrderer.clear();
         return result;
 
-    }
-
-    @Override
-    public TranspositionTable getTranspositionTable() {
-        return transpositionTable;
     }
 
     /**
@@ -164,9 +159,7 @@ public class Searcher implements Search {
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, depth, alpha, beta)) {
             if (ply == 0 && transposition.getMove() != null) {
-                Move ttMove = transposition.getMove();
-                Move ponderMove = extractPonderMove(ttMove);
-                resultCurrentDepth = new SearchResult(transposition.getScore(), ttMove, ponderMove, depth);
+                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), depth);
             }
             return transposition.getScore();
         }
@@ -191,7 +184,7 @@ public class Searcher implements Search {
         }
         if (ply == 0 && moves.size() == 1) {
             // Exit immediately if there is only one legal move at the root node
-            resultCurrentDepth = new SearchResult(staticEval, moves.get(0), extractPonderMove(moves.get(0)), depth);
+            resultCurrentDepth = new SearchResult(staticEval, moves.get(0), depth);
             cancelled = true;
             return staticEval;
         }
@@ -316,7 +309,7 @@ public class Searcher implements Search {
                 alpha = eval;
                 flag = HashFlag.EXACT;
                 if (ply == 0) {
-                    resultCurrentDepth = new SearchResult(eval, move, extractPonderMove(move), depth);
+                    resultCurrentDepth = new SearchResult(eval, move, depth);
                 }
             }
         }
@@ -459,16 +452,10 @@ public class Searcher implements Search {
         return Math.abs(result.eval()) >= Score.MATE_SCORE - currentDepth;
     }
 
-    private Move extractPonderMove(Move bestMove) {
-        if (!config.isPonderEnabled()) return null;
-        board.makeMove(bestMove);
-        HashEntry entry = transpositionTable.get(board.getGameState().getZobristKey(), 0);
-        Move ponderMove = entry != null ? entry.getMove() : null;
-        board.unmakeMove();
-        return ponderMove;
-    }
-
     private boolean isCancelled() {
+        // Exit if global search is cancelled
+        if (config.isSearchCancelled()) return true;
+        // Exit if local search is cancelled
         if (cancelled) return true;
         return !config.isPondering() && (timeout != null && !Instant.now().isBefore(timeout));
     }
@@ -479,6 +466,12 @@ public class Searcher implements Search {
 
     private long getKey() {
         return board.getGameState().getZobristKey();
+    }
+
+
+    @Override
+    public TranspositionTable getTranspositionTable() {
+        return transpositionTable;
     }
 
     @Override

@@ -87,17 +87,12 @@ public class ParallelSearcher implements Search {
         }
     }
 
-    @Override
-    public TranspositionTable getTranspositionTable() {
-        return transpositionTable;
-    }
-
     /**
      * Combines the {@link SearchResult} results of the different threads and selects a final result to use.
      * Simply selects the result from the thread which searched to the greatest depth.
      */
     private CompletableFuture<SearchResult> selectResult(List<CompletableFuture<SearchResult>> threads) {
-        CompletableFuture<SearchResult> collector = CompletableFuture.completedFuture(new SearchResult(0, null, null, 0));
+        CompletableFuture<SearchResult> collector = CompletableFuture.completedFuture(new SearchResult(0, null, 0));
         for (CompletableFuture<SearchResult> thread : threads) {
             collector = collector.thenCombine(thread, (thread1, thread2) -> thread1.depth() > thread2.depth() ? thread1 : thread2);
         }
@@ -113,6 +108,11 @@ public class ParallelSearcher implements Search {
         MoveOrdering moveOrderer = this.moveOrdererSupplier.get();
         Evaluation evaluator = this.evaluatorSupplier.get();
         return new Searcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
+    }
+
+    @Override
+    public TranspositionTable getTranspositionTable() {
+        return transpositionTable;
     }
 
     @Override

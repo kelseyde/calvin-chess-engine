@@ -110,13 +110,12 @@ public class Engine {
         boolean isWhite = board.isWhiteToMove();
         int timeRemainingMs = isWhite ? timeWhiteMs : timeBlackMs;
         int incrementMs = isWhite ? incrementWhiteMs : incrementBlackMs;
+
+        int overhead = 50;
+        timeRemainingMs -= overhead;
         double optimalThinkTime = Math.min(timeRemainingMs * 0.5, timeRemainingMs * 0.03333 + incrementMs);
-        if (optimalThinkTime > incrementMs * 2) {
-            optimalThinkTime += incrementMs * 0.8;
-        }
         double minThinkTime = Math.min(50, (int) (timeRemainingMs * 0.25));
         double thinkTime = Math.max(optimalThinkTime, minThinkTime);
-        System.out.printf("time %s, inc %s, think time1 %s%n", timeRemainingMs, incrementMs, (int) thinkTime);
         return (int) thinkTime;
 
     }

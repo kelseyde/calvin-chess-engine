@@ -109,7 +109,6 @@ public class BoardUtils {
 
     }
 
-
     public static Board copy(Board board) {
         Board newBoard = new Board();
         newBoard.setWhitePawns(board.getWhitePawns());

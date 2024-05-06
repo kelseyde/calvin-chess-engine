@@ -27,11 +27,6 @@ public class EngineConfig {
     boolean pondering = false;
     boolean searchCancelled = false;
 
-    float hardTimeBoundMultiplier;
-    float softTimeBoundMultiplier;
-    float softTimeBaseIncrementMultiplier;
-    int defaultMovesToGo;
-
     int maxDepth;
     int aspMargin;
     int aspFailMargin;

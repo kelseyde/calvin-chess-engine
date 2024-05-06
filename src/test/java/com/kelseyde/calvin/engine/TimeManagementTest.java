@@ -1,16 +1,11 @@
 package com.kelseyde.calvin.engine;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.stream.IntStream;
 
 public class TimeManagementTest {
 

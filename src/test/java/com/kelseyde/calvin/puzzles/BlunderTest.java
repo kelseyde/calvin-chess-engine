@@ -592,4 +592,17 @@ public class BlunderTest {
 
     }
 
+    @Test
+    public void testDontMissCrushingAttack() {
+
+        String fen = "3rk3/bp4p1/4p1p1/N3Pp2/5P1P/PQ4P1/1P1pqPK1/3R4 b - - 5 31";
+        engine.setPosition(fen, Collections.emptyList());
+        Move move = engine.think(1360).move();
+        System.out.println(Notation.toNotation(move));
+        Assertions.assertTrue(
+                move.matches(Notation.fromCombinedNotation("e2f2"))
+        );
+
+    }
+
 }

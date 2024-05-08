@@ -453,7 +453,11 @@ public class Searcher implements Search {
     }
 
     private boolean isCancelled() {
-        return cancelled || (timeout != null && !Instant.now().isBefore(timeout));
+        // Exit if global search is cancelled
+        if (config.isSearchCancelled()) return true;
+        // Exit if local search is cancelled
+        if (cancelled) return true;
+        return !config.isPondering() && (timeout != null && !Instant.now().isBefore(timeout));
     }
 
     private boolean isDraw() {
@@ -462,6 +466,12 @@ public class Searcher implements Search {
 
     private long getKey() {
         return board.getGameState().getZobristKey();
+    }
+
+
+    @Override
+    public TranspositionTable getTranspositionTable() {
+        return transpositionTable;
     }
 
     @Override

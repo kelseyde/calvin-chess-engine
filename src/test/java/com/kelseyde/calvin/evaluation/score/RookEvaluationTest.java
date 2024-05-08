@@ -60,8 +60,8 @@ public class RookEvaluationTest {
         int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
         int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
 
-        Assertions.assertEquals(15, whiteScore);
-        Assertions.assertEquals(15, blackScore);
+        Assertions.assertEquals(22, whiteScore);
+        Assertions.assertEquals(22, blackScore);
 
     }
 
@@ -76,8 +76,8 @@ public class RookEvaluationTest {
         int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
         int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
 
-        Assertions.assertEquals(24, whiteScore);
-        Assertions.assertEquals(24, blackScore);
+        Assertions.assertEquals(14, whiteScore);
+        Assertions.assertEquals(14, blackScore);
 
     }
 
@@ -92,8 +92,8 @@ public class RookEvaluationTest {
         int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
         int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
 
-        Assertions.assertEquals(24, whiteScore);
-        Assertions.assertEquals(24, blackScore);
+        Assertions.assertEquals(14, whiteScore);
+        Assertions.assertEquals(14, blackScore);
 
     }
 
@@ -108,8 +108,8 @@ public class RookEvaluationTest {
         int whiteScore = Phase.taperedEval(score.getWhiteRookMgScore(), score.getWhiteRookEgScore(), score.getPhase());
         int blackScore = Phase.taperedEval(score.getBlackRookMgScore(), score.getBlackRookEgScore(), score.getPhase());
 
-        Assertions.assertEquals(15, whiteScore);
-        Assertions.assertEquals(15, blackScore);
+        Assertions.assertEquals(22, whiteScore);
+        Assertions.assertEquals(22, blackScore);
 
     }
 

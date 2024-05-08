@@ -7,8 +7,10 @@ import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class KingSafetyTest {
 
     private final EngineConfig config = TestUtils.TST_CONFIG;

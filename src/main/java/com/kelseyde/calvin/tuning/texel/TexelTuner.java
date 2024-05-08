@@ -10,33 +10,49 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+@Data
 public class TexelTuner {
 
     public TexelTuner(String fileName) {
         this.positionsFileName = fileName;
     }
 
-    private static final double K = 0.20;
-
     private final String positionsFileName;
+
+    private Map<Board, Double> positions;
 
     private Delta[] deltas;
 
+    private double k = 1.26;
+
     public int[] tune(int[] initialParams, Function<int[], Evaluator> createEvaluatorFunction) throws IOException {
 
-        List<String> positions = loadPositions();
+        /**
+         * TODO
+         * -stochastic gradient descent/gradient descent/ADAM
+          */
+
+        positions = loadPositions();
         initDeltas(initialParams.length);
         System.out.println("number of positions: " + positions.size());
         Evaluator evaluator = createEvaluatorFunction.apply(initialParams);
         int[] bestParams = initialParams;
-        double bestError = meanSquareError(evaluator, positions);
+        double bestError = meanSquareError(evaluator);
+        int iterations = 0;
 
         boolean improved = true;
         while (improved) {
+            iterations++;
+            Instant start = Instant.now();
             improved = false;
             int modifiedParams = 0;
             for (int i = 0; i < bestParams.length; i++) {
@@ -44,11 +60,12 @@ public class TexelTuner {
                 int delta = deltas[i].delta;
                 newParams[i] += delta;
                 evaluator = createEvaluatorFunction.apply(newParams);
-                double newError = meanSquareError(evaluator, positions);
+                double newError = meanSquareError(evaluator);
                 System.out.printf("tuning param %s of %s, error %s%n", i, bestParams.length, newError);
 
                 if (newError < bestError) {
                     improved = true;
+                    modifiedParams++;
                     bestError = newError;
                     bestParams = Arrays.copyOf(newParams, newParams.length);
                     int newDelta = delta * 2;
@@ -59,9 +76,10 @@ public class TexelTuner {
                 } else {
                     newParams[i] -= delta * 2;
                     evaluator = createEvaluatorFunction.apply(newParams);
-                    newError = meanSquareError(evaluator, positions);
+                    newError = meanSquareError(evaluator);
                     if (newError < bestError) {
                         improved = true;
+                        modifiedParams++;
                         bestError = newError;
                         bestParams = Arrays.copyOf(newParams, newParams.length);
                         int newDelta = delta * 2;
@@ -69,13 +87,14 @@ public class TexelTuner {
                         deltas[i].setHalvedOrDoubled(Delta.DOUBLED);
                         System.out.printf("-%s improved param %s: %s%n", delta, i, bestParams[i]);
                     } else {
-                        int newDelta = delta / 2;
+                        int newDelta = Math.max(1, delta / 2);
                         deltas[i].setDelta(newDelta);
                         deltas[i].setHalvedOrDoubled(Delta.HALVED);
                     }
                 }
             }
-            System.out.printf("tuned %s params: %s%n", modifiedParams, Arrays.toString(bestParams));
+            System.out.printf("tuned %s/%s params: %s%n", modifiedParams, bestParams.length, Arrays.toString(bestParams));
+            System.out.printf("iteration %s completed in %s", iterations, Duration.between(start, Instant.now()));
 
         }
         System.out.printf("final params: %s, final error: %s%n", Arrays.toString(bestParams), bestError);
@@ -83,17 +102,16 @@ public class TexelTuner {
 
     }
 
-    public double meanSquareError(Evaluator evaluator, List<String> positions) throws IOException {
+    public double meanSquareError(Evaluator evaluator) throws IOException {
 
         int numberOfPositions = positions.size();
         double totalError = 0.0;
-        for (String position : positions) {
-            String fen = position.split("\\[")[0];
-            Board board = FEN.toBoard(fen);
+        for (Map.Entry<Board, Double> entry : positions.entrySet()) {
+            Board board = entry.getKey();
             int eval = evaluator.evaluate(board);
             if (!board.isWhiteToMove()) eval = -eval;
             double prediction = prediction(eval);
-            double actual = result(position);
+            double actual = entry.getValue();
             double error = error(prediction, actual);
             totalError += error;
         }
@@ -106,7 +124,7 @@ public class TexelTuner {
      * 0 indicating a loss and 1 indicating a win.
      */
     private double prediction(int eval) {
-        return 1 / (1 + Math.pow(10, -K * (float) eval / 400));
+        return 1.0 / (1.0 + Math.pow(10, (-k * eval / 400)));
     }
 
     private double error(double predicted, double actual) {
@@ -123,10 +141,51 @@ public class TexelTuner {
         };
     }
 
-    private List<String> loadPositions() throws IOException {
+    public List<String> loadFens() throws IOException {
         String fileName = String.format("src/test/resources/texel/" + positionsFileName);
         Path path = Paths.get(fileName);
         return Files.readAllLines(path);
+    }
+
+//    public double tuneScalingConstant(Evaluator evaluator) throws IOException {
+//        List<String> positions = loadFens();
+//        System.out.println("number of positions: " + positions.size());
+//        double bestError = meanSquareError(evaluator, positions);
+//
+//        boolean improved = true;
+//        while (improved) {
+//            improved = false;
+//            k += 0.01;
+//            System.out.println("1 new k = " + k);
+//            double newError = meanSquareError(evaluator, positions);
+//            if (newError < bestError) {
+//                improved = true;
+//                bestError = newError;
+//                System.out.println("improved k " + k + " " + bestError);
+//            } else {
+//                k -= 0.02;
+//                System.out.println("2 new k = " + k);
+//                newError = meanSquareError(evaluator, positions);
+//                if (newError < bestError) {
+//                    improved = true;
+//                    bestError = newError;
+//                    System.out.println("improved k " + k + " " + bestError);
+//                }
+//            }
+//        }
+//        System.out.println("final k " + k);
+//        return k;
+//    }
+//
+    private Map<Board, Double> loadPositions() throws IOException {
+        List<String> fens = loadFens();
+        Map<Board, Double> positions = new HashMap<>();
+        for (String fen : fens) {
+            Board board = FEN.toBoard(fen.split("\\[")[0]);
+            Double result = result(fen);
+            positions.put(board, result);
+        }
+        return positions;
     }
 
     private void initDeltas(int size) {

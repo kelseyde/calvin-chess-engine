@@ -34,6 +34,11 @@ public interface Search {
     SearchResult search(Duration duration);
 
     /**
+     * @return the {@link TranspositionTable} used by the search algorithm.
+     */
+    TranspositionTable getTranspositionTable();
+
+    /**
      * Clear any cached search information (transposition table, history/killer tables etc.)
      */
     void clearHistory();

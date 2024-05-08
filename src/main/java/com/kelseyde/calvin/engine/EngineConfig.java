@@ -22,6 +22,10 @@ public class EngineConfig {
 
     boolean ownBookEnabled;
     int maxBookMoves;
+    boolean ponderEnabled;
+
+    boolean pondering = false;
+    boolean searchCancelled = false;
 
     int maxDepth;
     int aspMargin;

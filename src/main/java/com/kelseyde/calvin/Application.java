@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
+import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
@@ -39,6 +40,7 @@ public class Application {
                     case "ucinewgame" ->  handleNewGame();
                     case "position" ->    handlePosition(command);
                     case "go" ->          handleGo(command);
+                    case "ponderhit" ->   handlePonderHit();
                     case "stop" ->        handleStop();
                     case "quit" ->        handleQuit();
                     default ->            write("Unrecognised command: " + command);
@@ -56,6 +58,7 @@ public class Application {
         write(String.format("option name Threads type spin default %s min %s max %s",
                 config.getDefaultThreadCount(), config.getMinThreadCount(), config.getMaxThreadCount()));
         write(String.format("option name OwnBook type check default %s", config.isOwnBookEnabled()));
+        write(String.format("option name Ponder type check default %s", config.isPonderEnabled()));
         write("uciok");
     }
 
@@ -69,6 +72,7 @@ public class Application {
             case "Hash":     setHashSize(command); break;
             case "Threads":  setThreadCount(command); break;
             case "OwnBook":  setOwnBook(command); break;
+            case "Ponder":   setPonder(command); break;
             default:         write("unrecognised option name " + optionType);
         }
     }
@@ -108,21 +112,32 @@ public class Application {
     }
 
     private static void handleGo(String command) {
+
+        boolean ponder = command.contains("ponder");
+        ENGINE.setPondering(ponder);
+        ENGINE.setSearchCancelled(false);
+
+        int thinkTime;
         if (command.contains("movetime")) {
-            int moveTimeMs = getLabelInt(command, "movetime", GO_LABELS);
-            ENGINE.think(moveTimeMs, Application::writeMove);
+            thinkTime = getLabelInt(command, "movetime", GO_LABELS);
         }
         else {
             int timeWhiteMs = getLabelInt(command, "wtime", GO_LABELS);
             int timeBlackMs = getLabelInt(command, "btime", GO_LABELS);
             int incrementWhiteMs = getLabelInt(command, "winc", GO_LABELS);
             int incrementBlackMs = getLabelInt(command, "binc", GO_LABELS);
-            ENGINE.think(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs, Application::writeMove);
+            thinkTime = ENGINE.chooseThinkTime(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
         }
+        ENGINE.think(thinkTime, Application::writeMove);
+    }
+
+    private static void handlePonderHit() {
+        ENGINE.setPondering(false);
     }
 
     private static void handleStop() {
-        ENGINE.stopThinking();
+        ENGINE.setPondering(false);
+        ENGINE.setSearchCancelled(true);
     }
 
     private static void handleQuit() {
@@ -130,9 +145,14 @@ public class Application {
         System.exit(0);
     }
 
-    private static void writeMove(Move move) {
-        String notation = Notation.toNotation(move);
-        write("bestmove " + notation);
+    private static void writeMove(SearchResult searchResult) {
+        Move move = searchResult.move();
+        Move ponderMove = ENGINE.extractPonderMove(move);
+        boolean ponder = ENGINE.getConfig().isPonderEnabled() && ponderMove != null;
+        String message = ponder ?
+                String.format("bestmove %s ponder %s", Notation.toNotation(move), Notation.toNotation(ponderMove)) :
+                String.format("bestmove %s", Notation.toNotation(move));
+        write(message);
     }
 
     private static void setHashSize(String command) {
@@ -163,6 +183,12 @@ public class Application {
         boolean ownBookEnabled = Boolean.parseBoolean(getLabelString(command, "value", SETOPTION_LABELS, "false"));
         ENGINE.setOwnBookEnabled(ownBookEnabled);
         write("info string OwnBook " + ownBookEnabled);
+    }
+
+    private static void setPonder(String command) {
+        boolean ponderEnabled = Boolean.parseBoolean(getLabelString(command, "value", SETOPTION_LABELS, "false"));
+        ENGINE.setPonderEnabled(ponderEnabled);
+        write("info string Ponder " + ponderEnabled);
     }
 
     private static String getLabelString(String command, String label, String[] allLabels, String defaultValue) {

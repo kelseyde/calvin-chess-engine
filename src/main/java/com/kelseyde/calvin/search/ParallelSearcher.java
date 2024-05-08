@@ -111,6 +111,11 @@ public class ParallelSearcher implements Search {
     }
 
     @Override
+    public TranspositionTable getTranspositionTable() {
+        return transpositionTable;
+    }
+
+    @Override
     public void clearHistory() {
         transpositionTable.clear();
         searchers.forEach(Searcher::clearHistory);

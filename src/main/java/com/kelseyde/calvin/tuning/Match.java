@@ -59,7 +59,7 @@ public class Match {
 
             GameResult result;
 
-            Move whiteMove = whitePlayer.engine().think(getThinkTime());
+            Move whiteMove = whitePlayer.engine().think(getThinkTime()).move();
             int moveCount = 1;
 
             while (moveCount <= config.getMaxMoves()) {
@@ -87,7 +87,7 @@ public class Match {
                     break;
                 }
 
-                Move blackMove = blackPlayer.engine().think(getThinkTime());
+                Move blackMove = blackPlayer.engine().think(getThinkTime()).move();
 
                 board.makeMove(blackMove);
                 moves.add(blackMove);
@@ -112,7 +112,7 @@ public class Match {
                     break;
                 }
 
-                whiteMove = whitePlayer.engine().think(getThinkTime());
+                whiteMove = whitePlayer.engine().think(getThinkTime()).move();
 
                 moveCount++;
                 if (moveCount > config.getMaxMoves()) {

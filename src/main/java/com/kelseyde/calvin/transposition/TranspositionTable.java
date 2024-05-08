@@ -138,7 +138,7 @@ public class TranspositionTable {
         long fill = Arrays.stream(entries).filter(Objects::nonNull).count();
         float fillPercentage = ((float) fill / (float) tableSize) * 100;
         float hitPercentage = ((float) hits / (float) tries) * 100;
-        System.out.printf("TT %s -- size: %s / %s (%s), tries: %s, hits: %s (%s)%n", this.hashCode(), fill, entries.length, fillPercentage, tries, hits, hitPercentage);
+        //System.out.printf("TT %s -- size: %s / %s (%s), tries: %s, hits: %s (%s)%n", this.hashCode(), fill, entries.length, fillPercentage, tries, hits, hitPercentage);
     }
 
 }

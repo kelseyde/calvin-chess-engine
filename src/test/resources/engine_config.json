@@ -1083,29 +1083,29 @@
   "protectedPassedPawnBonus":25,
   "bishopPairBonus":50,
   "rookOpenFileBonus":[
-    42,
-    22
+    48,
+    9
   ],
   "rookSemiOpenFileBonus":[
-    18,
-    16
+    16,
+    24
   ],
   "kingPawnShieldPenalty":[
     0,
     0,
-    10,
-    25,
-    50,
-    50,
-    50
+    9,
+    23,
+    31,
+    7,
+    -46
   ],
   "kingSemiOpenFilePenalty":15,
-  "kingSemiOpenAdjacentFilePenalty":10,
-  "kingOpenFilePenalty":25,
-  "kingOpenAdjacentFilePenalty":15,
-  "kingLostCastlingRightsPenalty":120,
-  "kingManhattanDistanceMultiplier":10,
-  "kingChebyshevDistanceMultiplier":10,
-  "kingCenterManhattanDistanceMultiplier":14,
+  "kingSemiOpenAdjacentFilePenalty":14,
+  "kingOpenFilePenalty":73,
+  "kingOpenAdjacentFilePenalty":33,
+  "kingLostCastlingRightsPenalty":57,
+  "kingManhattanDistanceMultiplier":14,
+  "kingChebyshevDistanceMultiplier":-32,
+  "kingCenterManhattanDistanceMultiplier":17,
   "tempoBonus":10
 }

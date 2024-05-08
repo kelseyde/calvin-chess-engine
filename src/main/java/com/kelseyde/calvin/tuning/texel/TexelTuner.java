@@ -94,7 +94,7 @@ public class TexelTuner {
                 }
             }
             System.out.printf("tuned %s/%s params: %s%n", modifiedParams, bestParams.length, Arrays.toString(bestParams));
-            System.out.printf("iteration %s completed in %s", iterations, Duration.between(start, Instant.now()));
+            System.out.printf("iteration %s completed in %s%n", iterations, Duration.between(start, Instant.now()));
 
         }
         System.out.printf("final params: %s, final error: %s%n", Arrays.toString(bestParams), bestError);

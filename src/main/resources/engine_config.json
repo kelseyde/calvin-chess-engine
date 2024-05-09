@@ -16,10 +16,12 @@
   "nmpDepth":0,
   "fpDepth":4,
   "rfpDepth":4,
+  "mcpDepth":8,
   "lmrDepth":3,
   "iirDepth":4,
   "nmpMargin":50,
   "dpMargin":140,
+  "singularMarginFactor":34,
   "fpMargin":[
     0,
     170,

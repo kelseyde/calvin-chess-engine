@@ -140,7 +140,7 @@ public class Searcher implements Search {
             return alpha;
         }
         if (depth <= 0) {
-            return quiescenceSearch(alpha, beta, 1, ply);
+            return qSearch(alpha, beta, 1, ply);
         }
         if (ply > 0 && isDraw()) {
             return Score.DRAW_SCORE;
@@ -189,18 +189,25 @@ public class Searcher implements Search {
             return staticEval;
         }
 
+        boolean isSingular = false;
+
         if (!pvNode && !isInCheck) {
             // Reverse futility pruning: if our position is so good that we don't need to move to beat beta + some small
             // margin, then let's assume we don't need to search any further, and cut off early.
             boolean isMateHunting = Math.abs(alpha) >= Score.MATE_SCORE - 100;
-            if (depth <= config.getRfpDepth() && staticEval - config.getRfpMargin()[depth] > beta && !isMateHunting) {
+            if (depth <= config.getRfpDepth()
+                    && staticEval - config.getRfpMargin()[depth] > beta
+                    && !isMateHunting) {
                 return staticEval - config.getRfpMargin()[depth];
             }
 
             // Null move pruning: if the static eval indicates a fail-high, then let's give the opponent an extra move
             // (make a 'null' move), and searching to a shallower depth. If the result still fails high, skip this node.
             boolean isPawnEndgame = !board.hasPiecesRemaining(board.isWhiteToMove());
-            if (depth >= config.getNmpDepth() && allowNull && staticEval >= beta - config.getNmpMargin() && !isPawnEndgame) {
+            if (depth >= config.getNmpDepth()
+                    && allowNull
+                    && staticEval >= beta - config.getNmpMargin()
+                    && !isPawnEndgame) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -209,6 +216,29 @@ public class Searcher implements Search {
                     return eval;
                 }
             }
+
+            if (depth >= config.getMcpDepth()
+                && transposition != null
+                && transposition.getFlag() == HashFlag.LOWER
+                && transposition.getDepth() >= depth - 3) {
+
+                int margin = config.getSingularMarginFactor() * depth;
+                int depthToSearch = (depth - 1) / 2;
+                int target = transposition.getScore() - margin;
+
+                // TODO allow null move ?
+                // TODO is pvNode handled correctly?
+                int eval = search(depthToSearch, target - 1, target, ply, false);
+
+                if (eval < target) {
+                    isSingular = true;
+                } else {
+                    return target;
+                }
+
+            }
+
+
         }
 
         // Give each move a 'score' based on how interesting or promising it looks. These scores will be used to select
@@ -257,7 +287,7 @@ public class Searcher implements Search {
             // Search extensions: in certain interesting cases (promotions, checks that do not immediately lose material),
             // let's extend the search depth by one ply.
             int extension = 0;
-            if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
+            if (isPromotion || isSingular || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
                 extension = 1;
             }
 
@@ -319,13 +349,13 @@ public class Searcher implements Search {
     }
 
     /**
-     * Extend the search by searching captures until a 'quiet' position is reached, where there are no further captures
-     * and therefore limited potential for winning tactics that drastically alter the evaluation. Used to mitigate the
-     * worst of the 'horizon effect'.
+     * The quiescence search extends the search by searching captures until a 'quiet' position is reached, where there
+     * are no further captures and therefore limited potential for winning tactics that drastically alter the evaluation.
+     * Used to mitigate the worst of the 'horizon effect'.
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta, int depth, int ply) {
+    int qSearch(int alpha, int beta, int depth, int ply) {
         if (isCancelled()) {
             return alpha;
         }
@@ -370,6 +400,8 @@ public class Searcher implements Search {
             scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
         }
 
+        // TODO some kind of futility pruning outside the move loop, e.g. standPat + margin < alpha
+
         for (int i = 0; i < moves.size(); i++) {
             for (int j = i + 1; j < moves.size(); j++) {
                 int firstScore = scores[i];
@@ -400,7 +432,7 @@ public class Searcher implements Search {
             }
 
             board.makeMove(move);
-            eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
+            eval = -qSearch(-beta, -alpha, depth + 1, ply + 1);
             board.unmakeMove();
 
             if (eval >= beta) {

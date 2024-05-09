@@ -115,6 +115,30 @@ public class TexelTunerTest {
 
     }
 
+    @Test
+    public void tunePawnStructureWeights() throws IOException {
+        tune(
+                new int[] {0, -10, -25, -50, -75, -75, -75, -75, -75,
+                        0, -20, -35, -65, -80, -80, -80, -80, -80,
+                        0, -5, -10, -20, -40, -60, -75, -85, -95,
+                        0, -15, -25, -35, -55, -75, -90, -100, -110,
+                        0, 140, 100, 60, 30, 15, 15,
+                        0, 250, 140, 85, 45, 25, 25,
+                        25},
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.getIsolatedPawnPenalty()[0] = Arrays.stream(params, 0, 9).toArray();
+                    config.getIsolatedPawnPenalty()[1] = Arrays.stream(params, 9, 18).toArray();
+                    config.getDoubledPawnPenalty()[0] = Arrays.stream(params, 18, 26).toArray();
+                    config.getDoubledPawnPenalty()[1] = Arrays.stream(params, 26, 34).toArray();
+                    config.getPassedPawnBonus()[0] = Arrays.stream(params, 34, 41).toArray();
+                    config.getPassedPawnBonus()[1] = Arrays.stream(params, 41, 48).toArray();
+                    config.setProtectedPassedPawnBonus(params[49]);
+                    return config;
+                }
+        );
+    }
+
     private void tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException {
         EngineConfig initialConfig = createConfigFunction.apply(initialParams);
         System.out.println("Initial config: " + objectMapper.writeValueAsString(initialConfig));

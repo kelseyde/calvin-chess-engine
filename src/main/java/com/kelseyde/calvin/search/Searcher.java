@@ -199,8 +199,10 @@ public class Searcher implements Search {
 
             // Null move pruning: if the static eval indicates a fail-high, then let's give the opponent an extra move
             // (make a 'null' move), and searching to a shallower depth. If the result still fails high, skip this node.
-            boolean isPawnEndgame = !board.hasPiecesRemaining(board.isWhiteToMove());
-            if (depth >= config.getNmpDepth() && allowNull && staticEval >= beta - config.getNmpMargin() && !isPawnEndgame) {
+            if (depth >= config.getNmpDepth()
+                    && staticEval >= beta - config.getNmpMargin()
+                    && board.hasPiecesRemaining(board.isWhiteToMove())
+                    && allowNull) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -268,6 +270,16 @@ public class Searcher implements Search {
                 eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
 
             } else {
+                // Late move pruning: if the move is ordered very late in the list, and isn't a 'noisy' move like a check,
+                // capture or promotion, let's assume it's less likely to be good, and fully skip searching that move.
+                if (!pvNode
+                    && !isInCheck
+                    && depth <= config.getLmpDepth()
+                    && isQuiet
+                    && i >= depth * config.getLmpMultiplier()) {
+                    board.unmakeMove();
+                    continue;
+                }
                 // Late move reductions: if the move is ordered late in the list, and isn't a 'noisy' move like a check,
                 // capture or promotion, let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;

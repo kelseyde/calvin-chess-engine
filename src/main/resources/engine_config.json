@@ -1096,14 +1096,14 @@
     9,
     23,
     31,
-    50,
-    50
+    7,
+    -46
   ],
   "kingSemiOpenFilePenalty":15,
   "kingSemiOpenAdjacentFilePenalty":14,
-  "kingOpenFilePenalty":74,
+  "kingOpenFilePenalty":73,
   "kingOpenAdjacentFilePenalty":33,
-  "kingLostCastlingRightsPenalty":59,
+  "kingLostCastlingRightsPenalty":57,
   "kingManhattanDistanceMultiplier":10,
   "kingChebyshevDistanceMultiplier":10,
   "kingCenterManhattanDistanceMultiplier":14,

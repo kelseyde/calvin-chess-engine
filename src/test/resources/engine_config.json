@@ -1104,8 +1104,8 @@
   "kingOpenFilePenalty":73,
   "kingOpenAdjacentFilePenalty":33,
   "kingLostCastlingRightsPenalty":57,
-  "kingManhattanDistanceMultiplier":14,
-  "kingChebyshevDistanceMultiplier":-32,
-  "kingCenterManhattanDistanceMultiplier":17,
+  "kingManhattanDistanceMultiplier":10,
+  "kingChebyshevDistanceMultiplier":10,
+  "kingCenterManhattanDistanceMultiplier":14,
   "tempoBonus":10
 }

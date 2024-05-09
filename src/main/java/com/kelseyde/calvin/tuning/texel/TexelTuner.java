@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.tuning.texel;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AllArgsConstructor;
@@ -34,17 +35,12 @@ public class TexelTuner {
 
     private double k = 1.26;
 
-    public int[] tune(int[] initialParams, Function<int[], Evaluator> createEvaluatorFunction) throws IOException {
-
-        /**
-         * TODO
-         * -stochastic gradient descent/gradient descent/ADAM
-          */
+    public int[] tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException {
 
         positions = loadPositions();
         initDeltas(initialParams.length);
         System.out.println("number of positions: " + positions.size());
-        Evaluator evaluator = createEvaluatorFunction.apply(initialParams);
+        Evaluator evaluator = new Evaluator(createConfigFunction.apply(initialParams));
         int[] bestParams = initialParams;
         double bestError = meanSquareError(evaluator);
         int iterations = 0;
@@ -59,7 +55,7 @@ public class TexelTuner {
                 int[] newParams = Arrays.copyOf(bestParams, bestParams.length);
                 int delta = deltas[i].delta;
                 newParams[i] += delta;
-                evaluator = createEvaluatorFunction.apply(newParams);
+                evaluator = new Evaluator(createConfigFunction.apply(newParams));
                 double newError = meanSquareError(evaluator);
                 System.out.printf("tuning param %s of %s, error %s%n", i, bestParams.length, newError);
 
@@ -75,7 +71,7 @@ public class TexelTuner {
 
                 } else {
                     newParams[i] -= delta * 2;
-                    evaluator = createEvaluatorFunction.apply(newParams);
+                    evaluator = new Evaluator(createConfigFunction.apply(newParams));
                     newError = meanSquareError(evaluator);
                     if (newError < bestError) {
                         improved = true;

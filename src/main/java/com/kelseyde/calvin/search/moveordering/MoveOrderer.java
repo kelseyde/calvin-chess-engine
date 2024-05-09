@@ -53,7 +53,7 @@ public class MoveOrderer implements MoveOrdering {
         return orderedMoves;
     }
 
-    public int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
+    public int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int ply) {
 
         int moveScore = 0;
 
@@ -80,7 +80,7 @@ public class MoveOrderer implements MoveOrdering {
         }
         else {
             // Non-captures are sorted using history + killers
-            if (includeKillers && isKillerMove(depth, move)) {
+            if (includeKillers && isKillerMove(ply, move)) {
                 moveScore += KILLER_MOVE_BIAS;
             }
             int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());

@@ -153,12 +153,13 @@ public class Searcher implements Search {
             return alpha;
         }
 
+        boolean rootNode = ply == 0;
         boolean pvNode = beta - alpha > 1;
-        Move previousBestMove = ply == 0 && result != null ? result.move() : null;
+        Move previousBestMove = rootNode && result != null ? result.move() : null;
 
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, depth, alpha, beta)) {
-            if (ply == 0 && transposition.getMove() != null) {
+            if (rootNode && transposition.getMove() != null) {
                 resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), depth);
             }
             return transposition.getScore();
@@ -182,7 +183,7 @@ public class Searcher implements Search {
             // Found checkmate / stalemate
             return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
         }
-        if (ply == 0 && moves.size() == 1) {
+        if (rootNode && moves.size() == 1) {
             // Exit immediately if there is only one legal move at the root node
             resultCurrentDepth = new SearchResult(staticEval, moves.get(0), depth);
             cancelled = true;
@@ -217,29 +218,31 @@ public class Searcher implements Search {
                 }
             }
 
-            if (depth >= config.getMcpDepth()
+        }
+
+        if (!rootNode
+                && depth >= config.getMcpDepth()
                 && transposition != null
                 && transposition.getFlag() == HashFlag.LOWER
                 && transposition.getDepth() >= depth - 3) {
 
-                int margin = config.getSingularMarginFactor() * depth;
-                int depthToSearch = (depth - 1) / 2;
-                int target = transposition.getScore() - margin;
+            int margin = config.getSingularMarginFactor() * depth;
+            int depthToSearch = (depth - 1) / 2;
+            int target = transposition.getScore() - margin;
 
-                // TODO allow null move ?
-                // TODO is pvNode handled correctly?
-                int eval = search(depthToSearch, target - 1, target, ply, false);
+            // TODO allow null move ?
+            // TODO is pvNode handled correctly?
+            int eval = search(depthToSearch, ply, target - 1, target, false);
 
-                if (eval < target) {
-                    isSingular = true;
-                } else {
-                    return target;
-                }
-
+            if (eval < target) {
+                isSingular = true;
+            }
+            else if (target >= beta) {
+                return target;
             }
 
-
         }
+
 
         // Give each move a 'score' based on how interesting or promising it looks. These scores will be used to select
         // the order in which moves are evaluated.
@@ -287,7 +290,7 @@ public class Searcher implements Search {
             // Search extensions: in certain interesting cases (promotions, checks that do not immediately lose material),
             // let's extend the search depth by one ply.
             int extension = 0;
-            if (isPromotion || isSingular || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
+            if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
                 extension = 1;
             }
 
@@ -295,6 +298,9 @@ public class Searcher implements Search {
             if (pvNode && i == 0) {
                 // Principal variation search: the first move must be searched with the full alpha-beta window. If our move
                 // ordering is any good then we expect this to be the best move, and so we need to retrieve the exact score.
+                if (isSingular) {
+                    extension = 1;
+                }
                 eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
 
             } else {
@@ -338,7 +344,7 @@ public class Searcher implements Search {
                 bestMove = move;
                 alpha = eval;
                 flag = HashFlag.EXACT;
-                if (ply == 0) {
+                if (rootNode) {
                     resultCurrentDepth = new SearchResult(eval, move, depth);
                 }
             }

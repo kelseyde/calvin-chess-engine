@@ -20,6 +20,8 @@ public interface MoveOrdering {
 
     void addKillerMove(int ply, Move newKiller);
 
+    void addCounterMove(Board board, Move newCountermove);
+
     void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite);
 
     void clear();

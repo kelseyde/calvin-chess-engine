@@ -310,6 +310,7 @@ public class Searcher implements Search {
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
+                    moveOrderer.addCounterMove(board, move);
                     moveOrderer.addHistoryMove(depth, move, board.isWhiteToMove());
                 }
                 return beta;

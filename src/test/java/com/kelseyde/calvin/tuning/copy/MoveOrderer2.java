@@ -110,6 +110,11 @@ public class MoveOrderer2 implements MoveOrdering {
         }
     }
 
+    @Override
+    public void addCounterMove(Board board, Move newCountermove) {
+
+    }
+
     private boolean isKillerMove(int ply, Move move) {
         return ply < MAX_KILLER_MOVE_PLY_DEPTH &&
                 (move.equals(killerMoves[ply][0]) || move.equals(killerMoves[ply][1]) || move.equals(killerMoves[ply][2]));

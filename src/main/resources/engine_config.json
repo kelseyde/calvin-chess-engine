@@ -17,6 +17,8 @@
   "fpDepth":4,
   "rfpDepth":4,
   "lmrDepth":3,
+  "lmpDepth": 2,
+  "lmpMultiplier": 10,
   "iirDepth":4,
   "nmpMargin":50,
   "dpMargin":140,

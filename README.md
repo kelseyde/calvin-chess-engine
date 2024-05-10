@@ -44,6 +44,7 @@ The table below tracks the strength of release versions, on the CCRL computer ch
 - [History heuristic](https://www.chessprogramming.org/History_Heuristic).
 
 ### Evaluation
+- [Texel Tuning](https://www.chessprogramming.org/Texel%27s_Tuning_Method): all evaluation parameters are tuned using Texel's tuning method.
 - [Material](https://www.chessprogramming.org/Material): basic material count, bishop pair bonus
 - [Piece square tables](https://www.chessprogramming.org/Piece-Square_Tables): asymettrical PSTs
 - [Tapered eval](https://www.chessprogramming.org/Tapered_Eval): evaluation tapered based on opening/middlegame/endgame phase
@@ -57,7 +58,8 @@ The table below tracks the strength of release versions, on the CCRL computer ch
 
 ### Communication
 - Calvin communicates using the Universal Chess Interface [(UCI) protocol](https://www.chessprogramming.org/UCI).
-- [Pondering](https://www.chessprogramming.org/Pondering) 
+- [Pondering](https://www.chessprogramming.org/Pondering), where the engine thinks on the opponent's move. Can be disabled via the UCI.
+- Hash size and number of Lazy SMP threads are also configurable via the UCI.
 - Calvin is connected to Lichess where he plays regularly in the engine pool: https://lichess.org/@/Calvin_Bot
 
 ### Perft results (starting position):

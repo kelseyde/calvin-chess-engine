@@ -56,7 +56,8 @@ The table below tracks the strength of release versions, on the CCRL computer ch
 - No endgame tablebases implemented yet.
 
 ### Communication
-- [UCI protocol](https://www.chessprogramming.org/UCI) implemented with time management support.
+- Calvin communicates using the Universal Chess Interface [(UCI) protocol](https://www.chessprogramming.org/UCI).
+- [Pondering](https://www.chessprogramming.org/Pondering) 
 - Calvin is connected to Lichess where he plays regularly in the engine pool: https://lichess.org/@/Calvin_Bot
 
 ### Perft results (starting position):

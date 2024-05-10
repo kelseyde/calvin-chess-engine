@@ -141,13 +141,15 @@ public class Attacks {
 
     public static long sliderAttacks(
             int square, long blockers, long[] masks, long[] magics, int[] shifts, long[][] attacks) {
-        long mask = masks[square];
-        long blocker = blockers & mask;
-        long magic = magics[square];
-        long index = blocker * magic;
-        long shift = shifts[square];
-        long key = index >>> shift;
-        return attacks[square][(int) key];
+        // commented out simply for speed, but kept for documentation
+        // long mask = masks[square];
+        // long blocker = blockers & mask;
+        // long magic = magics[square];
+        // long index = blocker * magic;
+        // long shift = shifts[square];
+        // long key = index >>> shift;
+        // return attacks[square][(int) key];
+        return attacks[square][(int) (((masks[square] & blockers) * magics[square]) >>> shifts[square])];
     }
 
     public static long[] generateWhitePawnAttacks() {

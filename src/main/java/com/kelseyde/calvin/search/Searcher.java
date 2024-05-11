@@ -21,6 +21,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -276,8 +277,8 @@ public class Searcher implements Search {
                 // capture or promotion, let's assume it's less likely to be good, and fully skip searching that move.
                 if (!pvNode
                     && !isInCheck
-                    && depth <= config.getLmpDepth()
                     && isQuiet
+                    && depth <= config.getLmpDepth()
                     && i >= depth * config.getLmpMultiplier()) {
                     board.unmakeMove();
                     continue;
@@ -286,9 +287,14 @@ public class Searcher implements Search {
                 // capture or promotion, let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
                 if (depth >= config.getLmrDepth()
-                    && i >= 2
+                    && i >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
                     && isQuiet) {
-                    reduction = i < 5 ? 1 : depth / 3;
+                    reduction = config.getLmrReductions()[depth][i];
+                    if (pvNode || isInCheck) {
+                        reduction--;
+                    }
+                    //System.out.printf("depth %s, moves searched %s, reduction %s%n", depth, i, reduction);
+                    //reduction = i < 5 ? 1 : depth / 3;
                 }
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),

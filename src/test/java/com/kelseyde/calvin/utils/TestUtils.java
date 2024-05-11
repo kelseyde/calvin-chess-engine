@@ -57,7 +57,9 @@ public class TestUtils {
             ObjectMapper mapper = new ObjectMapper();
             Path path = Paths.get(configLocation);
             String json = Files.readString(path);
-            return mapper.readValue(json, EngineConfig.class);
+            EngineConfig config = mapper.readValue(json, EngineConfig.class);
+            config.postInitialise();
+            return config;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

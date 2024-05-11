@@ -31,6 +31,7 @@ public class EngineInitializer {
 
     public static Engine loadEngine() {
         EngineConfig config = loadDefaultConfig();
+        config.postInitialise();
         OpeningBook book = loadDefaultOpeningBook();
         Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;

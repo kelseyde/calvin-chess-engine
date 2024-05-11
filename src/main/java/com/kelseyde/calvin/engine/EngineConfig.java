@@ -28,17 +28,22 @@ public class EngineConfig {
     boolean searchCancelled = false;
 
     int maxDepth;
+    int maxPossibleMoves = 250;
     int aspMargin;
     int aspFailMargin;
     int nmpDepth;
     int fpDepth;
     int rfpDepth;
     int lmrDepth;
+    float lmrBase;
+    float lmrDivisor;
+    int lmrMinSearchedMoves;
     int lmpDepth;
     int lmpMultiplier;
     int iirDepth;
     int nmpMargin;
     int dpMargin;
+    int[][] lmrReductions;
     int[] fpMargin;
     int[] rfpMargin;
 
@@ -71,5 +76,20 @@ public class EngineConfig {
     int kingCenterManhattanDistanceMultiplier;
 
     int tempoBonus;
+
+    public void postInitialise() {
+        calculateLmrReductions();
+    }
+
+    private void calculateLmrReductions() {
+        // Credit to Lynx (https://github.com/lynx-chess/Lynx) for this formula for determining the optimal late move reduction depth
+        lmrReductions = new int[maxDepth][];
+        for (int depth = 1; depth < maxDepth; ++depth) {
+            lmrReductions[depth] = new int[maxPossibleMoves];
+            for (int movesSearched = 1; movesSearched < maxPossibleMoves; ++movesSearched) {
+                lmrReductions[depth][movesSearched] = (int) Math.round(lmrBase + (Math.log(movesSearched) * Math.log(depth) / lmrDivisor));
+            }
+        }
+    }
 
 }

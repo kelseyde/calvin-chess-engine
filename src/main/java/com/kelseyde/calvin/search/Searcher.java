@@ -293,6 +293,9 @@ public class Searcher implements Search {
                     if (pvNode || isInCheck) {
                         reduction--;
                     }
+                    if (transposition != null && transposition.getMove() != null && isCapture) {
+                        reduction++;
+                    }
                     //System.out.printf("depth %s, moves searched %s, reduction %s%n", depth, i, reduction);
                     //reduction = i < 5 ? 1 : depth / 3;
                 }

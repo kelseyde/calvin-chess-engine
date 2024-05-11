@@ -29,21 +29,23 @@ public class TexelTuner {
     private final String positionsFileName;
 
     private Map<Board, Double> positions;
+    private List<Map<Board, Double>> partitions;
 
     private Delta[] deltas;
 
     private double k = 1.26;
 
-    private int threadCount = 5;
+    private int threadCount = 10;
 
     public int[] tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction)
             throws IOException, ExecutionException, InterruptedException {
 
         positions = loadPositions();
+        partitions = partitionPositions(positions, threadCount);
         initDeltas(initialParams.length);
         System.out.println("number of positions: " + positions.size());
         int[] bestParams = initialParams;
-        double bestError = meanSquareErrorMultithreaded(bestParams, createConfigFunction);
+        double bestError = meanSquareError(bestParams, createConfigFunction);
         int iterations = 0;
 
         boolean improved = true;
@@ -56,7 +58,7 @@ public class TexelTuner {
                 int[] newParams = Arrays.copyOf(bestParams, bestParams.length);
                 int delta = deltas[i].delta;
                 newParams[i] += delta;
-                double newError = meanSquareErrorMultithreaded(newParams, createConfigFunction);
+                double newError = meanSquareError(newParams, createConfigFunction);
                 System.out.printf("tuning param %s of %s, error %s%n", i, bestParams.length, newError);
 
                 if (newError < bestError) {
@@ -71,7 +73,7 @@ public class TexelTuner {
 
                 } else {
                     newParams[i] -= delta * 2;
-                    newError = meanSquareErrorMultithreaded(newParams, createConfigFunction);
+                    newError = meanSquareError(newParams, createConfigFunction);
                     if (newError < bestError) {
                         improved = true;
                         modifiedParams++;
@@ -97,22 +99,15 @@ public class TexelTuner {
 
     }
 
-    public double meanSquareErrorMultithreaded(int[] params, Function<int[], EngineConfig> createConfigFunction)
+    public double meanSquareError(int[] params, Function<int[], EngineConfig> createConfigFunction)
             throws ExecutionException, InterruptedException {
-
         int totalPositions = positions.size();
-        List<Map<Board, Double>> partitions = partitionPositions(positions, threadCount);
-
         List<CompletableFuture<Double>> threads = partitions.stream()
                 .map(partition -> CompletableFuture.supplyAsync(() -> totalError(partition, params, createConfigFunction)))
                 .toList();
-
-        CompletableFuture<List<Double>> combined = CompletableFuture.allOf(threads.toArray(CompletableFuture[]::new))
-                .thenApply(future -> threads.stream()
-                        .map(CompletableFuture::join)
-                        .collect(Collectors.toList()));
-
-        return combined.get().stream().reduce(Double::sum).orElse(0.0) / totalPositions;
+        CompletableFuture.allOf(threads.toArray(CompletableFuture[]::new)).get();
+        Double combinedResult = threads.stream().map(CompletableFuture::join).reduce(0.0, Double::sum);
+        return combinedResult / totalPositions;
     }
 
     public double totalError(Map<Board, Double> partitionedPositions, int[] params, Function<int[], EngineConfig> createConfigFunction) {
@@ -174,36 +169,6 @@ public class TexelTuner {
         return Files.readAllLines(path);
     }
 
-//    public double tuneScalingConstant(Evaluator evaluator) throws IOException {
-//        List<String> positions = loadFens();
-//        System.out.println("number of positions: " + positions.size());
-//        double bestError = meanSquareError(evaluator, positions);
-//
-//        boolean improved = true;
-//        while (improved) {
-//            improved = false;
-//            k += 0.01;
-//            System.out.println("1 new k = " + k);
-//            double newError = meanSquareError(evaluator, positions);
-//            if (newError < bestError) {
-//                improved = true;
-//                bestError = newError;
-//                System.out.println("improved k " + k + " " + bestError);
-//            } else {
-//                k -= 0.02;
-//                System.out.println("2 new k = " + k);
-//                newError = meanSquareError(evaluator, positions);
-//                if (newError < bestError) {
-//                    improved = true;
-//                    bestError = newError;
-//                    System.out.println("improved k " + k + " " + bestError);
-//                }
-//            }
-//        }
-//        System.out.println("final k " + k);
-//        return k;
-//    }
-//
     private Map<Board, Double> loadPositions() throws IOException {
         List<String> fens = loadFens();
         Map<Board, Double> positions = new HashMap<>();

@@ -193,16 +193,18 @@ public class Searcher implements Search {
             // Reverse futility pruning: if our position is so good that we don't need to move to beat beta + some small
             // margin, then let's assume we don't need to search any further, and cut off early.
             boolean isMateHunting = Math.abs(alpha) >= Score.MATE_SCORE - 100;
-            if (depth <= config.getRfpDepth() && staticEval - config.getRfpMargin()[depth] > beta && !isMateHunting) {
+            if (depth <= config.getRfpDepth()
+                && staticEval - config.getRfpMargin()[depth] > beta
+                && !isMateHunting) {
                 return staticEval - config.getRfpMargin()[depth];
             }
 
             // Null move pruning: if the static eval indicates a fail-high, then let's give the opponent an extra move
             // (make a 'null' move), and searching to a shallower depth. If the result still fails high, skip this node.
             if (depth >= config.getNmpDepth()
-                    && staticEval >= beta - config.getNmpMargin()
-                    && board.hasPiecesRemaining(board.isWhiteToMove())
-                    && allowNull) {
+                && staticEval >= beta - config.getNmpMargin()
+                && board.hasPiecesRemaining(board.isWhiteToMove())
+                && allowNull) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -283,7 +285,9 @@ public class Searcher implements Search {
                 // Late move reductions: if the move is ordered late in the list, and isn't a 'noisy' move like a check,
                 // capture or promotion, let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
-                if (depth >= config.getLmrDepth() && i >= 2 && isQuiet) {
+                if (depth >= config.getLmrDepth()
+                    && i >= 2
+                    && isQuiet) {
                     reduction = i < 5 ? 1 : depth / 3;
                 }
 

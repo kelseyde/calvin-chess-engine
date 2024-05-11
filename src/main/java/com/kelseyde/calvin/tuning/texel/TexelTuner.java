@@ -13,10 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,14 +34,16 @@ public class TexelTuner {
 
     private double k = 1.26;
 
-    public int[] tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException {
+    private int threadCount = 5;
+
+    public int[] tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction)
+            throws IOException, ExecutionException, InterruptedException {
 
         positions = loadPositions();
         initDeltas(initialParams.length);
         System.out.println("number of positions: " + positions.size());
-        Evaluator evaluator = new Evaluator(createConfigFunction.apply(initialParams));
         int[] bestParams = initialParams;
-        double bestError = meanSquareError(evaluator);
+        double bestError = meanSquareErrorMultithreaded(bestParams, createConfigFunction);
         int iterations = 0;
 
         boolean improved = true;
@@ -55,8 +56,7 @@ public class TexelTuner {
                 int[] newParams = Arrays.copyOf(bestParams, bestParams.length);
                 int delta = deltas[i].delta;
                 newParams[i] += delta;
-                evaluator = new Evaluator(createConfigFunction.apply(newParams));
-                double newError = meanSquareError(evaluator);
+                double newError = meanSquareErrorMultithreaded(newParams, createConfigFunction);
                 System.out.printf("tuning param %s of %s, error %s%n", i, bestParams.length, newError);
 
                 if (newError < bestError) {
@@ -71,8 +71,7 @@ public class TexelTuner {
 
                 } else {
                     newParams[i] -= delta * 2;
-                    evaluator = new Evaluator(createConfigFunction.apply(newParams));
-                    newError = meanSquareError(evaluator);
+                    newError = meanSquareErrorMultithreaded(newParams, createConfigFunction);
                     if (newError < bestError) {
                         improved = true;
                         modifiedParams++;
@@ -98,11 +97,28 @@ public class TexelTuner {
 
     }
 
-    public double meanSquareError(Evaluator evaluator) throws IOException {
+    public double meanSquareErrorMultithreaded(int[] params, Function<int[], EngineConfig> createConfigFunction)
+            throws ExecutionException, InterruptedException {
 
-        int numberOfPositions = positions.size();
+        int totalPositions = positions.size();
+        List<Map<Board, Double>> partitions = partitionPositions(positions, threadCount);
+
+        List<CompletableFuture<Double>> threads = partitions.stream()
+                .map(partition -> CompletableFuture.supplyAsync(() -> totalError(partition, params, createConfigFunction)))
+                .toList();
+
+        CompletableFuture<List<Double>> combined = CompletableFuture.allOf(threads.toArray(CompletableFuture[]::new))
+                .thenApply(future -> threads.stream()
+                        .map(CompletableFuture::join)
+                        .collect(Collectors.toList()));
+
+        return combined.get().stream().reduce(Double::sum).orElse(0.0) / totalPositions;
+    }
+
+    public double totalError(Map<Board, Double> partitionedPositions, int[] params, Function<int[], EngineConfig> createConfigFunction) {
+        Evaluator evaluator = new Evaluator(createConfigFunction.apply(params));
         double totalError = 0.0;
-        for (Map.Entry<Board, Double> entry : positions.entrySet()) {
+        for (Map.Entry<Board, Double> entry : partitionedPositions.entrySet()) {
             Board board = entry.getKey();
             int eval = evaluator.evaluate(board);
             if (!board.isWhiteToMove()) eval = -eval;
@@ -111,8 +127,7 @@ public class TexelTuner {
             double error = error(prediction, actual);
             totalError += error;
         }
-        return totalError / numberOfPositions;
-
+        return totalError;
     }
 
     /**
@@ -135,6 +150,22 @@ public class TexelTuner {
             case "0-1" -> 0.0;
             default -> throw new IllegalArgumentException("illegal result!");
         };
+    }
+
+    private List<Map<Board, Double>> partitionPositions(Map<Board, Double> positions, int partitions) {
+        List<Map<Board, Double>> partitionedPositions = new ArrayList<>();
+        List<Map.Entry<Board, Double>> positionEntries = positions.entrySet().stream().toList();
+        int positionsPerPartition = positions.size() / partitions;
+        int currentIndex = 0;
+        for (int i = 1; i < partitions + 1; i++) {
+            int startIndex = currentIndex;
+            int endIndex = Math.min(currentIndex + positionsPerPartition, positions.size());
+            partitionedPositions.add(
+                    positionEntries.subList(startIndex, endIndex).stream()
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+            currentIndex += positionsPerPartition;
+        }
+        return partitionedPositions;
     }
 
     public List<String> loadFens() throws IOException {

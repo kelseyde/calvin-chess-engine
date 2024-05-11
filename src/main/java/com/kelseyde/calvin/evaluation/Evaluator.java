@@ -436,7 +436,7 @@ public class Evaluator implements Evaluation {
         if (phase <= 0.5) return 0;
         int kingFile = BoardUtils.getFile(kingSquare);
         int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
-        int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial, isWhite);
+        int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
         int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(config, board, isWhite, kingFile);
         if (opponentMaterial.queens() == 0) {
             phase *= 0.6f;
@@ -484,7 +484,7 @@ public class Evaluator implements Evaluation {
         return pawnShieldPenalty;
     }
 
-    private int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial, boolean isWhite) {
+    private int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial) {
         if (opponentMaterial.rooks() == 0 && opponentMaterial.queens() == 0) {
             return 0;
         }

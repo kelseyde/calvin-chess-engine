@@ -14,7 +14,7 @@
   "aspMargin":50,
   "aspFailMargin":150,
   "nmpDepth":0,
-  "fpDepth":4,
+  "fpDepth":6,
   "rfpDepth":4,
   "lmrDepth":3,
   "lmpDepth":2,
@@ -27,7 +27,9 @@
     170,
     260,
     450,
-    575
+    500,
+    550,
+    600
   ],
   "rfpMargin":[
     0,

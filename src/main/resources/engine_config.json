@@ -11,7 +11,7 @@
   "pondering":false,
   "searchCancelled":false,
   "maxDepth":256,
-  "aspMargin":50,
+  "aspMargin":25,
   "aspFailMargin":150,
   "nmpDepth":0,
   "fpDepth":6,

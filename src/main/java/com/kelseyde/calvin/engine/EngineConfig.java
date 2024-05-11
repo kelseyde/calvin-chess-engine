@@ -35,6 +35,8 @@ public class EngineConfig {
     int rfpDepth;
     int mcpDepth;
     int lmrDepth;
+    int lmpDepth;
+    int lmpMultiplier;
     int iirDepth;
     int nmpMargin;
     int dpMargin;

@@ -49,6 +49,8 @@ public class Searcher implements Search {
     SearchResult resultCurrentDepth;
     SearchResult result;
 
+    Move excludedMove;
+
     public Searcher(EngineConfig config,
                     MoveGeneration moveGenerator,
                     MoveOrdering moveOrderer,
@@ -190,8 +192,6 @@ public class Searcher implements Search {
             return staticEval;
         }
 
-        boolean isSingular = false;
-
         if (!pvNode && !isInCheck) {
             // Reverse futility pruning: if our position is so good that we don't need to move to beat beta + some small
             // margin, then let's assume we don't need to search any further, and cut off early.
@@ -204,11 +204,10 @@ public class Searcher implements Search {
 
             // Null move pruning: if the static eval indicates a fail-high, then let's give the opponent an extra move
             // (make a 'null' move), and searching to a shallower depth. If the result still fails high, skip this node.
-            boolean isPawnEndgame = !board.hasPiecesRemaining(board.isWhiteToMove());
             if (depth >= config.getNmpDepth()
                     && allowNull
                     && staticEval >= beta - config.getNmpMargin()
-                    && !isPawnEndgame) {
+                    && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -220,9 +219,13 @@ public class Searcher implements Search {
 
         }
 
+        // Multi-cut pruning + singular extensions
+        //boolean isSingular = false;
         if (!rootNode
                 && depth >= config.getMcpDepth()
+                && excludedMove == null
                 && transposition != null
+                && transposition.getMove() != null
                 && transposition.getFlag() == HashFlag.LOWER
                 && transposition.getDepth() >= depth - 3) {
 
@@ -230,15 +233,15 @@ public class Searcher implements Search {
             int depthToSearch = (depth - 1) / 2;
             int target = transposition.getScore() - margin;
 
-            // TODO allow null move ?
-            // TODO is pvNode handled correctly?
+            this.excludedMove = transposition.getMove();
             int eval = search(depthToSearch, ply, target - 1, target, false);
+            this.excludedMove = null;
 
-            if (eval < target) {
-                isSingular = true;
-            }
-            else if (target >= beta) {
-                return target;
+            //if (eval < target) {
+            //    isSingular = true;
+            //}
+            if (eval >= beta) {
+                return beta;
             }
 
         }
@@ -272,6 +275,11 @@ public class Searcher implements Search {
             }
 
             Move move = moves.get(i);
+
+            if (move.matches(this.excludedMove)) {
+                continue;
+            }
+
             boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
             boolean isPromotion = move.getPromotionPieceType() != null;
 
@@ -298,12 +306,22 @@ public class Searcher implements Search {
             if (pvNode && i == 0) {
                 // Principal variation search: the first move must be searched with the full alpha-beta window. If our move
                 // ordering is any good then we expect this to be the best move, and so we need to retrieve the exact score.
-                if (isSingular) {
-                    extension = 1;
-                }
+//                if (isSingular) {
+//                    extension = 1;
+//                }
                 eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
 
             } else {
+                // Late move pruning: if the move is ordered very late in the list, and isn't a 'noisy' move like a check,
+                // capture or promotion, let's assume it's less likely to be good, and fully skip searching that move.
+                if (!pvNode
+                    && !isInCheck
+                    && depth <= config.getLmpDepth()
+                    && isQuiet
+                    && i >= depth * config.getLmpMultiplier()) {
+                    board.unmakeMove();
+                    continue;
+                }
                 // Late move reductions: if the move is ordered late in the list, and isn't a 'noisy' move like a check,
                 // capture or promotion, let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
@@ -405,8 +423,6 @@ public class Searcher implements Search {
         for (int i = 0; i < moves.size(); i++) {
             scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
         }
-
-        // TODO some kind of futility pruning outside the move loop, e.g. standPat + margin < alpha
 
         for (int i = 0; i < moves.size(); i++) {
             for (int j = i + 1; j < moves.size(); j++) {

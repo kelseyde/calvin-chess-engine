@@ -1,13 +1,18 @@
 package com.kelseyde.calvin.puzzles;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
+import com.kelseyde.calvin.search.Searcher;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -602,6 +607,42 @@ public class BlunderTest {
         Assertions.assertTrue(
                 move.matches(Notation.fromCombinedNotation("e2f2"))
         );
+
+    }
+
+    @Test
+    public void testDontForceRepetitionWhenMating() {
+
+        String fen = "4K3/5p2/4q2p/8/4kb2/8/8/8 w - - 10 81";
+        Board board = FEN.toBoard(fen);
+        board.makeMove(Notation.fromCombinedNotation("e8d8"));
+        board.makeMove(Notation.fromCombinedNotation("e6e5"));
+        board.makeMove(Notation.fromCombinedNotation("d8d7"));
+        board.makeMove(Notation.fromCombinedNotation("e5e6"));
+        board.makeMove(Notation.fromCombinedNotation("d7d8"));
+        board.makeMove(Notation.fromCombinedNotation("e6e5"));
+        board.makeMove(Notation.fromCombinedNotation("d8d7"));
+
+        engine.setPosition(board);
+
+        Move move = engine.think(200).move();
+        System.out.println(Notation.toNotation(move));
+        Assertions.assertFalse(
+                move.matches(Notation.fromCombinedNotation("e5e6"))
+        );
+
+//        Board boardCopy = BoardUtils.copy(board);
+//        boardCopy.makeMove(Notation.fromCombinedNotation("e5e6"));
+//        Searcher searcher = TestUtils.SEARCHER;
+//        searcher.setPosition(boardCopy);
+//
+//        int eval = searcher.search(Duration.ofSeconds(1)).eval();
+//        Assertions.assertEquals(0, eval);
+//
+//        boardCopy.makeMove(Notation.fromCombinedNotation("d7d8"));
+//        searcher.setPosition(boardCopy);
+//        eval = searcher.search(Duration.ofSeconds(1)).eval();
+//        Assertions.assertEquals(0, eval);
 
     }
 

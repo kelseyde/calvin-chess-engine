@@ -14,9 +14,9 @@ import java.util.List;
  */
 public interface MoveOrdering {
 
-    List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth);
+    List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, int depth);
 
-    int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth);
+    int scoreMove(Board board, Move move, Move previousBestMove, int depth);
 
     void addKillerMove(int ply, Move newKiller);
 

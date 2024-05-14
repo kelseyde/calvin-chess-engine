@@ -185,9 +185,10 @@ public class Searcher implements Search {
         }
         if (ply == 0 && moves.size() == 1) {
             // Exit immediately if there is only one legal move at the root node
-            resultCurrentDepth = new SearchResult(staticEval, moves.get(0), depth);
+            int eval = isDraw() ? Score.DRAW_SCORE : staticEval;
+            resultCurrentDepth = new SearchResult(eval, moves.get(0), depth);
             cancelled = true;
-            return staticEval;
+            return eval;
         }
 
         if (!pvNode && !isInCheck) {
@@ -202,10 +203,10 @@ public class Searcher implements Search {
 
             // Null move pruning: if the static eval indicates a fail-high, then let's give the opponent an extra move
             // (make a 'null' move), and searching to a shallower depth. If the result still fails high, skip this node.
-            if (depth >= config.getNmpDepth()
+            if (allowNull
+                && depth >= config.getNmpDepth()
                 && staticEval >= beta - config.getNmpMargin()
-                && board.hasPiecesRemaining(board.isWhiteToMove())
-                && allowNull) {
+                && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -220,7 +221,7 @@ public class Searcher implements Search {
         // the order in which moves are evaluated.
         int[] scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
         }
 
         Move bestMove = null;
@@ -267,12 +268,15 @@ public class Searcher implements Search {
             }
 
             int eval;
-            if (pvNode && i == 0) {
+            if (isDraw()) {
+                eval = Score.DRAW_SCORE;
+            }
+            else if (pvNode && i == 0) {
                 // Principal variation search: the first move must be searched with the full alpha-beta window. If our move
                 // ordering is any good then we expect this to be the best move, and so we need to retrieve the exact score.
                 eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
-
-            } else {
+            }
+            else {
                 // Late move pruning: if the move is ordered very late in the list, and isn't a 'noisy' move like a check,
                 // capture or promotion, let's assume it's less likely to be good, and fully skip searching that move.
                 if (!pvNode
@@ -296,8 +300,6 @@ public class Searcher implements Search {
                     if (transposition != null && transposition.getMove() != null && isCapture) {
                         reduction++;
                     }
-                    //System.out.printf("depth %s, moves searched %s, reduction %s%n", depth, i, reduction);
-                    //reduction = i < 5 ? 1 : depth / 3;
                 }
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
@@ -392,7 +394,7 @@ public class Searcher implements Search {
 
         int[] scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
         }
 
         for (int i = 0; i < moves.size(); i++) {

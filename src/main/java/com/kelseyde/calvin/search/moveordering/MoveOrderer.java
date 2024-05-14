@@ -29,9 +29,9 @@ public class MoveOrderer implements MoveOrdering {
     private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
-    private static final int UNDER_PROMOTION_BIAS = 4 * MILLION;
-    private static final int CASTLING_BIAS = 3 * MILLION;
+    private static final int HISTORY_MOVE_BIAS = 6 * MILLION;
+    private static final int LOSING_CAPTURE_BIAS = 4 * MILLION;
+    private static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
 
     private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 3;
@@ -47,14 +47,16 @@ public class MoveOrderer implements MoveOrdering {
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
     private int[][][] historyMoves = new int[2][64][64];
 
-    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
+    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, int depth) {
         List<Move> orderedMoves = new ArrayList<>(moves);
-        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
+        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, depth)));
         return orderedMoves;
     }
 
-    public int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
+    public int scoreMove(Board board, Move move, Move previousBestMove, int depth) {
 
+        int startSquare = move.getStartSquare();
+        int endSquare = move.getEndSquare();
         int moveScore = 0;
 
         // Always search the best move from the previous iteration first.
@@ -63,8 +65,8 @@ public class MoveOrderer implements MoveOrdering {
         }
 
         // Sort captures according to MVV-LVA (most valuable victim, least valuable attacker)
-        Piece piece = board.pieceAt(move.getStartSquare());
-        Piece capturedPiece = board.pieceAt(move.getEndSquare());
+        Piece piece = board.pieceAt(startSquare);
+        Piece capturedPiece = board.pieceAt(endSquare);
         boolean isCapture = capturedPiece != null;
         if (isCapture) {
             // Captures are sorted using MVV-LVA
@@ -80,15 +82,18 @@ public class MoveOrderer implements MoveOrdering {
         }
         else {
             // Non-captures are sorted using history + killers
-            if (includeKillers && isKillerMove(depth, move)) {
+            boolean isKiller = isKillerMove(depth, move);
+            if (isKiller) {
                 moveScore += KILLER_MOVE_BIAS;
             }
             int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
-            moveScore += historyMoves[colourIndex][move.getStartSquare()][move.getEndSquare()];
-        }
-
-        if (move.isCastling()) {
-            moveScore += CASTLING_BIAS;
+            int historyScore = historyMoves[colourIndex][startSquare][endSquare];
+            if (historyScore > 0) {
+                if (!isKiller) {
+                    moveScore += HISTORY_MOVE_BIAS;
+                }
+                moveScore += historyScore;
+            }
         }
 
         return moveScore;
@@ -119,7 +124,7 @@ public class MoveOrderer implements MoveOrdering {
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int score = plyRemaining * plyRemaining;
-        historyMoves[colourIndex][startSquare][endSquare] = score;
+        historyMoves[colourIndex][startSquare][endSquare] += score;
     }
 
     public void clear() {

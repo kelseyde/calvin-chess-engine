@@ -30,7 +30,7 @@ public class MoveOrderer implements MoveOrdering {
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
     private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
-    private static final int UNDER_PROMOTION_BIAS = 4 * MILLION;
+    private static final int HISTORY_MOVE_BIAS = 4 * MILLION;
     private static final int CASTLING_BIAS = 3 * MILLION;
 
     private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
@@ -57,6 +57,7 @@ public class MoveOrderer implements MoveOrdering {
 
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
+
         int moveScore = 0;
 
         // Always search the best move from the previous iteration first.
@@ -82,16 +83,20 @@ public class MoveOrderer implements MoveOrdering {
         }
         else {
             // Non-captures are sorted using history + killers
-            if (includeKillers && isKillerMove(depth, move)) {
+            boolean isKiller = includeKillers && isKillerMove(depth, move);
+            if (isKiller) {
                 moveScore += KILLER_MOVE_BIAS;
             }
             int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
             int historyScore = historyMoves[colourIndex][startSquare][endSquare];
             moveScore += historyScore;
-
-            if (move.isCastling()) {
-                moveScore += CASTLING_BIAS;
+            if (!isKiller && historyScore > 0) {
+                moveScore += HISTORY_MOVE_BIAS;
             }
+        }
+
+        if (move.isCastling()) {
+            moveScore += CASTLING_BIAS;
         }
 
         return moveScore;
@@ -122,7 +127,7 @@ public class MoveOrderer implements MoveOrdering {
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int score = plyRemaining * plyRemaining;
-        historyMoves[colourIndex][startSquare][endSquare] += score;
+        historyMoves[colourIndex][startSquare][endSquare] = score;
     }
 
     public void clear() {

@@ -55,6 +55,11 @@ public class Engine {
         searcher.setPosition(board);
     }
 
+    public void setPosition(Board board) {
+        this.board = board;
+        searcher.setPosition(board);
+    }
+
     public void setHashSize(int hashSizeMb) {
         this.searcher.setHashSize(hashSizeMb);
     }

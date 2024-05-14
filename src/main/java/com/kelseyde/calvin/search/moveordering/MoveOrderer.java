@@ -29,7 +29,7 @@ public class MoveOrderer implements MoveOrdering {
     private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int HISTORY_MOVE_BIAS = 6 * MILLION;
+    private static final int HISTORY_MOVE_BIAS = 5 * MILLION;
     private static final int LOSING_CAPTURE_BIAS = 4 * MILLION;
     private static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
 

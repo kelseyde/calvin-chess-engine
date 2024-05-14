@@ -48,13 +48,13 @@ public class MoveOrderer2 implements MoveOrdering {
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
     private int[][][] historyMoves = new int[2][64][64];
 
-    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, int depth) {
+    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
         List<Move> orderedMoves = new ArrayList<>(moves);
-        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, depth)));
+        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
         return orderedMoves;
     }
 
-    public int scoreMove(Board board, Move move, Move previousBestMove,  int depth) {
+    public int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
 
         int moveScore = 0;
 
@@ -81,7 +81,7 @@ public class MoveOrderer2 implements MoveOrdering {
         }
         else {
             // Non-captures are sorted using history + killers
-            if (isKillerMove(depth, move)) {
+            if (includeKillers && isKillerMove(depth, move)) {
                 moveScore += KILLER_MOVE_BIAS;
             }
             int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());

@@ -221,7 +221,7 @@ public class Searcher implements Search {
         // the order in which moves are evaluated.
         int[] scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
         }
 
         Move bestMove = null;
@@ -394,7 +394,7 @@ public class Searcher implements Search {
 
         int[] scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
         }
 
         for (int i = 0; i < moves.size(); i++) {

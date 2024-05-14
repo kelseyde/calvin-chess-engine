@@ -79,7 +79,7 @@ public class MoveOrdererTest {
 //                NotationUtils.fromNotation("d3", "e4", PieceType.PAWN),
         ));
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("f3", "e4")));
 
@@ -100,7 +100,7 @@ public class MoveOrdererTest {
         Move killerMove = TestUtils.getLegalMove(board, "f3", "f4");
         moveOrderer.addKillerMove(1, killerMove);
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("f3", "f4")));
 
@@ -122,7 +122,7 @@ public class MoveOrdererTest {
         Move killerMove = new Move(21, 29);
         moveOrderer.addKillerMove(2, killerMove);
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
         Assertions.assertFalse(orderedMoves.get(0).matches(Notation.fromNotation("f3", "f4")));
 
@@ -148,7 +148,7 @@ public class MoveOrdererTest {
 
         moveOrderer.addHistoryMove(5, Notation.fromNotation("f1", "e1"), true);
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("f1", "e1")));
 
@@ -168,7 +168,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("d3", "e4")
                 ));
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("d3", "e4")));
 
@@ -188,7 +188,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("d3", "e4")
                 ));
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("d3", "e4")));
         Assertions.assertTrue(orderedMoves.get(1).matches(Notation.fromNotation("f3", "e4")));
@@ -211,7 +211,7 @@ public class MoveOrdererTest {
 
         Move previousBestMove = Notation.fromNotation("e8", "e1");
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, previousBestMove, 1);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, previousBestMove, true, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("e8", "e1")));
 
@@ -237,7 +237,7 @@ public class MoveOrdererTest {
         // Add a white history move just to confirm it is not used
         moveOrderer.addHistoryMove(2, new Move(Notation.fromNotation("h3"), Notation.fromNotation("h2")), true);
 
-        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, 3);
+        List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, 3);
 
         Assertions.assertEquals(orderedMoves.get(0), new Move(Notation.fromNotation("b8"), Notation.fromNotation("c7")));
         Assertions.assertEquals(orderedMoves.get(1), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_QUEEN_FLAG));

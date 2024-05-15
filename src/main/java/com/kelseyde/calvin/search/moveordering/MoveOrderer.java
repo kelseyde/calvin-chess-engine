@@ -48,12 +48,33 @@ public class MoveOrderer implements MoveOrdering {
     private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY_DEPTH][MAX_KILLER_MOVES_PER_PLY];
     private int[][][] historyMoves = new int[2][64][64];
 
+    /**
+     * Orders the given list of moves based on the defined move-ordering strategy.
+     *
+     * @param board The current board state.
+     * @param moves The list of moves to be ordered.
+     * @param previousBestMove The best move found at an earlier ply.
+     * @param includeKillers Whether to include killer moves in the ordering.
+     * @param depth The current search depth.
+     * @return The ordered list of moves.
+     */
     public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
         List<Move> orderedMoves = new ArrayList<>(moves);
+        // Sort moves based on their scores in descending order
         orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
         return orderedMoves;
     }
 
+    /**
+     * Scores a move based on various heuristics such as previous best move, MVV-LVA, killer moves, and history moves.
+     *
+     * @param board The current board state.
+     * @param move The move to be scored.
+     * @param previousBestMove The best move found at an earlier ply.
+     * @param includeKillers Whether to include killer moves in the scoring.
+     * @param depth The current search depth.
+     * @return The score of the move.
+     */
     public int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth) {
 
         int startSquare = move.getStartSquare();
@@ -61,23 +82,23 @@ public class MoveOrderer implements MoveOrdering {
 
         int moveScore = 0;
 
-        // Always search the best move from the previous iteration first.
+        // Always prioritize the best move from the previous iteration
         if (move.equals(previousBestMove)) {
             moveScore += PREVIOUS_BEST_MOVE_BIAS;
         }
 
-        // Sort captures according to MVV-LVA (most valuable victim, least valuable attacker)
-        Piece piece = board.pieceAt(startSquare);
-
+        // Evaluate promotions
         Piece promotionPiece = move.getPromotionPieceType();
         if (promotionPiece != null) {
             moveScore += Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
         }
 
+        // Evaluate captures using MVV-LVA
         Piece capturedPiece = board.pieceAt(endSquare);
         boolean isCapture = capturedPiece != null;
         if (isCapture) {
             // Captures are sorted using MVV-LVA
+            Piece piece = board.pieceAt(startSquare);
             moveScore += MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
             int materialDelta = capturedPiece.getValue() - piece.getValue();
             if (materialDelta > 0) {
@@ -110,6 +131,12 @@ public class MoveOrderer implements MoveOrdering {
 
     }
 
+    /**
+     * Adds a new killer move for a given ply.
+     *
+     * @param ply The current ply depth.
+     * @param newKiller The new killer move to be added.
+     */
     public void addKillerMove(int ply, Move newKiller) {
         if (ply >= MAX_KILLER_MOVE_PLY_DEPTH) {
             return;
@@ -124,11 +151,25 @@ public class MoveOrderer implements MoveOrdering {
         }
     }
 
+    /**
+     * Checks if a move is a killer move at a given ply.
+     *
+     * @param ply The current ply depth.
+     * @param move The move to be checked.
+     * @return True if the move is a killer move, otherwise false.
+     */
     private boolean isKillerMove(int ply, Move move) {
         return ply < MAX_KILLER_MOVE_PLY_DEPTH &&
                 (move.equals(killerMoves[ply][0]) || move.equals(killerMoves[ply][1]) || move.equals(killerMoves[ply][2]));
     }
 
+    /**
+     * Adds a history move for a given ply and color.
+     *
+     * @param plyRemaining The remaining ply depth.
+     * @param historyMove The history move to be added.
+     * @param isWhite Whether the move is for white pieces.
+     */
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {
         int colourIndex = BoardUtils.getColourIndex(isWhite);
         int startSquare = historyMove.getStartSquare();

@@ -27,4 +27,9 @@ public class StartingPositionSPerftTest extends SPerftTest {
         sPerft(15);
     }
 
+    @Test
+    public void testDepthSeventeen() {
+        sPerft(17);
+    }
+
 }

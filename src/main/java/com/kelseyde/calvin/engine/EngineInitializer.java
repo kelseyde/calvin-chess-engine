@@ -47,7 +47,9 @@ public class EngineInitializer {
 
     public static EngineConfig loadConfig(String configLocation) {
         try (InputStream inputStream = EngineInitializer.class.getResourceAsStream(configLocation)) {
-            return OBJECT_MAPPER.readValue(inputStream, EngineConfig.class);
+            EngineConfig config = OBJECT_MAPPER.readValue(inputStream, EngineConfig.class);
+            config.postInitialise();
+            return config;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

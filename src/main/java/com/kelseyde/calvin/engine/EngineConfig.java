@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Arrays;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -47,6 +49,8 @@ public class EngineConfig {
     int[] fpMargin;
     int[] rfpMargin;
 
+    int[] piecePhases;
+    float totalPhase;
     int[][] pieceValues;
 
     int[][] middlegameTables;
@@ -79,6 +83,7 @@ public class EngineConfig {
 
     public void postInitialise() {
         calculateLmrReductions();
+        calculateTotalPhase();
     }
 
     private void calculateLmrReductions() {
@@ -90,6 +95,10 @@ public class EngineConfig {
                 lmrReductions[depth][movesSearched] = (int) Math.round(lmrBase + (Math.log(movesSearched) * Math.log(depth) / lmrDivisor));
             }
         }
+    }
+
+    private void calculateTotalPhase() {
+        totalPhase = (float) Arrays.stream(piecePhases).reduce(0, Integer::sum);
     }
 
 }

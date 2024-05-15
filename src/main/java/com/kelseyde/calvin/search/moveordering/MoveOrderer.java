@@ -31,7 +31,8 @@ public class MoveOrderer implements MoveOrdering {
     private static final int KILLER_MOVE_BIAS = 6 * MILLION;
     private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
     private static final int HISTORY_MOVE_BIAS = 4 * MILLION;
-    private static final int CASTLING_BIAS = 3 * MILLION;
+    private static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
+    private static final int CASTLING_BIAS = 2 * MILLION;
 
     private static final int MAX_KILLER_MOVE_PLY_DEPTH = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 3;
@@ -67,6 +68,12 @@ public class MoveOrderer implements MoveOrdering {
 
         // Sort captures according to MVV-LVA (most valuable victim, least valuable attacker)
         Piece piece = board.pieceAt(startSquare);
+
+        Piece promotionPiece = move.getPromotionPieceType();
+        if (promotionPiece != null) {
+            moveScore += Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
+        }
+
         Piece capturedPiece = board.pieceAt(endSquare);
         boolean isCapture = capturedPiece != null;
         if (isCapture) {

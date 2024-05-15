@@ -21,8 +21,7 @@ public class MoveList {
     }
 
     public void add(Move move) {
-        moves[putIndex] = move;
-        putIndex++;
+        moves[putIndex++] = move;
     }
 
     public Move get(int index) {

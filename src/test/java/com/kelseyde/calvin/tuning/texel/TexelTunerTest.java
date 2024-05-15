@@ -13,7 +13,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.List;
 
-
 @Disabled
 public class TexelTunerTest {
 
@@ -133,6 +132,18 @@ public class TexelTunerTest {
                 }
         );
 
+    }
+
+    @Test
+    public void tunePiecePhases() throws IOException, ExecutionException, InterruptedException {
+        tune(
+                new int[] {0, 10, 10, 20, 45, 0},
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.setPiecePhases(params);
+                    return config;
+                }
+        );
     }
 
     private void tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException, ExecutionException, InterruptedException {

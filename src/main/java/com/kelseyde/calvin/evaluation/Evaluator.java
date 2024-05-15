@@ -105,7 +105,7 @@ public class Evaluator implements Evaluation {
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
 
-        float phase = Phase.fromMaterial(whiteMaterial, blackMaterial);
+        float phase = Phase.fromMaterial(whiteMaterial, blackMaterial, config);
         score.setPhase(phase);
 
         int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
@@ -468,7 +468,7 @@ public class Evaluator implements Evaluation {
         // Bonus for pushing opponent king to the edges of the board
         mopUpScore += Distance.centerManhattan(opponentKingSquare) * config.getKingCenterManhattanDistanceMultiplier();
 
-        return (int) (mopUpScore * (1 - Phase.fromMaterial(opponentMaterial)));
+        return (int) (mopUpScore * (1 - Phase.fromMaterial(opponentMaterial, config)));
     }
 
     private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {

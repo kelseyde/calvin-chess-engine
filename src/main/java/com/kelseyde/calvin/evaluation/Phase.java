@@ -1,5 +1,8 @@
 package com.kelseyde.calvin.evaluation;
 
+import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
+
 /**
  * Calculates a tapered evaluation value indicating what game 'phase' we are in. A value of 1 indicates we are in the opening/
  * early middlegame with all the pieces still on the board; a value of 0 indicates there are only kings and pawns remaining.
@@ -9,32 +12,34 @@ package com.kelseyde.calvin.evaluation;
  */
 public class Phase {
 
-    static final int KNIGHT_PHASE = 10;
-    static final int BISHOP_PHASE = 10;
-    static final int ROOK_PHASE = 20;
-    static final int QUEEN_PHASE = 45;
-    static final float TOTAL_PHASE = (KNIGHT_PHASE * 4) + (BISHOP_PHASE * 4) + (ROOK_PHASE * 4) + (QUEEN_PHASE * 2);
-
-    public static float fromMaterial(Material whiteMaterial, Material blackMaterial) {
+    public static float fromMaterial(Material whiteMaterial, Material blackMaterial, EngineConfig config) {
+        int knightPhase = config.getPiecePhases()[Piece.KNIGHT.getIndex()];
+        int bishopPhase = config.getPiecePhases()[Piece.BISHOP.getIndex()];
+        int rookPhase = config.getPiecePhases()[Piece.ROOK.getIndex()];
+        int queenPhase = config.getPiecePhases()[Piece.QUEEN.getIndex()];
         int currentMaterial =
-            (whiteMaterial.knights() * KNIGHT_PHASE) +
-            (blackMaterial.knights() * KNIGHT_PHASE) +
-            (whiteMaterial.bishops() * BISHOP_PHASE) +
-            (blackMaterial.bishops() * BISHOP_PHASE) +
-            (whiteMaterial.rooks() * ROOK_PHASE) +
-            (blackMaterial.rooks() * ROOK_PHASE) +
-            (whiteMaterial.queens() * QUEEN_PHASE) +
-            (blackMaterial.queens() * QUEEN_PHASE);
-        return currentMaterial / TOTAL_PHASE;
+            (whiteMaterial.knights() * knightPhase) +
+            (blackMaterial.knights() * knightPhase) +
+            (whiteMaterial.bishops() * bishopPhase) +
+            (blackMaterial.bishops() * bishopPhase) +
+            (whiteMaterial.rooks() * rookPhase) +
+            (blackMaterial.rooks() * rookPhase) +
+            (whiteMaterial.queens() * queenPhase) +
+            (blackMaterial.queens() * queenPhase);
+        return currentMaterial / config.getTotalPhase();
     }
 
-    public static float fromMaterial(Material material) {
+    public static float fromMaterial(Material material, EngineConfig config) {
+        int knightPhase = config.getPiecePhases()[Piece.KNIGHT.getIndex()];
+        int bishopPhase = config.getPiecePhases()[Piece.BISHOP.getIndex()];
+        int rookPhase = config.getPiecePhases()[Piece.ROOK.getIndex()];
+        int queenPhase = config.getPiecePhases()[Piece.QUEEN.getIndex()];
         int currentMaterial =
-                (material.knights() * KNIGHT_PHASE) +
-                (material.bishops() * BISHOP_PHASE) +
-                (material.rooks() * ROOK_PHASE) +
-                (material.queens() * QUEEN_PHASE);
-        return currentMaterial / TOTAL_PHASE;
+                (material.knights() * knightPhase) +
+                (material.bishops() * bishopPhase) +
+                (material.rooks() * rookPhase) +
+                (material.queens() * queenPhase);
+        return currentMaterial / config.getTotalPhase();
     }
 
     public static int taperedEval(int middlegameScore, int endgameScore, float phase) {

@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.engine;
 
+import com.kelseyde.calvin.board.Piece;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -98,7 +99,11 @@ public class EngineConfig {
     }
 
     private void calculateTotalPhase() {
-        totalPhase = (float) Arrays.stream(piecePhases).reduce(0, Integer::sum);
+        int knightPhase = piecePhases[Piece.KNIGHT.getIndex()];
+        int bishopPhase = piecePhases[Piece.BISHOP.getIndex()];
+        int rookPhase = piecePhases[Piece.ROOK.getIndex()];
+        int queenPhase = piecePhases[Piece.QUEEN.getIndex()];
+        totalPhase = (knightPhase * 4) + (bishopPhase * 4) + (rookPhase * 4) + (queenPhase * 2);
     }
 
 }

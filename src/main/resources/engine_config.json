@@ -11,27 +11,28 @@
   "pondering":false,
   "searchCancelled":false,
   "maxDepth":256,
-  "maxPossibleMoves":250,
-  "aspMargin":50,
+  "aspMargin":25,
   "aspFailMargin":150,
   "nmpDepth":0,
-  "fpDepth":4,
+  "fpDepth":6,
   "rfpDepth":4,
   "lmrDepth":3,
-  "lmrBase":0.0,
-  "lmrDivisor":0.0,
-  "lmrMinSearchedMoves":0,
+  "lmrMinSearchedMoves": 3,
+  "lmrBase": 0.85,
+  "lmrDivisor": 3.12,
   "lmpDepth":2,
   "lmpMultiplier":10,
   "iirDepth":4,
-  "nmpMargin":50,
+  "nmpMargin":0,
   "dpMargin":140,
   "fpMargin":[
     0,
     170,
     260,
     450,
-    575
+    500,
+    550,
+    600
   ],
   "rfpMargin":[
     0,
@@ -40,7 +41,7 @@
     360,
     480
   ],
-  "totalPhase":250.0,
+  "piecePhases": [0, 10, 10, 20, 45, 0],
   "pieceValues":[
     [
       92,

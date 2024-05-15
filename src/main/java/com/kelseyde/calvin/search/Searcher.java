@@ -2,6 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.MoveList;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
@@ -175,7 +176,7 @@ public class Searcher implements Search {
             --depth;
         }
 
-        List<Move> moves = moveGenerator.generateMoves(board);
+        MoveList moves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
         int staticEval = evaluator.evaluate(board);
 
@@ -371,7 +372,7 @@ public class Searcher implements Search {
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-        List<Move> moves;
+        MoveList moves;
         if (isInCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.

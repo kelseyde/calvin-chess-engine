@@ -2,6 +2,7 @@ package com.kelseyde.calvin.tuning;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.MoveList;
 import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -131,7 +132,7 @@ public class Match {
     }
 
     private GameResult calculateResult(Board board) {
-        List<Move> legalMoves = moveGenerator.generateMoves(board);
+        MoveList legalMoves = moveGenerator.generateMoves(board);
         if (legalMoves.isEmpty()) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
                 return board.isWhiteToMove() ? GameResult.BLACK_WINS_BY_CHECKMATE : GameResult.WHITE_WINS_BY_CHECKMATE;

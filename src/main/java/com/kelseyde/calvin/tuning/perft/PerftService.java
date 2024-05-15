@@ -2,6 +2,7 @@ package com.kelseyde.calvin.tuning.perft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.MoveList;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.notation.Notation;
 
@@ -13,12 +14,13 @@ public class PerftService {
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
     public long perft(Board board, int depth) {
-        List<Move> moves = moveGenerator.generateMoves(board);
+        MoveList moves = moveGenerator.generateMoves(board);
         if (depth == 1) {
             return moves.size();
         }
         long totalMoveCount = 0;
-        for (Move move : moves) {
+        while (moves.hasNext()) {
+            Move move = moves.next();
             board.makeMove(move);
             totalMoveCount += perft(board, depth - 1);
             board.unmakeMove();

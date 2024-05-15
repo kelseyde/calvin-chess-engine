@@ -2,6 +2,7 @@ package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.MoveList;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public interface MoveOrdering {
 
-    List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth);
+    MoveList orderMoves(Board board, MoveList moves, Move previousBestMove, boolean includeKillers, int depth);
 
     int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth);
 

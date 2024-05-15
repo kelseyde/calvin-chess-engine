@@ -56,7 +56,7 @@ public class KingMoveGeneratorTest {
         board.toggleSquare(Piece.KING, true, startSquare);
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
-        Set<Integer> legalSquares = generator.generateMoves(board).stream()
+        Set<Integer> legalSquares = TestUtils.asList(generator.generateMoves(board)).stream()
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

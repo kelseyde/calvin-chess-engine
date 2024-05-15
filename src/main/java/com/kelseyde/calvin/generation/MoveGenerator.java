@@ -1,14 +1,10 @@
 package com.kelseyde.calvin.generation;
 
-import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bitwise;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.generation.check.PinCalculator;
 import com.kelseyde.calvin.generation.check.PinCalculator.PinData;
 import com.kelseyde.calvin.generation.check.RayCalculator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,15 +25,15 @@ public class MoveGenerator implements MoveGeneration {
     private long pushMask;
     private MoveFilter filter;
 
-    private List<Move> legalMoves;
+    private MoveList legalMoves;
 
     @Override
-    public List<Move> generateMoves(Board board) {
+    public MoveList generateMoves(Board board) {
         return generateMoves(board, MoveFilter.ALL);
     }
 
     @Override
-    public List<Move> generateMoves(Board board, MoveFilter filter) {
+    public MoveList generateMoves(Board board, MoveFilter filter) {
 
         boolean isWhite = board.isWhiteToMove();
         int kingSquare = Bitwise.getNextBit(board.getKing(isWhite));
@@ -53,7 +49,7 @@ public class MoveGenerator implements MoveGeneration {
         checkersMask = calculateAttackerMask(board, isWhite, 1L << kingSquare);
         long checkersCount = Bitwise.countBits(checkersMask);
 
-        legalMoves = new ArrayList<>();
+        legalMoves = new MoveList();
 
         generateKingMoves(board);
 
@@ -185,7 +181,7 @@ public class MoveGenerator implements MoveGeneration {
             int endSquare = Bitwise.getNextBit(pushPromotions);
             int startSquare = isWhite ? endSquare - 8 : endSquare + 8;
             if (!isPinned(startSquare)) {
-                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                addPromotionMoves(startSquare, endSquare);
             }
             pushPromotions = Bitwise.popBit(pushPromotions);
         }
@@ -193,7 +189,7 @@ public class MoveGenerator implements MoveGeneration {
             int endSquare = Bitwise.getNextBit(leftCapturePromotions);
             int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
             if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                addPromotionMoves(startSquare, endSquare);
             }
             leftCapturePromotions = Bitwise.popBit(leftCapturePromotions);
         }
@@ -201,7 +197,7 @@ public class MoveGenerator implements MoveGeneration {
             int endSquare = Bitwise.getNextBit(rightCapturePromotions);
             int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
             if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                addPromotionMoves(startSquare, endSquare);
             }
             rightCapturePromotions = Bitwise.popBit(rightCapturePromotions);
         }
@@ -475,13 +471,16 @@ public class MoveGenerator implements MoveGeneration {
         return false;
     }
 
-    private List<Move> getPromotionMoves(int startSquare, int endSquare) {
-        return filter != MoveFilter.ALL ?
-                List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG)) :
-                List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
+    private void addPromotionMoves(int startSquare, int endSquare) {
+        if (filter != MoveFilter.ALL) {
+            legalMoves.add(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG));
+        }
+        else {
+            legalMoves.add(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG));
+            legalMoves.add(new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
+            legalMoves.add(new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG));
+            legalMoves.add(new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG));
+        }
     }
 
     private boolean leavesKingInCheck(Board board, Move move, boolean isWhite) {

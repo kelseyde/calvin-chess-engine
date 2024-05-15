@@ -2,10 +2,12 @@ package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.MoveList;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.BoardUtils;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class SAN {
@@ -31,9 +33,10 @@ public class SAN {
 
         // Check if any ambiguity exists in notation (e.g. if e2 can be reached via Nfe2 and Nbe2)
         if (pieceType != Piece.PAWN && pieceType != Piece.KING) {
-            List<Move> legalMoves = moveGenerator.generateMoves(board);
+            MoveList legalMoves = moveGenerator.generateMoves(board);
 
-            for (Move legalMove : legalMoves) {
+            while (legalMoves.hasNext()) {
+                Move legalMove = legalMoves.next();
 
                 if (legalMove.getStartSquare() != move.getStartSquare() && legalMove.getEndSquare() == move.getEndSquare()) {
                     if (board.pieceAt(legalMove.getStartSquare()) == pieceType) {
@@ -81,7 +84,7 @@ public class SAN {
 
         board.makeMove(move);
         if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
-            List<Move> legalMoves = moveGenerator.generateMoves(board);
+            List<Move> legalMoves = Arrays.stream(moveGenerator.generateMoves(board).getMoves()).toList();
             notation += legalMoves.isEmpty() ? "#" : "+";
         }
         board.unmakeMove();

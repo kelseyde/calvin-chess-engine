@@ -15,6 +15,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -146,7 +147,7 @@ public class Engine {
     }
 
     private Move getLegalMove(Move move) {
-        return moveGenerator.generateMoves(board).stream()
+        return Arrays.stream(moveGenerator.generateMoves(board).getMoves())
                 .filter(move::matches)
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Notation.toNotation(move)));

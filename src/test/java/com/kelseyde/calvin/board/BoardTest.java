@@ -8,9 +8,7 @@ import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BoardTest {
 
@@ -333,7 +331,7 @@ public class BoardTest {
         Board board = new Board();
         board.makeMove(TestUtils.getLegalMove(board, "b1", "a3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        List<String> moves = new MoveGenerator().generateMoves(board).stream().map(Notation::toNotation).toList();
+        List<String> moves = Arrays.stream(new MoveGenerator().generateMoves(board).getMoves()).filter(Objects::nonNull).map(Notation::toNotation).toList();
         System.out.println(moves.size());
         System.out.println(moves);
         Assertions.assertEquals(20, moves.size());

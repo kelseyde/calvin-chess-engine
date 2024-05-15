@@ -3,6 +3,7 @@ package com.kelseyde.calvin.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.MoveList;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
@@ -17,16 +18,15 @@ import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.tuning.copy.Evaluator2;
-import com.kelseyde.calvin.tuning.copy.MoveOrderer2;
-import com.kelseyde.calvin.tuning.copy.Searcher2;
 import com.kelseyde.calvin.utils.notation.Notation;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class TestUtils {
@@ -42,14 +42,9 @@ public class TestUtils {
     public static final TranspositionTable TRANSPOSITION_TABLE = new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb());
     public static final Searcher SEARCHER = new Searcher(PRD_CONFIG, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
     public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), TRANSPOSITION_TABLE);
-    public static final Searcher SEARCHER_COPY = new Searcher(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb()));
 
     public static Engine getEngine() {
         return new Engine(PRD_CONFIG, OPENING_BOOK, new MoveGenerator(), new Searcher(PRD_CONFIG, new MoveGenerator(), new MoveOrderer(), new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
-    }
-
-    public static Engine getEngineCopy() {
-        return new Engine(TST_CONFIG, OPENING_BOOK, new MoveGenerator(), new Searcher2(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb())));
     }
 
     private static EngineConfig loadConfig(String configLocation) {
@@ -91,7 +86,7 @@ public class TestUtils {
 
     public static Move getLegalMove(Board board, String startSquare, String endSquare) {
         Move move = Notation.fromNotation(startSquare, endSquare);
-        List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board);
+        List<Move> legalMoves = asList(MOVE_GENERATOR.generateMoves(board));
         Optional<Move> legalMove = legalMoves.stream()
                 .filter(m -> m.matches(move))
                 .findAny();
@@ -102,7 +97,7 @@ public class TestUtils {
     }
 
     public static Move getLegalMove(Board board, Move move) {
-        List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board);
+        List<Move> legalMoves = asList(MOVE_GENERATOR.generateMoves(board));
         Optional<Move> legalMove = legalMoves.stream()
                 .filter(m -> m.matches(move))
                 .findAny();
@@ -110,6 +105,12 @@ public class TestUtils {
             throw new IllegalMoveException(String.format("Illegal move! %s", move));
         }
         return legalMove.get();
+    }
+
+    public static List<Move> asList(MoveList moveList) {
+        return Arrays.stream(moveList.getMoves())
+                .filter(Objects::nonNull)
+                .toList();
     }
 
 }

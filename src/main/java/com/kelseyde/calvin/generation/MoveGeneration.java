@@ -2,14 +2,15 @@ package com.kelseyde.calvin.generation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.MoveList;
 
 import java.util.List;
 
 public interface MoveGeneration {
 
-    List<Move> generateMoves(Board board);
+    MoveList generateMoves(Board board);
 
-    List<Move> generateMoves(Board board, MoveFilter filter);
+    MoveList generateMoves(Board board, MoveFilter filter);
 
     boolean isCheck(Board board, boolean isWhite);
 

@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
+import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ public class MoveOrdererPerformanceTest {
 
         Instant start = Instant.now();
         IntStream.range(0, 100000).forEach(i -> {
-            List<Move> moves = moveGenerator.generateMoves(board1);
+            List<Move> moves = TestUtils.asList(moveGenerator.generateMoves(board1));
             moves.sort(Comparator.comparingInt(move -> -moveOrderer.scoreMove(board1, move, null, true, 0)));
         });
         Instant end = Instant.now();

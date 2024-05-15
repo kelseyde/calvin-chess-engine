@@ -2,10 +2,12 @@ package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.MoveList;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -58,11 +60,11 @@ public class MoveOrderer implements MoveOrdering {
      * @param depth The current search depth.
      * @return The ordered list of moves.
      */
-    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth) {
-        List<Move> orderedMoves = new ArrayList<>(moves);
+    public MoveList orderMoves(Board board, MoveList moveList, Move previousBestMove, boolean includeKillers, int depth) {
+        Move[] orderedMoves = moveList.getMoves();
         // Sort moves based on their scores in descending order
-        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
-        return orderedMoves;
+        Arrays.sort(orderedMoves, Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, includeKillers, depth)));
+        return new MoveList(orderedMoves);
     }
 
     /**

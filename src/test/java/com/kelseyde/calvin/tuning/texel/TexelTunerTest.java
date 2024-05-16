@@ -21,6 +21,74 @@ public class TexelTunerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
+    public void tuneEverything() throws IOException, ExecutionException, InterruptedException {
+        List<Integer> weights = new ArrayList<>();
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameTables()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameTables()[1]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameTables()[2]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameTables()[3]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameTables()[4]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameTables()[5]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameTables()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameTables()[1]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameTables()[2]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameTables()[3]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameTables()[4]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameTables()[5]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getPieceValues()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getPieceValues()[1]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[1]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[2]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[3]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[4]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameMobilityBonus()[1]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameMobilityBonus()[2]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameMobilityBonus()[3]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getEndgameMobilityBonus()[4]).boxed().toList());
+        weights.add(initialConfig.getBishopPairBonus());
+        weights.add(initialConfig.getRookOpenFileBonus()[0]);
+        weights.add(initialConfig.getRookOpenFileBonus()[1]);
+        weights.add(initialConfig.getRookSemiOpenFileBonus()[0]);
+        weights.add(initialConfig.getRookSemiOpenFileBonus()[1]);
+        tune(
+                weights.stream().mapToInt(i -> i).toArray(),
+                (params) -> {
+                    if (params.length != 917) throw new IllegalArgumentException();
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.getMiddlegameTables()[0] = Arrays.stream(params, 0, 64).toArray();
+                    config.getMiddlegameTables()[1] = Arrays.stream(params, 64, 128).toArray();
+                    config.getMiddlegameTables()[2] = Arrays.stream(params, 128, 192).toArray();
+                    config.getMiddlegameTables()[3] = Arrays.stream(params, 192, 256).toArray();
+                    config.getMiddlegameTables()[4] = Arrays.stream(params, 256, 320).toArray();
+                    config.getMiddlegameTables()[5] = Arrays.stream(params, 320, 384).toArray();
+                    config.getEndgameTables()[0] = Arrays.stream(params, 384, 448).toArray();
+                    config.getEndgameTables()[1] = Arrays.stream(params, 448, 512).toArray();
+                    config.getEndgameTables()[2] = Arrays.stream(params, 512, 576).toArray();
+                    config.getEndgameTables()[3] = Arrays.stream(params, 576, 640).toArray();
+                    config.getEndgameTables()[4] = Arrays.stream(params, 640, 704).toArray();
+                    config.getEndgameTables()[5] = Arrays.stream(params, 704, 768).toArray();
+                    config.getPieceValues()[0] = Arrays.stream(params, 768, 774).toArray();
+                    config.getPieceValues()[1] = Arrays.stream(params, 774, 780).toArray();
+                    config.getMiddlegameMobilityBonus()[1] = Arrays.stream(params, 780, 789).toArray();
+                    config.getMiddlegameMobilityBonus()[2] = Arrays.stream(params, 789, 803).toArray();
+                    config.getMiddlegameMobilityBonus()[3] = Arrays.stream(params, 803, 818).toArray();
+                    config.getMiddlegameMobilityBonus()[4] = Arrays.stream(params, 818, 846).toArray();
+                    config.getEndgameMobilityBonus()[1] = Arrays.stream(params, 846, 855).toArray();
+                    config.getEndgameMobilityBonus()[2] = Arrays.stream(params, 855, 869).toArray();
+                    config.getEndgameMobilityBonus()[3] = Arrays.stream(params, 869, 884).toArray();
+                    config.getEndgameMobilityBonus()[4] = Arrays.stream(params, 884, 912).toArray();
+                    config.setBishopPairBonus(params[912]);
+                    config.getRookOpenFileBonus()[0] = params[913];
+                    config.getRookOpenFileBonus()[1] = params[914];
+                    config.getRookSemiOpenFileBonus()[0] = params[915];
+                    config.getRookSemiOpenFileBonus()[1] = params[916];
+                    return config;
+                }
+        );
+    }
+
+    @Test
     public void tunePieceValuesAndPSTs() throws IOException, ExecutionException, InterruptedException {
         List<Integer> weights = new ArrayList<>();
         EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();

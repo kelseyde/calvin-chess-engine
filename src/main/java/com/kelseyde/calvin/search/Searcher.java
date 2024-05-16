@@ -207,8 +207,10 @@ public class Searcher implements Search {
                 && depth >= config.getNmpDepth()
                 && staticEval >= beta - config.getNmpMargin()
                 && board.hasPiecesRemaining(board.isWhiteToMove())) {
+
+                int reduction = config.getNmpBaseReduction() + ((depth + config.getNmpDepthIncrement()) / config.getNmpDepthDivisor());
                 board.makeNullMove();
-                int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
+                int eval = -search(depth - reduction - 1, ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
                     transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, beta);
@@ -274,7 +276,7 @@ public class Searcher implements Search {
             else if (pvNode && i == 0) {
                 // Principal variation search: the first move must be searched with the full alpha-beta window. If our move
                 // ordering is any good then we expect this to be the best move, and so we need to retrieve the exact score.
-                eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
+                eval = -search(depth + extension - 1, ply + 1, -beta, -alpha, true);
             }
             else {
                 // Late move pruning: if the move is ordered very late in the list, and isn't a 'noisy' move like a check,
@@ -304,12 +306,12 @@ public class Searcher implements Search {
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                eval = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha, true);
+                eval = -search(depth + extension - reduction - 1, ply + 1, -alpha - 1, -alpha, true);
 
                 if (eval > alpha && (eval < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
+                    eval = -search(depth + extension - 1, ply + 1, -beta, -alpha, true);
                 }
             }
 

@@ -35,6 +35,9 @@ public class EngineConfig {
     int aspMargin;
     int aspFailMargin;
     int nmpDepth;
+    int nmpBaseReduction;
+    int nmpDepthIncrement;
+    int nmpDepthDivisor;
     int fpDepth;
     int rfpDepth;
     int lmrDepth;

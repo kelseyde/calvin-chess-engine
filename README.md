@@ -1,6 +1,6 @@
 <p align="center"><img src="src/main/resources/calvin.png" width="160"></p>
 
-Calvin is a chess engine written by @kelseyde.
+Calvin is a chess engine written by [@kelseyde](https://github.com/kelseyde).
 
 It is written in Java (JDK 21).
 

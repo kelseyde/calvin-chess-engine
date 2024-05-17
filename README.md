@@ -1,8 +1,12 @@
 <p align="center"><img src="src/main/resources/calvin.png" width="160"></p>
 
-Calvin is a UCI-compliant chess engine written in Java. 
+Calvin is a chess engine written by @kelseyde.
+
+It is written in Java (JDK 21).
 
 Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
+
+Ranked ~300th on the Computer Chess Rating Lists blitz leaderboard: https://www.computerchess.org.uk/ccrl/404/
 
 ## Strength
 

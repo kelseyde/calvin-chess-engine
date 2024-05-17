@@ -2,11 +2,13 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.engine.ThreadManager;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.BoardUtils;
+import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -32,6 +34,7 @@ public class ParallelSearcher implements Search {
     final Supplier<MoveOrdering> moveOrdererSupplier;
     final Supplier<Evaluation> evaluatorSupplier;
     TranspositionTable transpositionTable;
+    ThreadManager threadManager;
     int threadCount;
     int hashSize;
     Board board;
@@ -80,6 +83,7 @@ public class ParallelSearcher implements Search {
                     .map(searcher -> CompletableFuture.supplyAsync(() -> searcher.search(duration)))
                     .toList();
             SearchResult result = selectResult(threads).get();
+            System.out.printf("result depth: %s, eval: %s, move: %s%n", result.depth(), result.eval(), Notation.toNotation(result.move()));
             threads.forEach(thread -> thread.cancel(true));
             return result;
         } catch (InterruptedException | ExecutionException e) {
@@ -93,21 +97,30 @@ public class ParallelSearcher implements Search {
      */
     private CompletableFuture<SearchResult> selectResult(List<CompletableFuture<SearchResult>> threads) {
         CompletableFuture<SearchResult> collector = CompletableFuture.completedFuture(new SearchResult(0, null, 0));
+        System.out.println("collecting results");
         for (CompletableFuture<SearchResult> thread : threads) {
-            collector = collector.thenCombine(thread, (thread1, thread2) -> thread1.depth() > thread2.depth() ? thread1 : thread2);
+            collector = collector.thenCombine(thread, (thread1, thread2) -> {
+                System.out.printf("t1 depth: %s, eval: %s, move: %s%n",
+                        thread1.depth(), thread1.eval(), Notation.toNotation(thread1.move()));
+                System.out.printf("t2 depth: %s, eval: %s, move: %s%n",
+                        thread2.depth(), thread2.eval(), Notation.toNotation(thread2.move()));
+                System.out.println("----");
+                return thread1.depth() > thread2.depth() ? thread1 : thread2;
+            });
         }
         return collector;
     }
 
     private List<Searcher> initSearchers() {
-        return IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+        threadManager = new ThreadManager(threadCount);
+        return IntStream.range(0, threadCount).mapToObj(this::initSearcher).toList();
     }
 
-    private Searcher initSearcher() {
+    private Searcher initSearcher(int threadId) {
         MoveGeneration moveGenerator = this.moveGeneratorSupplier.get();
         MoveOrdering moveOrderer = this.moveOrdererSupplier.get();
         Evaluation evaluator = this.evaluatorSupplier.get();
-        return new Searcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
+        return new Searcher(threadId, threadManager, config, moveGenerator, moveOrderer, evaluator, transpositionTable);
     }
 
     @Override

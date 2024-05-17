@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.engine.ThreadManager;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Score;
@@ -44,8 +45,12 @@ public class Searcher implements Search {
     StaticExchangeEvaluator see;
     TranspositionTable transpositionTable;
 
+    int threadId;
+    ThreadManager threadManager;
+
     Board board;
     Instant timeout;
+    int currentDepth;
     boolean cancelled;
     SearchResult resultCurrentDepth;
     SearchResult result;
@@ -55,6 +60,23 @@ public class Searcher implements Search {
                     MoveOrdering moveOrderer,
                     Evaluation evaluator,
                     TranspositionTable transpositionTable) {
+        this.config = config;
+        this.moveGenerator = moveGenerator;
+        this.moveOrderer = moveOrderer;
+        this.evaluator = evaluator;
+        this.transpositionTable = transpositionTable;
+        this.see = new StaticExchangeEvaluator();
+    }
+
+    public Searcher(int threadId,
+                    ThreadManager threadManager,
+                    EngineConfig config,
+                    MoveGeneration moveGenerator,
+                    MoveOrdering moveOrderer,
+                    Evaluation evaluator,
+                    TranspositionTable transpositionTable) {
+        this.threadId = threadId;
+        this.threadManager = threadManager;
         this.config = config;
         this.moveGenerator = moveGenerator;
         this.moveOrderer = moveOrderer;
@@ -76,13 +98,14 @@ public class Searcher implements Search {
         resultCurrentDepth = null;
         cancelled = false;
 
-        int currentDepth = 1;
+        currentDepth = 1;
         int maxDepth = 256;
         int alpha = Integer.MIN_VALUE + 1;
         int beta = Integer.MAX_VALUE - 1;
         int retryMultiplier = 0;
 
         while (!isCancelled() && currentDepth < maxDepth) {
+            Instant start = Instant.now();
             resultCurrentDepth = null;
 
             int eval = search(currentDepth, 0, alpha, beta, true);
@@ -113,7 +136,8 @@ public class Searcher implements Search {
             alpha = eval - config.getAspMargin();
             beta = eval + config.getAspMargin();
             retryMultiplier = 0;
-            currentDepth++;
+            int newDepth = threadManager.selectNewDepth(threadId);
+            currentDepth = newDepth;
         }
 
         if (result == null) {
@@ -336,7 +360,7 @@ public class Searcher implements Search {
                 alpha = eval;
                 flag = HashFlag.EXACT;
                 if (ply == 0) {
-                    resultCurrentDepth = new SearchResult(eval, move, depth);
+                    resultCurrentDepth = new SearchResult(eval, move, currentDepth);
                 }
             }
         }

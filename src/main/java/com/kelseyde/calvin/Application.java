@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Entrypoint for the Calvin chess engine. Calvin communicates using the Universal Chess Interface protocol (UCI).
@@ -151,8 +152,10 @@ public class Application {
         String score = formatScore(searchResult.eval());
         long time = searchResult.time();
         int nodes = searchResult.nodes();
-        int nps = searchResult.nps();
-        write(String.format("info depth %s score %s nodes %s time %s nps %s", depth, score, nodes, time, nps));
+        long nps = searchResult.nps();
+        String pv = ENGINE.extractPrincipalVariation().stream()
+                .map(Notation::toNotation).collect(Collectors.joining(" "));
+        write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
     }
 
     private static String formatScore(int eval) {
@@ -160,8 +163,7 @@ public class Application {
             int moves = Math.max((Score.MATE_SCORE - Math.abs(eval)) / 2, 1);
             if (eval < 0) moves = -moves;
             return "mate " + moves;
-        }
-        else {
+        } else {
             return "cp " + eval;
         }
     }

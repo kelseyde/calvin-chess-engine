@@ -506,7 +506,7 @@ public class Searcher implements Search {
 
     private SearchResult buildResult() {
         long millis = Duration.between(start, Instant.now()).toMillis();
-        int nps = nodes > 0 ? ((int) (nodes / millis) * 1000) : 0;
+        long nps = nodes > 0 && millis > 0 ? ((nodes / millis) * 1000) : 0;
         return new SearchResult(bestEval, bestMove, currentDepth, millis, nodes, nps);
     }
 

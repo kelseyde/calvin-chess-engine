@@ -14,6 +14,10 @@ public class Score {
     public static final int DRAW_SCORE = 0;
     public static final int[] SIMPLE_PIECE_VALUES = Arrays.stream(Piece.values()).mapToInt(Piece::getValue).toArray();
 
+    public static boolean isMateScore(int eval) {
+        return Math.abs(eval) >= Score.MATE_SCORE - 100;
+    }
+
     int whiteMaterialMgScore;
     int whiteMaterialEgScore;
     int blackMaterialMgScore;

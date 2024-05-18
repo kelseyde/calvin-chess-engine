@@ -26,6 +26,7 @@ public class EngineConfig {
     boolean ownBookEnabled;
     int maxBookMoves;
     boolean ponderEnabled;
+    int principalVariationLength;
 
     boolean pondering = false;
     boolean searchCancelled = false;

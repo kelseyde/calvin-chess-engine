@@ -9,6 +9,7 @@
   "maxBookMoves":26,
   "ponderEnabled":true,
   "pondering":false,
+  "principalVariationLength": 12,
   "searchCancelled":false,
   "maxDepth":256,
   "aspMargin":25,

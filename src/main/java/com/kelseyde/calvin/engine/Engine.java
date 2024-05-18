@@ -87,7 +87,7 @@ public class Engine {
     public void think(int thinkTimeMs, Consumer<SearchResult> onThinkComplete) {
         if (hasBookMove()) {
             Move bookMove = getLegalMove(book.getBookMove(board.getGameState().getZobristKey()));
-            onThinkComplete.accept(new SearchResult(0, bookMove, 0));
+            onThinkComplete.accept(new SearchResult(0, bookMove, 0, 0, 0, 0));
             return;
         }
         stopThinking();

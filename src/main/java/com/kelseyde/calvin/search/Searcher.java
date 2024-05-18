@@ -38,6 +38,7 @@ import java.util.List;
 public class Searcher implements Search {
 
     EngineConfig config;
+    ThreadManager threadManager;
     MoveGeneration moveGenerator;
     MoveOrdering moveOrderer;
     Evaluation evaluator;
@@ -45,17 +46,27 @@ public class Searcher implements Search {
     TranspositionTable transpositionTable;
 
     Board board;
+    int nodes;
+    Instant start;
     Instant timeout;
     boolean cancelled;
-    SearchResult resultCurrentDepth;
-    SearchResult result;
+
+    int currentDepth;
+    int maxDepth = 256;
+
+    Move bestMove;
+    Move bestMoveCurrentDepth;
+    int bestEval;
+    int bestEvalCurrentDepth;
 
     public Searcher(EngineConfig config,
+                    ThreadManager threadManager,
                     MoveGeneration moveGenerator,
                     MoveOrdering moveOrderer,
                     Evaluation evaluator,
                     TranspositionTable transpositionTable) {
         this.config = config;
+        this.threadManager = threadManager;
         this.moveGenerator = moveGenerator;
         this.moveOrderer = moveOrderer;
         this.evaluator = evaluator;
@@ -71,24 +82,32 @@ public class Searcher implements Search {
     @Override
     public SearchResult search(Duration duration) {
 
-        timeout = Instant.now().plus(duration);
-        result = null;
-        resultCurrentDepth = null;
+        start = Instant.now();
+        timeout = start.plus(duration);
+        nodes = 0;
+        currentDepth = 1;
+        bestMove = null;
+        bestMoveCurrentDepth = null;
+        bestEval = 0;
+        bestEvalCurrentDepth = 0;
         cancelled = false;
 
-        int currentDepth = 1;
-        int maxDepth = 256;
         int alpha = Integer.MIN_VALUE + 1;
         int beta = Integer.MAX_VALUE - 1;
         int retryMultiplier = 0;
+        SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
-            resultCurrentDepth = null;
+            bestMoveCurrentDepth = null;
+            bestEvalCurrentDepth = 0;
 
             int eval = search(currentDepth, 0, alpha, beta, true);
 
-            if (resultCurrentDepth != null) {
-                result = resultCurrentDepth;
+            if (bestMoveCurrentDepth != null) {
+                bestMove = bestMoveCurrentDepth;
+                bestEval = bestEvalCurrentDepth;
+                result = buildResult();
+                threadManager.handleSearchResult(result);
             }
 
             if (isCancelled() || isCheckmateFoundAtCurrentDepth(currentDepth)) {
@@ -118,8 +137,8 @@ public class Searcher implements Search {
 
         if (result == null) {
             System.out.println("Time expired before a move was found!");
-            Move move = moveGenerator.generateMoves(board).get(0);
-            result = new SearchResult(0, move, currentDepth);
+            bestMove = moveGenerator.generateMoves(board).get(0);
+            result = buildResult();
         }
         moveOrderer.clear();
         return result;
@@ -143,6 +162,7 @@ public class Searcher implements Search {
         if (depth <= 0) {
             return quiescenceSearch(alpha, beta, 1, ply);
         }
+
         if (ply > 0 && isDraw()) {
             return Score.DRAW_SCORE;
         }
@@ -155,12 +175,13 @@ public class Searcher implements Search {
         }
 
         boolean pvNode = beta - alpha > 1;
-        Move previousBestMove = ply == 0 && result != null ? result.move() : null;
+        Move previousBestMove = ply == 0 ? bestMove : null;
 
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, depth, alpha, beta)) {
             if (ply == 0 && transposition.getMove() != null) {
-                resultCurrentDepth = new SearchResult(transposition.getScore(), transposition.getMove(), depth);
+                bestMoveCurrentDepth = transposition.getMove();
+                bestEvalCurrentDepth = transposition.getScore();
             }
             return transposition.getScore();
         }
@@ -186,7 +207,8 @@ public class Searcher implements Search {
         if (ply == 0 && moves.size() == 1) {
             // Exit immediately if there is only one legal move at the root node
             int eval = isDraw() ? Score.DRAW_SCORE : staticEval;
-            resultCurrentDepth = new SearchResult(eval, moves.get(0), depth);
+            bestMoveCurrentDepth = moves.get(0);
+            bestEvalCurrentDepth = eval;
             cancelled = true;
             return eval;
         }
@@ -194,7 +216,7 @@ public class Searcher implements Search {
         if (!pvNode && !isInCheck) {
             // Reverse futility pruning: if our position is so good that we don't need to move to beat beta + some small
             // margin, then let's assume we don't need to search any further, and cut off early.
-            boolean isMateHunting = Math.abs(alpha) >= Score.MATE_SCORE - 100;
+            boolean isMateHunting = Score.isMateScore(alpha);
             if (depth <= config.getRfpDepth()
                 && staticEval - config.getRfpMargin()[depth] > beta
                 && !isMateHunting) {
@@ -249,6 +271,7 @@ public class Searcher implements Search {
             boolean isPromotion = move.getPromotionPieceType() != null;
 
             board.makeMove(move);
+            nodes++;
 
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
@@ -336,7 +359,8 @@ public class Searcher implements Search {
                 alpha = eval;
                 flag = HashFlag.EXACT;
                 if (ply == 0) {
-                    resultCurrentDepth = new SearchResult(eval, move, depth);
+                    bestMoveCurrentDepth = move;
+                    bestEvalCurrentDepth = eval;
                 }
             }
         }
@@ -427,6 +451,7 @@ public class Searcher implements Search {
             }
 
             board.makeMove(move);
+            nodes++;
             eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             board.unmakeMove();
 
@@ -476,7 +501,13 @@ public class Searcher implements Search {
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
-        return Math.abs(result.eval()) >= Score.MATE_SCORE - currentDepth;
+        return Math.abs(bestEval) >= Score.MATE_SCORE - currentDepth;
+    }
+
+    private SearchResult buildResult() {
+        long millis = Duration.between(start, Instant.now()).toMillis();
+        int nps = nodes > 0 ? ((int) (nodes / millis) * 1000) : 0;
+        return new SearchResult(bestEval, bestMove, currentDepth, millis, nodes, nps);
     }
 
     private boolean isCancelled() {

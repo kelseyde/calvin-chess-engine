@@ -31,6 +31,7 @@ public class ParallelSearcher implements Search {
     final Supplier<MoveGeneration> moveGeneratorSupplier;
     final Supplier<MoveOrdering> moveOrdererSupplier;
     final Supplier<Evaluation> evaluatorSupplier;
+    ThreadManager threadManager;
     TranspositionTable transpositionTable;
     int threadCount;
     int hashSize;
@@ -46,11 +47,28 @@ public class ParallelSearcher implements Search {
         this.config = config;
         this.hashSize = config.getDefaultHashSizeMb();
         this.threadCount = config.getDefaultThreadCount();
+        this.threadManager = new ThreadManager();
         this.transpositionTable = transpositionTable;
         this.moveGeneratorSupplier = moveGeneratorSupplier;
         this.moveOrdererSupplier = moveOrdererSupplier;
         this.evaluatorSupplier = evaluatorSupplier;
         this.searchers = initSearchers();
+    }
+
+    @Override
+    public SearchResult search(Duration duration) {
+        try {
+            setPosition(board);
+            threadManager.reset();
+            List<CompletableFuture<SearchResult>> threads = searchers.stream()
+                    .map(searcher -> CompletableFuture.supplyAsync(() -> searcher.search(duration)))
+                    .toList();
+            SearchResult result = selectResult(threads).get();
+            threads.forEach(thread -> thread.cancel(true));
+            return result;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -72,27 +90,12 @@ public class ParallelSearcher implements Search {
         this.searchers = initSearchers();
     }
 
-    @Override
-    public SearchResult search(Duration duration) {
-        try {
-            setPosition(board);
-            List<CompletableFuture<SearchResult>> threads = searchers.stream()
-                    .map(searcher -> CompletableFuture.supplyAsync(() -> searcher.search(duration)))
-                    .toList();
-            SearchResult result = selectResult(threads).get();
-            threads.forEach(thread -> thread.cancel(true));
-            return result;
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * Combines the {@link SearchResult} results of the different threads and selects a final result to use.
      * Simply selects the result from the thread which searched to the greatest depth.
      */
     private CompletableFuture<SearchResult> selectResult(List<CompletableFuture<SearchResult>> threads) {
-        CompletableFuture<SearchResult> collector = CompletableFuture.completedFuture(new SearchResult(0, null, 0));
+        CompletableFuture<SearchResult> collector = CompletableFuture.completedFuture(new SearchResult(0, null, 0, 0, 0, 0));
         for (CompletableFuture<SearchResult> thread : threads) {
             collector = collector.thenCombine(thread, (thread1, thread2) -> thread1.depth() > thread2.depth() ? thread1 : thread2);
         }
@@ -107,7 +110,7 @@ public class ParallelSearcher implements Search {
         MoveGeneration moveGenerator = this.moveGeneratorSupplier.get();
         MoveOrdering moveOrderer = this.moveOrdererSupplier.get();
         Evaluation evaluator = this.evaluatorSupplier.get();
-        return new Searcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
+        return new Searcher(config, threadManager, moveGenerator, moveOrderer, evaluator, transpositionTable);
     }
 
     @Override

@@ -22,6 +22,7 @@ public class DrawByFiftyMoveRuleTest {
         board.toggleSquare(Piece.KING, true, 63);
         board.toggleSquare(Piece.KNIGHT, true, 18);
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         board.setWhiteToMove(true);
 
@@ -201,6 +202,7 @@ public class DrawByFiftyMoveRuleTest {
         board.toggleSquare(Piece.KING, true, 63);
         board.toggleSquare(Piece.PAWN, true, 12);
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         board.setWhiteToMove(true);
 
@@ -377,6 +379,7 @@ public class DrawByFiftyMoveRuleTest {
         board.toggleSquare(Piece.KING, false, 63);
         board.toggleSquare(Piece.KNIGHT, false, 18);
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         board.setWhiteToMove(false);
 
@@ -552,6 +555,7 @@ public class DrawByFiftyMoveRuleTest {
         board.toggleSquare(Piece.KING, false, 63);
         board.toggleSquare(Piece.PAWN, false, 52);
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         board.setWhiteToMove(false);
 

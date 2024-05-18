@@ -23,12 +23,6 @@ public record Material(int pawns,
         return new Material(pawns, knights, bishops, rooks, queens);
     }
 
-    public int sum(EngineConfig config, float phase) {
-        int middlegameScore = sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int endgameScore = sum(config.getPieceValues()[1], config.getBishopPairBonus());
-        return Phase.taperedEval(middlegameScore, endgameScore, phase);
-    }
-
     /**
      * Based on a provided piece-value array, counts the material score in centipawns.
      */

@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -432,11 +433,11 @@ public class BoardTest {
 
     private void assertSinglePieceBoard(Board board, int startSquare) {
         board.toggleSquare(Piece.ROOK, true, startSquare);
-        board.recalculatePieces();
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
         Assertions.assertEquals(Set.of(startSquare), getPiecePositions(board, true));
         Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
         board.toggleSquare(Piece.ROOK, true, startSquare);
-        board.recalculatePieces();
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
     }
 
 }

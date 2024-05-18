@@ -78,8 +78,6 @@ public class TestUtils {
 
         board.getGameState().setCastlingRights(0b0000);
 
-        board.recalculatePieces();
-
         return board;
     }
 

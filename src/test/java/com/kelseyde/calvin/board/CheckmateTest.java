@@ -184,6 +184,7 @@ public class CheckmateTest {
         board.toggleSquare(Piece.KING, true, 42);
         board.toggleSquare(Piece.QUEEN, true, 1);
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());

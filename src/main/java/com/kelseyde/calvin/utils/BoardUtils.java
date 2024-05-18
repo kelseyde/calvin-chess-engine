@@ -109,6 +109,25 @@ public class BoardUtils {
 
     }
 
+    public static long[] calculateOccupancyBitboards(Board board) {
+        long whitePieces = board.getPieceBitboards()[Piece.PAWN.getIndex() + Colour.WHITE.getShift()]
+                | board.getPieceBitboards()[Piece.KNIGHT.getIndex() + Colour.WHITE.getShift()]
+                | board.getPieceBitboards()[Piece.BISHOP.getIndex() + Colour.WHITE.getShift()]
+                | board.getPieceBitboards()[Piece.ROOK.getIndex() + Colour.WHITE.getShift()]
+                | board.getPieceBitboards()[Piece.QUEEN.getIndex() + Colour.WHITE.getShift()]
+                | board.getPieceBitboards()[Piece.KING.getIndex() + Colour.WHITE.getShift()];
+        long blackPieces = board.getPieceBitboards()[Piece.PAWN.getIndex() + Colour.BLACK.getShift()]
+                | board.getPieceBitboards()[Piece.KNIGHT.getIndex() + Colour.BLACK.getShift()]
+                | board.getPieceBitboards()[Piece.BISHOP.getIndex() + Colour.BLACK.getShift()]
+                | board.getPieceBitboards()[Piece.ROOK.getIndex() + Colour.BLACK.getShift()]
+                | board.getPieceBitboards()[Piece.QUEEN.getIndex() + Colour.BLACK.getShift()]
+                | board.getPieceBitboards()[Piece.KING.getIndex() + Colour.BLACK.getShift()];
+        long occupied = whitePieces | blackPieces;
+        return new long[] {whitePieces, blackPieces, occupied};
+    }
+
+
+
     public static Board copy(Board board) {
         Board newBoard = new Board();
         newBoard.setWhitePawns(board.getWhitePawns());
@@ -135,7 +154,6 @@ public class BoardUtils {
         board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.getValue())));
         newBoard.setMoveHistory(moveHistory);
         newBoard.setPieceList(Arrays.copyOf(board.getPieceList(), board.getPieceList().length));
-        newBoard.recalculatePieces();
         return newBoard;
     }
 

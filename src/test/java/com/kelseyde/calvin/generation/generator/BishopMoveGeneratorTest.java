@@ -35,8 +35,8 @@ public class BishopMoveGeneratorTest {
         board.toggleSquare(Piece.KNIGHT, false, 14);
         board.toggleSquare(Piece.BISHOP, false, 42);
         board.toggleSquare(Piece.ROOK, false, 46);
-        board.recalculatePieces();
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46));
 
@@ -54,7 +54,7 @@ public class BishopMoveGeneratorTest {
         board.toggleSquare(Piece.KNIGHT, true, 14);
         board.toggleSquare(Piece.BISHOP, true, 42);
         board.toggleSquare(Piece.ROOK, true, 46);
-        board.recalculatePieces();
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37));
 

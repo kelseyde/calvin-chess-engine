@@ -402,6 +402,8 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(Piece.KING, false, 63);
         board.toggleSquare(Piece.PAWN, true, 51);
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
+
         List<Move> legalMoves = generator.generateMoves(board).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
                 .toList();
@@ -421,6 +423,7 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(Piece.PAWN, false, 8);
         board.setWhiteToMove(false);
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         List<Move> legalMoves = generator.generateMoves(board).stream()
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.PAWN)
@@ -501,6 +504,8 @@ public class PawnMoveGeneratorTest {
 
     private void assertMovesFromSquare(Board board, int square, Set<Move> expected) {
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
+
         List<Move> actual = generator.generateMoves(board).stream()
                 .filter(move -> move.getStartSquare() == square)
                 .toList();

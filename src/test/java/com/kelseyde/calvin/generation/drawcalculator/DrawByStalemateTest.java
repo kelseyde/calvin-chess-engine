@@ -22,6 +22,7 @@ public class DrawByStalemateTest {
         board.toggleSquare(Piece.KING, true, 42);
         board.toggleSquare(Piece.QUEEN, true, 1);
         board.setPieceList(BoardUtils.calculatePieceList(board));
+        board.setOccupancyBitboards(BoardUtils.calculateOccupancyBitboards(board));
 
         Assertions.assertFalse(Result.isEffectiveDraw(board));
 

@@ -20,22 +20,14 @@ import java.util.Deque;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Board {
 
-    long whitePawns =   Bits.WHITE_PAWNS_START;
-    long whiteKnights = Bits.WHITE_KNIGHTS_START;
-    long whiteBishops = Bits.WHITE_BISHOPS_START;
-    long whiteRooks =   Bits.WHITE_ROOKS_START;
-    long whiteQueens =  Bits.WHITE_QUEENS_START;
-    long whiteKing =    Bits.WHITE_KING_START;
-    long blackPawns =   Bits.BLACK_PAWNS_START;
-    long blackKnights = Bits.BLACK_KNIGHTS_START;
-    long blackBishops = Bits.BLACK_BISHOPS_START;
-    long blackRooks =   Bits.BLACK_ROOKS_START;
-    long blackQueens =  Bits.BLACK_QUEENS_START;
-    long blackKing =    Bits.BLACK_KING_START;
+    long[] pieceBitboards = new long[] {
+            Bits.WHITE_PAWNS_START, Bits.WHITE_KNIGHTS_START, Bits.WHITE_BISHOPS_START, Bits.WHITE_ROOKS_START, Bits.WHITE_QUEENS_START, Bits.WHITE_KING_START,
+            Bits.BLACK_PAWNS_START, Bits.BLACK_KNIGHTS_START, Bits.BLACK_BISHOPS_START, Bits.BLACK_ROOKS_START, Bits.BLACK_QUEENS_START, Bits.BLACK_KING_START,
+    };
 
-    long whitePieces;
-    long blackPieces;
-    long occupied;
+    long [] occupancyBitboards = new long[] {
+            Bits.WHITE_PIECES_START, Bits.BLACK_PIECES_START, Bits.ALL_PIECES_START
+    };
 
     Piece[] pieceList = BoardUtils.getStartingPieceList();
 
@@ -48,7 +40,6 @@ public class Board {
     public Board() {
         gameState.setZobristKey(Zobrist.generateKey(this));
         gameState.setPawnKey(Zobrist.generatePawnKey(this));
-        recalculatePieces();
     }
 
     /**
@@ -164,7 +155,6 @@ public class Board {
         moveHistory.push(move);
 
         isWhiteToMove = !isWhiteToMove;
-        recalculatePieces();
     }
 
     /**
@@ -224,8 +214,6 @@ public class Board {
         }
 
         gameState = gameStateHistory.pop();
-        recalculatePieces();
-
     }
 
     /**
@@ -259,20 +247,9 @@ public class Board {
     }
 
     private void toggle(Piece type, boolean isWhite, long toggleMask) {
-        switch (type) {
-            case PAWN ->    { if (isWhite) whitePawns ^= toggleMask;    else blackPawns ^= toggleMask; }
-            case KNIGHT ->  { if (isWhite) whiteKnights ^= toggleMask;  else blackKnights ^= toggleMask; }
-            case BISHOP ->  { if (isWhite) whiteBishops ^= toggleMask;  else blackBishops ^= toggleMask; }
-            case ROOK ->    { if (isWhite) whiteRooks ^= toggleMask;    else blackRooks ^= toggleMask; }
-            case QUEEN ->   { if (isWhite) whiteQueens ^= toggleMask;   else blackQueens ^= toggleMask; }
-            case KING ->    { if (isWhite) whiteKing ^= toggleMask;     else blackKing ^= toggleMask; }
-        }
-    }
-
-    public void recalculatePieces() {
-        whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
-        blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
-        occupied = whitePieces | blackPieces;
+        pieceBitboards[type.getIndex() + Colour.shift(isWhite)] ^= toggleMask;
+        occupancyBitboards[Colour.of(isWhite).getIndex()] ^= toggleMask;
+        occupancyBitboards[Colour.ALL.getIndex()] ^= toggleMask;
     }
 
     private int calculateCastlingRights(int startSquare, int endSquare, Piece pieceType) {
@@ -307,41 +284,160 @@ public class Board {
         return pieceList[square];
     }
 
+    public long getWhitePawns() {
+        return pieceBitboards[Piece.PAWN.getIndex() + Colour.WHITE.getShift()];
+    }
+
+    public long getBlackPawns() {
+        return pieceBitboards[Piece.PAWN.getIndex() + Colour.BLACK.getShift()];
+    }
+
+    public long getWhiteKnights() {
+        return pieceBitboards[Piece.KNIGHT.getIndex() + Colour.WHITE.getShift()];
+    }
+
+    public long getBlackKnights() {
+        return pieceBitboards[Piece.KNIGHT.getIndex() + Colour.BLACK.getShift()];
+    }
+
+    public long getWhiteBishops() {
+        return pieceBitboards[Piece.BISHOP.getIndex() + Colour.WHITE.getShift()];
+    }
+
+    public long getBlackBishops() {
+        return pieceBitboards[Piece.BISHOP.getIndex() + Colour.BLACK.getShift()];
+    }
+
+    public long getWhiteRooks() {
+        return pieceBitboards[Piece.ROOK.getIndex() + Colour.WHITE.getShift()];
+    }
+
+    public long getBlackRooks() {
+        return pieceBitboards[Piece.ROOK.getIndex() + Colour.BLACK.getShift()];
+    }
+
+    public long getWhiteQueens() {
+        return pieceBitboards[Piece.QUEEN.getIndex() + Colour.WHITE.getShift()];
+    }
+
+    public long getBlackQueens() {
+        return pieceBitboards[Piece.QUEEN.getIndex() + Colour.BLACK.getShift()];
+    }
+
+    public long getWhiteKing() {
+        return pieceBitboards[Piece.KING.getIndex() + Colour.WHITE.getShift()];
+    }
+
+    public long getBlackKing() {
+        return pieceBitboards[Piece.KING.getIndex() + Colour.BLACK.getShift()];
+    }
+
+    public void setWhitePawns(long bitboard) {
+        pieceBitboards[Piece.PAWN.getIndex() + Colour.WHITE.getShift()] = bitboard;
+    }
+
+    public void setBlackPawns(long bitboard) {
+        pieceBitboards[Piece.PAWN.getIndex() + Colour.BLACK.getShift()] = bitboard;
+    }
+
+    public void setWhiteKnights(long bitboard) {
+        pieceBitboards[Piece.KNIGHT.getIndex() + Colour.WHITE.getShift()] = bitboard;
+    }
+
+    public void setBlackKnights(long bitboard) {
+        pieceBitboards[Piece.KNIGHT.getIndex() + Colour.BLACK.getShift()] = bitboard;
+    }
+
+    public void setWhiteBishops(long bitboard) {
+        pieceBitboards[Piece.BISHOP.getIndex() + Colour.WHITE.getShift()] = bitboard;
+    }
+
+    public void setBlackBishops(long bitboard) {
+        pieceBitboards[Piece.BISHOP.getIndex() + Colour.BLACK.getShift()] = bitboard;
+    }
+
+    public void setWhiteRooks(long bitboard) {
+        pieceBitboards[Piece.ROOK.getIndex() + Colour.WHITE.getShift()] = bitboard;
+    }
+
+    public void setBlackRooks(long bitboard) {
+        pieceBitboards[Piece.ROOK.getIndex() + Colour.BLACK.getShift()] = bitboard;
+    }
+
+    public void setWhiteQueens(long bitboard) {
+        pieceBitboards[Piece.QUEEN.getIndex() + Colour.WHITE.getShift()] = bitboard;
+    }
+
+    public void setBlackQueens(long bitboard) {
+        pieceBitboards[Piece.QUEEN.getIndex() + Colour.BLACK.getShift()] = bitboard;
+    }
+
+    public void setWhiteKing(long bitboard) {
+        pieceBitboards[Piece.KING.getIndex() + Colour.WHITE.getShift()] = bitboard;
+    }
+
+    public void setBlackKing(long bitboard) {
+        pieceBitboards[Piece.KING.getIndex() + Colour.BLACK.getShift()] = bitboard;
+    }
+
     public long getPawns(boolean isWhite) {
-        return isWhite ? whitePawns : blackPawns;
+        return pieceBitboards[Piece.PAWN.getIndex() + Colour.shift(isWhite)];
     }
 
     public long getKnights(boolean isWhite) {
-        return isWhite ? whiteKnights : blackKnights;
+        return pieceBitboards[Piece.KNIGHT.getIndex() + Colour.shift(isWhite)];
     }
 
     public long getBishops(boolean isWhite) {
-        return isWhite ? whiteBishops : blackBishops;
+        return pieceBitboards[Piece.BISHOP.getIndex() + Colour.shift(isWhite)];
     }
 
     public long getRooks(boolean isWhite) {
-        return isWhite ? whiteRooks : blackRooks;
+        return pieceBitboards[Piece.ROOK.getIndex() + Colour.shift(isWhite)];
     }
 
     public long getQueens(boolean isWhite) {
-        return isWhite ? whiteQueens : blackQueens;
+        return pieceBitboards[Piece.QUEEN.getIndex() + Colour.shift(isWhite)];
     }
 
     public long getKing(boolean isWhite) {
-        return isWhite ? whiteKing : blackKing;
+        return pieceBitboards[Piece.KING.getIndex() + Colour.shift(isWhite)];
+    }
+
+    public long getWhitePieces() {
+        return occupancyBitboards[Colour.WHITE.getIndex()];
+    }
+
+    public long getBlackPieces() {
+        return occupancyBitboards[Colour.BLACK.getIndex()];
+    }
+
+    public long getOccupied() {
+        return occupancyBitboards[Colour.ALL.getIndex()];
+    }
+
+    public void setWhitePieces(long bitboard) {
+        occupancyBitboards[Colour.WHITE.getIndex()] = bitboard;
+    }
+
+    public void setBlackPieces(long bitboard) {
+        occupancyBitboards[Colour.BLACK.getIndex()] = bitboard;
+    }
+
+    public void setOccupied(long bitboard) {
+        occupancyBitboards[Colour.ALL.getIndex()] = bitboard;
     }
 
     public long getPieces(boolean isWhite) {
-        return isWhite ? whitePieces : blackPieces;
+        return occupancyBitboards[isWhite ? 0 : 1];
     }
 
     public boolean hasPiecesRemaining(boolean isWhite) {
-        if (isWhite && Bitwise.countBits(whiteKnights) > 0 || Bitwise.countBits(whiteBishops) > 0 ||
-                Bitwise.countBits(whiteRooks) > 0 || Bitwise.countBits(whiteQueens) > 0) {
-            return true;
-        }
-        else return Bitwise.countBits(blackKnights) > 0 || Bitwise.countBits(blackBishops) > 0 ||
-                Bitwise.countBits(blackRooks) > 0 || Bitwise.countBits(blackQueens) > 0;
+        int colourShift = Colour.shift(isWhite);
+        return Bitwise.countBits(pieceBitboards[Piece.KNIGHT.getIndex() + colourShift]) > 0
+                || Bitwise.countBits(pieceBitboards[Piece.BISHOP.getIndex() + colourShift]) > 0
+                || Bitwise.countBits(pieceBitboards[Piece.ROOK.getIndex() + colourShift]) > 0
+                || Bitwise.countBits(pieceBitboards[Piece.QUEEN.getIndex() + colourShift]) > 0;
     }
 
 }

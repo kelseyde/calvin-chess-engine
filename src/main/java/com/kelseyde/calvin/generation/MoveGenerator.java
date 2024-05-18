@@ -270,7 +270,6 @@ public class MoveGenerator implements MoveGeneration {
 
         // Temporarily remove the king from the board
         board.toggleSquare(Piece.KING, isWhite, startSquare);
-        board.recalculatePieces();
 
         // Generate legal king moves
         while (kingMoves != 0) {
@@ -284,7 +283,6 @@ public class MoveGenerator implements MoveGeneration {
 
         // Restore the king to its original position on the board
         board.toggleSquare(Piece.KING, isWhite, startSquare);
-        board.recalculatePieces();
     }
 
     private void generateCastlingMoves(Board board) {

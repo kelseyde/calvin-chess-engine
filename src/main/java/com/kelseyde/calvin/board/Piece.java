@@ -2,6 +2,9 @@ package com.kelseyde.calvin.board;
 
 import lombok.Getter;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 /**
  * Stores basic information for each chess piece type.
  */

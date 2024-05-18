@@ -96,6 +96,11 @@ public class MoveOrderer2 implements MoveOrdering {
 
     }
 
+    @Override
+    public int mvvLva(Board board, Move move, Move other) {
+        return 0;
+    }
+
     public void addKillerMove(int ply, Move newKiller) {
         if (ply >= MAX_KILLER_MOVE_PLY_DEPTH) {
             return;

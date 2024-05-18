@@ -131,6 +131,17 @@ public class MoveOrderer implements MoveOrdering {
 
     }
 
+    @Override
+    public int mvvLva(Board board, Move move, Move previousBestMove) {
+        if (move.matches(previousBestMove)) return PREVIOUS_BEST_MOVE_BIAS;
+        int startSquare = move.getStartSquare();
+        int endSquare = move.getEndSquare();
+        Piece capturedPiece = board.pieceAt(endSquare);
+        if (capturedPiece == null) return 0;
+        Piece piece = board.pieceAt(startSquare);
+        return MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
+    }
+
     /**
      * Adds a new killer move for a given ply.
      *

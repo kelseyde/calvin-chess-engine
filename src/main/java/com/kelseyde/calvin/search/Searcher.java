@@ -98,11 +98,14 @@ public class Searcher implements Search {
         SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
+            // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestEvalCurrentDepth = 0;
 
+            // Perform alpha-beta search for the current depth
             int eval = search(currentDepth, 0, alpha, beta, true);
 
+            // Update the best move and evaluation if a better move is found
             if (bestMoveCurrentDepth != null) {
                 bestMove = bestMoveCurrentDepth;
                 bestEval = bestEvalCurrentDepth;
@@ -110,10 +113,12 @@ public class Searcher implements Search {
                 threadManager.handleSearchResult(result);
             }
 
+            // Check if search is cancelled or a checkmate is found
             if (isCancelled() || isCheckmateFoundAtCurrentDepth(currentDepth)) {
                 break;
             }
 
+            // Adjust the aspiration window in case the score fell outside the current window
             if (eval <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
                 retryMultiplier++;
@@ -131,15 +136,20 @@ public class Searcher implements Search {
 
             alpha = eval - config.getAspMargin();
             beta = eval + config.getAspMargin();
+
+            // Increment depth and retry multiplier for next iteration
             retryMultiplier = 0;
             currentDepth++;
         }
 
+        // If no move is found within the time limit, choose the first available move
         if (result == null) {
             System.out.println("Time expired before a move was found!");
             bestMove = moveGenerator.generateMoves(board).get(0);
             result = buildResult();
         }
+
+        // Clear move ordering cache and return the search result
         moveOrderer.clear();
         return result;
 

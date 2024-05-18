@@ -117,6 +117,9 @@ public class Attacks {
     public static final long[][] ROOK_ATTACKS = initMagicAttacks(true, ROOK_MAGICS, ROOK_SHIFTS);
     public static final long[][] BISHOP_ATTACKS = initMagicAttacks(false, BISHOP_MAGICS, BISHOP_SHIFTS);
 
+    public static final MagicLookup[] ROOK_MAGIC_LOOKUP = initMagicLookups(ROOK_ATTACKS, ROOK_MASKS, ROOK_MAGICS, ROOK_SHIFTS);
+    public static final MagicLookup[] BISHOP_MAGIC_LOOKUP = initMagicLookups(BISHOP_ATTACKS, BISHOP_MASKS, BISHOP_MAGICS, BISHOP_SHIFTS);
+
     public static long pawnAttacks(long pawns, boolean isWhite) {
         return isWhite ?
                 (Bitwise.shiftNorthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftNorthEast(pawns) &~ Bits.FILE_A) :
@@ -132,22 +135,19 @@ public class Attacks {
     }
 
     public static long rookAttacks(int square, long blockers) {
-        return sliderAttacks(square, blockers, ROOK_MASKS, ROOK_MAGICS, ROOK_SHIFTS, ROOK_ATTACKS);
+        return sliderAttacks(square, blockers, ROOK_MAGIC_LOOKUP);
     }
 
     public static long bishopAttacks(int square, long blockers) {
-        return sliderAttacks(square, blockers, BISHOP_MASKS, BISHOP_MAGICS, BISHOP_SHIFTS, BISHOP_ATTACKS);
+        return sliderAttacks(square, blockers, BISHOP_MAGIC_LOOKUP);
     }
 
-    public static long sliderAttacks(
-            int square, long blockers, long[] masks, long[] magics, int[] shifts, long[][] attacks) {
-        long mask = masks[square];
-        long blocker = blockers & mask;
-        long magic = magics[square];
-        long index = blocker * magic;
-        long shift = shifts[square];
-        long key = index >>> shift;
-        return attacks[square][(int) key];
+    public static long sliderAttacks(int sq, long occ, MagicLookup[] lookups) {
+        MagicLookup lookup = lookups[sq];
+        occ      &= lookup.mask;
+        occ      *= lookup.magic;
+        occ    >>>= lookup.shift;
+        return lookup.attacks[(int) occ];
     }
 
     public static long[] generateWhitePawnAttacks() {
@@ -258,6 +258,18 @@ public class Attacks {
 
     }
 
+    public static MagicLookup[] initMagicLookups(long[][] allAttacks, long[] masks, long[] magics, int[] shifts) {
+        MagicLookup[] magicLookups = new MagicLookup[64];
+        for (int i = 0; i < 64; i++) {
+            long[] attacks = allAttacks[i];
+            long mask = masks[i];
+            long magic = magics[i];
+            int shift = shifts[i];
+            magicLookups[i] = new MagicLookup(attacks, mask, magic, shift);
+        }
+        return magicLookups;
+    }
+
     private static boolean isValidVectorOffset(int square, int vectorOffset) {
         boolean isAFile = (Bits.FILE_A & 1L << square) != 0;
         boolean isHFile = (Bits.FILE_H & 1L << square) != 0;
@@ -266,5 +278,6 @@ public class Attacks {
         return (!isAFile || !isVectorAFileException) && (!isHFile || !isVectorHFileException);
     }
 
+    public record MagicLookup(long[] attacks, long mask, long magic, int shift) {}
 
 }

@@ -53,18 +53,20 @@ public class MoveGenerator implements MoveGeneration {
         int kingSquare = Bitwise.getNextBit(board.getKing(isWhite));
         this.filter = filter;
 
+        // Initialize capture and push masks
         captureMask = Bits.ALL_SQUARES;
         pushMask = Bits.ALL_SQUARES;
 
+        // Calculate pins and checks
         PinData pinData = pinCalculator.calculatePinMask(board, isWhite);
         pinMask = pinData.pinMask();
         pinRayMasks = pinData.pinRayMasks();
-
         checkersMask = calculateAttackerMask(board, isWhite, 1L << kingSquare);
         long checkersCount = Bitwise.countBits(checkersMask);
 
         legalMoves = new ArrayList<>();
 
+        // Generate king moves first
         generateKingMoves(board);
 
         if (checkersCount == 2) {
@@ -321,9 +323,9 @@ public class MoveGenerator implements MoveGeneration {
         long bishops = board.getBishops(isWhite);
         long rooks = board.getRooks(isWhite);
         long queens = board.getQueens(isWhite);
-        long diagonalSliders = bishops | queens;
-        long orthogonalSliders = rooks | queens;
         if (filter == MoveFilter.ALL) {
+            long diagonalSliders = bishops | queens;
+            long orthogonalSliders = rooks | queens;
             generateSlidingMoves(board, diagonalSliders, false, true);
             generateSlidingMoves(board, orthogonalSliders, true, false);
         } else {

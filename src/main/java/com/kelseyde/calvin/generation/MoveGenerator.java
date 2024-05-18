@@ -1,9 +1,6 @@
 package com.kelseyde.calvin.generation;
 
-import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bitwise;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.generation.check.PinCalculator;
 import com.kelseyde.calvin.generation.check.PinCalculator.PinData;
 import com.kelseyde.calvin.generation.check.RayCalculator;
@@ -31,11 +28,24 @@ public class MoveGenerator implements MoveGeneration {
 
     private List<Move> legalMoves;
 
+    /**
+     * Generates all legal moves for the current board position.
+     *
+     * @param board The current board state.
+     * @return A list of all legal moves.
+     */
     @Override
     public List<Move> generateMoves(Board board) {
         return generateMoves(board, MoveFilter.ALL);
     }
 
+    /**
+     * Generates legal moves for the current board position based on the provided filter.
+     *
+     * @param board  The current board state.
+     * @param filter The filter to apply to move generation.
+     * @return A list of legal moves filtered according to the given criteria.
+     */
     @Override
     public List<Move> generateMoves(Board board, MoveFilter filter) {
 
@@ -87,6 +97,13 @@ public class MoveGenerator implements MoveGeneration {
 
     }
 
+    /**
+     * Checks if the specified side is in check.
+     *
+     * @param board   The current board state.
+     * @param isWhite Indicates whether the side in question is white.
+     * @return True if the specified side is in check, otherwise false.
+     */
     @Override
     public boolean isCheck(Board board, boolean isWhite) {
         long king = board.getKing(isWhite);
@@ -242,22 +259,29 @@ public class MoveGenerator implements MoveGeneration {
         long friendlies = board.getPieces(isWhite);
         long opponents = board.getPieces(!isWhite);
         long filterMask = filter == MoveFilter.ALL ? Bits.ALL_SQUARES : opponents;
-        long kingMoves = Attacks.kingAttacks(startSquare) &~ friendlies & filterMask;
+        long kingMoves = Attacks.kingAttacks(startSquare) & ~friendlies & filterMask;
+
+        // Temporarily remove the king from the board
+        board.toggleSquare(Piece.KING, isWhite, startSquare);
+        board.recalculatePieces();
+
+        // Generate legal king moves
         while (kingMoves != 0) {
             int endSquare = Bitwise.getNextBit(kingMoves);
-            Move move = new Move(startSquare, endSquare);
-            board.makeMove(move);
-            boolean isAttacked = isAttacked(board, isWhite, 1L << endSquare);
-            board.unmakeMove();
-            if (!isAttacked) {
-                legalMoves.add(move);
+            // Check if the end square is not attacked by the opponent
+            if (!isAttacked(board, isWhite, 1L << endSquare)) {
+                legalMoves.add(new Move(startSquare, endSquare));
             }
             kingMoves = Bitwise.popBit(kingMoves);
         }
+
+        // Restore the king to its original position on the board
+        board.toggleSquare(Piece.KING, isWhite, startSquare);
+        board.recalculatePieces();
     }
 
     private void generateCastlingMoves(Board board) {
-        if (filter != MoveFilter.ALL) {
+        if (filter != MoveFilter.ALL || checkersMask != 0) {
             return;
         }
         boolean isWhite = board.isWhiteToMove();
@@ -265,31 +289,29 @@ public class MoveGenerator implements MoveGeneration {
         int startSquare = Bitwise.getNextBit(king);
         long occupied = board.getOccupied();
 
-        boolean isCheck = checkersMask != 0;
-        if (!isCheck) {
-            boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
-            if (isKingsideAllowed) {
-                long travelSquares = board.isWhiteToMove() ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
-                long blockedSquares = travelSquares & occupied;
-                long safeSquares = isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
-                boolean isAttacked = isAttacked(board, isWhite, safeSquares);
-                if (blockedSquares == 0 && !isAttacked) {
-                    int endSquare = board.isWhiteToMove() ? 6 : 62;
-                    legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
-                }
-            }
-            boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
-            if (isQueensideAllowed) {
-                long travelSquares = board.isWhiteToMove() ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
-                long blockedSquares = travelSquares & occupied;
-                long safeSquares = isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
-                boolean isAttacked = isAttacked(board, isWhite, safeSquares);
-                if (blockedSquares == 0 && !isAttacked) {
-                    int endSquare = board.isWhiteToMove() ? 2 : 58;
-                    legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
-                }
+        boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
+        if (isKingsideAllowed) {
+            long travelSquares = board.isWhiteToMove() ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
+            long blockedSquares = travelSquares & occupied;
+            long safeSquares = isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+            boolean isAttacked = isAttacked(board, isWhite, safeSquares);
+            if (blockedSquares == 0 && !isAttacked) {
+                int endSquare = board.isWhiteToMove() ? 6 : 62;
+                legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
             }
         }
+        boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
+        if (isQueensideAllowed) {
+            long travelSquares = board.isWhiteToMove() ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
+            long blockedSquares = travelSquares & occupied;
+            long safeSquares = isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+            boolean isAttacked = isAttacked(board, isWhite, safeSquares);
+            if (blockedSquares == 0 && !isAttacked) {
+                int endSquare = board.isWhiteToMove() ? 2 : 58;
+                legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+            }
+        }
+
     }
 
     private void generateAllSlidingMoves(Board board) {

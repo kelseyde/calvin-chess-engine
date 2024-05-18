@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
+import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -11,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Entrypoint for the Calvin chess engine. Calvin communicates using the Universal Chess Interface protocol (UCI).
@@ -143,6 +145,27 @@ public class Application {
     private static void handleQuit() {
         ENGINE.gameOver();
         System.exit(0);
+    }
+
+    public static void writeSearchInfo(SearchResult searchResult) {
+        int depth = searchResult.depth();
+        String score = formatScore(searchResult.eval());
+        long time = searchResult.time();
+        int nodes = searchResult.nodes();
+        long nps = searchResult.nps();
+        String pv = ENGINE.extractPrincipalVariation().stream()
+                .map(Notation::toNotation).collect(Collectors.joining(" "));
+        write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
+    }
+
+    private static String formatScore(int eval) {
+        if (Score.isMateScore(eval)) {
+            int moves = Math.max((Score.MATE_SCORE - Math.abs(eval)) / 2, 1);
+            if (eval < 0) moves = -moves;
+            return "mate " + moves;
+        } else {
+            return "cp " + eval;
+        }
     }
 
     private static void writeMove(SearchResult searchResult) {

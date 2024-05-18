@@ -14,12 +14,10 @@ import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.Searcher;
+import com.kelseyde.calvin.search.ThreadManager;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.tuning.copy.Evaluator2;
-import com.kelseyde.calvin.tuning.copy.MoveOrderer2;
-import com.kelseyde.calvin.tuning.copy.Searcher2;
 import com.kelseyde.calvin.utils.notation.Notation;
 
 import java.io.IOException;
@@ -40,16 +38,12 @@ public class TestUtils {
     public static final MoveOrdering MOVE_ORDERER = new MoveOrderer();
     public static final Evaluation EVALUATOR = new Evaluator(PRD_CONFIG);
     public static final TranspositionTable TRANSPOSITION_TABLE = new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb());
-    public static final Searcher SEARCHER = new Searcher(PRD_CONFIG, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
+    public static final ThreadManager THREAD_MANAGER = new ThreadManager();
+    public static final Searcher SEARCHER = new Searcher(PRD_CONFIG, THREAD_MANAGER, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
     public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), TRANSPOSITION_TABLE);
-    public static final Searcher SEARCHER_COPY = new Searcher(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb()));
 
     public static Engine getEngine() {
-        return new Engine(PRD_CONFIG, OPENING_BOOK, new MoveGenerator(), new Searcher(PRD_CONFIG, new MoveGenerator(), new MoveOrderer(), new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
-    }
-
-    public static Engine getEngineCopy() {
-        return new Engine(TST_CONFIG, OPENING_BOOK, new MoveGenerator(), new Searcher2(TST_CONFIG, new MoveGenerator(), new MoveOrderer2(), new Evaluator2(TST_CONFIG), new TranspositionTable(TST_CONFIG.getDefaultHashSizeMb())));
+        return new Engine(PRD_CONFIG, OPENING_BOOK, new MoveGenerator(), new Searcher(PRD_CONFIG, new ThreadManager(), new MoveGenerator(), new MoveOrderer(), new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
     }
 
     private static EngineConfig loadConfig(String configLocation) {

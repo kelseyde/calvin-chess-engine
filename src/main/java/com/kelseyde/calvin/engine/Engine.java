@@ -7,6 +7,7 @@ import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.transposition.HashEntry;
+import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -15,9 +16,11 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 /**
  * The engine is responsible for actually playing a game of chess. It manages the game state, updates the board, and 'thinks'
@@ -87,7 +90,7 @@ public class Engine {
     public void think(int thinkTimeMs, Consumer<SearchResult> onThinkComplete) {
         if (hasBookMove()) {
             Move bookMove = getLegalMove(book.getBookMove(board.getGameState().getZobristKey()));
-            onThinkComplete.accept(new SearchResult(0, bookMove, 0));
+            onThinkComplete.accept(new SearchResult(0, bookMove, 0, 0, 0, 0));
             return;
         }
         stopThinking();
@@ -137,6 +140,24 @@ public class Engine {
         HashEntry entry = transpositionTable.get(zobristKey, 0);
         board.unmakeMove();
         return entry != null ? entry.getMove() : null;
+    }
+
+    public List<Move> extractPrincipalVariation() {
+        List<Move> principalVariation = new ArrayList<>();
+        TranspositionTable transpositionTable = searcher.getTranspositionTable();
+        int moveCount = 0;
+        while (moveCount <= 12) {
+            long zobristKey = board.getGameState().getZobristKey();
+            HashEntry entry = transpositionTable.get(zobristKey, 0);
+            if (entry == null || entry.getMove() == null) {
+                break;
+            }
+            principalVariation.add(entry.getMove());
+            board.makeMove(entry.getMove());
+            moveCount++;
+        }
+        IntStream.range(0, moveCount).forEach(i -> board.unmakeMove());
+        return principalVariation;
     }
 
     private boolean hasBookMove() {

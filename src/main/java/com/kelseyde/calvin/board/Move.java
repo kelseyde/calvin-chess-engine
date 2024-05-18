@@ -50,13 +50,23 @@ public class Move {
     }
 
     /**
+     * Constructs a Move instance from the given start square and end square.
+     *
+     * @param startSquare The starting square of the move (0 - 63).
+     * @param endSquare   The ending square of the move (0 - 63).
+     */
+    public Move(int startSquare, int endSquare) {
+        this.value = (startSquare | endSquare << 6);
+    }
+
+    /**
      * Constructs a Move instance from the given start square, end square, and move flag.
      *
      * @param startSquare The starting square of the move (0 - 63).
      * @param endSquare   The ending square of the move (0 - 63).
      * @param flag        The special move flag representing additional move information.
      */
-    public Move(int startSquare, int endSquare, short flag) {
+    public Move(int startSquare, int endSquare, int flag) {
         this.value = startSquare | (endSquare << 6) | (flag << 12);
     }
 

@@ -31,7 +31,7 @@ public class TranspositionTable {
     int hits;
 
     public TranspositionTable(int tableSizeMb) {
-        this.tableSize = (tableSizeMb / ENTRY_SIZE_BYTES) * 1024 * 1024;
+        this.tableSize = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         entries = new HashEntry[tableSize];
     }
 
@@ -57,31 +57,17 @@ public class TranspositionTable {
         if (isMateScore(score)) score = calculateMateScore(score, ply);
         HashEntry newEntry = HashEntry.of(zobristKey, score, move, flag, depth);
 
-        int replacedMinDepth = Integer.MAX_VALUE;
         int replacedIndex = -1;
+        int minDepth = Integer.MAX_VALUE;
 
         for (int i = startIndex; i < startIndex + 4; i++) {
-
             HashEntry storedEntry = entries[i];
-            // If there is an empty entry in the bucket, use that immediately
-            if (storedEntry == null) {
-                replacedIndex = i;
-                break;
-            }
-            // If the stored entry matches the new entry, don't bother overwriting it
-            if (storedEntry.equals(newEntry)) {
-                return;
-            }
 
-            int storedDepth = storedEntry.getDepth();
-
-            if (storedEntry.key() == zobristKey) {
-                if (depth >= storedDepth) {
-                    // If the new entry has no move, use the move of the stored entry
-                    if (newEntry.getMove() == null && storedEntry.getMove() != null) {
+            if (storedEntry == null || storedEntry.key() == zobristKey) {
+                if (storedEntry == null || depth >= storedEntry.getDepth()) {
+                    if (newEntry.getMove() == null && storedEntry != null && storedEntry.getMove() != null) {
                         newEntry = HashEntry.of(newEntry.key(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
                     }
-                    replacedMinDepth = storedDepth;
                     replacedIndex = i;
                     break;
                 } else {
@@ -89,15 +75,15 @@ public class TranspositionTable {
                 }
             }
 
-            // Keep the lowest depth and its index
-            if (storedDepth < replacedMinDepth) {
-                replacedMinDepth = storedDepth;
+            if (storedEntry.getDepth() < minDepth) {
+                minDepth = storedEntry.getDepth();
                 replacedIndex = i;
             }
         }
 
-        entries[replacedIndex] = newEntry;
-
+        if (replacedIndex != -1) {
+            entries[replacedIndex] = newEntry;
+        }
     }
 
     public void clear() {
@@ -107,19 +93,9 @@ public class TranspositionTable {
         entries = new HashEntry[tableSize];
     }
 
-    /**
-     * The 64-bit zobrist key is too large to use as an index in a hashtable, due to memory constraints.
-     * Therefore, we take the modulo of the zobrist and the table size, giving us a more manageable number.
-     * Collisions can occur though, so we store the full key inside the entry to check we have the correct position.
-     */
     private int getIndex(long zobristKey) {
-        long index = (int) (zobristKey ^ (zobristKey >>> 32));
-        if (index < 0) {
-            index = -index;
-        }
-        index = index % (tableSize - 3);
-        index = 4 * (index / 4);
-        return (int) index;
+        long index = (zobristKey ^ (zobristKey >>> 32)) & 0x7FFFFFFF;
+        return (int) (index % (tableSize - 3)) & ~3;
     }
 
     private boolean isMateScore(int score) {
@@ -136,9 +112,8 @@ public class TranspositionTable {
 
     public void printStatistics() {
         long fill = Arrays.stream(entries).filter(Objects::nonNull).count();
-        float fillPercentage = ((float) fill / (float) tableSize) * 100;
-        float hitPercentage = ((float) hits / (float) tries) * 100;
+        float fillPercentage = ((float) fill / tableSize) * 100;
+        float hitPercentage = ((float) hits / tries) * 100;
         //System.out.printf("TT %s -- size: %s / %s (%s), tries: %s, hits: %s (%s)%n", this.hashCode(), fill, entries.length, fillPercentage, tries, hits, hitPercentage);
     }
-
 }

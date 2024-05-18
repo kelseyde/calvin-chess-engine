@@ -114,6 +114,7 @@ public class MoveGenerator implements MoveGeneration {
 
         boolean isWhite = board.isWhiteToMove();
         long pawns = board.getPawns(isWhite);
+        if (pawns == 0) return;
         long opponents = board.getPieces(!isWhite);
         long occupied = board.getOccupied();
         long enPassantFile = Bitwise.getFileBitboard(board.getGameState().getEnPassantFile());
@@ -228,8 +229,10 @@ public class MoveGenerator implements MoveGeneration {
     private void generateKnightMoves(Board board) {
         boolean isWhite = board.isWhiteToMove();
         long knights = board.getKnights(isWhite);
+        if (knights == 0) return;
         long opponents = board.getPieces(!isWhite);
 
+        // Initialize filter mask based on move filter type
         long filterMask = Bits.ALL_SQUARES;
         if (filter == MoveFilter.CAPTURES_ONLY) {
             filterMask = opponents;
@@ -238,11 +241,13 @@ public class MoveGenerator implements MoveGeneration {
             filterMask = opponents | Attacks.knightAttacks(opponentKing);
         }
 
-        long unpinnedKnights = knights &~ pinMask;
+        // Exclude pinned knights from generating moves
+        long unpinnedKnights = knights & ~pinMask;
 
+        // Generate legal knight moves
         while (unpinnedKnights != 0) {
             int startSquare = Bitwise.getNextBit(unpinnedKnights);
-            long possibleMoves = getKnightAttacks(board, startSquare, board.isWhiteToMove()) & (pushMask | captureMask) & filterMask;
+            long possibleMoves = getKnightAttacks(board, startSquare, isWhite) & (pushMask | captureMask) & filterMask;
             while (possibleMoves != 0) {
                 int endSquare = Bitwise.getNextBit(possibleMoves);
                 legalMoves.add(new Move(startSquare, endSquare));
@@ -291,27 +296,24 @@ public class MoveGenerator implements MoveGeneration {
 
         boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
         if (isKingsideAllowed) {
-            long travelSquares = board.isWhiteToMove() ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
-            long blockedSquares = travelSquares & occupied;
-            long safeSquares = isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
-            boolean isAttacked = isAttacked(board, isWhite, safeSquares);
-            if (blockedSquares == 0 && !isAttacked) {
-                int endSquare = board.isWhiteToMove() ? 6 : 62;
-                legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
-            }
-        }
-        boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
-        if (isQueensideAllowed) {
-            long travelSquares = board.isWhiteToMove() ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
-            long blockedSquares = travelSquares & occupied;
-            long safeSquares = isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
-            boolean isAttacked = isAttacked(board, isWhite, safeSquares);
-            if (blockedSquares == 0 && !isAttacked) {
-                int endSquare = board.isWhiteToMove() ? 2 : 58;
-                legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
-            }
+            generateCastlingMove(board, isWhite, true, startSquare, occupied);
         }
 
+        boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
+        if (isQueensideAllowed) {
+            generateCastlingMove(board, isWhite, false, startSquare, occupied);
+        }
+
+    }
+
+    private void generateCastlingMove(Board board, boolean isWhite, boolean isKingside, int startSquare, long occupied) {
+        long travelSquares = getCastleTravelSquares(isWhite, isKingside);
+        long blockedSquares = travelSquares & occupied;
+        long safeSquares = getCastleSafeSquares(isWhite, isKingside);
+        if (blockedSquares == 0 && !isAttacked(board, isWhite, safeSquares)) {
+            int endSquare = getCastleEndSquare(isWhite, isKingside);
+            legalMoves.add(new Move(startSquare, endSquare, Move.CASTLE_FLAG));
+        }
     }
 
     private void generateAllSlidingMoves(Board board) {
@@ -333,25 +335,27 @@ public class MoveGenerator implements MoveGeneration {
 
     private void generateSlidingMoves(Board board, long sliders, boolean isOrthogonal, boolean isDiagonal) {
         boolean isWhite = board.isWhiteToMove();
-        long opponents = board.getPieces(!board.isWhiteToMove());
+        long opponents = board.getPieces(!isWhite);
         long occupied = board.getOccupied();
 
         while (sliders != 0) {
             int startSquare = Bitwise.getNextBit(sliders);
             long attackMask = getSlidingAttacks(board, startSquare, isWhite, isDiagonal, isOrthogonal);
+
             attackMask &= pushMask | captureMask;
+
+            // Apply move filters
             if (filter == MoveFilter.CAPTURES_ONLY) {
                 attackMask &= opponents;
             } else if (filter == MoveFilter.CAPTURES_AND_CHECKS) {
-                int opponentKing = Bitwise.getNextBit(board.getKing(!isWhite));
-                long filterMask = opponents;
-                if (isDiagonal) filterMask |= Attacks.bishopAttacks(opponentKing, occupied);
-                if (isOrthogonal) filterMask |= Attacks.rookAttacks(opponentKing, occupied);
-                attackMask &= filterMask;
+                attackMask &= getCaptureAndCheckMask(board, isWhite, opponents, occupied, isDiagonal, isOrthogonal);
             }
+
+            // Handle pinned pieces
             if (isPinned(startSquare)) {
-                attackMask &= (pinRayMasks[startSquare]);
+                attackMask &= pinRayMasks[startSquare];
             }
+
             sliders = Bitwise.popBit(sliders);
             while (attackMask != 0) {
                 int endSquare = Bitwise.getNextBit(attackMask);
@@ -359,6 +363,18 @@ public class MoveGenerator implements MoveGeneration {
                 attackMask = Bitwise.popBit(attackMask);
             }
         }
+    }
+
+    private long getCaptureAndCheckMask(Board board, boolean isWhite, long opponents, long occupied, boolean isDiagonal, boolean isOrthogonal) {
+        int opponentKing = Bitwise.getNextBit(board.getKing(!isWhite));
+        long filterMask = opponents;
+        if (isDiagonal) {
+            filterMask |= Attacks.bishopAttacks(opponentKing, occupied);
+        }
+        if (isOrthogonal) {
+            filterMask |= Attacks.rookAttacks(opponentKing, occupied);
+        }
+        return filterMask;
     }
 
     public long getPawnAttacks(Board board, int square, boolean isWhite) {
@@ -506,6 +522,7 @@ public class MoveGenerator implements MoveGeneration {
                         new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
     }
 
+
     private boolean leavesKingInCheck(Board board, Move move, boolean isWhite) {
         board.makeMove(move);
         int kingSquare = isWhite ? Bitwise.getNextBit(board.getWhiteKing()) : Bitwise.getNextBit(board.getBlackKing());
@@ -521,6 +538,21 @@ public class MoveGenerator implements MoveGeneration {
     private boolean isMovingAlongPinRay(int startSquare, int endSquare) {
         long pinRay = pinRayMasks[startSquare];
         return (1L << endSquare & pinRay) != 0;
+    }
+
+    private long getCastleTravelSquares(boolean isWhite, boolean isKingside) {
+        if (isKingside) return isWhite ? Bits.WHITE_KINGSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_KINGSIDE_CASTLE_TRAVEL_MASK;
+        else return isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK : Bits.BLACK_QUEENSIDE_CASTLE_TRAVEL_MASK;
+    }
+
+    private long getCastleSafeSquares(boolean isWhite, boolean isKingside) {
+        if (isKingside) return isWhite ? Bits.WHITE_KINGSIDE_CASTLE_SAFE_MASK : Bits.BLACK_KINGSIDE_CASTLE_SAFE_MASK;
+        else return isWhite ? Bits.WHITE_QUEENSIDE_CASTLE_SAFE_MASK : Bits.BLACK_QUEENSIDE_CASTLE_SAFE_MASK;
+    }
+
+    private int getCastleEndSquare(boolean isWhite, boolean isKingside) {
+        if (isKingside) return isWhite ? 6 : 62;
+        else return isWhite ? 2 : 58;
     }
 
 }

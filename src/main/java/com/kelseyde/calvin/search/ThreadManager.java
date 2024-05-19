@@ -11,7 +11,7 @@ public class ThreadManager {
     }
 
     public synchronized void handleSearchResult(SearchResult searchResult) {
-        if (searchResult.depth() > depthLogged) {
+        if (searchResult.depth() > depthLogged && searchResult.time() > 0) {
             Application.writeSearchInfo(searchResult);
             depthLogged++;
         }

@@ -335,6 +335,10 @@ public class Board {
         return isWhite ? whitePieces : blackPieces;
     }
 
+    public int countPieces() {
+        return Bitwise.countBits(occupied);
+    }
+
     public boolean hasPiecesRemaining(boolean isWhite) {
         if (isWhite && Bitwise.countBits(whiteKnights) > 0 || Bitwise.countBits(whiteBishops) > 0 ||
                 Bitwise.countBits(whiteRooks) > 0 || Bitwise.countBits(whiteQueens) > 0) {

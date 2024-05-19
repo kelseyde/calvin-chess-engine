@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.opening;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -44,7 +45,8 @@ public class OpeningBook {
         return movesByPosition.containsKey(key);
     }
 
-    public Move getBookMove(long key) {
+    public Move getBookMove(Board board) {
+        long key = board.getGameState().getZobristKey();
         BookMove[] bookMoves = movesByPosition.get(key);
         if (bookMoves == null) {
             return null;

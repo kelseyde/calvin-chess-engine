@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 
 import java.time.Duration;

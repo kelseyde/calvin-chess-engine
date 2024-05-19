@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Arrays;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,6 +23,13 @@ public class EngineConfig {
 
     boolean ownBookEnabled;
     int maxBookMoves;
+
+    boolean ownTablebaseEnabled;
+    int maxTablebaseSupportedPieces;
+    String lichessTablebaseBaseUrl;
+    boolean lichessTablebaseDebugEnabled;
+    long lichessTablebaseTimeoutMs;
+
     boolean ponderEnabled;
     int principalVariationLength;
 

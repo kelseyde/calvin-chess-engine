@@ -49,9 +49,9 @@ public class FEN {
             for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
                 List<String> rank = rankFileHash.get(rankIndex);
                 for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
-                    int squareIndex = BoardUtils.squareIndex(rankIndex, fileIndex);
+                    int square = BoardUtils.squareIndex(rankIndex, fileIndex);
                     String squareValue = rank.get(fileIndex);
-                    long squareBB = 1L << squareIndex;
+                    long squareBB = 1L << square;
                     switch (squareValue) {
                         case "P" -> whitePawns |= squareBB;
                         case "N" -> whiteKnights |= squareBB;

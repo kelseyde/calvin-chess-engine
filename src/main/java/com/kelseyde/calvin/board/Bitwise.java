@@ -199,9 +199,24 @@ public class Bitwise {
     /**
      * Count the number of pawn protectors.
      */
-    public static int countPawnProtectors(int pawn, long friendlyPawns, boolean white) {
-        long protectionMask = white ? Bits.WHITE_PROTECTED_PAWN_MASK[pawn] : Bits.BLACK_PROTECTED_PAWN_MASK[pawn];
+    public static int countPawnProtectors(int square, long friendlyPawns, boolean white) {
+        long protectionMask = white ? Bits.WHITE_PROTECTED_PAWN_MASK[square] : Bits.BLACK_PROTECTED_PAWN_MASK[square];
         return countBits(protectionMask & friendlyPawns);
+    }
+
+    public static boolean hasPotentialPawnAttackers(int square, long opponentPawns, boolean white) {
+        long potentialAttackerMask = white ? Bits.WHITE_FORWARD_ADJACENT_MASK[square] : Bits.BLACK_FORWARD_ADJACENT_MASK[square];
+        return (potentialAttackerMask & opponentPawns) != 0;
+    }
+
+    /**
+     * Determine if this square is an outpost
+     * @return 0 for no outpost, 1 for single-protected outpost, 2 for double-protected outpost
+     */
+    public static int isOutpost(int square, long friendlyPawns, long opponentPawns, boolean white) {
+        return !hasPotentialPawnAttackers(square, opponentPawns, white) ?
+                countPawnProtectors(square, friendlyPawns, white) :
+                0;
     }
 
     /**

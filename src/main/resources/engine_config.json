@@ -1104,6 +1104,8 @@
     16,
     24
   ],
+  "knightOutpostBonus":[[],[19,8],[25,27]],
+  "bishopOutpostBonus":[[],[20,2],[30,-12]],
   "kingPawnShieldPenalty":[
     0,
     0,

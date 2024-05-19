@@ -109,16 +109,12 @@ public class Engine {
             } catch (TablebaseException e) {
                 // In case tablebase probe fails, search manually
                 System.out.println("error probing tablebase: " + e.getMessage());
-                stopThinking();
-                think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
-                think.thenAccept(onThinkComplete);
+                startThinking(thinkTimeMs, onThinkComplete);
             }
         }
         else {
             // Otherwise, search for the best move.
-            stopThinking();
-            think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
-            think.thenAccept(onThinkComplete);
+            startThinking(thinkTimeMs, onThinkComplete);
         }
 
     }
@@ -130,6 +126,12 @@ public class Engine {
 
     public boolean isThinking() {
         return think != null && !think.isDone();
+    }
+
+    public void startThinking(int thinkTimeMs, Consumer<SearchResult> onThinkComplete) {
+        stopThinking();
+        think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
+        think.thenAccept(onThinkComplete);
     }
 
     public void stopThinking() {

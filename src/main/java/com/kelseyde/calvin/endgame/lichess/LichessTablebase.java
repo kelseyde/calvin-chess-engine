@@ -57,7 +57,7 @@ public class LichessTablebase implements Tablebase {
     @Override
     public Move getTablebaseMove(Board board) throws TablebaseException {
         try {
-            HttpRequest request = buildRequest(board, Duration.ofSeconds(1));
+            HttpRequest request = buildRequest(board);
             HttpResponse<String> response = probeLichess(request);
             LichessTablebaseEntry tablebaseEntry = parseResponse(response);
             return parseBestMove(tablebaseEntry);
@@ -91,13 +91,13 @@ public class LichessTablebase implements Tablebase {
      * Builds the HTTP request to query the Lichess tablebase.
      *
      * @param board   the current board position.
-     * @param timeout the timeout duration for the request.
      * @return the constructed HttpRequest.
      * @throws URISyntaxException if the URI syntax is invalid.
      */
-    private HttpRequest buildRequest(Board board, Duration timeout) throws URISyntaxException {
+    private HttpRequest buildRequest(Board board) throws URISyntaxException {
         String fen = FEN.toFEN(board).replace(" ", "_");
         String url = config.getLichessTablebaseBaseUrl() + "/standard?fen=" + fen;
+        Duration timeout = Duration.ofMillis(config.getLichessTablebaseTimeoutMs());
         if (config.isLichessTablebaseDebugEnabled()) {
             System.out.println("Lichess url:" + url);
         }

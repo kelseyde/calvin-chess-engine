@@ -23,9 +23,9 @@ import java.time.Instant;
 /**
  * Implementation of {@link Tablebase} that uses the Lichess online API to make the tablebase probe.
  *
- * <p>The limitations of this implementation are that it must send an HTTP request, meaning it is relatively slow, and that
- * the Lichess API is request-limited, meaning that eventually the engine will hit its limit on requests and must wait
- * another minute before querying again.</p>
+ * <p>The limitations of this implementation are that it must send an HTTP request, meaning it is relatively slow, and
+ * that the Lichess API is request-limited, meaning that eventually the engine will hit its limit on requests and must
+ * wait another minute before querying again.</p>
  */
 public class LichessTablebase implements Tablebase {
 

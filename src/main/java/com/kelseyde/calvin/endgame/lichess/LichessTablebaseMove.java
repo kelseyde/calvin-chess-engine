@@ -1,5 +1,8 @@
 package com.kelseyde.calvin.endgame.lichess;
 
+/**
+ * Stores information for a single move returned from the Lichess tablebase API.
+ */
 public record LichessTablebaseMove(String uci,
                                    String san,
                                    int dtz,

@@ -2,6 +2,9 @@ package com.kelseyde.calvin.endgame.lichess;
 
 import java.util.List;
 
+/**
+ * The response from the Lichess tablebase API containing the tablebase entry for the provided FEN.
+ */
 public record LichessTablebaseEntry(int dtz,
                                     int precise_dtz,
                                     int dtm,

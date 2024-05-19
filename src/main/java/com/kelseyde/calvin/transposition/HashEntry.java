@@ -12,36 +12,44 @@ import com.kelseyde.calvin.board.Move;
  */
 public record HashEntry(long key, long value) {
 
-    private static final long CLEAR_SCORE_MASK = 0xffffffffL;
+    // Constants for bit masks and shift operations
+    private static final int SCORE_SHIFT = 32;
+    private static final int MOVE_SHIFT = 16;
+    private static final int FLAG_SHIFT = 12;
+    private static final long CLEAR_SCORE_MASK = 0x00000000FFFFFFFFL;
+    private static final int DEPTH_MASK = 0xfff;
+    private static final int FLAG_MASK = 0xf;
+
+    // Constants for default values
+    private static final int DEFAULT_MOVE_VALUE = 0;
 
     public int getScore() {
-        long score = value >>> 32;
-        return (int) score;
+        return (int) (value >>> SCORE_SHIFT);
     }
 
     public Move getMove() {
-        long move = (value >> 16) & 0xffff;
-        return move > 0 ? new Move((short) move) : null;
+        long moveValue = (value >> MOVE_SHIFT) & 0xffff;
+        return moveValue > 0 ? new Move((short) moveValue) : null;
     }
 
     public HashFlag getFlag() {
-        long flag = (value >>> 12) & 0xf;
-        return HashFlag.valueOf((int) flag);
+        int flagValue = (int) ((value >>> FLAG_SHIFT) & FLAG_MASK);
+        return HashFlag.valueOf(flagValue);
     }
 
     public int getDepth() {
-        return (int) value & 0xfff;
+        return (int) (value & DEPTH_MASK);
     }
 
     public static HashEntry of(long zobristKey, int score, Move move, HashFlag flag, int depth) {
-        long moveValue = move != null ? move.getValue() : 0;
+        long moveValue = move != null ? move.getValue() : DEFAULT_MOVE_VALUE;
         long flagValue = HashFlag.value(flag);
-        long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
+        long value = ((long) score << SCORE_SHIFT) | (moveValue << MOVE_SHIFT) | (flagValue << FLAG_SHIFT) | depth;
         return new HashEntry(zobristKey, value);
     }
 
     public static HashEntry withScore(HashEntry entry, int score) {
-        long value = (entry.value() & CLEAR_SCORE_MASK) | (long) score << 32;
+        long value = (entry.value() & ~CLEAR_SCORE_MASK) | ((long) score << SCORE_SHIFT);
         return new HashEntry(entry.key(), value);
     }
 

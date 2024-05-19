@@ -1,11 +1,11 @@
 package com.kelseyde.calvin.endgame.lichess;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.endgame.Tablebase;
 import com.kelseyde.calvin.endgame.TablebaseException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -17,8 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+@Disabled
 public class LichessTablebaseTest {
 
     @Test

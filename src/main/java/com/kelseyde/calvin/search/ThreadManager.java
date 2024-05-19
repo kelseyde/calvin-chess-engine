@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.Application;
+import com.kelseyde.calvin.evaluation.Score;
 
 public class ThreadManager {
 
@@ -11,7 +12,8 @@ public class ThreadManager {
     }
 
     public synchronized void handleSearchResult(SearchResult searchResult) {
-        if (searchResult.depth() > depthLogged && searchResult.time() > 0) {
+        if (searchResult.depth() > depthLogged
+                && (searchResult.time() > 0 || Score.isMateScore(searchResult.eval()))) {
             Application.writeSearchInfo(searchResult);
             depthLogged++;
         }

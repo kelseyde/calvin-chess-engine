@@ -60,6 +60,7 @@ public class Application {
         write(String.format("option name Threads type spin default %s min %s max %s",
                 config.getDefaultThreadCount(), config.getMinThreadCount(), config.getMaxThreadCount()));
         write(String.format("option name OwnBook type check default %s", config.isOwnBookEnabled()));
+        write(String.format("option name OwnTablebase type check default %s", config.isOwnTablebaseEnabled()));
         write(String.format("option name Ponder type check default %s", config.isPonderEnabled()));
         write("uciok");
     }
@@ -71,11 +72,12 @@ public class Application {
     private static void handleSetOption(String command) {
         String optionType = getLabelString(command, "name", SETOPTION_LABELS, "");
         switch (optionType) {
-            case "Hash":     setHashSize(command); break;
-            case "Threads":  setThreadCount(command); break;
-            case "OwnBook":  setOwnBook(command); break;
-            case "Ponder":   setPonder(command); break;
-            default:         write("unrecognised option name " + optionType);
+            case "Hash":          setHashSize(command); break;
+            case "Threads":       setThreadCount(command); break;
+            case "OwnBook":       setOwnBook(command); break;
+            case "OwnTablebase":  setOwnTablebase(command); break;
+            case "Ponder":        setPonder(command); break;
+            default:              write("unrecognised option name " + optionType);
         }
     }
 
@@ -130,7 +132,7 @@ public class Application {
             int incrementBlackMs = getLabelInt(command, "binc", GO_LABELS);
             thinkTime = ENGINE.chooseThinkTime(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
         }
-        ENGINE.think(thinkTime, Application::writeMove);
+        ENGINE.findBestMove(thinkTime, Application::writeMove);
     }
 
     private static void handlePonderHit() {
@@ -206,6 +208,12 @@ public class Application {
         boolean ownBookEnabled = Boolean.parseBoolean(getLabelString(command, "value", SETOPTION_LABELS, "false"));
         ENGINE.setOwnBookEnabled(ownBookEnabled);
         write("info string OwnBook " + ownBookEnabled);
+    }
+
+    private static void setOwnTablebase(String command) {
+        boolean ownTablebaseEnabled = Boolean.parseBoolean(getLabelString(command, "value", SETOPTION_LABELS, "false"));
+        ENGINE.setOwnTablebaseEnabled(ownTablebaseEnabled);
+        write("info string OwnTablebase " + ownTablebaseEnabled);
     }
 
     private static void setPonder(String command) {

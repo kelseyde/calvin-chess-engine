@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.engine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kelseyde.calvin.endgame.Tablebase;
+import com.kelseyde.calvin.endgame.lichess.LichessTablebase;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.generation.MoveGeneration;
@@ -33,12 +35,13 @@ public class EngineInitializer {
         EngineConfig config = loadDefaultConfig();
         config.postInitialise();
         OpeningBook book = loadDefaultOpeningBook();
+        Tablebase tablebase = loadDefaultTablebase(config);
         Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
         Supplier<Evaluation> evaluator = () -> new Evaluator(config);
         TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
         Search searcher = new ParallelSearcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
-        return new Engine(config, book, moveGenerator.get(), searcher);
+        return new Engine(config, book, tablebase, moveGenerator.get(), searcher);
     }
 
     public static EngineConfig loadDefaultConfig() {
@@ -57,6 +60,10 @@ public class EngineInitializer {
 
     public static OpeningBook loadDefaultOpeningBook() {
         return loadOpeningBook(DEFAULT_BOOK_LOCATION);
+    }
+
+    public static Tablebase loadDefaultTablebase(EngineConfig config) {
+        return new LichessTablebase(config);
     }
 
     public static OpeningBook loadOpeningBook(String bookLocation) {

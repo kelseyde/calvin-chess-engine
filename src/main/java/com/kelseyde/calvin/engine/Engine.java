@@ -108,6 +108,7 @@ public class Engine {
                 onThinkComplete.accept(new SearchResult(0, move(tablebaseMove), 0, 0, 0, 0));
             } catch (TablebaseException e) {
                 // In case tablebase probe fails, search manually
+                System.out.println("error probing tablebase: " + e.getMessage());
                 stopThinking();
                 think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
                 think.thenAccept(onThinkComplete);
@@ -191,7 +192,8 @@ public class Engine {
     }
 
     private boolean useEndgameTablebase(int thinkTimeMs) {
-        return config.isOwnTablebaseEnabled()
+        return !config.isPondering()
+                && config.isOwnTablebaseEnabled()
                 && board.countPieces() <= config.getMaxTablebaseSupportedPieces()
                 && tablebase.canProbeTablebase(thinkTimeMs);
     }

@@ -64,7 +64,7 @@ public class MoveGenerator implements MoveGeneration {
         checkersMask = calculateAttackerMask(board, isWhite, 1L << kingSquare);
         long checkersCount = Bitwise.countBits(checkersMask);
 
-        legalMoves = new ArrayList<>();
+        legalMoves = new ArrayList<>(40);
 
         // Generate king moves first
         generateKingMoves(board);
@@ -119,7 +119,6 @@ public class MoveGenerator implements MoveGeneration {
         if (pawns == 0) return;
         long opponents = board.getPieces(!isWhite);
         long occupied = board.getOccupied();
-        long enPassantFile = Bitwise.getFileBitboard(board.getGameState().getEnPassantFile());
         int opponentKing = Bitwise.getNextBit(board.getKing(!isWhite));
 
         long filterMask = Bits.ALL_SQUARES;
@@ -157,8 +156,6 @@ public class MoveGenerator implements MoveGeneration {
 
         long leftCaptures = Bitwise.pawnLeftCaptures(pawns, opponents, isWhite) & captureMask & filterMask;
         long rightCaptures = Bitwise.pawnRightCaptures(pawns, opponents, isWhite) & captureMask & filterMask;
-        long leftEnPassants = Bitwise.pawnLeftEnPassants(pawns, enPassantFile, isWhite);
-        long rightEnPassants = Bitwise.pawnRightEnPassants(pawns, enPassantFile, isWhite);
         long pushPromotions = Bitwise.pawnPushPromotions(pawns, occupied, isWhite) & pushMask & promotionFilterMask;
         long leftCapturePromotions = Bitwise.pawnLeftCapturePromotions(pawns, opponents, isWhite) & (captureMask | pushMask) & promotionFilterMask;
         long rightCapturePromotions = Bitwise.pawnRightCapturePromotions(pawns, opponents, isWhite) & (captureMask | pushMask) & promotionFilterMask;
@@ -179,27 +176,32 @@ public class MoveGenerator implements MoveGeneration {
             }
             rightCaptures = Bitwise.popBit(rightCaptures);
         }
-        while (leftEnPassants != 0) {
-            int endSquare = Bitwise.getNextBit(leftEnPassants);
-            int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
-            // En passant is complicated; just test legality by making the move on the board and checking
-            // whether the king is attacked.
-            Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
-            if (!leavesKingInCheck(board, move, isWhite)) {
-                legalMoves.add(move);
+        if (board.getGameState().getEnPassantFile() >= 0) {
+            long enPassantFile = Bitwise.getFileBitboard(board.getGameState().getEnPassantFile());
+            long leftEnPassants = Bitwise.pawnLeftEnPassants(pawns, enPassantFile, isWhite);
+            long rightEnPassants = Bitwise.pawnRightEnPassants(pawns, enPassantFile, isWhite);
+            while (leftEnPassants != 0) {
+                int endSquare = Bitwise.getNextBit(leftEnPassants);
+                int startSquare = isWhite ? endSquare - 7 : endSquare + 9;
+                // En passant is complicated; just test legality by making the move on the board and checking
+                // whether the king is attacked.
+                Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+                if (!leavesKingInCheck(board, move, isWhite)) {
+                    legalMoves.add(move);
+                }
+                leftEnPassants = Bitwise.popBit(leftEnPassants);
             }
-            leftEnPassants = Bitwise.popBit(leftEnPassants);
-        }
-        while (rightEnPassants != 0) {
-            int endSquare = Bitwise.getNextBit(rightEnPassants);
-            int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
-            // En passant is complicated; just test legality by making the move on the board and checking
-            // whether the king is attacked.
-            Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
-            if (!leavesKingInCheck(board, move, isWhite)) {
-                legalMoves.add(move);
+            while (rightEnPassants != 0) {
+                int endSquare = Bitwise.getNextBit(rightEnPassants);
+                int startSquare = isWhite ? endSquare - 9 : endSquare + 7;
+                // En passant is complicated; just test legality by making the move on the board and checking
+                // whether the king is attacked.
+                Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+                if (!leavesKingInCheck(board, move, isWhite)) {
+                    legalMoves.add(move);
+                }
+                rightEnPassants = Bitwise.popBit(rightEnPassants);
             }
-            rightEnPassants = Bitwise.popBit(rightEnPassants);
         }
         while (pushPromotions != 0) {
             int endSquare = Bitwise.getNextBit(pushPromotions);

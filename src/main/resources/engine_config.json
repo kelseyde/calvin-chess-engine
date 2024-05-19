@@ -10,7 +10,7 @@
   "ownTablebaseEnabled": true,
   "maxTablebaseSupportedPieces": 7,
   "lichessTablebaseBaseUrl": "http://tablebase.lichess.ovh",
-  "lichessTablebaseDebugEnabled": true,
+  "lichessTablebaseDebugEnabled": false,
   "lichessTablebaseTimeoutMs": 750,
   "ponderEnabled":true,
   "pondering":false,

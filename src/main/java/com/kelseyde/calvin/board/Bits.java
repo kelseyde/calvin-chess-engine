@@ -164,7 +164,7 @@ public class Bits {
 
     }
 
-    private static long[] generatePassedPawnMask(boolean isWhite) {
+    private static long[] generatePassedPawnMask(boolean white) {
         long[] passedPawnMask = new long[64];
         for (int square = 0; square < 64; square++) {
             int file = BoardUtils.getFile(square);
@@ -173,17 +173,17 @@ public class Bits {
             long fileMask = Bits.FILE_MASKS[file];
             long tripleFileMask = fileMask | ADJACENT_FILE_MASK[file];
 
-            long forwardMask = isWhite ? ~(Long.MAX_VALUE >>> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
+            long forwardMask = white ? ~(Long.MAX_VALUE >>> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
             passedPawnMask[square] = tripleFileMask & forwardMask;
         }
         return passedPawnMask;
     }
 
-    private static long[] generateProtectedPawnMask(boolean isWhite) {
+    private static long[] generateProtectedPawnMask(boolean white) {
         long[] pawnProtectionMask = new long[64];
         for (int square = 0; square < 64; square++) {
             long squareBB = 1L << square;
-            pawnProtectionMask[square] = isWhite ?
+            pawnProtectionMask[square] = white ?
                     Bitwise.shiftSouthEast(squareBB) | Bitwise.shiftSouthWest(squareBB) :
                     Bitwise.shiftNorthEast(squareBB) | Bitwise.shiftNorthWest(squareBB);
         }

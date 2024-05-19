@@ -179,10 +179,10 @@ public class MoveOrderer implements MoveOrdering {
      *
      * @param plyRemaining The remaining ply depth.
      * @param historyMove The history move to be added.
-     * @param isWhite Whether the move is for white pieces.
+     * @param white Whether the move is for white pieces.
      */
-    public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {
-        int colourIndex = BoardUtils.getColourIndex(isWhite);
+    public void addHistoryMove(int plyRemaining, Move historyMove, boolean white) {
+        int colourIndex = BoardUtils.getColourIndex(white);
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int score = plyRemaining * plyRemaining;

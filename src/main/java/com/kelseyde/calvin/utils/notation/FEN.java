@@ -69,7 +69,7 @@ public class FEN {
                 }
             }
 
-            boolean isWhiteToMove = parseSideToMove(parts[1]);
+            boolean whiteToMove = parseSideToMove(parts[1]);
             int castlingRights = parseCastlingRights(parts[2]);
             int enPassantFile = parseEnPassantFile(parts[3]);
             int fiftyMoveCounter = parts.length > 4 ? parseFiftyMoveCounter(parts[4]) : 0;
@@ -90,7 +90,7 @@ public class FEN {
             board.setBlackKing(blackKing);
             board.recalculatePieces();
             board.setPieceList(BoardUtils.calculatePieceList(board));
-            board.setWhiteToMove(isWhiteToMove);
+            board.setWhiteToMove(whiteToMove);
             board.getGameState().setCastlingRights(castlingRights);
             board.getGameState().setEnPassantFile(enPassantFile);
             board.getGameState().setFiftyMoveCounter(fiftyMoveCounter);
@@ -120,9 +120,9 @@ public class FEN {
                             emptySquares = 0;
                         }
                         long squareBB = 1L << square;
-                        boolean isWhite = (board.getWhitePieces() & squareBB) != 0;
+                        boolean white = (board.getWhitePieces() & squareBB) != 0;
                         String pieceCode = Notation.PIECE_CODE_INDEX.get(piece);
-                        if (isWhite) pieceCode = pieceCode.toUpperCase();
+                        if (white) pieceCode = pieceCode.toUpperCase();
                         sb.append(pieceCode);
                     } else {
                         emptySquares++;
@@ -136,8 +136,8 @@ public class FEN {
                 }
             }
 
-            String isWhiteToMove = toSideToMove(board.isWhiteToMove());
-            sb.append(" ").append(isWhiteToMove);
+            String whiteToMove = toSideToMove(board.isWhiteToMove());
+            sb.append(" ").append(whiteToMove);
 
             String castlingRights = toCastlingRights(board.getGameState().getCastlingRights());
             sb.append(" ").append(castlingRights);

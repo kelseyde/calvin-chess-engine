@@ -7,6 +7,6 @@ public interface Tablebase {
 
     Move getTablebaseMove(Board board) throws TablebaseException;
 
-    boolean canProbeTablebase();
+    boolean canProbeTablebase(long timeoutMs);
 
 }

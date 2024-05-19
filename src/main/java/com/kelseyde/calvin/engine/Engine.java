@@ -3,6 +3,7 @@ package com.kelseyde.calvin.engine;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.endgame.Tablebase;
+import com.kelseyde.calvin.endgame.TablebaseException;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Search;
@@ -100,10 +101,17 @@ public class Engine {
             Move bookMove = book.getBookMove(board);
             onThinkComplete.accept(new SearchResult(0, move(bookMove), 0, 0, 0, 0));
         }
-        else if (useEndgameTablebase()) {
+        else if (useEndgameTablebase(thinkTimeMs)) {
             // If we are in the endgame and tablebase is enabled, select a move from the tablebase probe
-            Move tablebaseMove = tablebase.getTablebaseMove(board);
-            onThinkComplete.accept(new SearchResult(0, move(tablebaseMove), 0, 0, 0, 0));
+            try {
+                Move tablebaseMove = tablebase.getTablebaseMove(board);
+                onThinkComplete.accept(new SearchResult(0, move(tablebaseMove), 0, 0, 0, 0));
+            } catch (TablebaseException e) {
+                // In case tablebase probe fails, search manually
+                stopThinking();
+                think = CompletableFuture.supplyAsync(() -> think(thinkTimeMs));
+                think.thenAccept(onThinkComplete);
+            }
         }
         else {
             // Otherwise, search for the best move.
@@ -182,11 +190,10 @@ public class Engine {
         return config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key);
     }
 
-    private boolean useEndgameTablebase() {
-        int piecesRemaining = board.countPieces();
+    private boolean useEndgameTablebase(int thinkTimeMs) {
         return config.isOwnTablebaseEnabled()
-                && piecesRemaining <= config.getMaxTablebaseSupportedPieces()
-                && tablebase.canProbeTablebase();
+                && board.countPieces() <= config.getMaxTablebaseSupportedPieces()
+                && tablebase.canProbeTablebase(thinkTimeMs);
     }
 
     /**

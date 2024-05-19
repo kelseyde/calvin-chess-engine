@@ -25,7 +25,7 @@ public class LichessTablebase implements Tablebase {
     private final EngineConfig config;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private Instant lastRequestLimitReached;
+    private Instant rateLimitReachedTimestamp;
 
     public LichessTablebase(EngineConfig config) {
         this.config = config;
@@ -47,12 +47,17 @@ public class LichessTablebase implements Tablebase {
     }
 
     @Override
-    public boolean canProbeTablebase() {
-        if (lastRequestLimitReached == null) {
-            return true;
+    public boolean canProbeTablebase(long timeoutMs) {
+        int overheadMs = 50;
+        if (timeoutMs - overheadMs <= config.getLichessTablebaseTimeoutMs()) {
+            return false;
         }
         Duration coolDown = Duration.ofMinutes(1);
-        return Instant.now().isAfter(lastRequestLimitReached.plus(coolDown));
+        boolean canProbe = rateLimitReachedTimestamp == null || Instant.now().isAfter(rateLimitReachedTimestamp.plus(coolDown));
+        if (config.isLichessTablebaseDebugEnabled()) {
+            System.out.println("Can probe Lichess tablebase? " + canProbe);
+        }
+        return canProbe;
     }
 
     private HttpRequest buildRequest(Board board, Duration timeout) throws URISyntaxException {
@@ -71,7 +76,7 @@ public class LichessTablebase implements Tablebase {
             System.out.printf("Lichess response: status %s, body %s%n", status, objectMapper.writeValueAsString(httpResponse.body()));
         }
         if (status == 429) {
-            lastRequestLimitReached = Instant.now();
+            rateLimitReachedTimestamp = Instant.now();
             throw new TablebaseException("Lichess API request limit reached!");
         }
         if (status != 200) {

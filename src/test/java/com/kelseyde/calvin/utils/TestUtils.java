@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.endgame.Tablebase;
+import com.kelseyde.calvin.endgame.lichess.LichessTablebase;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
@@ -34,6 +36,7 @@ public class TestUtils {
     public static final EngineConfig PRD_CONFIG = loadConfig(PRD_CONFIG_LOCATION);
     public static final EngineConfig TST_CONFIG = loadConfig(TST_CONFIG_LOCATION);
     public static final OpeningBook OPENING_BOOK = EngineInitializer.loadDefaultOpeningBook();
+    public static final Tablebase TABLEBASE = new LichessTablebase(PRD_CONFIG);
     public static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
     public static final MoveOrdering MOVE_ORDERER = new MoveOrderer();
     public static final Evaluation EVALUATOR = new Evaluator(PRD_CONFIG);
@@ -43,7 +46,7 @@ public class TestUtils {
     public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), TRANSPOSITION_TABLE);
 
     public static Engine getEngine() {
-        return new Engine(PRD_CONFIG, OPENING_BOOK, new MoveGenerator(), new Searcher(PRD_CONFIG, new ThreadManager(), new MoveGenerator(), new MoveOrderer(), new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
+        return new Engine(PRD_CONFIG, OPENING_BOOK, TABLEBASE, new MoveGenerator(), new Searcher(PRD_CONFIG, new ThreadManager(), new MoveGenerator(), new MoveOrderer(), new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
     }
 
     private static EngineConfig loadConfig(String configLocation) {

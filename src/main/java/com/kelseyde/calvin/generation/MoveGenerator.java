@@ -65,14 +65,7 @@ public class MoveGenerator implements MoveGeneration {
         checkersMask = calculateAttackerMask(board, 1L << kingSquare);
         long checkersCount = Bitwise.countBits(checkersMask);
 
-        int estimatedLegalMoves =
-                (Bitwise.countBits(board.getPawns(white)) * 2) +
-                (Bitwise.countBits(board.getKnights(white)) * 3) +
-                (Bitwise.countBits(board.getBishops(white)) * 3) +
-                (Bitwise.countBits(board.getRooks(white)) * 6) +
-                (Bitwise.countBits(board.getQueens(white)) * 9) +
-                (Bitwise.countBits(board.getKing(white)) * 3);
-
+        int estimatedLegalMoves = estimateLegalMoves(board);
         legalMoves = new ArrayList<>(estimatedLegalMoves);
 
         // Generate king moves first
@@ -562,6 +555,21 @@ public class MoveGenerator implements MoveGeneration {
     private int getCastleEndSquare(boolean white, boolean isKingside) {
         if (isKingside) return white ? 6 : 62;
         else return white ? 2 : 58;
+    }
+
+    /**
+     * Estimate the number of legal moves in the current position, based on the piece count and
+     * the average number of legal moves per piece. Used to initialise the legal moves ArrayList
+     * with a 'best guess', to reduce the number of times the ArrayList has to grow during move
+     * generation, yielding a small increase in performance.
+     */
+    private int estimateLegalMoves(Board board) {
+        return (Bitwise.countBits(board.getPawns(white)) * 2) +
+                (Bitwise.countBits(board.getKnights(white)) * 3) +
+                (Bitwise.countBits(board.getBishops(white)) * 3) +
+                (Bitwise.countBits(board.getRooks(white)) * 6) +
+                (Bitwise.countBits(board.getQueens(white)) * 9) +
+                (Bitwise.countBits(board.getKing(white)) * 3);
     }
 
 }

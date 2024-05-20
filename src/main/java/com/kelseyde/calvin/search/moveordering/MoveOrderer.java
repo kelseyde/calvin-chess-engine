@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.utils.BoardUtils;
-import com.kelseyde.calvin.utils.notation.Notation;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -145,7 +144,10 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private int scoreKillerMove(Move move, int ply) {
-        if (move.matches(killerMoves[ply][0])) {
+        if (ply >= MAX_KILLER_MOVE_PLY) {
+            return 0;
+        }
+        else if (move.matches(killerMoves[ply][0])) {
             return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 3);
         }
         else if (move.matches(killerMoves[ply][1])) {

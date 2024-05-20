@@ -98,7 +98,6 @@ public class Searcher implements Search {
         SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
-            System.out.println("depth " + currentDepth);
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestEvalCurrentDepth = 0;
@@ -108,9 +107,6 @@ public class Searcher implements Search {
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrentDepth != null) {
-                if (board == null) {
-                    System.out.println("yowza");
-                }
                 bestMove = bestMoveCurrentDepth;
                 bestEval = bestEvalCurrentDepth;
                 result = buildResult();

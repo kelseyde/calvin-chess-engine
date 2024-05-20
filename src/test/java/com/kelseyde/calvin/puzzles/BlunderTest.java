@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.puzzles;
 
+import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
@@ -20,7 +21,7 @@ import java.util.List;
 @Disabled
 public class BlunderTest {
 
-    private final Engine engine = TestUtils.getEngine();
+    private final Engine engine = Application.ENGINE;
 
     @Test
     public void testDontSacKnightForCenterPawn() {
@@ -638,7 +639,7 @@ public class BlunderTest {
         engine.setThreadCount(1);
         engine.setPosition(board);
         int thinkTime = engine.chooseThinkTime(10100,10100,100,100);
-        Move move = engine.think(600000).move();
+        Move move = engine.think(thinkTime).move();
         System.out.println(move);
 
     }

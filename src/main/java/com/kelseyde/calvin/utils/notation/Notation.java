@@ -52,8 +52,8 @@ public class Notation {
             return "-";
         }
         String notation = toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
-        if (move.getPromotionPieceType() != null) {
-            notation += PIECE_CODE_INDEX.get(move.getPromotionPieceType());
+        if (move.getPromotionPiece() != null) {
+            notation += PIECE_CODE_INDEX.get(move.getPromotionPiece());
         }
         return notation;
     }

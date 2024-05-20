@@ -121,6 +121,9 @@ public class Engine {
 
     public SearchResult think(int thinkTimeMs) {
         Duration thinkTime = Duration.ofMillis(thinkTimeMs);
+        if (board == null) {
+            System.out.println("huh?");
+        }
         return searcher.search(thinkTime);
     }
 

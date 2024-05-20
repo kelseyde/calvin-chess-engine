@@ -203,7 +203,7 @@ public class TranspositionTableTest {
         Assertions.assertEquals(flag, entry.getFlag());
         Assertions.assertEquals(bestMove, entry.getMove());
         Assertions.assertTrue(entry.getMove() != null && entry.getMove().isPromotion());
-        Assertions.assertEquals(Piece.BISHOP, entry.getMove().getPromotionPieceType());
+        Assertions.assertEquals(Piece.BISHOP, entry.getMove().getPromotionPiece());
         Assertions.assertEquals(eval, entry.getScore());
         Assertions.assertEquals(depth, entry.getDepth());
 

@@ -75,7 +75,7 @@ public class SAN {
 
         // Add promotion piece type
         if (move.isPromotion()) {
-            Piece promotionPieceType = move.getPromotionPieceType();
+            Piece promotionPieceType = move.getPromotionPiece();
             notation += "=" + Notation.PIECE_CODE_INDEX.get(promotionPieceType).toUpperCase();
         }
 

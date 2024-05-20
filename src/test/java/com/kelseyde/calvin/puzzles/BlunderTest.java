@@ -628,18 +628,18 @@ public class BlunderTest {
                 move.matches(Notation.fromCombinedNotation("e5e6"))
         );
 
-//        Board boardCopy = BoardUtils.copy(board);
-//        boardCopy.makeMove(Notation.fromCombinedNotation("e5e6"));
-//        Searcher searcher = TestUtils.SEARCHER;
-//        searcher.setPosition(boardCopy);
-//
-//        int eval = searcher.search(Duration.ofSeconds(1)).eval();
-//        Assertions.assertEquals(0, eval);
-//
-//        boardCopy.makeMove(Notation.fromCombinedNotation("d7d8"));
-//        searcher.setPosition(boardCopy);
-//        eval = searcher.search(Duration.ofSeconds(1)).eval();
-//        Assertions.assertEquals(0, eval);
+    }
+
+    @Test
+    public void testConnectionStalls() {
+
+        String fen = "8/8/4kp2/8/5K2/6p1/6P1/8 b - - 0 1";
+        Board board = FEN.toBoard(fen);
+        engine.setThreadCount(1);
+        engine.setPosition(board);
+        int thinkTime = engine.chooseThinkTime(10100,10100,100,100);
+        Move move = engine.think(600000).move();
+        System.out.println(move);
 
     }
 

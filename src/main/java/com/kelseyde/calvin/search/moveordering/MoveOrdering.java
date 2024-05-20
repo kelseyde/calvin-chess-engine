@@ -17,26 +17,24 @@ public interface MoveOrdering {
     /**
      * Orders the list of moves based on heuristics to determine the likely best moves.
      *
-     * @param board The current board position.
-     * @param moves The list of possible moves to be ordered.
+     * @param board            The current board position.
+     * @param moves            The list of possible moves to be ordered.
      * @param previousBestMove The best move from the previous iteration, used as a heuristic.
-     * @param includeKillers Whether to include killer moves in the ordering.
-     * @param depth The current depth of the search.
+     * @param depth            The current depth of the search.
      * @return The list of moves ordered by their estimated quality.
      */
-    List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth);
+    List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, int depth);
 
     /**
      * Scores a single move based on heuristics to determine its likely quality.
      *
-     * @param board The current board position.
-     * @param move The move to be scored.
+     * @param board            The current board position.
+     * @param move             The move to be scored.
      * @param previousBestMove The best move from the previous iteration, used as a heuristic.
-     * @param includeKillers Whether to consider killer moves in the scoring.
-     * @param depth The current depth of the search.
+     * @param depth            The current depth of the search.
      * @return The score representing the quality of the move.
      */
-    int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth);
+    int scoreMove(Board board, Move move, Move previousBestMove, int depth);
 
     /**
      * Scores a move using the Most Valuable Victim - Least Valuable Aggressor (MVV-LVA) heuristic.
@@ -64,7 +62,7 @@ public interface MoveOrdering {
      */
     void incrementHistoryScore(int depth, Move historyMove, boolean white);
 
-    void decrementHistoryScore(int depth, Move historyMove, boolean white);
+    void ageHistoryTable(boolean white);
 
     /**
      * Clears all stored data related to move ordering heuristics.

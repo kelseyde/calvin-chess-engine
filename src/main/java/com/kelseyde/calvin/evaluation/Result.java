@@ -59,6 +59,65 @@ public class Result {
                 && (Bitwise.countBits(blackPieces) == 0 || Bitwise.countBits(blackPieces) == 1);
     }
 
+    /**
+     * Determine if the position is 'drawish', i.e. still technically winnable but with perfect play should be a draw.
+     * Credit to Blunder chess engine (<a href="https://github.com/deanmchris/blunder">...</a>) for the formula.
+     */
+    public static boolean isDrawish(Material whiteMaterial, Material blackMaterial) {
+        int pawns = whiteMaterial.pawns() + blackMaterial.pawns();
+        if (pawns > 0) return false;
+
+        int whiteKnights = whiteMaterial.knights();
+        int blackKnights = blackMaterial.knights();
+        int whiteBishops = whiteMaterial.bishops();
+        int blackBishops = blackMaterial.bishops();
+        int whiteRooks = whiteMaterial.rooks();
+        int blackRooks = blackMaterial.rooks();
+        int whiteQueens = whiteMaterial.queens();
+        int blackQueens = blackMaterial.queens();
+
+        int knights = whiteKnights + blackKnights;
+        int bishops = whiteBishops + blackBishops;
+        int rooks = whiteRooks + blackRooks;
+        int queens = whiteQueens + blackQueens;
+
+        int whiteMinors = whiteKnights + whiteBishops;
+        int blackMinors = blackKnights + blackBishops;
+
+        int minors = knights + bishops;
+        int majors = rooks + queens;
+        int all = majors + minors;
+
+        return
+            // KQ v KQ
+            (all == 2 && blackQueens == 1 && whiteQueens == 1) ||
+            // KR v KR
+            (all == 2 && blackRooks == 1 && whiteRooks == 1) ||
+            // KN v KB
+            // KB v KB
+            (all == 2 && whiteMinors == 1 && blackMinors == 1) ||
+            // KQ v KRR
+            (all == 3 && ((whiteQueens == 1 && blackRooks == 2) || (blackQueens == 1 && whiteRooks == 2))) ||
+            // KQ vs KBB
+            (all == 3 && ((whiteQueens == 1 && blackBishops == 2) || (blackQueens == 1 && whiteBishops == 2))) ||
+            // KQ vs KNN
+            (all == 3 && ((whiteQueens == 1 && blackKnights == 2) || (blackQueens == 1 && whiteKnights == 2))) ||
+            // KNN v KN
+            // KNN v KB
+            // KNN v K
+            (all <= 3 && ((whiteKnights == 2 && blackMinors <= 1) || (blackKnights == 2 && whiteMinors <= 1))) ||
+            // KQ vs KRN
+            // KQ vs KRB
+            (all == 3 && ((whiteQueens == 1 && blackRooks == 1 && blackMinors == 1) || (blackQueens == 1 && whiteRooks == 1 && whiteMinors == 1))) ||
+            // KR vs KRB
+            // KR vs KRN
+            (all == 3 && ((whiteRooks == 1 && blackRooks == 1 && blackMinors == 1) || (blackRooks == 1 && whiteRooks == 1 && whiteMinors == 1))) ||
+            // KRR v KRB
+            // KRR v KRN
+            (all == 4 && ((whiteRooks == 2 && blackRooks == 1 && blackMinors == 1) || (blackRooks == 2 && whiteRooks == 1 && whiteMinors == 1)));
+
+    }
+
     public static boolean isFiftyMoveRule(Board board) {
         return board.getGameState().getFiftyMoveCounter() >= 100;
     }

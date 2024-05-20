@@ -248,24 +248,24 @@ public class Board {
         gameState = gameStateHistory.pop();
     }
 
-    public void toggleSquares(Piece type, boolean isWhite, int startSquare, int endSquare) {
+    public void toggleSquares(Piece type, boolean white, int startSquare, int endSquare) {
         long toggleMask = (1L << startSquare | 1L << endSquare);
-        toggle(type, isWhite, toggleMask);
+        toggle(type, white, toggleMask);
     }
 
-    public void toggleSquare(Piece type, boolean isWhite, int square) {
+    public void toggleSquare(Piece type, boolean white, int square) {
         long toggleMask = 1L << square;
-        toggle(type, isWhite, toggleMask);
+        toggle(type, white, toggleMask);
     }
 
-    private void toggle(Piece type, boolean isWhite, long toggleMask) {
+    private void toggle(Piece type, boolean white, long toggleMask) {
         switch (type) {
-            case PAWN ->    { if (isWhite) whitePawns ^= toggleMask;    else blackPawns ^= toggleMask; }
-            case KNIGHT ->  { if (isWhite) whiteKnights ^= toggleMask;  else blackKnights ^= toggleMask; }
-            case BISHOP ->  { if (isWhite) whiteBishops ^= toggleMask;  else blackBishops ^= toggleMask; }
-            case ROOK ->    { if (isWhite) whiteRooks ^= toggleMask;    else blackRooks ^= toggleMask; }
-            case QUEEN ->   { if (isWhite) whiteQueens ^= toggleMask;   else blackQueens ^= toggleMask; }
-            case KING ->    { if (isWhite) whiteKing ^= toggleMask;     else blackKing ^= toggleMask; }
+            case PAWN ->    { if (white) whitePawns ^= toggleMask;    else blackPawns ^= toggleMask; }
+            case KNIGHT ->  { if (white) whiteKnights ^= toggleMask;  else blackKnights ^= toggleMask; }
+            case BISHOP ->  { if (white) whiteBishops ^= toggleMask;  else blackBishops ^= toggleMask; }
+            case ROOK ->    { if (white) whiteRooks ^= toggleMask;    else blackRooks ^= toggleMask; }
+            case QUEEN ->   { if (white) whiteQueens ^= toggleMask;   else blackQueens ^= toggleMask; }
+            case KING ->    { if (white) whiteKing ^= toggleMask;     else blackKing ^= toggleMask; }
         }
     }
 
@@ -307,40 +307,40 @@ public class Board {
         return pieceList[square];
     }
 
-    public long getPawns(boolean isWhite) {
-        return isWhite ? whitePawns : blackPawns;
+    public long getPawns(boolean white) {
+        return white ? whitePawns : blackPawns;
     }
 
-    public long getKnights(boolean isWhite) {
-        return isWhite ? whiteKnights : blackKnights;
+    public long getKnights(boolean white) {
+        return white ? whiteKnights : blackKnights;
     }
 
-    public long getBishops(boolean isWhite) {
-        return isWhite ? whiteBishops : blackBishops;
+    public long getBishops(boolean white) {
+        return white ? whiteBishops : blackBishops;
     }
 
-    public long getRooks(boolean isWhite) {
-        return isWhite ? whiteRooks : blackRooks;
+    public long getRooks(boolean white) {
+        return white ? whiteRooks : blackRooks;
     }
 
-    public long getQueens(boolean isWhite) {
-        return isWhite ? whiteQueens : blackQueens;
+    public long getQueens(boolean white) {
+        return white ? whiteQueens : blackQueens;
     }
 
-    public long getKing(boolean isWhite) {
-        return isWhite ? whiteKing : blackKing;
+    public long getKing(boolean white) {
+        return white ? whiteKing : blackKing;
     }
 
-    public long getPieces(boolean isWhite) {
-        return isWhite ? whitePieces : blackPieces;
+    public long getPieces(boolean white) {
+        return white ? whitePieces : blackPieces;
     }
 
     public int countPieces() {
         return Bitwise.countBits(occupied);
     }
 
-    public boolean hasPiecesRemaining(boolean isWhite) {
-        if (isWhite && Bitwise.countBits(whiteKnights) > 0 || Bitwise.countBits(whiteBishops) > 0 ||
+    public boolean hasPiecesRemaining(boolean white) {
+        if (white && Bitwise.countBits(whiteKnights) > 0 || Bitwise.countBits(whiteBishops) > 0 ||
                 Bitwise.countBits(whiteRooks) > 0 || Bitwise.countBits(whiteQueens) > 0) {
             return true;
         }

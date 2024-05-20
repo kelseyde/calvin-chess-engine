@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.tuning.texel;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
@@ -214,9 +215,49 @@ public class TexelTunerTest {
         );
     }
 
+    @Test
+    public void testOutpostWeights() throws IOException, ExecutionException, InterruptedException {
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        int[] initialParams = new int[8];
+        initialParams[0] = initialConfig.getKnightOutpostBonus()[1][0];
+        initialParams[1] = initialConfig.getKnightOutpostBonus()[1][1];
+        initialParams[2] = initialConfig.getKnightOutpostBonus()[2][0];
+        initialParams[3] = initialConfig.getKnightOutpostBonus()[2][1];
+        initialParams[4] = initialConfig.getBishopOutpostBonus()[1][0];
+        initialParams[5] = initialConfig.getBishopOutpostBonus()[1][1];
+        initialParams[6] = initialConfig.getBishopOutpostBonus()[2][0];
+        initialParams[7] = initialConfig.getBishopOutpostBonus()[2][1];
+        tune(
+                initialParams,
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.getKnightOutpostBonus()[1][0] = params[0];
+                    config.getKnightOutpostBonus()[1][1] = params[1];
+                    config.getKnightOutpostBonus()[2][0] = params[2];
+                    config.getKnightOutpostBonus()[2][1] = params[3];
+                    config.getBishopOutpostBonus()[1][0] = params[4];
+                    config.getBishopOutpostBonus()[1][1] = params[5];
+                    config.getBishopOutpostBonus()[2][0] = params[6];
+                    config.getBishopOutpostBonus()[2][1] = params[7];
+                    return config;
+                }
+        );
+    }
+
+    @Test
+    public void tuneDrawishScaleFactor() throws IOException, ExecutionException, InterruptedException {
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        tune(
+                new int[] {initialConfig.getDrawishScaleFactor()},
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.setDrawishScaleFactor(params[0]);
+                    return config;
+                }
+        );
+    }
+
     private void tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException, ExecutionException, InterruptedException {
-        EngineConfig initialConfig = createConfigFunction.apply(initialParams);
-        System.out.println("Initial config: " + objectMapper.writeValueAsString(initialConfig));
         int[] bestParams = tuner.tune(initialParams, createConfigFunction);
         EngineConfig bestConfig = createConfigFunction.apply(bestParams);
         System.out.println("Best config: " + objectMapper.writeValueAsString(bestConfig));

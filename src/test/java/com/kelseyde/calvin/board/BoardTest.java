@@ -410,9 +410,9 @@ public class BoardTest {
         Assertions.assertEquals(actualSquares, expectedSquares);
     }
 
-    private Set<Integer> getPiecePositions(Board board, boolean isWhiteToMove) {
+    private Set<Integer> getPiecePositions(Board board, boolean whiteToMove) {
         Set<Integer> positions = new HashSet<>();
-        if (isWhiteToMove) {
+        if (whiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
                 int position = Bitwise.getNextBit(whitePieces);

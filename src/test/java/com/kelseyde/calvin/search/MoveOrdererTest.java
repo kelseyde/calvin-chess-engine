@@ -146,7 +146,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("e2", "e7")
                 ));
 
-        moveOrderer.addHistoryMove(5, Notation.fromNotation("f1", "e1"), true);
+        moveOrderer.incrementHistoryScore(5, Notation.fromNotation("f1", "e1"), true);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, true, 1);
 
@@ -232,10 +232,10 @@ public class MoveOrdererTest {
         // Add killer move
         moveOrderer.addKillerMove(3, new Move(Notation.fromNotation("d7"), Notation.fromNotation("d5"), Move.PAWN_DOUBLE_MOVE_FLAG));
         // Add history moves
-        moveOrderer.addHistoryMove(2, new Move(Notation.fromNotation("h7"), Notation.fromNotation("h5"), Move.PAWN_DOUBLE_MOVE_FLAG), false);
-        moveOrderer.addHistoryMove(3, new Move(Notation.fromNotation("g7"), Notation.fromNotation("g5"), Move.PAWN_DOUBLE_MOVE_FLAG), false);
+        moveOrderer.incrementHistoryScore(2, new Move(Notation.fromNotation("h7"), Notation.fromNotation("h5"), Move.PAWN_DOUBLE_MOVE_FLAG), false);
+        moveOrderer.incrementHistoryScore(3, new Move(Notation.fromNotation("g7"), Notation.fromNotation("g5"), Move.PAWN_DOUBLE_MOVE_FLAG), false);
         // Add a white history move just to confirm it is not used
-        moveOrderer.addHistoryMove(2, new Move(Notation.fromNotation("h3"), Notation.fromNotation("h2")), true);
+        moveOrderer.incrementHistoryScore(2, new Move(Notation.fromNotation("h3"), Notation.fromNotation("h2")), true);
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, true, 3);
 

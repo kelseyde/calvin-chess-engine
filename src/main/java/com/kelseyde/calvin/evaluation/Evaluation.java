@@ -6,6 +6,8 @@ public interface Evaluation {
 
     int evaluate(Board board);
 
+    int evaluate(Board board, boolean lazy, int alpha, int beta);
+
     Score getScore();
 
 }

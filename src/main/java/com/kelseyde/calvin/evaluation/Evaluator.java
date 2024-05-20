@@ -82,6 +82,11 @@ public class Evaluator implements Evaluation {
 
     @Override
     public int evaluate(Board board) {
+        return evaluate(board, false, 0, 0);
+    }
+
+    @Override
+    public int evaluate(Board board, boolean lazy, int alpha, int beta) {
 
         score = new Score();
         boolean white = board.isWhiteToMove();
@@ -115,6 +120,16 @@ public class Evaluator implements Evaluation {
         int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
         int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
         score.addMaterialScore(blackMaterialMiddlegameScore, blackMaterialEndgameScore, false);
+
+        if (lazy) {
+            int lazyEval = score.sum(white);
+            if (lazyEval - 300 >= beta) {
+                return lazyEval;
+            }
+            if (lazyEval + 300 < alpha) {
+                return lazyEval;
+            }
+        }
 
         // Blockers used during mobility calculations
         long friendlyWhiteBlockers = whiteKing | whitePawns;

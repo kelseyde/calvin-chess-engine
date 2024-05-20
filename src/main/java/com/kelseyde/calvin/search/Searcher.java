@@ -406,7 +406,8 @@ public class Searcher implements Search {
             previousBestMove = transposition.getMove();
         }
 
-        int eval = evaluator.evaluate(board);
+        // lazy eval
+        int eval = evaluator.evaluate(board, true, alpha, beta);
         int standPat = eval;
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());

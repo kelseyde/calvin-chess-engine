@@ -123,10 +123,10 @@ public class Evaluator implements Evaluation {
 
         if (lazy) {
             int lazyEval = score.sum(white);
-            if (lazyEval - 400 >= beta) {
+            if (lazyEval - 250 >= beta) {
                 return lazyEval;
             }
-            if (lazyEval + 400 < alpha) {
+            if (lazyEval + 250 < alpha) {
                 return lazyEval;
             }
         }

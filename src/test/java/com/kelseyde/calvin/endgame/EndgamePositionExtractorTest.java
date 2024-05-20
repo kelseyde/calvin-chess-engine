@@ -5,7 +5,6 @@ import com.kelseyde.calvin.evaluation.Material;
 import com.kelseyde.calvin.evaluation.Phase;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.PGN;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

@@ -90,6 +90,7 @@ public class Searcher implements Search {
         bestEval = 0;
         bestEvalCurrentDepth = 0;
         cancelled = false;
+        moveOrderer.ageHistoryScores(board.isWhiteToMove());
 
         int alpha = Integer.MIN_VALUE + 1;
         int beta = Integer.MAX_VALUE - 1;
@@ -253,7 +254,7 @@ public class Searcher implements Search {
         // the order in which moves are evaluated.
         int[] scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, true, ply);
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
         }
 
         Move bestMove = null;
@@ -278,7 +279,7 @@ public class Searcher implements Search {
 
             Move move = moves.get(i);
             boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
-            boolean isPromotion = move.getPromotionPieceType() != null;
+            boolean isPromotion = move.getPromotionPiece() != null;
 
             board.makeMove(move);
             nodes++;
@@ -363,7 +364,7 @@ public class Searcher implements Search {
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
-                    moveOrderer.addHistoryMove(depth, move, board.isWhiteToMove());
+                    moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
                 }
                 return beta;
             }

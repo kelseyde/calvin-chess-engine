@@ -31,7 +31,7 @@ public class MoveOrdererPerformanceTest {
         Instant start = Instant.now();
         IntStream.range(0, 100000).forEach(i -> {
             List<Move> moves = moveGenerator.generateMoves(board1);
-            moves.sort(Comparator.comparingInt(move -> -moveOrderer.scoreMove(board1, move, null, true, 0)));
+            moves.sort(Comparator.comparingInt(move -> -moveOrderer.scoreMove(board1, move, null, 0)));
         });
         Instant end = Instant.now();
         System.out.println(Duration.between(start, end));

@@ -243,6 +243,19 @@ public class TexelTunerTest {
         );
     }
 
+    @Test
+    public void tuneDrawishScaleFactor() throws IOException, ExecutionException, InterruptedException {
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        tune(
+                new int[] {initialConfig.getDrawishScaleFactor()},
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.setDrawishScaleFactor(params[0]);
+                    return config;
+                }
+        );
+    }
+
     private void tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException, ExecutionException, InterruptedException {
         EngineConfig initialConfig = createConfigFunction.apply(initialParams);
         System.out.println("Initial config: " + objectMapper.writeValueAsString(initialConfig));

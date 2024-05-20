@@ -11,6 +11,7 @@ import com.kelseyde.calvin.transposition.pawn.PawnHashEntry.PawnScore;
 import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
+import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -147,6 +148,10 @@ public class Evaluator implements Evaluation {
             score.setBlackTempoBonus(config.getTempoBonus());
         }
 
+        if (Result.isDrawish(whiteMaterial, blackMaterial)) {
+            score.setScaleFactor(config.getDrawishScaleFactor());
+        }
+
         return score.sum(white);
 
     }
@@ -265,11 +270,11 @@ public class Evaluator implements Evaluation {
             mobilityMgScore += knightMgMobility[moveCount];
             mobilityEgScore += knightEgMobility[moveCount];
 
-            int outpostValue = Bitwise.isOutpost(square, friendlyPawns, opponentPawns, white);
-            if (outpostValue > 0) {
-                outpostMgScore += config.getKnightOutpostBonus()[outpostValue][0];
-                outpostEgScore += config.getKnightOutpostBonus()[outpostValue][1];
-            }
+//            int outpostValue = Bitwise.isOutpost(square, friendlyPawns, opponentPawns, white);
+//            if (outpostValue > 0) {
+//                outpostMgScore += config.getKnightOutpostBonus()[outpostValue][0];
+//                outpostEgScore += config.getKnightOutpostBonus()[outpostValue][1];
+//            }
 
             knights = Bitwise.popBit(knights);
         }
@@ -313,11 +318,11 @@ public class Evaluator implements Evaluation {
             mobilityMgScore += bishopMgMobility[moveCount];
             mobilityEgScore += bishopEgMobility[moveCount];
 
-            int outpostValue = Bitwise.isOutpost(square, friendlyPawns, opponentPawns, white);
-            if (outpostValue > 0) {
-                outpostMgScore += config.getBishopOutpostBonus()[outpostValue][0];
-                outpostEgScore += config.getBishopOutpostBonus()[outpostValue][1];
-            }
+//            int outpostValue = Bitwise.isOutpost(square, friendlyPawns, opponentPawns, white);
+//            if (outpostValue > 0) {
+//                outpostMgScore += config.getBishopOutpostBonus()[outpostValue][0];
+//                outpostEgScore += config.getBishopOutpostBonus()[outpostValue][1];
+//            }
 
             bishops = Bitwise.popBit(bishops);
         }

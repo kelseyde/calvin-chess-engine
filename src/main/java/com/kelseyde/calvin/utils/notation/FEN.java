@@ -142,8 +142,8 @@ public class FEN {
             String castlingRights = toCastlingRights(board.getGameState().getCastlingRights());
             sb.append(" ").append(castlingRights);
 
-            String enPassantFile = toEnPassantSquare(board.getGameState().getEnPassantFile());
-            sb.append(" ").append(enPassantFile);
+            String enPassantSquare = toEnPassantSquare(board.getGameState().getEnPassantFile(), board.isWhiteToMove());
+            sb.append(" ").append(enPassantSquare);
 
             String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getFiftyMoveCounter());
             sb.append(" ").append(fiftyMoveCounter);
@@ -216,11 +216,12 @@ public class FEN {
         return BoardUtils.getFile(square);
     }
 
-    private static String toEnPassantSquare(int enPassantFile) {
+    private static String toEnPassantSquare(int enPassantFile, boolean white) {
+        int rank = white ? 2 : 5;
         if (enPassantFile == -1) {
             return "-";
         }
-        return Integer.valueOf(Notation.toNotation(enPassantFile)).toString();
+        return Notation.toNotation(BoardUtils.squareIndex(rank, enPassantFile));
     }
 
     private static int parseFiftyMoveCounter(String fiftyMoveCounter) {

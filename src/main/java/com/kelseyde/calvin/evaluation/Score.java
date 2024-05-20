@@ -60,6 +60,8 @@ public class Score {
     int whiteTempoBonus;
     int blackTempoBonus;
 
+    int scaleFactor = 1;
+
     float phase;
 
     public void addMaterialScore(int middlegameScore, int endgameScore, boolean white) {
@@ -173,7 +175,11 @@ public class Score {
                 blackKingSafetyScore + blackKnightScore + blackBishopScore + blackRookScore + blackMopUpScore + blackTempoBonus;
 
         int modifier = white ? 1 : -1;
-        return modifier * (whiteScore - blackScore);
+        int score = modifier * (whiteScore - blackScore);
+        if (scaleFactor != 1) {
+            score = score / scaleFactor;
+        }
+        return score;
 
     }
 

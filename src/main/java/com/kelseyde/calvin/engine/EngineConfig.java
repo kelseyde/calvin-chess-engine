@@ -89,6 +89,7 @@ public class EngineConfig {
     int kingChebyshevDistanceMultiplier;
     int kingCenterManhattanDistanceMultiplier;
 
+    int drawishScaleFactor;
     int tempoBonus;
 
     public void postInitialise() {

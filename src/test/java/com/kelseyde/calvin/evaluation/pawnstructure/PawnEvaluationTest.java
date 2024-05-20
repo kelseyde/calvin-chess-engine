@@ -129,7 +129,7 @@ public class PawnEvaluationTest {
 //    }
 //
 //    private int score(Board board) {
-//        int modifier = board.isWhiteToMove() ? 1 : -1;
+//        int modifier = board.whiteToMove() ? 1 : -1;
 //        long whitePawns = board.getPawns(true);
 //        long blackPawns = board.getPawns(false);
 //        int whiteScore = PawnEvaluation.score(config, whitePawns, blackPawns, true);

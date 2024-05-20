@@ -66,55 +66,55 @@ public class StaticExchangeEvaluator {
 
     private Move getLeastValuableAttacker(Board board, int square) {
 
-        boolean isWhite = board.isWhiteToMove();
+        boolean white = board.isWhiteToMove();
 
-        long pawns = board.getPawns(isWhite);
+        long pawns = board.getPawns(white);
         if (pawns > 0) {
-            long pawnAttackMask = moveGenerator.getPawnAttacks(board, square, !isWhite);
+            long pawnAttackMask = moveGenerator.getPawnAttacks(board, square, !white);
             if ((pawnAttackMask & pawns) != 0) {
                 int pawnStartSquare = Bitwise.getNextBit(pawnAttackMask & pawns);
                 return new Move(pawnStartSquare, square);
             }
         }
 
-        long knights = board.getKnights(isWhite);
+        long knights = board.getKnights(white);
         if (knights > 0) {
-            long knightAttackMask = moveGenerator.getKnightAttacks(board, square, !isWhite);
+            long knightAttackMask = moveGenerator.getKnightAttacks(board, square, !white);
             if ((knightAttackMask & knights) != 0) {
                 int knightStartSquare = Bitwise.getNextBit(knightAttackMask & knights);
                 return new Move(knightStartSquare, square);
             }
         }
 
-        long bishops = board.getBishops(isWhite);
+        long bishops = board.getBishops(white);
         if (bishops > 0) {
-            long bishopAttackMask = moveGenerator.getBishopAttacks(board, square, !isWhite);
+            long bishopAttackMask = moveGenerator.getBishopAttacks(board, square, !white);
             if ((bishopAttackMask & bishops) != 0) {
                 int bishopStartSquare = Bitwise.getNextBit(bishopAttackMask & bishops);
                 return new Move(bishopStartSquare, square);
             }
         }
 
-        long rooks = board.getRooks(isWhite);
+        long rooks = board.getRooks(white);
         if (rooks > 0) {
-            long rookAttackMask = moveGenerator.getRookAttacks(board, square, !isWhite);
+            long rookAttackMask = moveGenerator.getRookAttacks(board, square, !white);
             if ((rookAttackMask & rooks) != 0) {
                 int rookStartSquare = Bitwise.getNextBit(rookAttackMask & rooks);
                 return new Move(rookStartSquare, square);
             }
         }
 
-        long queens = board.getQueens(isWhite);
+        long queens = board.getQueens(white);
         if (queens > 0) {
-            long queenAttackMask = moveGenerator.getQueenAttacks(board, square, !isWhite);
+            long queenAttackMask = moveGenerator.getQueenAttacks(board, square, !white);
             if ((queenAttackMask & queens) != 0) {
                 int queenStartSquare = Bitwise.getNextBit(queenAttackMask & queens);
                 return new Move(queenStartSquare, square);
             }
         }
 
-        long king = board.getKing(isWhite);
-        long kingAttackMask = moveGenerator.getKingAttacks(board, square, !isWhite);
+        long king = board.getKing(white);
+        long kingAttackMask = moveGenerator.getKingAttacks(board, square, !white);
         if ((kingAttackMask & king) != 0) {
             int kingStartSquare = Bitwise.getNextBit(kingAttackMask & king);
             return new Move(kingStartSquare, square);

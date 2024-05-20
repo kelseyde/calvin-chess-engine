@@ -21,17 +21,17 @@ public class GameState {
     int castlingRights = Bits.INITIAL_CASTLING_RIGHTS;
     int fiftyMoveCounter = 0;
 
-    public boolean hasCastlingRights(boolean isWhite) {
-        return isKingsideCastlingAllowed(isWhite) || isQueensideCastlingAllowed(isWhite);
+    public boolean hasCastlingRights(boolean white) {
+        return isKingsideCastlingAllowed(white) || isQueensideCastlingAllowed(white);
     }
 
-    public boolean isKingsideCastlingAllowed(boolean isWhite) {
-        long kingsideMask = isWhite ? 0b0001 : 0b0100;
+    public boolean isKingsideCastlingAllowed(boolean white) {
+        long kingsideMask = white ? 0b0001 : 0b0100;
         return (castlingRights & kingsideMask) == kingsideMask;
     }
 
-    public boolean isQueensideCastlingAllowed(boolean isWhite) {
-        long queensideMask = isWhite ? 0b0010 : 0b1000;
+    public boolean isQueensideCastlingAllowed(boolean white) {
+        long queensideMask = white ? 0b0010 : 0b1000;
         return (castlingRights & queensideMask) == queensideMask;
     }
 

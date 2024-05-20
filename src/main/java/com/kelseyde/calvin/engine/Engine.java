@@ -142,9 +142,9 @@ public class Engine {
 
     public int chooseThinkTime(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs) {
 
-        boolean isWhite = board.isWhiteToMove();
-        int timeRemainingMs = isWhite ? timeWhiteMs : timeBlackMs;
-        int incrementMs = isWhite ? incrementWhiteMs : incrementBlackMs;
+        boolean white = board.isWhiteToMove();
+        int timeRemainingMs = white ? timeWhiteMs : timeBlackMs;
+        int incrementMs = white ? incrementWhiteMs : incrementBlackMs;
 
         int overhead = 50;
         timeRemainingMs -= overhead;

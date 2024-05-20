@@ -14,25 +14,31 @@
   "lichessTablebaseTimeoutMs": 750,
   "ponderEnabled":true,
   "pondering":false,
+  "principalVariationLength": 12,
   "searchCancelled":false,
   "maxDepth":256,
-  "aspMargin":50,
+  "aspMargin":25,
   "aspFailMargin":150,
   "nmpDepth":0,
-  "fpDepth":4,
+  "fpDepth":6,
   "rfpDepth":4,
   "lmrDepth":3,
+  "lmrMinSearchedMoves": 3,
+  "lmrBase": 0.85,
+  "lmrDivisor": 3.12,
   "lmpDepth":2,
   "lmpMultiplier":10,
   "iirDepth":4,
-  "nmpMargin":50,
+  "nmpMargin":0,
   "dpMargin":140,
   "fpMargin":[
     0,
     170,
     260,
     450,
-    575
+    500,
+    550,
+    600
   ],
   "rfpMargin":[
     0,
@@ -1116,4 +1122,5 @@
   "kingChebyshevDistanceMultiplier":10,
   "kingCenterManhattanDistanceMultiplier":14,
   "tempoBonus":10
+}
 }

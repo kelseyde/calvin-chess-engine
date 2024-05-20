@@ -64,7 +64,7 @@ public class Board {
 
         int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
         int newEnPassantFile = -1;
-        boolean resetFiftyMoveCounter = capturedPiece != null || Piece.PAWN.equals(piece);
+        boolean resetFiftyMoveCounter = capturedPiece != null || Piece.PAWN == piece;
         newFiftyMoveCounter = resetFiftyMoveCounter ? 0 : ++newFiftyMoveCounter;
         long zobrist = gameState.getZobristKey();
         long pawnZobrist = gameState.getPawnKey();
@@ -177,7 +177,6 @@ public class Board {
         Move lastMove = moveHistory.pop();
         int startSquare = lastMove.getStartSquare();
         int endSquare = lastMove.getEndSquare();
-        Piece piece = pieceAt(endSquare);
 
         if (lastMove.isCastling()) {
             toggleKing(isWhiteToMove, endSquare, startSquare);
@@ -215,6 +214,7 @@ public class Board {
             pieceList[captureSquare] = Piece.PAWN;
         }
         else {
+            Piece piece = pieceAt(endSquare);
             toggleSquares(piece, isWhiteToMove, endSquare, startSquare);
             if (gameState.getCapturedPiece() != null) {
                 toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
@@ -335,6 +335,12 @@ public class Board {
         occupied = whitePieces | blackPieces;
     }
 
+    public void recalculatePieces(boolean white) {
+        if (white) whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
+        else       blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
+        occupied = whitePieces | blackPieces;
+    }
+
     private int calculateCastlingRights(int startSquare, int endSquare, Piece pieceType) {
         int newCastlingRights = gameState.getCastlingRights();
         if (newCastlingRights == 0b0000) {
@@ -342,7 +348,7 @@ public class Board {
             return newCastlingRights;
         }
         // Any move by the king removes castling rights.
-        if (Piece.KING.equals(pieceType)) {
+        if (Piece.KING == pieceType) {
             newCastlingRights &= isWhiteToMove ? Bits.CLEAR_WHITE_CASTLING_MASK : Bits.CLEAR_BLACK_CASTLING_MASK;
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.

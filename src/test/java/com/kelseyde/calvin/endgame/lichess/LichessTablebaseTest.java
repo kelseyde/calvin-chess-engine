@@ -71,7 +71,7 @@ public class LichessTablebaseTest {
     }
 
     private List<String> loadFens() throws IOException {
-        String fileName = "src/test/resources/texel/quiet_positions.txt";
+        String fileName = "src/test/resources/texel/quiet_positions.epd";
         Path path = Paths.get(fileName);
         return Files.readAllLines(path);
     }

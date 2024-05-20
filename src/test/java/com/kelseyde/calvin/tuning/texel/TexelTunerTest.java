@@ -16,7 +16,7 @@ import java.util.function.Function;
 @Disabled
 public class TexelTunerTest {
 
-    private final TexelTuner tuner = new TexelTuner("quiet_positions.txt");
+    private final TexelTuner tuner = new TexelTuner("quiet_positions.epd");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

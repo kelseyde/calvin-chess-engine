@@ -216,9 +216,6 @@ public class Evaluator implements Evaluation {
             else if (Bitwise.isIsolatedPawn(file, friendlyPawns)) {
                 isolatedPawnCount++;
             }
-            if (Bitwise.isDoubledPawn(file, friendlyPawns)) {
-                doubledPawnCount++;
-            }
 
             pawnsIterator = Bitwise.popBit(pawnsIterator);
         }

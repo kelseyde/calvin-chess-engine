@@ -113,6 +113,7 @@ public class MoveOrderer implements MoveOrdering {
             // Non-captures are sorted using history + killers
             boolean isKiller = includeKillers && isKillerMove(depth, move);
             if (isKiller) {
+                // TODO give first, second, third killers different scores, see Blunder
                 moveScore += KILLER_MOVE_BIAS;
             }
             int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
@@ -182,6 +183,8 @@ public class MoveOrderer implements MoveOrdering {
      * @param isWhite Whether the move is for white pieces.
      */
     public void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite) {
+        // TODO age history moves? see Blunder
+        // TODO decrement history moves if they don't cause a cutoff, see Blunder
         int colourIndex = BoardUtils.getColourIndex(isWhite);
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();

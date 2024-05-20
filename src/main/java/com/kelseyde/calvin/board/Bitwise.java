@@ -255,17 +255,6 @@ public class Bitwise {
      * Get the bitboard for a specific file.
      */
     public static long getFileBitboard(int file) {
-        return switch (file) {
-            case -1 -> 0L;
-            case 0 -> Bits.FILE_A;
-            case 1 -> Bits.FILE_B;
-            case 2 -> Bits.FILE_C;
-            case 3 -> Bits.FILE_D;
-            case 4 -> Bits.FILE_E;
-            case 5 -> Bits.FILE_F;
-            case 6 -> Bits.FILE_G;
-            case 7 -> Bits.FILE_H;
-            default -> throw new IllegalArgumentException("Invalid file " + file);
-        };
+        return 0x0101010101010101L << file;
     }
 }

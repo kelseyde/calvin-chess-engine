@@ -247,8 +247,6 @@ public class Evaluator implements Evaluation {
         int piecePlacementEgScore = 0;
         int mobilityMgScore = 0;
         int mobilityEgScore = 0;
-//        int outpostMgScore = 0;
-//        int outpostEgScore = 0;
 
         while (knights != 0) {
             int knight = Bitwise.getNextBit(knights);
@@ -263,18 +261,11 @@ public class Evaluator implements Evaluation {
             mobilityMgScore += knightMgMobility[moveCount];
             mobilityEgScore += knightEgMobility[moveCount];
 
-//            int outpostValue = Bitwise.isOutpost(square, friendlyPawns, opponentPawns, white);
-//            if (outpostValue > 0) {
-//                outpostMgScore += config.getKnightOutpostBonus()[outpostValue][0];
-//                outpostEgScore += config.getKnightOutpostBonus()[outpostValue][1];
-//            }
-
             knights = Bitwise.popBit(knights);
         }
 
         score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
         score.addMobilityScore(mobilityMgScore, mobilityEgScore, white);
-//        score.addKnightScore(outpostMgScore, outpostEgScore, white);
 
     }
 
@@ -309,18 +300,11 @@ public class Evaluator implements Evaluation {
             mobilityMgScore += bishopMgMobility[moveCount];
             mobilityEgScore += bishopEgMobility[moveCount];
 
-//            int outpostValue = Bitwise.isOutpost(square, friendlyPawns, opponentPawns, white);
-//            if (outpostValue > 0) {
-//                outpostMgScore += config.getBishopOutpostBonus()[outpostValue][0];
-//                outpostEgScore += config.getBishopOutpostBonus()[outpostValue][1];
-//            }
-
             bishops = Bitwise.popBit(bishops);
         }
 
         score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
         score.addMobilityScore(mobilityMgScore, mobilityEgScore, white);
-//        score.addBishopScore(outpostMgScore, outpostEgScore, white);
 
     }
 

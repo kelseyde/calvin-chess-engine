@@ -85,12 +85,12 @@ public class BoardUtils {
         return 8 * rank + file;
     }
 
-    public static boolean isValidIndex(int squareIndex) {
-        return squareIndex >= 0 && squareIndex < 64;
+    public static boolean isValidIndex(int square) {
+        return square >= 0 && square < 64;
     }
 
-    public static int getColourIndex(boolean isWhite) {
-        return isWhite ? 1 : 0;
+    public static int getColourIndex(boolean white) {
+        return white ? 1 : 0;
     }
 
     public static Piece[] calculatePieceList(Board board) {

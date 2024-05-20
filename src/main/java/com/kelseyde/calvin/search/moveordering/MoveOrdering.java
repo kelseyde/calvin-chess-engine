@@ -60,9 +60,9 @@ public interface MoveOrdering {
      *
      * @param plyRemaining The remaining depth in the search.
      * @param historyMove The move to be added to the history table.
-     * @param isWhite Whether the move was made by the white player.
+     * @param white Whether the move was made by the white player.
      */
-    void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite);
+    void addHistoryMove(int plyRemaining, Move historyMove, boolean white);
 
     /**
      * Clears all stored data related to move ordering heuristics.

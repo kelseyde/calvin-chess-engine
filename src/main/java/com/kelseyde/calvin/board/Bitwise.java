@@ -87,8 +87,8 @@ public class Bitwise {
     /**
      * Calculate single pawn moves.
      */
-    public static long pawnSingleMoves(long pawns, long occupied, boolean isWhite) {
-        return isWhite ?
+    public static long pawnSingleMoves(long pawns, long occupied, boolean white) {
+        return white ?
                 shiftNorth(pawns) & ~occupied & ~Bits.RANK_8 :
                 shiftSouth(pawns) & ~occupied & ~Bits.RANK_1;
     }
@@ -96,8 +96,8 @@ public class Bitwise {
     /**
      * Calculate double pawn moves.
      */
-    public static long pawnDoubleMoves(long pawns, long occupied, boolean isWhite) {
-        return isWhite ?
+    public static long pawnDoubleMoves(long pawns, long occupied, boolean white) {
+        return white ?
                 shiftNorth(pawnSingleMoves(pawns, occupied, true)) & ~occupied & Bits.RANK_4 :
                 shiftSouth(pawnSingleMoves(pawns, occupied, false)) & ~occupied & Bits.RANK_5;
     }
@@ -105,8 +105,8 @@ public class Bitwise {
     /**
      * Calculate pawn push promotions.
      */
-    public static long pawnPushPromotions(long pawns, long occupied, boolean isWhite) {
-        return isWhite ?
+    public static long pawnPushPromotions(long pawns, long occupied, boolean white) {
+        return white ?
                 shiftNorth(pawns) & ~occupied & Bits.RANK_8 :
                 shiftSouth(pawns) & ~occupied & Bits.RANK_1;
     }
@@ -114,8 +114,8 @@ public class Bitwise {
     /**
      * Calculate left captures by pawns.
      */
-    public static long pawnLeftCaptures(long pawns, long opponents, boolean isWhite) {
-        return isWhite ?
+    public static long pawnLeftCaptures(long pawns, long opponents, boolean white) {
+        return white ?
                 shiftNorthWest(pawns) & opponents & ~Bits.FILE_H & ~Bits.RANK_8 :
                 shiftSouthWest(pawns) & opponents & ~Bits.FILE_H & ~Bits.RANK_1;
     }
@@ -123,8 +123,8 @@ public class Bitwise {
     /**
      * Calculate right captures by pawns.
      */
-    public static long pawnRightCaptures(long pawns, long opponents, boolean isWhite) {
-        return isWhite ?
+    public static long pawnRightCaptures(long pawns, long opponents, boolean white) {
+        return white ?
                 shiftNorthEast(pawns) & opponents & ~Bits.FILE_A & ~Bits.RANK_8 :
                 shiftSouthEast(pawns) & opponents & ~Bits.FILE_A & ~Bits.RANK_1;
     }
@@ -132,8 +132,8 @@ public class Bitwise {
     /**
      * Calculate left en passant captures by pawns.
      */
-    public static long pawnLeftEnPassants(long pawns, long enPassantFile, boolean isWhite) {
-        return isWhite ?
+    public static long pawnLeftEnPassants(long pawns, long enPassantFile, boolean white) {
+        return white ?
                 shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 & ~Bits.FILE_H :
                 shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 & ~Bits.FILE_H;
     }
@@ -141,8 +141,8 @@ public class Bitwise {
     /**
      * Calculate right en passant captures by pawns.
      */
-    public static long pawnRightEnPassants(long pawns, long enPassantFile, boolean isWhite) {
-        return isWhite ?
+    public static long pawnRightEnPassants(long pawns, long enPassantFile, boolean white) {
+        return white ?
                 shiftNorthEast(pawns) & enPassantFile & Bits.RANK_6 & ~Bits.FILE_A :
                 shiftSouthEast(pawns) & enPassantFile & Bits.RANK_3 & ~Bits.FILE_A;
     }
@@ -150,8 +150,8 @@ public class Bitwise {
     /**
      * Calculate left capture promotions by pawns.
      */
-    public static long pawnLeftCapturePromotions(long pawns, long opponents, boolean isWhite) {
-        return isWhite ?
+    public static long pawnLeftCapturePromotions(long pawns, long opponents, boolean white) {
+        return white ?
                 shiftNorthWest(pawns) & opponents & ~Bits.FILE_H & Bits.RANK_8 :
                 shiftSouthWest(pawns) & opponents & ~Bits.FILE_H & Bits.RANK_1;
     }
@@ -159,8 +159,8 @@ public class Bitwise {
     /**
      * Calculate right capture promotions by pawns.
      */
-    public static long pawnRightCapturePromotions(long pawns, long opponents, boolean isWhite) {
-        return isWhite ?
+    public static long pawnRightCapturePromotions(long pawns, long opponents, boolean white) {
+        return white ?
                 shiftNorthEast(pawns) & opponents & ~Bits.FILE_A & Bits.RANK_8 :
                 shiftSouthEast(pawns) & opponents & ~Bits.FILE_A & Bits.RANK_1;
     }
@@ -168,8 +168,8 @@ public class Bitwise {
     /**
      * Determine if a pawn is passed.
      */
-    public static boolean isPassedPawn(int pawn, long opponentPawns, boolean isWhite) {
-        long passedPawnMask = isWhite ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];
+    public static boolean isPassedPawn(int pawn, long opponentPawns, boolean white) {
+        long passedPawnMask = white ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];
         return (passedPawnMask & opponentPawns) == 0;
     }
 
@@ -199,9 +199,24 @@ public class Bitwise {
     /**
      * Count the number of pawn protectors.
      */
-    public static int countPawnProtectors(int pawn, long friendlyPawns, boolean isWhite) {
-        long protectionMask = isWhite ? Bits.WHITE_PROTECTED_PAWN_MASK[pawn] : Bits.BLACK_PROTECTED_PAWN_MASK[pawn];
+    public static int countPawnProtectors(int square, long friendlyPawns, boolean white) {
+        long protectionMask = white ? Bits.WHITE_PROTECTED_PAWN_MASK[square] : Bits.BLACK_PROTECTED_PAWN_MASK[square];
         return countBits(protectionMask & friendlyPawns);
+    }
+
+    public static boolean hasPotentialPawnAttackers(int square, long opponentPawns, boolean white) {
+        long potentialAttackerMask = white ? Bits.WHITE_FORWARD_ADJACENT_MASK[square] : Bits.BLACK_FORWARD_ADJACENT_MASK[square];
+        return (potentialAttackerMask & opponentPawns) != 0;
+    }
+
+    /**
+     * Determine if this square is an outpost
+     * @return 0 for no outpost, 1 for single-protected outpost, 2 for double-protected outpost
+     */
+    public static int isOutpost(int square, long friendlyPawns, long opponentPawns, boolean white) {
+        return !hasPotentialPawnAttackers(square, opponentPawns, white) ?
+                countPawnProtectors(square, friendlyPawns, white) :
+                0;
     }
 
     /**

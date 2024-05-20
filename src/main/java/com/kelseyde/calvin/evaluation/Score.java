@@ -39,6 +39,16 @@ public class Score {
     int whiteKingSafetyScore;
     int blackKingSafetyScore;
 
+    int whiteKnightMgScore;
+    int whiteKnightEgScore;
+    int blackKnightMgScore;
+    int blackKnightEgScore;
+
+    int whiteBishopMgScore;
+    int whiteBishopEgScore;
+    int blackBishopMgScore;
+    int blackBishopEgScore;
+
     int whiteRookMgScore;
     int whiteRookEgScore;
     int blackRookMgScore;
@@ -50,10 +60,12 @@ public class Score {
     int whiteTempoBonus;
     int blackTempoBonus;
 
+    int scaleFactor = 1;
+
     float phase;
 
-    public void addMaterialScore(int middlegameScore, int endgameScore, boolean isWhite) {
-        if (isWhite) {
+    public void addMaterialScore(int middlegameScore, int endgameScore, boolean white) {
+        if (white) {
             whiteMaterialMgScore += middlegameScore;
             whiteMaterialEgScore += endgameScore;
         } else {
@@ -62,16 +74,16 @@ public class Score {
         }
     }
 
-    public void addPiecePlacementScore(int middlegameScore, int endgameScore, boolean isWhite) {
-        if (isWhite) {
+    public void addPiecePlacementScore(int middlegameScore, int endgameScore, boolean white) {
+        if (white) {
             whitePiecePlacementScore += Phase.taperedEval(middlegameScore, endgameScore, phase);
         } else {
             blackPiecePlacementScore += Phase.taperedEval(middlegameScore, endgameScore, phase);
         }
     }
 
-    public void addMobilityScore(int middlegameScore, int endgameScore, boolean isWhite) {
-        if (isWhite) {
+    public void addMobilityScore(int middlegameScore, int endgameScore, boolean white) {
+        if (white) {
             whiteMobilityMgScore += middlegameScore;
             whiteMobilityEgScore += endgameScore;
         } else {
@@ -80,8 +92,8 @@ public class Score {
         }
     }
 
-    public void addPawnStructureScore(int middlegameScore, int endgameScore, boolean isWhite) {
-        if (isWhite) {
+    public void addPawnStructureScore(int middlegameScore, int endgameScore, boolean white) {
+        if (white) {
             whitePawnStructureMgScore += middlegameScore;
             whitePawnStructureEgScore += endgameScore;
         } else {
@@ -90,8 +102,28 @@ public class Score {
         }
     }
 
-    public void addRookScore(int middlegameScore, int endgameScore, boolean isWhite) {
-        if (isWhite) {
+    public void addKnightScore(int middlegameScore, int endgameScore, boolean white) {
+        if (white) {
+            whiteKnightMgScore += middlegameScore;
+            whiteKnightEgScore += endgameScore;
+        } else {
+            blackKnightMgScore += middlegameScore;
+            blackKnightEgScore += endgameScore;
+        }
+    }
+
+    public void addBishopScore(int middlegameScore, int endgameScore, boolean white) {
+        if (white) {
+            whiteBishopMgScore += middlegameScore;
+            whiteBishopEgScore += endgameScore;
+        } else {
+            blackBishopMgScore += middlegameScore;
+            blackBishopEgScore += endgameScore;
+        }
+    }
+
+    public void addRookScore(int middlegameScore, int endgameScore, boolean white) {
+        if (white) {
             whiteRookMgScore += middlegameScore;
             whiteRookEgScore += endgameScore;
         } else {
@@ -100,23 +132,23 @@ public class Score {
         }
     }
 
-    public void setKingSafetyScore(int score, boolean isWhite) {
-        if (isWhite) {
+    public void setKingSafetyScore(int score, boolean white) {
+        if (white) {
             whiteKingSafetyScore = score;
         } else {
             blackKingSafetyScore = score;
         }
     }
 
-    public void setMopUpScore(int score, boolean isWhite) {
-        if (isWhite) {
+    public void setMopUpScore(int score, boolean white) {
+        if (white) {
             whiteMopUpScore = score;
         } else {
             blackMopUpScore = score;
         }
     }
 
-    public int sum(boolean isWhite) {
+    public int sum(boolean white) {
 
         int whiteMaterialScore = Phase.taperedEval(whiteMaterialMgScore, whiteMaterialEgScore, phase);
         int blackMaterialScore = Phase.taperedEval(blackMaterialMgScore, blackMaterialEgScore, phase);
@@ -127,17 +159,24 @@ public class Score {
         int whitePawnStructureScore = Phase.taperedEval(whitePawnStructureMgScore, whitePawnStructureEgScore, phase);
         int blackPawnStructureScore = Phase.taperedEval(blackPawnStructureMgScore, blackPawnStructureEgScore, phase);
 
+        int whiteKnightScore = Phase.taperedEval(whiteKnightMgScore, whiteKnightEgScore, phase);
+        int blackKnightScore = Phase.taperedEval(blackKnightMgScore, blackKnightEgScore, phase);
+
+        int whiteBishopScore = Phase.taperedEval(whiteBishopMgScore, whiteBishopEgScore, phase);
+        int blackBishopScore = Phase.taperedEval(blackBishopMgScore, blackBishopEgScore, phase);
+
         int whiteRookScore = Phase.taperedEval(whiteRookMgScore, whiteRookEgScore, phase);
         int blackRookScore = Phase.taperedEval(blackRookMgScore, blackRookEgScore, phase);
 
         int whiteScore = whiteMaterialScore + whitePiecePlacementScore + whiteMobilityScore + whitePawnStructureScore +
-                whiteKingSafetyScore + whiteRookScore + whiteMopUpScore + whiteTempoBonus;
+                whiteKingSafetyScore + whiteKnightScore + whiteBishopScore + whiteRookScore + whiteMopUpScore + whiteTempoBonus;
 
         int blackScore = blackMaterialScore + blackPiecePlacementScore + blackMobilityScore + blackPawnStructureScore +
-                blackKingSafetyScore + blackRookScore + blackMopUpScore + blackTempoBonus;
+                blackKingSafetyScore + blackKnightScore + blackBishopScore + blackRookScore + blackMopUpScore + blackTempoBonus;
 
-        int modifier = isWhite ? 1 : -1;
-        return modifier * (whiteScore - blackScore);
+        int score = whiteScore - blackScore;
+        int modifier = white ? 1 : -1;
+        return score * modifier;
 
     }
 

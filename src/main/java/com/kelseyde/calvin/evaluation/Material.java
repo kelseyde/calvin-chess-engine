@@ -14,12 +14,12 @@ public record Material(int pawns,
                        int rooks,
                        int queens) {
 
-    public static Material fromBoard(Board board, boolean isWhite) {
-        int pawns = Bitwise.countBits(board.getPawns(isWhite));
-        int knights = Bitwise.countBits(board.getKnights(isWhite));
-        int bishops = Bitwise.countBits(board.getBishops(isWhite));
-        int rooks = Bitwise.countBits(board.getRooks(isWhite));
-        int queens = Bitwise.countBits(board.getQueens(isWhite));
+    public static Material fromBoard(Board board, boolean white) {
+        int pawns = Bitwise.countBits(board.getPawns(white));
+        int knights = Bitwise.countBits(board.getKnights(white));
+        int bishops = Bitwise.countBits(board.getBishops(white));
+        int rooks = Bitwise.countBits(board.getRooks(white));
+        int queens = Bitwise.countBits(board.getQueens(white));
         return new Material(pawns, knights, bishops, rooks, queens);
     }
 

@@ -88,50 +88,33 @@ public class Result {
         int majors = rooks + queens;
         int all = majors + minors;
 
-        if (all == 2 && blackQueens == 1 && whiteQueens == 1) {
-            // KQ v KQ => drawish
-            return true;
-        } else if (all == 2 && blackRooks == 1 && whiteRooks == 1) {
-            // KR v KR => drawish
-            return true;
-        } else if (all == 2 && whiteMinors == 1 && blackMinors == 1) {
-            // KN v KB => drawish
-            // KB v KB => drawish
-            return true;
-        } else if (all == 3 && ((whiteQueens == 1 && blackRooks == 2) || (blackQueens == 1 && whiteRooks == 2))) {
-            // KQ v KRR => drawish
-            return true;
-        } else if (all == 3 && ((whiteQueens == 1 && blackBishops == 2) || (blackQueens == 1 && whiteBishops == 2))) {
-            // KQ vs KBB => drawish
-            return true;
-        } else if (all == 3 && ((whiteQueens == 1 && blackKnights == 2) || (blackQueens == 1 && whiteKnights == 2))) {
-            // KQ vs KNN => drawish
-            return true;
-        } else if (all <= 3 && ((whiteKnights == 2 && blackMinors <= 1) || (blackKnights == 2 && whiteMinors <= 1))) {
-            // KNN v KN => drawish
-            // KNN v KB => drawish
-            // KNN v K => drawish
-            return true;
-        } else if (all == 3 &&
-                ((whiteQueens == 1 && blackRooks == 1 && blackMinors == 1) ||
-                        (blackQueens == 1 && whiteRooks == 1 && whiteMinors == 1))) {
-            // KQ vs KRN => drawish
-            // KQ vs KRB => drawish
-            return true;
-        } else if (all == 3 &&
-                ((whiteRooks == 1 && blackRooks == 1 && blackMinors == 1) ||
-                        (blackRooks == 1 && whiteRooks == 1 && whiteMinors == 1))) {
-            // KR vs KRB => drawish
-            // KR vs KRN => drawish
-            return true;
-        } else if (all == 4 &&
-                ((whiteRooks == 2 && blackRooks == 1 && blackMinors == 1) ||
-                        (blackRooks == 2 && whiteRooks == 1 && whiteMinors == 1))) {
-            // KRR v KRB => drawish
-            // KRR v KRN => drawish
-            return true;
-        }
-        return false;
+        return
+            // KQ v KQ
+            (all == 2 && blackQueens == 1 && whiteQueens == 1) ||
+            // KR v KR
+            (all == 2 && blackRooks == 1 && whiteRooks == 1) ||
+            // KN v KB
+            // KB v KB
+            (all == 2 && whiteMinors == 1 && blackMinors == 1) ||
+            // KQ v KRR
+            (all == 3 && ((whiteQueens == 1 && blackRooks == 2) || (blackQueens == 1 && whiteRooks == 2))) ||
+            // KQ vs KBB
+            (all == 3 && ((whiteQueens == 1 && blackBishops == 2) || (blackQueens == 1 && whiteBishops == 2))) ||
+            // KQ vs KNN
+            (all == 3 && ((whiteQueens == 1 && blackKnights == 2) || (blackQueens == 1 && whiteKnights == 2))) ||
+            // KNN v KN
+            // KNN v KB
+            // KNN v K
+            (all <= 3 && ((whiteKnights == 2 && blackMinors <= 1) || (blackKnights == 2 && whiteMinors <= 1))) ||
+            // KQ vs KRN
+            // KQ vs KRB
+            (all == 3 && ((whiteQueens == 1 && blackRooks == 1 && blackMinors == 1) || (blackQueens == 1 && whiteRooks == 1 && whiteMinors == 1))) ||
+            // KR vs KRB
+            // KR vs KRN
+            (all == 3 && ((whiteRooks == 1 && blackRooks == 1 && blackMinors == 1) || (blackRooks == 1 && whiteRooks == 1 && whiteMinors == 1))) ||
+            // KRR v KRB
+            // KRR v KRN
+            (all == 4 && ((whiteRooks == 2 && blackRooks == 1 && blackMinors == 1) || (blackRooks == 2 && whiteRooks == 1 && whiteMinors == 1)));
 
     }
 

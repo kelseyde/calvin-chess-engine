@@ -254,8 +254,8 @@ public class Evaluator implements Evaluation {
         int piecePlacementEgScore = 0;
         int mobilityMgScore = 0;
         int mobilityEgScore = 0;
-        int outpostMgScore = 0;
-        int outpostEgScore = 0;
+//        int outpostMgScore = 0;
+//        int outpostEgScore = 0;
 
         while (knights != 0) {
             int knight = Bitwise.getNextBit(knights);
@@ -281,7 +281,7 @@ public class Evaluator implements Evaluation {
 
         score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
         score.addMobilityScore(mobilityMgScore, mobilityEgScore, white);
-        score.addKnightScore(outpostMgScore, outpostEgScore, white);
+//        score.addKnightScore(outpostMgScore, outpostEgScore, white);
 
     }
 
@@ -301,8 +301,8 @@ public class Evaluator implements Evaluation {
         int piecePlacementEgScore = 0;
         int mobilityMgScore = 0;
         int mobilityEgScore = 0;
-        int outpostMgScore = 0;
-        int outpostEgScore = 0;
+//        int outpostMgScore = 0;
+//        int outpostEgScore = 0;
 
         long blockers = friendlyBlockers | opponentBlockers;
         while (bishops != 0) {
@@ -329,7 +329,7 @@ public class Evaluator implements Evaluation {
 
         score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
         score.addMobilityScore(mobilityMgScore, mobilityEgScore, white);
-        score.addBishopScore(outpostMgScore, outpostEgScore, white);
+//        score.addBishopScore(outpostMgScore, outpostEgScore, white);
 
     }
 

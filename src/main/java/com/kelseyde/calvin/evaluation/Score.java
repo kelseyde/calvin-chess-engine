@@ -174,12 +174,14 @@ public class Score {
         int blackScore = blackMaterialScore + blackPiecePlacementScore + blackMobilityScore + blackPawnStructureScore +
                 blackKingSafetyScore + blackKnightScore + blackBishopScore + blackRookScore + blackMopUpScore + blackTempoBonus;
 
+        int score = whiteScore - blackScore;
+//        if (scaleFactor != 1) {
+//            score = (int) (Math.sqrt(Math.abs(score)) * Math.signum(score));
+//            score *= scaleFactor;
+//        }
+
         int modifier = white ? 1 : -1;
-        int score = modifier * (whiteScore - blackScore);
-        if (scaleFactor != 1) {
-            score = score / scaleFactor;
-        }
-        return score;
+        return score * modifier;
 
     }
 

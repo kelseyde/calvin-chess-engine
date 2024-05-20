@@ -58,8 +58,8 @@ The table below tracks the strength of release versions, on the CCRL computer ch
 - [Incremental updates](https://www.chessprogramming.org/Incremental_Updates): Evaluation is updated incrementally with make/unmake move
 
 ### Opening Book / Endgame Tablebase
-- Simple opening book loaded from a .txt file on startup. Can be disabled using the 'OwnBook' UCI option
-- No endgame tablebases implemented yet.
+- Simple opening book loaded from a .txt file on startup. Can be disabled using the 'OwnBook' UCI option.
+- Calvin can probe the [Lichess Tablebase API](https://github.com/lichess-org/lila-tablebase) for endgames of 7 men or fewer. Can be disabled using the 'OwnTablebase' UCI option.
 
 ### Communication
 - Calvin communicates using the Universal Chess Interface [(UCI) protocol](https://www.chessprogramming.org/UCI).

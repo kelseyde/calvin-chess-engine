@@ -25,6 +25,7 @@ public class MoveGenerator implements MoveGeneration {
     private long captureMask;
     private long pushMask;
     private MoveFilter filter;
+    private boolean white;
 
     private List<Move> legalMoves;
 
@@ -49,7 +50,7 @@ public class MoveGenerator implements MoveGeneration {
     @Override
     public List<Move> generateMoves(Board board, MoveFilter filter) {
 
-        boolean white = board.isWhiteToMove();
+        white = board.isWhiteToMove();
         int kingSquare = Bitwise.getNextBit(board.getKing(white));
         this.filter = filter;
 
@@ -61,10 +62,11 @@ public class MoveGenerator implements MoveGeneration {
         PinData pinData = pinCalculator.calculatePinMask(board, white);
         pinMask = pinData.pinMask();
         pinRayMasks = pinData.pinRayMasks();
-        checkersMask = calculateAttackerMask(board, white, 1L << kingSquare);
+        checkersMask = calculateAttackerMask(board, 1L << kingSquare);
         long checkersCount = Bitwise.countBits(checkersMask);
 
-        legalMoves = new ArrayList<>();
+        int estimatedLegalMoves = estimateLegalMoves(board);
+        legalMoves = new ArrayList<>(estimatedLegalMoves);
 
         // Generate king moves first
         generateKingMoves(board);
@@ -114,12 +116,10 @@ public class MoveGenerator implements MoveGeneration {
 
     private void generatePawnMoves(Board board) {
 
-        boolean white = board.isWhiteToMove();
         long pawns = board.getPawns(white);
         if (pawns == 0) return;
         long opponents = board.getPieces(!white);
         long occupied = board.getOccupied();
-        long enPassantFile = Bitwise.getFileBitboard(board.getGameState().getEnPassantFile());
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
         long filterMask = Bits.ALL_SQUARES;
@@ -157,8 +157,6 @@ public class MoveGenerator implements MoveGeneration {
 
         long leftCaptures = Bitwise.pawnLeftCaptures(pawns, opponents, white) & captureMask & filterMask;
         long rightCaptures = Bitwise.pawnRightCaptures(pawns, opponents, white) & captureMask & filterMask;
-        long leftEnPassants = Bitwise.pawnLeftEnPassants(pawns, enPassantFile, white);
-        long rightEnPassants = Bitwise.pawnRightEnPassants(pawns, enPassantFile, white);
         long pushPromotions = Bitwise.pawnPushPromotions(pawns, occupied, white) & pushMask & promotionFilterMask;
         long leftCapturePromotions = Bitwise.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask) & promotionFilterMask;
         long rightCapturePromotions = Bitwise.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask) & promotionFilterMask;
@@ -179,28 +177,35 @@ public class MoveGenerator implements MoveGeneration {
             }
             rightCaptures = Bitwise.popBit(rightCaptures);
         }
-        while (leftEnPassants != 0) {
-            int endSquare = Bitwise.getNextBit(leftEnPassants);
-            int startSquare = white ? endSquare - 7 : endSquare + 9;
-            // En passant is complicated; just test legality by making the move on the board and checking
-            // whether the king is attacked.
-            Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
-            if (!leavesKingInCheck(board, move, white)) {
-                legalMoves.add(move);
+
+        if (board.getGameState().getEnPassantFile() >= 0) {
+            long enPassantFile = Bitwise.getFileBitboard(board.getGameState().getEnPassantFile());
+            long leftEnPassants = Bitwise.pawnLeftEnPassants(pawns, enPassantFile, white);
+            long rightEnPassants = Bitwise.pawnRightEnPassants(pawns, enPassantFile, white);
+            while (leftEnPassants != 0) {
+                int endSquare = Bitwise.getNextBit(leftEnPassants);
+                int startSquare = white ? endSquare - 7 : endSquare + 9;
+                // En passant is complicated; just test legality by making the move on the board and checking
+                // whether the king is attacked.
+                Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+                if (!leavesKingInCheck(board, move, white)) {
+                    legalMoves.add(move);
+                }
+                leftEnPassants = Bitwise.popBit(leftEnPassants);
             }
-            leftEnPassants = Bitwise.popBit(leftEnPassants);
-        }
-        while (rightEnPassants != 0) {
-            int endSquare = Bitwise.getNextBit(rightEnPassants);
-            int startSquare = white ? endSquare - 9 : endSquare + 7;
-            // En passant is complicated; just test legality by making the move on the board and checking
-            // whether the king is attacked.
-            Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
-            if (!leavesKingInCheck(board, move, white)) {
-                legalMoves.add(move);
+            while (rightEnPassants != 0) {
+                int endSquare = Bitwise.getNextBit(rightEnPassants);
+                int startSquare = white ? endSquare - 9 : endSquare + 7;
+                // En passant is complicated; just test legality by making the move on the board and checking
+                // whether the king is attacked.
+                Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+                if (!leavesKingInCheck(board, move, white)) {
+                    legalMoves.add(move);
+                }
+                rightEnPassants = Bitwise.popBit(rightEnPassants);
             }
-            rightEnPassants = Bitwise.popBit(rightEnPassants);
         }
+
         while (pushPromotions != 0) {
             int endSquare = Bitwise.getNextBit(pushPromotions);
             int startSquare = white ? endSquare - 8 : endSquare + 8;
@@ -229,7 +234,6 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private void generateKnightMoves(Board board) {
-        boolean white = board.isWhiteToMove();
         long knights = board.getKnights(white);
         if (knights == 0) return;
         long opponents = board.getPieces(!white);
@@ -260,7 +264,6 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private void generateKingMoves(Board board) {
-        boolean white = board.isWhiteToMove();
         long king = board.getKing(white);
         int startSquare = Bitwise.getNextBit(king);
         long friendlies = board.getPieces(white);
@@ -269,7 +272,7 @@ public class MoveGenerator implements MoveGeneration {
         long kingMoves = Attacks.kingAttacks(startSquare) & ~friendlies & filterMask;
 
         // Temporarily remove the king from the board
-        board.toggleSquare(Piece.KING, white, startSquare);
+        board.toggleKing(white, startSquare);
         board.recalculatePieces();
 
         // Generate legal king moves
@@ -283,7 +286,7 @@ public class MoveGenerator implements MoveGeneration {
         }
 
         // Restore the king to its original position on the board
-        board.toggleSquare(Piece.KING, white, startSquare);
+        board.toggleKing(white, startSquare);
         board.recalculatePieces();
     }
 
@@ -291,17 +294,16 @@ public class MoveGenerator implements MoveGeneration {
         if (filter != MoveFilter.ALL || checkersMask != 0) {
             return;
         }
-        boolean white = board.isWhiteToMove();
         long king = board.getKing(white);
         int startSquare = Bitwise.getNextBit(king);
         long occupied = board.getOccupied();
 
-        boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(board.isWhiteToMove());
+        boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(white);
         if (isKingsideAllowed) {
             generateCastlingMove(board, white, true, startSquare, occupied);
         }
 
-        boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(board.isWhiteToMove());
+        boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(white);
         if (isQueensideAllowed) {
             generateCastlingMove(board, white, false, startSquare, occupied);
         }
@@ -319,7 +321,6 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private void generateAllSlidingMoves(Board board) {
-        boolean white = board.isWhiteToMove();
         long bishops = board.getBishops(white);
         long rooks = board.getRooks(white);
         long queens = board.getQueens(white);
@@ -336,7 +337,6 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private void generateSlidingMoves(Board board, long sliders, boolean isOrthogonal, boolean isDiagonal) {
-        boolean white = board.isWhiteToMove();
         long opponents = board.getPieces(!white);
         long occupied = board.getOccupied();
 
@@ -424,15 +424,15 @@ public class MoveGenerator implements MoveGeneration {
         long occ = board.getOccupied();
         long friendlies = board.getPieces(white);
         if (isOrthogonal) {
-            attackMask |= Attacks.rookAttacks(square, occ) &~ friendlies;
+            attackMask |= Attacks.rookAttacks(square, occ);
         }
         if (isDiagonal) {
-            attackMask |= Attacks.bishopAttacks(square, occ) &~ friendlies;
+            attackMask |= Attacks.bishopAttacks(square, occ);
         }
-        return attackMask;
+        return attackMask &~ friendlies;
     }
 
-    private long calculateAttackerMask(Board board, boolean white, long squareMask) {
+    private long calculateAttackerMask(Board board, long squareMask) {
         long attackerMask = 0L;
         while (squareMask != 0) {
             int square = Bitwise.getNextBit(squareMask);
@@ -555,6 +555,21 @@ public class MoveGenerator implements MoveGeneration {
     private int getCastleEndSquare(boolean white, boolean isKingside) {
         if (isKingside) return white ? 6 : 62;
         else return white ? 2 : 58;
+    }
+
+    /**
+     * Estimate the number of legal moves in the current position, based on the piece count and
+     * the average number of legal moves per piece. Used to initialise the legal moves ArrayList
+     * with a 'best guess', to reduce the number of times the ArrayList has to grow during move
+     * generation, yielding a small increase in performance.
+     */
+    private int estimateLegalMoves(Board board) {
+        return (Bitwise.countBits(board.getPawns(white)) * 2) +
+                (Bitwise.countBits(board.getKnights(white)) * 3) +
+                (Bitwise.countBits(board.getBishops(white)) * 3) +
+                (Bitwise.countBits(board.getRooks(white)) * 6) +
+                (Bitwise.countBits(board.getQueens(white)) * 9) +
+                (Bitwise.countBits(board.getKing(white)) * 3);
     }
 
 }

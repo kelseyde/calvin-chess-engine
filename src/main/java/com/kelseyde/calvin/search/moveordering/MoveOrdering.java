@@ -62,7 +62,7 @@ public interface MoveOrdering {
      */
     void incrementHistoryScore(int depth, Move historyMove, boolean white);
 
-    void ageHistoryTable(boolean white);
+    void ageHistoryScores(boolean white);
 
     /**
      * Clears all stored data related to move ordering heuristics.

@@ -90,7 +90,7 @@ public class Searcher implements Search {
         bestEval = 0;
         bestEvalCurrentDepth = 0;
         cancelled = false;
-        moveOrderer.ageHistoryTable(board.isWhiteToMove());
+        moveOrderer.ageHistoryScores(board.isWhiteToMove());
 
         int alpha = Integer.MIN_VALUE + 1;
         int beta = Integer.MAX_VALUE - 1;

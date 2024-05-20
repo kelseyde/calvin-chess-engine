@@ -88,43 +88,20 @@ public class MoveOrderer implements MoveOrdering {
         // Then any pawn promotions
         Piece promotionPiece = move.getPromotionPiece();
         if (promotionPiece != null) {
-            moveScore += Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
+            moveScore += scorePromotion(promotionPiece);
         }
 
         // Then captures, sorted by MVV-LVA
         Piece capturedPiece = board.pieceAt(endSquare);
         boolean isCapture = capturedPiece != null;
         if (isCapture) {
-            // Captures are sorted using MVV-LVA
-            Piece piece = board.pieceAt(startSquare);
-            moveScore += MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
-            int materialDelta = capturedPiece.getValue() - piece.getValue();
-            if (materialDelta > 0) {
-                moveScore += WINNING_CAPTURE_BIAS;
-            } else if (materialDelta == 0) {
-                moveScore += EQUAL_CAPTURE_BIAS;
-            } else {
-                moveScore += LOSING_CAPTURE_BIAS;
-            }
+            moveScore += scoreCapture(board, startSquare, capturedPiece);
         }
         // Non-captures are sorted using killer score + history score
         else {
-            // Non-captures are sorted using history + killers
             int killerScore = scoreKillerMove(move, ply);
             int historyScore = scoreHistoryMove(board, startSquare, endSquare, killerScore);
             moveScore += killerScore + historyScore;
-
-//            boolean isKiller = isKillerMove(ply, move);
-//            if (isKiller) {
-//                // TODO give first, second, third killers different scores, see Blunder
-//                moveScore += KILLER_MOVE_BIAS;
-//            }
-//            int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
-//            int historyScore = historyMoves[colourIndex][startSquare][endSquare];
-//            moveScore += historyScore;
-//            if (!isKiller && historyScore > 0) {
-//                moveScore += HISTORY_MOVE_BIAS;
-//            }
         }
 
         if (move.isCastling()) {
@@ -133,13 +110,6 @@ public class MoveOrderer implements MoveOrdering {
 
         return moveScore;
 
-    }
-
-    private boolean isKillerMove(int ply, Move move) {
-        return ply < MAX_KILLER_MOVE_PLY
-                && (move.equals(killerMoves[ply][0])
-                || move.equals(killerMoves[ply][1])
-                || move.equals(killerMoves[ply][2]));
     }
 
     @Override
@@ -151,6 +121,10 @@ public class MoveOrderer implements MoveOrdering {
         if (capturedPiece == null) return 0;
         Piece piece = board.pieceAt(startSquare);
         return MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
+    }
+
+    private int scorePromotion(Piece promotionPiece) {
+        return Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
     }
 
     private int scoreCapture(Board board, int startSquare, Piece capturedPiece) {
@@ -166,10 +140,6 @@ public class MoveOrderer implements MoveOrdering {
             captureScore += LOSING_CAPTURE_BIAS;
         }
         return captureScore;
-    }
-
-    private int scorePromotion(Piece promotionPiece) {
-        return Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
     }
 
     private int scoreKillerMove(Move move, int ply) {
@@ -234,7 +204,7 @@ public class MoveOrderer implements MoveOrdering {
         historyMoves[colourIndex][startSquare][endSquare] += score;
     }
 
-    public void ageHistoryTable(boolean white) {
+    public void ageHistoryScores(boolean white) {
         int colourIndex = BoardUtils.getColourIndex(white);
         for (int startSquare = 0; startSquare < 64; startSquare++) {
             for (int endSquare = 0; endSquare < 64; endSquare++) {

@@ -81,7 +81,7 @@ public class MoveOrderer implements MoveOrdering {
         int moveScore = 0;
 
         // The previous best move from the transposition table is searched first.
-        if (move.matches(previousBestMove)) {
+        if (move.equals(previousBestMove)) {
             moveScore += PREVIOUS_BEST_MOVE_BIAS;
         }
 
@@ -144,21 +144,29 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private int scoreKillerMove(Move move, int ply) {
-        if (ply >= MAX_KILLER_MOVE_PLY) {
-            return 0;
+
+        if (ply < MAX_KILLER_MOVE_PLY
+            && (move.matches(killerMoves[ply][0])
+                || move.matches(killerMoves[ply][1])
+                || move.matches(killerMoves[ply][2]))) {
+            return KILLER_MOVE_BIAS;
         }
-        else if (move.matches(killerMoves[ply][0])) {
-            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 3);
-        }
-        else if (move.matches(killerMoves[ply][1])) {
-            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 2);
-        }
-        else if (move.matches(killerMoves[ply][2])) {
-            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS);
-        }
-        else {
-            return 0;
-        }
+        return 0;
+//        if (ply >= MAX_KILLER_MOVE_PLY) {
+//            return 0;
+//        }
+//        else if (move.matches(killerMoves[ply][0])) {
+//            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 3);
+//        }
+//        else if (move.matches(killerMoves[ply][1])) {
+//            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 2);
+//        }
+//        else if (move.matches(killerMoves[ply][2])) {
+//            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS);
+//        }
+//        else {
+//            return 0;
+//        }
     }
 
     private int scoreHistoryMove(Board board, int startSquare, int endSquare, int killerScore) {

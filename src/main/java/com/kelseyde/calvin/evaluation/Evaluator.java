@@ -121,13 +121,15 @@ public class Evaluator implements Evaluation {
         int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
         score.addMaterialScore(blackMaterialMiddlegameScore, blackMaterialEndgameScore, false);
 
+        scorePawnsWithHash(board, whitePawns, blackPawns);
+
         if (lazy) {
             int lazyEval = score.sum(white);
-            if (lazyEval - 250 >= beta) {
-                return lazyEval;
+            if (lazyEval - 300 >= beta) {
+                return beta;
             }
-            if (lazyEval + 250 < alpha) {
-                return lazyEval;
+            if (lazyEval + 300 < alpha) {
+                return alpha;
             }
         }
 
@@ -138,8 +140,6 @@ public class Evaluator implements Evaluation {
         // Pawn attacks used during mobility calculations
         long whitePawnAttacks = Attacks.pawnAttacks(whitePawns, true);
         long blackPawnAttacks = Attacks.pawnAttacks(blackPawns, false);
-
-        scorePawnsWithHash(board, whitePawns, blackPawns);
 
         scoreKnights(whiteKnights, friendlyWhiteBlockers, blackPawnAttacks, true);
         scoreKnights(blackKnights, friendlyBlackBlockers, whitePawnAttacks, false);

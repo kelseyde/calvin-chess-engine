@@ -204,7 +204,7 @@ public class Searcher implements Search {
 
         List<Move> moves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-        int staticEval = evaluator.evaluate(board);
+        int staticEval = evaluator.evaluate(board, true, alpha, beta);
 
         if (moves.isEmpty()) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
@@ -407,7 +407,7 @@ public class Searcher implements Search {
         }
 
         // lazy eval
-        int eval = evaluator.evaluate(board, true, alpha, beta);
+        int eval = evaluator.evaluate(board);
         int standPat = eval;
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());

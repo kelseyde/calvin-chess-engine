@@ -11,7 +11,6 @@ import com.kelseyde.calvin.transposition.pawn.PawnHashEntry.PawnScore;
 import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
-import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -127,11 +126,11 @@ public class Evaluator implements Evaluation {
 
         scorePawnsWithHash(board, whitePawns, blackPawns);
 
-        scoreKnights(whiteKnights, whitePawns, blackPawns, friendlyWhiteBlockers, blackPawnAttacks, true);
-        scoreKnights(blackKnights, blackPawns, whitePawns, friendlyBlackBlockers, whitePawnAttacks, false);
+        scoreKnights(whiteKnights, friendlyWhiteBlockers, blackPawnAttacks, true);
+        scoreKnights(blackKnights, friendlyBlackBlockers, whitePawnAttacks, false);
 
-        scoreBishops(whiteBishops, whitePawns, blackPawns, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreBishops(blackBishops, blackPawns, whitePawns, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        scoreBishops(whiteBishops, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
+        scoreBishops(blackBishops, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
 
         scoreRooks(whiteRooks, whitePawns, blackPawns, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
         scoreRooks(blackRooks, blackPawns, whitePawns, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
@@ -146,10 +145,6 @@ public class Evaluator implements Evaluation {
             score.setWhiteTempoBonus(config.getTempoBonus());
         } else {
             score.setBlackTempoBonus(config.getTempoBonus());
-        }
-
-        if (Result.isDrawish(whiteMaterial, blackMaterial)) {
-            score.setScaleFactor(config.getDrawishScaleFactor());
         }
 
         return score.sum(white);
@@ -243,8 +238,6 @@ public class Evaluator implements Evaluation {
      * Knight evaluation consists of simple piece-placement and mobility bonuses.
      */
     private void scoreKnights(long knights,
-                              long friendlyPawns,
-                              long opponentPawns,
                               long friendlyBlockers,
                               long opponentPawnAttacks,
                               boolean white) {
@@ -289,8 +282,6 @@ public class Evaluator implements Evaluation {
      * Bishop evaluation consists of simple piece-placement and mobility bonuses.
      */
     private void scoreBishops(long bishops,
-                              long friendlyPawns,
-                              long opponentPawns,
                               long friendlyBlockers,
                               long opponentBlockers,
                               long opponentPawnAttacks,

@@ -92,10 +92,10 @@ public class MoveOrdererTest {
         Board board = FEN.toBoard(fen);
 
         List<Move> moves = new ArrayList<>(List.of(
-                Notation.fromNotation("g1", "h1"),
-                Notation.fromNotation("g1", "f1"),
-                Notation.fromNotation("f3", "f4"),
-                Notation.fromNotation("h2", "h4")));
+                TestUtils.getLegalMove(board, "g1", "h1"),
+                TestUtils.getLegalMove(board, "g1", "f1"),
+                TestUtils.getLegalMove(board, "f3", "f4"),
+                TestUtils.getLegalMove(board, "h2", "h4")));
 
         Move killerMove1 = TestUtils.getLegalMove(board, "f3", "f4");
         moveOrderer.addKillerMove(1, killerMove1);
@@ -108,9 +108,9 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("g1", "f1")));
-        Assertions.assertTrue(orderedMoves.get(1).matches(Notation.fromNotation("h2", "h4")));
-        Assertions.assertTrue(orderedMoves.get(2).matches(Notation.fromNotation("f3", "f4")));
+        Assertions.assertTrue(orderedMoves.get(0).matches(killerMove3));
+        Assertions.assertTrue(orderedMoves.get(1).matches(killerMove2));
+        Assertions.assertTrue(orderedMoves.get(2).matches(killerMove1));
 
 
     }

@@ -164,6 +164,7 @@ public class Move {
      * @param move The move to compare against.
      * @return True if the moves match, false otherwise.
      */
+    // TODO Optional is slow, replace it
     public boolean matches(Move move) {
         if (move == null) return false;
         boolean squareMatch = getStartSquare() == move.getStartSquare() && getEndSquare() == move.getEndSquare();

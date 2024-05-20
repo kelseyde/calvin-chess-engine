@@ -109,21 +109,22 @@ public class MoveOrderer implements MoveOrdering {
         }
         // Non-captures are sorted using killer score + history score
         else {
-//            int killerScore = scoreKillerMove(move, ply);
-//            int historyScore = scoreHistoryMove(board, startSquare, endSquare, killerScore);
-//            moveScore += killerScore + historyScore;
             // Non-captures are sorted using history + killers
-            boolean isKiller = isKillerMove(ply, move);
-            if (isKiller) {
-                // TODO give first, second, third killers different scores, see Blunder
-                moveScore += KILLER_MOVE_BIAS;
-            }
-            int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
-            int historyScore = historyMoves[colourIndex][startSquare][endSquare];
-            moveScore += historyScore;
-            if (!isKiller && historyScore > 0) {
-                moveScore += HISTORY_MOVE_BIAS;
-            }
+            int killerScore = scoreKillerMove(move, ply);
+            int historyScore = scoreHistoryMove(board, startSquare, endSquare, killerScore);
+            moveScore += killerScore + historyScore;
+
+//            boolean isKiller = isKillerMove(ply, move);
+//            if (isKiller) {
+//                // TODO give first, second, third killers different scores, see Blunder
+//                moveScore += KILLER_MOVE_BIAS;
+//            }
+//            int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
+//            int historyScore = historyMoves[colourIndex][startSquare][endSquare];
+//            moveScore += historyScore;
+//            if (!isKiller && historyScore > 0) {
+//                moveScore += HISTORY_MOVE_BIAS;
+//            }
         }
 
         if (move.isCastling()) {
@@ -143,7 +144,7 @@ public class MoveOrderer implements MoveOrdering {
 
     @Override
     public int mvvLva(Board board, Move move, Move previousBestMove) {
-        if (move.matches(previousBestMove)) return PREVIOUS_BEST_MOVE_BIAS;
+        if (move.equals(previousBestMove)) return PREVIOUS_BEST_MOVE_BIAS;
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         Piece capturedPiece = board.pieceAt(endSquare);
@@ -172,29 +173,21 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private int scoreKillerMove(Move move, int ply) {
-
-        if (ply < MAX_KILLER_MOVE_PLY
-            && (move.equals(killerMoves[ply][0])
-                || move.equals(killerMoves[ply][1])
-                || move.equals(killerMoves[ply][2]))) {
-            return KILLER_MOVE_BIAS;
+        if (ply >= MAX_KILLER_MOVE_PLY) {
+            return 0;
         }
-        return 0;
-//        if (ply >= MAX_KILLER_MOVE_PLY) {
-//            return 0;
-//        }
-//        else if (move.matches(killerMoves[ply][0])) {
-//            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 3);
-//        }
-//        else if (move.matches(killerMoves[ply][1])) {
-//            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 2);
-//        }
-//        else if (move.matches(killerMoves[ply][2])) {
-//            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS);
-//        }
-//        else {
-//            return 0;
-//        }
+        else if (move.equals(killerMoves[ply][0])) {
+            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 3);
+        }
+        else if (move.equals(killerMoves[ply][1])) {
+            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 2);
+        }
+        else if (move.equals(killerMoves[ply][2])) {
+            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS);
+        }
+        else {
+            return 0;
+        }
     }
 
     private int scoreHistoryMove(Board board, int startSquare, int endSquare, int killerScore) {

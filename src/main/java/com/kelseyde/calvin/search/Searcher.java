@@ -366,6 +366,10 @@ public class Searcher implements Search {
                     moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
                 }
                 return beta;
+            } else {
+                if (!isCapture) {
+                    moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
+                }
             }
 
             if (eval > alpha) {

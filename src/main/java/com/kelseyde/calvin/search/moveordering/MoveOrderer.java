@@ -192,6 +192,14 @@ public class MoveOrderer implements MoveOrdering {
         historyMoves[colourIndex][startSquare][endSquare] += score;
     }
 
+    public void decrementHistoryScore(int depth, Move historyMove, boolean white) {
+        int colourIndex = BoardUtils.getColourIndex(white);
+        int startSquare = historyMove.getStartSquare();
+        int endSquare = historyMove.getEndSquare();
+        int score = depth * depth;
+        historyMoves[colourIndex][startSquare][endSquare] -= score;
+    }
+
     public void ageHistoryTable() {
 
     }

@@ -257,6 +257,20 @@ public class TexelTunerTest {
         );
     }
 
+    @Test
+    public void tuneBackwardPawnWeights() throws IOException, ExecutionException, InterruptedException {
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        tune(
+                new int[] {initialConfig.getBackwardPawnPenalty()[0], initialConfig.getBackwardPawnPenalty()[1]},
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.getBackwardPawnPenalty()[0] = params[0];
+                    config.getBackwardPawnPenalty()[1] = params[1];
+                    return config;
+                }
+        );
+    }
+
     private void tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException, ExecutionException, InterruptedException {
         int[] bestParams = tuner.tune(initialParams, createConfigFunction);
         EngineConfig bestConfig = createConfigFunction.apply(bestParams);

@@ -1094,6 +1094,7 @@
       25
     ]
   ],
+  "backwardPawnPenalty": [-5, -6],
   "protectedPassedPawnBonus":25,
   "bishopPairBonus":50,
   "rookOpenFileBonus":[
@@ -1122,5 +1123,4 @@
   "kingChebyshevDistanceMultiplier":10,
   "kingCenterManhattanDistanceMultiplier":14,
   "tempoBonus":10
-}
 }

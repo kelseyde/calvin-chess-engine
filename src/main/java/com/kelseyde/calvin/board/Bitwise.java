@@ -188,6 +188,16 @@ public class Bitwise {
         return countBits(friendlyPawns & fileMask) > 1;
     }
 
+    public static boolean isBackwardPawn(int square, int rank, int file, long friendlyPawns, boolean white) {
+        long squareBB = 1L << square;
+        if ((squareBB & friendlyPawns) == 0) return false;
+        long adjacentFileMask = Bits.TRIPLE_FILE_MASK[file];
+        long forwardMask = white ? ~(Long.MAX_VALUE >>> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
+        long supportingPawnMask = adjacentFileMask &~ forwardMask;
+        long otherPawns = friendlyPawns &~ (1L << square);
+        return (supportingPawnMask & otherPawns) == 0;
+    }
+
     /**
      * Get the pawn shield bitboard.
      */

@@ -189,10 +189,12 @@ public class Evaluator implements Evaluation {
 
         int isolatedPawnCount = 0;
         int doubledPawnCount = 0;
+        int backwardPawnCount = 0;
 
         long pawnsIterator = friendlyPawns;
         while (pawnsIterator > 0) {
             int pawn = Bitwise.getNextBit(pawnsIterator);
+            int rank = BoardUtils.getRank(pawn);
             int file = BoardUtils.getFile(pawn);
 
             int square = white ? pawn ^ 56 : pawn;
@@ -202,7 +204,6 @@ public class Evaluator implements Evaluation {
             // Bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
             // Bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
             if (Bitwise.isPassedPawn(pawn, opponentPawns, white)) {
-                int rank = BoardUtils.getRank(pawn);
                 int squaresFromPromotion = white ? 7 - rank : rank;
                 pawnStructureMgScore += config.getPassedPawnBonus()[0][squaresFromPromotion];
                 pawnStructureEgScore += config.getPassedPawnBonus()[1][squaresFromPromotion];
@@ -216,6 +217,12 @@ public class Evaluator implements Evaluation {
             else if (Bitwise.isIsolatedPawn(file, friendlyPawns)) {
                 isolatedPawnCount++;
             }
+            else if (Bitwise.isBackwardPawn(square, rank, file, friendlyPawns, white)) {
+                backwardPawnCount++;
+            }
+            if (Bitwise.isDoubledPawn(file, friendlyPawns)) {
+                doubledPawnCount++;
+            }
 
             pawnsIterator = Bitwise.popBit(pawnsIterator);
         }
@@ -227,6 +234,10 @@ public class Evaluator implements Evaluation {
         // Penalties for doubled pawns, indexed by the number of doubled pawns
         pawnStructureMgScore += config.getDoubledPawnPenalty()[0][doubledPawnCount];
         pawnStructureEgScore += config.getDoubledPawnPenalty()[1][doubledPawnCount];
+
+        // Penalties for backward pawns
+        pawnStructureMgScore += config.getBackwardPawnPenalty()[0] * backwardPawnCount;
+        pawnStructureEgScore += config.getBackwardPawnPenalty()[1] * backwardPawnCount;
 
         return new PawnScore(piecePlacementMgScore, piecePlacementEgScore, pawnStructureMgScore, pawnStructureEgScore);
     }

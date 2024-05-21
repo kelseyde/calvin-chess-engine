@@ -175,8 +175,8 @@ public class Searcher implements Search {
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW_SCORE;
 
+        // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
-        // See https://www.chessprogramming.org/Mate_Distance_Pruning
         alpha = Math.max(alpha, -Score.MATE_SCORE + ply);
         beta = Math.min(beta, Score.MATE_SCORE - ply);
         if (alpha >= beta) return alpha;
@@ -195,9 +195,9 @@ public class Searcher implements Search {
             previousBestMove = transposition.getMove();
         }
 
+        // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
-        // See https://www.chessprogramming.org/Internal_Iterative_Deepening
         if (transposition == null && ply > 0 && depth >= config.getIirDepth()) {
             --depth;
         }
@@ -222,9 +222,9 @@ public class Searcher implements Search {
         boolean pvNode = beta - alpha > 1;
 
         if (!pvNode && !isInCheck) {
+            // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
-            // See https://www.chessprogramming.org/Reverse_Futility_Pruning
             boolean isMateHunting = Score.isMateScore(alpha);
             if (depth <= config.getRfpDepth()
                 && staticEval - config.getRfpMargin()[depth] > beta
@@ -232,10 +232,10 @@ public class Searcher implements Search {
                 return staticEval - config.getRfpMargin()[depth];
             }
 
+            // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning
             // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
-            // See https://www.chessprogramming.org/Null_Move_Pruning
             if (allowNull
                 && depth >= config.getNmpDepth()
                 && staticEval >= beta - config.getNmpMargin()
@@ -287,9 +287,9 @@ public class Searcher implements Search {
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
 
-            // Futility pruning: if the static evaluation + some margin is still < alpha, and the current move is not
-            // interesting (checks, captures, promotions), then let's assume it will fail low and prune this node.
-            // See https://www.chessprogramming.org/Futility_Pruning
+            // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
+            // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
+            // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
                 && depth <= config.getFpDepth()
                 && staticEval + config.getFpMargin()[depth] < alpha
@@ -299,9 +299,9 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Search Extensions - https://www.chessprogramming.org/Extensions
             // In certain interesting cases (e.g. promotions, or checks that do not immediately lose material), let's
             // extend the search depth by one ply.
-            // See https://www.chessprogramming.org/Extensions
             int extension = 0;
             if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
                 extension = 1;
@@ -312,15 +312,15 @@ public class Searcher implements Search {
                 eval = Score.DRAW_SCORE;
             }
             else if (pvNode && i == 0) {
+                // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                // See https://www.chessprogramming.org/Principal_Variation_Search
                 eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
             }
             else {
+                // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
-                // See https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
                 if (!pvNode
                     && !isInCheck
                     && isQuiet
@@ -329,9 +329,9 @@ public class Searcher implements Search {
                     board.unmakeMove();
                     continue;
                 }
+                // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
                 // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
                 // let's save time by assuming it's less likely to be good, and reduce the search depth.
-                // See https://www.chessprogramming.org/Late_Move_Reductions
                 int reduction = 0;
                 if (depth >= config.getLmrDepth()
                     && i >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
@@ -456,17 +456,17 @@ public class Searcher implements Search {
             }
             Move move = moves.get(i);
             if (!isInCheck) {
+                // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
                 // is bad for us no matter what we do, and not bother searching any further
-                // See https://www.chessprogramming.org/Delta_Pruning
                 Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
                 boolean isFutile = capturedPiece != null && (standPat + capturedPiece.getValue() + config.getDpMargin() < alpha) && !move.isPromotion();
                 if (isFutile) {
                     continue;
                 }
+                // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Evaluate the possible captures + recaptures on the target square, in order to ilter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
-                // See https://www.chessprogramming.org/Static_Exchange_Evaluation
                 int seeScore = see.evaluate(board, move);
                 boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);
                 if (isBadCapture) {

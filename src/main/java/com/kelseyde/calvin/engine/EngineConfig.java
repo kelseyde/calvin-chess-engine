@@ -78,16 +78,17 @@ public class EngineConfig {
     int[][] knightOutpostBonus;
     int[][] bishopOutpostBonus;
 
-    int[] kingPawnShieldPenalty;
-    int kingSemiOpenFilePenalty;
-    int kingSemiOpenAdjacentFilePenalty;
-    int kingOpenFilePenalty;
-    int kingOpenAdjacentFilePenalty;
-    int kingLostCastlingRightsPenalty;
+    int[][] kingPawnShieldPenalty;
+    int[] kingSemiOpenFilePenalty;
+    int[] kingSemiOpenAdjacentFilePenalty;
+    int[] kingOpenFilePenalty;
+    int[] kingOpenAdjacentFilePenalty;
+    int[] kingLostCastlingRightsPenalty;
 
     int kingManhattanDistanceMultiplier;
     int kingChebyshevDistanceMultiplier;
     int kingCenterManhattanDistanceMultiplier;
+    int[] mopUpScaleFactor;
 
     int drawishScaleFactor;
     int tempoBonus;

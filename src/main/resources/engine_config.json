@@ -1104,22 +1104,32 @@
     16,
     24
   ],
-  "kingPawnShieldPenalty":[
+  "kingPawnShieldPenalty":[[
     0,
     0,
-    9,
-    23,
-    31,
-    7,
-    -46
+    -9,
+    -23,
+    -31,
+    -7,
+    46
   ],
-  "kingSemiOpenFilePenalty":15,
-  "kingSemiOpenAdjacentFilePenalty":14,
-  "kingOpenFilePenalty":73,
-  "kingOpenAdjacentFilePenalty":33,
-  "kingLostCastlingRightsPenalty":57,
+    [
+      0,
+      0,
+      -9,
+      -23,
+      -31,
+      -7,
+      46
+    ]],
+  "kingSemiOpenFilePenalty": [-15, -15],
+  "kingSemiOpenAdjacentFilePenalty":[-14,-14],
+  "kingOpenFilePenalty":[-73, -73],
+  "kingOpenAdjacentFilePenalty":[-33, -33],
+  "kingLostCastlingRightsPenalty":[-57, -57],
   "kingManhattanDistanceMultiplier":10,
   "kingChebyshevDistanceMultiplier":10,
   "kingCenterManhattanDistanceMultiplier":14,
+  "mopUpScaleFactor": [10, 100],
   "tempoBonus":10
 }

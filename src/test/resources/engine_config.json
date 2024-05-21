@@ -7,14 +7,14 @@
   "defaultHashSizeMb":512,
   "ownBookEnabled":true,
   "maxBookMoves":26,
-  "ownTablebaseEnabled": true,
-  "maxTablebaseSupportedPieces": 7,
-  "lichessTablebaseBaseUrl": "http://tablebase.lichess.ovh",
-  "lichessTablebaseDebugEnabled": false,
-  "lichessTablebaseTimeoutMs": 750,
+  "ownTablebaseEnabled":true,
+  "maxTablebaseSupportedPieces":7,
+  "lichessTablebaseBaseUrl":"http://tablebase.lichess.ovh",
+  "lichessTablebaseDebugEnabled":false,
+  "lichessTablebaseTimeoutMs":750,
   "ponderEnabled":true,
   "pondering":false,
-  "principalVariationLength": 12,
+  "principalVariationLength":12,
   "searchCancelled":false,
   "maxDepth":256,
   "aspMargin":25,
@@ -23,9 +23,9 @@
   "fpDepth":6,
   "rfpDepth":4,
   "lmrDepth":3,
-  "lmrMinSearchedMoves": 3,
-  "lmrBase": 0.85,
-  "lmrDivisor": 3.12,
+  "lmrMinSearchedMoves":3,
+  "lmrBase":0.85,
+  "lmrDivisor":3.12,
   "lmpDepth":2,
   "lmpMultiplier":10,
   "iirDepth":4,
@@ -33,12 +33,12 @@
   "dpMargin":140,
   "fpMargin":[
     0,
-    170,
-    260,
-    450,
+    120,
+    200,
+    375,
+    425,
     500,
-    550,
-    600
+    550
   ],
   "rfpMargin":[
     0,
@@ -47,7 +47,14 @@
     360,
     480
   ],
-  "piecePhases": [0, 10, 10, 20, 45, 0],
+  "piecePhases":[
+    0,
+    10,
+    10,
+    20,
+    45,
+    0
+  ],
   "pieceValues":[
     [
       92,
@@ -1105,21 +1112,52 @@
     24
   ],
   "kingPawnShieldPenalty":[
-    0,
-    0,
-    9,
-    23,
-    31,
-    7,
-    -46
+    [
+      0,
+      0,
+      -8,
+      -19,
+      -17,
+      5,
+      63
+    ],
+    [
+      0,
+      -1,
+      3,
+      -5,
+      -9,
+      -15,
+      -73
+    ]
   ],
-  "kingSemiOpenFilePenalty":15,
-  "kingSemiOpenAdjacentFilePenalty":14,
-  "kingOpenFilePenalty":73,
-  "kingOpenAdjacentFilePenalty":33,
-  "kingLostCastlingRightsPenalty":57,
+  "kingSemiOpenFilePenalty":[
+    -20,
+    26
+  ],
+  "kingSemiOpenAdjacentFilePenalty":[
+    -24,
+    31
+  ],
+  "kingOpenFilePenalty":[
+    -61,
+    -12
+  ],
+  "kingOpenAdjacentFilePenalty":[
+    -6,
+    -33
+  ],
+  "kingLostCastlingRightsPenalty":[
+    -57,
+    -57
+  ],
   "kingManhattanDistanceMultiplier":10,
   "kingChebyshevDistanceMultiplier":10,
   "kingCenterManhattanDistanceMultiplier":14,
+  "mopUpScaleFactor":[
+    10,
+    100
+  ],
+  "drawishScaleFactor":0,
   "tempoBonus":10
 }

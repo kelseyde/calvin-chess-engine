@@ -167,22 +167,32 @@ public class TexelTunerTest {
 
     @Test
     public void tuneKingSafetyWeights() throws IOException, ExecutionException, InterruptedException {
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        List<Integer> initialParams = new ArrayList<>();
+        initialParams.addAll(Arrays.stream(initialConfig.getKingPawnShieldPenalty()[0]).boxed().toList()); // 0, 6
+        initialParams.addAll(Arrays.stream(initialConfig.getKingPawnShieldPenalty()[1]).boxed().toList()); // 7, 13
+        initialParams.add(initialConfig.getKingSemiOpenFilePenalty()[0]); // 14
+        initialParams.add(initialConfig.getKingSemiOpenFilePenalty()[1]); // 15
+        initialParams.add(initialConfig.getKingSemiOpenAdjacentFilePenalty()[0]); // 16
+        initialParams.add(initialConfig.getKingSemiOpenAdjacentFilePenalty()[1]); // 17
+        initialParams.add(initialConfig.getKingOpenFilePenalty()[0]); // 18
+        initialParams.add(initialConfig.getKingOpenFilePenalty()[1]); // 19
+        initialParams.add(initialConfig.getKingOpenAdjacentFilePenalty()[0]); // 20
+        initialParams.add(initialConfig.getKingOpenAdjacentFilePenalty()[1]); // 21
         tune(
-                new int[] { 0, 0, 10, 25, 50, 50, 50, 15, 10, 25, 15, 120 },
+                initialParams.stream().mapToInt(i -> i).toArray(),
                 (params) -> {
                     EngineConfig config = EngineInitializer.loadDefaultConfig();
-                    config.getKingPawnShieldPenalty()[0] = params[0];
-                    config.getKingPawnShieldPenalty()[1] = params[1];
-                    config.getKingPawnShieldPenalty()[2] = params[2];
-                    config.getKingPawnShieldPenalty()[3] = params[3];
-                    config.getKingPawnShieldPenalty()[4] = params[4];
-                    config.getKingPawnShieldPenalty()[5] = params[5];
-                    config.getKingPawnShieldPenalty()[6] = params[6];
-                    config.setKingSemiOpenFilePenalty(params[7]);
-                    config.setKingSemiOpenAdjacentFilePenalty(params[8]);
-                    config.setKingOpenFilePenalty(params[9]);
-                    config.setKingOpenAdjacentFilePenalty(params[10]);
-                    config.setKingLostCastlingRightsPenalty(params[11]);
+                    config.getKingPawnShieldPenalty()[0] = Arrays.stream(params, 0, 7).toArray();
+                    config.getKingPawnShieldPenalty()[1] =  Arrays.stream(params, 7, 14).toArray();
+                    config.getKingSemiOpenFilePenalty()[0] = params[14];
+                    config.getKingSemiOpenFilePenalty()[1] = params[15];
+                    config.getKingSemiOpenAdjacentFilePenalty()[0] = params[16];
+                    config.getKingSemiOpenAdjacentFilePenalty()[1] = params[17];
+                    config.getKingOpenFilePenalty()[0] = params[18];
+                    config.getKingOpenFilePenalty()[1] = params[19];
+                    config.getKingOpenAdjacentFilePenalty()[0] = params[20];
+                    config.getKingSemiOpenAdjacentFilePenalty()[0] = params[21];
                     return config;
                 }
         );

@@ -54,9 +54,6 @@ public class Evaluator implements Evaluation {
     int whiteMaterialMgScore;
     int blackMaterialMgScore;
 
-    int whiteMaterialEgScore;
-    int blackMaterialEgScore;
-
     Score score;
 
     public Evaluator(EngineConfig config) {
@@ -115,11 +112,11 @@ public class Evaluator implements Evaluation {
         score.setPhase(phase);
 
         whiteMaterialMgScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        whiteMaterialEgScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
+        int whiteMaterialEgScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
         score.addScore(whiteMaterialMgScore, whiteMaterialEgScore, true);
 
         blackMaterialMgScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        blackMaterialEgScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
+        int blackMaterialEgScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
         score.addScore(blackMaterialMgScore, blackMaterialEgScore, false);
 
         // Blockers used during mobility calculations
@@ -255,10 +252,7 @@ public class Evaluator implements Evaluation {
     /**
      * Bishop evaluation consists of simple piece-placement and mobility bonuses.
      */
-    private void scoreBishops(long bishops,
-                              long friendlyBlockers,
-                              long opponentBlockers,
-                              boolean white) {
+    private void scoreBishops(long bishops, long friendlyBlockers, long opponentBlockers, boolean white) {
 
         if (bishops == 0) return;
         int mgScore = 0;

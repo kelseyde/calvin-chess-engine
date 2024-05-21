@@ -30,15 +30,15 @@
   "lmpMultiplier":10,
   "iirDepth":4,
   "nmpMargin":0,
-  "dpMargin":50,
+  "dpMargin":140,
   "fpMargin":[
     0,
-    100,
-    160,
-    250,
-    340,
-    420,
-    500
+    120,
+    200,
+    375,
+    425,
+    500,
+    550
   ],
   "rfpMargin":[
     0,

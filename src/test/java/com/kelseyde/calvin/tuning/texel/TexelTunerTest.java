@@ -256,6 +256,20 @@ public class TexelTunerTest {
         );
     }
 
+    @Test
+    public void tuneMopUpScaleFactor() throws IOException, ExecutionException, InterruptedException {
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        tune(
+                new int[] {initialConfig.getMopUpScaleFactor()[0], initialConfig.getMopUpScaleFactor()[1]},
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.getMopUpScaleFactor()[0] = params[0];
+                    config.getMopUpScaleFactor()[1] = params[1];
+                    return config;
+                }
+        );
+    }
+
     private void tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException, ExecutionException, InterruptedException {
         int[] bestParams = tuner.tune(initialParams, createConfigFunction);
         EngineConfig bestConfig = createConfigFunction.apply(bestParams);

@@ -55,14 +55,6 @@ public class Score {
         }
     }
 
-    public void setMopUpScore(int score, boolean white) {
-        if (white) {
-            whiteMopUpScore = score;
-        } else {
-            blackMopUpScore = score;
-        }
-    }
-
     public void setTempoBonus(int score, boolean white) {
         if (white) {
             whiteTempoBonus = score;
@@ -72,8 +64,8 @@ public class Score {
     }
 
     public int sum(boolean white) {
-        int whiteScore = Phase.taperedEval(whiteMgScore, whiteEgScore, phase) + whiteKingSafetyScore + whiteMopUpScore + whiteTempoBonus;
-        int blackScore = Phase.taperedEval(blackMgScore, blackEgScore, phase) + blackKingSafetyScore + blackMopUpScore + blackTempoBonus;
+        int whiteScore = Phase.taperedEval(whiteMgScore, whiteEgScore, phase) + whiteKingSafetyScore + whiteTempoBonus;
+        int blackScore = Phase.taperedEval(blackMgScore, blackEgScore, phase) + blackKingSafetyScore + blackTempoBonus;
         int score = whiteScore - blackScore;
         int modifier = white ? 1 : -1;
         return score * modifier;

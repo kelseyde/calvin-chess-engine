@@ -407,8 +407,7 @@ public class Evaluator implements Evaluation {
         int kingSafetyScore = evaluateKingSafety(kingSquare, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
         score.setKingSafetyScore(kingSafetyScore, white);
 
-        int mopUpScore = evaluateMopUp(kingSquare, opponentKing, friendlyMaterial, white);
-        score.setMopUpScore(mopUpScore, white);
+        scoreMopUp(kingSquare, opponentKing, friendlyMaterial, white);
 
     }
 
@@ -444,7 +443,7 @@ public class Evaluator implements Evaluation {
      * </p>
      * @see <a href="https://www.chessprogramming.org/Mop-up_Evaluation">Chess Programming Wiki</a>
      */
-    private int evaluateMopUp(int friendlyKingSquare,
+    private void scoreMopUp(int friendlyKingSquare,
                               long opponentKing,
                               Material opponentMaterial,
                               boolean white) {
@@ -452,7 +451,7 @@ public class Evaluator implements Evaluation {
         int friendlyMaterialScore = white ? whiteMaterialMgScore : blackMaterialMgScore;
         int opponentMaterialScore = white ? blackMaterialMgScore: whiteMaterialMgScore;
         boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
-        if (!twoPawnAdvantage) return 0;
+        if (!twoPawnAdvantage) return;
         int opponentKingSquare = Bitwise.getNextBit(opponentKing);
 
         // Bonus for moving king closer to opponent king
@@ -462,7 +461,13 @@ public class Evaluator implements Evaluation {
         // Bonus for pushing opponent king to the edges of the board
         mopUpScore += Distance.centerManhattan(opponentKingSquare) * config.getKingCenterManhattanDistanceMultiplier();
 
-        return (int) (mopUpScore * (1 - Phase.fromMaterial(opponentMaterial, config)));
+        float opponentPhase = Phase.fromMaterial(opponentMaterial, config);
+        float phasedScore = mopUpScore * (1 - opponentPhase);
+
+        int mgScore = (int) ((phasedScore / 100) * config.getMopUpScaleFactor()[0]);
+        int egScore = (int) ((phasedScore / 100) * config.getMopUpScaleFactor()[1]);
+        score.addScore(mgScore, egScore, white);
+
     }
 
     private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {

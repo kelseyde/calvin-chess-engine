@@ -1128,6 +1128,7 @@
   "kingManhattanDistanceMultiplier":10,
   "kingChebyshevDistanceMultiplier":10,
   "kingCenterManhattanDistanceMultiplier":14,
+  "mopUpScaleFactor": [154, 37],
   "drawishScaleFactor":0,
   "tempoBonus":10
 }

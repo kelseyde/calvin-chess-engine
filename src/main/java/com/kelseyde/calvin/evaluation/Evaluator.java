@@ -51,6 +51,12 @@ public class Evaluator implements Evaluation {
     final int[] queenMgMobility;
     final int[] queenEgMobility;
 
+    int whiteMaterialMgScore;
+    int blackMaterialMgScore;
+
+    int whiteMaterialEgScore;
+    int blackMaterialEgScore;
+
     Score score;
 
     public Evaluator(EngineConfig config) {
@@ -108,13 +114,13 @@ public class Evaluator implements Evaluation {
         float phase = Phase.fromMaterial(whiteMaterial, blackMaterial, config);
         score.setPhase(phase);
 
-        int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
-        score.addScore(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, true);
+        whiteMaterialMgScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
+        whiteMaterialEgScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
+        score.addScore(whiteMaterialMgScore, whiteMaterialEgScore, true);
 
-        int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
-        score.addScore(blackMaterialMiddlegameScore, blackMaterialEndgameScore, false);
+        blackMaterialMgScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
+        blackMaterialEgScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
+        score.addScore(blackMaterialMgScore, blackMaterialEgScore, false);
 
         // Blockers used during mobility calculations
         long friendlyWhiteBlockers = whiteKing | whitePawns;
@@ -440,10 +446,12 @@ public class Evaluator implements Evaluation {
      */
     private int evaluateMopUp(int friendlyKingSquare,
                               long opponentKing,
-                              Material friendlyMaterial,
-                              Material opponentMaterial) {
+                              Material opponentMaterial,
+                              boolean white) {
         int mopUpScore = 0;
-        boolean twoPawnAdvantage = friendlyMaterial.simpleScore() >= (opponentMaterial.simpleScore() + 2);
+        int friendlyMaterialScore = white ? whiteMaterialMgScore : blackMaterialMgScore;
+        int opponentMaterialScore = white ? blackMaterialMgScore: whiteMaterialMgScore;
+        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
         if (!twoPawnAdvantage) return 0;
         int opponentKingSquare = Bitwise.getNextBit(opponentKing);
 

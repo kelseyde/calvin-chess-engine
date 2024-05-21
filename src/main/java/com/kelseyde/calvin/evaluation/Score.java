@@ -1,10 +1,7 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Piece;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Arrays;
 
 @Data
 @NoArgsConstructor
@@ -40,7 +37,7 @@ public class Score {
         int blackScore = Phase.taperedEval(blackMgScore, blackEgScore, phase);
         int score = whiteScore - blackScore;
         int modifier = white ? 1 : -1;
-        return score * modifier;
+        return score *= modifier;
     }
 
 }

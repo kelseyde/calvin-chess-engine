@@ -126,29 +126,24 @@ public class Evaluator implements Evaluation {
         long friendlyWhiteBlockers = whiteKing | whitePawns;
         long friendlyBlackBlockers = blackKing | blackPawns;
 
-        // Pawn attacks used during mobility calculations
-        long whitePawnAttacks = Attacks.pawnAttacks(whitePawns, true);
-        long blackPawnAttacks = Attacks.pawnAttacks(blackPawns, false);
-
         scorePawnsWithHash(board, whitePawns, blackPawns);
 
-        scoreKnights(whiteKnights, friendlyWhiteBlockers, blackPawnAttacks, true);
-        scoreKnights(blackKnights, friendlyBlackBlockers, whitePawnAttacks, false);
+        scoreKnights(whiteKnights, friendlyWhiteBlockers, true);
+        scoreKnights(blackKnights, friendlyBlackBlockers, false);
 
-        scoreBishops(whiteBishops, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreBishops(blackBishops, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        scoreBishops(whiteBishops, friendlyWhiteBlockers, blackPieces, true);
+        scoreBishops(blackBishops, friendlyBlackBlockers, whitePieces, false);
 
-        scoreRooks(whiteRooks, whitePawns, blackPawns, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreRooks(blackRooks, blackPawns, whitePawns, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        scoreRooks(whiteRooks, whitePawns, blackPawns, friendlyWhiteBlockers, blackPieces, true);
+        scoreRooks(blackRooks, blackPawns, whitePawns, friendlyBlackBlockers, whitePieces, false);
 
-        scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, true);
+        scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, false);
 
         scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
         scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
 
         return score.sum(white);
-
     }
 
     private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {
@@ -231,7 +226,7 @@ public class Evaluator implements Evaluation {
     /**
      * Knight evaluation consists of simple piece-placement and mobility bonuses.
      */
-    private void scoreKnights(long knights, long friendlyBlockers, long opponentPawnAttacks, boolean white) {
+    private void scoreKnights(long knights, long friendlyBlockers, boolean white) {
 
         if (knights == 0) return;
         int mgScore = 0;
@@ -245,7 +240,7 @@ public class Evaluator implements Evaluation {
             egScore += knightEgTable[square];
 
             long attacks = Attacks.knightAttacks(knight);
-            long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+            long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
             mgScore += knightMgMobility[moveCount];
             egScore += knightEgMobility[moveCount];
@@ -263,7 +258,6 @@ public class Evaluator implements Evaluation {
     private void scoreBishops(long bishops,
                               long friendlyBlockers,
                               long opponentBlockers,
-                              long opponentPawnAttacks,
                               boolean white) {
 
         if (bishops == 0) return;
@@ -279,7 +273,7 @@ public class Evaluator implements Evaluation {
             egScore += bishopEgTable[square];
 
             long attacks = Attacks.bishopAttacks(bishop, blockers);
-            long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+            long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
             mgScore += bishopMgMobility[moveCount];
             egScore += bishopEgMobility[moveCount];
@@ -299,7 +293,6 @@ public class Evaluator implements Evaluation {
                             long opponentPawns,
                             long friendlyBlockers,
                             long opponentBlockers,
-                            long opponentPawnAttacks,
                             boolean white) {
 
         if (rooks == 0) return;
@@ -317,7 +310,7 @@ public class Evaluator implements Evaluation {
             egScore += rookEgTable[square];
 
             long attacks = Attacks.rookAttacks(rook, blockers);
-            long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+            long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
             mgScore += rookMgMobility[moveCount];
             egScore += rookEgMobility[moveCount];
@@ -348,7 +341,6 @@ public class Evaluator implements Evaluation {
     private void scoreQueens(long queens,
                              long friendlyBlockers,
                              long opponentBlockers,
-                             long opponentPawnAttacks,
                              boolean white) {
 
         if (queens == 0) return;
@@ -364,7 +356,7 @@ public class Evaluator implements Evaluation {
             egScore += queenEgTable[square];
 
             long attacks = Attacks.bishopAttacks(queen, blockers) | Attacks.rookAttacks(queen, blockers);
-            long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+            long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
             mgScore += queenMgMobility[moveCount];
             egScore += queenEgMobility[moveCount];

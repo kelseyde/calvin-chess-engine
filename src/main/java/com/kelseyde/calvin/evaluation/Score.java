@@ -12,7 +12,6 @@ public class Score {
 
     public static final int MATE_SCORE = 1000000;
     public static final int DRAW_SCORE = 0;
-    public static final int[] SIMPLE_PIECE_VALUES = Arrays.stream(Piece.values()).mapToInt(Piece::getValue).toArray();
 
     public static boolean isMateScore(int eval) {
         return Math.abs(eval) >= Score.MATE_SCORE - 100;
@@ -23,12 +22,6 @@ public class Score {
 
     int whiteEgScore;
     int blackEgScore;
-
-    int whiteKingSafetyScore;
-    int blackKingSafetyScore;
-
-    int whiteMopUpScore;
-    int blackMopUpScore;
 
     int whiteTempoBonus;
     int blackTempoBonus;
@@ -47,14 +40,6 @@ public class Score {
         }
     }
 
-    public void setKingSafetyScore(int score, boolean white) {
-        if (white) {
-            whiteKingSafetyScore = score;
-        } else {
-            blackKingSafetyScore = score;
-        }
-    }
-
     public void setTempoBonus(int score, boolean white) {
         if (white) {
             whiteTempoBonus = score;
@@ -64,8 +49,8 @@ public class Score {
     }
 
     public int sum(boolean white) {
-        int whiteScore = Phase.taperedEval(whiteMgScore, whiteEgScore, phase) + whiteKingSafetyScore + whiteTempoBonus;
-        int blackScore = Phase.taperedEval(blackMgScore, blackEgScore, phase) + blackKingSafetyScore + blackTempoBonus;
+        int whiteScore = Phase.taperedEval(whiteMgScore, whiteEgScore, phase) + whiteTempoBonus;
+        int blackScore = Phase.taperedEval(blackMgScore, blackEgScore, phase) + blackTempoBonus;
         int score = whiteScore - blackScore;
         int modifier = white ? 1 : -1;
         return score * modifier;

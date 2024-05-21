@@ -1120,6 +1120,7 @@
     7,
     -46
   ],
+  "kingSafetyScaleFactor": [98, 110],
   "kingSemiOpenFilePenalty":15,
   "kingSemiOpenAdjacentFilePenalty":14,
   "kingOpenFilePenalty":73,
@@ -1128,7 +1129,7 @@
   "kingManhattanDistanceMultiplier":10,
   "kingChebyshevDistanceMultiplier":10,
   "kingCenterManhattanDistanceMultiplier":14,
-  "mopUpScaleFactor": [154, 37],
+  "mopUpScaleFactor": [162, 32],
   "drawishScaleFactor":0,
   "tempoBonus":10
 }

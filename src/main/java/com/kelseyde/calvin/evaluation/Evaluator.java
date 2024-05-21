@@ -397,17 +397,14 @@ public class Evaluator implements Evaluation {
         int mgScore = 0;
         int egScore = 0;
 
-        int kingSquare = Bitwise.getNextBit(friendlyKing);
-
-        int square = white ? kingSquare ^ 56 : kingSquare;
+        int king = Bitwise.getNextBit(friendlyKing);
+        int square = white ? king ^ 56 : king;
         mgScore += kingMgTable[square];
         egScore += kingEgTable[square];
         score.addScore(mgScore, egScore, white);
 
-        int kingSafetyScore = evaluateKingSafety(kingSquare, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
-        score.setKingSafetyScore(kingSafetyScore, white);
-
-        scoreMopUp(kingSquare, opponentKing, friendlyMaterial, white);
+        scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
+        scoreMopUp(king, opponentKing, friendlyMaterial, white);
 
     }
 
@@ -418,7 +415,7 @@ public class Evaluator implements Evaluation {
      * </p>
      * @see <a href="https://www.chessprogramming.org/King_Safety">Chess Programming Wiki</a>
      */
-    private int evaluateKingSafety(int kingSquare,
+    private void scoreKingSafety(int kingSquare,
                                    long friendlyPawns,
                                    long opponentPawns,
                                    Material opponentMaterial,
@@ -426,15 +423,17 @@ public class Evaluator implements Evaluation {
                                    float phase,
                                    boolean white) {
         // King safety evaluation
-        if (phase <= 0.5) return 0;
         int kingFile = BoardUtils.getFile(kingSquare);
         int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
         int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
         int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(config, board, white, kingFile);
         if (opponentMaterial.queens() == 0) {
-            phase *= 0.6f;
+            phase *= 0.4f;
         }
-        return (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
+        float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
+        int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
+        int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
+        score.addScore(mgScore, egScore, white);
     }
 
     /**

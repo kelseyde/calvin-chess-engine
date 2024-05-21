@@ -1114,38 +1114,37 @@
   "kingPawnShieldPenalty":[
     [
       0,
-      0,
-      -8,
-      -19,
-      -17,
-      5,
-      63
+      -2,
+      -12,
+      -18,
+      -16,
+      18,
+      158
     ],
     [
       0,
-      -1,
-      3,
-      -5,
+      21,
+      34,
       -9,
-      -15,
-      -73
+      -5,
+      -23,
+      -331
     ]
   ],
   "kingSemiOpenFilePenalty":[
-    -20,
-    26
+    -20,0
   ],
   "kingSemiOpenAdjacentFilePenalty":[
-    -24,
-    31
+    -22,
+    0
   ],
   "kingOpenFilePenalty":[
-    -61,
-    -12
+    -68,
+    0
   ],
   "kingOpenAdjacentFilePenalty":[
-    -6,
-    -33
+    -19,
+    0
   ],
   "kingLostCastlingRightsPenalty":[
     -57,

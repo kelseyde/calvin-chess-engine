@@ -403,7 +403,7 @@ public class Evaluator implements Evaluation {
         egScore += kingEgTable[square];
         score.addScore(mgScore, egScore, white);
 
-        scoreKingSafety(kingSquare, friendlyPawns, opponentPawns, opponentMaterial, board, white);
+        scoreKingSafety(kingSquare, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
 
         int mopUpScore = evaluateMopUp(kingSquare, opponentKing, opponentMaterial, white);
         score.setMopUpScore(mopUpScore, white);
@@ -422,12 +422,13 @@ public class Evaluator implements Evaluation {
                                    long opponentPawns,
                                    Material opponentMaterial,
                                    Board board,
+                                   float phase,
                                    boolean white) {
         // King safety evaluation
         // TODO if fails add back?
-//        if (phase <= 0.5) {
-//            return;
-//        }
+        if (phase <= 0.5) {
+            return;
+        }
         int kingFile = BoardUtils.getFile(kingSquare);
         scorePawnShield(kingSquare, kingFile, friendlyPawns, white);
         scoreOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial, white);

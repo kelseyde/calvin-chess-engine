@@ -407,7 +407,7 @@ public class Evaluator implements Evaluation {
         int kingSafetyScore = evaluateKingSafety(kingSquare, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
         score.setKingSafetyScore(kingSafetyScore, white);
 
-        int mopUpScore = evaluateMopUp(kingSquare, opponentKing, friendlyMaterial, opponentMaterial);
+        int mopUpScore = evaluateMopUp(kingSquare, opponentKing, friendlyMaterial, white);
         score.setMopUpScore(mopUpScore, white);
 
     }

@@ -46,6 +46,7 @@ public class TexelTuner {
         System.out.println("number of positions: " + positions.size());
         int[] bestParams = initialParams;
         double bestError = meanSquareError(bestParams, createConfigFunction);
+        System.out.println("current best error: " + bestError);
         int iterations = 0;
 
         boolean improved = true;

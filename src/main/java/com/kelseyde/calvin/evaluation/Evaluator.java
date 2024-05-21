@@ -147,8 +147,6 @@ public class Evaluator implements Evaluation {
         scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
         scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
 
-        score.setTempoBonus(config.getTempoBonus(), board.isWhiteToMove());
-
         return score.sum(white);
 
     }
@@ -177,9 +175,7 @@ public class Evaluator implements Evaluation {
      * Pawn evaluation consists of piece-placement eval + pawn structure considerations (bonuses for passed pawns,
      * penalties for isolated/doubled pawns).
      */
-    private PawnScore scorePawns(long friendlyPawns,
-                                 long opponentPawns,
-                                 boolean white) {
+    private PawnScore scorePawns(long friendlyPawns, long opponentPawns, boolean white) {
         
         if (friendlyPawns == 0) return new PawnScore(0, 0);
         int mgScore = 0;
@@ -235,10 +231,7 @@ public class Evaluator implements Evaluation {
     /**
      * Knight evaluation consists of simple piece-placement and mobility bonuses.
      */
-    private void scoreKnights(long knights,
-                              long friendlyBlockers,
-                              long opponentPawnAttacks,
-                              boolean white) {
+    private void scoreKnights(long knights, long friendlyBlockers, long opponentPawnAttacks, boolean white) {
 
         if (knights == 0) return;
         int mgScore = 0;

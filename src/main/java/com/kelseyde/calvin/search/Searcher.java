@@ -290,7 +290,11 @@ public class Searcher implements Search {
             // Futility pruning: if the static evaluation + some margin is still < alpha, and the current move is not
             // interesting (checks, captures, promotions), then let's assume it will fail low and prune this node.
             // See https://www.chessprogramming.org/Futility_Pruning
-            if (!pvNode && depth <= config.getFpDepth() && staticEval + config.getFpMargin()[depth] < alpha && !isInCheck && isQuiet) {
+            if (!pvNode
+                && depth <= config.getFpDepth()
+                && staticEval + config.getFpMargin()[depth] < alpha
+                && !isInCheck
+                && isQuiet) {
                 board.unmakeMove();
                 continue;
             }

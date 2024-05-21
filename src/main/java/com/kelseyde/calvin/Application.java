@@ -155,9 +155,10 @@ public class Application {
         long time = searchResult.time();
         int nodes = searchResult.nodes();
         long nps = searchResult.nps();
+        int hashFull = ENGINE.getHashFull();
         String pv = ENGINE.extractPrincipalVariation().stream()
                 .map(Notation::toNotation).collect(Collectors.joining(" "));
-        write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
+        write(String.format("info depth %s score %s nodes %s time %s nps %s hashfull %s pv %s", depth, score, nodes, time, nps, hashFull, pv));
     }
 
     private static String formatScore(int eval) {

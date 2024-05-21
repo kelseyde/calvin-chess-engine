@@ -57,7 +57,7 @@ public class TranspositionTable {
         if (isMateScore(score)) score = calculateMateScore(score, ply);
         HashEntry newEntry = HashEntry.of(zobristKey, score, move, flag, depth);
 
-        int replacedIndex = -1;
+        int insertIndex = -1;
         int minDepth = Integer.MAX_VALUE;
 
         for (int i = startIndex; i < startIndex + 4; i++) {
@@ -68,7 +68,7 @@ public class TranspositionTable {
                     if (newEntry.getMove() == null && storedEntry != null && storedEntry.getMove() != null) {
                         newEntry = HashEntry.of(newEntry.key(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
                     }
-                    replacedIndex = i;
+                    insertIndex = i;
                     break;
                 } else {
                     return;
@@ -77,12 +77,12 @@ public class TranspositionTable {
 
             if (storedEntry.getDepth() < minDepth) {
                 minDepth = storedEntry.getDepth();
-                replacedIndex = i;
+                insertIndex = i;
             }
         }
 
-        if (replacedIndex != -1) {
-            entries[replacedIndex] = newEntry;
+        if (insertIndex != -1) {
+            entries[insertIndex] = newEntry;
         }
     }
 
@@ -110,10 +110,19 @@ public class TranspositionTable {
         return score > 0 ? score + plyFromRoot : score - plyFromRoot;
     }
 
+    /**
+     * @return how full the hash table is, in permille (parts per thousand, so 1000 is 100% full), to be outputted in UCI
+     */
+    public int getHashFull() {
+        int fill = (int) Arrays.stream(entries).filter(Objects::nonNull).count();
+        return (int) (((float) fill / tableSize) * 1000f);
+    }
+
     public void printStatistics() {
         long fill = Arrays.stream(entries).filter(Objects::nonNull).count();
         float fillPercentage = ((float) fill / tableSize) * 100;
         float hitPercentage = ((float) hits / tries) * 100;
         //System.out.printf("TT %s -- size: %s / %s (%s), tries: %s, hits: %s (%s)%n", this.hashCode(), fill, entries.length, fillPercentage, tries, hits, hitPercentage);
     }
+
 }

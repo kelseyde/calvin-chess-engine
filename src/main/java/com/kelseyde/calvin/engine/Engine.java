@@ -187,6 +187,10 @@ public class Engine {
         return principalVariation;
     }
 
+    public int getHashFull() {
+        return searcher.getTranspositionTable().getHashFull();
+    }
+
     private boolean useOpeningBook() {
         long key = board.getGameState().getZobristKey();
         int moveCount = board.getMoveHistory().size();

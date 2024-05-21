@@ -138,14 +138,10 @@ public class Evaluator implements Evaluation {
         scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
         scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
 
-        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, blackMaterial, board, phase, true);
-        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, whiteMaterial, board, phase, false);
+        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
+        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
 
-        if (board.isWhiteToMove()) {
-            score.setWhiteTempoBonus(config.getTempoBonus());
-        } else {
-            score.setBlackTempoBonus(config.getTempoBonus());
-        }
+        score.setTempoBonus(config.getTempoBonus(), board.isWhiteToMove());
 
         return score.sum(white);
 
@@ -408,6 +404,7 @@ public class Evaluator implements Evaluation {
                            long opponentKing,
                            long friendlyPawns,
                            long opponentPawns,
+                           Material friendlyMaterial,
                            Material opponentMaterial,
                            Board board,
                            float phase,
@@ -425,7 +422,7 @@ public class Evaluator implements Evaluation {
         int kingSafetyScore = evaluateKingSafety(kingSquare, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
         score.setKingSafetyScore(kingSafetyScore, white);
 
-        int mopUpScore = evaluateMopUp(kingSquare, opponentKing, opponentMaterial, white);
+        int mopUpScore = evaluateMopUp(kingSquare, opponentKing, friendlyMaterial, opponentMaterial);
         score.setMopUpScore(mopUpScore, white);
 
     }
@@ -464,12 +461,10 @@ public class Evaluator implements Evaluation {
      */
     private int evaluateMopUp(int friendlyKingSquare,
                               long opponentKing,
-                              Material opponentMaterial,
-                              boolean white) {
+                              Material friendlyMaterial,
+                              Material opponentMaterial) {
         int mopUpScore = 0;
-        int friendlyMaterialScore = white ? score.getWhiteMaterialMgScore() : score.getBlackMaterialMgScore();
-        int opponentMaterialScore = white ? score.getBlackMaterialMgScore() : score.getWhiteMaterialMgScore();
-        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
+        boolean twoPawnAdvantage = friendlyMaterial.simpleScore() > (opponentMaterial.simpleScore() + 2);
         if (!twoPawnAdvantage) return 0;
         int opponentKingSquare = Bitwise.getNextBit(opponentKing);
 

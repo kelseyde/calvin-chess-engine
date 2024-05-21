@@ -23,8 +23,10 @@ public class Score {
     int blackMaterialMgScore;
     int blackMaterialEgScore;
 
-    int whitePiecePlacementScore;
-    int blackPiecePlacementScore;
+    int whitePiecePlacementMgScore;
+    int whitePiecePlacementEgScore;
+    int blackPiecePlacementMgScore;
+    int blackPiecePlacementEgScore;
 
     int whiteMobilityMgScore;
     int whiteMobilityEgScore;
@@ -76,9 +78,11 @@ public class Score {
 
     public void addPiecePlacementScore(int middlegameScore, int endgameScore, boolean white) {
         if (white) {
-            whitePiecePlacementScore += Phase.taperedEval(middlegameScore, endgameScore, phase);
+            whitePiecePlacementMgScore += middlegameScore;
+            whitePiecePlacementEgScore += endgameScore;
         } else {
-            blackPiecePlacementScore += Phase.taperedEval(middlegameScore, endgameScore, phase);
+            blackPiecePlacementMgScore += middlegameScore;
+            blackPiecePlacementEgScore += endgameScore;
         }
     }
 
@@ -148,31 +152,23 @@ public class Score {
         }
     }
 
+    public void setTempoBonus(int score, boolean white) {
+        if (white) {
+            whiteTempoBonus = score;
+        } else {
+            blackTempoBonus = score;
+        }
+    }
+
     public int sum(boolean white) {
 
-        int whiteMaterialScore = Phase.taperedEval(whiteMaterialMgScore, whiteMaterialEgScore, phase);
-        int blackMaterialScore = Phase.taperedEval(blackMaterialMgScore, blackMaterialEgScore, phase);
+        int whiteMiddlegameScore = whiteMaterialMgScore + whitePiecePlacementMgScore + whiteMobilityMgScore + whitePawnStructureMgScore + whiteKnightMgScore + whiteBishopMgScore + whiteRookMgScore;
+        int whiteEndgameScore = whiteMaterialEgScore + whitePiecePlacementEgScore + whiteMobilityEgScore + whitePawnStructureEgScore + whiteKnightEgScore + whiteBishopEgScore + whiteRookEgScore;
+        int whiteScore = Phase.taperedEval(whiteMiddlegameScore, whiteEndgameScore, phase) + whiteKingSafetyScore + whiteMopUpScore + whiteTempoBonus;
 
-        int whiteMobilityScore = Phase.taperedEval(whiteMobilityMgScore, whiteMobilityEgScore, phase);
-        int blackMobilityScore = Phase.taperedEval(blackMobilityMgScore, blackMobilityEgScore, phase);
-
-        int whitePawnStructureScore = Phase.taperedEval(whitePawnStructureMgScore, whitePawnStructureEgScore, phase);
-        int blackPawnStructureScore = Phase.taperedEval(blackPawnStructureMgScore, blackPawnStructureEgScore, phase);
-
-        int whiteKnightScore = Phase.taperedEval(whiteKnightMgScore, whiteKnightEgScore, phase);
-        int blackKnightScore = Phase.taperedEval(blackKnightMgScore, blackKnightEgScore, phase);
-
-        int whiteBishopScore = Phase.taperedEval(whiteBishopMgScore, whiteBishopEgScore, phase);
-        int blackBishopScore = Phase.taperedEval(blackBishopMgScore, blackBishopEgScore, phase);
-
-        int whiteRookScore = Phase.taperedEval(whiteRookMgScore, whiteRookEgScore, phase);
-        int blackRookScore = Phase.taperedEval(blackRookMgScore, blackRookEgScore, phase);
-
-        int whiteScore = whiteMaterialScore + whitePiecePlacementScore + whiteMobilityScore + whitePawnStructureScore +
-                whiteKingSafetyScore + whiteKnightScore + whiteBishopScore + whiteRookScore + whiteMopUpScore + whiteTempoBonus;
-
-        int blackScore = blackMaterialScore + blackPiecePlacementScore + blackMobilityScore + blackPawnStructureScore +
-                blackKingSafetyScore + blackKnightScore + blackBishopScore + blackRookScore + blackMopUpScore + blackTempoBonus;
+        int blackMiddlegameScore = blackMaterialMgScore + blackPiecePlacementMgScore + blackMobilityMgScore + blackPawnStructureMgScore + blackKnightMgScore + blackBishopMgScore + blackRookMgScore;
+        int blackEndgameScore = blackMaterialEgScore + blackPiecePlacementEgScore + blackMobilityEgScore + blackPawnStructureEgScore + blackKnightEgScore + blackBishopEgScore + blackRookEgScore;
+        int blackScore = Phase.taperedEval(blackMiddlegameScore, blackEndgameScore, phase) + blackKingSafetyScore + blackMopUpScore + blackTempoBonus;
 
         int score = whiteScore - blackScore;
         int modifier = white ? 1 : -1;

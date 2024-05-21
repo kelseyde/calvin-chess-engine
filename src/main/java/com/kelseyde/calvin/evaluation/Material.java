@@ -23,10 +23,8 @@ public record Material(int pawns,
         return new Material(pawns, knights, bishops, rooks, queens);
     }
 
-    public int sum(EngineConfig config, float phase) {
-        int middlegameScore = sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int endgameScore = sum(config.getPieceValues()[1], config.getBishopPairBonus());
-        return Phase.taperedEval(middlegameScore, endgameScore, phase);
+    public int simpleScore() {
+        return pawns + (knights * 3) + (bishops * 3) + (rooks * 5) + (queens * 9);
     }
 
     /**

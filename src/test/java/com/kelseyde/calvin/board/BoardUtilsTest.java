@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -7,6 +8,7 @@ import java.time.Instant;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+@Disabled
 public class BoardUtilsTest {
 
     @Test

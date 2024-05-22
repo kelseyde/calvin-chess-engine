@@ -20,9 +20,7 @@ import java.util.Optional;
  * Largely inspired by Sebastian Lague's Chess Coding Adventure:
  * @see <a href="https://github.com/SebLague/Chess-Coding-Adventure">Chess Coding Adventure</a>
  */
-@Getter
-@EqualsAndHashCode
-public class Move {
+public record Move(int value) {
 
     // Special move flags
     public static final short NO_FLAG = 0b0000;
@@ -38,17 +36,6 @@ public class Move {
     public static final int START_SQUARE_MASK = 0b0000000000111111;
     public static final int END_SQUARE_MASK = 0b0000111111000000;
 
-    private final int value; // 16-bit integer value representing the move
-
-    /**
-     * Constructs a Move instance with the given encoded value.
-     *
-     * @param value The encoded value representing the move.
-     */
-    public Move(int value) {
-        this.value = value;
-    }
-
     /**
      * Constructs a Move instance from the given start square and end square.
      *
@@ -56,7 +43,7 @@ public class Move {
      * @param endSquare   The ending square of the move (0 - 63).
      */
     public Move(int startSquare, int endSquare) {
-        this.value = (startSquare | endSquare << 6);
+        this(startSquare | endSquare << 6);
     }
 
     /**
@@ -67,7 +54,7 @@ public class Move {
      * @param flag        The special move flag representing additional move information.
      */
     public Move(int startSquare, int endSquare, int flag) {
-        this.value = startSquare | (endSquare << 6) | (flag << 12);
+        this(startSquare | (endSquare << 6) | (flag << 12));
     }
 
     /**

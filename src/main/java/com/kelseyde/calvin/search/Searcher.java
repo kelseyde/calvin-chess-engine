@@ -467,8 +467,11 @@ public class Searcher implements Search {
                 // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Evaluate the possible captures + recaptures on the target square, in order to ilter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
-                int seeScore = see.evaluate(board, move);
-                boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);
+                //int seeScore = see.evaluate(board, move);
+                int score = scores[i];
+                boolean isBadCapture = (depth <= 3 && score >= MoveOrderer.LOSING_CAPTURE_BIAS && score < MoveOrderer.KILLER_MOVE_BIAS)
+                            || (depth > 3 && score >= MoveOrderer.EQUAL_CAPTURE_BIAS && score < MoveOrderer.WINNING_CAPTURE_BIAS);
+                //boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);
                 if (isBadCapture) {
                     continue;
                 }

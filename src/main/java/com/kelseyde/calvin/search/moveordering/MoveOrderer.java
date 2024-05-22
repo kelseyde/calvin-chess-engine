@@ -25,18 +25,20 @@ public class MoveOrderer implements MoveOrdering {
 
     private static final int MILLION = 1000000;
     private static final int PREVIOUS_BEST_MOVE_BIAS = 10 * MILLION;
-    private static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
-    private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
-    private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
-    private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
-    private static final int HISTORY_MOVE_BIAS = 4 * MILLION;
-    private static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
+    public static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
+    public static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
+    public static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
+    public static final int KILLER_MOVE_BIAS = 6 * MILLION;
+    public static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
+    public static final int HISTORY_MOVE_BIAS = 4 * MILLION;
+    public static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
     private static final int CASTLING_BIAS = 2 * MILLION;
 
     private static final int KILLER_MOVE_ORDER_BONUS = 10000;
     private static final int MAX_KILLER_MOVE_PLY = 32;
     private static final int MAX_KILLER_MOVES_PER_PLY = 3;
+
+    private final StaticExchangeEvaluator see = new StaticExchangeEvaluator();
 
     public static final int[][] MVV_LVA_TABLE = new int[][] {
             new int[] {15, 14, 13, 12, 11, 10},  // victim P, attacker P, N, B, R, Q, K
@@ -95,7 +97,7 @@ public class MoveOrderer implements MoveOrdering {
         Piece capturedPiece = board.pieceAt(endSquare);
         boolean isCapture = capturedPiece != null;
         if (isCapture) {
-            moveScore += scoreCapture(board, startSquare, capturedPiece);
+            moveScore += scoreCapture(board, startSquare, move);
         }
         // Non-captures are sorted using killer score + history score
         else {
@@ -127,19 +129,28 @@ public class MoveOrderer implements MoveOrdering {
         return Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
     }
 
-    private int scoreCapture(Board board, int startSquare, Piece capturedPiece) {
-        Piece piece = board.pieceAt(startSquare);
-        int captureScore = 0;
-        captureScore += MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
-        int materialDelta = capturedPiece.getValue() - piece.getValue();
-        if (materialDelta > 0) {
-            captureScore += WINNING_CAPTURE_BIAS;
-        } else if (materialDelta == 0) {
-            captureScore += EQUAL_CAPTURE_BIAS;
+    private int scoreCapture(Board board, int startSquare, Move move) {
+        int seeScore = see.evaluate(board, move);
+        if (seeScore > 0) {
+            return seeScore + WINNING_CAPTURE_BIAS;
+        } else if (seeScore == 0) {
+            return seeScore + EQUAL_CAPTURE_BIAS;
         } else {
-            captureScore += LOSING_CAPTURE_BIAS;
+            return seeScore + LOSING_CAPTURE_BIAS;
         }
-        return captureScore;
+
+//        Piece piece = board.pieceAt(startSquare);
+//        int captureScore = 0;
+//        captureScore += MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
+//        int materialDelta = capturedPiece.getValue() - piece.getValue();
+//        if (materialDelta > 0) {
+//            captureScore += WINNING_CAPTURE_BIAS;
+//        } else if (materialDelta == 0) {
+//            captureScore += EQUAL_CAPTURE_BIAS;
+//        } else {
+//            captureScore += LOSING_CAPTURE_BIAS;
+//        }
+//        return captureScore;
     }
 
     private int scoreKillerMove(Move move, int ply) {

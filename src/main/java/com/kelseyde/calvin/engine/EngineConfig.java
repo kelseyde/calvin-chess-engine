@@ -84,10 +84,12 @@ public class EngineConfig {
     int kingOpenFilePenalty;
     int kingOpenAdjacentFilePenalty;
     int kingLostCastlingRightsPenalty;
+    int[] kingSafetyScaleFactor;
 
     int kingManhattanDistanceMultiplier;
     int kingChebyshevDistanceMultiplier;
     int kingCenterManhattanDistanceMultiplier;
+    int[] mopUpScaleFactor;
 
     int drawishScaleFactor;
     int tempoBonus;

@@ -34,11 +34,6 @@ public class MoveGenerator implements MoveGeneration {
     private long queens;
     private long king;
 
-    private int kingSquare;
-    private long friendlies;
-    private long opponents;
-    private long occupied;
-
     private List<Move> legalMoves;
 
     /**
@@ -67,17 +62,19 @@ public class MoveGenerator implements MoveGeneration {
         // Initialise piece fields
         initPieces(board, white);
 
+        int kingSquare = Bitwise.getNextBit(king);
         this.filter = filter;
+
 
         // Initialize capture and push masks
         captureMask = Bits.ALL_SQUARES;
         pushMask = Bits.ALL_SQUARES;
 
         // Calculate pins and checks
-        PinData pinData = pinCalculator.calculatePinMask(board, kingSquare, friendlies, opponents, white);
+        PinData pinData = pinCalculator.calculatePinMask(board, white);
         pinMask = pinData.pinMask();
         pinRayMasks = pinData.pinRayMasks();
-        checkersMask = calculateAttackerMask(board, king);
+        checkersMask = calculateAttackerMask(board, 1L << kingSquare);
         long checkersCount = Bitwise.countBits(checkersMask);
 
         int estimatedLegalMoves = estimateLegalMoves(board);
@@ -132,6 +129,8 @@ public class MoveGenerator implements MoveGeneration {
     private void generatePawnMoves(Board board) {
 
         if (pawns == 0) return;
+        long opponents = board.getPieces(!white);
+        long occupied = board.getOccupied();
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
         long filterMask = Bits.ALL_SQUARES;
@@ -247,6 +246,7 @@ public class MoveGenerator implements MoveGeneration {
 
     private void generateKnightMoves(Board board) {
         if (knights == 0) return;
+        long opponents = board.getPieces(!white);
 
         // Initialize filter mask based on move filter type
         long filterMask = Bits.ALL_SQUARES;
@@ -271,12 +271,12 @@ public class MoveGenerator implements MoveGeneration {
             }
             unpinnedKnights = Bitwise.popBit(unpinnedKnights);
         }
-
     }
 
     private void generateKingMoves(Board board) {
         int startSquare = Bitwise.getNextBit(king);
-
+        long friendlies = board.getPieces(white);
+        long opponents = board.getPieces(!white);
         long filterMask = filter == MoveFilter.ALL ? Bits.ALL_SQUARES : opponents;
         long kingMoves = Attacks.kingAttacks(startSquare) & ~friendlies & filterMask;
 
@@ -297,8 +297,6 @@ public class MoveGenerator implements MoveGeneration {
         // Restore the king to its original position on the board
         board.toggleKing(white, startSquare);
         board.recalculatePieces();
-        initPieces(board, white);
-
     }
 
     private void generateCastlingMoves(Board board) {
@@ -306,6 +304,7 @@ public class MoveGenerator implements MoveGeneration {
             return;
         }
         int startSquare = Bitwise.getNextBit(king);
+        long occupied = board.getOccupied();
 
         boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(white);
         if (isKingsideAllowed) {
@@ -343,10 +342,13 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private void generateSlidingMoves(Board board, long sliders, boolean isOrthogonal, boolean isDiagonal) {
+        long opponents = board.getPieces(!white);
+        long occupied = board.getOccupied();
+        long friendlies = board.getPieces(white);
 
         while (sliders != 0) {
             int startSquare = Bitwise.getNextBit(sliders);
-            long attackMask = getSlidingAttacks(startSquare, isDiagonal, isOrthogonal);
+            long attackMask = getSlidingAttacks(board, startSquare, white, friendlies, occupied, isDiagonal, isOrthogonal);
 
             attackMask &= pushMask | captureMask;
 
@@ -384,9 +386,9 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     public long getPawnAttacks(Board board, int square, boolean white) {
-
         long attackMask = 0L;
         long squareBB = 1L << square;
+        long friendlies = board.getPieces(white);
 
         long leftCapture = white ?
                 Bitwise.shiftNorthWest(squareBB) &~ friendlies &~ Bits.FILE_H :
@@ -402,37 +404,40 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     public long getKnightAttacks(Board board, int square, boolean white) {
-        initPieces(board, white);
+        long friendlies = board.getPieces(white);
         return Attacks.knightAttacks(square) &~ friendlies;
     }
 
     public long getBishopAttacks(Board board, int square, boolean white) {
-        initPieces(board, white);
-        return getSlidingAttacks(square, true, false);
+        long occupied = board.getOccupied();
+        long friendlies = board.getPieces(white);
+        return getSlidingAttacks(board, square, white, friendlies, occupied, true, false);
     }
 
     public long getRookAttacks(Board board, int square, boolean white) {
-        initPieces(board, white);
-        return getSlidingAttacks(square, false, true);
+        long occupied = board.getOccupied();
+        long friendlies = board.getPieces(white);
+        return getSlidingAttacks(board, square, white, friendlies, occupied, false, true);
     }
 
     public long getQueenAttacks(Board board, int square, boolean white) {
-        initPieces(board, white);
-        return getSlidingAttacks(square, true, true);
+        long occupied = board.getOccupied();
+        long friendlies = board.getPieces(white);
+        return getSlidingAttacks(board, square, white, friendlies, occupied, true, true);
     }
 
     public long getKingAttacks(Board board, int square, boolean white) {
-        initPieces(board, white);
+        long friendlies = board.getPieces(white);
         return Attacks.kingAttacks(square) &~ friendlies;
     }
 
-    private long getSlidingAttacks(int square, boolean isDiagonal, boolean isOrthogonal) {
+    private long getSlidingAttacks(Board board, int square, boolean white, long friendlies, long occ, boolean isDiagonal, boolean isOrthogonal) {
         long attackMask = 0L;
         if (isOrthogonal) {
-            attackMask |= Attacks.rookAttacks(square, occupied);
+            attackMask |= Attacks.rookAttacks(square, occ);
         }
         if (isDiagonal) {
-            attackMask |= Attacks.bishopAttacks(square, occupied);
+            attackMask |= Attacks.bishopAttacks(square, occ);
         }
         return attackMask &~ friendlies;
     }
@@ -584,10 +589,6 @@ public class MoveGenerator implements MoveGeneration {
         rooks = board.getRooks(white);
         queens = board.getQueens(white);
         king = board.getKing(white);
-        kingSquare = Bitwise.getNextBit(king);
-        friendlies = board.getPieces(white);
-        opponents = board.getPieces(!white);
-        occupied = board.getOccupied();
     }
 
 }

@@ -41,6 +41,9 @@ public class Board {
 
     boolean isWhiteToMove = true;
 
+    long[] attackBoards;
+    boolean hasAttackBoards = false;
+
     GameState gameState = new GameState();
     Deque<GameState> gameStateHistory = new ArrayDeque<>();
     Deque<Move> moveHistory = new ArrayDeque<>();
@@ -48,6 +51,7 @@ public class Board {
     public Board() {
         gameState.setZobristKey(Zobrist.generateKey(this));
         gameState.setPawnKey(Zobrist.generatePawnKey(this));
+        attackBoards = new long[64];
         recalculatePieces();
     }
 

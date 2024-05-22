@@ -20,9 +20,13 @@ public class PinCalculator {
      * @param white Whether the current player is white.
      * @return The pin data containing the pin mask and pin ray masks.
      */
-    public PinData calculatePinMask(Board board, int kingSquare, long friendlies, long opponents, boolean white) {
+    public PinData calculatePinMask(Board board, boolean white) {
         pinMask = 0L;
         pinRayMasks = new long[64];
+
+        int kingSquare = Bitwise.getNextBit(board.getKing(white));
+        long friendlies = board.getPieces(white);
+        long opponents = board.getPieces(!white);
 
         // Calculate possible orthogonal (queen or rook) pins
         long opponentOrthogonalSliders = board.getRooks(!white) | board.getQueens(!white);

@@ -271,6 +271,7 @@ public class MoveGenerator implements MoveGeneration {
             }
             unpinnedKnights = Bitwise.popBit(unpinnedKnights);
         }
+
     }
 
     private void generateKingMoves(Board board) {
@@ -296,8 +297,8 @@ public class MoveGenerator implements MoveGeneration {
         // Restore the king to its original position on the board
         board.toggleKing(white, startSquare);
         board.recalculatePieces();
-        king = board.getKing(white);
-        kingSquare = Bitwise.getNextBit(king);
+        initPieces(board, white);
+
     }
 
     private void generateCastlingMoves(Board board) {
@@ -383,7 +384,7 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     public long getPawnAttacks(Board board, int square, boolean white) {
-        initPieces(board, white);
+
         long attackMask = 0L;
         long squareBB = 1L << square;
 

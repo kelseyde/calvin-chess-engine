@@ -4,20 +4,14 @@ public record PawnHashEntry(long key,
                             PawnScore whiteScore,
                             PawnScore blackScore) {
 
-    public record PawnScore(int pawnPlacementMgScore,
-                                   int pawnPlacementEgScore,
-                                   int pawnStructureMgScore,
-                                   int pawnStructureEgScore) {
+    public record PawnScore(int mgScore, int egScore) {
 
         @Override
         public boolean equals(Object other) {
             if (!(other instanceof PawnScore otherScore)) {
                 return false;
             }
-            return this.pawnPlacementMgScore == otherScore.pawnPlacementMgScore
-                    && this.pawnPlacementEgScore == otherScore.pawnPlacementEgScore
-                    && this.pawnStructureMgScore == otherScore.pawnStructureMgScore
-                    && this.pawnStructureEgScore == otherScore.pawnStructureEgScore;
+            return this.mgScore == otherScore.mgScore && this.egScore == otherScore.egScore;
         }
     }
 

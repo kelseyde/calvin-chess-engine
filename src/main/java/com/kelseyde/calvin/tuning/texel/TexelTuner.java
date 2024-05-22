@@ -46,10 +46,11 @@ public class TexelTuner {
         System.out.println("number of positions: " + positions.size());
         int[] bestParams = initialParams;
         double bestError = meanSquareError(bestParams, createConfigFunction);
+        System.out.println("current best error: " + bestError);
         int iterations = 0;
 
         boolean improved = true;
-        while (improved) {
+        while (improved || !allDeltasOne()) {
             iterations++;
             Instant start = Instant.now();
             improved = false;
@@ -185,6 +186,10 @@ public class TexelTuner {
         for (int i = 0; i < size; i++) {
             deltas[i] = new Delta(1, Delta.DOUBLED);
         }
+    }
+
+    private boolean allDeltasOne() {
+        return Arrays.stream(deltas).allMatch(delta -> delta.delta == 1);
     }
 
     @Data

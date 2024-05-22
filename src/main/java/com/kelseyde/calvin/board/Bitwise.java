@@ -205,6 +205,7 @@ public class Bitwise {
     }
 
     public static boolean hasPotentialPawnAttackers(int square, long opponentPawns, boolean white) {
+        if (opponentPawns == 0) return false;
         long potentialAttackerMask = white ? Bits.WHITE_FORWARD_ADJACENT_MASK[square] : Bits.BLACK_FORWARD_ADJACENT_MASK[square];
         return (potentialAttackerMask & opponentPawns) != 0;
     }

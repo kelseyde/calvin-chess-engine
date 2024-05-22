@@ -51,6 +51,9 @@ public class Evaluator implements Evaluation {
     final int[] queenMgMobility;
     final int[] queenEgMobility;
 
+    int whiteMaterialMgScore;
+    int blackMaterialMgScore;
+
     Score score;
 
     public Evaluator(EngineConfig config) {
@@ -108,47 +111,36 @@ public class Evaluator implements Evaluation {
         float phase = Phase.fromMaterial(whiteMaterial, blackMaterial, config);
         score.setPhase(phase);
 
-        int whiteMaterialMiddlegameScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int whiteMaterialEndgameScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
-        score.addMaterialScore(whiteMaterialMiddlegameScore, whiteMaterialEndgameScore, true);
+        whiteMaterialMgScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
+        int whiteMaterialEgScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
+        score.addScore(whiteMaterialMgScore, whiteMaterialEgScore, true);
 
-        int blackMaterialMiddlegameScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int blackMaterialEndgameScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
-        score.addMaterialScore(blackMaterialMiddlegameScore, blackMaterialEndgameScore, false);
+        blackMaterialMgScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
+        int blackMaterialEgScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
+        score.addScore(blackMaterialMgScore, blackMaterialEgScore, false);
 
         // Blockers used during mobility calculations
         long friendlyWhiteBlockers = whiteKing | whitePawns;
         long friendlyBlackBlockers = blackKing | blackPawns;
 
-        // Pawn attacks used during mobility calculations
-        long whitePawnAttacks = Attacks.pawnAttacks(whitePawns, true);
-        long blackPawnAttacks = Attacks.pawnAttacks(blackPawns, false);
-
         scorePawnsWithHash(board, whitePawns, blackPawns);
 
-        scoreKnights(whiteKnights, friendlyWhiteBlockers, blackPawnAttacks, true);
-        scoreKnights(blackKnights, friendlyBlackBlockers, whitePawnAttacks, false);
+        scoreKnights(whiteKnights, friendlyWhiteBlockers, true);
+        scoreKnights(blackKnights, friendlyBlackBlockers, false);
 
-        scoreBishops(whiteBishops, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreBishops(blackBishops, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        scoreBishops(whiteBishops, friendlyWhiteBlockers, blackPieces, true);
+        scoreBishops(blackBishops, friendlyBlackBlockers, whitePieces, false);
 
-        scoreRooks(whiteRooks, whitePawns, blackPawns, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreRooks(blackRooks, blackPawns, whitePawns, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        scoreRooks(whiteRooks, whitePawns, blackPawns, friendlyWhiteBlockers, blackPieces, true);
+        scoreRooks(blackRooks, blackPawns, whitePawns, friendlyBlackBlockers, whitePieces, false);
 
-        scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, blackPawnAttacks, true);
-        scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, whitePawnAttacks, false);
+        scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, true);
+        scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, false);
 
-        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, blackMaterial, board, phase, true);
-        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, whiteMaterial, board, phase, false);
-
-        if (board.isWhiteToMove()) {
-            score.setWhiteTempoBonus(config.getTempoBonus());
-        } else {
-            score.setBlackTempoBonus(config.getTempoBonus());
-        }
+        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
+        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
 
         return score.sum(white);
-
     }
 
     private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {
@@ -166,10 +158,8 @@ public class Evaluator implements Evaluation {
             hashEntry = new PawnHashEntry(pawnKey, whiteScore, blackScore);
             pawnHash.put(pawnKey, hashEntry);
         }
-        score.addPiecePlacementScore(whiteScore.pawnPlacementMgScore(), whiteScore.pawnPlacementEgScore(), true);
-        score.addPawnStructureScore(whiteScore.pawnStructureMgScore(), whiteScore.pawnStructureEgScore(), true);
-        score.addPiecePlacementScore(blackScore.pawnPlacementMgScore(), blackScore.pawnPlacementEgScore(), false);
-        score.addPawnStructureScore(blackScore.pawnStructureMgScore(), blackScore.pawnStructureEgScore(), false);
+        score.addScore(whiteScore.mgScore(), whiteScore.egScore(), true);
+        score.addScore(blackScore.mgScore(), blackScore.egScore(), false);
 
     }
 
@@ -177,15 +167,11 @@ public class Evaluator implements Evaluation {
      * Pawn evaluation consists of piece-placement eval + pawn structure considerations (bonuses for passed pawns,
      * penalties for isolated/doubled pawns).
      */
-    private PawnScore scorePawns(long friendlyPawns,
-                                 long opponentPawns,
-                                 boolean white) {
+    private PawnScore scorePawns(long friendlyPawns, long opponentPawns, boolean white) {
         
-        if (friendlyPawns == 0) return new PawnScore(0, 0, 0, 0);
-        int piecePlacementMgScore = 0;
-        int piecePlacementEgScore = 0;
-        int pawnStructureMgScore = 0;
-        int pawnStructureEgScore = 0;
+        if (friendlyPawns == 0) return new PawnScore(0, 0);
+        int mgScore = 0;
+        int egScore = 0;
 
         int isolatedPawnCount = 0;
         int doubledPawnCount = 0;
@@ -196,21 +182,21 @@ public class Evaluator implements Evaluation {
             int file = BoardUtils.getFile(pawn);
 
             int square = white ? pawn ^ 56 : pawn;
-            piecePlacementMgScore += pawnMgTable[square];
-            piecePlacementEgScore += pawnEgTable[square];
+            mgScore += pawnMgTable[square];
+            egScore += pawnEgTable[square];
 
             // Bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
             // Bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
             if (Bitwise.isPassedPawn(pawn, opponentPawns, white)) {
                 int rank = BoardUtils.getRank(pawn);
                 int squaresFromPromotion = white ? 7 - rank : rank;
-                pawnStructureMgScore += config.getPassedPawnBonus()[0][squaresFromPromotion];
-                pawnStructureEgScore += config.getPassedPawnBonus()[1][squaresFromPromotion];
+                mgScore += config.getPassedPawnBonus()[0][squaresFromPromotion];
+                egScore += config.getPassedPawnBonus()[1][squaresFromPromotion];
 
                 int numberOfProtectors = Bitwise.countPawnProtectors(pawn, friendlyPawns, white);
                 int protectedPawnBonus = numberOfProtectors * config.getProtectedPassedPawnBonus();
-                pawnStructureMgScore += protectedPawnBonus;
-                pawnStructureEgScore += protectedPawnBonus;
+                mgScore += protectedPawnBonus;
+                egScore += protectedPawnBonus;
             }
             // Passed pawns are not penalised for being isolated
             else if (Bitwise.isIsolatedPawn(file, friendlyPawns)) {
@@ -224,87 +210,72 @@ public class Evaluator implements Evaluation {
         }
 
         // Penalties for isolated pawns, indexed by the number of isolated pawns.
-        pawnStructureMgScore += config.getIsolatedPawnPenalty()[0][isolatedPawnCount];
-        pawnStructureEgScore += config.getIsolatedPawnPenalty()[1][isolatedPawnCount];
+        mgScore += config.getIsolatedPawnPenalty()[0][isolatedPawnCount];
+        egScore += config.getIsolatedPawnPenalty()[1][isolatedPawnCount];
 
         // Penalties for doubled pawns, indexed by the number of doubled pawns
-        pawnStructureMgScore += config.getDoubledPawnPenalty()[0][doubledPawnCount];
-        pawnStructureEgScore += config.getDoubledPawnPenalty()[1][doubledPawnCount];
+        mgScore += config.getDoubledPawnPenalty()[0][doubledPawnCount];
+        egScore += config.getDoubledPawnPenalty()[1][doubledPawnCount];
 
-        return new PawnScore(piecePlacementMgScore, piecePlacementEgScore, pawnStructureMgScore, pawnStructureEgScore);
+        return new PawnScore(mgScore, egScore);
     }
 
     /**
      * Knight evaluation consists of simple piece-placement and mobility bonuses.
      */
-    private void scoreKnights(long knights,
-                              long friendlyBlockers,
-                              long opponentPawnAttacks,
-                              boolean white) {
+    private void scoreKnights(long knights, long friendlyBlockers, boolean white) {
 
         if (knights == 0) return;
-        int piecePlacementMgScore = 0;
-        int piecePlacementEgScore = 0;
-        int mobilityMgScore = 0;
-        int mobilityEgScore = 0;
+        int mgScore = 0;
+        int egScore = 0;
 
         while (knights != 0) {
             int knight = Bitwise.getNextBit(knights);
 
             int square = white ? knight ^ 56 : knight;
-            piecePlacementMgScore += knightMgTable[square];
-            piecePlacementEgScore += knightEgTable[square];
+            mgScore += knightMgTable[square];
+            egScore += knightEgTable[square];
 
             long attacks = Attacks.knightAttacks(knight);
-            long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+            long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
-            mobilityMgScore += knightMgMobility[moveCount];
-            mobilityEgScore += knightEgMobility[moveCount];
+            mgScore += knightMgMobility[moveCount];
+            egScore += knightEgMobility[moveCount];
 
             knights = Bitwise.popBit(knights);
         }
 
-        score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
-        score.addMobilityScore(mobilityMgScore, mobilityEgScore, white);
+        score.addScore(mgScore, egScore, white);
 
     }
 
     /**
      * Bishop evaluation consists of simple piece-placement and mobility bonuses.
      */
-    private void scoreBishops(long bishops,
-                              long friendlyBlockers,
-                              long opponentBlockers,
-                              long opponentPawnAttacks,
-                              boolean white) {
+    private void scoreBishops(long bishops, long friendlyBlockers, long opponentBlockers, boolean white) {
 
         if (bishops == 0) return;
-        int piecePlacementMgScore = 0;
-        int piecePlacementEgScore = 0;
-        int mobilityMgScore = 0;
-        int mobilityEgScore = 0;
-//        int outpostMgScore = 0;
-//        int outpostEgScore = 0;
+        int mgScore = 0;
+        int egScore = 0;
 
         long blockers = friendlyBlockers | opponentBlockers;
         while (bishops != 0) {
             int bishop = Bitwise.getNextBit(bishops);
 
             int square = white ? bishop ^ 56 : bishop;
-            piecePlacementMgScore += bishopMgTable[square];
-            piecePlacementEgScore += bishopEgTable[square];
+            mgScore += bishopMgTable[square];
+            egScore += bishopEgTable[square];
 
             long attacks = Attacks.bishopAttacks(bishop, blockers);
-            long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+            long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
-            mobilityMgScore += bishopMgMobility[moveCount];
-            mobilityEgScore += bishopEgMobility[moveCount];
+            mgScore += bishopMgMobility[moveCount];
+            egScore += bishopEgMobility[moveCount];
 
             bishops = Bitwise.popBit(bishops);
         }
 
-        score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
-        score.addMobilityScore(mobilityMgScore, mobilityEgScore, white);
+        score.addScore(mgScore, egScore, white);
 
     }
 
@@ -316,16 +287,11 @@ public class Evaluator implements Evaluation {
                             long opponentPawns,
                             long friendlyBlockers,
                             long opponentBlockers,
-                            long opponentPawnAttacks,
                             boolean white) {
 
         if (rooks == 0) return;
-        int piecePlacementMgScore = 0;
-        int piecePlacementEgScore = 0;
-        int mobilityMgScore = 0;
-        int mobilityEgScore = 0;
-        int rookMgScore = 0;
-        int rookEgScore = 0;
+        int mgScore = 0;
+        int egScore = 0;
 
         long blockers = friendlyBlockers | opponentBlockers;
         while (rooks != 0) {
@@ -334,14 +300,14 @@ public class Evaluator implements Evaluation {
             long fileMask = Bits.FILE_MASKS[file];
 
             int square = white ? rook ^ 56 : rook;
-            piecePlacementMgScore += rookMgTable[square];
-            piecePlacementEgScore += rookEgTable[square];
+            mgScore += rookMgTable[square];
+            egScore += rookEgTable[square];
 
             long attacks = Attacks.rookAttacks(rook, blockers);
-            long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+            long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
-            mobilityMgScore += rookMgMobility[moveCount];
-            mobilityEgScore += rookEgMobility[moveCount];
+            mgScore += rookMgMobility[moveCount];
+            egScore += rookEgMobility[moveCount];
 
             boolean hasFriendlyPawn = (fileMask & friendlyPawns) != 0;
             boolean hasOpponentPawn = (fileMask & opponentPawns) != 0;
@@ -349,20 +315,18 @@ public class Evaluator implements Evaluation {
             boolean hasSemiOpenFile = !hasFriendlyPawn && hasOpponentPawn;
 
             if (hasOpenFile) {
-                rookMgScore += config.getRookOpenFileBonus()[0];
-                rookEgScore += config.getRookOpenFileBonus()[1];
+                mgScore += config.getRookOpenFileBonus()[0];
+                egScore += config.getRookOpenFileBonus()[1];
             }
             else if (hasSemiOpenFile) {
-                rookMgScore += config.getRookSemiOpenFileBonus()[0];
-                rookEgScore += config.getRookSemiOpenFileBonus()[1];
+                mgScore += config.getRookSemiOpenFileBonus()[0];
+                egScore += config.getRookSemiOpenFileBonus()[1];
             }
 
             rooks = Bitwise.popBit(rooks);
         }
 
-        score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
-        score.addMobilityScore(mobilityMgScore, mobilityEgScore, white);
-        score.addRookScore(rookMgScore, rookEgScore, white);
+        score.addScore(mgScore, egScore, white);
     }
 
     /**
@@ -371,34 +335,30 @@ public class Evaluator implements Evaluation {
     private void scoreQueens(long queens,
                              long friendlyBlockers,
                              long opponentBlockers,
-                             long opponentPawnAttacks,
                              boolean white) {
 
         if (queens == 0) return;
-        int piecePlacementMgScore = 0;
-        int piecePlacementEgScore = 0;
-        int mobilityMgScore = 0;
-        int mobilityEgScore = 0;
+        int mgScore = 0;
+        int egScore = 0;
 
         long blockers = friendlyBlockers | opponentBlockers;
         while (queens != 0) {
             int queen = Bitwise.getNextBit(queens);
 
             int square = white ? queen ^ 56 : queen;
-            piecePlacementMgScore += queenMgTable[square];
-            piecePlacementEgScore += queenEgTable[square];
+            mgScore += queenMgTable[square];
+            egScore += queenEgTable[square];
 
             long attacks = Attacks.bishopAttacks(queen, blockers) | Attacks.rookAttacks(queen, blockers);
-            long moves = attacks &~ friendlyBlockers &~ opponentPawnAttacks;
+            long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
-            mobilityMgScore += queenMgMobility[moveCount];
-            mobilityEgScore += queenEgMobility[moveCount];
+            mgScore += queenMgMobility[moveCount];
+            egScore += queenEgMobility[moveCount];
 
             queens = Bitwise.popBit(queens);
         }
 
-        score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
-        score.addMobilityScore(mobilityMgScore, mobilityEgScore, white);
+        score.addScore(mgScore, egScore, white);
     }
 
     /**
@@ -408,25 +368,22 @@ public class Evaluator implements Evaluation {
                            long opponentKing,
                            long friendlyPawns,
                            long opponentPawns,
+                           Material friendlyMaterial,
                            Material opponentMaterial,
                            Board board,
                            float phase,
                            boolean white) {
-        int piecePlacementMgScore = 0;
-        int piecePlacementEgScore = 0;
+        int mgScore = 0;
+        int egScore = 0;
 
-        int kingSquare = Bitwise.getNextBit(friendlyKing);
+        int king = Bitwise.getNextBit(friendlyKing);
+        int square = white ? king ^ 56 : king;
+        mgScore += kingMgTable[square];
+        egScore += kingEgTable[square];
+        score.addScore(mgScore, egScore, white);
 
-        int square = white ? kingSquare ^ 56 : kingSquare;
-        piecePlacementMgScore += kingMgTable[square];
-        piecePlacementEgScore += kingEgTable[square];
-        score.addPiecePlacementScore(piecePlacementMgScore, piecePlacementEgScore, white);
-
-        int kingSafetyScore = evaluateKingSafety(kingSquare, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
-        score.setKingSafetyScore(kingSafetyScore, white);
-
-        int mopUpScore = evaluateMopUp(kingSquare, opponentKing, opponentMaterial, white);
-        score.setMopUpScore(mopUpScore, white);
+        scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
+        scoreMopUp(king, opponentKing, friendlyMaterial, white);
 
     }
 
@@ -437,7 +394,7 @@ public class Evaluator implements Evaluation {
      * </p>
      * @see <a href="https://www.chessprogramming.org/King_Safety">Chess Programming Wiki</a>
      */
-    private int evaluateKingSafety(int kingSquare,
+    private void scoreKingSafety(int kingSquare,
                                    long friendlyPawns,
                                    long opponentPawns,
                                    Material opponentMaterial,
@@ -445,15 +402,17 @@ public class Evaluator implements Evaluation {
                                    float phase,
                                    boolean white) {
         // King safety evaluation
-        if (phase <= 0.5) return 0;
         int kingFile = BoardUtils.getFile(kingSquare);
         int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
         int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
         int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(config, board, white, kingFile);
         if (opponentMaterial.queens() == 0) {
-            phase *= 0.6f;
+            phase *= 0.4f;
         }
-        return (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
+        float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
+        int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
+        int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
+        score.addScore(mgScore, egScore, white);
     }
 
     /**
@@ -462,15 +421,15 @@ public class Evaluator implements Evaluation {
      * </p>
      * @see <a href="https://www.chessprogramming.org/Mop-up_Evaluation">Chess Programming Wiki</a>
      */
-    private int evaluateMopUp(int friendlyKingSquare,
+    private void scoreMopUp(int friendlyKingSquare,
                               long opponentKing,
                               Material opponentMaterial,
                               boolean white) {
         int mopUpScore = 0;
-        int friendlyMaterialScore = white ? score.getWhiteMaterialMgScore() : score.getBlackMaterialMgScore();
-        int opponentMaterialScore = white ? score.getBlackMaterialMgScore() : score.getWhiteMaterialMgScore();
+        int friendlyMaterialScore = white ? whiteMaterialMgScore : blackMaterialMgScore;
+        int opponentMaterialScore = white ? blackMaterialMgScore: whiteMaterialMgScore;
         boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
-        if (!twoPawnAdvantage) return 0;
+        if (!twoPawnAdvantage) return;
         int opponentKingSquare = Bitwise.getNextBit(opponentKing);
 
         // Bonus for moving king closer to opponent king
@@ -480,7 +439,13 @@ public class Evaluator implements Evaluation {
         // Bonus for pushing opponent king to the edges of the board
         mopUpScore += Distance.centerManhattan(opponentKingSquare) * config.getKingCenterManhattanDistanceMultiplier();
 
-        return (int) (mopUpScore * (1 - Phase.fromMaterial(opponentMaterial, config)));
+        float opponentPhase = Phase.fromMaterial(opponentMaterial, config);
+        float phasedScore = mopUpScore * (1 - opponentPhase);
+
+        int mgScore = (int) ((phasedScore / 100) * config.getMopUpScaleFactor()[0]);
+        int egScore = (int) ((phasedScore / 100) * config.getMopUpScaleFactor()[1]);
+        score.addScore(mgScore, egScore, white);
+
     }
 
     private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {

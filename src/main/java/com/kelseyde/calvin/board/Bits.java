@@ -76,6 +76,9 @@ public class Bits {
     public static final long KINGSIDE_MASK = FILE_F | FILE_G | FILE_H;
     public static final long QUEENSIDE_MASK = FILE_A | FILE_B | FILE_C;
 
+    public static final long WHITE_HALF_MASK = 0x00000000FFFFFFFFL; // Bits 0 to 31
+    public static final long BLACK_HALF_MASK = 0xFFFFFFFF00000000L; // Bits 32 to 63
+
     // Masks for the squares that must be unoccupied for legal castling
     public static final long WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK = 0x000000000000000EL;
     public static final long WHITE_KINGSIDE_CASTLE_TRAVEL_MASK = 0x0000000000000060L;

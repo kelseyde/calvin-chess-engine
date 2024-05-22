@@ -12,33 +12,30 @@ import com.kelseyde.calvin.engine.EngineConfig;
  */
 public class Phase {
 
+    private static final int KNIGHT_PHASE = 10;
+    private static final int BISHOP_PHASE = 10;
+    private static final int ROOK_PHASE = 20;
+    private static final int QUEEN_PHASE = 45;
+
     public static float fromMaterial(Material whiteMaterial, Material blackMaterial, EngineConfig config) {
-        int knightPhase = config.getPiecePhases()[Piece.KNIGHT.getIndex()];
-        int bishopPhase = config.getPiecePhases()[Piece.BISHOP.getIndex()];
-        int rookPhase = config.getPiecePhases()[Piece.ROOK.getIndex()];
-        int queenPhase = config.getPiecePhases()[Piece.QUEEN.getIndex()];
         int currentMaterial =
-            (whiteMaterial.knights() * knightPhase) +
-            (blackMaterial.knights() * knightPhase) +
-            (whiteMaterial.bishops() * bishopPhase) +
-            (blackMaterial.bishops() * bishopPhase) +
-            (whiteMaterial.rooks() * rookPhase) +
-            (blackMaterial.rooks() * rookPhase) +
-            (whiteMaterial.queens() * queenPhase) +
-            (blackMaterial.queens() * queenPhase);
+            (whiteMaterial.knights() * KNIGHT_PHASE) +
+            (blackMaterial.knights() * KNIGHT_PHASE) +
+            (whiteMaterial.bishops() * BISHOP_PHASE) +
+            (blackMaterial.bishops() * BISHOP_PHASE) +
+            (whiteMaterial.rooks() * ROOK_PHASE) +
+            (blackMaterial.rooks() * ROOK_PHASE) +
+            (whiteMaterial.queens() * QUEEN_PHASE) +
+            (blackMaterial.queens() * QUEEN_PHASE);
         return currentMaterial / config.getTotalPhase();
     }
 
     public static float fromMaterial(Material material, EngineConfig config) {
-        int knightPhase = config.getPiecePhases()[Piece.KNIGHT.getIndex()];
-        int bishopPhase = config.getPiecePhases()[Piece.BISHOP.getIndex()];
-        int rookPhase = config.getPiecePhases()[Piece.ROOK.getIndex()];
-        int queenPhase = config.getPiecePhases()[Piece.QUEEN.getIndex()];
         int currentMaterial =
-                (material.knights() * knightPhase) +
-                (material.bishops() * bishopPhase) +
-                (material.rooks() * rookPhase) +
-                (material.queens() * queenPhase);
+                (material.knights() * KNIGHT_PHASE) +
+                (material.bishops() * BISHOP_PHASE) +
+                (material.rooks() * ROOK_PHASE) +
+                (material.queens() * QUEEN_PHASE);
         return currentMaterial / config.getTotalPhase();
     }
 

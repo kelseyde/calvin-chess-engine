@@ -132,8 +132,18 @@ public class TexelTunerTest {
 
     @Test
     public void tuneMobilityWeights() throws IOException, ExecutionException, InterruptedException {
+        List<Integer> initialParams = new ArrayList<>();
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        initialParams.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[1]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[2]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[3]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[4]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[1]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[2]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[3]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getMiddlegameMobilityBonus()[4]).boxed().toList());
         tune(
-                new int[] { -18, -14, -8, -4, 0, 4, 8, 12, 16, -26, -21, -16, -12, -8, -4, 0, 4, 8, 12, 16, 16, 16, 16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 12, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 12, -18, -14, -8, -4, 0, 4, 8, 12, 16, -26, -21, -16, -12, -8, -4, 0, 4, 8, 12, 16, 16, 16, 16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12, 12, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 12 },
+                initialParams.stream().mapToInt(i -> i).toArray(),
                 (params) -> {
                     EngineConfig config = EngineInitializer.loadDefaultConfig();
                     config.getMiddlegameMobilityBonus()[1] = Arrays.stream(params, 0, 9).toArray();
@@ -217,15 +227,15 @@ public class TexelTunerTest {
     @Test
     public void testOutpostWeights() throws IOException, ExecutionException, InterruptedException {
         EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
-        int[] initialParams = new int[8];
+        int[] initialParams = new int[4];
         initialParams[0] = initialConfig.getKnightOutpostBonus()[1][0];
         initialParams[1] = initialConfig.getKnightOutpostBonus()[1][1];
         initialParams[2] = initialConfig.getKnightOutpostBonus()[2][0];
         initialParams[3] = initialConfig.getKnightOutpostBonus()[2][1];
-        initialParams[4] = initialConfig.getBishopOutpostBonus()[1][0];
-        initialParams[5] = initialConfig.getBishopOutpostBonus()[1][1];
-        initialParams[6] = initialConfig.getBishopOutpostBonus()[2][0];
-        initialParams[7] = initialConfig.getBishopOutpostBonus()[2][1];
+//        initialParams[4] = initialConfig.getBishopOutpostBonus()[1][0];
+//        initialParams[5] = initialConfig.getBishopOutpostBonus()[1][1];
+//        initialParams[6] = initialConfig.getBishopOutpostBonus()[2][0];
+//        initialParams[7] = initialConfig.getBishopOutpostBonus()[2][1];
         tune(
                 initialParams,
                 (params) -> {
@@ -234,10 +244,10 @@ public class TexelTunerTest {
                     config.getKnightOutpostBonus()[1][1] = params[1];
                     config.getKnightOutpostBonus()[2][0] = params[2];
                     config.getKnightOutpostBonus()[2][1] = params[3];
-                    config.getBishopOutpostBonus()[1][0] = params[4];
-                    config.getBishopOutpostBonus()[1][1] = params[5];
-                    config.getBishopOutpostBonus()[2][0] = params[6];
-                    config.getBishopOutpostBonus()[2][1] = params[7];
+//                    config.getBishopOutpostBonus()[1][0] = params[4];
+//                    config.getBishopOutpostBonus()[1][1] = params[5];
+//                    config.getBishopOutpostBonus()[2][0] = params[6];
+//                    config.getBishopOutpostBonus()[2][1] = params[7];
                     return config;
                 }
         );
@@ -251,6 +261,36 @@ public class TexelTunerTest {
                 (params) -> {
                     EngineConfig config = EngineInitializer.loadDefaultConfig();
                     config.setDrawishScaleFactor(params[0]);
+                    return config;
+                }
+        );
+    }
+
+    @Test
+    public void tuneScaleFactors() throws IOException, ExecutionException, InterruptedException {
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        tune(
+                new int[] {initialConfig.getMopUpScaleFactor()[0], initialConfig.getMopUpScaleFactor()[1],
+                        initialConfig.getKingSafetyScaleFactor()[0], initialConfig.getKingSafetyScaleFactor()[1]},
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.getMopUpScaleFactor()[0] = params[0];
+                    config.getMopUpScaleFactor()[1] = params[1];
+                    config.getKingSafetyScaleFactor()[0] = params[2];
+                    config.getKingSafetyScaleFactor()[1] = params[3];
+                    return config;
+                }
+        );
+    }
+
+    @Test
+    public void tuneTempoBonus() throws IOException, ExecutionException, InterruptedException {
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        tune(
+                new int[] {initialConfig.getTempoBonus()},
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.setTempoBonus(params[0]);
                     return config;
                 }
         );

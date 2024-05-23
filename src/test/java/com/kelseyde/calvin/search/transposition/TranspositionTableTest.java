@@ -144,27 +144,6 @@ public class TranspositionTableTest {
     }
 
     @Test
-    public void testHalfZobrist() {
-
-        List<Board> boards = TestUtils.QUIET_POSITIONS;
-        System.out.println(boards.size());
-        List<Long> halfZobrists = boards.stream()
-                .map(b -> HashEntry.zobristPart(b.getGameState().getZobristKey()))
-                .toList();
-        System.out.println(boards.size());
-        System.out.println(halfZobrists.stream().distinct().count());
-
-
-//        TestUtils.QUIET_POSITIONS.forEach(x -> {
-//            table.put(x.getGameState().getZobristKey(), HashFlag.EXACT, 1, 1, null, 0);
-//            if (table.get(x.getGameState().getZobristKey(), 0) == null) {
-//                System.out.println("hello!");
-//            }
-//        });
-
-    }
-
-    @Test
     public void testSimplePutAndGetExact() {
 
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));

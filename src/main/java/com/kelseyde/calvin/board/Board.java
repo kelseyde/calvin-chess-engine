@@ -408,4 +408,12 @@ public class Board {
                 Bitwise.countBits(blackRooks) > 0 || Bitwise.countBits(blackQueens) > 0;
     }
 
+    public boolean isPawnEndgame() {
+        return (whitePawns != 0 || blackPawns != 0)
+                && whiteKnights == 0 && blackKnights == 0
+                && whiteBishops == 0 && blackBishops == 0
+                && whiteRooks == 0 && blackRooks == 0
+                && whiteQueens == 0 && blackQueens == 0;
+    }
+
 }

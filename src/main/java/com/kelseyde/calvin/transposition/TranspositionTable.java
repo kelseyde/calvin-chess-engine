@@ -42,9 +42,10 @@ public class TranspositionTable {
             HashEntry entry = entries[index + i];
             if (entry != null && entry.getKey() == zobristKey) {
                 hits++;
+                entries[index + i].resetAge();
                 if (isMateScore(entry.getScore())) {
                     int score = retrieveMateScore(entry.getScore(), ply);
-                    entry = HashEntry.withScore(entry, score);
+                    return HashEntry.withScore(entry, score);
                 }
                 return entry;
             }
@@ -68,7 +69,7 @@ public class TranspositionTable {
                 break;
             }
 
-            if (storedEntry.getAge() > 0) {
+            if (storedEntry.getAge() > 1 && depth >= storedEntry.getDepth() - storedEntry.getAge()) {
                 replacedIndex = i;
                 break;
             }

@@ -10,16 +10,18 @@ import lombok.Data;
  * - score: 32 bits     (-1000000-1000000, capturing negative -> positive checkmate score)
  * - move: 16 bits      (0-5 = start square, 6-11 = end square, 12-15 = special move flag, see {@link Move})
  * - flag: 4 bits       (0-2, capturing three possible flag values + 1 bit padding)
- * - depth: 12 bits     (0-265, max depth = 256 = 8 bits + 4 bit padding)
+ * - depth: 10 bits     (0-265, max depth = 256 = 8 bits + 2 bit padding)
+ * - age: 2 bits        (0-2, the age of the entry, the max being two, as anything with age > 1 is always replaced)
  */
 @Data
 @AllArgsConstructor
 public class HashEntry {
     private long key;
-    private byte age;
     private long value;
 
     private static final long CLEAR_SCORE_MASK = 0xffffffffL;
+
+    private static final long AGE_MASK = 0b11;
 
     public int getScore() {
         long score = value >>> 32;
@@ -37,26 +39,40 @@ public class HashEntry {
     }
 
     public int getDepth() {
-        return (int) value & 0xfff;
+//        return (int) value & 0xfff;
+        return (int) ((value >>> 2) & 0x3FF);
+    }
+
+    public int getAge() {
+        return (int) value & 0b11;
+    }
+
+    public void setAge(int age) {
+        value |= (age) & AGE_MASK;
     }
 
     public void incrementAge() {
-        if (this.age < Byte.MAX_VALUE) {
-            this.age++;
+        int age = getAge();
+        if (age < 2) {
+            setAge(age + 1);
         }
+    }
+
+    public void resetAge() {
+        setAge(0);
     }
 
     public static HashEntry of(long zobristKey, int score, Move move, HashFlag flag, int depth) {
         long moveValue = move != null ? move.value() : 0;
         long flagValue = HashFlag.value(flag);
-        long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
-        byte age = 0;
-        return new HashEntry(zobristKey, age, value);
+        int age = 0;
+        long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth << 2 | age;
+        return new HashEntry(zobristKey, value);
     }
 
     public static HashEntry withScore(HashEntry entry, int score) {
         long value = (entry.getValue() & CLEAR_SCORE_MASK) | (long) score << 32;
-        return new HashEntry(entry.getKey(), entry.getAge(), value);
+        return new HashEntry(entry.getKey(), value);
     }
 
 }

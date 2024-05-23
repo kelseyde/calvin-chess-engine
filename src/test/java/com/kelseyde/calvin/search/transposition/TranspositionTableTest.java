@@ -324,7 +324,7 @@ public class TranspositionTableTest {
     }
 
     @Test
-    public void testReplacesEntryWithGreaterAge() {
+    public void testDoesNotReplaceEntryWithAgeZero() {
 
         long zobrist = board.getGameState().getZobristKey();
         HashFlag flag1 = HashFlag.EXACT;
@@ -344,12 +344,57 @@ public class TranspositionTableTest {
 
         assertEntryInTT(zobrist, eval1, bestMove1, flag1, plyRemaining1);
 
+    }
+
+    @Test
+    public void testDoesNotReplaceEntryWithAgeOne() {
+
+        long zobrist = board.getGameState().getZobristKey();
+        HashFlag flag1 = HashFlag.EXACT;
+        Move bestMove1 = Notation.fromNotation("e2", "e4");
+        int eval1 = 60;
+        int plyFromRoot1 = 0;
+        int plyRemaining1 = 12;
+
+        table.put(board.getGameState().getZobristKey(), flag1, plyRemaining1, plyFromRoot1, bestMove1, eval1);
         table.incrementAge();
+
+        HashFlag flag2 = HashFlag.UPPER;
+        int eval2 = 70;
+        int plyFromRoot2 = 0;
+        int plyRemaining2 = 11;
+        Move bestMove2 = Notation.fromNotation("d2", "d4");
+        table.put(board.getGameState().getZobristKey(), flag2, plyRemaining2, plyFromRoot2, bestMove2, eval2);
+
+        assertEntryInTT(zobrist, eval1, bestMove1, flag1, plyRemaining1);
+
+    }
+
+    @Test
+    public void testReplacesEntryWithAgeTwo() {
+
+        long zobrist = board.getGameState().getZobristKey();
+        HashFlag flag1 = HashFlag.EXACT;
+        Move bestMove1 = Notation.fromNotation("e2", "e4");
+        int eval1 = 60;
+        int plyFromRoot1 = 0;
+        int plyRemaining1 = 12;
+
+        table.put(board.getGameState().getZobristKey(), flag1, plyRemaining1, plyFromRoot1, bestMove1, eval1);
+        table.incrementAge();
+        table.incrementAge();
+
+        HashFlag flag2 = HashFlag.UPPER;
+        int eval2 = 70;
+        int plyFromRoot2 = 0;
+        int plyRemaining2 = 11;
+        Move bestMove2 = Notation.fromNotation("d2", "d4");
         table.put(board.getGameState().getZobristKey(), flag2, plyRemaining2, plyFromRoot2, bestMove2, eval2);
 
         assertEntryInTT(zobrist, eval2, bestMove2, flag2, plyRemaining2);
 
     }
+
 
     private void assertEntry(long zobrist, int score, Move move, HashFlag flag, int depth) {
         HashEntry entry = HashEntry.of(zobrist, score, move, flag, depth);

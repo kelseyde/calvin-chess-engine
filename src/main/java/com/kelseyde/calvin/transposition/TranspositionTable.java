@@ -41,10 +41,11 @@ public class TranspositionTable {
 
     public HashEntry get(long zobristKey, int ply) {
         int index = getIndex(zobristKey);
+
         tries++;
         for (int i = 0; i < 4; i++) {
             HashEntry entry = entries[index + i];
-            if (entry != null && entry.getHalfZobrist() == HashEntry.halfZobrist(zobristKey)) {
+            if (entry != null && entry.getZobristPart() == zobristKey) {
                 hits++;
                 entry.setGeneration(generation);
                 if (isMateScore(entry.getScore())) {
@@ -59,6 +60,7 @@ public class TranspositionTable {
 
     public void put(long zobristKey, HashFlag flag, int depth, int ply, Move move, int score) {
         int startIndex = getIndex(zobristKey);
+        long halfZobrist = HashEntry.zobristPart(zobristKey);
         if (isMateScore(score)) score = calculateMateScore(score, ply);
         HashEntry newEntry = HashEntry.of(zobristKey, score, move, flag, depth, generation);
 
@@ -68,12 +70,7 @@ public class TranspositionTable {
         for (int i = startIndex; i < startIndex + 4; i++) {
             HashEntry storedEntry = entries[i];
 
-            // if stored entry is null, overwrite it and exit.
-            // if stored entry matches hash, but depth < storedDepth, do not overwrite and exit.
-            // if stored entry matches hash, and depth >= storedDepth, overwrite it and exit.
-            // if no stored entry matches the hash, just overwrite the one with the shallowest depth
-
-            if (storedEntry == null || storedEntry.getHalfZobrist() == HashEntry.halfZobrist(zobristKey)) {
+            if (storedEntry == null || storedEntry.getZobristPart() == zobristKey) {
                 if (storedEntry == null || depth >= storedEntry.getDepth()) {
                     if (newEntry.getMove() == null && storedEntry != null && storedEntry.getMove() != null) {
                         newEntry.setMove(storedEntry.getMove());
@@ -89,31 +86,6 @@ public class TranspositionTable {
                 minDepth = storedEntry.getDepth();
                 replacedIndex = i;
             }
-//            if (storedEntry == null) {
-//                replacedIndex = i;
-//                break;
-//            }
-//
-//            if (storedEntry.getHalfZobrist() == HashEntry.halfZobrist(zobristKey)) {
-//                if (depth >= storedEntry.getDepth()) {
-//                    if (newEntry.getMove() == null && storedEntry.getMove() != null) {
-//                        newEntry.setMove(storedEntry.getMove());
-//                    }
-//                    replacedIndex = i;
-//                    break;
-//                } else {
-//                    return;
-//                }
-//            }
-//
-//            if (storedEntry.getGeneration() < newEntry.getGeneration()) {
-//                replacedIndex = i;
-//            }
-//
-//            if (storedEntry.getDepth() < minDepth) {
-//                minDepth = storedEntry.getDepth();
-//                replacedIndex = i;
-//            }
         }
 
         if (replacedIndex != -1) {

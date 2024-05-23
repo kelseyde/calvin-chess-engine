@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 public class TranspositionTableTest {
 
     private TranspositionTable table;
@@ -137,8 +139,29 @@ public class TranspositionTableTest {
 
         Assertions.assertEquals(0, entry.getGeneration());
 
-        entry.setGeneration(221);
-        Assertions.assertEquals(221, entry.getGeneration());
+        entry.setGeneration(127);
+        Assertions.assertEquals(127, entry.getGeneration());
+    }
+
+    @Test
+    public void testHalfZobrist() {
+
+        List<Board> boards = TestUtils.QUIET_POSITIONS;
+        System.out.println(boards.size());
+        List<Long> halfZobrists = boards.stream()
+                .map(b -> HashEntry.zobristPart(b.getGameState().getZobristKey()))
+                .toList();
+        System.out.println(boards.size());
+        System.out.println(halfZobrists.stream().distinct().count());
+
+
+//        TestUtils.QUIET_POSITIONS.forEach(x -> {
+//            table.put(x.getGameState().getZobristKey(), HashFlag.EXACT, 1, 1, null, 0);
+//            if (table.get(x.getGameState().getZobristKey(), 0) == null) {
+//                System.out.println("hello!");
+//            }
+//        });
+
     }
 
     @Test
@@ -161,7 +184,7 @@ public class TranspositionTableTest {
         HashEntry entry = table.get(board.getGameState().getZobristKey(), ply);
 
         Assertions.assertNotNull(entry);
-        Assertions.assertEquals(HashEntry.halfZobrist(board.getGameState().getZobristKey()), entry.getHalfZobrist());
+        Assertions.assertEquals(HashEntry.zobristPart(board.getGameState().getZobristKey()), entry.getZobristPart());
         Assertions.assertEquals(flag, entry.getFlag());
         Assertions.assertEquals(bestMove, entry.getMove());
         Assertions.assertEquals(eval, entry.getScore());
@@ -176,7 +199,7 @@ public class TranspositionTableTest {
 
         entry = table.get(board.getGameState().getZobristKey(), ply);
         Assertions.assertNotNull(entry);
-        Assertions.assertEquals(HashEntry.halfZobrist(board.getGameState().getZobristKey()), entry.getHalfZobrist());
+        Assertions.assertEquals(HashEntry.zobristPart(board.getGameState().getZobristKey()), entry.getZobristPart());
         Assertions.assertEquals(flag, entry.getFlag());
         Assertions.assertEquals(bestMove, entry.getMove());
         Assertions.assertEquals(eval, entry.getScore());
@@ -191,7 +214,7 @@ public class TranspositionTableTest {
 
         entry = table.get(board.getGameState().getZobristKey(), ply);
         Assertions.assertNotNull(entry);
-        Assertions.assertEquals(HashEntry.halfZobrist(board.getGameState().getZobristKey()), entry.getHalfZobrist());
+        Assertions.assertEquals(HashEntry.zobristPart(board.getGameState().getZobristKey()), entry.getZobristPart());
         Assertions.assertEquals(flag, entry.getFlag());
         Assertions.assertEquals(bestMove, entry.getMove());
         Assertions.assertEquals(eval - 2, entry.getScore());
@@ -248,7 +271,7 @@ public class TranspositionTableTest {
         HashEntry entry = table.get(board.getGameState().getZobristKey(), ply);
 
         Assertions.assertNotNull(entry);
-        Assertions.assertEquals(HashEntry.halfZobrist(zobrist), entry.getHalfZobrist());
+        Assertions.assertEquals(HashEntry.zobristPart(zobrist), entry.getZobristPart());
         Assertions.assertEquals(flag, entry.getFlag());
         Assertions.assertEquals(bestMove, entry.getMove());
         Assertions.assertTrue(entry.getMove() != null && entry.getMove().isPromotion());
@@ -375,7 +398,7 @@ public class TranspositionTableTest {
 
     private void assertEntry(long zobrist, int score, Move move, HashFlag flag, int depth) {
         HashEntry entry = HashEntry.of(zobrist, score, move, flag, depth, 0);
-        Assertions.assertEquals(HashEntry.halfZobrist(zobrist), entry.getHalfZobrist());
+        Assertions.assertEquals(HashEntry.zobristPart(zobrist), entry.getZobristPart());
         Assertions.assertEquals(depth, entry.getDepth());
         Assertions.assertEquals(score, entry.getScore());
         Assertions.assertEquals(flag, entry.getFlag());

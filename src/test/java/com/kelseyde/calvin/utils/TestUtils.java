@@ -20,6 +20,7 @@ import com.kelseyde.calvin.search.ThreadManager;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 
 import java.io.IOException;
@@ -44,6 +45,8 @@ public class TestUtils {
     public static final ThreadManager THREAD_MANAGER = new ThreadManager();
     public static final Searcher SEARCHER = new Searcher(PRD_CONFIG, THREAD_MANAGER, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
     public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), TRANSPOSITION_TABLE);
+    public static final String QUIET_POSITIONS_FILE = "src/test/resources/texel/quiet_positions.epd";
+    public static final List<Board> QUIET_POSITIONS = getQuietPositions();
 
     public static Engine getEngine() {
         return new Engine(PRD_CONFIG, OPENING_BOOK, TABLEBASE, new MoveGenerator(), new Searcher(PRD_CONFIG, new ThreadManager(), new MoveGenerator(), new MoveOrderer(), new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
@@ -107,6 +110,17 @@ public class TestUtils {
             throw new IllegalMoveException(String.format("Illegal move! %s", move));
         }
         return legalMove.get();
+    }
+
+    private static List<Board> getQuietPositions() {
+        Path path = Paths.get(QUIET_POSITIONS_FILE);
+        try {
+            return Files.readAllLines(path).stream()
+                    .map(FEN::toBoard)
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

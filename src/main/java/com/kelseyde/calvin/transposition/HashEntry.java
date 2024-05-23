@@ -2,7 +2,6 @@ package com.kelseyde.calvin.transposition;
 
 import com.kelseyde.calvin.board.Move;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 /**
  * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encode the relevant information
@@ -23,30 +22,35 @@ import lombok.Getter;
 @AllArgsConstructor
 public class HashEntry {
 
-    private static final long ZOBRIST_MASK = 0x00000000ffffffffL;
-    private static final long GENERATION_MASK = 0xffffffff00000000L;
+    private static final long ZOBRIST_PART_MASK = 0x00ffffffffffffffL;
+    private static final long GENERATION_MASK = 0xff00000000000000L;
     private static final long SCORE_MASK = 0xffffffff00000000L;
     private static final long MOVE_MASK = 0x00000000ffff0000L;
     private static final long FLAG_MASK = 0x000000000000f000L;
     private static final long DEPTH_MASK = 0x0000000000000fffL;
 
+    private static final int MAX_GENERATION = 128;
+
     private long key;
     private long value;
 
-    public static long halfZobrist(long zobrist) {
-        return zobrist & ZOBRIST_MASK;
+    public static long zobristPart(long zobrist) {
+        return zobrist;
     }
 
-    public long getHalfZobrist() {
-        return key & ZOBRIST_MASK;
+    public long getZobristPart() {
+        return key;
     }
 
     public int getGeneration() {
-        return (int) ((key & GENERATION_MASK) >>> 32);
+        return 0;
+        //return (int) ((key & GENERATION_MASK) >>> 56);
     }
 
     public void setGeneration(int generation) {
-        key = (key &~ GENERATION_MASK) | (long) generation << 32;
+        return;
+//        generation = Math.min(generation, MAX_GENERATION);
+//        key = (key &~ GENERATION_MASK) | (long) generation << 56;
     }
 
     public int getScore() {
@@ -82,7 +86,7 @@ public class HashEntry {
     }
 
     public static HashEntry of(long zobristKey, int score, Move move, HashFlag flag, int depth, int generation) {
-        long key = halfZobrist(zobristKey) | generation;
+        long key = zobristPart(zobristKey) | generation;
         long moveValue = move != null ? move.value() : 0;
         long flagValue = HashFlag.value(flag);
         long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;

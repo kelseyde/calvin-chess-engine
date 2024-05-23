@@ -75,7 +75,7 @@ public class TranspositionTableTest {
     public void testMaxDepth() {
         Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
         long zobristKey = board.getGameState().getZobristKey();
-        int depth = 256;
+        int depth = 128;
         int score = -789;
         HashFlag flag = HashFlag.UPPER;
         Move move = null;
@@ -86,7 +86,7 @@ public class TranspositionTableTest {
     public void testPromotionFlag() {
         Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
         long zobristKey = board.getGameState().getZobristKey();
-        int depth = 256;
+        int depth = 128;
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
@@ -123,7 +123,7 @@ public class TranspositionTableTest {
         flag = HashFlag.UPPER;
         bestMove = Notation.fromNotation("g8", "f6");
         eval = 28666;
-        depth = 256;
+        depth = 255;
         table.put(board.getGameState().getZobristKey(), flag, depth, ply + 1, bestMove, eval);
 
         entry = table.get(board.getGameState().getZobristKey(), ply);

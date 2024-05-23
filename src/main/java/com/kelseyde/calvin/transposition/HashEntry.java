@@ -9,8 +9,8 @@ import lombok.AllArgsConstructor;
  * </p>
  *
  * Key encoding:
- * 0-48: three-quarters of the zobrist hash for this position. Used to verify that the position does match.
- * 48-63: the generation of the entry, i.e. how old it is. Used in the replacement scheme to gradually phase out old entries.
+ * 0-48: 48 bits representing three-quarters of the zobrist hash. Used to verify that the position truly matches.
+ * 48-63: 16 bits representing the generation of the entry, i.e. how old it is. Used to gradually replace old entries.
  * </p>
  *
  * Value encoding:
@@ -129,7 +129,7 @@ public class HashEntry {
         long key = (zobristKey & ZOBRIST_PART_MASK) | (long) generation << 48;
         // Get the 16-bit encoded move
         long moveValue = move != null ? move.value() : 0;
-        // Get the 3-bit encoded node type
+        // Get the 3-bit encoded flag
         long flagValue = HashFlag.value(flag);
         // Combine the score, move, flag and depth to create the hash entry value
         long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;

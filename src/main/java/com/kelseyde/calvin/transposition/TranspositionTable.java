@@ -11,7 +11,7 @@ import java.util.Objects;
  * The transposition table is a database that stores the results of previously searched positions, as well as relevant
  * information about that position, such as the depth to which it was searched, and the best move found during the previous
  * search.
- * <p>
+ * </p>
  * Since many positions can be arrived at by several different move orders, a simple brute-force search of the search tree
  * encounters the same positions again and again (via 'transposition'). A transposition table, therefore, greatly reduces
  * the size of the search tree, since subsequent arrivals at the position can re-use the results of previous searches.
@@ -131,7 +131,7 @@ public class TranspositionTable {
             }
 
             // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (storedEntry.getGeneration() < newEntry.getGeneration()) {
+            if (newEntry.getGeneration() > storedEntry.getGeneration() + 1) {
                 replacedByAge = true;
                 replacedIndex = i;
             }

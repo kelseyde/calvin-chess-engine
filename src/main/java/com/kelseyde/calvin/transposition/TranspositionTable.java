@@ -69,30 +69,21 @@ public class TranspositionTable {
                 break;
             }
 
-            if (storedEntry.getAge() > 1 && depth >= storedEntry.getDepth() - storedEntry.getAge()) {
-                replacedIndex = i;
-                break;
-            }
-
-            if (storedEntry.getKey() == zobristKey && depth >= storedEntry.getDepth()) {
-                if (newEntry.getMove() == null && storedEntry.getMove() != null) {
-                    newEntry = HashEntry.of(newEntry.getKey(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
+            if (storedEntry.getKey() == zobristKey) {
+                if (depth >= storedEntry.getDepth()) {
+                    if (newEntry.getMove() == null && storedEntry.getMove() != null) {
+                        newEntry = HashEntry.of(newEntry.getKey(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
+                    }
+                    replacedIndex = i;
+                    break;
+                } else {
+                    return;
                 }
-                replacedIndex = i;
-                break;
             }
 
-//            if (storedEntry == null || storedEntry.getKey() == zobristKey) {
-//                if (storedEntry == null || depth >= storedEntry.getDepth()) {
-//                    if (newEntry.getMove() == null && storedEntry != null && storedEntry.getMove() != null) {
-//                        newEntry = HashEntry.of(newEntry.getKey(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
-//                    }
-//                    replacedIndex = i;
-//                    break;
-//                } else {
-//                    return;
-//                }
-//            }
+            if (storedEntry.getAge() > 1) {
+                replacedIndex = i;
+            }
 
             if (storedEntry.getDepth() < minDepth) {
                 minDepth = storedEntry.getDepth();

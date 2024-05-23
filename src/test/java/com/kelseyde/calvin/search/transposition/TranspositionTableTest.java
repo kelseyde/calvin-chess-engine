@@ -324,77 +324,51 @@ public class TranspositionTableTest {
     }
 
     @Test
-    public void testDoesNotReplaceEntryWithAgeZero() {
+    public void testHashEntryAgeCappedAtTwo() {
 
         long zobrist = board.getGameState().getZobristKey();
-        HashFlag flag1 = HashFlag.EXACT;
-        Move bestMove1 = Notation.fromNotation("e2", "e4");
-        int eval1 = 60;
-        int plyFromRoot1 = 0;
-        int plyRemaining1 = 12;
+        int score = 10;
+        Move move = Notation.fromNotation("e2", "e4");
+        HashFlag flag = HashFlag.UPPER;
+        int depth = 3;
 
-        table.put(board.getGameState().getZobristKey(), flag1, plyRemaining1, plyFromRoot1, bestMove1, eval1);
-
-        HashFlag flag2 = HashFlag.UPPER;
-        int eval2 = 70;
-        int plyFromRoot2 = 0;
-        int plyRemaining2 = 11;
-        Move bestMove2 = Notation.fromNotation("d2", "d4");
-        table.put(board.getGameState().getZobristKey(), flag2, plyRemaining2, plyFromRoot2, bestMove2, eval2);
-
-        assertEntryInTT(zobrist, eval1, bestMove1, flag1, plyRemaining1);
+        HashEntry entry = HashEntry.of(zobrist, score, move, flag, depth);
+        Assertions.assertEquals(0, entry.getAge());
+        entry.incrementAge();
+        Assertions.assertEquals(1, entry.getAge());
+        entry.incrementAge();
+        Assertions.assertEquals(2, entry.getAge());
+        entry.incrementAge();
+        Assertions.assertEquals(2, entry.getAge());
 
     }
+
 
     @Test
-    public void testDoesNotReplaceEntryWithAgeOne() {
+    public void testEntryProbeResetsAge() {
 
         long zobrist = board.getGameState().getZobristKey();
-        HashFlag flag1 = HashFlag.EXACT;
-        Move bestMove1 = Notation.fromNotation("e2", "e4");
-        int eval1 = 60;
-        int plyFromRoot1 = 0;
-        int plyRemaining1 = 12;
+        HashFlag flag = HashFlag.EXACT;
+        Move bestMove = Notation.fromNotation("e2", "e4");
+        int eval = 60;
+        int plyFromRoot = 0;
+        int plyRemaining = 12;
 
-        table.put(board.getGameState().getZobristKey(), flag1, plyRemaining1, plyFromRoot1, bestMove1, eval1);
+        table.put(zobrist, flag, plyRemaining, plyFromRoot, bestMove, eval);
+
+        HashEntry entry = table.get(zobrist, 0);
+        Assertions.assertEquals(0, entry.getAge());
+
+        table.incrementAge();
+        table.incrementAge();
+        table.incrementAge();
+        table.incrementAge();
         table.incrementAge();
 
-        HashFlag flag2 = HashFlag.UPPER;
-        int eval2 = 70;
-        int plyFromRoot2 = 0;
-        int plyRemaining2 = 11;
-        Move bestMove2 = Notation.fromNotation("d2", "d4");
-        table.put(board.getGameState().getZobristKey(), flag2, plyRemaining2, plyFromRoot2, bestMove2, eval2);
-
-        assertEntryInTT(zobrist, eval1, bestMove1, flag1, plyRemaining1);
+        entry = table.get(zobrist, 0);
+        Assertions.assertEquals(0, entry.getAge());
 
     }
-
-    @Test
-    public void testReplacesEntryWithAgeTwo() {
-
-        long zobrist = board.getGameState().getZobristKey();
-        HashFlag flag1 = HashFlag.EXACT;
-        Move bestMove1 = Notation.fromNotation("e2", "e4");
-        int eval1 = 60;
-        int plyFromRoot1 = 0;
-        int plyRemaining1 = 12;
-
-        table.put(board.getGameState().getZobristKey(), flag1, plyRemaining1, plyFromRoot1, bestMove1, eval1);
-        table.incrementAge();
-        table.incrementAge();
-
-        HashFlag flag2 = HashFlag.UPPER;
-        int eval2 = 70;
-        int plyFromRoot2 = 0;
-        int plyRemaining2 = 11;
-        Move bestMove2 = Notation.fromNotation("d2", "d4");
-        table.put(board.getGameState().getZobristKey(), flag2, plyRemaining2, plyFromRoot2, bestMove2, eval2);
-
-        assertEntryInTT(zobrist, eval2, bestMove2, flag2, plyRemaining2);
-
-    }
-
 
     private void assertEntry(long zobrist, int score, Move move, HashFlag flag, int depth) {
         HashEntry entry = HashEntry.of(zobrist, score, move, flag, depth);

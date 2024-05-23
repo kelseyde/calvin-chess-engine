@@ -39,16 +39,16 @@ public class HashEntry {
     }
 
     public int getDepth() {
-//        return (int) value & 0xfff;
         return (int) ((value >>> 2) & 0x3FF);
     }
 
     public int getAge() {
-        return (int) value & 0b11;
+        return (int) (value & AGE_MASK);
     }
 
     public void setAge(int age) {
-        value |= (age) & AGE_MASK;
+        value = value &~ AGE_MASK;
+        value |= (age & AGE_MASK);
     }
 
     public void incrementAge() {

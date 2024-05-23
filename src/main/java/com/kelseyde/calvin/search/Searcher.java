@@ -51,7 +51,7 @@ public class Searcher implements Search {
     boolean cancelled;
 
     int currentDepth;
-    int maxDepth = 256;
+    int maxDepth = 128;
 
     Move bestMove;
     Move bestMoveCurrentDepth;

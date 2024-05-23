@@ -278,7 +278,8 @@ public class Searcher implements Search {
             }
 
             Move move = moves.get(i);
-            boolean isCapture = board.pieceAt(move.getEndSquare()) != null;
+            Piece capturedPiece = board.pieceAt(move.getEndSquare());
+            boolean isCapture = capturedPiece != null;
             boolean isPromotion = move.getPromotionPiece() != null;
 
             board.makeMove(move);
@@ -304,6 +305,11 @@ public class Searcher implements Search {
             // extend the search depth by one ply.
             int extension = 0;
             if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
+                extension = 1;
+            }
+
+            // Extend search 1 ply when entering a pawn endgame, to avoid accidentally trading into lost/drawn endgames
+            if (isCapture && capturedPiece != Piece.PAWN && board.isPawnEndgame()) {
                 extension = 1;
             }
 

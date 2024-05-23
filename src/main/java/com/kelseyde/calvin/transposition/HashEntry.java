@@ -4,12 +4,12 @@ import com.kelseyde.calvin.board.Move;
 import lombok.AllArgsConstructor;
 
 /**
- * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encode the relevant information
- * about the position.
+ * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encodes the relevant
+ * information about the position.
  * </p>
  *
  * Key encoding:
- * 0-48: 48 bits representing three-quarters of the zobrist hash. Used to verify that the position truly matches.
+ * 0-47: 48 bits representing three-quarters of the zobrist hash. Used to verify that the position truly matches.
  * 48-63: 16 bits representing the generation of the entry, i.e. how old it is. Used to gradually replace old entries.
  * </p>
  *

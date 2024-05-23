@@ -61,6 +61,7 @@ public class ParallelSearcher implements Search {
             setPosition(board);
             threadManager.reset();
             transpositionTable.incrementGeneration();
+            transpositionTable.printStatistics();
             List<CompletableFuture<SearchResult>> threads = searchers.stream()
                     .map(searcher -> CompletableFuture.supplyAsync(() -> searcher.search(duration)))
                     .toList();

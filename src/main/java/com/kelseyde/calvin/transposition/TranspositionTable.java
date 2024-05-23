@@ -63,17 +63,35 @@ public class TranspositionTable {
         for (int i = startIndex; i < startIndex + 4; i++) {
             HashEntry storedEntry = entries[i];
 
-            if (storedEntry == null || storedEntry.getKey() == zobristKey) {
-                if (storedEntry == null || depth >= (storedEntry.getDepth() - storedEntry.getAge())) {
-                    if (newEntry.getMove() == null && storedEntry != null && storedEntry.getMove() != null) {
-                        newEntry = HashEntry.of(newEntry.getKey(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
-                    }
-                    replacedIndex = i;
-                    break;
-                } else {
-                    return;
-                }
+            if (storedEntry == null) {
+                replacedIndex = i;
+                break;
             }
+
+            if (storedEntry.getAge() > 0) {
+                replacedIndex = i;
+                break;
+            }
+
+            if (storedEntry.getKey() == zobristKey && depth >= storedEntry.getDepth()) {
+                if (newEntry.getMove() == null && storedEntry.getMove() != null) {
+                    newEntry = HashEntry.of(newEntry.getKey(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
+                }
+                replacedIndex = i;
+                break;
+            }
+
+//            if (storedEntry == null || storedEntry.getKey() == zobristKey) {
+//                if (storedEntry == null || depth >= storedEntry.getDepth()) {
+//                    if (newEntry.getMove() == null && storedEntry != null && storedEntry.getMove() != null) {
+//                        newEntry = HashEntry.of(newEntry.getKey(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
+//                    }
+//                    replacedIndex = i;
+//                    break;
+//                } else {
+//                    return;
+//                }
+//            }
 
             if (storedEntry.getDepth() < minDepth) {
                 minDepth = storedEntry.getDepth();

@@ -9,8 +9,8 @@ import lombok.AllArgsConstructor;
  * </p>
  *
  * Key encoding:
- * 0-31: the half of the zobrist hash NOT used to generate the entry's index. Used to verify that the position does match.
- * 32-63: the generation of the entry, i.e. how old it is. Used in the replacement scheme to gradually phase out old entries.
+ * 0-48: three-quarters of the zobrist hash for this position. Used to verify that the position does match.
+ * 48-63: the generation of the entry, i.e. how old it is. Used in the replacement scheme to gradually phase out old entries.
  * </p>
  *
  * Value encoding:
@@ -22,80 +22,118 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class HashEntry {
 
-    private static final long ZOBRIST_PART_MASK = 0x00ffffffffffffffL;
-    private static final long GENERATION_MASK = 0xff00000000000000L;
+    private static final long ZOBRIST_PART_MASK = 0x0000ffffffffffffL;
+    private static final long GENERATION_MASK = 0xffff000000000000L;
     private static final long SCORE_MASK = 0xffffffff00000000L;
     private static final long MOVE_MASK = 0x00000000ffff0000L;
     private static final long FLAG_MASK = 0x000000000000f000L;
     private static final long DEPTH_MASK = 0x0000000000000fffL;
 
-    private static final int MAX_GENERATION = 128;
-
     private long key;
     private long value;
 
+    /**
+     * Extracts the 48-bits representing the zobrist part of the given zobrist key.
+     */
     public static long zobristPart(long zobrist) {
-        return zobrist;
+        return zobrist & ZOBRIST_PART_MASK;
     }
 
+    /**
+     * Returns the 48-bits representing zobrist part of the hash entry key.
+     */
     public long getZobristPart() {
-        return key;
+        return key & ZOBRIST_PART_MASK;
     }
 
+    /**
+     * Gets the generation part of this entry's key.
+     */
     public int getGeneration() {
-        return 0;
-        //return (int) ((key & GENERATION_MASK) >>> 56);
+        return (int) ((key & GENERATION_MASK) >>> 48);
     }
 
+    /**
+     * Sets the generation part of this entry's key.
+     */
     public void setGeneration(int generation) {
-        return;
-//        generation = Math.min(generation, MAX_GENERATION);
-//        key = (key &~ GENERATION_MASK) | (long) generation << 56;
+        key = (key &~ GENERATION_MASK) | (long) generation << 48;
     }
 
+    /**
+     * Gets the score from this entry's value.
+     */
     public int getScore() {
         long score = (value & SCORE_MASK) >>> 32;
         return (int) score;
     }
 
+    /**
+     * Sets the score in this entry's value.
+     */
     public void setScore(int score) {
         value = (value &~ SCORE_MASK) | (long) score << 32;
     }
 
+    /**
+     * Creates a new {@link HashEntry} with the adjusted score.
+     */
     public HashEntry withAdjustedScore(int score) {
         long newValue = (value &~ SCORE_MASK) | (long) score << 32;
         return new HashEntry(key, newValue);
     }
 
+    /**
+     * Sets the move in this entry's value.
+     */
     public void setMove(Move move) {
         value = (value &~ MOVE_MASK) | (long) move.value() << 16;
     }
 
+    /**
+     * Gets the move from this entry's value.
+     */
     public Move getMove() {
         long move = (value & MOVE_MASK) >>> 16;
         return move > 0 ? new Move((short) move) : null;
     }
 
+    /**
+     * Gets the flag from this entry's value.
+     */
     public HashFlag getFlag() {
         long flag = (value & FLAG_MASK) >>> 12;
         return HashFlag.valueOf((int) flag);
     }
 
+    /**
+     * Gets the depth from this entry's value.
+     */
     public int getDepth() {
         return (int) (value & DEPTH_MASK);
     }
 
+    /**
+     * Creates a new {@link HashEntry} with the specified parameters.
+     *
+     * @param zobristKey the Zobrist key
+     * @param score the score
+     * @param move the move
+     * @param flag the flag
+     * @param depth the depth
+     * @param generation the generation
+     * @return a new {@link HashEntry}
+     */
     public static HashEntry of(long zobristKey, int score, Move move, HashFlag flag, int depth, int generation) {
-        long key = zobristPart(zobristKey) | generation;
+        // Build the key using 48 bits for the zobrist part and 16 bits for the generation part.
+        long key = (zobristKey & ZOBRIST_PART_MASK) | (long) generation << 48;
+        // Get the 16-bit encoded move
         long moveValue = move != null ? move.value() : 0;
+        // Get the 3-bit encoded node type
         long flagValue = HashFlag.value(flag);
+        // Combine the score, move, flag and depth to create the hash entry value
         long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
         return new HashEntry(key, value);
     }
-
-//    public static HashEntry withScore(HashEntry entry, int score) {
-//        long value = (entry.value() &~ SCORE_MASK) | (long) score << 32;
-//        return new HashEntry(entry.key(), value);
-//    }
 
 }

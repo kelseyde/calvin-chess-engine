@@ -60,13 +60,12 @@ public class ParallelSearcher implements Search {
         try {
             setPosition(board);
             threadManager.reset();
-            transpositionTable.incrementGeneration();
-            transpositionTable.printStatistics();
             List<CompletableFuture<SearchResult>> threads = searchers.stream()
                     .map(searcher -> CompletableFuture.supplyAsync(() -> searcher.search(duration)))
                     .toList();
             SearchResult result = selectResult(threads).get();
             threads.forEach(thread -> thread.cancel(true));
+            transpositionTable.incrementGeneration();
             return result;
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);

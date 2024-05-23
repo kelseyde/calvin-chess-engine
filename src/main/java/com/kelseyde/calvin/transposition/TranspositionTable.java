@@ -40,7 +40,7 @@ public class TranspositionTable {
         tries++;
         for (int i = 0; i < 4; i++) {
             HashEntry entry = entries[index + i];
-            if (entry != null && entry.key() == zobristKey) {
+            if (entry != null && entry.getKey() == zobristKey) {
                 hits++;
                 if (isMateScore(entry.getScore())) {
                     int score = retrieveMateScore(entry.getScore(), ply);
@@ -63,10 +63,10 @@ public class TranspositionTable {
         for (int i = startIndex; i < startIndex + 4; i++) {
             HashEntry storedEntry = entries[i];
 
-            if (storedEntry == null || storedEntry.key() == zobristKey) {
-                if (storedEntry == null || depth >= storedEntry.getDepth()) {
+            if (storedEntry == null || storedEntry.getKey() == zobristKey) {
+                if (storedEntry == null || depth >= (storedEntry.getDepth() - storedEntry.getAge())) {
                     if (newEntry.getMove() == null && storedEntry != null && storedEntry.getMove() != null) {
-                        newEntry = HashEntry.of(newEntry.key(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
+                        newEntry = HashEntry.of(newEntry.getKey(), newEntry.getScore(), storedEntry.getMove(), newEntry.getFlag(), newEntry.getDepth());
                     }
                     replacedIndex = i;
                     break;
@@ -83,6 +83,14 @@ public class TranspositionTable {
 
         if (replacedIndex != -1) {
             entries[replacedIndex] = newEntry;
+        }
+    }
+
+    public void incrementAge() {
+        for (HashEntry entry : entries) {
+            if (entry != null) {
+                entry.incrementAge();
+            }
         }
     }
 

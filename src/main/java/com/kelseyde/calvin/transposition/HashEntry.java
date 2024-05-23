@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.transposition;
 
 import com.kelseyde.calvin.board.Move;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
  * Individual entry in the transposition table containing the 64-bit zobrist key, and a 64-bit encoding of the score,
@@ -10,7 +12,12 @@ import com.kelseyde.calvin.board.Move;
  * - flag: 4 bits       (0-2, capturing three possible flag values + 1 bit padding)
  * - depth: 12 bits     (0-265, max depth = 256 = 8 bits + 4 bit padding)
  */
-public record HashEntry(long key, long value) {
+@Data
+@AllArgsConstructor
+public class HashEntry {
+    private long key;
+    private byte age;
+    private long value;
 
     private static final long CLEAR_SCORE_MASK = 0xffffffffL;
 
@@ -33,16 +40,23 @@ public record HashEntry(long key, long value) {
         return (int) value & 0xfff;
     }
 
+    public void incrementAge() {
+        if (this.age < Byte.MAX_VALUE) {
+            this.age++;
+        }
+    }
+
     public static HashEntry of(long zobristKey, int score, Move move, HashFlag flag, int depth) {
         long moveValue = move != null ? move.value() : 0;
         long flagValue = HashFlag.value(flag);
         long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
-        return new HashEntry(zobristKey, value);
+        byte age = 0;
+        return new HashEntry(zobristKey, age, value);
     }
 
     public static HashEntry withScore(HashEntry entry, int score) {
-        long value = (entry.value() & CLEAR_SCORE_MASK) | (long) score << 32;
-        return new HashEntry(entry.key(), value);
+        long value = (entry.getValue() & CLEAR_SCORE_MASK) | (long) score << 32;
+        return new HashEntry(entry.getKey(), entry.getAge(), value);
     }
 
 }

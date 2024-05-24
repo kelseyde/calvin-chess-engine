@@ -137,8 +137,8 @@ public class Evaluator implements Evaluation {
         scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, true);
         scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, false);
 
-        scoreKing(whiteKing, blackKing, whitePawns, blackPawns, whiteMaterial, blackMaterial, board, phase, true);
-        scoreKing(blackKing, whiteKing, blackPawns, whitePawns, blackMaterial, whiteMaterial, board, phase, false);
+        scoreKing(whiteKing, whitePawns, blackPawns, blackMaterial, board, phase, true);
+        scoreKing(blackKing, blackPawns, whitePawns, whiteMaterial, board, phase, false);
 
         return score.sum(white);
     }
@@ -365,10 +365,8 @@ public class Evaluator implements Evaluation {
      * King evaluation consists of a piece-placement bonus, king safety considerations and mop-up bonus if up material.
      */
     private void scoreKing(long friendlyKing,
-                           long opponentKing,
                            long friendlyPawns,
                            long opponentPawns,
-                           Material friendlyMaterial,
                            Material opponentMaterial,
                            Board board,
                            float phase,

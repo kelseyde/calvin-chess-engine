@@ -5,6 +5,7 @@
   "minHashSizeMb":16,
   "maxHashSizeMb":1024,
   "defaultHashSizeMb":512,
+  "defaultPawnHashSizeMb":16,
   "ownBookEnabled":true,
   "maxBookMoves":26,
   "ownTablebaseEnabled":true,

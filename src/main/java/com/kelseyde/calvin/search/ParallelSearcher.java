@@ -6,6 +6,7 @@ import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;

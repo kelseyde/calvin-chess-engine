@@ -13,6 +13,7 @@ import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -36,10 +37,11 @@ public class EngineInitializer {
         config.postInitialise();
         OpeningBook book = loadDefaultOpeningBook();
         Tablebase tablebase = loadDefaultTablebase(config);
+        TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
+        PawnHashTable pawnHashTable = new PawnHashTable();
         Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
-        Supplier<Evaluation> evaluator = () -> new Evaluator(config);
-        TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
+        Supplier<Evaluation> evaluator = () -> new Evaluator(config, pawnHashTable);
         Search searcher = new ParallelSearcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
         return new Engine(config, book, tablebase, moveGenerator.get(), searcher);
     }

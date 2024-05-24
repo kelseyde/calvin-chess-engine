@@ -3,9 +3,13 @@ package com.kelseyde.calvin.transposition.pawn;
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * A hash table specifically for storing pawn structure evaluations.
+ */
 public class PawnHashTable {
 
     static final int TABLE_SIZE = 250000;
+    static final int INDEX_MASK = 0x7FFFFFFF;
 
     PawnHashEntry[] entries;
 
@@ -16,6 +20,12 @@ public class PawnHashTable {
         entries = new PawnHashEntry[TABLE_SIZE];
     }
 
+    /**
+     * Retrieves a pawn hash entry using the pawn key.
+     *
+     * @param pawnKey the key representing the pawn structure.
+     * @return the corresponding {@link PawnHashEntry} if found, or {@code null} if not found.
+     */
     public PawnHashEntry get(long pawnKey) {
         int index = getIndex(pawnKey);
         tries++;
@@ -27,18 +37,27 @@ public class PawnHashTable {
         return null;
     }
 
+    /**
+     * Puts a pawn hash entry into the table.
+     *
+     * @param pawnKey the key representing the pawn structure.
+     * @param entry   the {@link PawnHashEntry} to store.
+     */
     public void put(long pawnKey, PawnHashEntry entry) {
         int index = getIndex(pawnKey);
         entries[index] = entry;
     }
 
+    /**
+     * Computes the index for a given pawn key.
+     *
+     * @param pawnKey the key representing the pawn structure.
+     * @return the index in the table.
+     */
     private int getIndex(long pawnKey) {
-        int index = (int) (pawnKey ^ (pawnKey >>> 32));
-        if (index < 0) {
-            index = -index;
-        }
-        index = index % TABLE_SIZE;
-        return index;
+        // XOR the upper and lower halves of the key and mask the result to ensure it is positive.
+        int index = (int) (pawnKey ^ (pawnKey >>> 32)) & INDEX_MASK;
+        return index % TABLE_SIZE;
     }
 
     public void clear() {

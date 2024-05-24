@@ -1,18 +1,22 @@
 package com.kelseyde.calvin.transposition.pawn;
 
 public record PawnHashEntry(long key,
-                            PawnScore whiteScore,
-                            PawnScore blackScore) {
+                            long whiteScore,
+                            long blackScore) {
 
-    public record PawnScore(int mgScore, int egScore) {
+    private static final long MG_SCORE_MASK = 0x00000000ffffffffL;
+    private static final long EG_SCORE_MASK = 0xffffffff00000000L;
 
-        @Override
-        public boolean equals(Object other) {
-            if (!(other instanceof PawnScore otherScore)) {
-                return false;
-            }
-            return this.mgScore == otherScore.mgScore && this.egScore == otherScore.egScore;
-        }
+    public static int mgScore(long pawnScore) {
+        return (int) (pawnScore & MG_SCORE_MASK);
+    }
+
+    public static int egScore(long pawnScore) {
+        return (int) ((pawnScore & EG_SCORE_MASK) >>> 32);
+    }
+
+    public static long encode(int mgScore, int egScore) {
+        return (long) mgScore | ((long) egScore) << 32;
     }
 
 }

@@ -7,7 +7,6 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.generation.Attacks;
 import com.kelseyde.calvin.transposition.pawn.PawnHashEntry;
-import com.kelseyde.calvin.transposition.pawn.PawnHashEntry.PawnScore;
 import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
@@ -57,8 +56,12 @@ public class Evaluator implements Evaluation {
     Score score;
 
     public Evaluator(EngineConfig config) {
+        this(config, new PawnHashTable());
+    }
+
+    public Evaluator(EngineConfig config, PawnHashTable pawnHash) {
         this.config = config;
-        this.pawnHash = new PawnHashTable();
+        this.pawnHash = pawnHash;
 
         pawnMgTable = config.getMiddlegameTables()[Piece.PAWN.getIndex()];
         pawnEgTable = config.getEndgameTables()[Piece.PAWN.getIndex()];
@@ -147,8 +150,8 @@ public class Evaluator implements Evaluation {
 
         long pawnKey = board.getGameState().getPawnKey();
         PawnHashEntry hashEntry = pawnHash.get(pawnKey);
-        PawnScore whiteScore;
-        PawnScore blackScore;
+        long whiteScore;
+        long blackScore;
         if (hashEntry != null) {
             whiteScore = hashEntry.whiteScore();
             blackScore = hashEntry.blackScore();
@@ -158,8 +161,8 @@ public class Evaluator implements Evaluation {
             hashEntry = new PawnHashEntry(pawnKey, whiteScore, blackScore);
             pawnHash.put(pawnKey, hashEntry);
         }
-        score.addScore(whiteScore.mgScore(), whiteScore.egScore(), true);
-        score.addScore(blackScore.mgScore(), blackScore.egScore(), false);
+        score.addScore(PawnHashEntry.mgScore(whiteScore), PawnHashEntry.egScore(whiteScore), true);
+        score.addScore(PawnHashEntry.mgScore(blackScore), PawnHashEntry.egScore(blackScore), false);
 
     }
 
@@ -167,9 +170,10 @@ public class Evaluator implements Evaluation {
      * Pawn evaluation consists of piece-placement eval + pawn structure considerations (bonuses for passed pawns,
      * penalties for isolated/doubled pawns).
      */
-    private PawnScore scorePawns(long friendlyPawns, long opponentPawns, boolean white) {
-        
-        if (friendlyPawns == 0) return new PawnScore(0, 0);
+    private long scorePawns(long friendlyPawns, long opponentPawns, boolean white) {
+
+        // TODO what happens if pawns = 0?
+        if (friendlyPawns == 0) return 0L;
         int mgScore = 0;
         int egScore = 0;
 
@@ -217,7 +221,7 @@ public class Evaluator implements Evaluation {
         mgScore += config.getDoubledPawnPenalty()[0][doubledPawnCount];
         egScore += config.getDoubledPawnPenalty()[1][doubledPawnCount];
 
-        return new PawnScore(mgScore, egScore);
+        return PawnHashEntry.encode(mgScore, egScore);
     }
 
     /**

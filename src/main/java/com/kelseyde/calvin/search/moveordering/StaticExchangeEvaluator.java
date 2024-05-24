@@ -23,22 +23,101 @@ public class StaticExchangeEvaluator {
 
     public int evaluate(Board board, Move move) {
 
+        int startSquare = move.getStartSquare();
+        int endSquare = move.getEndSquare();
+        boolean white = board.isWhiteToMove();
+        Piece piece = move.isPromotion() ? move.getPromotionPiece() : board.pieceAt(startSquare);
+
         int score = 0;
-        int square = move.getEndSquare();
-        Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
-        score += capturedPiece != null ? capturedPiece.getValue() : 0;
 
-        board.makeMove(move);
-        Move leastValuableAttacker = getLeastValuableAttacker(board, square);
-        if (leastValuableAttacker != null) {
-            /* The opponent should have the option of 'standing pat' - that is, declining to continue the capture
-             sequence if it would lead to a loss of material.
-             Therefore, we return the minimum of the stand-pat score and the capture score. */
-            score = Math.min(score, score - evaluate(board, leastValuableAttacker));
+        if (move.isCastling()) {
+            return 0;
         }
-        board.unmakeMove();
-        return score;
 
+        if (move.isPromotion()) {
+            score -= Piece.PAWN.getValue();
+            score += move.getPromotionPiece().getValue();
+        }
+
+        Piece capturedPiece = board.pieceAt(endSquare);
+        if (capturedPiece != null) {
+            score += capturedPiece.getValue();
+        }
+
+        long remaining = board.getOccupied();
+        remaining ^= 1L << startSquare;
+        remaining |= 1L << endSquare;
+
+        if (move.isEnPassant()) {
+            remaining ^= board.isWhiteToMove() ? endSquare - 8 : endSquare + 8;
+        }
+
+        long diagonalSliders = (board.getDiagonalSliders(white) | board.getDiagonalSliders(!white)) & remaining;
+        long orthogonalSliders = (board.getOrthogonalSliders(white) | board.getOrthogonalSliders(!white)) & remaining;
+
+
+
+        let mut attackers = self.attackers(tgt, remaining) & remaining;
+        let mut side = self.current;
+
+        // Start trading off pieces
+        loop {
+            // Switch side-to-move
+            side = !side;
+
+            // Check whether or not we need to re-capture in the first place
+            // If we've beaten the threshold and it's our turn, there's no need
+            // to re-capture.
+            if side == self.current && balance >= 0
+                    || side != self.current && balance <= 0 {
+                break;
+            }
+
+            // Find least valuable attacker, and break if no attackers are left
+            let Some(attacker_sq) = self.lva(attackers, side) else { break };
+            let attacker = self.get_at(attacker_sq).unwrap();
+
+            // If our last attacker is a king, but the opponent still has
+            // attackers, cut the exchange short (because the capture isn't
+            // legal).
+            if attacker.is_king()
+                    && !(attackers & self.occupied_by(!side)).is_empty() {
+                break;
+            }
+
+            // Remove the attacker from the boards
+            remaining    ^= Bitboard::from(attacker_sq);
+            attackers    &= remaining;
+            diag_sliders &= remaining;
+            hv_sliders   &= remaining;
+
+            // Any discovered attackers?
+            if attacker.is_pawn() || attacker.is_diag_slider() {
+                attackers |= tgt.bishop_squares(remaining) & diag_sliders;
+            }
+
+            if attacker.is_hv_slider() {
+                attackers |= tgt.rook_squares(remaining) & hv_sliders;
+            }
+
+            // Update balance
+            if side == self.current {
+                balance += SEE_VALUES[current_victim as usize];
+            } else {
+                balance -= SEE_VALUES[current_victim as usize];
+            }
+
+            current_victim = attacker.piece_type();
+        }
+
+        // After all the exchanges are done, check whether the final balance
+        // matches the threshold
+        balance >= 0
+
+    }
+
+    private long allAttackers(Board board, int square) {
+        return moveGenerator.att
     }
 
     /**

@@ -525,6 +525,13 @@ public class MoveGenerator implements MoveGeneration {
         return false;
     }
 
+    /**
+     * Get all attackers on a square, regardless of colour.
+     */
+    public long allAttackers() {
+
+    }
+
     private List<Move> getPromotionMoves(int startSquare, int endSquare) {
         return filter != MoveFilter.ALL ?
                 List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG)) :

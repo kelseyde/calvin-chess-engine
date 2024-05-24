@@ -391,6 +391,14 @@ public class Board {
         return white ? whiteKing : blackKing;
     }
 
+    public long getDiagonalSliders(boolean white) {
+        return white ? whiteBishops | whiteQueens : blackBishops | blackQueens;
+    }
+
+    public long getOrthogonalSliders(boolean white) {
+        return white ? whiteRooks | whiteQueens : blackRooks | blackQueens;
+    }
+
     public long getPieces(boolean white) {
         return white ? whitePieces : blackPieces;
     }

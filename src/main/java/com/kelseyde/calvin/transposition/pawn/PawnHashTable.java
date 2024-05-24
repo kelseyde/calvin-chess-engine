@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.transposition.pawn;
 
+import com.kelseyde.calvin.transposition.HashEntry;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -8,16 +10,19 @@ import java.util.Objects;
  */
 public class PawnHashTable {
 
-    static final int TABLE_SIZE = 250000;
     static final int INDEX_MASK = 0x7FFFFFFF;
 
     PawnHashEntry[] entries;
 
+    int tableSize;
     int tries;
     int hits;
 
-    public PawnHashTable() {
-        entries = new PawnHashEntry[TABLE_SIZE];
+    public PawnHashTable(int tableSizeMb) {
+        this.tableSize = (tableSizeMb * 1024 * 1024) / PawnHashEntry.SIZE_BYTES;
+        entries = new PawnHashEntry[tableSize];
+        tries = 0;
+        hits = 0;
     }
 
     /**
@@ -57,21 +62,21 @@ public class PawnHashTable {
     private int getIndex(long pawnKey) {
         // XOR the upper and lower halves of the key and mask the result to ensure it is positive.
         int index = (int) (pawnKey ^ (pawnKey >>> 32)) & INDEX_MASK;
-        return index % TABLE_SIZE;
+        return index % tableSize;
     }
 
     public void clear() {
-        printStatistics();
+        //printStatistics();
         tries = 0;
         hits = 0;
-        entries = new PawnHashEntry[TABLE_SIZE];
+        entries = new PawnHashEntry[tableSize];
     }
 
     public void printStatistics() {
         long fill = Arrays.stream(entries).filter(Objects::nonNull).count();
-        float fillPercentage = ((float) fill / (float) TABLE_SIZE) * 100;
+        float fillPercentage = ((float) fill / (float) tableSize) * 100;
         float hitPercentage = ((float) hits / (float) tries) * 100;
-        System.out.printf("TT -- table size: %s / %s (%s), tries: %s, hits: %s (%s)%n", fill, TABLE_SIZE, fillPercentage, tries, hits, hitPercentage);
+        System.out.printf("TT -- table size: %s / %s (%s), tries: %s, hits: %s (%s)%n", fill, tableSize, fillPercentage, tries, hits, hitPercentage);
     }
 
 }

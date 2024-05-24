@@ -59,7 +59,7 @@ public class Evaluator implements Evaluation {
     float phase;
 
     public Evaluator(EngineConfig config) {
-        this(config, new PawnHashTable());
+        this(config, new PawnHashTable(config.getDefaultPawnHashSizeMb()));
     }
 
     public Evaluator(EngineConfig config, PawnHashTable pawnHash) {
@@ -486,7 +486,7 @@ public class Evaluator implements Evaluation {
         int blackScore = Phase.taperedEval(blackMgScore, blackEgScore, phase);
         int score = whiteScore - blackScore;
         int modifier = white ? 1 : -1;
-        return score *= modifier;
+        return score * modifier;
     }
 
     @Override

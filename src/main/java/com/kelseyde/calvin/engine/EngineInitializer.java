@@ -38,7 +38,7 @@ public class EngineInitializer {
         OpeningBook book = loadDefaultOpeningBook();
         Tablebase tablebase = loadDefaultTablebase(config);
         TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
-        PawnHashTable pawnHashTable = new PawnHashTable();
+        PawnHashTable pawnHashTable = new PawnHashTable(config.getDefaultPawnHashSizeMb());
         Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
         Supplier<Evaluation> evaluator = () -> new Evaluator(config, pawnHashTable);

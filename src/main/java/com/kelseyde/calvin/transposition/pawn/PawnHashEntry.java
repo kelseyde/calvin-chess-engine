@@ -10,6 +10,9 @@ package com.kelseyde.calvin.transposition.pawn;
  */
 public record PawnHashEntry(long key, long value) {
 
+    // A rough estimate: 2 8-byte fields and some overhead for object headers
+    public static final int SIZE_BYTES = 24;
+
     private static final long WHITE_SCORE_MASK = 0xffffffff00000000L;
     private static final long BLACK_SCORE_MASK = 0x00000000ffffffffL;
     private static final int LOWER_HALF_SCORE_MASK = 0xFFFF;

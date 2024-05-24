@@ -61,6 +61,7 @@ public class PawnHashTable {
     }
 
     public void clear() {
+        printStatistics();
         tries = 0;
         hits = 0;
         entries = new PawnHashEntry[TABLE_SIZE];
@@ -70,7 +71,7 @@ public class PawnHashTable {
         long fill = Arrays.stream(entries).filter(Objects::nonNull).count();
         float fillPercentage = ((float) fill / (float) TABLE_SIZE) * 100;
         float hitPercentage = ((float) hits / (float) tries) * 100;
-        //System.out.printf("TT -- table size: %s / %s (%s), tries: %s, hits: %s (%s)%n", fill, TABLE_SIZE, fillPercentage, tries, hits, hitPercentage);
+        System.out.printf("TT -- table size: %s / %s (%s), tries: %s, hits: %s (%s)%n", fill, TABLE_SIZE, fillPercentage, tries, hits, hitPercentage);
     }
 
 }

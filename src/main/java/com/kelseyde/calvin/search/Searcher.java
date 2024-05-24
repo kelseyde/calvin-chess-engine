@@ -565,6 +565,7 @@ public class Searcher implements Search {
     @Override
     public void clearHistory() {
         transpositionTable.clear();
+        evaluator.clearHistory();
     }
 
     @Override

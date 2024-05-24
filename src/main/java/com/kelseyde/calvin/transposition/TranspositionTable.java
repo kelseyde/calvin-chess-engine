@@ -131,7 +131,7 @@ public class TranspositionTable {
             }
 
             // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (newEntry.getGeneration() > storedEntry.getGeneration() + 1) {
+            if (newEntry.getGeneration() > storedEntry.getGeneration()) {
                 replacedByAge = true;
                 replacedIndex = i;
             }

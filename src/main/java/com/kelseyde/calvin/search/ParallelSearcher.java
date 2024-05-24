@@ -65,6 +65,7 @@ public class ParallelSearcher implements Search {
                     .toList();
             SearchResult result = selectResult(threads).get();
             threads.forEach(thread -> thread.cancel(true));
+            transpositionTable.incrementGeneration();
             return result;
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);

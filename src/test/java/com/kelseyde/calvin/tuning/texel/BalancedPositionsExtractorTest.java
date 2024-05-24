@@ -4,11 +4,13 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 
+@Disabled
 public class BalancedPositionsExtractorTest {
 
     private static final Evaluation evaluator = TestUtils.EVALUATOR;

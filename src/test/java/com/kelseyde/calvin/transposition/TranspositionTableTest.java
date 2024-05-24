@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.transposition;
+package com.kelseyde.calvin.transposition;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;

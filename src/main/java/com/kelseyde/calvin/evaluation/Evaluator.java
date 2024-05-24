@@ -383,7 +383,6 @@ public class Evaluator implements Evaluation {
         score.addScore(mgScore, egScore, white);
 
         scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
-        scoreMopUp(king, opponentKing, friendlyMaterial, white);
 
     }
 
@@ -413,39 +412,6 @@ public class Evaluator implements Evaluation {
         int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
         int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
         score.addScore(mgScore, egScore, white);
-    }
-
-    /**
-     * When the side-to-move is up a decisive amount of material, give a small bonus for escorting the opponent king to
-     * the sides or corners of the board. This assists the engine in finding forced mate.
-     * </p>
-     * @see <a href="https://www.chessprogramming.org/Mop-up_Evaluation">Chess Programming Wiki</a>
-     */
-    private void scoreMopUp(int friendlyKingSquare,
-                              long opponentKing,
-                              Material opponentMaterial,
-                              boolean white) {
-        int mopUpScore = 0;
-        int friendlyMaterialScore = white ? whiteMaterialMgScore : blackMaterialMgScore;
-        int opponentMaterialScore = white ? blackMaterialMgScore: whiteMaterialMgScore;
-        boolean twoPawnAdvantage = friendlyMaterialScore > (opponentMaterialScore + 2 * Piece.PAWN.getValue());
-        if (!twoPawnAdvantage) return;
-        int opponentKingSquare = Bitwise.getNextBit(opponentKing);
-
-        // Bonus for moving king closer to opponent king
-        mopUpScore += (14 - Distance.manhattan(friendlyKingSquare, opponentKingSquare)) * config.getKingManhattanDistanceMultiplier();
-        mopUpScore += (7 - Distance.chebyshev(friendlyKingSquare, opponentKingSquare)) * config.getKingChebyshevDistanceMultiplier();
-
-        // Bonus for pushing opponent king to the edges of the board
-        mopUpScore += Distance.centerManhattan(opponentKingSquare) * config.getKingCenterManhattanDistanceMultiplier();
-
-        float opponentPhase = Phase.fromMaterial(opponentMaterial, config);
-        float phasedScore = mopUpScore * (1 - opponentPhase);
-
-        int mgScore = (int) ((phasedScore / 100) * config.getMopUpScaleFactor()[0]);
-        int egScore = (int) ((phasedScore / 100) * config.getMopUpScaleFactor()[1]);
-        score.addScore(mgScore, egScore, white);
-
     }
 
     private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {

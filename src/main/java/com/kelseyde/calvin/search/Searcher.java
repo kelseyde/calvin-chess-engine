@@ -222,6 +222,13 @@ public class Searcher implements Search {
         boolean pvNode = beta - alpha > 1;
 
         if (!pvNode && !isInCheck) {
+
+            if (depth < 8
+                && staticEval - (71 * depth) >= beta) {
+                return beta;
+            }
+
+
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.

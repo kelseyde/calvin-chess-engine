@@ -97,6 +97,14 @@ public class MovePicker {
         sortMoves();
         Move move = moves.get(moveIndex);
         moveIndex++;
+        if (move.equals(previousBestMove)) {
+            if (moveIndex >= moves.size()) {
+                stage = Stage.END;
+                return null;
+            }
+            move = moves.get(moveIndex);
+            moveIndex++;
+        }
         return move;
     }
 

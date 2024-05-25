@@ -342,6 +342,7 @@ public class Searcher implements Search {
             }
 
             if (eval >= beta) {
+
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
                 transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, beta);
                 if (!isCapture) {

@@ -173,6 +173,11 @@ public class Bitwise {
         return (passedPawnMask & opponentPawns) == 0;
     }
 
+    public static boolean isFreePawn(int pawn, long occupied, boolean white) {
+        long forwardMask = white ? Bits.WHITE_FORWARD_MASK[pawn] : Bits.BLACK_FORWARD_MASK[pawn];
+        return (forwardMask & occupied) == 0;
+    }
+
     /**
      * Determine if a pawn is isolated.
      */

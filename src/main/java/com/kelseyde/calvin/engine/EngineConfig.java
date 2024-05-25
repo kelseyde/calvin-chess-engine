@@ -70,7 +70,9 @@ public class EngineConfig {
     int[][] isolatedPawnPenalty;
     int[][] doubledPawnPenalty;
     int[][] passedPawnBonus;
+    int[][] freePassedPawnBonus;
     int protectedPassedPawnBonus;
+    int escortedPassedPawnMultiplier;
 
     int bishopPairBonus;
     int[] rookOpenFileBonus;

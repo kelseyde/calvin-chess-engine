@@ -126,6 +126,9 @@ public class Bits {
     public static final long[] WHITE_PROTECTED_PAWN_MASK = generateProtectedPawnMask(true);
     public static final long[] BLACK_PROTECTED_PAWN_MASK = generateProtectedPawnMask(false);
 
+    public static final long[] WHITE_FORWARD_MASK = generateForwardMask(true);
+    public static final long[] BLACK_FORWARD_MASK = generateForwardMask(false);
+
     public static final long[] WHITE_FORWARD_ADJACENT_MASK = generateForwardAdjacentMask(true);
     public static final long[] BLACK_FORWARD_ADJACENT_MASK = generateForwardAdjacentMask(false);
 
@@ -194,6 +197,24 @@ public class Bits {
                     Bitwise.shiftNorthEast(squareBB) | Bitwise.shiftNorthWest(squareBB);
         }
         return pawnProtectionMask;
+    }
+
+    private static long[] generateForwardMask(boolean white) {
+
+        long[] forwardMasks = new long[64];
+
+        for (int square = 0; square < 64; square++) {
+            int file = BoardUtils.getFile(square);
+            int rank = BoardUtils.getRank(square);
+            long fileMask = Bits.FILE_MASKS[file];
+            long rankMask = Bits.RANK_MASKS[rank];
+            long forwardAllMask = white ? ~(Long.MAX_VALUE >>> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
+            long forwardMask = fileMask & forwardAllMask &~ rankMask;
+            forwardMasks[square] = forwardMask;
+        }
+
+        return forwardMasks;
+
     }
 
     private static long[] generateForwardAdjacentMask(boolean white) {

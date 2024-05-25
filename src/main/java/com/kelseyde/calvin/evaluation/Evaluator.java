@@ -100,6 +100,7 @@ public class Evaluator implements Evaluation {
 
         boolean white = board.isWhiteToMove();
 
+        long occupied = board.getOccupied();
         long whitePieces = board.getWhitePieces();
         long blackPieces = board.getBlackPieces();
 
@@ -115,6 +116,9 @@ public class Evaluator implements Evaluation {
         long blackRooks = board.getBlackRooks();
         long blackQueens = board.getBlackQueens();
         long blackKing = board.getBlackKing();
+
+        int whiteKingSquare = Bitwise.getNextBit(whiteKing);
+        int blackKingSquare = Bitwise.getNextBit(blackKing);
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
@@ -133,7 +137,7 @@ public class Evaluator implements Evaluation {
         long friendlyWhiteBlockers = whiteKing | whitePawns;
         long friendlyBlackBlockers = blackKing | blackPawns;
 
-        scorePawnsWithHash(board, whitePawns, blackPawns);
+        scorePawnsWithHash(board, whitePawns, blackPawns, whiteKingSquare, blackKingSquare, occupied);
 
         scoreKnights(whiteKnights, friendlyWhiteBlockers, true);
         scoreKnights(blackKnights, friendlyBlackBlockers, false);
@@ -147,13 +151,13 @@ public class Evaluator implements Evaluation {
         scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, true);
         scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, false);
 
-        scoreKing(whiteKing, whitePawns, blackPawns, blackMaterial, board, phase, true);
-        scoreKing(blackKing, blackPawns, whitePawns, whiteMaterial, board, phase, false);
+        scoreKing(whiteKingSquare, whitePawns, blackPawns, blackMaterial, board, phase, true);
+        scoreKing(blackKingSquare, blackPawns, whitePawns, whiteMaterial, board, phase, false);
 
         return sum(white);
     }
 
-    private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {
+    private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns, int whiteKing, int blackKing, long occupied) {
 
         long pawnKey = board.getGameState().getPawnKey();
         PawnHashEntry hashEntry = pawnHash.get(pawnKey);
@@ -163,8 +167,8 @@ public class Evaluator implements Evaluation {
             whiteScore = hashEntry.whiteScore();
             blackScore = hashEntry.blackScore();
         } else {
-            whiteScore = scorePawns(whitePawns, blackPawns, true);
-            blackScore = scorePawns(blackPawns, whitePawns, false);
+            whiteScore = scorePawns(whitePawns, blackPawns, whiteKing, blackKing, occupied, true);
+            blackScore = scorePawns(blackPawns, whitePawns, blackKing, whiteKing, occupied, false);
             hashEntry = PawnHashEntry.of(pawnKey, whiteScore, blackScore);
             pawnHash.put(pawnKey, hashEntry);
         }
@@ -177,7 +181,12 @@ public class Evaluator implements Evaluation {
      * Pawn evaluation consists of piece-placement eval + pawn structure considerations (bonuses for passed pawns,
      * penalties for isolated/doubled pawns).
      */
-    private int scorePawns(long friendlyPawns, long opponentPawns, boolean white) {
+    private int scorePawns(long friendlyPawns,
+                           long opponentPawns,
+                           int friendlyKing,
+                           int opponentKing,
+                           long occupied,
+                           boolean white) {
 
         // TODO what happens if pawns = 0?
         if (friendlyPawns == 0) return 0;
@@ -201,8 +210,21 @@ public class Evaluator implements Evaluation {
             if (Bitwise.isPassedPawn(pawn, opponentPawns, white)) {
                 int rank = BoardUtils.getRank(pawn);
                 int squaresFromPromotion = white ? 7 - rank : rank;
-                mgScore += config.getPassedPawnBonus()[0][squaresFromPromotion];
-                egScore += config.getPassedPawnBonus()[1][squaresFromPromotion];
+
+                if (Bitwise.isFreePawn(pawn, occupied, white)) {
+                    mgScore += config.getFreePassedPawnBonus()[0][squaresFromPromotion];
+                    egScore += config.getFreePassedPawnBonus()[1][squaresFromPromotion];
+                }
+                else {
+                    mgScore += config.getPassedPawnBonus()[0][squaresFromPromotion];
+                    egScore += config.getPassedPawnBonus()[1][squaresFromPromotion];
+                }
+
+                int friendlyKingDistance = Distance.chebyshev(friendlyKing, pawn);
+                int opponentKingDistance = Distance.chebyshev(opponentKing, pawn);
+                int escortedPawnBonus = (opponentKingDistance - friendlyKingDistance) * config.getEscortedPassedPawnMultiplier();
+                mgScore += escortedPawnBonus;
+                egScore += escortedPawnBonus;
 
                 int numberOfProtectors = Bitwise.countPawnProtectors(pawn, friendlyPawns, white);
                 int protectedPawnBonus = numberOfProtectors * config.getProtectedPassedPawnBonus();
@@ -373,9 +395,13 @@ public class Evaluator implements Evaluation {
     }
 
     /**
-     * King evaluation consists of a piece-placement bonus, king safety considerations and mop-up bonus if up material.
+     * The king is penalised for being uncastled; for being castled but with the pawns infront of the king (the 'pawn shield')
+     * pushed too far up the board; or for having open or semi-open files either infront of or adjacent to the king. This
+     * evaluation matters less in the endgame, when there are fewer pieces on the board, and the king becomes a more active piece.
+     * </p>
+     * @see <a href="https://www.chessprogramming.org/King_Safety">Chess Programming Wiki</a>
      */
-    private void scoreKing(long friendlyKing,
+    private void scoreKing(int kingSquare,
                            long friendlyPawns,
                            long opponentPawns,
                            Material opponentMaterial,
@@ -385,30 +411,10 @@ public class Evaluator implements Evaluation {
         int mgScore = 0;
         int egScore = 0;
 
-        int king = Bitwise.getNextBit(friendlyKing);
-        int square = white ? king ^ 56 : king;
+        int square = white ? kingSquare ^ 56 : kingSquare;
         mgScore += kingMgTable[square];
         egScore += kingEgTable[square];
-        addScore(mgScore, egScore, white);
 
-        scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
-
-    }
-
-    /**
-     * The king is penalised for being uncastled; for being castled but with the pawns infront of the king (the 'pawn shield')
-     * pushed too far up the board; or for having open or semi-open files either infront of or adjacent to the king. This
-     * evaluation matters less in the endgame, when there are fewer pieces on the board, and the king becomes a more active piece.
-     * </p>
-     * @see <a href="https://www.chessprogramming.org/King_Safety">Chess Programming Wiki</a>
-     */
-    private void scoreKingSafety(int kingSquare,
-                                   long friendlyPawns,
-                                   long opponentPawns,
-                                   Material opponentMaterial,
-                                   Board board,
-                                   float phase,
-                                   boolean white) {
         // King safety evaluation
         int kingFile = BoardUtils.getFile(kingSquare);
         int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
@@ -418,9 +424,10 @@ public class Evaluator implements Evaluation {
             phase *= 0.4f;
         }
         float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
-        int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
-        int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
+        mgScore += (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
+        egScore += (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
         addScore(mgScore, egScore, white);
+
     }
 
     private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {

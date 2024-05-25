@@ -1,8 +1,15 @@
 package com.kelseyde.calvin.evaluation.pawnstructure;
 
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 public class PawnEvaluationTest {
-//
-//    private final EngineConfig config = TestUtils.TEST_CONFIG;
+
+//    private final EngineConfig config = TestUtils.PRD_CONFIG;
 //
 //    @Test
 //    public void testSinglePassedPawn() {
@@ -129,7 +136,7 @@ public class PawnEvaluationTest {
 //    }
 //
 //    private int score(Board board) {
-//        int modifier = board.whiteToMove() ? 1 : -1;
+//        int modifier = board.isWhiteToMove() ? 1 : -1;
 //        long whitePawns = board.getPawns(true);
 //        long blackPawns = board.getPawns(false);
 //        int whiteScore = PawnEvaluation.score(config, whitePawns, blackPawns, true);

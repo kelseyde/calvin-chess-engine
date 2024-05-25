@@ -254,6 +254,32 @@ public class TexelTunerTest {
     }
 
     @Test
+    public void tunePassedPawnBonuses() throws IOException, ExecutionException, InterruptedException {
+        List<Integer> initialParams = new ArrayList<>();
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        initialParams.addAll(Arrays.stream(initialConfig.getPassedPawnBonus()[0]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getPassedPawnBonus()[1]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getFreePassedPawnBonus()[0]).boxed().toList());
+        initialParams.addAll(Arrays.stream(initialConfig.getFreePassedPawnBonus()[1]).boxed().toList());
+        initialParams.add(initialConfig.getProtectedPassedPawnBonus());
+        initialParams.add(initialConfig.getEscortedPassedPawnMultiplier());
+        tune(
+                initialParams.stream().mapToInt(i -> i).toArray(),
+                (params) -> {
+                    if (params.length != 30) throw new IllegalArgumentException();
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.getPassedPawnBonus()[0] = Arrays.stream(params, 0, 7).toArray();
+                    config.getPassedPawnBonus()[1] = Arrays.stream(params, 7, 14).toArray();
+                    config.getFreePassedPawnBonus()[0] = Arrays.stream(params, 14, 21).toArray();
+                    config.getFreePassedPawnBonus()[1] = Arrays.stream(params, 21, 28).toArray();
+                    config.setProtectedPassedPawnBonus(params[28]);
+                    config.setEscortedPassedPawnMultiplier(params[29]);
+                    return config;
+                }
+        );
+    }
+
+    @Test
     public void tuneDrawishScaleFactor() throws IOException, ExecutionException, InterruptedException {
         EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
         tune(

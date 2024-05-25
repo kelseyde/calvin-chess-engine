@@ -1086,24 +1086,45 @@
   "passedPawnBonus":[
     [
       0,
-      140,
-      100,
-      60,
-      30,
-      15,
-      15
+      175,
+      63,
+      10,
+      -16,
+      -16,
+      -4
     ],
     [
       0,
-      250,
-      140,
-      85,
-      45,
-      25,
-      25
+      164,
+      84,
+      60,
+      35,
+      15,
+      6
     ]
   ],
-  "protectedPassedPawnBonus":25,
+  "freePassedPawnBonus":[
+    [
+      0,
+      141,
+      53,
+      1,
+      -41,
+      -34,
+      -23
+    ],
+    [
+      0,
+      272,
+      169,
+      88,
+      51,
+      23,
+      18
+    ]
+  ],
+  "protectedPassedPawnBonus":22,
+  "escortedPassedPawnMultiplier":6,
   "bishopPairBonus":54,
   "rookOpenFileBonus":[
     47,

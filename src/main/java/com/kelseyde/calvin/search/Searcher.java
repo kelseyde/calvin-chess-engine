@@ -222,13 +222,6 @@ public class Searcher implements Search {
         boolean pvNode = beta - alpha > 1;
 
         if (!pvNode && !isInCheck) {
-
-            if (depth < 8
-                && staticEval - (71 * depth) >= beta) {
-                return beta;
-            }
-
-
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
@@ -362,11 +355,15 @@ public class Searcher implements Search {
                 // to try and prove the move will fail low while saving the time spent on a full search.
                 eval = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha, true);
 
-                if (eval > alpha && (eval < beta || reduction > 0)) {
-                    // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
-                    // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
+                // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
+                // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
+                if (reduction > 0 && eval > alpha) {
+                    eval = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, true);
+                }
+                if (pvNode && eval > alpha && eval < beta) {
                     eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
                 }
+
             }
 
             board.unmakeMove();

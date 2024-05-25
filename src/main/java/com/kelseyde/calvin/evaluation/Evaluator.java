@@ -264,6 +264,8 @@ public class Evaluator implements Evaluation {
         if (knights == 0) return;
         int mgScore = 0;
         int egScore = 0;
+        int psqtMgScore = 0;
+        int psqtEgScore = 0;
         boolean noChange = white ? previousWhiteKnights == knights : previousBlackKnights == knights;
         if (noChange) {
             mgScore += white ? mgScore(previousWhiteKnightsScore) : mgScore(previousBlackKnightsScore);
@@ -275,17 +277,10 @@ public class Evaluator implements Evaluation {
 
             if (!noChange) {
                 int square = white ? knight ^ 56 : knight;
-                int psqtMgScore = knightMgTable[square];
-                int psqtEgScore = kingEgTable[square];
+                psqtMgScore = knightMgTable[square];
+                psqtEgScore = kingEgTable[square];
                 mgScore += psqtMgScore;
                 egScore += psqtEgScore;
-                if (white) {
-                    previousWhiteKnights = knights;
-                    previousWhiteKnightsScore = encodeScore(psqtMgScore, psqtEgScore);
-                } else {
-                    previousBlackKnights = knights;
-                    previousBlackKnightsScore = encodeScore(psqtMgScore, psqtEgScore);
-                }
             }
 
             long attacks = Attacks.knightAttacks(knight);
@@ -295,6 +290,16 @@ public class Evaluator implements Evaluation {
             egScore += knightEgMobility[moveCount];
 
             knights = Bitwise.popBit(knights);
+        }
+
+        if (!noChange) {
+            if (white) {
+                previousWhiteKnights = knights;
+                previousWhiteKnightsScore = encodeScore(psqtMgScore, psqtEgScore);
+            } else {
+                previousBlackKnights = knights;
+                previousBlackKnightsScore = encodeScore(psqtMgScore, psqtEgScore);
+            }
         }
 
         addScore(mgScore, egScore, white);
@@ -309,6 +314,8 @@ public class Evaluator implements Evaluation {
         if (bishops == 0) return;
         int mgScore = 0;
         int egScore = 0;
+        int psqtMgScore = 0;
+        int psqtEgScore = 0;
         boolean noChange = white ? previousWhiteBishops == bishops : previousBlackBishops == bishops;
         if (noChange) {
             mgScore += white ? mgScore(previousWhiteBishopsScore) : mgScore(previousBlackBishopsScore);
@@ -321,17 +328,10 @@ public class Evaluator implements Evaluation {
 
             if (!noChange) {
                 int square = white ? bishop ^ 56 : bishop;
-                int psqtMgScore = bishopMgTable[square];
-                int psqtEgScore = bishopEgTable[square];
+                psqtMgScore = bishopMgTable[square];
+                psqtEgScore = bishopEgTable[square];
                 mgScore += psqtMgScore;
                 egScore += psqtEgScore;
-                if (white) {
-                    previousWhiteBishops = bishops;
-                    previousWhiteBishopsScore = encodeScore(psqtMgScore, psqtEgScore);
-                } else {
-                    previousBlackBishops = bishops;
-                    previousBlackBishopsScore = encodeScore(psqtMgScore, psqtEgScore);
-                }
             }
 
             long attacks = Attacks.bishopAttacks(bishop, blockers);
@@ -341,6 +341,16 @@ public class Evaluator implements Evaluation {
             egScore += bishopEgMobility[moveCount];
 
             bishops = Bitwise.popBit(bishops);
+        }
+
+        if (!noChange) {
+            if (white) {
+                previousWhiteBishops = bishops;
+                previousWhiteBishopsScore = encodeScore(psqtMgScore, psqtEgScore);
+            } else {
+                previousBlackBishops = bishops;
+                previousBlackBishopsScore = encodeScore(psqtMgScore, psqtEgScore);
+            }
         }
 
         addScore(mgScore, egScore, white);
@@ -360,6 +370,8 @@ public class Evaluator implements Evaluation {
         if (rooks == 0) return;
         int mgScore = 0;
         int egScore = 0;
+        int psqtMgScore = 0;
+        int psqtEgScore = 0;
         boolean noChange = white ? previousWhiteRooks == rooks : previousBlackRooks == rooks;
         if (noChange) {
             mgScore += white ? mgScore(previousWhiteRooksScore) : mgScore(previousBlackRooksScore);
@@ -374,18 +386,10 @@ public class Evaluator implements Evaluation {
 
             if (!noChange) {
                 int square = white ? rook ^ 56 : rook;
-                int psqtMgScore = rookMgTable[square];
-                int psqtEgScore = rookEgTable[square];
+                psqtMgScore = rookMgTable[square];
+                psqtEgScore = rookEgTable[square];
                 mgScore += psqtMgScore;
                 egScore += psqtEgScore;
-                if (white) {
-                    previousWhiteRooks = rooks;
-                    previousWhiteRooksScore = encodeScore(psqtMgScore, psqtEgScore);
-                }
-                else {
-                    previousBlackRooks = rooks;
-                    previousBlackRooksScore = encodeScore(psqtMgScore, psqtEgScore);
-                }
             }
 
             long attacks = Attacks.rookAttacks(rook, blockers);
@@ -411,6 +415,17 @@ public class Evaluator implements Evaluation {
             rooks = Bitwise.popBit(rooks);
         }
 
+        if (!noChange) {
+            if (white) {
+                previousWhiteRooks = rooks;
+                previousWhiteRooksScore = encodeScore(psqtMgScore, psqtEgScore);
+            }
+            else {
+                previousBlackRooks = rooks;
+                previousBlackRooksScore = encodeScore(psqtMgScore, psqtEgScore);
+            }
+        }
+
         addScore(mgScore, egScore, white);
     }
 
@@ -425,6 +440,8 @@ public class Evaluator implements Evaluation {
         if (queens == 0) return;
         int mgScore = 0;
         int egScore = 0;
+        int psqtMgScore = 0;
+        int psqtEgScore = 0;
         boolean noChange = white ? previousWhiteQueens == queens : previousBlackQueens == queens;
         if (noChange) {
             mgScore += white ? mgScore(previousWhiteQueensScore) : mgScore(previousBlackQueensScore);
@@ -437,18 +454,10 @@ public class Evaluator implements Evaluation {
 
             if (!noChange) {
                 int square = white ? queen ^ 56 : queen;
-                int psqtMgScore = queenMgTable[square];
-                int psqtEgScore = queenEgTable[square];
+                psqtMgScore = queenMgTable[square];
+                psqtEgScore = queenEgTable[square];
                 mgScore += psqtMgScore;
                 egScore += psqtEgScore;
-                if (white) {
-                    previousWhiteQueens = queens;
-                    previousWhiteQueensScore = encodeScore(psqtMgScore, psqtEgScore);
-                }
-                else {
-                    previousBlackQueens = queens;
-                    previousBlackQueensScore = encodeScore(psqtMgScore, psqtEgScore);
-                }
             }
 
             long attacks = Attacks.bishopAttacks(queen, blockers) | Attacks.rookAttacks(queen, blockers);
@@ -458,6 +467,17 @@ public class Evaluator implements Evaluation {
             egScore += queenEgMobility[moveCount];
 
             queens = Bitwise.popBit(queens);
+        }
+
+        if (!noChange) {
+            if (white) {
+                previousWhiteQueens = queens;
+                previousWhiteQueensScore = encodeScore(psqtMgScore, psqtEgScore);
+            }
+            else {
+                previousBlackQueens = queens;
+                previousBlackQueensScore = encodeScore(psqtMgScore, psqtEgScore);
+            }
         }
 
         addScore(mgScore, egScore, white);
@@ -475,21 +495,23 @@ public class Evaluator implements Evaluation {
                            boolean white) {
         int mgScore = 0;
         int egScore = 0;
+        int psqtMgScore = 0;
+        int psqtEgScore = 0;
         int king = Bitwise.getNextBit(friendlyKing);
-        boolean noChange = white ? previousWhiteRooks == friendlyKing : previousBlackRooks == friendlyKing;
+        boolean noChange = white ? previousWhiteKing == friendlyKing : previousBlackKing == friendlyKing;
         if (noChange) {
             mgScore += white ? mgScore(previousWhiteKingScore) : mgScore(previousBlackKingScore);
             egScore += white ? egScore(previousWhiteKingScore) : egScore(previousBlackKingScore);
         } else {
             int square = white ? king ^ 56 : king;
-            mgScore += kingMgTable[square];
-            egScore += kingEgTable[square];
+            psqtMgScore += kingMgTable[square];
+            psqtEgScore += kingEgTable[square];
             if (white) {
                 previousWhiteKing = friendlyKing;
-                previousWhiteKingScore = encodeScore(mgScore, egScore);
+                previousWhiteKingScore = encodeScore(psqtMgScore, psqtEgScore);
             } else {
                 previousBlackKing = friendlyKing;
-                previousBlackKingScore = encodeScore(mgScore, egScore);
+                previousBlackKingScore = encodeScore(psqtMgScore, psqtEgScore);
             }
         }
 

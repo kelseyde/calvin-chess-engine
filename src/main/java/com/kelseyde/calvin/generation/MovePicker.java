@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
-import com.kelseyde.calvin.utils.Manager;
 
 import java.util.List;
 
@@ -84,7 +83,6 @@ public class MovePicker {
     private Move pickNoisyMove() {
         if (moves == null) {
             moves = moveGenerator.generateMoves(board, filter);
-            Manager.generated += moves.size();
             if (moves.isEmpty()) {
                 stage = Stage.END;
                 return null;

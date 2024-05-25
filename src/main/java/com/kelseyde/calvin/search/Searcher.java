@@ -317,7 +317,7 @@ public class Searcher implements Search {
             if (isDraw()) {
                 eval = Score.DRAW_SCORE;
             }
-            else if (pvNode && i == 0) {
+            else if (i == 0) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.

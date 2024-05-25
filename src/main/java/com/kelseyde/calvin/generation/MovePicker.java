@@ -19,8 +19,9 @@ public class MovePicker {
 
     private final MoveGeneration moveGenerator;
     private final MoveOrdering moveOrderer;
-    private final Board board;
-    private final int ply;
+
+    private Board board;
+    private int ply;
 
     private Stage stage = Stage.PREVIOUS_BEST_MOVE;
     private MoveFilter filter = MoveFilter.ALL;
@@ -39,6 +40,16 @@ public class MovePicker {
         this.moveOrderer = moveOrderer;
         this.board = board;
         this.ply = ply;
+    }
+
+    public void reset(Board board, int ply) {
+        this.board = board;
+        this.ply = ply;
+        this.stage = Stage.PREVIOUS_BEST_MOVE;
+        this.previousBestMove = null;
+        this.moves = null;
+        this.scores = null;
+        this.moveIndex = 0;
     }
 
     public Move pickNextMove() {

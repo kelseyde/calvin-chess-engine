@@ -98,7 +98,6 @@ public class Searcher implements Search {
         SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
-
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestEvalCurrentDepth = 0;
@@ -395,7 +394,7 @@ public class Searcher implements Search {
             return alpha;
         }
 
-        MovePicker movePicker = movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
+        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         Move previousBestMove = null;
@@ -416,7 +415,7 @@ public class Searcher implements Search {
         if (isInCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.
-            movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
+            movePicker.setFilter(MoveFilter.ALL);
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.

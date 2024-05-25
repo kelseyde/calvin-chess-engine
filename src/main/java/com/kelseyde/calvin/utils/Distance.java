@@ -36,6 +36,10 @@ public class Distance {
         return CENTER_MANHATTAN_DISTANCE[sq];
     }
 
+    public static int relativeKingDistance(int target, int friendlyKing, int opponentKing) {
+        return chebyshev(target, opponentKing) - chebyshev(target, friendlyKing);
+    }
+
     static {
         for (int sq1 = 0; sq1 < 64; sq1++) {
             for (int sq2 = 0; sq2 < 64; sq2++) {

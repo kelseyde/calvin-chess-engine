@@ -43,4 +43,14 @@ public class DistanceTest {
 
     }
 
+    @Test
+    public void testRelativeKingDistance() {
+
+        Assertions.assertEquals(0, Distance.relativeKingDistance(56, 0, 63));
+        Assertions.assertEquals(6, Distance.relativeKingDistance(56, 48, 63));
+        Assertions.assertEquals(1, Distance.relativeKingDistance(36, 21, 59));
+        Assertions.assertEquals(-1, Distance.relativeKingDistance(9, 6, 41));
+
+    }
+
 }

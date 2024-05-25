@@ -211,18 +211,17 @@ public class Evaluator implements Evaluation {
                 int rank = BoardUtils.getRank(pawn);
                 int squaresFromPromotion = white ? 7 - rank : rank;
 
-                if (Bitwise.isFreePawn(pawn, occupied, white)) {
-                    mgScore += config.getFreePassedPawnBonus()[0][squaresFromPromotion];
-                    egScore += config.getFreePassedPawnBonus()[1][squaresFromPromotion];
-                }
-                else {
+//                if (Bitwise.isFreePawn(pawn, occupied, white)) {
+//                    mgScore += config.getFreePassedPawnBonus()[0][squaresFromPromotion];
+//                    egScore += config.getFreePassedPawnBonus()[1][squaresFromPromotion];
+//                }
+//                else {
                     mgScore += config.getPassedPawnBonus()[0][squaresFromPromotion];
                     egScore += config.getPassedPawnBonus()[1][squaresFromPromotion];
-                }
+                //}
 
-                int friendlyKingDistance = Distance.chebyshev(friendlyKing, pawn);
-                int opponentKingDistance = Distance.chebyshev(opponentKing, pawn);
-                int escortedPawnBonus = (opponentKingDistance - friendlyKingDistance) * config.getEscortedPassedPawnMultiplier();
+                int relativeKingDistance = Distance.relativeKingDistance(pawn, friendlyKing, opponentKing);
+                int escortedPawnBonus = relativeKingDistance * config.getEscortedPassedPawnMultiplier();
                 mgScore += escortedPawnBonus;
                 egScore += escortedPawnBonus;
 

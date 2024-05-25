@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
+import com.kelseyde.calvin.utils.Manager;
 
 import java.util.List;
 
@@ -17,19 +18,19 @@ public class MovePicker {
         END
     }
 
-    private MoveGeneration moveGenerator;
-    private MoveOrdering moveOrderer;
-    private Board board;
-    private int ply;
+    private final MoveGeneration moveGenerator;
+    private final MoveOrdering moveOrderer;
+    private final Board board;
+    private final int ply;
 
-    private Stage stage;
-    private Move previousBestMove;
+    private Stage stage = Stage.PREVIOUS_BEST_MOVE;
     private MoveFilter filter = MoveFilter.ALL;
 
     private Move[] killerMoves;
     private int killerIndex;
 
     private List<Move> moves;
+    private Move previousBestMove;
     //private List<Move> quietMoves;
     private int moveIndex;
     private int[] scores;
@@ -83,6 +84,7 @@ public class MovePicker {
     private Move pickNoisyMove() {
         if (moves == null) {
             moves = moveGenerator.generateMoves(board, filter);
+            Manager.generated += moves.size();
             if (moves.isEmpty()) {
                 stage = Stage.END;
                 return null;
@@ -119,9 +121,9 @@ public class MovePicker {
         for (int j = moveIndex + 1; j < moves.size(); j++) {
             int firstScore = scores[moveIndex];
             int secondScore = scores[j];
-            Move firstMove = moves.get(moveIndex);
-            Move secondMove = moves.get(j);
             if (scores[j] > scores[moveIndex]) {
+                Move firstMove = moves.get(moveIndex);
+                Move secondMove = moves.get(j);
                 scores[moveIndex] = secondScore;
                 scores[j] = firstScore;
                 moves.set(moveIndex, secondMove);

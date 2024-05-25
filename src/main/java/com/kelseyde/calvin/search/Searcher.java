@@ -16,13 +16,13 @@ import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.Manager;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 /**
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
@@ -99,6 +99,10 @@ public class Searcher implements Search {
         SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
+
+            System.out.println(currentDepth + ": " + Manager.generated);
+            Manager.generated = 0;
+
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestEvalCurrentDepth = 0;

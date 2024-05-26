@@ -99,6 +99,8 @@ public class MovePicker {
                 return null;
             }
             moveIndex = 0;
+        }
+        if (scores == null) {
             scoreMoves();
         }
         if (moveIndex >= moves.size()) {
@@ -113,6 +115,7 @@ public class MovePicker {
                 stage = Stage.END;
                 return null;
             }
+            sortMoves();
             move = moves.get(moveIndex);
             moveIndex++;
         }
@@ -147,6 +150,10 @@ public class MovePicker {
 
     public List<Move> getMoves() {
         return moves;
+    }
+
+    public void setMoves(List<Move> moves) {
+        this.moves = moves;
     }
 
     public void setPreviousBestMove(Move previousBestMove) {

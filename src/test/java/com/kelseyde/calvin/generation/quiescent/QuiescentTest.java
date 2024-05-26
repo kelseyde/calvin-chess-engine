@@ -136,6 +136,13 @@ public class QuiescentTest {
         List<Move> expected = List.of(
                 Notation.fromNotation("g4", "h3"),
                 Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_ROOK_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_ROOK_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_BISHOP_FLAG),
                 Notation.fromNotation("e3", "d2")
         );
         assertMoves(expected, moves);
@@ -144,8 +151,14 @@ public class QuiescentTest {
         expected = List.of(
                 Notation.fromNotation("g4", "h3"),
                 Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Notation.fromNotation("e3", "d2"),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_ROOK_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_BISHOP_FLAG),
                 Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_ROOK_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Notation.fromNotation("e3", "d2"),
                 Notation.fromNotation("b3", "b2")
         );
         assertMoves(expected, moves);

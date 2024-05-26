@@ -134,13 +134,13 @@ public class MoveGenerator implements MoveGeneration {
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
         long filterMask = Bits.ALL_SQUARES;
-        long promotionFilterMask = Bits.ALL_SQUARES;
+        //long promotionFilterMask = Bits.ALL_SQUARES;
         if (filter == MoveFilter.CAPTURES_ONLY) {
             filterMask = opponents;
-            promotionFilterMask = opponents;
+            //promotionFilterMask = opponents;
         } else if (filter == MoveFilter.CAPTURES_AND_CHECKS) {
             filterMask = opponents | Attacks.pawnAttacks(1L << opponentKing, !white);
-            promotionFilterMask = opponents | Attacks.bishopAttacks(opponentKing, occupied) | Attacks.rookAttacks(opponentKing, occupied);
+            //promotionFilterMask = opponents | Attacks.bishopAttacks(opponentKing, occupied) | Attacks.rookAttacks(opponentKing, occupied);
         }
 
         if (filter != MoveFilter.CAPTURES_ONLY) {
@@ -168,9 +168,9 @@ public class MoveGenerator implements MoveGeneration {
 
         long leftCaptures = Bitwise.pawnLeftCaptures(pawns, opponents, white) & captureMask & filterMask;
         long rightCaptures = Bitwise.pawnRightCaptures(pawns, opponents, white) & captureMask & filterMask;
-        long pushPromotions = Bitwise.pawnPushPromotions(pawns, occupied, white) & pushMask & promotionFilterMask;
-        long leftCapturePromotions = Bitwise.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask) & promotionFilterMask;
-        long rightCapturePromotions = Bitwise.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask) & promotionFilterMask;
+        long pushPromotions = Bitwise.pawnPushPromotions(pawns, occupied, white) & pushMask;// & promotionFilterMask;
+        long leftCapturePromotions = Bitwise.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);// & promotionFilterMask;
+        long rightCapturePromotions = Bitwise.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);// & promotionFilterMask;
 
         while (leftCaptures != 0) {
             int endSquare = Bitwise.getNextBit(leftCaptures);
@@ -526,9 +526,7 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private List<Move> getPromotionMoves(int startSquare, int endSquare) {
-        return filter != MoveFilter.ALL ?
-                List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG)) :
-                List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
+        return List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
                         new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
                         new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
                         new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));

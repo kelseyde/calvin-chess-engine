@@ -350,6 +350,7 @@ public class Searcher implements Search {
                     moveOrderer.addKillerMove(ply, move);
                     moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
                 }
+
                 return beta;
             }
 
@@ -370,6 +371,7 @@ public class Searcher implements Search {
             return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
         }
         if (ply == 0 && movesSearched == 1) {
+            // TODO doesnt work anymore I guess
             // If there is only one legal move at the root node, play that move immediately.
             int eval = isDraw() ? Score.DRAW_SCORE : staticEval;
             bestMoveCurrentDepth = bestMove;
@@ -396,6 +398,7 @@ public class Searcher implements Search {
         }
 
         MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
+        movePicker.setScoringStrategy(MovePicker.ScoringStrategy.MVV_LVA);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         Move previousBestMove = null;

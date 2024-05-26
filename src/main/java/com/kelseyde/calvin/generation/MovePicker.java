@@ -17,6 +17,11 @@ public class MovePicker {
         END
     }
 
+    public enum ScoringStrategy {
+        MVV_LVA,
+        ALL;
+    }
+
     private final MoveGeneration moveGenerator;
     private final MoveOrdering moveOrderer;
 
@@ -25,6 +30,7 @@ public class MovePicker {
 
     private Stage stage = Stage.PREVIOUS_BEST_MOVE;
     private MoveFilter filter = MoveFilter.ALL;
+    private ScoringStrategy scoringStrategy = ScoringStrategy.ALL;
 
     private Move[] killerMoves;
     private int killerIndex;
@@ -99,8 +105,6 @@ public class MovePicker {
                 return null;
             }
             moveIndex = 0;
-        }
-        if (scores == null) {
             scoreMoves();
         }
         if (moveIndex >= moves.size()) {
@@ -125,7 +129,10 @@ public class MovePicker {
     private void scoreMoves() {
         scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
+            scores[i] = switch (scoringStrategy) {
+                case ALL -> moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
+                case MVV_LVA -> moveOrderer.mvvLva(board, moves.get(i), previousBestMove);
+            };
         }
     }
 
@@ -154,6 +161,7 @@ public class MovePicker {
 
     public void setMoves(List<Move> moves) {
         this.moves = moves;
+        scoreMoves();
     }
 
     public void setPreviousBestMove(Move previousBestMove) {
@@ -162,6 +170,10 @@ public class MovePicker {
 
     public void setFilter(MoveFilter filter) {
         this.filter = filter;
+    }
+
+    public void setScoringStrategy(ScoringStrategy strategy) {
+        this.scoringStrategy = strategy;
     }
 
 }

@@ -16,6 +16,7 @@ import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -195,8 +196,8 @@ public class Searcher implements Search {
         Move previousBestMove = ply == 0 ? bestMove : null;
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
-            movePicker.setPreviousBestMove(previousBestMove);
         }
+        movePicker.setPreviousBestMove(previousBestMove);
 
         // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a

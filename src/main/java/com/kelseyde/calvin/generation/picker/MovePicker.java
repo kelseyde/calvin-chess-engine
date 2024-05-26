@@ -41,16 +41,6 @@ public class MovePicker implements MovePicking {
         this.stage = Stage.PREVIOUS_BEST_MOVE;
     }
 
-    public void reset(Board board, int ply) {
-        this.board = board;
-        this.ply = ply;
-        this.stage = Stage.PREVIOUS_BEST_MOVE;
-        this.previousBestMove = null;
-        this.moves = null;
-        this.scores = null;
-        this.moveIndex = 0;
-    }
-
     @Override
     public Move pickNextMove() {
 

@@ -4,9 +4,12 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class MovePicker {
 
     public enum Stage {
@@ -22,24 +25,22 @@ public class MovePicker {
         ALL;
     }
 
-    private final MoveGeneration moveGenerator;
-    private final MoveOrdering moveOrderer;
+    final MoveGeneration moveGenerator;
+    final MoveOrdering moveOrderer;
 
-    private Board board;
-    private int ply;
+    Board board;
+    int ply;
 
-    private Stage stage = Stage.PREVIOUS_BEST_MOVE;
-    private MoveFilter filter = MoveFilter.ALL;
-    private ScoringStrategy scoringStrategy = ScoringStrategy.ALL;
+    Stage stage = Stage.PREVIOUS_BEST_MOVE;
+    MoveFilter filter = MoveFilter.ALL;
+    ScoringStrategy scoringStrategy = ScoringStrategy.ALL;
 
-    private Move[] killerMoves;
-    private int killerIndex;
+    int killerIndex;
 
-    private List<Move> moves;
-    private Move previousBestMove;
-    //private List<Move> quietMoves;
-    private int moveIndex;
-    private int[] scores;
+    List<Move> moves;
+    Move previousBestMove;
+    int moveIndex;
+    int[] scores;
 
     public MovePicker(MoveGeneration moveGenerator, MoveOrdering moveOrderer, Board board, int ply) {
         this.moveGenerator = moveGenerator;

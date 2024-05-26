@@ -17,7 +17,6 @@ public interface MoveGeneration {
         ALL,
         CAPTURES_AND_CHECKS,
         CAPTURES_ONLY,
-        NOISY,
         QUIET
     }
 

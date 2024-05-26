@@ -401,7 +401,7 @@ public class Searcher implements Search {
         movePicker.setScoringStrategy(MovePicker.ScoringStrategy.MVV_LVA);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        Move previousBestMove = null;
+        Move previousBestMove;
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
@@ -451,7 +451,7 @@ public class Searcher implements Search {
                     continue;
                 }
                 // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
-                // Evaluate the possible captures + recaptures on the target square, in order to ilter out losing capture
+                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
                 int seeScore = see.evaluate(board, move);
                 boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);

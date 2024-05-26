@@ -9,14 +9,14 @@ import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.generation.MovePicker;
+import com.kelseyde.calvin.generation.picker.MovePicker;
+import com.kelseyde.calvin.generation.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -397,8 +397,7 @@ public class Searcher implements Search {
             return alpha;
         }
 
-        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
-        movePicker.setScoringStrategy(MovePicker.ScoringStrategy.MVV_LVA);
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         Move previousBestMove;
@@ -429,7 +428,7 @@ public class Searcher implements Search {
             if (eval > alpha) {
                 alpha = eval;
             }
-            MoveFilter filter = depth == 1 ? MoveFilter.CAPTURES_AND_CHECKS : MoveFilter.CAPTURES_ONLY;
+            MoveFilter filter = depth == 1 ? MoveFilter.NOISY : MoveFilter.CAPTURES_ONLY;
             movePicker.setFilter(filter);
         }
 

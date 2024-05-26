@@ -15,9 +15,9 @@ public interface MoveGeneration {
 
     enum MoveFilter {
         ALL,
-        CAPTURES_AND_CHECKS,
+        NOISY,
+        QUIET,
         CAPTURES_ONLY,
-        QUIET
     }
 
 }

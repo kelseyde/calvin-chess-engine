@@ -65,7 +65,6 @@ public class MoveGenerator implements MoveGeneration {
         int kingSquare = Bitwise.getNextBit(king);
         this.filter = filter;
 
-
         // Initialize capture and push masks
         captureMask = Bits.ALL_SQUARES;
         pushMask = Bits.ALL_SQUARES;
@@ -133,15 +132,12 @@ public class MoveGenerator implements MoveGeneration {
         long occupied = board.getOccupied();
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
-        long filterMask = Bits.ALL_SQUARES;
-        //long promotionFilterMask = Bits.ALL_SQUARES;
-        if (filter == MoveFilter.CAPTURES_ONLY) {
-            filterMask = opponents;
-            //promotionFilterMask = opponents;
-        } else if (filter == MoveFilter.CAPTURES_AND_CHECKS) {
-            filterMask = opponents | Attacks.pawnAttacks(1L << opponentKing, !white);
-            //promotionFilterMask = opponents | Attacks.bishopAttacks(opponentKing, occupied) | Attacks.rookAttacks(opponentKing, occupied);
-        }
+        long filterMask = switch (filter) {
+            case ALL -> Bits.ALL_SQUARES;
+            case CAPTURES_ONLY -> opponents;
+            case NOISY -> opponents | Attacks.pawnAttacks(1L << opponentKing, !white);
+            case QUIET -> ~opponents & ~Attacks.pawnAttacks(1L << opponentKing, !white);
+        };
 
         if (filter != MoveFilter.CAPTURES_ONLY) {
 
@@ -166,80 +162,82 @@ public class MoveGenerator implements MoveGeneration {
             }
         }
 
-        long leftCaptures = Bitwise.pawnLeftCaptures(pawns, opponents, white) & captureMask & filterMask;
-        long rightCaptures = Bitwise.pawnRightCaptures(pawns, opponents, white) & captureMask & filterMask;
-        long pushPromotions = Bitwise.pawnPushPromotions(pawns, occupied, white) & pushMask;// & promotionFilterMask;
-        long leftCapturePromotions = Bitwise.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);// & promotionFilterMask;
-        long rightCapturePromotions = Bitwise.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);// & promotionFilterMask;
+        if (filter != MoveFilter.QUIET) {
+            long leftCaptures = Bitwise.pawnLeftCaptures(pawns, opponents, white) & captureMask & filterMask;
+            long rightCaptures = Bitwise.pawnRightCaptures(pawns, opponents, white) & captureMask & filterMask;
+            long pushPromotions = Bitwise.pawnPushPromotions(pawns, occupied, white) & pushMask;
+            long leftCapturePromotions = Bitwise.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
+            long rightCapturePromotions = Bitwise.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
 
-        while (leftCaptures != 0) {
-            int endSquare = Bitwise.getNextBit(leftCaptures);
-            int startSquare = white ? endSquare - 7 : endSquare + 9;
-            if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                legalMoves.add(new Move(startSquare, endSquare));
-            }
-            leftCaptures = Bitwise.popBit(leftCaptures);
-        }
-        while (rightCaptures != 0) {
-            int endSquare = Bitwise.getNextBit(rightCaptures);
-            int startSquare = white ? endSquare - 9 : endSquare + 7;
-            if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                legalMoves.add(new Move(startSquare, endSquare));
-            }
-            rightCaptures = Bitwise.popBit(rightCaptures);
-        }
-
-        if (board.getGameState().getEnPassantFile() >= 0) {
-            long enPassantFile = Bitwise.getFileBitboard(board.getGameState().getEnPassantFile());
-            long leftEnPassants = Bitwise.pawnLeftEnPassants(pawns, enPassantFile, white);
-            long rightEnPassants = Bitwise.pawnRightEnPassants(pawns, enPassantFile, white);
-            while (leftEnPassants != 0) {
-                int endSquare = Bitwise.getNextBit(leftEnPassants);
+            while (leftCaptures != 0) {
+                int endSquare = Bitwise.getNextBit(leftCaptures);
                 int startSquare = white ? endSquare - 7 : endSquare + 9;
-                // En passant is complicated; just test legality by making the move on the board and checking
-                // whether the king is attacked.
-                Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
-                if (!leavesKingInCheck(board, move, white)) {
-                    legalMoves.add(move);
+                if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                    legalMoves.add(new Move(startSquare, endSquare));
                 }
-                leftEnPassants = Bitwise.popBit(leftEnPassants);
+                leftCaptures = Bitwise.popBit(leftCaptures);
             }
-            while (rightEnPassants != 0) {
-                int endSquare = Bitwise.getNextBit(rightEnPassants);
+            while (rightCaptures != 0) {
+                int endSquare = Bitwise.getNextBit(rightCaptures);
                 int startSquare = white ? endSquare - 9 : endSquare + 7;
-                // En passant is complicated; just test legality by making the move on the board and checking
-                // whether the king is attacked.
-                Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
-                if (!leavesKingInCheck(board, move, white)) {
-                    legalMoves.add(move);
+                if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                    legalMoves.add(new Move(startSquare, endSquare));
                 }
-                rightEnPassants = Bitwise.popBit(rightEnPassants);
+                rightCaptures = Bitwise.popBit(rightCaptures);
             }
-        }
 
-        while (pushPromotions != 0) {
-            int endSquare = Bitwise.getNextBit(pushPromotions);
-            int startSquare = white ? endSquare - 8 : endSquare + 8;
-            if (!isPinned(startSquare)) {
-                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+            if (board.getGameState().getEnPassantFile() >= 0) {
+                long enPassantFile = Bitwise.getFileBitboard(board.getGameState().getEnPassantFile());
+                long leftEnPassants = Bitwise.pawnLeftEnPassants(pawns, enPassantFile, white);
+                long rightEnPassants = Bitwise.pawnRightEnPassants(pawns, enPassantFile, white);
+                while (leftEnPassants != 0) {
+                    int endSquare = Bitwise.getNextBit(leftEnPassants);
+                    int startSquare = white ? endSquare - 7 : endSquare + 9;
+                    // En passant is complicated; just test legality by making the move on the board and checking
+                    // whether the king is attacked.
+                    Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+                    if (!leavesKingInCheck(board, move, white)) {
+                        legalMoves.add(move);
+                    }
+                    leftEnPassants = Bitwise.popBit(leftEnPassants);
+                }
+                while (rightEnPassants != 0) {
+                    int endSquare = Bitwise.getNextBit(rightEnPassants);
+                    int startSquare = white ? endSquare - 9 : endSquare + 7;
+                    // En passant is complicated; just test legality by making the move on the board and checking
+                    // whether the king is attacked.
+                    Move move = new Move(startSquare, endSquare, Move.EN_PASSANT_FLAG);
+                    if (!leavesKingInCheck(board, move, white)) {
+                        legalMoves.add(move);
+                    }
+                    rightEnPassants = Bitwise.popBit(rightEnPassants);
+                }
             }
-            pushPromotions = Bitwise.popBit(pushPromotions);
-        }
-        while (leftCapturePromotions != 0) {
-            int endSquare = Bitwise.getNextBit(leftCapturePromotions);
-            int startSquare = white ? endSquare - 7 : endSquare + 9;
-            if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+
+            while (pushPromotions != 0) {
+                int endSquare = Bitwise.getNextBit(pushPromotions);
+                int startSquare = white ? endSquare - 8 : endSquare + 8;
+                if (!isPinned(startSquare)) {
+                    legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                }
+                pushPromotions = Bitwise.popBit(pushPromotions);
             }
-            leftCapturePromotions = Bitwise.popBit(leftCapturePromotions);
-        }
-        while (rightCapturePromotions != 0) {
-            int endSquare = Bitwise.getNextBit(rightCapturePromotions);
-            int startSquare = white ? endSquare - 9 : endSquare + 7;
-            if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
-                legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+            while (leftCapturePromotions != 0) {
+                int endSquare = Bitwise.getNextBit(leftCapturePromotions);
+                int startSquare = white ? endSquare - 7 : endSquare + 9;
+                if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                    legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                }
+                leftCapturePromotions = Bitwise.popBit(leftCapturePromotions);
             }
-            rightCapturePromotions = Bitwise.popBit(rightCapturePromotions);
+            while (rightCapturePromotions != 0) {
+                int endSquare = Bitwise.getNextBit(rightCapturePromotions);
+                int startSquare = white ? endSquare - 9 : endSquare + 7;
+                if (!isPinned(startSquare) || isMovingAlongPinRay(startSquare, endSquare)) {
+                    legalMoves.addAll(getPromotionMoves(startSquare, endSquare));
+                }
+                rightCapturePromotions = Bitwise.popBit(rightCapturePromotions);
+            }
         }
 
     }
@@ -247,15 +245,15 @@ public class MoveGenerator implements MoveGeneration {
     private void generateKnightMoves(Board board) {
         if (knights == 0) return;
         long opponents = board.getPieces(!white);
+        int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
         // Initialize filter mask based on move filter type
-        long filterMask = Bits.ALL_SQUARES;
-        if (filter == MoveFilter.CAPTURES_ONLY) {
-            filterMask = opponents;
-        } else if (filter == MoveFilter.CAPTURES_AND_CHECKS) {
-            int opponentKing = Bitwise.getNextBit(board.getKing(!white));
-            filterMask = opponents | Attacks.knightAttacks(opponentKing);
-        }
+        long filterMask = switch (filter) {
+            case ALL -> Bits.ALL_SQUARES;
+            case CAPTURES_ONLY -> opponents;
+            case NOISY -> opponents | Attacks.knightAttacks(opponentKing);
+            case QUIET -> ~opponents & ~Attacks.knightAttacks(opponentKing);
+        };
 
         // Exclude pinned knights from generating moves
         long unpinnedKnights = knights & ~pinMask;
@@ -277,7 +275,13 @@ public class MoveGenerator implements MoveGeneration {
         int startSquare = Bitwise.getNextBit(king);
         long friendlies = board.getPieces(white);
         long opponents = board.getPieces(!white);
-        long filterMask = filter == MoveFilter.ALL ? Bits.ALL_SQUARES : opponents;
+
+        long filterMask = switch (filter) {
+            case ALL -> Bits.ALL_SQUARES;
+            case CAPTURES_ONLY, NOISY -> opponents;
+            case QUIET -> ~opponents;
+        };
+
         long kingMoves = Attacks.kingAttacks(startSquare) & ~friendlies & filterMask;
 
         // Temporarily remove the king from the board
@@ -300,7 +304,8 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private void generateCastlingMoves(Board board) {
-        if (filter != MoveFilter.ALL || checkersMask != 0) {
+        if ((filter != MoveFilter.ALL && filter != MoveFilter.QUIET)
+                || checkersMask != 0) {
             return;
         }
         int startSquare = Bitwise.getNextBit(king);
@@ -355,8 +360,10 @@ public class MoveGenerator implements MoveGeneration {
             // Apply move filters
             if (filter == MoveFilter.CAPTURES_ONLY) {
                 attackMask &= opponents;
-            } else if (filter == MoveFilter.CAPTURES_AND_CHECKS) {
+            } else if (filter == MoveFilter.NOISY) {
                 attackMask &= getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
+            } else if (filter == MoveFilter.QUIET) {
+                attackMask &= ~getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
             }
 
             // Handle pinned pieces

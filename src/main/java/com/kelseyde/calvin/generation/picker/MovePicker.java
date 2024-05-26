@@ -1,7 +1,8 @@
-package com.kelseyde.calvin.generation;
+package com.kelseyde.calvin.generation.picker;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import lombok.AccessLevel;
@@ -10,19 +11,13 @@ import lombok.experimental.FieldDefaults;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MovePicker {
+public class MovePicker implements MovePicking {
 
     public enum Stage {
         PREVIOUS_BEST_MOVE,
         NOISY,
-        //KILLERS,
-        //QUIET,
+        QUIET,
         END
-    }
-
-    public enum ScoringStrategy {
-        MVV_LVA,
-        ALL;
     }
 
     final MoveGeneration moveGenerator;
@@ -31,11 +26,7 @@ public class MovePicker {
     Board board;
     int ply;
 
-    Stage stage = Stage.PREVIOUS_BEST_MOVE;
-    MoveFilter filter = MoveFilter.ALL;
-    ScoringStrategy scoringStrategy = ScoringStrategy.ALL;
-
-    int killerIndex;
+    Stage stage;
 
     List<Move> moves;
     Move previousBestMove;
@@ -47,6 +38,7 @@ public class MovePicker {
         this.moveOrderer = moveOrderer;
         this.board = board;
         this.ply = ply;
+        this.stage = Stage.PREVIOUS_BEST_MOVE;
     }
 
     public void reset(Board board, int ply) {
@@ -59,20 +51,16 @@ public class MovePicker {
         this.moveIndex = 0;
     }
 
+    @Override
     public Move pickNextMove() {
-
-        if (stage == null) {
-            stage = Stage.PREVIOUS_BEST_MOVE;
-        }
 
         Move nextMove = null;
 
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case PREVIOUS_BEST_MOVE -> pickHashMove();
-                case NOISY -> pickNoisyMove();
-                //case KILLERS -> pickKillerMove(ply);
-                //case QUIET -> pickQuietMove();
+                case PREVIOUS_BEST_MOVE -> pickPreviousBestMove();
+                case NOISY -> pickMove(MoveFilter.NOISY, Stage.QUIET);
+                case QUIET -> pickMove(MoveFilter.QUIET, Stage.END);
                 case END -> null;
             };
             if (stage == Stage.END) break;
@@ -82,62 +70,42 @@ public class MovePicker {
 
     }
 
-    private Move pickHashMove() {
-        //stage = Stage.KILLERS;
+    private Move pickPreviousBestMove() {
         stage = Stage.NOISY;
         return previousBestMove;
     }
 
-    private Move pickKillerMove(int ply) {
-        Move killerMove = moveOrderer.getKillerMove(ply, killerIndex);
-        if (killerMove != null) {
-            killerIndex++;
-        } else {
-            stage = Stage.NOISY;
-        }
-        return killerMove;
-    }
+    private Move pickMove(MoveFilter filter, Stage nextStage) {
 
-    private Move pickNoisyMove() {
         if (moves == null) {
             moves = moveGenerator.generateMoves(board, filter);
-            if (moves.isEmpty()) {
-                stage = Stage.END;
-                return null;
-            }
             moveIndex = 0;
             scoreMoves();
         }
         if (moveIndex >= moves.size()) {
-            stage = Stage.END;
+            moves = null;
+            stage = nextStage;
             return null;
         }
         sortMoves();
         Move move = moves.get(moveIndex);
         moveIndex++;
         if (move.equals(previousBestMove)) {
-            if (moveIndex >= moves.size()) {
-                stage = Stage.END;
-                return null;
-            }
-            sortMoves();
-            move = moves.get(moveIndex);
-            moveIndex++;
+            // Skip to the next move
+            return pickMove(filter, nextStage);
         }
         return move;
+
     }
 
-    private void scoreMoves() {
+    public void scoreMoves() {
         scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = switch (scoringStrategy) {
-                case ALL -> moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
-                case MVV_LVA -> moveOrderer.mvvLva(board, moves.get(i), previousBestMove);
-            };
+            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
         }
     }
 
-    private void sortMoves() {
+    public void sortMoves() {
         for (int j = moveIndex + 1; j < moves.size(); j++) {
             int firstScore = scores[moveIndex];
             int secondScore = scores[j];
@@ -152,10 +120,6 @@ public class MovePicker {
         }
     }
 
-//    private Move pickQuietMove() {
-//        return null;
-//    }
-
     public List<Move> getMoves() {
         return moves;
     }
@@ -167,14 +131,6 @@ public class MovePicker {
 
     public void setPreviousBestMove(Move previousBestMove) {
         this.previousBestMove = previousBestMove;
-    }
-
-    public void setFilter(MoveFilter filter) {
-        this.filter = filter;
-    }
-
-    public void setScoringStrategy(ScoringStrategy strategy) {
-        this.scoringStrategy = strategy;
     }
 
 }

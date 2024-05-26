@@ -138,6 +138,9 @@ public class MoveGenerator implements MoveGeneration {
             case NOISY -> opponents | Attacks.pawnAttacks(1L << opponentKing, !white);
             case QUIET -> ~opponents & ~Attacks.pawnAttacks(1L << opponentKing, !white);
         };
+        if (filterMask == Bits.NO_SQUARES) {
+            return;
+        }
 
         if (filter != MoveFilter.CAPTURES_ONLY) {
 
@@ -254,6 +257,9 @@ public class MoveGenerator implements MoveGeneration {
             case NOISY -> opponents | Attacks.knightAttacks(opponentKing);
             case QUIET -> ~opponents & ~Attacks.knightAttacks(opponentKing);
         };
+        if (filterMask == Bits.NO_SQUARES) {
+            return;
+        }
 
         // Exclude pinned knights from generating moves
         long unpinnedKnights = knights & ~pinMask;
@@ -281,6 +287,9 @@ public class MoveGenerator implements MoveGeneration {
             case CAPTURES_ONLY, NOISY -> opponents;
             case QUIET -> ~opponents;
         };
+        if (filterMask == Bits.NO_SQUARES) {
+            return;
+        }
 
         long kingMoves = Attacks.kingAttacks(startSquare) & ~friendlies & filterMask;
 
@@ -358,13 +367,16 @@ public class MoveGenerator implements MoveGeneration {
             attackMask &= pushMask | captureMask;
 
             // Apply move filters
-            if (filter == MoveFilter.CAPTURES_ONLY) {
-                attackMask &= opponents;
-            } else if (filter == MoveFilter.NOISY) {
-                attackMask &= getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
-            } else if (filter == MoveFilter.QUIET) {
-                attackMask &= ~getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
+            long filterMask = switch (filter) {
+                case ALL -> Bits.ALL_SQUARES;
+                case CAPTURES_ONLY -> opponents;
+                case NOISY -> getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
+                case QUIET -> ~getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
+            };
+            if (filterMask == Bits.NO_SQUARES) {
+                return;
             }
+            attackMask &= filterMask;
 
             // Handle pinned pieces
             if (isPinned(startSquare)) {

@@ -412,7 +412,7 @@ public class Searcher implements Search {
             movePicker.setBestMove(previousBestMove);
         }
 
-        int eval = evaluator.evaluate(board);
+        int eval = transposition != null ? transposition.getScore() : evaluator.evaluate(board);
         int standPat = eval;
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());

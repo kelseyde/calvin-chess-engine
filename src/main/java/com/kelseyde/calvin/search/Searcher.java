@@ -398,27 +398,24 @@ public class Searcher implements Search {
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
     int quiescenceSearch(int alpha, int beta, int depth, int ply) {
-
-        //System.out.println("q " + depth + " " + FEN.toFEN(board));
-
         if (isCancelled()) {
             return alpha;
         }
 
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
+
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        Move previousBestMove = null;
+        Move previousBestMove;
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
+            movePicker.setBestMove(previousBestMove);
         }
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-
-        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, see, board, isInCheck, depth);
-        movePicker.setBestMove(previousBestMove);
 
         // Only compute the static eval when not in check
         int eval = isInCheck ? Integer.MIN_VALUE : evaluator.evaluate(board);
@@ -445,7 +442,6 @@ public class Searcher implements Search {
 
         while (true) {
 
-            // Captures with a bad SEE score are implicitly filtered out in the move picker
             Move move = movePicker.pickNextMove();
             if (move == null) break;
             movesSearched++;
@@ -457,6 +453,14 @@ public class Searcher implements Search {
                 Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
                 boolean isFutile = capturedPiece != null && (standPat + capturedPiece.getValue() + config.getDpMargin() < alpha) && !move.isPromotion();
                 if (isFutile) {
+                    continue;
+                }
+                // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
+                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
+                // chains, such as capturing with the queen a pawn defended by another pawn.
+                int seeScore = see.evaluate(board, move);
+                boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);
+                if (isBadCapture) {
                     continue;
                 }
             }

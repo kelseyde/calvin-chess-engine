@@ -19,6 +19,7 @@ public class MoveGenerator implements MoveGeneration {
     private final PinCalculator pinCalculator = new PinCalculator();
     private final RayCalculator rayCalculator = new RayCalculator();
 
+    private int checkersCount;
     private long checkersMask;
     private long pinMask;
     private long[] pinRayMasks;
@@ -74,10 +75,14 @@ public class MoveGenerator implements MoveGeneration {
         pinMask = pinData.pinMask();
         pinRayMasks = pinData.pinRayMasks();
         checkersMask = calculateAttackerMask(board, 1L << kingSquare);
-        long checkersCount = Bitwise.countBits(checkersMask);
+        checkersCount = Bitwise.countBits(checkersMask);
 
         int estimatedLegalMoves = estimateLegalMoves(board);
         legalMoves = new ArrayList<>(estimatedLegalMoves);
+
+        if (checkersCount > 0 && filter == MoveFilter.QUIET) {
+            return legalMoves;
+        }
 
         // Generate king moves first
         generateKingMoves(board);
@@ -132,7 +137,8 @@ public class MoveGenerator implements MoveGeneration {
         long occupied = board.getOccupied();
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
-        long filterMask = switch (filter) {
+        long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
+        switch (filter) {
             case ALL -> Bits.ALL_SQUARES;
             case CAPTURES_ONLY -> opponents;
             case NOISY -> opponents | Attacks.pawnAttacks(1L << opponentKing, !white);
@@ -251,7 +257,8 @@ public class MoveGenerator implements MoveGeneration {
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
         // Initialize filter mask based on move filter type
-        long filterMask = switch (filter) {
+        long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
+        switch (filter) {
             case ALL -> Bits.ALL_SQUARES;
             case CAPTURES_ONLY -> opponents;
             case NOISY -> opponents | Attacks.knightAttacks(opponentKing);
@@ -282,7 +289,8 @@ public class MoveGenerator implements MoveGeneration {
         long friendlies = board.getPieces(white);
         long opponents = board.getPieces(!white);
 
-        long filterMask = switch (filter) {
+        long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
+        switch (filter) {
             case ALL -> Bits.ALL_SQUARES;
             case CAPTURES_ONLY, NOISY -> opponents;
             case QUIET -> ~opponents;
@@ -367,7 +375,8 @@ public class MoveGenerator implements MoveGeneration {
             attackMask &= pushMask | captureMask;
 
             // Apply move filters
-            long filterMask = switch (filter) {
+            long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
+            switch (filter) {
                 case ALL -> Bits.ALL_SQUARES;
                 case CAPTURES_ONLY -> opponents;
                 case NOISY -> getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);

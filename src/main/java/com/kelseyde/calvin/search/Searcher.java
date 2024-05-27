@@ -9,8 +9,8 @@ import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.generation.picker.MovePicker;
-import com.kelseyde.calvin.generation.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
@@ -197,7 +197,7 @@ public class Searcher implements Search {
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
         }
-        movePicker.setPreviousBestMove(previousBestMove);
+        movePicker.setBestMove(previousBestMove);
 
         // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
@@ -407,7 +407,7 @@ public class Searcher implements Search {
         }
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
-            movePicker.setPreviousBestMove(previousBestMove);
+            movePicker.setBestMove(previousBestMove);
         }
 
         int eval = evaluator.evaluate(board);

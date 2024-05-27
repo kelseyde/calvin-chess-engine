@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.generation.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -276,7 +276,7 @@ public class MoveOrdererTest {
         moveOrderer.incrementHistoryScore(2, new Move(Notation.fromNotation("h3"), Notation.fromNotation("h2")), true);
 
         movePicker = new MovePicker(moveGenerator, moveOrderer, board, 3);
-        movePicker.setPreviousBestMove(previousBestMove);
+        movePicker.setBestMove(previousBestMove);
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, 3);
 
         Assertions.assertEquals(orderedMoves.get(0), new Move(Notation.fromNotation("b8"), Notation.fromNotation("c7")));

@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.generation.picker;
+package com.kelseyde.calvin.search.picker;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
@@ -11,34 +11,31 @@ import lombok.experimental.FieldDefaults;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MovePicker implements MovePicking {
+public class QuiescentMovePicker implements MovePicking {
 
     public enum Stage {
-        PREVIOUS_BEST_MOVE,
+        BEST_MOVE,
         NOISY,
-        QUIET,
         END
     }
 
     final MoveGeneration moveGenerator;
     final MoveOrdering moveOrderer;
 
-    Board board;
-    int ply;
-
+    final Board board;
+    MoveFilter filter;
     Stage stage;
 
     List<Move> moves;
-    Move previousBestMove;
+    Move bestMove;
     int moveIndex;
     int[] scores;
 
-    public MovePicker(MoveGeneration moveGenerator, MoveOrdering moveOrderer, Board board, int ply) {
+    public QuiescentMovePicker(MoveGeneration moveGenerator, MoveOrdering moveOrderer, Board board) {
         this.moveGenerator = moveGenerator;
         this.moveOrderer = moveOrderer;
         this.board = board;
-        this.ply = ply;
-        this.stage = Stage.PREVIOUS_BEST_MOVE;
+        this.stage = Stage.BEST_MOVE;
     }
 
     @Override
@@ -48,9 +45,8 @@ public class MovePicker implements MovePicking {
 
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case PREVIOUS_BEST_MOVE -> pickPreviousBestMove();
-                case NOISY -> pickMove(MoveFilter.NOISY, Stage.QUIET);
-                case QUIET -> pickMove(MoveFilter.QUIET, Stage.END);
+                case BEST_MOVE -> pickPreviousBestMove();
+                case NOISY -> pickMove();
                 case END -> null;
             };
             if (stage == Stage.END) break;
@@ -60,12 +56,7 @@ public class MovePicker implements MovePicking {
 
     }
 
-    private Move pickPreviousBestMove() {
-        stage = Stage.NOISY;
-        return previousBestMove;
-    }
-
-    private Move pickMove(MoveFilter filter, Stage nextStage) {
+    private Move pickMove() {
 
         if (moves == null) {
             moves = moveGenerator.generateMoves(board, filter);
@@ -74,24 +65,29 @@ public class MovePicker implements MovePicking {
         }
         if (moveIndex >= moves.size()) {
             moves = null;
-            stage = nextStage;
+            stage = Stage.END;
             return null;
         }
         sortMoves();
         Move move = moves.get(moveIndex);
         moveIndex++;
-        if (move.equals(previousBestMove)) {
+        if (move.equals(bestMove)) {
             // Skip to the next move
-            return pickMove(filter, nextStage);
+            return pickMove();
         }
         return move;
 
     }
 
+    private Move pickPreviousBestMove() {
+        stage = Stage.NOISY;
+        return bestMove;
+    }
+
     public void scoreMoves() {
         scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
+            scores[i] = moveOrderer.mvvLva(board, moves.get(i), bestMove);
         }
     }
 
@@ -114,13 +110,12 @@ public class MovePicker implements MovePicking {
         return moves;
     }
 
-    public void setMoves(List<Move> moves) {
-        this.moves = moves;
-        scoreMoves();
+    public void setBestMove(Move bestMove) {
+        this.bestMove = bestMove;
     }
 
-    public void setPreviousBestMove(Move previousBestMove) {
-        this.previousBestMove = previousBestMove;
+    public void setFilter(MoveFilter filter) {
+        this.filter = filter;
     }
 
 }

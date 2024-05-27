@@ -7,6 +7,7 @@ import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -398,6 +399,20 @@ public class BoardTest {
         assertRingMasks(Bits.OUTER_RING_MASK[1], Set.of(16, 17, 18, 19, 11, 3));
         assertRingMasks(Bits.OUTER_RING_MASK[56], Set.of(40, 41, 42, 50, 58));
         assertRingMasks(Bits.OUTER_RING_MASK[24], Set.of(8, 9, 10, 18, 26, 34, 40, 41, 42));
+
+    }
+
+    @Test
+    @Disabled
+    public void testKingSafetyZones() {
+
+        for (int i = 0; i < 64; i++) {
+            System.out.println("WHITE " + Notation.toNotation(i));
+            Bitwise.print(Bits.WHITE_KING_SAFETY_ZONE[i]);
+
+            System.out.println("BLACK " + Notation.toNotation(i));
+            Bitwise.print(Bits.BLACK_KING_SAFETY_ZONE[i]);
+        }
 
     }
 

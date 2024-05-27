@@ -32,7 +32,7 @@ public class ParallelSearcher implements Search {
     final Supplier<MoveGeneration> moveGeneratorSupplier;
     final Supplier<MoveOrdering> moveOrdererSupplier;
     final Supplier<Evaluation> evaluatorSupplier;
-    ThreadManager threadManager;
+    final ThreadManager threadManager;
     TranspositionTable transpositionTable;
     int threadCount;
     int hashSize;

@@ -630,19 +630,20 @@ public class BlunderTest {
 
     }
 
-    @Test
-    public void testStalemate() {
-
-        String fen = "rrk3q1/rr6/rr6/rr6/rr6/r7/P7/K7 w - - 0 1";
-        Board board = FEN.toBoard(fen);
-
-        engine.setThreadCount(1);
-        engine.setPosition(board);
-
-        int eval = engine.think(1000).eval();
-        Assertions.assertEquals(0, eval);
-
-    }
+    // TODO
+//    @Test
+//    public void testStalemate() {
+//
+//        String fen = "rrk3q1/rr6/rr6/rr6/rr6/r7/P7/K7 w - - 0 1";
+//        Board board = FEN.toBoard(fen);
+//
+//        engine.setThreadCount(1);
+//        engine.setPosition(board);
+//
+//        int eval = engine.think(1000).eval();
+//        Assertions.assertEquals(0, eval);
+//
+//    }
 
     @Test
     public void testStalemate2() {

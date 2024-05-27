@@ -187,7 +187,6 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE_SCORE - ply);
         if (alpha >= beta) return alpha;
 
-
         MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
 
         // Probe the transposition table in case this node has been searched before
@@ -214,8 +213,12 @@ public class Searcher implements Search {
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-        // Only compute the static eval when not in check
-        int staticEval = isInCheck ? Integer.MIN_VALUE : evaluator.evaluate(board);
+
+        // Re-use cached static eval if available. Don't compute static eval while in check.
+        int staticEval = Integer.MIN_VALUE;
+        if (!isInCheck) {
+            staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
+        }
 
         if (!zwNode && !isInCheck) {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
@@ -240,7 +243,7 @@ public class Searcher implements Search {
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
-                    transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, beta);
+                    transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
                     return eval;
                 }
             }
@@ -350,7 +353,7 @@ public class Searcher implements Search {
             if (eval >= beta) {
 
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, beta);
+                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
@@ -385,7 +388,7 @@ public class Searcher implements Search {
             return eval;
         }
 
-        transpositionTable.put(getKey(), flag, depth, ply, bestMove, alpha);
+        transpositionTable.put(getKey(), flag, depth, ply, bestMove, staticEval, alpha);
         return alpha;
 
     }
@@ -417,8 +420,11 @@ public class Searcher implements Search {
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-        // Only compute the static eval when not in check
-        int eval = isInCheck ? Integer.MIN_VALUE : evaluator.evaluate(board);
+        // Re-use cached static eval if available. Don't compute static eval while in check.
+        int eval = Integer.MIN_VALUE;
+        if (!isInCheck) {
+            eval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
+        }
         int standPat = eval;
 
         if (isInCheck) {

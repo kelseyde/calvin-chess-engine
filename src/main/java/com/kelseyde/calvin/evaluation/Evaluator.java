@@ -50,11 +50,34 @@ public class Evaluator implements Evaluation {
     final int[] queenMgMobility;
     final int[] queenEgMobility;
 
+    static final int[] safetyTable = new int[]{
+        0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
+        18,  22,  26,  30,  35,  39,  44,  50,  56,  62,
+        68,  75,  82,  85,  89,  97, 105, 113, 122, 131,
+        140, 150, 169, 180, 191, 202, 213, 225, 237, 248,
+        260, 272, 283, 295, 307, 319, 330, 342, 354, 366,
+        377, 389, 401, 412, 424, 436, 448, 459, 471, 483,
+        494, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+        500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+        500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+        500, 500, 500, 500, 500, 500, 500, 500, 500, 500
+    };
+
+    static final int MINOR_PIECE_ATTACK_UNIT = 2;
+    static final int ROOK_ATTACK_UNIT = 3;
+    static final int QUEEN_ATTACK_UNIT = 5;
+
+    long whiteKingSafetyZone;
+    long blackKingSafetyZone;
+
     int whiteMgScore;
     int blackMgScore;
 
     int whiteEgScore;
     int blackEgScore;
+
+    int whiteAttackZoneScore;
+    int blackAttackZoneScore;
 
     float phase;
 
@@ -115,6 +138,9 @@ public class Evaluator implements Evaluation {
         long blackRooks = board.getBlackRooks();
         long blackQueens = board.getBlackQueens();
         long blackKing = board.getBlackKing();
+
+        whiteKingSafetyZone = Bits.WHITE_KING_SAFETY_ZONE[Bitwise.getNextBit(whiteKing)];
+        blackKingSafetyZone = Bits.BLACK_KING_SAFETY_ZONE[Bitwise.getNextBit(blackKing)];
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
@@ -253,6 +279,10 @@ public class Evaluator implements Evaluation {
             mgScore += knightMgMobility[moveCount];
             egScore += knightEgMobility[moveCount];
 
+            long kingAttackZone = white ? blackKingSafetyZone : whiteKingSafetyZone;
+            int attackZoneAttacks = Bitwise.countBits(kingAttackZone & attacks);
+            addAttackZoneScore(MINOR_PIECE_ATTACK_UNIT, attackZoneAttacks, white);
+
             knights = Bitwise.popBit(knights);
         }
 
@@ -282,6 +312,10 @@ public class Evaluator implements Evaluation {
             int moveCount = Bitwise.countBits(moves);
             mgScore += bishopMgMobility[moveCount];
             egScore += bishopEgMobility[moveCount];
+
+            long kingAttackZone = white ? blackKingSafetyZone : whiteKingSafetyZone;
+            int attackZoneAttacks = Bitwise.countBits(kingAttackZone & attacks);
+            addAttackZoneScore(MINOR_PIECE_ATTACK_UNIT, attackZoneAttacks, white);
 
             bishops = Bitwise.popBit(bishops);
         }
@@ -319,6 +353,10 @@ public class Evaluator implements Evaluation {
             int moveCount = Bitwise.countBits(moves);
             mgScore += rookMgMobility[moveCount];
             egScore += rookEgMobility[moveCount];
+
+            long kingAttackZone = white ? blackKingSafetyZone : whiteKingSafetyZone;
+            int attackZoneAttacks = Bitwise.countBits(kingAttackZone & attacks);
+            addAttackZoneScore(ROOK_ATTACK_UNIT, attackZoneAttacks, white);
 
             boolean hasFriendlyPawn = (fileMask & friendlyPawns) != 0;
             boolean hasOpponentPawn = (fileMask & opponentPawns) != 0;
@@ -365,6 +403,10 @@ public class Evaluator implements Evaluation {
             int moveCount = Bitwise.countBits(moves);
             mgScore += queenMgMobility[moveCount];
             egScore += queenEgMobility[moveCount];
+
+            long kingAttackZone = white ? blackKingSafetyZone : whiteKingSafetyZone;
+            int attackZoneAttacks = Bitwise.countBits(kingAttackZone & attacks);
+            addAttackZoneScore(QUEEN_ATTACK_UNIT, attackZoneAttacks, white);
 
             queens = Bitwise.popBit(queens);
         }
@@ -417,7 +459,8 @@ public class Evaluator implements Evaluation {
         if (opponentMaterial.queens() == 0) {
             phase *= 0.4f;
         }
-        float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
+        int attackZoneScore = white ? whiteAttackZoneScore : blackAttackZoneScore;
+        float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty + attackZoneScore) * phase);
         int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
         int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
         addScore(mgScore, egScore, white);
@@ -479,6 +522,13 @@ public class Evaluator implements Evaluation {
             blackMgScore += middlegameScore;
             blackEgScore += endgameScore;
         }
+    }
+
+    private void addAttackZoneScore(int attackUnit, int attackCount, boolean white) {
+        int attackZoneScore = (attackCount * safetyTable[attackUnit]);
+        if (white) blackAttackZoneScore += attackZoneScore;
+        else       whiteAttackZoneScore += attackZoneScore;
+
     }
 
     public int sum(boolean white) {

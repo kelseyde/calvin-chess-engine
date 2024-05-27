@@ -9,6 +9,8 @@ import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
@@ -21,7 +23,6 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 /**
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
@@ -181,6 +182,8 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE_SCORE - ply);
         if (alpha >= beta) return alpha;
 
+        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
+
         // Probe the transposition table in case this node has been searched before
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, depth, alpha, beta)) {
@@ -194,6 +197,7 @@ public class Searcher implements Search {
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
         }
+        movePicker.setBestMove(previousBestMove);
 
         // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
@@ -202,22 +206,8 @@ public class Searcher implements Search {
             --depth;
         }
 
-        List<Move> moves = moveGenerator.generateMoves(board);
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
         int staticEval = evaluator.evaluate(board);
-
-        if (moves.isEmpty()) {
-            // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
-            return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
-        }
-        if (ply == 0 && moves.size() == 1) {
-            // If there is only one legal move at the root node, play that move immediately.
-            int eval = isDraw() ? Score.DRAW_SCORE : staticEval;
-            bestMoveCurrentDepth = moves.get(0);
-            bestEvalCurrentDepth = eval;
-            cancelled = true;
-            return eval;
-        }
 
         boolean pvNode = beta - alpha > 1;
 
@@ -250,34 +240,17 @@ public class Searcher implements Search {
             }
         }
 
-        // Give each move a 'score' based on how interesting or promising it looks. These scores will be used to select
-        // the order in which moves are evaluated.
-        int[] scores = new int[moves.size()];
-        for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), previousBestMove, ply);
-        }
-
         Move bestMove = null;
         HashFlag flag = HashFlag.UPPER;
+        int movesSearched = 0;
 
-        for (int i = 0; i < moves.size(); i++) {
+        while (true) {
 
-            // Incremental move ordering: it's unnecessary to sort the entire move list, since most of them are never evaluated.
-            // So just select the move with the best score that hasn't been tried yet
-            for (int j = i + 1; j < moves.size(); j++) {
-                int firstScore = scores[i];
-                int secondScore = scores[j];
-                Move firstMove = moves.get(i);
-                Move secondMove = moves.get(j);
-                if (scores[j] > scores[i]) {
-                    scores[i] = secondScore;
-                    scores[j] = firstScore;
-                    moves.set(i, secondMove);
-                    moves.set(j, firstMove);
-                }
-            }
+            Move move = movePicker.pickNextMove();
+            if (move == null) break;
+            if (bestMove == null) bestMove = move;
+            movesSearched++;
 
-            Move move = moves.get(i);
             Piece capturedPiece = board.pieceAt(move.getEndSquare());
             boolean isCapture = capturedPiece != null;
             boolean isPromotion = move.getPromotionPiece() != null;
@@ -317,7 +290,7 @@ public class Searcher implements Search {
             if (isDraw()) {
                 eval = Score.DRAW_SCORE;
             }
-            else if (pvNode && i == 0) {
+            else if (pvNode && movesSearched == 0) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
@@ -331,7 +304,7 @@ public class Searcher implements Search {
                     && !isInCheck
                     && isQuiet
                     && depth <= config.getLmpDepth()
-                    && i >= depth * config.getLmpMultiplier()) {
+                    && movesSearched >= depth * config.getLmpMultiplier()) {
                     board.unmakeMove();
                     continue;
                 }
@@ -340,9 +313,9 @@ public class Searcher implements Search {
                 // let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
                 if (depth >= config.getLmrDepth()
-                    && i >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
+                    && movesSearched >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
                     && isQuiet) {
-                    reduction = config.getLmrReductions()[depth][i];
+                    reduction = config.getLmrReductions()[depth][movesSearched];
                     if (pvNode || isInCheck) {
                         reduction--;
                     }
@@ -369,6 +342,7 @@ public class Searcher implements Search {
             }
 
             if (eval >= beta) {
+
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
                 transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, beta);
                 if (!isCapture) {
@@ -376,6 +350,7 @@ public class Searcher implements Search {
                     moveOrderer.addKillerMove(ply, move);
                     moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
                 }
+
                 return beta;
             }
 
@@ -390,6 +365,20 @@ public class Searcher implements Search {
                 }
             }
         }
+
+        if (movesSearched == 0) {
+            // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
+            return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
+        }
+        if (ply == 0 && movesSearched == 1) {
+            // If there is only one legal move at the root node, play that move immediately.
+            int eval = isDraw() ? Score.DRAW_SCORE : staticEval;
+            bestMoveCurrentDepth = bestMove;
+            bestEvalCurrentDepth = eval;
+            cancelled = true;
+            return eval;
+        }
+
         transpositionTable.put(getKey(), flag, depth, ply, bestMove, alpha);
         return alpha;
 
@@ -406,14 +395,18 @@ public class Searcher implements Search {
         if (isCancelled()) {
             return alpha;
         }
+
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
+
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        Move previousBestMove = null;
+        Move previousBestMove;
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
+            movePicker.setBestMove(previousBestMove);
         }
 
         int eval = evaluator.evaluate(board);
@@ -421,14 +414,10 @@ public class Searcher implements Search {
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-        List<Move> moves;
         if (isInCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.
-            moves = moveGenerator.generateMoves(board, MoveFilter.ALL);
-            if (moves.isEmpty()) {
-                return -Score.MATE_SCORE + ply;
-            }
+            movePicker.setFilter(MoveFilter.ALL);
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
@@ -438,29 +427,18 @@ public class Searcher implements Search {
             if (eval > alpha) {
                 alpha = eval;
             }
-            MoveFilter filter = depth == 1 ? MoveFilter.CAPTURES_AND_CHECKS : MoveFilter.CAPTURES_ONLY;
-            moves = moveGenerator.generateMoves(board, filter);
+            MoveFilter filter = depth == 1 ? MoveFilter.NOISY : MoveFilter.CAPTURES_ONLY;
+            movePicker.setFilter(filter);
         }
 
-        int[] scores = new int[moves.size()];
-        for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.mvvLva(board, moves.get(i), previousBestMove);
-        }
+        int movesSearched = 0;
 
-        for (int i = 0; i < moves.size(); i++) {
-            for (int j = i + 1; j < moves.size(); j++) {
-                int firstScore = scores[i];
-                int secondScore = scores[j];
-                Move firstMove = moves.get(i);
-                Move secondMove = moves.get(j);
-                if (scores[j] > scores[i]) {
-                    scores[i] = secondScore;
-                    scores[j] = firstScore;
-                    moves.set(i, secondMove);
-                    moves.set(j, firstMove);
-                }
-            }
-            Move move = moves.get(i);
+        while (true) {
+
+            Move move = movePicker.pickNextMove();
+            if (move == null) break;
+            movesSearched++;
+
             if (!isInCheck) {
                 // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
@@ -471,7 +449,7 @@ public class Searcher implements Search {
                     continue;
                 }
                 // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
-                // Evaluate the possible captures + recaptures on the target square, in order to ilter out losing capture
+                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
                 int seeScore = see.evaluate(board, move);
                 boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);
@@ -491,6 +469,10 @@ public class Searcher implements Search {
             if (eval > alpha) {
                 alpha = eval;
             }
+        }
+
+        if (movesSearched == 0 && isInCheck) {
+            return -Score.MATE_SCORE + ply;
         }
 
         return alpha;

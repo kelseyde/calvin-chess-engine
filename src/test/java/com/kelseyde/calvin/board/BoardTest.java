@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -397,6 +398,19 @@ public class BoardTest {
         assertRingMasks(Bits.OUTER_RING_MASK[1], Set.of(16, 17, 18, 19, 11, 3));
         assertRingMasks(Bits.OUTER_RING_MASK[56], Set.of(40, 41, 42, 50, 58));
         assertRingMasks(Bits.OUTER_RING_MASK[24], Set.of(8, 9, 10, 18, 26, 34, 40, 41, 42));
+
+    }
+
+    @Test
+    public void testPromotionWithFilters() {
+
+        String fen = "8/k5P1/8/8/8/8/5rr1/7K w - - 0 1";
+        Board board = FEN.toBoard(fen);
+
+        MoveGenerator moveGenerator = new MoveGenerator();
+
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.QUIET).size());
+        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY).size());
 
     }
 

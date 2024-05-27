@@ -4,6 +4,9 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.utils.BoardUtils;
+import com.kelseyde.calvin.utils.notation.Notation;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,22 +24,23 @@ import java.util.List;
  *  8. History moves
  *  9. Everything else.
  */
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class MoveOrderer implements MoveOrdering {
 
-    private static final int MILLION = 1000000;
-    private static final int PREVIOUS_BEST_MOVE_BIAS = 10 * MILLION;
-    private static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
-    private static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
-    private static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
-    private static final int KILLER_MOVE_BIAS = 6 * MILLION;
-    private static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
-    private static final int HISTORY_MOVE_BIAS = 4 * MILLION;
-    private static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
-    private static final int CASTLING_BIAS = 2 * MILLION;
+    static final int MILLION = 1000000;
+    static final int PREVIOUS_BEST_MOVE_BIAS = 10 * MILLION;
+    static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
+    static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
+    static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
+    static final int KILLER_MOVE_BIAS = 6 * MILLION;
+    static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
+    static final int HISTORY_MOVE_BIAS = 4 * MILLION;
+    static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
+    static final int CASTLING_BIAS = 2 * MILLION;
 
-    private static final int KILLER_MOVE_ORDER_BONUS = 10000;
-    private static final int MAX_KILLER_MOVE_PLY = 32;
-    private static final int MAX_KILLER_MOVES_PER_PLY = 3;
+    static final int KILLERS_PER_PLY = 3;
+    static final int MAX_KILLER_PLY = 32;
+    static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
     public static final int[][] MVV_LVA_TABLE = new int[][] {
             new int[] {15, 14, 13, 12, 11, 10},  // victim P, attacker P, N, B, R, Q, K
@@ -46,8 +50,8 @@ public class MoveOrderer implements MoveOrdering {
             new int[] {55, 54, 53, 52, 51, 50},  // victim Q, attacker P, N, B, R, Q, K
     };
 
-    private Move[][] killerMoves = new Move[MAX_KILLER_MOVE_PLY][MAX_KILLER_MOVES_PER_PLY];
-    private final int[][][] historyMoves = new int[2][64][64];
+    Move[][] killerMoves = new Move[MAX_KILLER_PLY][KILLERS_PER_PLY];
+    final int[][][] historyMoves = new int[2][64][64];
 
     /**
      * Orders the given list of moves based on the defined move-ordering strategy.
@@ -143,7 +147,7 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private int scoreKillerMove(Move move, int ply) {
-        if (ply >= MAX_KILLER_MOVE_PLY) {
+        if (ply >= MAX_KILLER_PLY) {
             return 0;
         }
         else if (move.equals(killerMoves[ply][0])) {
@@ -169,6 +173,13 @@ public class MoveOrderer implements MoveOrdering {
         return historyScore;
     }
 
+    public Move getKillerMove(int ply, int index) {
+        if (index >= KILLERS_PER_PLY || ply > MAX_KILLER_PLY) {
+            return null;
+        }
+        return killerMoves[ply][index];
+    }
+
     /**
      * Adds a new killer move for a given ply.
      *
@@ -176,7 +187,7 @@ public class MoveOrderer implements MoveOrdering {
      * @param newKiller The new killer move to be added.
      */
     public void addKillerMove(int ply, Move newKiller) {
-        if (ply >= MAX_KILLER_MOVE_PLY) {
+        if (ply >= MAX_KILLER_PLY) {
             return;
         }
         Move firstKiller = killerMoves[ply][0];
@@ -214,7 +225,7 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     public void clear() {
-        killerMoves = new Move[MAX_KILLER_MOVE_PLY][MAX_KILLER_MOVES_PER_PLY];
+        killerMoves = new Move[MAX_KILLER_PLY][KILLERS_PER_PLY];
     }
 
 }

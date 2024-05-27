@@ -17,6 +17,8 @@ import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -179,26 +181,25 @@ public class Searcher implements Search {
         boolean rootNode = ply == 0;
         boolean zwNode = beta - alpha > 1;
 
-        if (!rootNode) {
-            // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
-            // Exit early if we have already found a forced mate at an earlier ply
-            alpha = Math.max(alpha, -Score.MATE_SCORE + ply);
-            beta = Math.min(beta, Score.MATE_SCORE - ply);
-            if (alpha >= beta) return alpha;
-        }
+        // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
+        // Exit early if we have already found a forced mate at an earlier ply
+        alpha = Math.max(alpha, -Score.MATE_SCORE + ply);
+        beta = Math.min(beta, Score.MATE_SCORE - ply);
+        if (alpha >= beta) return alpha;
+
 
         MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
 
         // Probe the transposition table in case this node has been searched before
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, depth, alpha, beta)) {
-            if (ply == 0 && transposition.getMove() != null) {
+            if (rootNode && transposition.getMove() != null) {
                 bestMoveCurrentDepth = transposition.getMove();
                 bestEvalCurrentDepth = transposition.getScore();
             }
             return transposition.getScore();
         }
-        Move previousBestMove = ply == 0 ? bestMove : null;
+        Move previousBestMove = rootNode ? bestMove : null;
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
         }
@@ -212,7 +213,9 @@ public class Searcher implements Search {
         }
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-        int staticEval = transposition != null ? transposition.getScore() : evaluator.evaluate(board);
+
+        // Only compute the static eval when not in check
+        int staticEval = isInCheck ? Integer.MIN_VALUE : evaluator.evaluate(board);
 
         if (!zwNode && !isInCheck) {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
@@ -362,7 +365,7 @@ public class Searcher implements Search {
                 bestMove = move;
                 alpha = eval;
                 flag = HashFlag.EXACT;
-                if (ply == 0) {
+                if (rootNode) {
                     bestMoveCurrentDepth = move;
                     bestEvalCurrentDepth = eval;
                 }
@@ -373,7 +376,7 @@ public class Searcher implements Search {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
             return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
         }
-        if (ply == 0 && movesSearched == 1) {
+        if (rootNode && movesSearched == 1) {
             // If there is only one legal move at the root node, play that move immediately.
             int eval = isDraw() ? Score.DRAW_SCORE : staticEval;
             bestMoveCurrentDepth = bestMove;
@@ -395,27 +398,31 @@ public class Searcher implements Search {
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
     int quiescenceSearch(int alpha, int beta, int depth, int ply) {
+
+        //System.out.println("q " + depth + " " + FEN.toFEN(board));
+
         if (isCancelled()) {
             return alpha;
         }
 
-        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
-
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        Move previousBestMove;
+        Move previousBestMove = null;
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
-            movePicker.setBestMove(previousBestMove);
         }
 
-        int eval = transposition != null ? transposition.getScore() : evaluator.evaluate(board);
-        int standPat = eval;
-
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, see, board, isInCheck, depth);
+        movePicker.setBestMove(previousBestMove);
+
+        // Only compute the static eval when not in check
+        int eval = isInCheck ? Integer.MIN_VALUE : evaluator.evaluate(board);
+        int standPat = eval;
 
         if (isInCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
@@ -438,6 +445,7 @@ public class Searcher implements Search {
 
         while (true) {
 
+            // Captures with a bad SEE score are implicitly filtered out in the move picker
             Move move = movePicker.pickNextMove();
             if (move == null) break;
             movesSearched++;
@@ -449,14 +457,6 @@ public class Searcher implements Search {
                 Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
                 boolean isFutile = capturedPiece != null && (standPat + capturedPiece.getValue() + config.getDpMargin() < alpha) && !move.isPromotion();
                 if (isFutile) {
-                    continue;
-                }
-                // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
-                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
-                // chains, such as capturing with the queen a pawn defended by another pawn.
-                int seeScore = see.evaluate(board, move);
-                boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);
-                if (isBadCapture) {
                     continue;
                 }
             }

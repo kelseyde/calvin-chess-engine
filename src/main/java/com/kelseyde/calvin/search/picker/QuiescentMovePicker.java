@@ -6,6 +6,8 @@ import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
+import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -25,9 +27,11 @@ public class QuiescentMovePicker implements MovePicking {
     }
 
     final MoveGeneration moveGenerator;
-    final MoveOrdering moveOrderer;
+    final StaticExchangeEvaluator see;
 
     final Board board;
+    final int ply;
+    final boolean isInCheck;
     MoveFilter filter;
     Stage stage;
 
@@ -43,11 +47,13 @@ public class QuiescentMovePicker implements MovePicking {
      * @param moveOrderer   the move orderer to use for scoring and ordering moves
      * @param board         the current state of the board
      */
-    public QuiescentMovePicker(MoveGeneration moveGenerator, MoveOrdering moveOrderer, Board board) {
+    public QuiescentMovePicker(MoveGeneration moveGenerator, StaticExchangeEvaluator see, Board board, boolean isInCheck, int ply) {
         this.moveGenerator = moveGenerator;
-        this.moveOrderer = moveOrderer;
+        this.see = see;
         this.board = board;
         this.stage = Stage.BEST_MOVE;
+        this.isInCheck = isInCheck;
+        this.ply = ply;
     }
 
     /**
@@ -101,6 +107,18 @@ public class QuiescentMovePicker implements MovePicking {
             // Skip to the next move
             return pickMove();
         }
+
+//        if (!isInCheck) {
+//            int score = scores[moveIndex];
+//            // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
+//            // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
+//            // chains, such as capturing with the queen a pawn defended by another pawn.
+//            if ((ply <= 3 && score < 0) || (ply > 3 && score <= 0)) {
+//                moveIndex++;
+//                return pickMove();
+//            }
+//        }
+
         return move;
 
     }
@@ -111,7 +129,8 @@ public class QuiescentMovePicker implements MovePicking {
     public void scoreMoves() {
         scores = new int[moves.size()];
         for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.mvvLva(board, moves.get(i), bestMove);
+            //scores[i] = see.evaluate(board, moves.get(i));
+            scores[i] = new MoveOrderer().mvvLva(board, moves.get(i), bestMove);
         }
     }
 

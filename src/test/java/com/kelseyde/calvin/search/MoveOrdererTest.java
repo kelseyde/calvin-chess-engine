@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -22,8 +21,6 @@ public class MoveOrdererTest {
     private MoveOrderer moveOrderer;
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
-
-    private MovePicker movePicker;
 
     @BeforeEach
     public void beforeEach() {
@@ -79,11 +76,8 @@ public class MoveOrdererTest {
                 Notation.fromNotation("h1", "g1"),
                 Notation.fromNotation("h1", "g2"),
                 Notation.fromNotation("f3", "e4")
+//                NotationUtils.fromNotation("d3", "e4", PieceType.PAWN),
         ));
-
-        movePicker = new MovePicker(moveGenerator, moveOrderer, board, 1);
-        movePicker.setMoves(moves);
-        Assertions.assertTrue(movePicker.pickNextMove().matches(Notation.fromNotation("f3", "e4")));
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
@@ -112,19 +106,11 @@ public class MoveOrdererTest {
         Move killerMove3 = TestUtils.getLegalMove(board, "g1", "f1");
         moveOrderer.addKillerMove(1, killerMove3);
 
-        movePicker = new MovePicker(moveGenerator, moveOrderer, board, 1);
-        movePicker.setMoves(moves);
-
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(killerMove3));
-        Assertions.assertTrue(movePicker.pickNextMove().matches(killerMove3));
-
         Assertions.assertTrue(orderedMoves.get(1).matches(killerMove2));
-        Assertions.assertTrue(movePicker.pickNextMove().matches(killerMove2));
-
         Assertions.assertTrue(orderedMoves.get(2).matches(killerMove1));
-        Assertions.assertTrue(movePicker.pickNextMove().matches(killerMove1));
 
 
     }
@@ -145,13 +131,9 @@ public class MoveOrdererTest {
         Move killerMove = new Move(21, 29);
         moveOrderer.addKillerMove(2, killerMove);
 
-        movePicker = new MovePicker(moveGenerator, moveOrderer, board, 1);
-        movePicker.setMoves(moves);
-
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
         Assertions.assertFalse(orderedMoves.get(0).matches(Notation.fromNotation("f3", "f4")));
-        Assertions.assertFalse(movePicker.pickNextMove().matches(Notation.fromNotation("f3", "f4")));
 
     }
 
@@ -175,13 +157,9 @@ public class MoveOrdererTest {
 
         moveOrderer.incrementHistoryScore(5, Notation.fromNotation("f1", "e1"), true);
 
-        movePicker = new MovePicker(moveGenerator, moveOrderer, board, 1);
-        movePicker.setMoves(moves);
-
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("f1", "e1")));
-        Assertions.assertTrue(movePicker.pickNextMove().matches(Notation.fromNotation("f1", "e1")));
 
     }
 
@@ -199,12 +177,9 @@ public class MoveOrdererTest {
                 Notation.fromNotation("d3", "e4")
                 ));
 
-        movePicker = new MovePicker(moveGenerator, moveOrderer, board, 1);
-        movePicker.setMoves(moves);
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("d3", "e4")));
-        Assertions.assertTrue(movePicker.pickNextMove().matches(Notation.fromNotation("d3", "e4")));
 
     }
 
@@ -222,14 +197,10 @@ public class MoveOrdererTest {
                 Notation.fromNotation("d3", "e4")
                 ));
 
-        movePicker = new MovePicker(moveGenerator, moveOrderer, board, 1);
-        movePicker.setMoves(moves);
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
         Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("d3", "e4")));
-        Assertions.assertTrue(movePicker.pickNextMove().matches(Notation.fromNotation("d3", "e4")));
         Assertions.assertTrue(orderedMoves.get(1).matches(Notation.fromNotation("f3", "e4")));
-        Assertions.assertTrue(movePicker.pickNextMove().matches(Notation.fromNotation("f3", "e4")));
 
     }
 
@@ -275,38 +246,22 @@ public class MoveOrdererTest {
         // Add a white history move just to confirm it is not used
         moveOrderer.incrementHistoryScore(2, new Move(Notation.fromNotation("h3"), Notation.fromNotation("h2")), true);
 
-        movePicker = new MovePicker(moveGenerator, moveOrderer, board, 3);
-        movePicker.setBestMove(previousBestMove);
         List<Move> orderedMoves = moveOrderer.orderMoves(board, legalMoves, previousBestMove, 3);
 
         Assertions.assertEquals(orderedMoves.get(0), new Move(Notation.fromNotation("b8"), Notation.fromNotation("c7")));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("b8"), Notation.fromNotation("c7")));
         Assertions.assertEquals(orderedMoves.get(1), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_QUEEN_FLAG));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_QUEEN_FLAG));
         Assertions.assertEquals(orderedMoves.get(2), new Move(Notation.fromNotation("c6"), Notation.fromNotation("e4")));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("c6"), Notation.fromNotation("e4")));
         Assertions.assertEquals(orderedMoves.get(3), new Move(Notation.fromNotation("h3"), Notation.fromNotation("g2")));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("h3"), Notation.fromNotation("g2")));
         Assertions.assertEquals(orderedMoves.get(4), new Move(Notation.fromNotation("b6"), Notation.fromNotation("a4")));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("b6"), Notation.fromNotation("a4")));
         Assertions.assertEquals(orderedMoves.get(5), new Move(Notation.fromNotation("d7"), Notation.fromNotation("e6")));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("d7"), Notation.fromNotation("e6")));
         Assertions.assertEquals(orderedMoves.get(6), new Move(Notation.fromNotation("d7"), Notation.fromNotation("d5"), Move.PAWN_DOUBLE_MOVE_FLAG));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("d7"), Notation.fromNotation("d5"), Move.PAWN_DOUBLE_MOVE_FLAG));
         Assertions.assertEquals(orderedMoves.get(7), new Move(Notation.fromNotation("c6"), Notation.fromNotation("a4")));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("c6"), Notation.fromNotation("a4")));
         Assertions.assertEquals(orderedMoves.get(8), new Move(Notation.fromNotation("a6"), Notation.fromNotation("a4")));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("a6"), Notation.fromNotation("a4")));
         Assertions.assertEquals(orderedMoves.get(9), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_KNIGHT_FLAG));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_KNIGHT_FLAG));
         Assertions.assertEquals(orderedMoves.get(10), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_BISHOP_FLAG));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_BISHOP_FLAG));
         Assertions.assertEquals(orderedMoves.get(11), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_ROOK_FLAG));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("f2"), Notation.fromNotation("f1"), Move.PROMOTE_TO_ROOK_FLAG));
         Assertions.assertEquals(orderedMoves.get(12), new Move(Notation.fromNotation("g7"), Notation.fromNotation("g5"), Move.PAWN_DOUBLE_MOVE_FLAG));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("g7"), Notation.fromNotation("g5"), Move.PAWN_DOUBLE_MOVE_FLAG));
         Assertions.assertEquals(orderedMoves.get(13), new Move(Notation.fromNotation("h7"), Notation.fromNotation("h5"), Move.PAWN_DOUBLE_MOVE_FLAG));
-        Assertions.assertEquals(movePicker.pickNextMove(), new Move(Notation.fromNotation("h7"), Notation.fromNotation("h5"), Move.PAWN_DOUBLE_MOVE_FLAG));
 
     }
 

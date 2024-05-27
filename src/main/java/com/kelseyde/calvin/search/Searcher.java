@@ -371,7 +371,6 @@ public class Searcher implements Search {
             return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
         }
         if (ply == 0 && movesSearched == 1) {
-            // TODO doesnt work anymore I guess
             // If there is only one legal move at the root node, play that move immediately.
             int eval = isDraw() ? Score.DRAW_SCORE : staticEval;
             bestMoveCurrentDepth = bestMove;

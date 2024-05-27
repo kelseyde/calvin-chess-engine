@@ -10,6 +10,7 @@ import com.kelseyde.calvin.transposition.pawn.PawnHashEntry;
 import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
+import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -24,6 +25,10 @@ import lombok.experimental.FieldDefaults;
  */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Evaluator implements Evaluation {
+
+    static final int MINOR_PIECE_ATTACK_UNIT = 2;
+    static final int ROOK_ATTACK_UNIT = 3;
+    static final int QUEEN_ATTACK_UNIT = 5;
 
     final EngineConfig config;
     final PawnHashTable pawnHash;
@@ -50,23 +55,6 @@ public class Evaluator implements Evaluation {
     final int[] queenMgMobility;
     final int[] queenEgMobility;
 
-    static final int[] safetyTable = new int[]{
-        0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
-        18,  22,  26,  30,  35,  39,  44,  50,  56,  62,
-        68,  75,  82,  85,  89,  97, 105, 113, 122, 131,
-        140, 150, 169, 180, 191, 202, 213, 225, 237, 248,
-        260, 272, 283, 295, 307, 319, 330, 342, 354, 366,
-        377, 389, 401, 412, 424, 436, 448, 459, 471, 483,
-        494, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-        500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-        500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
-        500, 500, 500, 500, 500, 500, 500, 500, 500, 500
-    };
-
-    static final int MINOR_PIECE_ATTACK_UNIT = 2;
-    static final int ROOK_ATTACK_UNIT = 3;
-    static final int QUEEN_ATTACK_UNIT = 5;
-
     long whiteKingSafetyZone;
     long blackKingSafetyZone;
 
@@ -76,8 +64,8 @@ public class Evaluator implements Evaluation {
     int whiteEgScore;
     int blackEgScore;
 
-    int whiteAttackZoneScore;
-    int blackAttackZoneScore;
+    int whiteKingAttackZoneUnits;
+    int blackKingAttackZoneUnits;
 
     float phase;
 
@@ -119,6 +107,8 @@ public class Evaluator implements Evaluation {
         whiteEgScore = 0;
         blackMgScore = 0;
         blackEgScore = 0;
+        whiteKingAttackZoneUnits = 0;
+        blackKingAttackZoneUnits = 0;
         phase = 0;
 
         boolean white = board.isWhiteToMove();
@@ -459,7 +449,8 @@ public class Evaluator implements Evaluation {
         if (opponentMaterial.queens() == 0) {
             phase *= 0.4f;
         }
-        int attackZoneScore = white ? whiteAttackZoneScore : blackAttackZoneScore;
+        int kingAttackZoneUnits = white ? whiteKingAttackZoneUnits : blackKingAttackZoneUnits;
+        int attackZoneScore = config.getKingAttackZonePenaltyTable()[kingAttackZoneUnits];
         float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty + attackZoneScore) * phase);
         int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
         int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
@@ -525,9 +516,9 @@ public class Evaluator implements Evaluation {
     }
 
     private void addAttackZoneScore(int attackUnit, int attackCount, boolean white) {
-        int attackZoneScore = (attackCount * safetyTable[attackUnit]);
-        if (white) blackAttackZoneScore += attackZoneScore;
-        else       whiteAttackZoneScore += attackZoneScore;
+        int attackZoneScore = attackUnit * attackCount;
+        if (white) blackKingAttackZoneUnits += attackZoneScore;
+        else       whiteKingAttackZoneUnits += attackZoneScore;
 
     }
 

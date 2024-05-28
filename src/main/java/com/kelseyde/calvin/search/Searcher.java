@@ -248,8 +248,10 @@ public class Searcher implements Search {
                 }
             }
 
-            int[] razorMargin = new int[] {250, 200, 150};
-            if (depth < 3 && staticEval + razorMargin[depth] < alpha) {
+            int[] razorMargin = new int[] {300, 350, 450};
+            if (depth < 3
+                    && staticEval + razorMargin[depth] < alpha
+                    && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 int eval = quiescenceSearch(alpha, beta, 1, ply);
                 if (eval < alpha) {
                     return eval;

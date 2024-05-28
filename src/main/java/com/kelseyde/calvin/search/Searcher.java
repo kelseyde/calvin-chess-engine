@@ -247,6 +247,14 @@ public class Searcher implements Search {
                     return eval;
                 }
             }
+
+            int[] razorMargin = new int[] {250, 200, 150};
+            if (depth < 3 && staticEval + razorMargin[depth] < alpha) {
+                int eval = quiescenceSearch(alpha, beta, 1, ply);
+                if (eval < alpha) {
+                    return eval;
+                }
+            }
         }
 
         Move bestMove = null;

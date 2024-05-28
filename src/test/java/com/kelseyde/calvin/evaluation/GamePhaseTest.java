@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -90,7 +91,7 @@ public class GamePhaseTest {
     private float score(Board board) {
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
-        return Phase.fromMaterial(whiteMaterial, blackMaterial);
+        return Phase.fromMaterial(whiteMaterial, blackMaterial, TestUtils.TST_CONFIG);
     }
 
 }

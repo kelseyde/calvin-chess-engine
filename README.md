@@ -1,8 +1,12 @@
 <p align="center"><img src="src/main/resources/calvin.png" width="160"></p>
 
-Calvin is a UCI-compliant chess engine written in Java. 
+Calvin is a chess engine written by [@kelseyde](https://github.com/kelseyde).
+
+It is written in Java (JDK 21).
 
 Currently playing on Lichess: https://lichess.org/@/Calvin_Bot
+
+Ranked ~300th on the Computer Chess Rating Lists blitz leaderboard: https://www.computerchess.org.uk/ccrl/404/
 
 ## Strength
 
@@ -10,10 +14,12 @@ The table below tracks the strength of release versions, on the CCRL computer ch
 
 | 	Version	 | 	Release date | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | 
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | :-----:	 | 
-| [2.6.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/2.6.2) | 2023-11-12 | ~2300 | 2276 |
-| [3.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.0.0) | 2023-12-02 | ~2380 | - |
+| [3.4.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) | 2024-05-19 | ~2580 | - |
+| [3.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.3.0) | 2024-05-10 | ~2550 | 2453 |
+| [3.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.2.0) | 2023-12-09 | ~2400 | 2233 |
 | [3.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.1.0) | 2023-12-05 | ~2390 | - |
-| [3.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.2.0) | 2023-12-09 | ~2400 | - |
+| [3.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.0.0) | 2023-12-02 | ~2380 | - |
+| [2.6.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/2.6.2) | 2023-11-12 | ~2300 | 2173 |
 
 ## Features
 
@@ -44,6 +50,7 @@ The table below tracks the strength of release versions, on the CCRL computer ch
 - [History heuristic](https://www.chessprogramming.org/History_Heuristic).
 
 ### Evaluation
+- [Texel Tuning](https://www.chessprogramming.org/Texel%27s_Tuning_Method): all evaluation parameters are tuned using Texel's tuning method.
 - [Material](https://www.chessprogramming.org/Material): basic material count, bishop pair bonus
 - [Piece square tables](https://www.chessprogramming.org/Piece-Square_Tables): asymettrical PSTs
 - [Tapered eval](https://www.chessprogramming.org/Tapered_Eval): evaluation tapered based on opening/middlegame/endgame phase
@@ -52,11 +59,13 @@ The table below tracks the strength of release versions, on the CCRL computer ch
 - [Incremental updates](https://www.chessprogramming.org/Incremental_Updates): Evaluation is updated incrementally with make/unmake move
 
 ### Opening Book / Endgame Tablebase
-- Simple opening book loaded from a .txt file on startup. Can be disabled using the 'OwnBook' UCI option
-- No endgame tablebases implemented yet.
+- Simple opening book loaded from a .txt file on startup. Can be disabled using the 'OwnBook' UCI option.
+- Calvin can probe the [Lichess Tablebase API](https://github.com/lichess-org/lila-tablebase) for endgames of 7 men or fewer. Can be disabled using the 'OwnTablebase' UCI option.
 
 ### Communication
-- [UCI protocol](https://www.chessprogramming.org/UCI) implemented with time management support.
+- Calvin communicates using the Universal Chess Interface [(UCI) protocol](https://www.chessprogramming.org/UCI).
+- [Pondering](https://www.chessprogramming.org/Pondering), where the engine thinks on the opponent's move. Can be disabled via the UCI.
+- Hash size and number of Lazy SMP threads are also configurable via the UCI.
 - Calvin is connected to Lichess where he plays regularly in the engine pool: https://lichess.org/@/Calvin_Bot
 
 ### Perft results (starting position):

@@ -21,10 +21,10 @@ public abstract class PerftTest {
     protected abstract String getFen();
     protected abstract String getSubFolder();
 
-    protected void perft(int depth, int expectedTotalMoves) {
+    protected void perft(int depth, long expectedTotalMoves) {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
-        int totalMoveCount = perftService.perft(board, depth);
+        long totalMoveCount = perftService.perft(board, depth);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
         if (expectedTotalMoves == totalMoveCount) {

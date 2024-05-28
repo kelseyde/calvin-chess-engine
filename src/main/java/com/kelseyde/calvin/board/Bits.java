@@ -76,6 +76,9 @@ public class Bits {
     public static final long KINGSIDE_MASK = FILE_F | FILE_G | FILE_H;
     public static final long QUEENSIDE_MASK = FILE_A | FILE_B | FILE_C;
 
+    public static final long WHITE_HALF_MASK = 0x00000000FFFFFFFFL; // Bits 0 to 31
+    public static final long BLACK_HALF_MASK = 0xFFFFFFFF00000000L; // Bits 32 to 63
+
     // Masks for the squares that must be unoccupied for legal castling
     public static final long WHITE_QUEENSIDE_CASTLE_TRAVEL_MASK = 0x000000000000000EL;
     public static final long WHITE_KINGSIDE_CASTLE_TRAVEL_MASK = 0x0000000000000060L;
@@ -112,6 +115,8 @@ public class Bits {
     public static final int CLEAR_WHITE_QUEENSIDE_MASK = 0b1101;
     public static final int CLEAR_BLACK_QUEENSIDE_MASK = 0b0111;
 
+    public static final long[] WEST_FILE_MASK = generateWestFileMask();
+    public static final long[] EAST_FILE_MASK = generateEastFileMask();
     public static final long[] ADJACENT_FILE_MASK = generateAdjacentFileMask();
     public static final long[] TRIPLE_FILE_MASK = generateTripleFileMask();
 
@@ -121,8 +126,30 @@ public class Bits {
     public static final long[] WHITE_PROTECTED_PAWN_MASK = generateProtectedPawnMask(true);
     public static final long[] BLACK_PROTECTED_PAWN_MASK = generateProtectedPawnMask(false);
 
+    public static final long[] WHITE_FORWARD_ADJACENT_MASK = generateForwardAdjacentMask(true);
+    public static final long[] BLACK_FORWARD_ADJACENT_MASK = generateForwardAdjacentMask(false);
+
     public static final long[] INNER_RING_MASK = generateInnerRingMask();
     public static final long[] OUTER_RING_MASK = generateOuterRingMask();
+
+    public static final long[] WHITE_KING_SAFETY_ZONE = generateKingSafetyZone(true);
+    public static final long[] BLACK_KING_SAFETY_ZONE = generateKingSafetyZone(false);
+
+    private static long[] generateWestFileMask() {
+        long[] westFileMasks = new long[8];
+        for (int i = 0; i < 8; i++) {
+            westFileMasks[i] = i > 0 ? Bits.FILE_A << (i - 1) : 0;
+        }
+        return westFileMasks;
+    }
+
+    private static long[] generateEastFileMask() {
+        long[] westFileMasks = new long[8];
+        for (int i = 0; i < 8; i++) {
+            westFileMasks[i] = i < 7 ? Bits.FILE_A << (i + 1) : 0;
+        }
+        return westFileMasks;
+    }
 
     private static long[] generateAdjacentFileMask() {
         long[] adjacentFileMasks = new long[8];
@@ -146,7 +173,7 @@ public class Bits {
 
     }
 
-    private static long[] generatePassedPawnMask(boolean isWhite) {
+    private static long[] generatePassedPawnMask(boolean white) {
         long[] passedPawnMask = new long[64];
         for (int square = 0; square < 64; square++) {
             int file = BoardUtils.getFile(square);
@@ -155,21 +182,38 @@ public class Bits {
             long fileMask = Bits.FILE_MASKS[file];
             long tripleFileMask = fileMask | ADJACENT_FILE_MASK[file];
 
-            long forwardMask = isWhite ? ~(Long.MAX_VALUE >>> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
+            long forwardMask = white ? ~(Long.MAX_VALUE >>> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
             passedPawnMask[square] = tripleFileMask & forwardMask;
         }
         return passedPawnMask;
     }
 
-    private static long[] generateProtectedPawnMask(boolean isWhite) {
+    private static long[] generateProtectedPawnMask(boolean white) {
         long[] pawnProtectionMask = new long[64];
         for (int square = 0; square < 64; square++) {
             long squareBB = 1L << square;
-            pawnProtectionMask[square] = isWhite ?
+            pawnProtectionMask[square] = white ?
                     Bitwise.shiftSouthEast(squareBB) | Bitwise.shiftSouthWest(squareBB) :
                     Bitwise.shiftNorthEast(squareBB) | Bitwise.shiftNorthWest(squareBB);
         }
         return pawnProtectionMask;
+    }
+
+    private static long[] generateForwardAdjacentMask(boolean white) {
+
+        long[] forwardAdjacentMasks = new long[64];
+
+        for (int square = 0; square < 64; square++) {
+            int file = BoardUtils.getFile(square);
+            int rank = BoardUtils.getRank(square);
+
+            long adjacentMask = ADJACENT_FILE_MASK[file];
+            long forwardMask = white ? ~(Long.MAX_VALUE >>> (64 - 8 * (rank + 1))) : ((1L << 8 * rank) - 1);
+            forwardAdjacentMasks[square] = forwardMask & adjacentMask;
+        }
+
+        return forwardAdjacentMasks;
+
     }
 
     private static long[] generateInnerRingMask() {
@@ -196,6 +240,18 @@ public class Bits {
             outerRingMasks[square] = mask;
         }
         return outerRingMasks;
+    }
+
+    private static long[] generateKingSafetyZone(boolean white) {
+        long[] kingSafetyZones = new long[64];
+        for (int square = 0; square < 64; square++) {
+            long innerRingMask = INNER_RING_MASK[square];
+            long kingSafetyZone = white ?
+                    innerRingMask | Bitwise.shiftNorth(innerRingMask) :
+                    innerRingMask | Bitwise.shiftSouth(innerRingMask);
+            kingSafetyZones[square] = kingSafetyZone;
+        }
+        return kingSafetyZones;
     }
 
 }

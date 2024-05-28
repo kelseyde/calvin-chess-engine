@@ -24,7 +24,7 @@ public class Notation {
         return new Move(fromNotation(startSquare), fromNotation(endSquare));
     }
 
-    public static Move fromNotation(String startSquare, String endSquare, short flag) {
+    public static Move fromNotation(String startSquare, String endSquare, int flag) {
         return new Move(fromNotation(startSquare), fromNotation(endSquare), flag);
     }
 
@@ -36,7 +36,7 @@ public class Notation {
         int startSquare = fromNotation(notation.substring(0, 2));
         int endSquare = fromNotation(notation.substring(2, 4));
 
-        short flag = Move.NO_FLAG;
+        int flag = Move.NO_FLAG;
         if (notation.length() == 5) {
             String pieceCode = notation.substring(4, 5);
             Piece promotionPieceType = PIECE_CODE_INDEX.entrySet().stream()
@@ -52,8 +52,8 @@ public class Notation {
             return "-";
         }
         String notation = toNotation(move.getStartSquare()) + toNotation(move.getEndSquare());
-        if (move.getPromotionPieceType() != null) {
-            notation += PIECE_CODE_INDEX.get(move.getPromotionPieceType());
+        if (move.getPromotionPiece() != null) {
+            notation += PIECE_CODE_INDEX.get(move.getPromotionPiece());
         }
         return notation;
     }

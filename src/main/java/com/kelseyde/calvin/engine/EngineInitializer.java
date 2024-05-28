@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.engine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kelseyde.calvin.endgame.Tablebase;
+import com.kelseyde.calvin.endgame.lichess.LichessTablebase;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.generation.MoveGeneration;
@@ -11,6 +13,7 @@ import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -31,13 +34,16 @@ public class EngineInitializer {
 
     public static Engine loadEngine() {
         EngineConfig config = loadDefaultConfig();
+        config.postInitialise();
         OpeningBook book = loadDefaultOpeningBook();
+        Tablebase tablebase = loadDefaultTablebase(config);
+        TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
+        PawnHashTable pawnHashTable = new PawnHashTable(config.getDefaultPawnHashSizeMb());
         Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
-        Supplier<Evaluation> evaluator = () -> new Evaluator(config);
-        TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
+        Supplier<Evaluation> evaluator = () -> new Evaluator(config, pawnHashTable);
         Search searcher = new ParallelSearcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
-        return new Engine(config, book, moveGenerator.get(), searcher);
+        return new Engine(config, book, tablebase, moveGenerator.get(), searcher);
     }
 
     public static EngineConfig loadDefaultConfig() {
@@ -46,7 +52,9 @@ public class EngineInitializer {
 
     public static EngineConfig loadConfig(String configLocation) {
         try (InputStream inputStream = EngineInitializer.class.getResourceAsStream(configLocation)) {
-            return OBJECT_MAPPER.readValue(inputStream, EngineConfig.class);
+            EngineConfig config = OBJECT_MAPPER.readValue(inputStream, EngineConfig.class);
+            config.postInitialise();
+            return config;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -54,6 +62,10 @@ public class EngineInitializer {
 
     public static OpeningBook loadDefaultOpeningBook() {
         return loadOpeningBook(DEFAULT_BOOK_LOCATION);
+    }
+
+    public static Tablebase loadDefaultTablebase(EngineConfig config) {
+        return new LichessTablebase(config);
     }
 
     public static OpeningBook loadOpeningBook(String bookLocation) {

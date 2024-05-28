@@ -14,14 +14,67 @@ import java.util.List;
  */
 public interface MoveOrdering {
 
-    List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, boolean includeKillers, int depth);
+    /**
+     * Orders the list of moves based on heuristics to determine the likely best moves.
+     *
+     * @param board            The current board position.
+     * @param moves            The list of possible moves to be ordered.
+     * @param previousBestMove The best move from the previous iteration, used as a heuristic.
+     * @param depth            The current depth of the search.
+     * @return The list of moves ordered by their estimated quality.
+     */
+    List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, int depth);
 
-    int scoreMove(Board board, Move move, Move previousBestMove, boolean includeKillers, int depth);
+    /**
+     * Scores a single move based on heuristics to determine its likely quality.
+     *
+     * @param board            The current board position.
+     * @param move             The move to be scored.
+     * @param previousBestMove The best move from the previous iteration, used as a heuristic.
+     * @param depth            The current depth of the search.
+     * @return The score representing the quality of the move.
+     */
+    int scoreMove(Board board, Move move, Move previousBestMove, int depth);
 
+    /**
+     * Scores a move using the Most Valuable Victim - Least Valuable Aggressor (MVV-LVA) heuristic.
+     *
+     * @param board The current board position.
+     * @param move The move to be scored.
+     * @return The MVV-LVA score of the move.
+     */
+    int mvvLva(Board board, Move move, Move previousBestMove);
+
+    /**
+     * Get a killer move for the given ply and killer index.
+     * @param ply the ply of the killer move
+     * @param index the index of the move in the killer move array.
+     * @return the killer move
+     */
+    Move getKillerMove(int ply, int index);
+
+    /**
+     * Adds a killer move for a given ply (depth) in the search.
+     *
+     * @param ply The depth at which the move is considered a killer move.
+     * @param newKiller The move to be added as a killer move.
+     */
     void addKillerMove(int ply, Move newKiller);
 
-    void addHistoryMove(int plyRemaining, Move historyMove, boolean isWhite);
+    /**
+     * Adds a move to the history heuristic table.
+     *
+     * @param depth The remaining depth in the search.
+     * @param historyMove The move to be added to the history table.
+     * @param white Whether the move was made by the white player.
+     */
+    void incrementHistoryScore(int depth, Move historyMove, boolean white);
 
+    void ageHistoryScores(boolean white);
+
+    /**
+     * Clears all stored data related to move ordering heuristics.
+     */
     void clear();
 
 }

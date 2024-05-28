@@ -1,11 +1,14 @@
 package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.board.Zobrist;
 import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -46,9 +49,9 @@ public class FEN {
             for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
                 List<String> rank = rankFileHash.get(rankIndex);
                 for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
-                    int squareIndex = BoardUtils.squareIndex(rankIndex, fileIndex);
+                    int square = BoardUtils.squareIndex(rankIndex, fileIndex);
                     String squareValue = rank.get(fileIndex);
-                    long squareBB = 1L << squareIndex;
+                    long squareBB = 1L << square;
                     switch (squareValue) {
                         case "P" -> whitePawns |= squareBB;
                         case "N" -> whiteKnights |= squareBB;
@@ -66,7 +69,7 @@ public class FEN {
                 }
             }
 
-            boolean isWhiteToMove = parseSideToMove(parts[1]);
+            boolean whiteToMove = parseSideToMove(parts[1]);
             int castlingRights = parseCastlingRights(parts[2]);
             int enPassantFile = parseEnPassantFile(parts[3]);
             int fiftyMoveCounter = parts.length > 4 ? parseFiftyMoveCounter(parts[4]) : 0;
@@ -87,7 +90,7 @@ public class FEN {
             board.setBlackKing(blackKing);
             board.recalculatePieces();
             board.setPieceList(BoardUtils.calculatePieceList(board));
-            board.setWhiteToMove(isWhiteToMove);
+            board.setWhiteToMove(whiteToMove);
             board.getGameState().setCastlingRights(castlingRights);
             board.getGameState().setEnPassantFile(enPassantFile);
             board.getGameState().setFiftyMoveCounter(fiftyMoveCounter);
@@ -104,16 +107,57 @@ public class FEN {
 
     public static String toFEN(Board board) {
         try {
-            // TODO
-            String isWhiteToMove = toSideToMove(board.isWhiteToMove());
+            StringBuilder sb = new StringBuilder();
+
+            for (int rank = 7; rank >= 0; rank--) {
+                int emptySquares = 0;
+                for (int file = 0; file < 8; file++) {
+                    int square = BoardUtils.squareIndex(rank, file);
+                    Piece piece = board.pieceAt(square);
+                    if (piece != null) {
+                        if (emptySquares != 0) {
+                            sb.append(emptySquares);
+                            emptySquares = 0;
+                        }
+                        long squareBB = 1L << square;
+                        boolean white = (board.getWhitePieces() & squareBB) != 0;
+                        String pieceCode = Notation.PIECE_CODE_INDEX.get(piece);
+                        if (white) pieceCode = pieceCode.toUpperCase();
+                        sb.append(pieceCode);
+                    } else {
+                        emptySquares++;
+                    }
+                }
+                if (emptySquares != 0) {
+                    sb.append(emptySquares);
+                }
+                if (rank > 0) {
+                    sb.append('/');
+                }
+            }
+
+            String whiteToMove = toSideToMove(board.isWhiteToMove());
+            sb.append(" ").append(whiteToMove);
+
             String castlingRights = toCastlingRights(board.getGameState().getCastlingRights());
-            String enPassantFile = toEnPassantFile(board.getGameState().getEnPassantFile());
+            sb.append(" ").append(castlingRights);
+
+            String enPassantSquare = toEnPassantSquare(board.getGameState().getEnPassantFile(), board.isWhiteToMove());
+            sb.append(" ").append(enPassantSquare);
+
             String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getFiftyMoveCounter());
-            return null;
+            sb.append(" ").append(fiftyMoveCounter);
+
+            String fullMoveNumber = toFullMoveCounter(board.getMoveHistory());
+            sb.append(" ").append(fullMoveNumber);
+
+            return sb.toString();
         } catch (Exception e) {
             throw new IllegalArgumentException(board.toString(), e);
         }
     }
+
+
 
     private static boolean parseSideToMove(String sideToMove) {
         return switch (sideToMove) {
@@ -148,7 +192,7 @@ public class FEN {
         if (castlingRights == 0b0000) {
             return "-";
         }
-        String castlingRightsString = "-";
+        String castlingRightsString = "";
         if ((castlingRights & 0b0001) != 0) {
             castlingRightsString += "K";
         }
@@ -164,19 +208,20 @@ public class FEN {
         return castlingRightsString;
     }
 
-    private static int parseEnPassantFile(String enPassantFile) {
-        if (enPassantFile.equals("-")) {
+    private static int parseEnPassantFile(String enPassantSquare) {
+        if (enPassantSquare.equals("-")) {
             return -1;
         }
-        int square = Notation.fromNotation(enPassantFile);
+        int square = Notation.fromNotation(enPassantSquare);
         return BoardUtils.getFile(square);
     }
 
-    private static String toEnPassantFile(int enPassantFile) {
+    private static String toEnPassantSquare(int enPassantFile, boolean white) {
+        int rank = white ? 2 : 5;
         if (enPassantFile == -1) {
             return "-";
         }
-        return Integer.valueOf(Notation.toNotation(enPassantFile)).toString();
+        return Notation.toNotation(BoardUtils.squareIndex(rank, enPassantFile));
     }
 
     private static int parseFiftyMoveCounter(String fiftyMoveCounter) {
@@ -185,6 +230,11 @@ public class FEN {
 
     private static String toFiftyMoveCounter(int fiftyMoveCounter) {
         return Integer.toString(fiftyMoveCounter);
+    }
+
+    private static String toFullMoveCounter(Deque<Move> moveHistory) {
+        int halfMoves = moveHistory.size();
+        return Integer.toString(1 + (halfMoves / 2));
     }
 
     private static Stream<String> parseSquare(String square) {

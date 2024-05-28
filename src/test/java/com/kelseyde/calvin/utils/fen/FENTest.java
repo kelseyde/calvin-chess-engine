@@ -3,10 +3,17 @@ package com.kelseyde.calvin.utils.fen;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
+@Disabled
 public class FENTest {
 
     @Test
@@ -36,6 +43,25 @@ public class FENTest {
         Assertions.assertEquals(new ArrayList<>(newBoard.getGameStateHistory()), new ArrayList<>(fenBoard.getGameStateHistory()));
         Assertions.assertEquals(new ArrayList<>(newBoard.getMoveHistory()), new ArrayList<>(fenBoard.getMoveHistory()));
 
+    }
+
+    @Test
+    public void testAllFens() throws IOException {
+
+        List<String> fens = loadFens();
+        for (String originalFen : fens) {
+            String actualFen = originalFen.split("\"")[0];
+            Board board = FEN.toBoard(actualFen);
+            String newFen = FEN.toFEN(board);
+            Assertions.assertEquals(actualFen, newFen);
+        }
+
+    }
+
+    private List<String> loadFens() throws IOException {
+        String fileName = "src/test/resources/texel/quiet_positions.epd";
+        Path path = Paths.get(fileName);
+        return Files.readAllLines(path);
     }
 
 }

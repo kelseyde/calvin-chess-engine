@@ -11,12 +11,13 @@ public interface MoveGeneration {
 
     List<Move> generateMoves(Board board, MoveFilter filter);
 
-    boolean isCheck(Board board, boolean isWhite);
+    boolean isCheck(Board board, boolean white);
 
     enum MoveFilter {
         ALL,
-        CAPTURES_AND_CHECKS,
-        CAPTURES_ONLY
+        NOISY,
+        QUIET,
+        CAPTURES_ONLY,
     }
 
 }

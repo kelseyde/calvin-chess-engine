@@ -1,11 +1,13 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -400,6 +402,33 @@ public class BoardTest {
 
     }
 
+    @Test
+    @Disabled
+    public void testKingSafetyZones() {
+
+        for (int i = 0; i < 64; i++) {
+            System.out.println("WHITE " + Notation.toNotation(i));
+            Bitwise.print(Bits.WHITE_KING_SAFETY_ZONE[i]);
+
+            System.out.println("BLACK " + Notation.toNotation(i));
+            Bitwise.print(Bits.BLACK_KING_SAFETY_ZONE[i]);
+        }
+
+    }
+
+    @Test
+    public void testPromotionWithFilters() {
+
+        String fen = "8/k5P1/8/8/8/8/5rr1/7K w - - 0 1";
+        Board board = FEN.toBoard(fen);
+
+        MoveGenerator moveGenerator = new MoveGenerator();
+
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.QUIET).size());
+        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY).size());
+
+    }
+
     private void assertRingMasks(long ringMask, Set<Integer> expectedSquares) {
         Set<Integer> actualSquares = new HashSet<>();
         while (ringMask != 0) {
@@ -410,9 +439,9 @@ public class BoardTest {
         Assertions.assertEquals(actualSquares, expectedSquares);
     }
 
-    private Set<Integer> getPiecePositions(Board board, boolean isWhiteToMove) {
+    private Set<Integer> getPiecePositions(Board board, boolean whiteToMove) {
         Set<Integer> positions = new HashSet<>();
-        if (isWhiteToMove) {
+        if (whiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
                 int position = Bitwise.getNextBit(whitePieces);

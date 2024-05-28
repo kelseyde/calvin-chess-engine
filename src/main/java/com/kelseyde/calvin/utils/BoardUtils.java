@@ -85,12 +85,12 @@ public class BoardUtils {
         return 8 * rank + file;
     }
 
-    public static boolean isValidIndex(int squareIndex) {
-        return squareIndex >= 0 && squareIndex < 64;
+    public static boolean isValidIndex(int square) {
+        return square >= 0 && square < 64;
     }
 
-    public static int getColourIndex(boolean isWhite) {
-        return isWhite ? 1 : 0;
+    public static int getColourIndex(boolean white) {
+        return white ? 1 : 0;
     }
 
     public static Piece[] calculatePieceList(Board board) {
@@ -108,7 +108,6 @@ public class BoardUtils {
         return pieceList;
 
     }
-
 
     public static Board copy(Board board) {
         Board newBoard = new Board();
@@ -133,7 +132,7 @@ public class BoardUtils {
         board.getGameStateHistory().forEach(gameState -> gameStateHistory.add(gameState.copy()));
         newBoard.setGameStateHistory(gameStateHistory);
         Deque<Move> moveHistory = new ArrayDeque<>();
-        board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.getValue())));
+        board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.value())));
         newBoard.setMoveHistory(moveHistory);
         newBoard.setPieceList(Arrays.copyOf(board.getPieceList(), board.getPieceList().length));
         newBoard.recalculatePieces();

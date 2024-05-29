@@ -213,7 +213,6 @@ public class Searcher implements Search {
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
@@ -228,7 +227,7 @@ public class Searcher implements Search {
             if (depth <= config.getRfpDepth()
                 && staticEval - config.getRfpMargin()[depth] > beta
                 && !isMateHunting) {
-                return staticEval - config.getRfpMargin()[depth];
+                return beta;
             }
 
             // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning
@@ -244,7 +243,7 @@ public class Searcher implements Search {
                 board.unmakeNullMove();
                 if (eval >= beta) {
                     transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
-                    return eval;
+                    return beta;
                 }
             }
         }
@@ -408,14 +407,12 @@ public class Searcher implements Search {
         QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        Move previousBestMove;
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
         if (hasBestMove(transposition)) {
-            previousBestMove = transposition.getMove();
-            movePicker.setBestMove(previousBestMove);
+            movePicker.setBestMove(transposition.getMove());
         }
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());

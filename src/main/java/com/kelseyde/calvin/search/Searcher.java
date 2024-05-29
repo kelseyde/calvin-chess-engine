@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -9,16 +10,14 @@ import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.search.picker.MovePicker;
-import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -237,7 +236,7 @@ public class Searcher implements Search {
             if (allowNull
                 && depth >= config.getNmpDepth()
                 && staticEval >= beta - config.getNmpMargin()
-                && board.hasPiecesRemaining(board.isWhiteToMove())) {
+                && Bitwise.hasPiecesRemaining(board, board.isWhiteToMove())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -290,7 +289,7 @@ public class Searcher implements Search {
             }
 
             // Extend search 1 ply when entering a pawn endgame, to avoid accidentally trading into lost/drawn endgames
-            if (isCapture && capturedPiece != Piece.PAWN && board.isPawnEndgame()) {
+            if (isCapture && capturedPiece != Piece.PAWN && Bitwise.isPawnEndgame(board)) {
                 extension = 1;
             }
 

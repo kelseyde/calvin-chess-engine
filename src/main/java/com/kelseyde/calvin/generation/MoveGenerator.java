@@ -1,6 +1,9 @@
 package com.kelseyde.calvin.generation;
 
-import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.check.PinCalculator;
 import com.kelseyde.calvin.generation.check.PinCalculator.PinData;
 import com.kelseyde.calvin.generation.check.RayCalculator;

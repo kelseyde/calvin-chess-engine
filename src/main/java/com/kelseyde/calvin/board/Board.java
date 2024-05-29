@@ -151,7 +151,7 @@ public class Board {
             }
         }
 
-        int newCastlingRights = calculateCastlingRights(startSquare, endSquare, piece);
+        int newCastlingRights = GameState.calculateCastlingRights(gameState, startSquare, endSquare, piece, isWhiteToMove);
 
         zobrist = Zobrist.updateCastlingRights(zobrist, gameState.getCastlingRights(), newCastlingRights);
         zobrist = Zobrist.updateEnPassantFile(zobrist, gameState.getEnPassantFile(), newEnPassantFile);
@@ -248,6 +248,42 @@ public class Board {
         gameState = gameStateHistory.pop();
     }
 
+    public Piece pieceAt(int square) {
+        return pieceList[square];
+    }
+
+    public long getPawns(boolean white) {
+        return white ? whitePawns : blackPawns;
+    }
+
+    public long getKnights(boolean white) {
+        return white ? whiteKnights : blackKnights;
+    }
+
+    public long getBishops(boolean white) {
+        return white ? whiteBishops : blackBishops;
+    }
+
+    public long getRooks(boolean white) {
+        return white ? whiteRooks : blackRooks;
+    }
+
+    public long getQueens(boolean white) {
+        return white ? whiteQueens : blackQueens;
+    }
+
+    public long getKing(boolean white) {
+        return white ? whiteKing : blackKing;
+    }
+
+    public long getPieces(boolean white) {
+        return white ? whitePieces : blackPieces;
+    }
+
+    public int countPieces() {
+        return Bitwise.countBits(occupied);
+    }
+
     public void toggleSquares(Piece type, boolean white, int startSquare, int endSquare) {
         long toggleMask = (1L << startSquare | 1L << endSquare);
         toggle(type, white, toggleMask);
@@ -256,17 +292,6 @@ public class Board {
     public void toggleSquare(Piece type, boolean white, int square) {
         long toggleMask = 1L << square;
         toggle(type, white, toggleMask);
-    }
-
-    private void toggle(Piece type, boolean white, long toggleMask) {
-        switch (type) {
-            case PAWN ->    { if (white) whitePawns ^= toggleMask;    else blackPawns ^= toggleMask; }
-            case KNIGHT ->  { if (white) whiteKnights ^= toggleMask;  else blackKnights ^= toggleMask; }
-            case BISHOP ->  { if (white) whiteBishops ^= toggleMask;  else blackBishops ^= toggleMask; }
-            case ROOK ->    { if (white) whiteRooks ^= toggleMask;    else blackRooks ^= toggleMask; }
-            case QUEEN ->   { if (white) whiteQueens ^= toggleMask;   else blackQueens ^= toggleMask; }
-            case KING ->    { if (white) whiteKing ^= toggleMask;     else blackKing ^= toggleMask; }
-        }
     }
 
     public void togglePawns(boolean white, int startSquare, int endSquare) {
@@ -329,91 +354,21 @@ public class Board {
         else blackKing ^= 1L << startSquare;
     }
 
+    private void toggle(Piece type, boolean white, long toggleMask) {
+        switch (type) {
+            case PAWN ->    { if (white) whitePawns ^= toggleMask;    else blackPawns ^= toggleMask; }
+            case KNIGHT ->  { if (white) whiteKnights ^= toggleMask;  else blackKnights ^= toggleMask; }
+            case BISHOP ->  { if (white) whiteBishops ^= toggleMask;  else blackBishops ^= toggleMask; }
+            case ROOK ->    { if (white) whiteRooks ^= toggleMask;    else blackRooks ^= toggleMask; }
+            case QUEEN ->   { if (white) whiteQueens ^= toggleMask;   else blackQueens ^= toggleMask; }
+            case KING ->    { if (white) whiteKing ^= toggleMask;     else blackKing ^= toggleMask; }
+        }
+    }
+
     public void recalculatePieces() {
         whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
         blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
         occupied = whitePieces | blackPieces;
-    }
-
-    private int calculateCastlingRights(int startSquare, int endSquare, Piece pieceType) {
-        int newCastlingRights = gameState.getCastlingRights();
-        if (newCastlingRights == 0b0000) {
-            // Both sides already lost castling rights, so nothing to calculate.
-            return newCastlingRights;
-        }
-        // Any move by the king removes castling rights.
-        if (Piece.KING.equals(pieceType)) {
-            newCastlingRights &= isWhiteToMove ? Bits.CLEAR_WHITE_CASTLING_MASK : Bits.CLEAR_BLACK_CASTLING_MASK;
-        }
-        // Any move starting from/ending at a rook square removes castling rights for that corner.
-        // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
-        // another rook in starting position; in that case, both sides lose castling rights!
-        if (startSquare == 7 || endSquare == 7) {
-            newCastlingRights &= Bits.CLEAR_WHITE_KINGSIDE_MASK;
-        }
-        if (startSquare == 63 || endSquare == 63) {
-            newCastlingRights &= Bits.CLEAR_BLACK_KINGSIDE_MASK;
-        }
-        if (startSquare == 0 || endSquare == 0) {
-            newCastlingRights &= Bits.CLEAR_WHITE_QUEENSIDE_MASK;
-        }
-        if (startSquare == 56 || endSquare == 56) {
-            newCastlingRights &= Bits.CLEAR_BLACK_QUEENSIDE_MASK;
-        }
-        return newCastlingRights;
-    }
-
-    public Piece pieceAt(int square) {
-        return pieceList[square];
-    }
-
-    public long getPawns(boolean white) {
-        return white ? whitePawns : blackPawns;
-    }
-
-    public long getKnights(boolean white) {
-        return white ? whiteKnights : blackKnights;
-    }
-
-    public long getBishops(boolean white) {
-        return white ? whiteBishops : blackBishops;
-    }
-
-    public long getRooks(boolean white) {
-        return white ? whiteRooks : blackRooks;
-    }
-
-    public long getQueens(boolean white) {
-        return white ? whiteQueens : blackQueens;
-    }
-
-    public long getKing(boolean white) {
-        return white ? whiteKing : blackKing;
-    }
-
-    public long getPieces(boolean white) {
-        return white ? whitePieces : blackPieces;
-    }
-
-    public int countPieces() {
-        return Bitwise.countBits(occupied);
-    }
-
-    public boolean hasPiecesRemaining(boolean white) {
-        if (white && Bitwise.countBits(whiteKnights) > 0 || Bitwise.countBits(whiteBishops) > 0 ||
-                Bitwise.countBits(whiteRooks) > 0 || Bitwise.countBits(whiteQueens) > 0) {
-            return true;
-        }
-        else return Bitwise.countBits(blackKnights) > 0 || Bitwise.countBits(blackBishops) > 0 ||
-                Bitwise.countBits(blackRooks) > 0 || Bitwise.countBits(blackQueens) > 0;
-    }
-
-    public boolean isPawnEndgame() {
-        return (whitePawns != 0 || blackPawns != 0)
-                && whiteKnights == 0 && blackKnights == 0
-                && whiteBishops == 0 && blackBishops == 0
-                && whiteRooks == 0 && blackRooks == 0
-                && whiteQueens == 0 && blackQueens == 0;
     }
 
 }

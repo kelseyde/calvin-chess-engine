@@ -63,18 +63,20 @@ public class Result {
      * Determine if the position is 'drawish', i.e. still technically winnable but with perfect play should be a draw.
      * Credit to Blunder chess engine (<a href="https://github.com/deanmchris/blunder">...</a>) for the formula.
      */
-    public static boolean isDrawish(Material whiteMaterial, Material blackMaterial) {
-        int pawns = whiteMaterial.pawns() + blackMaterial.pawns();
-        if (pawns > 0) return false;
+    public static boolean isDrawish(
+            int whitePawns,
+            int blackPawns,
+            int whiteKnights,
+            int blackKnights,
+            int whiteBishops,
+            int blackBishops,
+            int whiteRooks,
+            int blackRooks,
+            int whiteQueens,
+            int blackQueens) {
 
-        int whiteKnights = whiteMaterial.knights();
-        int blackKnights = blackMaterial.knights();
-        int whiteBishops = whiteMaterial.bishops();
-        int blackBishops = blackMaterial.bishops();
-        int whiteRooks = whiteMaterial.rooks();
-        int blackRooks = blackMaterial.rooks();
-        int whiteQueens = whiteMaterial.queens();
-        int blackQueens = blackMaterial.queens();
+        int pawns = whitePawns + blackPawns;
+        if (pawns > 0) return false;
 
         int knights = whiteKnights + blackKnights;
         int bishops = whiteBishops + blackBishops;

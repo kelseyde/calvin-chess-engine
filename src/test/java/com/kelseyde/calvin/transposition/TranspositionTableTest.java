@@ -3,17 +3,12 @@ package com.kelseyde.calvin.transposition;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.transposition.HashEntry;
-import com.kelseyde.calvin.transposition.HashFlag;
-import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 public class TranspositionTableTest {
 

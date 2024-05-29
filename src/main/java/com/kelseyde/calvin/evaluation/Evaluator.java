@@ -10,7 +10,6 @@ import com.kelseyde.calvin.transposition.pawn.PawnHashEntry;
 import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
-import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -29,6 +28,8 @@ public class Evaluator implements Evaluation {
     static final int MINOR_PIECE_ATTACK_UNIT = 2;
     static final int ROOK_ATTACK_UNIT = 3;
     static final int QUEEN_ATTACK_UNIT = 5;
+
+    Board board;
 
     final EngineConfig config;
     final PawnHashTable pawnHash;
@@ -54,6 +55,17 @@ public class Evaluator implements Evaluation {
     final int[] rookEgMobility;
     final int[] queenMgMobility;
     final int[] queenEgMobility;
+
+    int whitePawnCount;
+    int blackPawnCount;
+    int whiteKnightCount;
+    int whiteBishopCount;
+    int whiteRookCount;
+    int whiteQueenCount;
+    int blackKnightCount;
+    int blackBishopCount;
+    int blackRookCount;
+    int blackQueenCount;
 
     long whiteKingSafetyZone;
     long blackKingSafetyZone;
@@ -103,13 +115,23 @@ public class Evaluator implements Evaluation {
     @Override
     public int evaluate(Board board) {
 
-        whiteMgScore = 0;
-        whiteEgScore = 0;
-        blackMgScore = 0;
-        blackEgScore = 0;
-        whiteKingAttackZoneUnits = 0;
-        blackKingAttackZoneUnits = 0;
-        phase = 0;
+        this.board = board;
+        this.whiteMgScore = 0;
+        this.whiteEgScore = 0;
+        this.blackMgScore = 0;
+        this.blackEgScore = 0;
+        this.whitePawnCount = Bitwise.countBits(board.getPawns(true));
+        this.blackPawnCount = Bitwise.countBits(board.getPawns(false));
+        this.whiteKnightCount = 0;
+        this.whiteBishopCount = 0;
+        this.whiteRookCount = 0;
+        this.whiteQueenCount = 0;
+        this.blackKnightCount = 0;
+        this.blackBishopCount = 0;
+        this.blackRookCount = 0;
+        this.blackQueenCount = 0;
+        this.whiteKingAttackZoneUnits = 0;
+        this.blackKingAttackZoneUnits = 0;
 
         boolean white = board.isWhiteToMove();
 
@@ -129,27 +151,13 @@ public class Evaluator implements Evaluation {
         long blackQueens = board.getBlackQueens();
         long blackKing = board.getBlackKing();
 
-        whiteKingSafetyZone = Bits.WHITE_KING_SAFETY_ZONE[Bitwise.getNextBit(whiteKing)];
-        blackKingSafetyZone = Bits.BLACK_KING_SAFETY_ZONE[Bitwise.getNextBit(blackKing)];
+        this.whiteKingSafetyZone = Bits.WHITE_KING_SAFETY_ZONE[Bitwise.getNextBit(whiteKing)];
+        this.blackKingSafetyZone = Bits.BLACK_KING_SAFETY_ZONE[Bitwise.getNextBit(blackKing)];
 
-        Material whiteMaterial = Material.fromBoard(board, true);
-        Material blackMaterial = Material.fromBoard(board, false);
-
-        phase = Phase.fromMaterial(whiteMaterial, blackMaterial, config);
-
-        int whiteMaterialMgScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int whiteMaterialEgScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
-        addScore(whiteMaterialMgScore, whiteMaterialEgScore, true);
-
-        int blackMaterialMgScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int blackMaterialEgScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
-        addScore(blackMaterialMgScore, blackMaterialEgScore, false);
-
-        // Blockers used during mobility calculations
         long friendlyWhiteBlockers = whiteKing | whitePawns;
         long friendlyBlackBlockers = blackKing | blackPawns;
 
-        scorePawnsWithHash(board, whitePawns, blackPawns);
+        scorePawnsWithHash(whitePawns, blackPawns);
 
         scoreKnights(whiteKnights, friendlyWhiteBlockers, true);
         scoreKnights(blackKnights, friendlyBlackBlockers, false);
@@ -163,13 +171,21 @@ public class Evaluator implements Evaluation {
         scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, true);
         scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, false);
 
-        scoreKing(whiteKing, whitePawns, blackPawns, blackMaterial, board, phase, true);
-        scoreKing(blackKing, blackPawns, whitePawns, whiteMaterial, board, phase, false);
+        scoreMaterial();
+
+        phase = Phase.calculatePhase(config,
+                whiteKnightCount + blackKnightCount,
+                whiteBishopCount + blackBishopCount,
+                whiteRookCount + blackRookCount,
+                whiteQueenCount + blackQueenCount);
+
+        scoreKing(whiteKing, whitePawns, blackPawns, true);
+        scoreKing(blackKing, blackPawns, whitePawns, false);
 
         return sum(white);
     }
 
-    private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {
+    private void scorePawnsWithHash(long whitePawns, long blackPawns) {
 
         long pawnKey = board.getGameState().getPawnKey();
         PawnHashEntry hashEntry = pawnHash.get(pawnKey);
@@ -258,6 +274,8 @@ public class Evaluator implements Evaluation {
 
         while (knights != 0) {
             int knight = Bitwise.getNextBit(knights);
+            if (white) whiteKnightCount++;
+            else blackKnightCount++;
 
             int square = white ? knight ^ 56 : knight;
             mgScore += knightMgTable[square];
@@ -292,6 +310,8 @@ public class Evaluator implements Evaluation {
         long blockers = friendlyBlockers | opponentBlockers;
         while (bishops != 0) {
             int bishop = Bitwise.getNextBit(bishops);
+            if (white) whiteBishopCount++;
+            else blackBishopCount++;
 
             int square = white ? bishop ^ 56 : bishop;
             mgScore += bishopMgTable[square];
@@ -331,6 +351,9 @@ public class Evaluator implements Evaluation {
         long blockers = friendlyBlockers | opponentBlockers;
         while (rooks != 0) {
             int rook = Bitwise.getNextBit(rooks);
+            if (white) whiteRookCount++;
+            else blackRookCount++;
+
             int file = BoardUtils.getFile(rook);
             long fileMask = Bits.FILE_MASKS[file];
 
@@ -383,6 +406,8 @@ public class Evaluator implements Evaluation {
         long blockers = friendlyBlockers | opponentBlockers;
         while (queens != 0) {
             int queen = Bitwise.getNextBit(queens);
+            if (white) whiteQueenCount++;
+            else blackQueenCount++;
 
             int square = white ? queen ^ 56 : queen;
             mgScore += queenMgTable[square];
@@ -410,9 +435,6 @@ public class Evaluator implements Evaluation {
     private void scoreKing(long friendlyKing,
                            long friendlyPawns,
                            long opponentPawns,
-                           Material opponentMaterial,
-                           Board board,
-                           float phase,
                            boolean white) {
         int mgScore = 0;
         int egScore = 0;
@@ -423,7 +445,7 @@ public class Evaluator implements Evaluation {
         egScore += kingEgTable[square];
         addScore(mgScore, egScore, white);
 
-        scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
+        scoreKingSafety(king, friendlyPawns, opponentPawns, white);
 
     }
 
@@ -437,16 +459,13 @@ public class Evaluator implements Evaluation {
     private void scoreKingSafety(int kingSquare,
                                    long friendlyPawns,
                                    long opponentPawns,
-                                   Material opponentMaterial,
-                                   Board board,
-                                   float phase,
                                    boolean white) {
         // King safety evaluation
         int kingFile = BoardUtils.getFile(kingSquare);
         int pawnShieldPenalty = calculatePawnShieldPenalty(kingSquare, kingFile, friendlyPawns);
-        int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, opponentMaterial);
+        int openKingFilePenalty = calculateOpenKingFilePenalty(kingFile, friendlyPawns, opponentPawns, white);
         int lostCastlingRightsPenalty = calculateLostCastlingRightsPenalty(config, board, white, kingFile);
-        if (opponentMaterial.queens() == 0) {
+        if (Bitwise.countBits(board.getQueens(!white)) == 0) {
             phase *= 0.4f;
         }
         int kingAttackZoneUnits = white ? whiteKingAttackZoneUnits : blackKingAttackZoneUnits;
@@ -455,6 +474,16 @@ public class Evaluator implements Evaluation {
         int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
         int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
         addScore(mgScore, egScore, white);
+    }
+
+    private void scoreMaterial() {
+        int whiteMaterialMgScore = sumMaterial(whitePawnCount, whiteKnightCount, whiteBishopCount, whiteRookCount, whiteQueenCount, config.getPieceValues()[0], config.getBishopPairBonus());
+        int whiteMaterialEgScore = sumMaterial(whitePawnCount, whiteKnightCount, whiteBishopCount, whiteRookCount, whiteQueenCount, config.getPieceValues()[1], config.getBishopPairBonus());
+        addScore(whiteMaterialMgScore, whiteMaterialEgScore, true);
+
+        int blackMaterialMgScore = sumMaterial(blackPawnCount, blackKnightCount, blackBishopCount, blackRookCount, blackQueenCount, config.getPieceValues()[0], config.getBishopPairBonus());
+        int blackMaterialEgScore = sumMaterial(blackPawnCount, blackKnightCount, blackBishopCount, blackRookCount, blackQueenCount, config.getPieceValues()[1], config.getBishopPairBonus());
+        addScore(blackMaterialMgScore, blackMaterialEgScore, false);
     }
 
     private int calculatePawnShieldPenalty(int kingSquare, int kingFile, long pawns) {
@@ -470,13 +499,13 @@ public class Evaluator implements Evaluation {
         return pawnShieldPenalty;
     }
 
-    private int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, Material opponentMaterial) {
-        if (opponentMaterial.rooks() == 0 && opponentMaterial.queens() == 0) {
+    private int calculateOpenKingFilePenalty(int kingFile, long friendlyPawns, long opponentPawns, boolean white) {
+        if (Bitwise.countBits(board.getRooks(!white)) == 0 && Bitwise.countBits(board.getQueens(!white)) == 0) {
             return 0;
         }
         return scoreFile(Bits.FILE_MASKS[kingFile], friendlyPawns, opponentPawns, true)
-            + scoreFile(Bits.WEST_FILE_MASK[kingFile], friendlyPawns, opponentPawns, false)
-            + scoreFile(Bits.EAST_FILE_MASK[kingFile], friendlyPawns, opponentPawns, false);
+             + scoreFile(Bits.WEST_FILE_MASK[kingFile], friendlyPawns, opponentPawns, false)
+             + scoreFile(Bits.EAST_FILE_MASK[kingFile], friendlyPawns, opponentPawns, false);
     }
 
     private int scoreFile(long fileMask, long friendlyPawns, long opponentPawns, boolean isKingFile) {
@@ -505,6 +534,15 @@ public class Evaluator implements Evaluation {
         return !hasCastlingRights && opponentHasCastlingRights ? config.getKingLostCastlingRightsPenalty() : 0;
     }
 
+    public int sumMaterial(int pawns, int knights, int bishops, int rooks, int queens, int[] pieceValues, int bishopPairBonus) {
+        return (pawns     * pieceValues[Piece.PAWN.getIndex()]) +
+               (knights   * pieceValues[Piece.KNIGHT.getIndex()]) +
+               (bishops   * pieceValues[Piece.BISHOP.getIndex()]) +
+               (rooks     * pieceValues[Piece.ROOK.getIndex()]) +
+               (queens    * pieceValues[Piece.QUEEN.getIndex()]) +
+               (bishops == 2 ? bishopPairBonus : 0);
+    }
+
     public void addScore(int middlegameScore, int endgameScore, boolean white) {
         if (white) {
             whiteMgScore += middlegameScore;
@@ -519,7 +557,6 @@ public class Evaluator implements Evaluation {
         int attackZoneScore = attackUnit * attackCount;
         if (white) blackKingAttackZoneUnits += attackZoneScore;
         else       whiteKingAttackZoneUnits += attackZoneScore;
-
     }
 
     public int sum(boolean white) {

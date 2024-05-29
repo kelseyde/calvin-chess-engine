@@ -236,6 +236,24 @@ public class Bitwise {
         return (fileMask & friendlyPawns) == 0 && (fileMask & opponentPawns) != 0;
     }
 
+
+    public static boolean hasPiecesRemaining(Board board, boolean white) {
+        if (white && Bitwise.countBits(board.getWhiteKnights()) > 0 || Bitwise.countBits(board.getWhiteBishops()) > 0 ||
+                Bitwise.countBits(board.getWhiteRooks()) > 0 || Bitwise.countBits(board.getWhiteQueens()) > 0) {
+            return true;
+        }
+        else return Bitwise.countBits(board.getBlackKnights()) > 0 || Bitwise.countBits(board.getBlackBishops()) > 0 ||
+                Bitwise.countBits(board.getBlackRooks()) > 0 || Bitwise.countBits(board.getBlackQueens()) > 0;
+    }
+
+    public static boolean isPawnEndgame(Board board) {
+        return (board.getWhitePawns() != 0 || board.getBlackPawns() != 0)
+                && board.getWhiteKnights() == 0 && board.getBlackKnights() == 0
+                && board.getWhiteBishops() == 0 && board.getBlackBishops() == 0
+                && board.getWhiteRooks() == 0 && board.getBlackRooks() == 0
+                && board.getWhiteQueens() == 0 && board.getBlackQueens() == 0;
+    }
+
     /**
      * Print the bitboard in a human-readable format.
      */

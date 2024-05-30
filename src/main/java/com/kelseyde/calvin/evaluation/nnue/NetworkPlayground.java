@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.nnue;
+package com.kelseyde.calvin.evaluation.nnue;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;

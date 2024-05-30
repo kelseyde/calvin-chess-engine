@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.endgame;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.Material;
-import com.kelseyde.calvin.evaluation.Phase;
+import com.kelseyde.calvin.evaluation.hce.Material;
+import com.kelseyde.calvin.evaluation.hce.Phase;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;

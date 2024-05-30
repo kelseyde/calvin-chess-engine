@@ -2,7 +2,7 @@ package com.kelseyde.calvin.evaluation.score;
 
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.hce.Evaluator;
 import com.kelseyde.calvin.utils.TestUtils;
 
 public class RookEvaluationTest {

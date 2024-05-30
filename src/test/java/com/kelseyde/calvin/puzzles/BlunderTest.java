@@ -28,6 +28,7 @@ public class BlunderTest {
         String fen = "r1bqkb1r/1pp1pppp/p1n2n2/8/2BPP3/2N2N2/PP3PPP/R1BQK2R b KQkq - 0 6";
         engine.newGame();
         engine.setPosition(fen, Collections.emptyList());
+        engine.setThreadCount(1);
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("f6e4")));

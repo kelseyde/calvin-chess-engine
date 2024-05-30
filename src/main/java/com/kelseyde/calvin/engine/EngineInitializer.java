@@ -4,16 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.endgame.Tablebase;
 import com.kelseyde.calvin.endgame.lichess.LichessTablebase;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.evaluation.nnue.NNUE;
+import com.kelseyde.calvin.evaluation.nnue.Network;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -38,11 +38,11 @@ public class EngineInitializer {
         OpeningBook book = loadDefaultOpeningBook();
         Tablebase tablebase = loadDefaultTablebase(config);
         TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
-        PawnHashTable pawnHashTable = new PawnHashTable(config.getDefaultPawnHashSizeMb());
         Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
-        Supplier<Evaluation> evaluator = () -> new Evaluator(config, pawnHashTable);
+        Supplier<Evaluation> evaluator = NNUE::new;
         Search searcher = new ParallelSearcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
+        Network.DEFAULT = Network.loadNetwork();
         return new Engine(config, book, tablebase, moveGenerator.get(), searcher);
     }
 

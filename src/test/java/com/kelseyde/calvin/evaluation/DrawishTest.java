@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.evaluation.hce.Material;
+import com.kelseyde.calvin.evaluation.hce.Result;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;

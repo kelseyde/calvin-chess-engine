@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.generation.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.Result;
+import com.kelseyde.calvin.evaluation.hce.Result;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;

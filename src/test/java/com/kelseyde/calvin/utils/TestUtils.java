@@ -10,7 +10,7 @@ import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.hce.Evaluator;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.ParallelSearcher;
@@ -20,7 +20,6 @@ import com.kelseyde.calvin.search.ThreadManager;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 
 import java.io.IOException;

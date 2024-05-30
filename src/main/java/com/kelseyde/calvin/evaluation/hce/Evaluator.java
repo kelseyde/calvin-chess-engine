@@ -1,16 +1,13 @@
-package com.kelseyde.calvin.evaluation;
+package com.kelseyde.calvin.evaluation.hce;
 
-import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bitwise;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.generation.Attacks;
 import com.kelseyde.calvin.transposition.pawn.PawnHashEntry;
 import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
-import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -167,6 +164,16 @@ public class Evaluator implements Evaluation {
         scoreKing(blackKing, blackPawns, whitePawns, whiteMaterial, board, phase, false);
 
         return sum(white);
+    }
+
+    @Override
+    public void makeMove(Board board, Move move) {
+        // This implementation does not support incremental updates
+    }
+
+    @Override
+    public void unmakeMove() {
+        // This implementation does not support incremental updates
     }
 
     private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {

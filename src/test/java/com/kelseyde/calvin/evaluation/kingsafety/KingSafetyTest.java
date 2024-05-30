@@ -2,7 +2,7 @@ package com.kelseyde.calvin.evaluation.kingsafety;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.hce.Evaluator;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;

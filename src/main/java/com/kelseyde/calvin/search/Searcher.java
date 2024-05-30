@@ -5,11 +5,11 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Result;
-import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.evaluation.hce.Result;
+import com.kelseyde.calvin.evaluation.hce.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.nnue.NNUE;
+import com.kelseyde.calvin.evaluation.nnue.NNUE;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
@@ -18,8 +18,6 @@ import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -61,8 +59,6 @@ public class Searcher implements Search {
     Move bestMoveCurrentDepth;
     int bestEval;
     int bestEvalCurrentDepth;
-
-    final NNUE nnue = new NNUE();
 
     public Searcher(EngineConfig config,
                     ThreadManager threadManager,
@@ -220,8 +216,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            nnue.activateAll(board);
-            staticEval = transposition != null ? transposition.getStaticEval() : nnue.evaluate(board);
+            staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
         }
 
         if (!zwNode && !isInCheck) {
@@ -268,6 +263,7 @@ public class Searcher implements Search {
             boolean isCapture = capturedPiece != null;
             boolean isPromotion = move.getPromotionPiece() != null;
 
+            evaluator.makeMove(board, move);
             board.makeMove(move);
             nodes++;
 
@@ -282,6 +278,7 @@ public class Searcher implements Search {
                 && staticEval + config.getFpMargin()[depth] < alpha
                 && !isInCheck
                 && isQuiet) {
+                evaluator.unmakeMove();
                 board.unmakeMove();
                 continue;
             }
@@ -318,6 +315,7 @@ public class Searcher implements Search {
                     && isQuiet
                     && depth <= config.getLmpDepth()
                     && movesSearched >= depth * config.getLmpMultiplier()) {
+                    evaluator.unmakeMove();
                     board.unmakeMove();
                     continue;
                 }
@@ -348,6 +346,7 @@ public class Searcher implements Search {
                 }
             }
 
+            evaluator.unmakeMove();
             board.unmakeMove();
 
             if (isCancelled()) {
@@ -427,8 +426,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int eval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            nnue.activateAll(board);
-            eval = transposition != null ? transposition.getStaticEval() : nnue.evaluate(board);
+            eval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
         }
         int standPat = eval;
 
@@ -476,9 +474,11 @@ public class Searcher implements Search {
                 }
             }
 
+            evaluator.makeMove(board, move);
             board.makeMove(move);
             nodes++;
             eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
+            evaluator.unmakeMove();
             board.unmakeMove();
 
             if (eval >= beta) {
@@ -500,7 +500,7 @@ public class Searcher implements Search {
     @Override
     public void setPosition(Board board) {
         this.board = board;
-        this.evaluator.evaluate(board);
+        this.evaluator = new NNUE(board);
     }
 
     @Override

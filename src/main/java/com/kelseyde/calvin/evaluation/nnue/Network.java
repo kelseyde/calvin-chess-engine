@@ -1,18 +1,15 @@
-package com.kelseyde.calvin.nnue;
+package com.kelseyde.calvin.evaluation.nnue;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class Network {
 
     public static final int INPUT_LAYER_SIZE = 768;
     public static final int HIDDEN_LAYER_SIZE = 256;
 
-    public static final Network DEFAULT = loadNetwork();
+    public static Network DEFAULT = loadNetwork();
 
     /**
      * The weights for each connection between the input layer and the hidden layer.
@@ -45,11 +42,16 @@ public class Network {
     }
 
     public static Network loadNetwork() {
-        System.out.println("Loading NNUE");
-        Path path = Paths.get("/Users/kelseyde/git/dan/calvin/calvin-chess-engine/src/main/resources/nnue/256HL-3B5083B8.nnue");
-
         try {
-            byte[] fileBytes = Files.readAllBytes(path);
+            // Use the class loader to get the resource as an input stream
+            InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/256HL-3B5083B8.nnue");
+            if (inputStream == null) {
+                throw new FileNotFoundException("NNUE file not found in resources");
+            }
+
+            // Read the entire content of the file into a byte array
+            byte[] fileBytes = inputStream.readAllBytes();
+            inputStream.close();
             ByteBuffer buffer = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN);
 
             int inputWeightsOffset = Network.INPUT_LAYER_SIZE * Network.HIDDEN_LAYER_SIZE;
@@ -78,5 +80,9 @@ public class Network {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load NNUE network", e);
         }
+    }
+
+    public static void main(String[] args) {
+        DEFAULT = loadNetwork();
     }
 }

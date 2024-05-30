@@ -9,6 +9,7 @@ import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.nnue.NNUE;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
@@ -60,6 +61,8 @@ public class Searcher implements Search {
     Move bestMoveCurrentDepth;
     int bestEval;
     int bestEvalCurrentDepth;
+
+    final NNUE nnue = new NNUE();
 
     public Searcher(EngineConfig config,
                     ThreadManager threadManager,
@@ -217,7 +220,8 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
+            nnue.activateAll(board);
+            staticEval = transposition != null ? transposition.getStaticEval() : nnue.evaluate(board);
         }
 
         if (!zwNode && !isInCheck) {
@@ -423,7 +427,8 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int eval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            eval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
+            nnue.activateAll(board);
+            eval = transposition != null ? transposition.getStaticEval() : nnue.evaluate(board);
         }
         int standPat = eval;
 

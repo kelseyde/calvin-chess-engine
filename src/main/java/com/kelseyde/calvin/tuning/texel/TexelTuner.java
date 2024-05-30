@@ -3,6 +3,7 @@ package com.kelseyde.calvin.tuning.texel;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.nnue.NNUE;
 import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -112,11 +113,12 @@ public class TexelTuner {
     }
 
     public double totalError(Map<Board, Double> partitionedPositions, int[] params, Function<int[], EngineConfig> createConfigFunction) {
-        Evaluator evaluator = new Evaluator(createConfigFunction.apply(params));
+        NNUE nnue = new NNUE();
         double totalError = 0.0;
         for (Map.Entry<Board, Double> entry : partitionedPositions.entrySet()) {
             Board board = entry.getKey();
-            int eval = evaluator.evaluate(board);
+            nnue.activateAll(board);
+            int eval = nnue.evaluate(board);
             if (!board.isWhiteToMove()) eval = -eval;
             double prediction = prediction(eval);
             double actual = entry.getValue();

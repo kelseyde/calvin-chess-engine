@@ -18,7 +18,7 @@ public class NNUE implements Evaluation {
 
     private static final int COLOUR_STRIDE = 64 * 6;
     private static final int PIECE_STRIDE = 64;
-    private static final int SCALE = 400;
+    private static final int SCALE = 350;
     private static final int Q = 255 * 64;
     private static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
 

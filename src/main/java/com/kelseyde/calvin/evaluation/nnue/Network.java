@@ -44,7 +44,7 @@ public class Network {
     public static Network loadNetwork() {
         try {
             // Use the class loader to get the resource as an input stream
-            InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/256HL-3B5083B8.nnue");
+            InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/net010.nnue");
             if (inputStream == null) {
                 throw new FileNotFoundException("NNUE file not found in resources");
             }

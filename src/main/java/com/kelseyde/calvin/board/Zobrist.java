@@ -114,6 +114,11 @@ public class Zobrist {
         return key ^ PIECE_SQUARE_HASH[square][white ? 0 : 1][pieceType.getIndex()];
     }
 
+    public static long updatePiece(long key, int startSquare, int endSquare, Piece piece, boolean white) {
+        return key ^ PIECE_SQUARE_HASH[startSquare][white ? 0 : 1][piece.getIndex()]
+                   ^ PIECE_SQUARE_HASH[endSquare][white ? 0 : 1][piece.getIndex()];
+    }
+
     public static long updateCastlingRights(long key, int oldCastlingRights, int newCastlingRights) {
         key ^= CASTLING_RIGHTS[oldCastlingRights];
         key ^= CASTLING_RIGHTS[newCastlingRights];

@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 
 /**

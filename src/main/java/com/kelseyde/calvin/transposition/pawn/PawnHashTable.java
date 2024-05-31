@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.transposition.pawn;
 
-import com.kelseyde.calvin.transposition.HashEntry;
-
 import java.util.Arrays;
 import java.util.Objects;
 

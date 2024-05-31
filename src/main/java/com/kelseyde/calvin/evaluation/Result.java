@@ -21,11 +21,11 @@ public class Result {
     public static boolean isThreefoldRepetition(Board board) {
 
         int repetitionCount = 0;
-        long zobrist = board.getGameState().getZobristKey();
+        long zobrist = board.getGameState().getZobrist();
         Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
         while (iterator.hasNext()) {
             GameState gameState = iterator.next();
-            if (gameState.getZobristKey() == zobrist) {
+            if (gameState.getZobrist() == zobrist) {
                 repetitionCount += 1;
             }
         }
@@ -35,11 +35,11 @@ public class Result {
 
     public static boolean isDoubleRepetition(Board board) {
 
-        long zobrist = board.getGameState().getZobristKey();
+        long zobrist = board.getGameState().getZobrist();
         Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
         while (iterator.hasNext()) {
             GameState gameState = iterator.next();
-            if (gameState.getZobristKey() == zobrist) {
+            if (gameState.getZobrist() == zobrist) {
                 return true;
             }
         }
@@ -119,7 +119,7 @@ public class Result {
     }
 
     public static boolean isFiftyMoveRule(Board board) {
-        return board.getGameState().getFiftyMoveCounter() >= 100;
+        return board.getGameState().getHalfMoveClock() >= 100;
     }
 
 

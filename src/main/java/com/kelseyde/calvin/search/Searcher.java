@@ -9,16 +9,14 @@ import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.search.picker.MovePicker;
-import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -545,7 +543,7 @@ public class Searcher implements Search {
     }
 
     private long getKey() {
-        return board.getGameState().getZobristKey();
+        return board.getGameState().getZobrist();
     }
 
 

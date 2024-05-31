@@ -93,9 +93,9 @@ public class FEN {
             board.setWhiteToMove(whiteToMove);
             board.getGameState().setCastlingRights(castlingRights);
             board.getGameState().setEnPassantFile(enPassantFile);
-            board.getGameState().setFiftyMoveCounter(fiftyMoveCounter);
-            board.getGameState().setZobristKey(Zobrist.generateKey(board));
-            board.getGameState().setPawnKey(Zobrist.generatePawnKey(board));
+            board.getGameState().setHalfMoveClock(fiftyMoveCounter);
+            board.getGameState().setZobrist(Zobrist.generateKey(board));
+            board.getGameState().setPawnZobrist(Zobrist.generatePawnKey(board));
 
             return board;
 
@@ -145,7 +145,7 @@ public class FEN {
             String enPassantSquare = toEnPassantSquare(board.getGameState().getEnPassantFile(), board.isWhiteToMove());
             sb.append(" ").append(enPassantSquare);
 
-            String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getFiftyMoveCounter());
+            String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getHalfMoveClock());
             sb.append(" ").append(fiftyMoveCounter);
 
             String fullMoveNumber = toFullMoveCounter(board.getMoveHistory());

@@ -61,7 +61,6 @@ public class Board {
         int endSquare = move.getEndSquare();
         Piece piece = pieceList[startSquare];
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : pieceList[endSquare];
-
         gameStateHistory.push(gameState.copy());
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(startSquare, endSquare);
@@ -71,9 +70,7 @@ public class Board {
         else                          makeStandardMove(startSquare, endSquare, piece, capturedPiece);
 
         updateGameState(startSquare, endSquare, piece, capturedPiece, move);
-
         moveHistory.push(move);
-
         whiteToMove = !whiteToMove;
         recalculatePieces();
 

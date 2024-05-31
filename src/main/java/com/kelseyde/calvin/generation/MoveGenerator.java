@@ -302,8 +302,7 @@ public class MoveGenerator implements MoveGeneration {
         long kingMoves = Attacks.kingAttacks(startSquare) & ~friendlies & filterMask;
 
         // Temporarily remove the king from the board
-        board.toggleKing(white, startSquare);
-        board.recalculatePieces();
+        board.removeKing(white);
 
         // Generate legal king moves
         while (kingMoves != 0) {
@@ -316,8 +315,7 @@ public class MoveGenerator implements MoveGeneration {
         }
 
         // Restore the king to its original position on the board
-        board.toggleKing(white, startSquare);
-        board.recalculatePieces();
+        board.addKing(startSquare, white);
     }
 
     private void generateCastlingMoves(Board board) {

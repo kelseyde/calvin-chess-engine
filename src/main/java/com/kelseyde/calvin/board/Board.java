@@ -287,24 +287,9 @@ public class Board {
         else blackPawns ^= (1L << startSquare | 1L << endSquare);
     }
 
-    public void toggleKnights(boolean white, int startSquare, int endSquare) {
-        if (white) whiteKnights ^= (1L << startSquare | 1L << endSquare);
-        else blackKnights ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void toggleBishops(boolean white, int startSquare, int endSquare) {
-        if (white) whiteBishops ^= (1L << startSquare | 1L << endSquare);
-        else blackBishops ^= (1L << startSquare | 1L << endSquare);
-    }
-
     public void toggleRooks(boolean white, int startSquare, int endSquare) {
         if (white) whiteRooks ^= (1L << startSquare | 1L << endSquare);
         else blackRooks ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void toggleQueens(boolean white, int startSquare, int endSquare) {
-        if (white) whiteQueens ^= (1L << startSquare | 1L << endSquare);
-        else blackQueens ^= (1L << startSquare | 1L << endSquare);
     }
 
     public void toggleKing(boolean white, int startSquare, int endSquare) {
@@ -317,29 +302,26 @@ public class Board {
         else blackPawns ^= 1L << startSquare;
     }
 
-    public void toggleKnight(boolean white, int startSquare) {
-        if (white) whiteKnights ^= 1L << startSquare;
-        else blackKnights ^= 1L << startSquare;
+    public void removeKing(boolean white) {
+        if (white) {
+            whitePieces ^= whiteKing;
+            whiteKing = 0L;
+        } else {
+            blackPieces ^= blackKing;
+            blackKing = 0L;
+        }
+        occupied = whitePieces | blackPieces;
     }
 
-    public void toggleBishop(boolean white, int startSquare) {
-        if (white) whiteBishops ^= 1L << startSquare;
-        else blackBishops ^= 1L << startSquare;
-    }
-
-    public void toggleRook(boolean white, int startSquare) {
-        if (white) whiteRooks ^= 1L << startSquare;
-        else blackRooks ^= 1L << startSquare;
-    }
-
-    public void toggleQueen(boolean white, int startSquare) {
-        if (white) whiteQueens ^= 1L << startSquare;
-        else blackQueens ^= 1L << startSquare;
-    }
-
-    public void toggleKing(boolean white, int startSquare) {
-        if (white) whiteKing ^= 1L << startSquare;
-        else blackKing ^= 1L << startSquare;
+    public void addKing(int kingSquare, boolean white) {
+        if (white) {
+            whiteKing = 1L << kingSquare;
+            whitePieces |= whiteKing;
+        } else {
+            blackKing = 1L << kingSquare;
+            blackPieces |= blackKing;
+        }
+        occupied = whitePieces | blackPieces;
     }
 
     public void recalculatePieces() {
@@ -413,12 +395,9 @@ public class Board {
     }
 
     public boolean hasPiecesRemaining(boolean white) {
-        if (white && Bitwise.countBits(whiteKnights) > 0 || Bitwise.countBits(whiteBishops) > 0 ||
-                Bitwise.countBits(whiteRooks) > 0 || Bitwise.countBits(whiteQueens) > 0) {
-            return true;
-        }
-        else return Bitwise.countBits(blackKnights) > 0 || Bitwise.countBits(blackBishops) > 0 ||
-                Bitwise.countBits(blackRooks) > 0 || Bitwise.countBits(blackQueens) > 0;
+        return white ?
+                (whiteKnights != 0 || whiteBishops != 0 || whiteRooks != 0 || whiteQueens != 0) :
+                (blackKnights != 0 || blackBishops != 0 || blackRooks != 0 || blackQueens != 0);
     }
 
     public boolean isPawnEndgame() {

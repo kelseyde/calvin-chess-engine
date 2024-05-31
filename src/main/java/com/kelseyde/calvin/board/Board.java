@@ -76,6 +76,7 @@ public class Board {
 
         whiteToMove = !whiteToMove;
         recalculatePieces();
+
     }
 
     /**

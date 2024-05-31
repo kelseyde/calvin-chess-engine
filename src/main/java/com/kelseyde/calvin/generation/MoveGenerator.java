@@ -414,22 +414,9 @@ public class MoveGenerator implements MoveGeneration {
         return filterMask;
     }
 
-    public long getPawnAttacks(Board board, int square, boolean white) {
-        long attackMask = 0L;
+    public long getPawnAttacks(int square, boolean white) {
         long squareBB = 1L << square;
-        long friendlies = board.getPieces(white);
-
-        long leftCapture = white ?
-                Bitwise.shiftNorthWest(squareBB) &~ friendlies:
-                Bitwise.shiftSouthWest(squareBB) &~ friendlies;
-        attackMask |= leftCapture;
-
-        long rightCapture = white ?
-                Bitwise.shiftNorthEast(squareBB) &~ friendlies :
-                Bitwise.shiftSouthEast(squareBB) &~ friendlies;
-        attackMask |= rightCapture;
-
-        return attackMask;
+        return Attacks.pawnAttacks(squareBB, white);
     }
 
     public long getKnightAttacks(Board board, int square, boolean white) {
@@ -477,7 +464,7 @@ public class MoveGenerator implements MoveGeneration {
             int square = Bitwise.getNextBit(squareMask);
 
             long opponentPawns = board.getPawns(!white);
-            long pawnAttackMask = getPawnAttacks(board, square, white);
+            long pawnAttackMask = getPawnAttacks(square, white);
             attackerMask |= pawnAttackMask & opponentPawns;
 
             long opponentKnights = board.getKnights(!white);
@@ -510,7 +497,7 @@ public class MoveGenerator implements MoveGeneration {
 
             long opponentPawns = board.getPawns(!white);
             if (opponentPawns != 0) {
-                long pawnAttackMask = getPawnAttacks(board, square, white);
+                long pawnAttackMask = getPawnAttacks(square, white);
                 if ((pawnAttackMask & opponentPawns) != 0) {
                     return true;
                 }

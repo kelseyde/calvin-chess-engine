@@ -70,7 +70,7 @@ public class StaticExchangeEvaluator {
 
         long pawns = board.getPawns(white);
         if (pawns > 0) {
-            long pawnAttackMask = moveGenerator.getPawnAttacks(board, square, !white);
+            long pawnAttackMask = moveGenerator.getPawnAttacks(square, !white);
             if ((pawnAttackMask & pawns) != 0) {
                 int pawnStartSquare = Bitwise.getNextBit(pawnAttackMask & pawns);
                 return new Move(pawnStartSquare, square);

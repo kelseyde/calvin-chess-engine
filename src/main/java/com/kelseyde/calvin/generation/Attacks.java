@@ -122,8 +122,8 @@ public class Attacks {
 
     public static long pawnAttacks(long pawns, boolean white) {
         return white ?
-                (Bitwise.shiftNorthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftNorthEast(pawns) &~ Bits.FILE_A) :
-                (Bitwise.shiftSouthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftSouthEast(pawns) &~ Bits.FILE_A);
+                Bitwise.shiftNorthWest(pawns) | Bitwise.shiftNorthEast(pawns) :
+                Bitwise.shiftSouthWest(pawns) | Bitwise.shiftSouthEast(pawns);
     }
 
     public static long kingAttacks(int square) {
@@ -156,7 +156,7 @@ public class Attacks {
     }
 
     public static long[] generateBlackPawnAttacks() {
-        // ODO
+        // TODO
         return null;
     }
 

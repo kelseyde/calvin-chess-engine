@@ -116,8 +116,8 @@ public class Bitwise {
      */
     public static long pawnLeftCaptures(long pawns, long opponents, boolean white) {
         return white ?
-                shiftNorthWest(pawns) & opponents & ~Bits.FILE_H & ~Bits.RANK_8 :
-                shiftSouthWest(pawns) & opponents & ~Bits.FILE_H & ~Bits.RANK_1;
+                shiftNorthWest(pawns) & opponents & ~Bits.RANK_8 :
+                shiftSouthWest(pawns) & opponents & ~Bits.RANK_1;
     }
 
     /**
@@ -125,8 +125,8 @@ public class Bitwise {
      */
     public static long pawnRightCaptures(long pawns, long opponents, boolean white) {
         return white ?
-                shiftNorthEast(pawns) & opponents & ~Bits.FILE_A & ~Bits.RANK_8 :
-                shiftSouthEast(pawns) & opponents & ~Bits.FILE_A & ~Bits.RANK_1;
+                shiftNorthEast(pawns) & opponents & ~Bits.RANK_8 :
+                shiftSouthEast(pawns) & opponents& ~Bits.RANK_1;
     }
 
     /**
@@ -134,8 +134,8 @@ public class Bitwise {
      */
     public static long pawnLeftEnPassants(long pawns, long enPassantFile, boolean white) {
         return white ?
-                shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 & ~Bits.FILE_H :
-                shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3 & ~Bits.FILE_H;
+                shiftNorthWest(pawns) & enPassantFile & Bits.RANK_6 :
+                shiftSouthWest(pawns) & enPassantFile & Bits.RANK_3;
     }
 
     /**
@@ -143,8 +143,8 @@ public class Bitwise {
      */
     public static long pawnRightEnPassants(long pawns, long enPassantFile, boolean white) {
         return white ?
-                shiftNorthEast(pawns) & enPassantFile & Bits.RANK_6 & ~Bits.FILE_A :
-                shiftSouthEast(pawns) & enPassantFile & Bits.RANK_3 & ~Bits.FILE_A;
+                shiftNorthEast(pawns) & enPassantFile & Bits.RANK_6:
+                shiftSouthEast(pawns) & enPassantFile & Bits.RANK_3;
     }
 
     /**
@@ -152,8 +152,8 @@ public class Bitwise {
      */
     public static long pawnLeftCapturePromotions(long pawns, long opponents, boolean white) {
         return white ?
-                shiftNorthWest(pawns) & opponents & ~Bits.FILE_H & Bits.RANK_8 :
-                shiftSouthWest(pawns) & opponents & ~Bits.FILE_H & Bits.RANK_1;
+                shiftNorthWest(pawns) & opponents & Bits.RANK_8 :
+                shiftSouthWest(pawns) & opponents & Bits.RANK_1;
     }
 
     /**
@@ -161,8 +161,8 @@ public class Bitwise {
      */
     public static long pawnRightCapturePromotions(long pawns, long opponents, boolean white) {
         return white ?
-                shiftNorthEast(pawns) & opponents & ~Bits.FILE_A & Bits.RANK_8 :
-                shiftSouthEast(pawns) & opponents & ~Bits.FILE_A & Bits.RANK_1;
+                shiftNorthEast(pawns) & opponents & Bits.RANK_8 :
+                shiftSouthEast(pawns) & opponents & Bits.RANK_1;
     }
 
     /**

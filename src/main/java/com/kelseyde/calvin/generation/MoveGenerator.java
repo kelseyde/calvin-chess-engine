@@ -420,13 +420,13 @@ public class MoveGenerator implements MoveGeneration {
         long friendlies = board.getPieces(white);
 
         long leftCapture = white ?
-                Bitwise.shiftNorthWest(squareBB) &~ friendlies &~ Bits.FILE_H :
-                Bitwise.shiftSouthWest(squareBB) &~ friendlies &~ Bits.FILE_H;
+                Bitwise.shiftNorthWest(squareBB) &~ friendlies:
+                Bitwise.shiftSouthWest(squareBB) &~ friendlies;
         attackMask |= leftCapture;
 
         long rightCapture = white ?
-                Bitwise.shiftNorthEast(squareBB) &~ friendlies &~ Bits.FILE_A :
-                Bitwise.shiftSouthEast(squareBB) &~ friendlies &~ Bits.FILE_A;
+                Bitwise.shiftNorthEast(squareBB) &~ friendlies :
+                Bitwise.shiftSouthEast(squareBB) &~ friendlies;
         attackMask |= rightCapture;
 
         return attackMask;

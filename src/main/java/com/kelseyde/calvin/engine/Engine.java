@@ -142,7 +142,7 @@ public class Engine {
 
     public int chooseThinkTime(int timeWhiteMs, int timeBlackMs, int incrementWhiteMs, int incrementBlackMs) {
 
-        boolean white = board.isWhiteToMove();
+        boolean white = board.isWhite();
         int timeRemainingMs = white ? timeWhiteMs : timeBlackMs;
         int incrementMs = white ? incrementWhiteMs : incrementBlackMs;
 

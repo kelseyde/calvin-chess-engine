@@ -109,6 +109,20 @@ public class BoardUtils {
 
     }
 
+    public static int enPassantSquare(int endSquare, boolean white) {
+        return white ? endSquare - 8 : endSquare + 8;
+    }
+
+    public static int rookStartSquare(boolean kingside, boolean white) {
+        if (kingside) return white ? 7 : 63;
+        else return white ? 0 : 56;
+    }
+
+    public static int rookEndSquare(boolean kingside, boolean white) {
+        if (kingside) return white ? 5 : 61;
+        else return white ? 3 : 59;
+    }
+
     public static Board copy(Board board) {
         Board newBoard = new Board();
         newBoard.setWhitePawns(board.getWhitePawns());
@@ -126,7 +140,7 @@ public class BoardUtils {
         newBoard.setWhitePieces(board.getWhitePieces());
         newBoard.setBlackPieces(board.getBlackPieces());
         newBoard.setOccupied(board.getOccupied());
-        newBoard.setWhiteToMove(board.isWhiteToMove());
+        newBoard.setWhite(board.isWhite());
         newBoard.setGameState(board.getGameState().copy());
         Deque<GameState> gameStateHistory = new ArrayDeque<>();
         board.getGameStateHistory().forEach(gameState -> gameStateHistory.add(gameState.copy()));

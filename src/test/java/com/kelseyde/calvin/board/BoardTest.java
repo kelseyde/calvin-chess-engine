@@ -135,7 +135,7 @@ public class BoardTest {
         Assertions.assertEquals(board1.getWhitePieces(), board2.getWhitePieces());
         Assertions.assertEquals(board1.getBlackPieces(), board2.getBlackPieces());
         Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
-        Assertions.assertEquals(board1.isWhiteToMove(), board2.isWhiteToMove());
+        Assertions.assertEquals(board1.isWhite(), board2.isWhite());
 
         Assertions.assertEquals(board1.getGameState(), board2.getGameState());
 
@@ -174,7 +174,7 @@ public class BoardTest {
         Assertions.assertEquals(board1.getWhitePieces(), board2.getWhitePieces());
         Assertions.assertEquals(board1.getBlackPieces(), board2.getBlackPieces());
         Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
-        Assertions.assertEquals(board1.isWhiteToMove(), board2.isWhiteToMove());
+        Assertions.assertEquals(board1.isWhite(), board2.isWhite());
 
         Assertions.assertEquals(board1.getGameState(), board2.getGameState());
 
@@ -255,19 +255,19 @@ public class BoardTest {
     public void testUnmakeMoveHandlesTurnSwitching() {
 
         Board board = new Board();
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
 
         board.makeMove(new Move(12, 28));
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
 
         board.makeMove(new Move(51, 35));
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
 
         board.makeMove(new Move(28, 35));
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
 
         board.unmakeMove();
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
 
     }
 
@@ -283,14 +283,14 @@ public class BoardTest {
         board.makeMove(new Move(61, 52));
         // castles
         board.makeMove(new Move(4, 6, Move.CASTLE_FLAG));
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
         Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
         Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));
         Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
         Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
 
         board.unmakeMove();
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
         Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(true));
         Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(true));
         Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
@@ -310,7 +310,7 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
         // scholar's mate
         board.makeMove(TestUtils.getLegalMove(board, "h5", "f7"));
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
         // todo
 
     }
@@ -346,13 +346,13 @@ public class BoardTest {
 
         Board board = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R w KQkq - 1 6");
         long initialZobrist = board.getGameState().getZobristKey();
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
         board.makeNullMove();
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
         Board board2 = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R b KQkq - 1 6");
         Assertions.assertEquals(board.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
         board.unmakeNullMove();
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
         Assertions.assertEquals(initialZobrist, board.getGameState().getZobristKey());
 
     }

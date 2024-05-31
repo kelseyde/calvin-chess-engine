@@ -117,7 +117,7 @@ public class TexelTuner {
         for (Map.Entry<Board, Double> entry : partitionedPositions.entrySet()) {
             Board board = entry.getKey();
             int eval = evaluator.evaluate(board);
-            if (!board.isWhiteToMove()) eval = -eval;
+            if (!board.isWhite()) eval = -eval;
             double prediction = prediction(eval);
             double actual = entry.getValue();
             double error = error(prediction, actual);

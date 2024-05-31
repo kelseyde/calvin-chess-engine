@@ -17,8 +17,6 @@ import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -93,7 +91,7 @@ public class Searcher implements Search {
         bestEval = 0;
         bestEvalCurrentDepth = 0;
         cancelled = false;
-        moveOrderer.ageHistoryScores(board.isWhiteToMove());
+        moveOrderer.ageHistoryScores(board.isWhite());
 
         int alpha = Integer.MIN_VALUE + 1;
         int beta = Integer.MAX_VALUE - 1;
@@ -211,7 +209,7 @@ public class Searcher implements Search {
             --depth;
         }
 
-        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+        boolean isInCheck = moveGenerator.isCheck(board, board.isWhite());
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
@@ -237,7 +235,7 @@ public class Searcher implements Search {
             if (allowNull
                 && depth >= config.getNmpDepth()
                 && staticEval >= beta - config.getNmpMargin()
-                && board.hasPiecesRemaining(board.isWhiteToMove())) {
+                && board.hasPiecesRemaining(board.isWhite())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -266,7 +264,7 @@ public class Searcher implements Search {
             board.makeMove(move);
             nodes++;
 
-            boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+            boolean isCheck = moveGenerator.isCheck(board, board.isWhite());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
@@ -356,7 +354,7 @@ public class Searcher implements Search {
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
-                    moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
+                    moveOrderer.incrementHistoryScore(depth, move, board.isWhite());
                 }
 
                 return beta;
@@ -415,7 +413,7 @@ public class Searcher implements Search {
             movePicker.setBestMove(transposition.getMove());
         }
 
-        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+        boolean isInCheck = moveGenerator.isCheck(board, board.isWhite());
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int eval = Integer.MIN_VALUE;

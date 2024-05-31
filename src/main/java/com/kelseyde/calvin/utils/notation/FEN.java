@@ -90,7 +90,7 @@ public class FEN {
             board.setBlackKing(blackKing);
             board.recalculatePieces();
             board.setPieceList(BoardUtils.calculatePieceList(board));
-            board.setWhiteToMove(whiteToMove);
+            board.setWhite(whiteToMove);
             board.getGameState().setCastlingRights(castlingRights);
             board.getGameState().setEnPassantFile(enPassantFile);
             board.getGameState().setFiftyMoveCounter(fiftyMoveCounter);
@@ -136,13 +136,13 @@ public class FEN {
                 }
             }
 
-            String whiteToMove = toSideToMove(board.isWhiteToMove());
+            String whiteToMove = toSideToMove(board.isWhite());
             sb.append(" ").append(whiteToMove);
 
             String castlingRights = toCastlingRights(board.getGameState().getCastlingRights());
             sb.append(" ").append(castlingRights);
 
-            String enPassantSquare = toEnPassantSquare(board.getGameState().getEnPassantFile(), board.isWhiteToMove());
+            String enPassantSquare = toEnPassantSquare(board.getGameState().getEnPassantFile(), board.isWhite());
             sb.append(" ").append(enPassantSquare);
 
             String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getFiftyMoveCounter());

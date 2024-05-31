@@ -136,7 +136,7 @@ public class PawnMoveGeneratorTest {
     public void testBlackPawnsNotOnStartingSquares() {
 
         board = TestUtils.emptyBoard();
-        board.setWhiteToMove(false);
+        board.setWhite(false);
 
         board.toggleSquare(Piece.KING, true, 0);
         board.toggleSquare(Piece.KING, false, 63);
@@ -273,7 +273,7 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(Piece.PAWN, false, 52);
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
-        board.setWhiteToMove(false);
+        board.setWhite(false);
 
         // black first double pawn advance
         board.makeMove(new Move(50, 34, Move.PAWN_DOUBLE_MOVE_FLAG));
@@ -306,7 +306,7 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(Piece.PAWN, false, 29);
         board.toggleSquare(Piece.PAWN, true, 30);
         board.getGameState().setEnPassantFile(BoardUtils.getFile(22));
-        board.setWhiteToMove(false);
+        board.setWhite(false);
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
         List<Move> legalBlackMoves = generator.generateMoves(board).stream()
@@ -354,7 +354,7 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(Piece.PAWN, true, 8);
         board.toggleSquare(Piece.PAWN, true, 10);
         board.setPieceList(BoardUtils.calculatePieceList(board));
-        board.setWhiteToMove(true);
+        board.setWhite(true);
 
         // white first double pawn advance
         board.makeMove(new Move(10, 26, Move.PAWN_DOUBLE_MOVE_FLAG));
@@ -419,7 +419,7 @@ public class PawnMoveGeneratorTest {
         board.toggleSquare(Piece.KING, true, 61);
         board.toggleSquare(Piece.KING, false, 63);
         board.toggleSquare(Piece.PAWN, false, 8);
-        board.setWhiteToMove(false);
+        board.setWhite(false);
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
         List<Move> legalMoves = generator.generateMoves(board).stream()

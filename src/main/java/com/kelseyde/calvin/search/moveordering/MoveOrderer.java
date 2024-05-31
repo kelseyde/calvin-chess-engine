@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.utils.BoardUtils;
-import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -165,7 +164,7 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private int scoreHistoryMove(Board board, int startSquare, int endSquare, int killerScore) {
-        int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
+        int colourIndex = BoardUtils.getColourIndex(board.isWhite());
         int historyScore = historyMoves[colourIndex][startSquare][endSquare];
         if (killerScore == 0 && historyScore > 0) {
             historyScore += HISTORY_MOVE_BIAS;

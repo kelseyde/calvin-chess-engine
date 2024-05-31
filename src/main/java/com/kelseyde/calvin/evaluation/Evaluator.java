@@ -10,7 +10,6 @@ import com.kelseyde.calvin.transposition.pawn.PawnHashEntry;
 import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
-import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -133,7 +132,7 @@ public class Evaluator implements Evaluation {
         blackKingAttackZoneUnits = 0;
         phase = 0;
 
-        boolean white = board.isWhiteToMove();
+        boolean white = board.isWhite();
 
         long whitePieces = board.getWhitePieces();
         long blackPieces = board.getBlackPieces();

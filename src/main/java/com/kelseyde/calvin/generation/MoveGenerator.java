@@ -58,7 +58,7 @@ public class MoveGenerator implements MoveGeneration {
     @Override
     public List<Move> generateMoves(Board board, MoveFilter filter) {
 
-        white = board.isWhiteToMove();
+        white = board.isWhite();
 
         // Initialise piece fields
         initPieces(board, white);

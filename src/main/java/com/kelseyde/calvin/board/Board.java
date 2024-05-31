@@ -86,13 +86,13 @@ public class Board {
         }
         else if (move.isCastling()) {
             toggleKing(isWhiteToMove, startSquare, endSquare);
-            zobrist = Zobrist.updatePiece(zobrist, startSquare, endSquare, Piece.KING, isWhiteToMove);
             boolean kingside = BoardUtils.getFile(endSquare) == 6;
             int rookStartSquare = rookStartSquare(kingside);
             int rookEndSquare = rookEndSquare(kingside);
             toggleRooks(isWhiteToMove, rookStartSquare, rookEndSquare);
             pieceList[rookStartSquare] = null;
             pieceList[rookEndSquare] = Piece.ROOK;
+            zobrist = Zobrist.updatePiece(zobrist, startSquare, endSquare, Piece.KING, isWhiteToMove);
             zobrist = Zobrist.updatePiece(zobrist, rookStartSquare, rookEndSquare, Piece.ROOK, isWhiteToMove);
         }
         else if (move.isPromotion()) {
@@ -108,7 +108,6 @@ public class Board {
                 }
             }
             zobrist = Zobrist.updatePiece(zobrist, endSquare, move.getPromotionPiece(), isWhiteToMove);
-            pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, move.getPromotionPiece(), isWhiteToMove);
         }
         else if (move.isEnPassant()) {
             toggleSquares(piece, isWhiteToMove, startSquare, endSquare);

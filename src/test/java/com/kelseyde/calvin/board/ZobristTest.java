@@ -190,4 +190,21 @@ public class ZobristTest {
 
     }
 
+    @Test
+    public void testPawnZobristPromotion() {
+
+        String fenBeforePromotion = "rnb1kb1r/pP2pppp/5n2/8/8/3q4/PPPP1PPP/RNBQKBNR w KQkq - 1 5";
+        String fenAfterPromotion = "Qnb1kb1r/p3pppp/5n2/8/8/3q4/PPPP1PPP/RNBQKBNR b KQk - 0 5";
+
+        Board board1 = FEN.toBoard(fenBeforePromotion);
+        board1.makeMove(Notation.fromNotation("b7", "a8", Move.PROMOTE_TO_QUEEN_FLAG));
+        long zobrist1 = board1.getGameState().getPawnKey();
+
+        Board board2 = FEN.toBoard(fenAfterPromotion);
+        long zobrist2 = board2.getGameState().getPawnKey();
+
+        Assertions.assertEquals(zobrist1, zobrist2);
+
+    }
+
 }

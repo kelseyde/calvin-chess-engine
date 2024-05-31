@@ -132,7 +132,7 @@ public class Evaluator implements Evaluation {
         blackKingAttackZoneUnits = 0;
         phase = 0;
 
-        boolean white = board.isWhite();
+        boolean white = board.isWhiteToMove();
 
         long whitePieces = board.getWhitePieces();
         long blackPieces = board.getBlackPieces();
@@ -192,7 +192,7 @@ public class Evaluator implements Evaluation {
 
     private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {
 
-        long pawnKey = board.getGameState().getPawnKey();
+        long pawnKey = board.getGameState().getPawnZobrist();
         PawnHashEntry hashEntry = pawnHash.get(pawnKey);
         int whiteScore;
         int blackScore;

@@ -23,7 +23,7 @@ public class DrawByFiftyMoveRuleTest {
         board.toggleSquare(Piece.KNIGHT, true, 18);
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
-        board.setWhite(true);
+        board.setWhiteToMove(true);
 
         // black knight captures white queen
         board.makeMove(TestUtils.getLegalMove(board, "c3", "d5"));
@@ -202,7 +202,7 @@ public class DrawByFiftyMoveRuleTest {
         board.toggleSquare(Piece.PAWN, true, 12);
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
-        board.setWhite(true);
+        board.setWhiteToMove(true);
 
         // white pawn makes last possible pawn move
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
@@ -378,7 +378,7 @@ public class DrawByFiftyMoveRuleTest {
         board.toggleSquare(Piece.KNIGHT, false, 18);
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
-        board.setWhite(false);
+        board.setWhiteToMove(false);
 
         // black knight captures white queen
         board.makeMove(TestUtils.getLegalMove(board, "c3", "d5"));
@@ -553,7 +553,7 @@ public class DrawByFiftyMoveRuleTest {
         board.toggleSquare(Piece.PAWN, false, 52);
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
-        board.setWhite(false);
+        board.setWhiteToMove(false);
 
         // black pawn makes last possible pawn move
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));

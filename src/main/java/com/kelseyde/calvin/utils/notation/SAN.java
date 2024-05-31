@@ -80,7 +80,7 @@ public class SAN {
         }
 
         board.makeMove(move);
-        if (moveGenerator.isCheck(board, board.isWhite())) {
+        if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
             List<Move> legalMoves = moveGenerator.generateMoves(board);
             notation += legalMoves.isEmpty() ? "#" : "+";
         }

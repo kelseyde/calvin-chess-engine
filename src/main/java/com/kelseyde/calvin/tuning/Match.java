@@ -133,8 +133,8 @@ public class Match {
     private GameResult calculateResult(Board board) {
         List<Move> legalMoves = moveGenerator.generateMoves(board);
         if (legalMoves.isEmpty()) {
-            if (moveGenerator.isCheck(board, board.isWhite())) {
-                return board.isWhite() ? GameResult.BLACK_WINS_BY_CHECKMATE : GameResult.WHITE_WINS_BY_CHECKMATE;
+            if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
+                return board.isWhiteToMove() ? GameResult.BLACK_WINS_BY_CHECKMATE : GameResult.WHITE_WINS_BY_CHECKMATE;
             } else {
                 return GameResult.DRAW_BY_STALEMATE;
             }

@@ -91,7 +91,7 @@ public class Searcher implements Search {
         bestEval = 0;
         bestEvalCurrentDepth = 0;
         cancelled = false;
-        moveOrderer.ageHistoryScores(board.isWhite());
+        moveOrderer.ageHistoryScores(board.isWhiteToMove());
 
         int alpha = Integer.MIN_VALUE + 1;
         int beta = Integer.MAX_VALUE - 1;
@@ -209,7 +209,7 @@ public class Searcher implements Search {
             --depth;
         }
 
-        boolean isInCheck = moveGenerator.isCheck(board, board.isWhite());
+        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
@@ -235,7 +235,7 @@ public class Searcher implements Search {
             if (allowNull
                 && depth >= config.getNmpDepth()
                 && staticEval >= beta - config.getNmpMargin()
-                && board.hasPiecesRemaining(board.isWhite())) {
+                && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -264,7 +264,7 @@ public class Searcher implements Search {
             board.makeMove(move);
             nodes++;
 
-            boolean isCheck = moveGenerator.isCheck(board, board.isWhite());
+            boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
@@ -354,7 +354,7 @@ public class Searcher implements Search {
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
-                    moveOrderer.incrementHistoryScore(depth, move, board.isWhite());
+                    moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
                 }
 
                 return beta;
@@ -413,7 +413,7 @@ public class Searcher implements Search {
             movePicker.setBestMove(transposition.getMove());
         }
 
-        boolean isInCheck = moveGenerator.isCheck(board, board.isWhite());
+        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int eval = Integer.MIN_VALUE;
@@ -543,7 +543,7 @@ public class Searcher implements Search {
     }
 
     private long getKey() {
-        return board.getGameState().getZobristKey();
+        return board.getGameState().getZobrist();
     }
 
 

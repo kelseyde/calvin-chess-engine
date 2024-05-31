@@ -164,7 +164,7 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private int scoreHistoryMove(Board board, int startSquare, int endSquare, int killerScore) {
-        int colourIndex = BoardUtils.getColourIndex(board.isWhite());
+        int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
         int historyScore = historyMoves[colourIndex][startSquare][endSquare];
         if (killerScore == 0 && historyScore > 0) {
             historyScore += HISTORY_MOVE_BIAS;

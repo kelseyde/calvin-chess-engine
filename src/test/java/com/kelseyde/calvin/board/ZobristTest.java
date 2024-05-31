@@ -14,19 +14,19 @@ public class ZobristTest {
 
         Board board1 = new Board();
         Board board2 = new Board();
-        Assertions.assertEquals(board1.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
+        Assertions.assertEquals(board1.getGameState().getZobrist(), board2.getGameState().getZobrist());
 
         Move e4 = new Move(12, 28, Move.PAWN_DOUBLE_MOVE_FLAG);
         board1.makeMove(e4);
         board2.makeMove(e4);
 
-        Assertions.assertEquals(board1.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
+        Assertions.assertEquals(board1.getGameState().getZobrist(), board2.getGameState().getZobrist());
 
         board1.unmakeMove();
         board2.unmakeMove();
 
-        Assertions.assertEquals(board1.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
-        Assertions.assertEquals(board1.getGameState().getZobristKey(), new Board().getGameState().getZobristKey());
+        Assertions.assertEquals(board1.getGameState().getZobrist(), board2.getGameState().getZobrist());
+        Assertions.assertEquals(board1.getGameState().getZobrist(), new Board().getGameState().getZobrist());
 
     }
 
@@ -36,18 +36,18 @@ public class ZobristTest {
         String fen = "k6K/1pp2P1P/p1p5/P7/8/8/5r2/2R5 w - - 1 51";
 
         Board board = FEN.toBoard(fen);
-        long firstZobrist1 = board.getGameState().getZobristKey();
+        long firstZobrist1 = board.getGameState().getZobrist();
 
         board.makeMove(Notation.fromNotation("h8", "g8"));
-        long secondZobrist1 = board.getGameState().getZobristKey();
+        long secondZobrist1 = board.getGameState().getZobrist();
 
         board.makeMove(Notation.fromNotation("f2", "g2"));
         board.makeMove(Notation.fromNotation("g8", "h8"));
         board.makeMove(Notation.fromNotation("g2", "f2"));
-        long firstZobrist2 = board.getGameState().getZobristKey();
+        long firstZobrist2 = board.getGameState().getZobrist();
 
         board.makeMove(Notation.fromNotation("h8", "g8"));
-        long secondZobrist2 = board.getGameState().getZobristKey();
+        long secondZobrist2 = board.getGameState().getZobrist();
 
         Assertions.assertEquals(firstZobrist1, firstZobrist2);
         Assertions.assertEquals(secondZobrist1, secondZobrist2);
@@ -64,17 +64,17 @@ public class ZobristTest {
         String fen = "1rb3k1/p1q3pp/4pr2/5p2/2pP4/1PQ3P1/4PPBP/2R1K2R b K - 0 21";
 
         Board board = FEN.toBoard(fen);
-        long z1 = board.getGameState().getZobristKey();
+        long z1 = board.getGameState().getZobrist();
         board.makeMove(Notation.fromNotation("b8", "b3"));
-        long z2 = board.getGameState().getZobristKey();
+        long z2 = board.getGameState().getZobrist();
         board.makeMove(Notation.fromNotation("c3", "b3"));
-        long z3 = board.getGameState().getZobristKey();
+        long z3 = board.getGameState().getZobrist();
         board.makeMove(Notation.fromNotation("c7", "a5"));
-        long z4 = board.getGameState().getZobristKey();
+        long z4 = board.getGameState().getZobrist();
         board.makeMove(Notation.fromNotation("b3", "c3"));
-        long z5 = board.getGameState().getZobristKey();
+        long z5 = board.getGameState().getZobrist();
         board.makeMove(Notation.fromNotation("a5", "c7"));
-        long z6 = board.getGameState().getZobristKey();
+        long z6 = board.getGameState().getZobrist();
         System.out.println(z1);
         System.out.println(z2);
         System.out.println(z3);
@@ -97,10 +97,10 @@ public class ZobristTest {
 
         Board board1 = FEN.toBoard(fenBeforeMove);
         board1.makeMove(Notation.fromNotation("e2", "e4"));
-        long zobrist1 = board1.getGameState().getZobristKey();
+        long zobrist1 = board1.getGameState().getZobrist();
 
         Board board2 = FEN.toBoard(fenAfterMove);
-        long zobrist2 = board2.getGameState().getZobristKey();
+        long zobrist2 = board2.getGameState().getZobrist();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -114,10 +114,10 @@ public class ZobristTest {
 
         Board board1 = FEN.toBoard(fenBeforeMove);
         board1.makeMove(Notation.fromNotation("e4", "d5"));
-        long zobrist1 = board1.getGameState().getZobristKey();
+        long zobrist1 = board1.getGameState().getZobrist();
 
         Board board2 = FEN.toBoard(fenAfterMove);
-        long zobrist2 = board2.getGameState().getZobristKey();
+        long zobrist2 = board2.getGameState().getZobrist();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -131,10 +131,10 @@ public class ZobristTest {
 
         Board board1 = FEN.toBoard(fenBeforeMove);
         board1.makeMove(Notation.fromNotation("e1", "e2"));
-        long zobrist1 = board1.getGameState().getZobristKey();
+        long zobrist1 = board1.getGameState().getZobrist();
 
         Board board2 = FEN.toBoard(fenAfterMove);
-        long zobrist2 = board2.getGameState().getZobristKey();
+        long zobrist2 = board2.getGameState().getZobrist();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -148,10 +148,10 @@ public class ZobristTest {
 
         Board board1 = FEN.toBoard(fenBeforeCapture);
         board1.makeMove(Notation.fromNotation("e5", "d6", Move.EN_PASSANT_FLAG));
-        long zobrist1 = board1.getGameState().getZobristKey();
+        long zobrist1 = board1.getGameState().getZobrist();
 
         Board board2 = FEN.toBoard(fenAfterCapture);
-        long zobrist2 = board2.getGameState().getZobristKey();
+        long zobrist2 = board2.getGameState().getZobrist();
 
         Assertions.assertEquals(zobrist1, zobrist2);
     }
@@ -164,10 +164,10 @@ public class ZobristTest {
 
         Board board1 = FEN.toBoard(fenBeforeCastle);
         board1.makeMove(Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG));
-        long zobrist1 = board1.getGameState().getZobristKey();
+        long zobrist1 = board1.getGameState().getZobrist();
 
         Board board2 = FEN.toBoard(fenAfterCastle);
-        long zobrist2 = board2.getGameState().getZobristKey();
+        long zobrist2 = board2.getGameState().getZobrist();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -181,10 +181,10 @@ public class ZobristTest {
 
         Board board1 = FEN.toBoard(fenBeforeCastle);
         board1.makeMove(Notation.fromNotation("b7", "a8", Move.PROMOTE_TO_QUEEN_FLAG));
-        long zobrist1 = board1.getGameState().getZobristKey();
+        long zobrist1 = board1.getGameState().getZobrist();
 
         Board board2 = FEN.toBoard(fenAfterCastle);
-        long zobrist2 = board2.getGameState().getZobristKey();
+        long zobrist2 = board2.getGameState().getZobrist();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -198,10 +198,10 @@ public class ZobristTest {
 
         Board board1 = FEN.toBoard(fenBeforePromotion);
         board1.makeMove(Notation.fromNotation("b7", "a8", Move.PROMOTE_TO_QUEEN_FLAG));
-        long zobrist1 = board1.getGameState().getPawnKey();
+        long zobrist1 = board1.getGameState().getPawnZobrist();
 
         Board board2 = FEN.toBoard(fenAfterPromotion);
-        long zobrist2 = board2.getGameState().getPawnKey();
+        long zobrist2 = board2.getGameState().getPawnZobrist();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 

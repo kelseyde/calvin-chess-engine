@@ -66,7 +66,7 @@ public class StaticExchangeEvaluator {
 
     private Move getLeastValuableAttacker(Board board, int square) {
 
-        boolean white = board.isWhite();
+        boolean white = board.isWhiteToMove();
 
         long pawns = board.getPawns(white);
         if (pawns > 0) {

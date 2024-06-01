@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.generation.Attacks;
 import com.kelseyde.calvin.generation.MoveGenerator;
 
 /**
@@ -26,7 +27,7 @@ public class StaticExchangeEvaluator {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         boolean white = board.isWhiteToMove();
-        Piece piece = move.isPromotion() ? move.getPromotionPiece() : board.pieceAt(startSquare);
+        Piece currentVictim = move.isPromotion() ? move.getPromotionPiece() : board.pieceAt(startSquare);
 
         int score = 0;
 
@@ -55,69 +56,74 @@ public class StaticExchangeEvaluator {
         long diagonalSliders = (board.getDiagonalSliders(white) | board.getDiagonalSliders(!white)) & remaining;
         long orthogonalSliders = (board.getOrthogonalSliders(white) | board.getOrthogonalSliders(!white)) & remaining;
 
+        // Get all attackers, regardless of colour
+        long attackers = moveGenerator.allAttackers(board, endSquare, remaining) & remaining;
 
+        boolean originalSide = white;
+        boolean currentSide = white;
 
-        let mut attackers = self.attackers(tgt, remaining) & remaining;
-        let mut side = self.current;
+        // Start exchanging pieces
+        while (true) {
 
-        // Start trading off pieces
-        loop {
-            // Switch side-to-move
-            side = !side;
-
-            // Check whether or not we need to re-capture in the first place
-            // If we've beaten the threshold and it's our turn, there's no need
-            // to re-capture.
-            if side == self.current && balance >= 0
-                    || side != self.current && balance <= 0 {
+            currentSide = !currentSide;
+            if ((currentSide == originalSide && score >= 0)
+                || currentSide != originalSide && score <= 0) {
                 break;
             }
 
-            // Find least valuable attacker, and break if no attackers are left
-            let Some(attacker_sq) = self.lva(attackers, side) else { break };
-            let attacker = self.get_at(attacker_sq).unwrap();
+            int attackerSquare = lva(board, attackers, currentSide);
+            if (attackerSquare < 0) break;
 
-            // If our last attacker is a king, but the opponent still has
-            // attackers, cut the exchange short (because the capture isn't
-            // legal).
-            if attacker.is_king()
-                    && !(attackers & self.occupied_by(!side)).is_empty() {
+            Piece lva = board.pieceAt(attackerSquare);
+            if (lva == Piece.KING && (attackers & board.getPieces(!currentSide)) != 0) {
                 break;
             }
 
             // Remove the attacker from the boards
-            remaining    ^= Bitboard::from(attacker_sq);
-            attackers    &= remaining;
-            diag_sliders &= remaining;
-            hv_sliders   &= remaining;
+            remaining ^= 1L << attackerSquare;
+            attackers &= remaining;
+            diagonalSliders &= remaining;
+            orthogonalSliders &= remaining;
 
-            // Any discovered attackers?
-            if attacker.is_pawn() || attacker.is_diag_slider() {
-                attackers |= tgt.bishop_squares(remaining) & diag_sliders;
+            if (lva == Piece.PAWN || (lva == Piece.BISHOP || lva == Piece.QUEEN)) {
+                attackers |= Attacks.bishopAttacks(endSquare, remaining) & diagonalSliders;
+            }
+            if ((lva == Piece.ROOK || lva == Piece.QUEEN)) {
+                attackers |= Attacks.rookAttacks(endSquare, remaining) & orthogonalSliders;
             }
 
-            if attacker.is_hv_slider() {
-                attackers |= tgt.rook_squares(remaining) & hv_sliders;
-            }
-
-            // Update balance
-            if side == self.current {
-                balance += SEE_VALUES[current_victim as usize];
+            if (currentSide == originalSide) {
+                score += currentVictim.getValue();
             } else {
-                balance -= SEE_VALUES[current_victim as usize];
+                score -= currentVictim.getValue();
             }
 
-            current_victim = attacker.piece_type();
-        }
+            currentVictim = lva;
 
-        // After all the exchanges are done, check whether the final balance
-        // matches the threshold
-        balance >= 0
+        }
+        return score;
 
     }
 
-    private long allAttackers(Board board, int square) {
-        return moveGenerator.att
+    /**
+     * Get the square of the least-valuable-attacker
+     */
+    private int lva(Board board, long attackers, boolean white) {
+
+        int square = -1;
+        int lowestValue = Integer.MAX_VALUE;
+        long sideAttackers = attackers & board.getPieces(white);
+        while (sideAttackers != 0) {
+            int attackerSquare = Bitwise.getNextBit(sideAttackers);
+            Piece attacker = board.pieceAt(attackerSquare);
+            int attackerValue = attacker.getValue();
+            if (attackerValue < lowestValue) {
+                square = attackerSquare;
+                lowestValue = attackerValue;
+            }
+            sideAttackers = Bitwise.popBit(sideAttackers);
+        }
+        return square;
     }
 
     /**

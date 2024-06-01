@@ -557,8 +557,13 @@ public class MoveGenerator implements MoveGeneration {
     /**
      * Get all attackers on a square, regardless of colour.
      */
-    public long allAttackers() {
-
+    public long allAttackers(Board board, int square, long blockers) {
+        return Attacks.pawnAttacks(board.getPawns(true), true)
+                | Attacks.pawnAttacks(board.getPawns(false), false)
+                | (Attacks.kingAttacks(square) & (board.getKing(true) | board.getKing(false)))
+                | (Attacks.knightAttacks(square) & (board.getKnights(true) | board.getKnights(false)))
+                | (Attacks.bishopAttacks(square, blockers) & (board.getBishops(true) | board.getBishops(false) | board.getQueens(true) | board.getQueens(false)))
+                | (Attacks.rookAttacks(square, blockers) & (board.getRooks(true) | board.getRooks(false) | board.getQueens(true) | board.getQueens(false)));
     }
 
     private List<Move> getPromotionMoves(int startSquare, int endSquare) {

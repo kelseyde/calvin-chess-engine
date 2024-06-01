@@ -33,23 +33,18 @@ public class Board {
     long blackQueens =  Bits.BLACK_QUEENS_START;
     long blackKing =    Bits.BLACK_KING_START;
 
-    long whitePieces;
-    long blackPieces;
-    long occupied;
-
-    Piece[] pieceList = BoardUtils.getStartingPieceList();
+    long whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
+    long blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
+    long occupied = whitePieces | blackPieces;
 
     boolean whiteToMove = true;
 
-    GameState gameState = new GameState();
+    Piece[] pieceList = BoardUtils.getStartingPieceList();
+    GameState gameState = new GameState(this);
     Deque<GameState> gameStateHistory = new ArrayDeque<>();
     Deque<Move> moveHistory = new ArrayDeque<>();
 
-    public Board() {
-        gameState.setZobrist(Zobrist.generateKey(this));
-        gameState.setPawnZobrist(Zobrist.generatePawnKey(this));
-        recalculatePieces();
-    }
+    public Board() { }
 
     /**
      * Updates the internal board representation with the {@link Move} just made. Toggles the piece bitboards to move the
@@ -303,12 +298,6 @@ public class Board {
             blackKing = 1L << kingSquare;
             blackPieces |= blackKing;
         }
-        occupied = whitePieces | blackPieces;
-    }
-
-    public void recalculatePieces() {
-        whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
-        blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
         occupied = whitePieces | blackPieces;
     }
 

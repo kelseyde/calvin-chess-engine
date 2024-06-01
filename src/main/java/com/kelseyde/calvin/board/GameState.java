@@ -11,15 +11,23 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class GameState {
 
-    long zobrist = 0L;
-    long pawnZobrist = 0L;
+    long zobrist;
+    long pawnZobrist;
     Piece capturedPiece;
-    int enPassantFile = -1;
-    int castlingRights = Bits.INITIAL_CASTLING_RIGHTS;
-    int halfMoveClock = 0;
+    int enPassantFile;
+    int castlingRights;
+    int halfMoveClock;
+
+    public GameState(Board board) {
+        this.zobrist = Zobrist.generateKey(board);
+        this.pawnZobrist = Zobrist.generatePawnKey(board);
+        this.capturedPiece = null;
+        this.enPassantFile = -1;
+        this.castlingRights = Bits.INITIAL_CASTLING_RIGHTS;
+        this.halfMoveClock = 0;
+    }
 
     public boolean hasCastlingRights(boolean white) {
         return isKingsideCastlingAllowed(white) || isQueensideCastlingAllowed(white);

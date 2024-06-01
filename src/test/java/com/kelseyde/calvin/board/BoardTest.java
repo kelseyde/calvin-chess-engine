@@ -528,11 +528,9 @@ public class BoardTest {
 
     private void assertSinglePieceBoard(Board board, int startSquare) {
         board.toggleSquare(Piece.ROOK, true, startSquare);
-        board.recalculatePieces();
         Assertions.assertEquals(Set.of(startSquare), getPiecePositions(board, true));
         Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
         board.toggleSquare(Piece.ROOK, true, startSquare);
-        board.recalculatePieces();
     }
 
 }

@@ -1247,6 +1247,7 @@
     98,
     110
   ],
+  "virtualKingMobilityPenalty":[[0,0,0,-449,-643,47,31,33,-9,14,8,6,-4,2,6,-9,-10,0,0,0,-25,0,0,19,0,25,-11,-7],[0,0,0,127,4,-63,-5,-23,-7,0,0,12,0,0,0,12,9,4,4,3,4,-4,-6,-18,-9,-28,-14,-36]],
   "kingManhattanDistanceMultiplier":10,
   "kingChebyshevDistanceMultiplier":10,
   "kingCenterManhattanDistanceMultiplier":14,

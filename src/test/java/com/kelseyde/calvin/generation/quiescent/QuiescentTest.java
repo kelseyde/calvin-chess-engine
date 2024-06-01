@@ -30,7 +30,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
+        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("a6", "b7"),
                 Notation.fromNotation("f8", "d7"),
@@ -55,7 +55,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
+        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("g3", "h4"),
                 Notation.fromNotation("b3", "f7"),
@@ -80,7 +80,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
+        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("h2", "g4"),
                 Notation.fromNotation("c6", "d6"),
@@ -112,7 +112,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
+        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("e2", "a6"),
                 Notation.fromNotation("f3", "f6"),
@@ -136,16 +136,29 @@ public class QuiescentTest {
         List<Move> expected = List.of(
                 Notation.fromNotation("g4", "h3"),
                 Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_ROOK_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_ROOK_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_BISHOP_FLAG),
                 Notation.fromNotation("e3", "d2")
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
+        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("g4", "h3"),
                 Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Notation.fromNotation("e3", "d2"),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_ROOK_FLAG),
+                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_BISHOP_FLAG),
                 Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_ROOK_FLAG),
+                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Notation.fromNotation("e3", "d2"),
                 Notation.fromNotation("b3", "b2")
         );
         assertMoves(expected, moves);
@@ -167,7 +180,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_AND_CHECKS);
+        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("h1", "h8"),
                 Notation.fromNotation("e1", "e7"),

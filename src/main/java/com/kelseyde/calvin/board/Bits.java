@@ -132,6 +132,9 @@ public class Bits {
     public static final long[] INNER_RING_MASK = generateInnerRingMask();
     public static final long[] OUTER_RING_MASK = generateOuterRingMask();
 
+    public static final long[] WHITE_KING_SAFETY_ZONE = generateKingSafetyZone(true);
+    public static final long[] BLACK_KING_SAFETY_ZONE = generateKingSafetyZone(false);
+
     private static long[] generateWestFileMask() {
         long[] westFileMasks = new long[8];
         for (int i = 0; i < 8; i++) {
@@ -237,6 +240,18 @@ public class Bits {
             outerRingMasks[square] = mask;
         }
         return outerRingMasks;
+    }
+
+    private static long[] generateKingSafetyZone(boolean white) {
+        long[] kingSafetyZones = new long[64];
+        for (int square = 0; square < 64; square++) {
+            long innerRingMask = INNER_RING_MASK[square];
+            long kingSafetyZone = white ?
+                    innerRingMask | Bitwise.shiftNorth(innerRingMask) :
+                    innerRingMask | Bitwise.shiftSouth(innerRingMask);
+            kingSafetyZones[square] = kingSafetyZone;
+        }
+        return kingSafetyZones;
     }
 
 }

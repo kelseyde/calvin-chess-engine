@@ -9,8 +9,9 @@ import lombok.AllArgsConstructor;
  * </p>
  *
  * Key encoding:
- * 0-47: 48 bits representing three-quarters of the zobrist hash. Used to verify that the position truly matches.
- * 48-63: 16 bits representing the generation of the entry, i.e. how old it is. Used to gradually replace old entries.
+ * 0-31: 32 bits representing half of the zobrist hash. Used to verify that the position truly matches.
+ * 32-47: 16 bits representing the generation of the entry, i.e. how old it is. Used to gradually replace old entries.
+ * 48-63: 16 bits representing the static eval of the position. Re-used to save calling the evaluation function again.
  * </p>
  *
  * Value encoding:
@@ -22,8 +23,9 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class HashEntry {
 
-    private static final long ZOBRIST_PART_MASK = 0x0000ffffffffffffL;
-    private static final long GENERATION_MASK = 0xffff000000000000L;
+    private static final long ZOBRIST_PART_MASK = 0x00000000ffffffffL;
+    private static final long GENERATION_MASK = 0x0000ffff00000000L;
+    private static final long STATIC_EVAL_MASK = 0xffff000000000000L;
     private static final long SCORE_MASK = 0xffffffff00000000L;
     private static final long MOVE_MASK = 0x00000000ffff0000L;
     private static final long FLAG_MASK = 0x000000000000f000L;
@@ -50,14 +52,28 @@ public class HashEntry {
      * Gets the generation part of this entry's key.
      */
     public int getGeneration() {
-        return (int) ((key & GENERATION_MASK) >>> 48);
+        return (int) ((key & GENERATION_MASK) >>> 32);
     }
 
     /**
      * Sets the generation part of this entry's key.
      */
     public void setGeneration(int generation) {
-        key = (key &~ GENERATION_MASK) | (long) generation << 48;
+        key = (key & ~GENERATION_MASK) | ((long) generation << 32);
+    }
+
+    /**
+     * Gets the static eval part of this entry's key.
+     */
+    public int getStaticEval() {
+        return (short) ((key & STATIC_EVAL_MASK) >>> 48);
+    }
+
+    /**
+     * Sets the static eval part of this entry's key.
+     */
+    public void setStaticEval(int staticEval) {
+        key = (key & ~STATIC_EVAL_MASK) | ((long) (staticEval & 0xFFFF) << 48);
     }
 
     /**
@@ -124,9 +140,9 @@ public class HashEntry {
      * @param generation the generation
      * @return a new {@link HashEntry}
      */
-    public static HashEntry of(long zobristKey, int score, Move move, HashFlag flag, int depth, int generation) {
-        // Build the key using 48 bits for the zobrist part and 16 bits for the generation part.
-        long key = (zobristKey & ZOBRIST_PART_MASK) | (long) generation << 48;
+    public static HashEntry of(long zobristKey, int score, int staticEval, Move move, HashFlag flag, int depth, int generation) {
+        // Build the key using 32 bits for the zobrist part, 16 bits for the generation part, and 16 bits for the static evaluation part.
+        long key = (zobristKey & ZOBRIST_PART_MASK) | ((long) generation << 32) | ((long) (staticEval & 0xFFFF) << 48);
         // Get the 16-bit encoded move
         long moveValue = move != null ? move.value() : 0;
         // Get the 3-bit encoded flag

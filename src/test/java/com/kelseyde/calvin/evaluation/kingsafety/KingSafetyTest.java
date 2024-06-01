@@ -1,15 +1,28 @@
 package com.kelseyde.calvin.evaluation.kingsafety;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 @Disabled
 public class KingSafetyTest {
 
     private final EngineConfig config = TestUtils.TST_CONFIG;
     private final Evaluator evaluator = new Evaluator(config);
+
+    @Test
+    public void testAttackZones() {
+
+        String fen = "1N6/5k2/5b1p/8/6R1/5pP1/5K1P/8 b - - 0 1";
+        Board board = FEN.toBoard(fen);
+
+        evaluator.evaluate(board);
+
+    }
 
 //    @Test
 //    public void testSimpleCastledKingFullPawnShield() {

@@ -87,7 +87,7 @@ public class TranspositionTable {
      * @param move the best move found at this position.
      * @param score the score of the position.
      */
-    public void put(long zobristKey, HashFlag flag, int depth, int ply, Move move, int score) {
+    public void put(long zobristKey, HashFlag flag, int depth, int ply, Move move, int staticEval, int score) {
 
         // Get the start index of the 4-item bucket.
         int startIndex = getIndex(zobristKey);
@@ -99,7 +99,7 @@ public class TranspositionTable {
         if (isMateScore(score)) score = calculateMateScore(score, ply);
 
         // Construct the new entry to store in the hash table.
-        HashEntry newEntry = HashEntry.of(zobristKey, score, move, flag, depth, generation);
+        HashEntry newEntry = HashEntry.of(zobristKey, score, staticEval, move, flag, depth, generation);
 
         int replacedIndex = -1;
         int minDepth = Integer.MAX_VALUE;

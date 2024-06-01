@@ -6,6 +6,6 @@ public interface Evaluation {
 
     int evaluate(Board board);
 
-    Score getScore();
+    void clearHistory();
 
 }

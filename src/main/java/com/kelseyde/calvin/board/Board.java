@@ -40,11 +40,14 @@ public class Board {
     boolean whiteToMove = true;
 
     Piece[] pieceList = BoardUtils.getStartingPieceList();
-    GameState gameState = new GameState(this);
+    GameState gameState = new GameState();
     Deque<GameState> gameStateHistory = new ArrayDeque<>();
     Deque<Move> moveHistory = new ArrayDeque<>();
 
-    public Board() { }
+    public Board() {
+        gameState.setZobrist(Zobrist.generateKey(this));
+        gameState.setPawnZobrist(Zobrist.generatePawnKey(this));
+    }
 
     /**
      * Updates the internal board representation with the {@link Move} just made. Toggles the piece bitboards to move the

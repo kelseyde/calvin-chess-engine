@@ -10,7 +10,6 @@ import com.kelseyde.calvin.transposition.pawn.PawnHashEntry;
 import com.kelseyde.calvin.transposition.pawn.PawnHashTable;
 import com.kelseyde.calvin.utils.BoardUtils;
 import com.kelseyde.calvin.utils.Distance;
-import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -32,6 +31,17 @@ public class Evaluator implements Evaluation {
 
     final EngineConfig config;
     final PawnHashTable pawnHash;
+
+    final int pawnMgValue;
+    final int knightMgValue;
+    final int bishopMgValue;
+    final int rookMgValue;
+    final int queenMgValue;
+    final int pawnEgValue;
+    final int knightEgValue;
+    final int bishopEgValue;
+    final int rookEgValue;
+    final int queenEgValue;
 
     final int[] pawnMgTable;
     final int[] pawnEgTable;
@@ -76,6 +86,17 @@ public class Evaluator implements Evaluation {
     public Evaluator(EngineConfig config, PawnHashTable pawnHash) {
         this.config = config;
         this.pawnHash = pawnHash;
+
+        pawnMgValue = config.getPieceValues()[0][Piece.PAWN.getIndex()];
+        knightMgValue = config.getPieceValues()[0][Piece.KNIGHT.getIndex()];
+        bishopMgValue = config.getPieceValues()[0][Piece.BISHOP.getIndex()];
+        rookMgValue = config.getPieceValues()[0][Piece.ROOK.getIndex()];
+        queenMgValue = config.getPieceValues()[0][Piece.QUEEN.getIndex()];
+        pawnEgValue = config.getPieceValues()[1][Piece.PAWN.getIndex()];
+        knightEgValue = config.getPieceValues()[1][Piece.KNIGHT.getIndex()];
+        bishopEgValue = config.getPieceValues()[1][Piece.BISHOP.getIndex()];
+        rookEgValue = config.getPieceValues()[1][Piece.ROOK.getIndex()];
+        queenEgValue = config.getPieceValues()[1][Piece.QUEEN.getIndex()];
 
         pawnMgTable = config.getMiddlegameTables()[Piece.PAWN.getIndex()];
         pawnEgTable = config.getEndgameTables()[Piece.PAWN.getIndex()];
@@ -137,12 +158,12 @@ public class Evaluator implements Evaluation {
 
         phase = Phase.fromMaterial(whiteMaterial, blackMaterial, config);
 
-        int whiteMaterialMgScore = whiteMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int whiteMaterialEgScore = whiteMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());
+        int whiteMaterialMgScore = mgMaterialScore(whiteMaterial);
+        int whiteMaterialEgScore = egMaterialScore(whiteMaterial);
         addScore(whiteMaterialMgScore, whiteMaterialEgScore, true);
 
-        int blackMaterialMgScore = blackMaterial.sum(config.getPieceValues()[0], config.getBishopPairBonus());
-        int blackMaterialEgScore = blackMaterial.sum(config.getPieceValues()[1], config.getBishopPairBonus());;
+        int blackMaterialMgScore = mgMaterialScore(blackMaterial);
+        int blackMaterialEgScore = egMaterialScore(blackMaterial);
         addScore(blackMaterialMgScore, blackMaterialEgScore, false);
 
         // Blockers used during mobility calculations
@@ -163,15 +184,15 @@ public class Evaluator implements Evaluation {
         scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, true);
         scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, false);
 
-        scoreKing(whiteKing, whitePawns, blackPawns, blackMaterial, board, phase, true);
-        scoreKing(blackKing, blackPawns, whitePawns, whiteMaterial, board, phase, false);
+        scoreKing(whiteKing, whitePawns, blackPawns, blackMaterial, friendlyWhiteBlockers, blackPieces, board, phase, true);
+        scoreKing(blackKing, blackPawns, whitePawns, whiteMaterial, friendlyBlackBlockers, whitePieces, board, phase, false);
 
         return sum(white);
     }
 
     private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {
 
-        long pawnKey = board.getGameState().getPawnKey();
+        long pawnKey = board.getGameState().getPawnZobrist();
         PawnHashEntry hashEntry = pawnHash.get(pawnKey);
         int whiteScore;
         int blackScore;
@@ -411,6 +432,8 @@ public class Evaluator implements Evaluation {
                            long friendlyPawns,
                            long opponentPawns,
                            Material opponentMaterial,
+                           long friendlyBlockers,
+                           long opponentBlockers,
                            Board board,
                            float phase,
                            boolean white) {
@@ -423,7 +446,7 @@ public class Evaluator implements Evaluation {
         egScore += kingEgTable[square];
         addScore(mgScore, egScore, white);
 
-        scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
+        scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, friendlyBlockers, opponentBlockers, board, phase, white);
 
     }
 
@@ -438,6 +461,8 @@ public class Evaluator implements Evaluation {
                                    long friendlyPawns,
                                    long opponentPawns,
                                    Material opponentMaterial,
+                                   long friendlyBlockers,
+                                   long opponentBlockers,
                                    Board board,
                                    float phase,
                                    boolean white) {
@@ -451,6 +476,16 @@ public class Evaluator implements Evaluation {
         }
         int kingAttackZoneUnits = white ? whiteKingAttackZoneUnits : blackKingAttackZoneUnits;
         int attackZoneScore = config.getKingAttackZonePenaltyTable()[kingAttackZoneUnits];
+
+        int virtualMobilityMgPenalty = 0;
+        int virtualMobilityEgPenalty = 0;
+        long blockers = friendlyBlockers | opponentBlockers;
+        long attacks = Attacks.bishopAttacks(kingSquare, blockers) | Attacks.rookAttacks(kingSquare, blockers);
+        int moveCount = Bitwise.countBits(attacks);
+        virtualMobilityMgPenalty += config.getVirtualKingMobilityPenalty()[0][moveCount];
+        virtualMobilityEgPenalty += config.getVirtualKingMobilityPenalty()[1][moveCount];
+        addScore(virtualMobilityMgPenalty, virtualMobilityEgPenalty, white);
+
         float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty + attackZoneScore) * phase);
         int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
         int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
@@ -503,6 +538,24 @@ public class Evaluator implements Evaluation {
         boolean hasCastlingRights = board.getGameState().hasCastlingRights(white);
         boolean opponentHasCastlingRights = board.getGameState().hasCastlingRights(!white);
         return !hasCastlingRights && opponentHasCastlingRights ? config.getKingLostCastlingRightsPenalty() : 0;
+    }
+
+    private int mgMaterialScore(Material material) {
+        return (material.pawns() * pawnMgValue) +
+               (material.knights() * knightMgValue) +
+               (material.bishops() * bishopMgValue) +
+               (material.rooks() * rookMgValue) +
+               (material.queens() * queenMgValue) +
+               (material.bishops() == 2 ? config.getBishopPairBonus() : 0);
+    }
+
+    private int egMaterialScore(Material material) {
+        return (material.pawns() * pawnEgValue) +
+                (material.knights() * knightEgValue) +
+                (material.bishops() * bishopEgValue) +
+                (material.rooks() * rookEgValue) +
+                (material.queens() * queenEgValue) +
+                (material.bishops() == 2 ? config.getBishopPairBonus() : 0);
     }
 
     public void addScore(int middlegameScore, int endgameScore, boolean white) {

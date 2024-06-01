@@ -14,7 +14,7 @@ public class OpeningBookTest {
         Assertions.assertNotNull(book);
 
         Board board = new Board();
-        Assertions.assertTrue(book.hasBookMove(board.getGameState().getZobristKey()));
+        Assertions.assertTrue(book.hasBookMove(board.getGameState().getZobrist()));
 
 
     }

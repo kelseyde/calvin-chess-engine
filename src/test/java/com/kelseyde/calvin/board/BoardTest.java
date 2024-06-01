@@ -345,15 +345,15 @@ public class BoardTest {
     public void testMakeNullMoveChangesSideToMove() {
 
         Board board = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R w KQkq - 1 6");
-        long initialZobrist = board.getGameState().getZobristKey();
+        long initialZobrist = board.getGameState().getZobrist();
         Assertions.assertTrue(board.isWhiteToMove());
         board.makeNullMove();
         Assertions.assertFalse(board.isWhiteToMove());
         Board board2 = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R b KQkq - 1 6");
-        Assertions.assertEquals(board.getGameState().getZobristKey(), board2.getGameState().getZobristKey());
+        Assertions.assertEquals(board.getGameState().getZobrist(), board2.getGameState().getZobrist());
         board.unmakeNullMove();
         Assertions.assertTrue(board.isWhiteToMove());
-        Assertions.assertEquals(initialZobrist, board.getGameState().getZobristKey());
+        Assertions.assertEquals(initialZobrist, board.getGameState().getZobrist());
 
     }
 
@@ -361,13 +361,13 @@ public class BoardTest {
     public void testUnmakeMoveResetsEnPassantFile() {
 
         Board board = FEN.toBoard("r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3");
-        long initialZobrist = board.getGameState().getZobristKey();
+        long initialZobrist = board.getGameState().getZobrist();
         Assertions.assertEquals(3, board.getGameState().getEnPassantFile());
         board.makeNullMove();
         Assertions.assertEquals(-1, board.getGameState().getEnPassantFile());
         board.unmakeNullMove();
         Assertions.assertEquals(3, board.getGameState().getEnPassantFile());
-        Assertions.assertEquals(initialZobrist, board.getGameState().getZobristKey());
+        Assertions.assertEquals(initialZobrist, board.getGameState().getZobrist());
 
     }
 
@@ -375,13 +375,13 @@ public class BoardTest {
     public void testUnmakeMoveResetsFiftyMoveCounter() {
 
         Board board = FEN.toBoard("8/4n3/2kn4/8/3B4/5K2/8/8 w - - 4 3");
-        long initialZobrist = board.getGameState().getZobristKey();
-        Assertions.assertEquals(4, board.getGameState().getFiftyMoveCounter());
+        long initialZobrist = board.getGameState().getZobrist();
+        Assertions.assertEquals(4, board.getGameState().getHalfMoveClock());
         board.makeNullMove();
-        Assertions.assertEquals(0, board.getGameState().getFiftyMoveCounter());
+        Assertions.assertEquals(0, board.getGameState().getHalfMoveClock());
         board.unmakeNullMove();
-        Assertions.assertEquals(4, board.getGameState().getFiftyMoveCounter());
-        Assertions.assertEquals(initialZobrist, board.getGameState().getZobristKey());
+        Assertions.assertEquals(4, board.getGameState().getHalfMoveClock());
+        Assertions.assertEquals(initialZobrist, board.getGameState().getZobrist());
 
     }
 
@@ -426,6 +426,73 @@ public class BoardTest {
 
         Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.QUIET).size());
         Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY).size());
+
+    }
+
+    @Test
+    public void testUnmakeCastling() {
+
+        Board board = new Board();
+        board.makeMove(Notation.fromCombinedNotation("e2e4"));
+        System.out.println("1");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromCombinedNotation("d7d5"));
+        System.out.println("2");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromCombinedNotation("g1f3"));
+        System.out.println("3");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromCombinedNotation("b8c6"));
+        System.out.println("4");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromCombinedNotation("f1b5"));
+        System.out.println("5");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromCombinedNotation("c8g4"));
+        System.out.println("6");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG));
+        System.out.println("7");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromCombinedNotation("d8d7"));
+        System.out.println("8");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromNotation("f1", "e1"));
+        System.out.println("9");
+        Bitwise.print(board.getWhiteKing());
+        Bitwise.print(board.getWhiteRooks());
+        board.makeMove(Notation.fromNotation("e8","c8",Move.CASTLE_FLAG));
+
+        Board board2 = FEN.toBoard("2kr1bnr/pppqpppp/2n5/1B1p4/4P1b1/5N2/PPPP1PPP/RNBQR1K1 w - - 8 6");
+        Assertions.assertEquals(board.getWhitePieces(), board2.getWhitePieces());
+        Assertions.assertEquals(board.getBlackPieces(), board2.getBlackPieces());
+        Assertions.assertEquals(board.getWhiteRooks(), board2.getWhiteRooks());
+        Assertions.assertEquals(board.getBlackRooks(), board2.getBlackRooks());
+
+        board.unmakeMove();
+        board.unmakeMove();
+        board.unmakeMove();
+        board.unmakeMove();
+        board.unmakeMove();
+        board.unmakeMove();
+        board.unmakeMove();
+        board.unmakeMove();
+        board.unmakeMove();
+        board.unmakeMove();
+
+        Board board3 = new Board();
+        Assertions.assertEquals(board.getWhitePieces(), board3.getWhitePieces());
+        Assertions.assertEquals(board.getBlackPieces(), board3.getBlackPieces());
+        Assertions.assertEquals(board.getWhiteRooks(), board3.getWhiteRooks());
+        Assertions.assertEquals(board.getBlackRooks(), board3.getBlackRooks());
 
     }
 

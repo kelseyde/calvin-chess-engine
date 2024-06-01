@@ -23,6 +23,8 @@ import java.util.Random;
  */
 public class OpeningBook {
 
+    public record BookMove(Move move, int frequency) {}
+
     private final Map<Long, BookMove[]> movesByPosition;
     private final Random random = new Random();
 
@@ -33,7 +35,7 @@ public class OpeningBook {
             if (entry.isBlank()) continue;
             String[] entryData = entry.trim().split("\n");
             String fen = entryData[0];
-            long key = FEN.toBoard(fen).getGameState().getZobristKey();
+            long key = FEN.toBoard(fen).getGameState().getZobrist();
             BookMove[] bookMoves = Arrays.stream(entryData, 1, entryData.length)
                     .map(this::parseBookMove)
                     .toArray(BookMove[]::new);
@@ -46,7 +48,7 @@ public class OpeningBook {
     }
 
     public Move getBookMove(Board board) {
-        long key = board.getGameState().getZobristKey();
+        long key = board.getGameState().getZobrist();
         BookMove[] bookMoves = movesByPosition.get(key);
         if (bookMoves == null) {
             return null;

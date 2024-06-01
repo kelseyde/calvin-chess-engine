@@ -296,6 +296,23 @@ public class TexelTunerTest {
         );
     }
 
+    @Test
+    public void tuneVirtualKingMobility() throws IOException, ExecutionException, InterruptedException {
+        List<Integer> weights = new ArrayList<>();
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        weights.addAll(Arrays.stream(initialConfig.getVirtualKingMobilityPenalty()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getVirtualKingMobilityPenalty()[1]).boxed().toList());
+        tune(
+                weights.stream().mapToInt(i -> i).toArray(),
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.getVirtualKingMobilityPenalty()[0] = Arrays.stream(params, 0, 28).toArray();
+                    config.getVirtualKingMobilityPenalty()[1] = Arrays.stream(params, 28, 56).toArray();
+                    return config;
+                }
+        );
+    }
+
     private void tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException, ExecutionException, InterruptedException {
         int[] bestParams = tuner.tune(initialParams, createConfigFunction);
         EngineConfig bestConfig = createConfigFunction.apply(bestParams);

@@ -9,16 +9,14 @@ import com.kelseyde.calvin.evaluation.Result;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.search.picker.MovePicker;
-import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -213,7 +211,6 @@ public class Searcher implements Search {
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
@@ -228,7 +225,7 @@ public class Searcher implements Search {
             if (depth <= config.getRfpDepth()
                 && staticEval - config.getRfpMargin()[depth] > beta
                 && !isMateHunting) {
-                return staticEval - config.getRfpMargin()[depth];
+                return beta;
             }
 
             // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning
@@ -244,7 +241,7 @@ public class Searcher implements Search {
                 board.unmakeNullMove();
                 if (eval >= beta) {
                     transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
-                    return eval;
+                    return beta;
                 }
             }
 
@@ -418,14 +415,12 @@ public class Searcher implements Search {
         QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        Move previousBestMove;
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
         if (hasBestMove(transposition)) {
-            previousBestMove = transposition.getMove();
-            movePicker.setBestMove(previousBestMove);
+            movePicker.setBestMove(transposition.getMove());
         }
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -558,7 +553,7 @@ public class Searcher implements Search {
     }
 
     private long getKey() {
-        return board.getGameState().getZobristKey();
+        return board.getGameState().getZobrist();
     }
 
 

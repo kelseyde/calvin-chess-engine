@@ -348,6 +348,7 @@ public class Evaluator implements Evaluation {
         if (rooks == 0) return;
         int mgScore = 0;
         int egScore = 0;
+        long seventhRank = white ? Bits.RANK_7 : Bits.RANK_2;
 
         long blockers = friendlyBlockers | opponentBlockers;
         while (rooks != 0) {
@@ -381,6 +382,10 @@ public class Evaluator implements Evaluation {
             else if (hasSemiOpenFile) {
                 mgScore += config.getRookSemiOpenFileBonus()[0];
                 egScore += config.getRookSemiOpenFileBonus()[1];
+            }
+            if ((1L << rook & seventhRank) != 0) {
+                mgScore += config.getRookOnSeventhBonus()[0];
+                egScore += config.getRookOnSeventhBonus()[1];
             }
 
             rooks = Bitwise.popBit(rooks);

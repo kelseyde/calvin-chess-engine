@@ -75,6 +75,7 @@ public class EngineConfig {
     int bishopPairBonus;
     int[] rookOpenFileBonus;
     int[] rookSemiOpenFileBonus;
+    int[] rookOnSeventhBonus;
 
     int[][] knightOutpostBonus;
     int[][] bishopOutpostBonus;

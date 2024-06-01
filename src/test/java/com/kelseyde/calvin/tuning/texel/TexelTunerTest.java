@@ -51,10 +51,18 @@ public class TexelTunerTest {
         weights.add(initialConfig.getRookOpenFileBonus()[1]);
         weights.add(initialConfig.getRookSemiOpenFileBonus()[0]);
         weights.add(initialConfig.getRookSemiOpenFileBonus()[1]);
+        weights.add(initialConfig.getKingSemiOpenFilePenalty());
+        weights.add(initialConfig.getKingSemiOpenAdjacentFilePenalty());
+        weights.add(initialConfig.getKingOpenFilePenalty());
+        weights.add(initialConfig.getKingOpenAdjacentFilePenalty());
+        weights.add(initialConfig.getKingLostCastlingRightsPenalty());
+        weights.addAll(Arrays.stream(initialConfig.getKingAttackZonePenaltyTable()).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getVirtualKingMobilityPenalty()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getVirtualKingMobilityPenalty()[1]).boxed().toList());
         tune(
                 weights.stream().mapToInt(i -> i).toArray(),
                 (params) -> {
-                    if (params.length != 917) throw new IllegalArgumentException();
+                    if (params.length != 1078) throw new IllegalArgumentException();
                     EngineConfig config = EngineInitializer.loadDefaultConfig();
                     config.getMiddlegameTables()[0] = Arrays.stream(params, 0, 64).toArray();
                     config.getMiddlegameTables()[1] = Arrays.stream(params, 64, 128).toArray();
@@ -83,6 +91,14 @@ public class TexelTunerTest {
                     config.getRookOpenFileBonus()[1] = params[914];
                     config.getRookSemiOpenFileBonus()[0] = params[915];
                     config.getRookSemiOpenFileBonus()[1] = params[916];
+                    config.setKingSemiOpenFilePenalty(params[917]);
+                    config.setKingSemiOpenAdjacentFilePenalty(params[918]);
+                    config.setKingOpenFilePenalty(params[919]);
+                    config.setKingOpenAdjacentFilePenalty(params[920]);
+                    config.setKingLostCastlingRightsPenalty(params[921]);
+                    config.setKingAttackZonePenaltyTable(Arrays.stream(params, 922, 1022).toArray());
+                    config.getVirtualKingMobilityPenalty()[0] = Arrays.stream(params, 1022, 1050).toArray();
+                    config.getVirtualKingMobilityPenalty()[1] = Arrays.stream(params, 1050, 1078).toArray();
                     return config;
                 }
         );

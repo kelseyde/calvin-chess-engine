@@ -87,6 +87,7 @@ public class EngineConfig {
     int kingLostCastlingRightsPenalty;
     int[] kingAttackZonePenaltyTable;
     int[] kingSafetyScaleFactor;
+    int[][] virtualKingMobilityPenalty;
 
     int kingManhattanDistanceMultiplier;
     int kingChebyshevDistanceMultiplier;

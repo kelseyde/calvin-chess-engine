@@ -376,8 +376,8 @@ public class Searcher implements Search {
                     bestEvalCurrentDepth = eval;
                 }
             }
-
-            if (!isCapture) {
+            else if (!isCapture) {
+                // Quiet moves which do not fail high or raise alpha are given a negative history penalty
                 visitedQuiets.add(move);
             }
 

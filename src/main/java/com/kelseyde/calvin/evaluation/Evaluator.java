@@ -184,8 +184,8 @@ public class Evaluator implements Evaluation {
         scoreQueens(whiteQueens, friendlyWhiteBlockers, blackPieces, true);
         scoreQueens(blackQueens, friendlyBlackBlockers, whitePieces, false);
 
-        scoreKing(whiteKing, whitePawns, blackPawns, blackMaterial, board, phase, true);
-        scoreKing(blackKing, blackPawns, whitePawns, whiteMaterial, board, phase, false);
+        scoreKing(whiteKing, whitePawns, blackPawns, blackMaterial, friendlyWhiteBlockers, blackPieces, board, phase, true);
+        scoreKing(blackKing, blackPawns, whitePawns, whiteMaterial, friendlyBlackBlockers, whitePieces, board, phase, false);
 
         return sum(white);
     }
@@ -432,6 +432,8 @@ public class Evaluator implements Evaluation {
                            long friendlyPawns,
                            long opponentPawns,
                            Material opponentMaterial,
+                           long friendlyBlockers,
+                           long opponentBlockers,
                            Board board,
                            float phase,
                            boolean white) {
@@ -444,7 +446,7 @@ public class Evaluator implements Evaluation {
         egScore += kingEgTable[square];
         addScore(mgScore, egScore, white);
 
-        scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, board, phase, white);
+        scoreKingSafety(king, friendlyPawns, opponentPawns, opponentMaterial, friendlyBlockers, opponentBlockers, board, phase, white);
 
     }
 
@@ -459,6 +461,8 @@ public class Evaluator implements Evaluation {
                                    long friendlyPawns,
                                    long opponentPawns,
                                    Material opponentMaterial,
+                                   long friendlyBlockers,
+                                   long opponentBlockers,
                                    Board board,
                                    float phase,
                                    boolean white) {
@@ -472,6 +476,16 @@ public class Evaluator implements Evaluation {
         }
         int kingAttackZoneUnits = white ? whiteKingAttackZoneUnits : blackKingAttackZoneUnits;
         int attackZoneScore = config.getKingAttackZonePenaltyTable()[kingAttackZoneUnits];
+
+        int virtualMobilityMgPenalty = 0;
+        int virtualMobilityEgPenalty = 0;
+        long blockers = friendlyBlockers | opponentBlockers;
+        long attacks = Attacks.bishopAttacks(kingSquare, blockers) | Attacks.rookAttacks(kingSquare, blockers);
+        int moveCount = Bitwise.countBits(attacks);
+        virtualMobilityMgPenalty += config.getVirtualKingMobilityPenalty()[0][moveCount];
+        virtualMobilityEgPenalty += config.getVirtualKingMobilityPenalty()[1][moveCount];
+        addScore(virtualMobilityMgPenalty, virtualMobilityEgPenalty, white);
+
         float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty + attackZoneScore) * phase);
         int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
         int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);

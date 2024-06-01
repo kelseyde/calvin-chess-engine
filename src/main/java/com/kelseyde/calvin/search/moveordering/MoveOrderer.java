@@ -37,7 +37,7 @@ public class MoveOrderer implements MoveOrdering {
     static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
     static final int CASTLING_BIAS = 2 * MILLION;
 
-    static final int KILLERS_PER_PLY = 3;
+    static final int KILLERS_PER_PLY = 4;
     static final int MAX_KILLER_PLY = 32;
     static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
@@ -150,12 +150,15 @@ public class MoveOrderer implements MoveOrdering {
             return 0;
         }
         else if (move.equals(killerMoves[ply][0])) {
-            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 3);
+            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 4);
         }
         else if (move.equals(killerMoves[ply][1])) {
-            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 2);
+            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 3);
         }
         else if (move.equals(killerMoves[ply][2])) {
+            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 2);
+        }
+        else if (move.equals(killerMoves[ply][3])) {
             return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS);
         }
         else {
@@ -192,7 +195,12 @@ public class MoveOrderer implements MoveOrdering {
         Move firstKiller = killerMoves[ply][0];
         Move secondKiller = killerMoves[ply][1];
         Move thirdKiller = killerMoves[ply][2];
-        if (!newKiller.equals(firstKiller) && !newKiller.equals(secondKiller) && !newKiller.equals(thirdKiller)) {
+        Move fourthKiller = killerMoves[ply][3];
+        if (!newKiller.equals(firstKiller)
+                && !newKiller.equals(secondKiller)
+                && !newKiller.equals(thirdKiller)
+                && !newKiller.equals(fourthKiller)) {
+            killerMoves[ply][3] = thirdKiller;
             killerMoves[ply][2] = secondKiller;
             killerMoves[ply][1] = firstKiller;
             killerMoves[ply][0] = newKiller;

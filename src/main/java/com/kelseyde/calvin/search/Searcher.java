@@ -59,6 +59,9 @@ public class Searcher implements Search {
     int bestEval;
     int bestEvalCurrentDepth;
 
+    int razorSuccess = 0;
+    int razorFail = 0;
+
     public Searcher(EngineConfig config,
                     ThreadManager threadManager,
                     MoveGeneration moveGenerator,
@@ -99,6 +102,7 @@ public class Searcher implements Search {
         SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
+            System.out.println("RAZOR " + razorSuccess + " / " + razorFail);
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestEvalCurrentDepth = 0;
@@ -249,9 +253,13 @@ public class Searcher implements Search {
             if (depth < config.getRazorDepth()
                     && staticEval + config.getRazorMargin()[depth] < alpha
                     && board.hasPiecesRemaining(board.isWhiteToMove())) {
+                System.out.println("trying razor");
                 int eval = quiescenceSearch(alpha, beta, 1, ply);
                 if (eval < alpha) {
+                    razorSuccess++;
                     return eval;
+                } else {
+                    razorFail++;
                 }
             }
         }

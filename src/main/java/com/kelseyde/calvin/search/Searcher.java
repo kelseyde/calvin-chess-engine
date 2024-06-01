@@ -245,9 +245,9 @@ public class Searcher implements Search {
                 }
             }
 
-            int[] razorMargin = new int[] {300, 350, 450};
-            if (depth < 3
-                    && staticEval + razorMargin[depth] < alpha
+            // Razoring
+            if (depth < config.getRazorDepth()
+                    && staticEval + config.getRazorMargin()[depth] < alpha
                     && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 int eval = quiescenceSearch(alpha, beta, 1, ply);
                 if (eval < alpha) {

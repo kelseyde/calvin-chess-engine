@@ -51,11 +51,13 @@ public class EngineConfig {
     int lmpDepth;
     int lmpMultiplier;
     int iirDepth;
+    int razorDepth;
     int nmpMargin;
     int dpMargin;
     int[][] lmrReductions;
     int[] fpMargin;
     int[] rfpMargin;
+    int[] razorMargin;
 
     int[] piecePhases;
     float totalPhase;

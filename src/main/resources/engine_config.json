@@ -30,6 +30,7 @@
   "lmpDepth":2,
   "lmpMultiplier":10,
   "iirDepth":4,
+  "razorDepth": 2,
   "nmpMargin":0,
   "dpMargin":140,
   "fpMargin":[
@@ -48,6 +49,7 @@
     360,
     480
   ],
+  "razorMargin": [300, 350, 450],
   "piecePhases":[
     0,
     10,

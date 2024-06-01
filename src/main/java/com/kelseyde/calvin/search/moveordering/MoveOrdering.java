@@ -62,13 +62,22 @@ public interface MoveOrdering {
     void addKillerMove(int ply, Move newKiller);
 
     /**
-     * Adds a move to the history heuristic table.
+     * Increments a move's score in the history heuristic table.
      *
      * @param depth The remaining depth in the search.
-     * @param historyMove The move to be added to the history table.
+     * @param historyMove The move to be incremented in the history table.
      * @param white Whether the move was made by the white player.
      */
     void incrementHistoryScore(int depth, Move historyMove, boolean white);
+
+    /**
+     * Decrements a move's score in the history heuristic table.
+     *
+     * @param depth The remaining depth in the search.
+     * @param historyMove The move to be decremented in the history table.
+     * @param white Whether the move was made by the white player.
+     */
+    void decrementHistoryScore(int depth, Move historyMove, boolean white);
 
     void ageHistoryScores(boolean white);
 

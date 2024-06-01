@@ -172,6 +172,7 @@ public class MoveOrderer implements MoveOrdering {
         return historyScore;
     }
 
+    @Override
     public Move getKillerMove(int ply, int index) {
         if (index >= KILLERS_PER_PLY || ply > MAX_KILLER_PLY) {
             return null;
@@ -185,6 +186,7 @@ public class MoveOrderer implements MoveOrdering {
      * @param ply The current ply from root.
      * @param newKiller The new killer move to be added.
      */
+    @Override
     public void addKillerMove(int ply, Move newKiller) {
         if (ply >= MAX_KILLER_PLY) {
             return;
@@ -200,12 +202,13 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     /**
-     * Adds a history move for a given ply and color.
+     * Increments a history score for a given ply and color.
      *
      * @param depth The current search depth.
      * @param historyMove The history move to be added.
      * @param white Whether the move is for white pieces.
      */
+    @Override
     public void incrementHistoryScore(int depth, Move historyMove, boolean white) {
         int colourIndex = BoardUtils.getColourIndex(white);
         int startSquare = historyMove.getStartSquare();
@@ -214,6 +217,23 @@ public class MoveOrderer implements MoveOrdering {
         historyMoves[colourIndex][startSquare][endSquare] += score;
     }
 
+    /**
+     * Adds a history move for a given ply and color.
+     *
+     * @param depth The current search depth.
+     * @param historyMove The history move to be added.
+     * @param white Whether the move is for white pieces.
+     */
+    @Override
+    public void decrementHistoryScore(int depth, Move historyMove, boolean white) {
+        int colourIndex = BoardUtils.getColourIndex(white);
+        int startSquare = historyMove.getStartSquare();
+        int endSquare = historyMove.getEndSquare();
+        int score = depth * depth;
+        historyMoves[colourIndex][startSquare][endSquare] -= score;
+    }
+
+    @Override
     public void ageHistoryScores(boolean white) {
         int colourIndex = BoardUtils.getColourIndex(white);
         for (int startSquare = 0; startSquare < 64; startSquare++) {

@@ -23,6 +23,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
@@ -249,6 +251,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
+        List<Move> visitedQuiets = new ArrayList<>();
 
         while (true) {
 
@@ -355,6 +358,9 @@ public class Searcher implements Search {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
                     moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
+                    for (Move quiet : visitedQuiets) {
+                        moveOrderer.decrementHistoryScore(depth, quiet, board.isWhiteToMove());
+                    }
                 }
 
                 return beta;
@@ -370,6 +376,11 @@ public class Searcher implements Search {
                     bestEvalCurrentDepth = eval;
                 }
             }
+
+            if (!isCapture) {
+                visitedQuiets.add(move);
+            }
+
         }
 
         if (movesSearched == 0) {

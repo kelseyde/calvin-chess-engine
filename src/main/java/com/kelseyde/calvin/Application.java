@@ -136,7 +136,6 @@ public class Application {
     }
 
     private static void handlePonderHit() {
-        System.out.println("handling ponderhit");
         ENGINE.setPondering(false);
     }
 

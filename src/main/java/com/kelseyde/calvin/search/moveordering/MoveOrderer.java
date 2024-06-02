@@ -34,8 +34,9 @@ public class MoveOrderer implements MoveOrdering {
     static final int KILLER_MOVE_BIAS = 6 * MILLION;
     static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
     static final int HISTORY_MOVE_BIAS = 4 * MILLION;
-    static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
-    static final int CASTLING_BIAS = 2 * MILLION;
+    static final int COUNTER_MOVE_BIAS = 3 * MILLION;
+    static final int UNDER_PROMOTION_BIAS = 2 * MILLION;
+    static final int CASTLING_BIAS = MILLION;
 
     static final int KILLERS_PER_PLY = 3;
     static final int MAX_KILLER_PLY = 32;
@@ -50,6 +51,7 @@ public class MoveOrderer implements MoveOrdering {
     };
 
     Move[][] killerMoves = new Move[MAX_KILLER_PLY][KILLERS_PER_PLY];
+    Move[][] counterMoves = new Move[64][64];
     final int[][][] historyMoves = new int[2][64][64];
 
     /**
@@ -104,7 +106,8 @@ public class MoveOrderer implements MoveOrdering {
         else {
             int killerScore = scoreKillerMove(move, ply);
             int historyScore = scoreHistoryMove(board, startSquare, endSquare, killerScore);
-            moveScore += killerScore + historyScore;
+            int counterScore = scoreCounterMove(board, move);
+            moveScore += killerScore + historyScore + counterScore;
         }
 
         if (move.isCastling()) {
@@ -172,6 +175,15 @@ public class MoveOrderer implements MoveOrdering {
         return historyScore;
     }
 
+    private int scoreCounterMove(Board board, Move move) {
+        Move previousMove = board.getMoveHistory().peek();
+        if (previousMove == null) return 0;
+        int startSquare = previousMove.getStartSquare();
+        int endSquare = previousMove.getEndSquare();
+        Move counterMove = counterMoves[startSquare][endSquare];
+        return move.equals(counterMove) ? COUNTER_MOVE_BIAS : 0;
+    }
+
     public Move getKillerMove(int ply, int index) {
         if (index >= KILLERS_PER_PLY || ply > MAX_KILLER_PLY) {
             return null;
@@ -183,7 +195,7 @@ public class MoveOrderer implements MoveOrdering {
      * Adds a new killer move for a given ply.
      *
      * @param ply The current ply from root.
-     * @param newKiller The new killer move to be added.
+     * @param move The new killer move to be added.
      */
     public void addKillerMove(int ply, Move move) {
         // Check if the move already exists in the killer moves list
@@ -203,6 +215,11 @@ public class MoveOrderer implements MoveOrdering {
             killerMoves[ply][i] = killerMoves[ply][i - 1];
         }
         killerMoves[ply][0] = move;
+    }
+
+    @Override
+    public void addCounterMove(Move previousMove, Move counterMove) {
+        counterMoves[previousMove.getStartSquare()][previousMove.getEndSquare()] = counterMove;
     }
 
     /**
@@ -231,6 +248,7 @@ public class MoveOrderer implements MoveOrdering {
 
     public void clear() {
         killerMoves = new Move[MAX_KILLER_PLY][KILLERS_PER_PLY];
+        counterMoves = new Move[64][64];
     }
 
 }

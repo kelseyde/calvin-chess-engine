@@ -62,6 +62,11 @@ public interface MoveOrdering {
     void addKillerMove(int ply, Move newKiller);
 
     /**
+     * Adds a countermove for the given move, to be used for later move ordering
+     */
+    void addCounterMove(Move previousMove, Move counterMove);
+
+    /**
      * Adds a move to the history heuristic table.
      *
      * @param depth The remaining depth in the search.

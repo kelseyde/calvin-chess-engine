@@ -36,6 +36,7 @@ public class ParallelSearcher implements Search {
     int threadCount;
     int hashSize;
     Board board;
+    List<CompletableFuture<SearchResult>> threads;
 
     private List<Searcher> searchers;
 
@@ -60,7 +61,7 @@ public class ParallelSearcher implements Search {
         try {
             setPosition(board);
             threadManager.reset();
-            List<CompletableFuture<SearchResult>> threads = searchers.stream()
+            threads = searchers.stream()
                     .map(searcher -> CompletableFuture.supplyAsync(() -> searcher.search(duration)))
                     .toList();
             SearchResult result = selectResult(threads).get();
@@ -127,7 +128,7 @@ public class ParallelSearcher implements Search {
 
     @Override
     public void logStatistics() {
-
+        System.out.println("info threads " + threads.stream().map(CompletableFuture::toString).toList());
     }
 
 }

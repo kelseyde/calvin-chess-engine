@@ -5,6 +5,7 @@ import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -30,24 +31,28 @@ public class Application {
     static final String[] SETOPTION_LABELS = new String[] { "setoption", "name", "value" };
 
     public static void main(String[] args) {
-        String command = "";
-        while (!command.equals("quit")) {
-            command = readCommand();
-            if (!command.isEmpty()) {
-                String commandType = command.trim().toLowerCase().split(" ")[0];
-                switch (commandType) {
-                    case "uci" ->         handleUci();
-                    case "isready" ->     handleIsReady();
-                    case "setoption" ->   handleSetOption(command);
-                    case "ucinewgame" ->  handleNewGame();
-                    case "position" ->    handlePosition(command);
-                    case "go" ->          handleGo(command);
-                    case "ponderhit" ->   handlePonderHit();
-                    case "stop" ->        handleStop();
-                    case "quit" ->        handleQuit();
-                    default ->            write("Unrecognised command: " + command);
+        try {
+            String command = "";
+            while (!command.equals("quit")) {
+                command = readCommand();
+                if (!command.isEmpty()) {
+                    String commandType = command.trim().toLowerCase().split(" ")[0];
+                    switch (commandType) {
+                        case "uci" ->         handleUci();
+                        case "isready" ->     handleIsReady();
+                        case "setoption" ->   handleSetOption(command);
+                        case "ucinewgame" ->  handleNewGame();
+                        case "position" ->    handlePosition(command);
+                        case "go" ->          handleGo(command);
+                        case "ponderhit" ->   handlePonderHit();
+                        case "stop" ->        handleStop();
+                        case "quit" ->        handleQuit();
+                        default ->            write("Unrecognised command: " + command);
+                    }
                 }
             }
+        } catch (Exception e) {
+            write("info error " + e.getMessage());
         }
     }
 

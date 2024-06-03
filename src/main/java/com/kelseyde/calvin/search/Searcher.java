@@ -58,6 +58,7 @@ public class Searcher implements Search {
     Move bestMoveCurrentDepth;
     int bestEval;
     int bestEvalCurrentDepth;
+    SearchResult result;
 
     public Searcher(EngineConfig config,
                     ThreadManager threadManager,
@@ -152,6 +153,8 @@ public class Searcher implements Search {
 
         // Clear move ordering cache and return the search result
         moveOrderer.clear();
+
+        this.result = result;
         return result;
 
     }
@@ -546,6 +549,9 @@ public class Searcher implements Search {
         return board.getGameState().getZobrist();
     }
 
+    public SearchResult getResult() {
+        return result;
+    }
 
     @Override
     public TranspositionTable getTranspositionTable() {

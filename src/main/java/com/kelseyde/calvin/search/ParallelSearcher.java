@@ -13,7 +13,6 @@ import lombok.experimental.FieldDefaults;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
@@ -84,24 +83,14 @@ public class ParallelSearcher implements Search {
      */
     @Override
     public SearchResult search(Duration duration) {
-        try {
-            setPosition(board);
-            threadManager.reset();
-            List<Thread> threads = searchers.stream()
-                    .map(searcher -> Thread.ofVirtual().start(() -> searcher.search(duration)))
-                    .toList();
-
-            for (Thread thread : threads) {
-                thread.join();
-            }
-
-            SearchResult result = selectResult(searchers);
-            transpositionTable.incrementGeneration();
-            return result;
-        } catch (InterruptedException e) {
-            System.out.println("info error " + e);
-            return SearchResult.empty();
-        }
+        setPosition(board);
+        threadManager.reset();
+        searchers.stream()
+                .map(searcher -> newThread(searcher, duration))
+                .forEach(this::joinThread);
+        SearchResult result = selectResult(searchers);
+        transpositionTable.incrementGeneration();
+        return result;
     }
 
     /**
@@ -162,6 +151,18 @@ public class ParallelSearcher implements Search {
      */
     private List<Searcher> initSearchers() {
         return IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+    }
+
+    private Thread newThread(Searcher searcher, Duration duration) {
+        return Thread.ofVirtual().start(() -> searcher.search(duration));
+    }
+
+    private void joinThread(Thread thread) {
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            System.out.println("info error " + e);
+        }
     }
 
     /**

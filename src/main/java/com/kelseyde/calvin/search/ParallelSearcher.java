@@ -83,15 +83,26 @@ public class ParallelSearcher implements Search {
      */
     @Override
     public SearchResult search(Duration duration) {
-        setPosition(board);
-        threadManager.reset();
-        searchers.stream()
-                .map(searcher -> newThread(searcher, duration))
-                .forEach(this::joinThread);
-        SearchResult result = selectResult(searchers);
-        transpositionTable.incrementGeneration();
-        return result;
+        try {
+            setPosition(board);
+            threadManager.reset();
+            List<Thread> threads = searchers.stream()
+                    .map(searcher -> Thread.ofVirtual().start(() -> searcher.search(duration)))
+                    .toList();
+
+            for (Thread thread : threads) {
+                thread.join();
+            }
+
+            SearchResult result = selectResult(searchers);
+            transpositionTable.incrementGeneration();
+            return result;
+        } catch (InterruptedException e) {
+            System.out.println("info error " + e);
+            return SearchResult.empty();
+        }
     }
+
 
     /**
      * Sets the current board position for all searchers. This is done by copying the board to each searcher.
@@ -151,18 +162,6 @@ public class ParallelSearcher implements Search {
      */
     private List<Searcher> initSearchers() {
         return IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
-    }
-
-    private Thread newThread(Searcher searcher, Duration duration) {
-        return Thread.ofVirtual().start(() -> searcher.search(duration));
-    }
-
-    private void joinThread(Thread thread) {
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            System.out.println("info error " + e);
-        }
     }
 
     /**

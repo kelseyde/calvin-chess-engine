@@ -25,3 +25,6 @@ target/**
 venv
 
 .DS_Store
+src/test/resources/texel/quiet-labeled.v6.epd
+src/test/resources/texel/quiet-labeled.v7.epd
+src/test/resources/texel/quiet_positions_extended.epd

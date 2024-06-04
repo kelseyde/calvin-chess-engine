@@ -179,8 +179,11 @@ public class Searcher implements Search {
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW_SCORE;
 
+        // Is this node the root node of the search tree
         boolean rootNode = ply == 0;
-        boolean zwNode = beta - alpha > 1;
+
+        // Is this node a PV (principal variation) node
+        boolean pvNode = beta - alpha > 1;
 
         // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
@@ -220,7 +223,7 @@ public class Searcher implements Search {
             staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
         }
 
-        if (!zwNode && !isInCheck) {
+        if (!pvNode && !isInCheck) {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
@@ -273,7 +276,7 @@ public class Searcher implements Search {
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
-            if (!zwNode
+            if (!pvNode
                 && depth <= config.getFpDepth()
                 && staticEval + config.getFpMargin()[depth] < alpha
                 && !isInCheck
@@ -299,7 +302,7 @@ public class Searcher implements Search {
             if (isDraw()) {
                 eval = Score.DRAW_SCORE;
             }
-            else if (zwNode && movesSearched == 0) {
+            else if (pvNode && movesSearched == 0) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
@@ -309,7 +312,7 @@ public class Searcher implements Search {
                 // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
-                if (!zwNode
+                if (!pvNode
                     && !isInCheck
                     && isQuiet
                     && depth <= config.getLmpDepth()
@@ -322,10 +325,10 @@ public class Searcher implements Search {
                 // let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
                 if (depth >= config.getLmrDepth()
-                    && movesSearched >= (zwNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
+                    && movesSearched >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
                     && isQuiet) {
                     reduction = config.getLmrReductions()[depth][movesSearched];
-                    if (zwNode || isInCheck) {
+                    if (pvNode || isInCheck) {
                         reduction--;
                     }
                     if (transposition != null && transposition.getMove() != null && isCapture) {

@@ -45,6 +45,9 @@ public class TestUtils {
     public static final Searcher SEARCHER = new Searcher(PRD_CONFIG, THREAD_MANAGER, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
     public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), TRANSPOSITION_TABLE);
     public static final String QUIET_POSITIONS_FILE = "src/test/resources/texel/quiet_positions.epd";
+    public static final String QUIET_POSITIONS_EXTENDED_FILE = "src/test/resources/texel/quiet_positions_extended.epd";
+    public static final String QUIET_LABELLED_V6_FILE = "src/test/resources/texel/quiet-labeled.v6.epd";
+    public static final String QUIET_LABELLED_V7_FILE = "src/test/resources/texel/quiet-labeled.v7.epd";
 
     public static Engine getEngine() {
         return new Engine(PRD_CONFIG, OPENING_BOOK, TABLEBASE, new MoveGenerator(), new Searcher(PRD_CONFIG, new ThreadManager(), new MoveGenerator(), new MoveOrderer(), new Evaluator(PRD_CONFIG), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
@@ -115,5 +118,13 @@ public class TestUtils {
         return Files.readAllLines(path);
     }
 
+    public static List<String> loadAllFens() throws IOException {
+        Path path = Paths.get(QUIET_LABELLED_V6_FILE);
+        List<String> firstFens = Files.readAllLines(path);
+        path = Paths.get(QUIET_LABELLED_V7_FILE);
+        List<String> secondFends = Files.readAllLines(path);
+        firstFens.addAll(secondFends);
+        return firstFens;
+    }
 
 }

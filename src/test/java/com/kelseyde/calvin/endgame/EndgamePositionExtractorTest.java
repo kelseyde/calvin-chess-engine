@@ -34,20 +34,21 @@ public class EndgamePositionExtractorTest {
                     float phase = Phase.fromMaterial(whiteMaterial, blackMaterial, TestUtils.PRD_CONFIG);
                     return phase < 0.5f;
                 })
+                .distinct()
                 .toList()
                 .subList(0, MAX_POSITIONS);
         System.out.println(endgameFens.size());
 
-        Path path = Paths.get(OUTPUT_FILE);
-        Files.deleteIfExists(path);
-        Files.createFile(path);
-        endgameFens.forEach(fen -> {
-            try {
-                Files.writeString(path, fen + "\n", StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+//        Path path = Paths.get(OUTPUT_FILE);
+//        Files.deleteIfExists(path);
+//        Files.createFile(path);
+//        endgameFens.forEach(fen -> {
+//            try {
+//                Files.writeString(path, fen + "\n", StandardOpenOption.APPEND);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        });
 
 
     }

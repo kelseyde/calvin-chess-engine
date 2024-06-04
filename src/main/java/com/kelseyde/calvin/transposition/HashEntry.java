@@ -45,35 +45,39 @@ public class HashEntry {
      * Returns the 48-bits representing zobrist part of the hash entry key.
      */
     public long getZobristPart() {
-        return key & ZOBRIST_PART_MASK;
+        return (key ^ value) & ZOBRIST_PART_MASK;
     }
 
     /**
      * Gets the generation part of this entry's key.
      */
     public int getGeneration() {
-        return (int) ((key & GENERATION_MASK) >>> 32);
+        return (int) (((key ^ value) & GENERATION_MASK) >>> 32);
     }
 
     /**
      * Sets the generation part of this entry's key.
      */
     public void setGeneration(int generation) {
+        key ^= value;
         key = (key & ~GENERATION_MASK) | ((long) generation << 32);
+        key ^= value;
     }
 
     /**
      * Gets the static eval part of this entry's key.
      */
     public int getStaticEval() {
-        return (short) ((key & STATIC_EVAL_MASK) >>> 48);
+        return (short) (((key ^ value) & STATIC_EVAL_MASK) >>> 48);
     }
 
     /**
      * Sets the static eval part of this entry's key.
      */
     public void setStaticEval(int staticEval) {
+        key ^= value;
         key = (key & ~STATIC_EVAL_MASK) | ((long) (staticEval & 0xFFFF) << 48);
+        key ^= value;
     }
 
     /**
@@ -149,6 +153,8 @@ public class HashEntry {
         long flagValue = HashFlag.value(flag);
         // Combine the score, move, flag and depth to create the hash entry value
         long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
+        // XOR the key with the value, to guarantee a unique key on insert, allowing for multithreaded access
+        key ^= value;
         return new HashEntry(key, value);
     }
 

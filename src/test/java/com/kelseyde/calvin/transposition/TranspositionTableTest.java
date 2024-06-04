@@ -41,7 +41,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 1;
         int score = 1;
-        HashFlag flag = HashFlag.UPPER;
+        HashFlag flag = HashFlag.FAIL_LOW;
         Move move = null;
         assertEntry(zobristKey, score, move, flag, depth);
     }
@@ -52,7 +52,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 1;
         int score = 1000000;
-        HashFlag flag = HashFlag.UPPER;
+        HashFlag flag = HashFlag.FAIL_LOW;
         Move move = Notation.fromNotation("e4", "e5");
         assertEntry(zobristKey, score, move, flag, depth);
     }
@@ -63,7 +63,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 1;
         int score = -1000000;
-        HashFlag flag = HashFlag.UPPER;
+        HashFlag flag = HashFlag.FAIL_LOW;
         Move move = Notation.fromNotation("e4", "e5");
         assertEntry(zobristKey, score, move, flag, depth);
     }
@@ -74,7 +74,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 256;
         int score = -789;
-        HashFlag flag = HashFlag.UPPER;
+        HashFlag flag = HashFlag.FAIL_LOW;
         Move move = null;
         assertEntry(zobristKey, score, move, flag, depth);
     }
@@ -85,7 +85,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 256;
         int score = -789;
-        HashFlag flag = HashFlag.LOWER;
+        HashFlag flag = HashFlag.FAIL_HIGH;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
         assertEntry(zobristKey, score, move, flag, depth);
     }
@@ -96,7 +96,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 256;
         int score = -789;
-        HashFlag flag = HashFlag.LOWER;
+        HashFlag flag = HashFlag.FAIL_HIGH;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
         HashEntry entry = HashEntry.of(zobristKey, score, 0, move, flag, depth, 0);
 
@@ -112,7 +112,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 256;
         int score = -789;
-        HashFlag flag = HashFlag.LOWER;
+        HashFlag flag = HashFlag.FAIL_HIGH;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
         HashEntry entry = HashEntry.of(zobristKey, score,  0, move, flag, depth, 0);
 
@@ -128,7 +128,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 256;
         int score = -789;
-        HashFlag flag = HashFlag.LOWER;
+        HashFlag flag = HashFlag.FAIL_HIGH;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
         HashEntry entry = HashEntry.of(zobristKey, score, 0,  move, flag, depth, 0);
 
@@ -144,7 +144,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getGameState().getZobrist();
         int depth = 256;
         int score = -789;
-        HashFlag flag = HashFlag.LOWER;
+        HashFlag flag = HashFlag.FAIL_HIGH;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
         int staticEval = 10;
         HashEntry entry = HashEntry.of(zobristKey, score, staticEval,  move, flag, depth, 0);
@@ -182,7 +182,7 @@ public class TranspositionTableTest {
         Assertions.assertEquals(depth, entry.getDepth());
 
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
-        flag = HashFlag.UPPER;
+        flag = HashFlag.FAIL_LOW;
         bestMove = Notation.fromNotation("g8", "f6");
         eval = 28666;
         depth = 256;
@@ -197,7 +197,7 @@ public class TranspositionTableTest {
         Assertions.assertEquals(depth, entry.getDepth());
 
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
-        flag = HashFlag.LOWER;
+        flag = HashFlag.FAIL_HIGH;
         bestMove = null;
         eval = 1000000;
         depth = 10;
@@ -355,7 +355,7 @@ public class TranspositionTableTest {
 
         table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
 
-        flag = HashFlag.UPPER;
+        flag = HashFlag.FAIL_LOW;
         eval = 70;
         plyRemaining = 11;
         bestMove = Notation.fromNotation("d2", "d4");
@@ -377,7 +377,7 @@ public class TranspositionTableTest {
 
         table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
 
-        flag = HashFlag.UPPER;
+        flag = HashFlag.FAIL_LOW;
         eval = 70;
         plyRemaining = 13;
         bestMove = Notation.fromNotation("d2", "d4");

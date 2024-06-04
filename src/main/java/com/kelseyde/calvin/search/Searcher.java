@@ -243,14 +243,14 @@ public class Searcher implements Search {
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
-                    transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
+                    transpositionTable.put(getKey(), HashFlag.FAIL_HIGH, depth, ply, previousBestMove, staticEval, beta);
                     return beta;
                 }
             }
         }
 
         Move bestMove = null;
-        HashFlag flag = HashFlag.UPPER;
+        HashFlag flag = HashFlag.FAIL_LOW;
         int movesSearched = 0;
 
         while (true) {
@@ -351,9 +351,8 @@ public class Searcher implements Search {
             }
 
             if (eval >= beta) {
-
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
+                transpositionTable.put(getKey(), HashFlag.FAIL_HIGH, depth, ply, move, staticEval, beta);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
@@ -515,8 +514,8 @@ public class Searcher implements Search {
         return entry != null &&
                 entry.getDepth() >= depth &&
                 ((entry.getFlag().equals(HashFlag.EXACT)) ||
-                 (entry.getFlag().equals(HashFlag.UPPER) && entry.getScore() <= alpha) ||
-                 (entry.getFlag().equals(HashFlag.LOWER) && entry.getScore() >= beta));
+                 (entry.getFlag().equals(HashFlag.FAIL_LOW) && entry.getScore() <= alpha) ||
+                 (entry.getFlag().equals(HashFlag.FAIL_HIGH) && entry.getScore() >= beta));
     }
 
     private boolean hasBestMove(HashEntry transposition) {

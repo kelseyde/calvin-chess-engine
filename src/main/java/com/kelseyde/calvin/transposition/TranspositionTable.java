@@ -120,9 +120,13 @@ public class TranspositionTable {
             if (storedEntry.getZobristPart() == zobristPart) {
                 if (depth >= storedEntry.getDepth()) {
                     // If the stored entry has a recorded best move but the new entry does not, use the stored one.
-                    if (newEntry.getMove() == null && storedEntry.getMove() != null) {
-                        newEntry.setMove(storedEntry.getMove());
+                    // Or, if the new entry is a fail low, don't overwrite an existing move.
+                    if (storedEntry.getMove() != null) {
+                        if (newEntry.getMove() == null || newEntry.getFlag() == HashFlag.FAIL_LOW) {
+                            newEntry.setMove(storedEntry.getMove());
+                        }
                     }
+
                     replacedIndex = i;
                     break;
                 } else {

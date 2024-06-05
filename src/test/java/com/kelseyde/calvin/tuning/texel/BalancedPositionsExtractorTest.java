@@ -24,23 +24,15 @@ public class BalancedPositionsExtractorTest {
     @Test
     public void testExtractBalancedPositions() throws IOException {
 
-        List<String> fens = TestUtils.loadAllFens();
-        System.out.println(fens.size());
-
-        List<String> notInCheck = fens.stream()
-                .filter(fen -> {
-                    Board board = FEN.toBoard(fen);
-                    boolean white = board.isWhiteToMove();
-                    return !moveGenerator.isCheck(board, white) && !moveGenerator.isCheck(board, !white);
-                })
+        List<String> fens = TestUtils.loadAllFens().stream()
                 .distinct()
                 .toList();
-        System.out.println(notInCheck.size());
+        System.out.println(fens.size());
 
         Path path = Paths.get(TestUtils.QUIET_POSITIONS_EXTENDED_FILE);
         Files.deleteIfExists(path);
         Files.createFile(path);
-        notInCheck.forEach(fen -> {
+        fens.forEach(fen -> {
             try {
                 Files.writeString(path, fen + "\n", StandardOpenOption.APPEND);
             } catch (IOException e) {

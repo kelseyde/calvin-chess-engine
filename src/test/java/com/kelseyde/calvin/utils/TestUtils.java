@@ -26,8 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class TestUtils {
 
@@ -119,8 +118,8 @@ public class TestUtils {
     }
 
     public static List<String> loadAllFens() throws IOException {
-        Path path = Paths.get(QUIET_LABELLED_V6_FILE);
-        List<String> firstFens = Files.readAllLines(path);
+        Path path = Paths.get(QUIET_LABELLED_V7_FILE);
+        List<String> firstFens = new ArrayList<>();
         path = Paths.get(QUIET_LABELLED_V7_FILE);
         List<String> secondFends = Files.readAllLines(path);
         firstFens.addAll(secondFends);

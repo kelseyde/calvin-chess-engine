@@ -17,7 +17,7 @@ import java.util.function.Function;
 @Disabled
 public class TexelTunerTest {
 
-    private final TexelTuner tuner = new TexelTuner("quiet_positions_extended.epd");
+    private final TexelTuner tuner = new TexelTuner("quiet_positions.epd");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -52,10 +52,23 @@ public class TexelTunerTest {
         weights.add(initialConfig.getRookOpenFileBonus()[1]);
         weights.add(initialConfig.getRookSemiOpenFileBonus()[0]);
         weights.add(initialConfig.getRookSemiOpenFileBonus()[1]);
+        weights.addAll(Arrays.stream(initialConfig.getPassedPawnBonus()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getPassedPawnBonus()[1]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getDoubledPawnPenalty()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getDoubledPawnPenalty()[1]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getIsolatedPawnPenalty()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getIsolatedPawnPenalty()[1]).boxed().toList());
+        weights.add(initialConfig.getProtectedPassedPawnBonus());
+        weights.addAll(Arrays.stream(initialConfig.getKingPawnShieldPenalty()).boxed().toList());
+        weights.add(initialConfig.getKingOpenFilePenalty());
+        weights.add(initialConfig.getKingSemiOpenFilePenalty());
+        weights.add(initialConfig.getKingOpenAdjacentFilePenalty());
+        weights.add(initialConfig.getKingSemiOpenAdjacentFilePenalty());
+        weights.addAll(Arrays.stream(initialConfig.getVirtualKingMobilityPenalty()[0]).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getVirtualKingMobilityPenalty()[1]).boxed().toList());
         tune(
                 weights.stream().mapToInt(i -> i).toArray(),
                 (params) -> {
-                    if (params.length != 917) throw new IllegalArgumentException();
                     EngineConfig config = EngineInitializer.loadDefaultConfig();
                     config.getMiddlegameTables()[0] = Arrays.stream(params, 0, 64).toArray();
                     config.getMiddlegameTables()[1] = Arrays.stream(params, 64, 128).toArray();
@@ -84,6 +97,20 @@ public class TexelTunerTest {
                     config.getRookOpenFileBonus()[1] = params[914];
                     config.getRookSemiOpenFileBonus()[0] = params[915];
                     config.getRookSemiOpenFileBonus()[1] = params[916];
+                    config.getPassedPawnBonus()[0] = Arrays.stream(params, 917, 924).toArray();
+                    config.getPassedPawnBonus()[1] = Arrays.stream(params, 924, 931).toArray();
+                    config.getDoubledPawnPenalty()[0] = Arrays.stream(params, 931, 940).toArray();
+                    config.getDoubledPawnPenalty()[1] = Arrays.stream(params, 940, 949).toArray();
+                    config.getIsolatedPawnPenalty()[0] = Arrays.stream(params, 949, 958).toArray();
+                    config.getIsolatedPawnPenalty()[1] = Arrays.stream(params, 958, 967).toArray();
+                    config.setProtectedPassedPawnBonus(params[967]);
+                    config.setKingPawnShieldPenalty(Arrays.stream(params, 968, 975).toArray());
+                    config.setKingOpenFilePenalty(params[975]);
+                    config.setKingSemiOpenFilePenalty(params[976]);
+                    config.setKingOpenAdjacentFilePenalty(params[977]);
+                    config.setKingSemiOpenAdjacentFilePenalty(params[978]);
+                    config.getVirtualKingMobilityPenalty()[0] = Arrays.stream(params, 978, 1006).toArray();
+                    config.getVirtualKingMobilityPenalty()[1] = Arrays.stream(params, 1006, 1034).toArray();
                     return config;
                 }
         );
@@ -91,7 +118,7 @@ public class TexelTunerTest {
 
     @Test
     public void convertParamsToJson() throws JsonProcessingException {
-        int[] params = new int[] {0, 0, 0, 0, 0, 0, 0, 0, -109, -136, -132, -127, -115, -181, -156, -205, -42, -48, -20, -47, -10, 35, -3, -12, -26, -12, -10, 2, 18, 36, 16, -5, -35, -30, -5, 6, 5, 32, -1, -23, -31, -27, -5, -7, 8, 21, 21, -3, -34, -8, -21, -10, -4, 32, 40, -11, 0, 0, 0, 0, 0, 0, 0, 0, -216, -268, -250, -241, -139, -298, -265, -205, -82, -70, -2, -199, -147, -77, -128, -92, -70, -32, -83, -4, -23, -12, -14, -74, -41, 0, 0, -15, -4, 16, -18, -2, -17, -40, 1, -12, -13, 9, -25, -25, -26, -11, 14, 0, 13, 15, 11, -27, -56, -52, -21, -4, 0, -2, -10, -19, -98, -21, -75, -51, -39, -31, -19, -90, -100, -249, -280, -264, -209, -275, -272, -73, -53, -19, -50, -107, -117, -46, -82, -104, -121, -42, -68, -73, -70, -163, -86, -80, -45, -23, -23, -18, -2, -65, -10, -56, -17, -33, -6, -3, -3, 0, -22, -15, 3, 9, 6, 1, 10, 13, 8, -5, -6, 23, 2, -4, 2, 21, 40, 1, -16, -40, 5, -52, -36, 1, -20, -34, -128, -88, -165, -142, -106, -136, -69, -115, -53, -59, -35, -4, -24, -71, -99, -76, -71, -73, -76, -47, -56, -65, -90, -68, -86, -59, -48, -48, -43, -28, -26, -14, -35, -70, -58, -56, -44, -26, -44, -4, -51, -34, -39, -34, -15, -14, 6, -11, -41, -43, -44, -38, -28, 0, 20, -53, -3, -18, -12, -10, -2, 17, -12, 21, -98, -232, -299, -239, -181, -117, -96, -39, -44, -28, -89, -121, -132, -77, -52, -38, -70, -63, -92, -90, -99, -193, -86, -63, -55, -24, -43, -73, -58, -98, -60, -42, -8, -50, -7, -22, -13, -27, -28, -24, -20, 15, -7, 2, 9, 6, 17, -10, -11, 15, 17, 14, 21, 31, 39, 30, -6, -18, -1, 28, -4, -27, -30, 33, 99, 107, 103, 142, 88, 86, 79, 2, -23, 107, 126, 35, 90, 66, 38, -72, 59, 135, 92, 116, 34, 135, 85, -10, 11, 66, 76, 16, -6, 6, 3, -112, -1, 69, 18, -18, -34, -41, -31, -138, -17, 43, -16, -32, -19, -14, 14, -48, -1, 11, -5, -39, -22, -9, 37, -17, -67, 41, 24, -48, -8, -35, 41, -9, 0, 0, 0, 0, 0, 0, 0, 0, 75, 67, 54, 23, 18, 22, 55, 79, 41, 33, 3, -29, -39, -13, 12, 15, 17, 11, 0, -27, -14, -9, 5, 1, 11, 7, -4, -13, -7, -6, -4, -2, 2, -3, -4, -10, -1, -2, -16, -9, 12, -8, 7, -2, 4, 0, -16, -3, 0, 0, 0, 0, 0, 0, 0, 0, -44, -4, -3, 1, -24, -18, -24, -64, -40, -11, -14, 34, 5, -34, -32, -34, -28, -12, 32, 4, -10, -20, -36, -42, -25, -3, 17, 23, 12, 6, 1, -29, -36, 8, 16, 20, 21, 8, -3, -30, -43, -9, -8, 12, 9, -12, -20, -45, -53, -24, -13, -11, -12, -9, -21, -39, -48, -68, -29, -15, -27, -30, -68, -51, -28, 18, 16, 8, -3, 10, 10, -40, -21, -14, -5, -10, 0, -33, -21, -24, 4, -5, 7, 8, -7, 28, -15, -14, -11, -9, -2, 3, 0, -4, -26, -24, -27, -8, -1, 10, -3, -7, -25, -29, -30, -11, -5, 0, -1, -9, -13, -24, -28, -33, -24, -14, -15, -15, -24, -39, -29, -13, -38, -7, -5, -27, -25, -32, 37, 25, 41, 23, 8, 15, 2, 23, 23, 28, 17, 0, -11, -3, 15, 12, 18, 15, 16, -2, -20, -11, -4, -10, 15, 6, 3, -3, -10, -21, -26, -21, -15, -1, -1, -3, -19, -21, -23, -33, -16, -24, -14, -19, -27, -29, -42, -44, -25, -25, -13, -16, -22, -31, -49, -29, -10, -11, -6, -4, -15, -25, -23, -44, 21, 156, 192, 151, 128, 72, 42, 9, 27, 8, 95, 123, 141, 95, 47, 11, 15, 42, 84, 78, 87, 166, 48, 14, 9, 13, 33, 90, 82, 65, 20, -11, -19, 44, 20, 60, 39, 36, 35, -6, -23, -30, 22, 10, 22, 20, -14, -16, -23, -39, -31, -1, -13, -40, -46, -67, -41, -32, -44, -82, -35, -28, -19, -100, -95, -37, -47, -48, -40, -26, -25, -58, -26, 0, -1, 4, 8, 17, 28, -2, -23, 13, 23, 21, 32, 34, 36, 1, -32, 15, 27, 49, 52, 46, 36, 12, -36, 0, 33, 55, 60, 50, 24, 9, -33, 1, 34, 49, 49, 39, 14, -7, -34, 2, 16, 30, 31, 25, 1, -17, -49, -43, -21, -9, -19, -9, -41, -75, 57, 307, 313, 387, 915, 0, 65, 243, 265, 495, 848, 0, -35, -14, -6, -10, -5, -9, -7, -11, -5, -40, -29, -16, -11, -7, -8, -3, 1, 0, 0, 4, 10, 7, 3, -77, -1, 19, 13, 19, 5, 5, 11, 11, 3, 5, 6, -12, -4, -17, -4108, -23, -45, 1, -4, -5, 7, -1, 4, 3, 6, 3, 5, 5, 4, 2, -1, -4, -2, -5, -2, -8, -4, -6, 4, 26, 160, 181, -93, 15, 11, 14, 20, 16, 16, 22, 18, -50, -19, -18, 0, 12, 21, 27, 24, 31, 23, 23, 14, 35, 11, -107, -60, -11, 6, -2, 7, 16, 5, 12, 17, 16, 15, 23, 21, 9, -1036, -340, -250, -262, -128, -153, -108, -69, -62, -57, -45, -23, -24, -13, -8, -3, 4, 6, 4, 2, -4, 6, -4, -6, -31, -34, -140, -134, 27, 70, -7, 26, 34};
+        int[] params = new int[] {0, 0, 0, 0, 0, 0, 0, 0, -76, -83, -104, -73, -29, -62, -78, -181, -8, 4, 44, 22, 55, 117, 33, 4, -6, 4, 11, 29, 45, 46, 27, 4, -29, -12, 6, 33, 30, 44, 18, -25, -19, -15, 13, 16, 32, 28, 41, 14, -23, 5, -6, 9, 16, 54, 64, 6, 0, 0, 0, 0, 0, 0, 0, 0, -268, -57, -34, -36, 42, -122, -145, -136, -67, -27, 92, 35, 102, 78, 1, 5, 5, 31, 40, 78, 120, 151, 77, 2, 41, 38, 30, 73, 37, 54, 16, 61, 19, 12, 36, 28, 43, 44, 26, 5, -1, 16, 40, 38, 51, 34, 46, 10, 12, -8, 17, 22, 28, 40, 31, 32, -21, 11, -26, 8, 4, 19, 8, -40, -23, -54, -21, -73, -119, -19, -14, -80, -20, 4, -15, -6, 4, 59, -17, 12, -6, 17, 58, 8, 69, 64, 68, 42, -22, 9, 19, 24, 31, -17, 19, -2, 8, 13, 19, 37, 38, 17, 16, -5, 44, 42, 34, 17, 36, 37, 34, 41, -2, 49, 29, 18, 22, 54, 72, 29, 33, 4, 25, 3, 2, 12, 22, 31, 35, 53, 37, 53, 98, 151, 106, 29, -13, -36, 3, 47, 5, 70, 90, 77, -5, -17, -26, 1, 13, 43, 90, 40, -38, -14, -7, 6, -21, 2, 28, 34, -28, -36, -47, -32, -26, -14, 11, -4, -31, -28, -17, -5, -4, 0, 21, 8, -18, -21, -29, -12, -6, 13, 34, -29, -3, -6, -2, 3, 6, 12, -12, 17, -35, -7, 34, 56, 97, 29, -3, -37, -39, -56, -61, -93, -116, 10, -60, 98, -35, -28, -23, -30, -18, -15, 37, -10, -32, -17, -21, -46, -48, -58, -67, -27, -15, -17, -13, -28, -6, -20, -5, -33, -19, 9, -7, -1, -3, -1, 7, -16, -3, 7, 9, 11, 19, 34, 44, 24, 0, -13, -1, 18, -8, -13, -24, 32, 152, 98, 161, 142, 149, 147, 69, 3, 3, 167, 142, 107, 112, 161, 20, -65, 66, 212, 122, 133, 61, 154, 124, -51, 8, 63, 100, 70, 38, 18, 31, -83, 45, 84, 66, -18, -15, -75, -33, -138, 13, 45, -49, -51, -60, -48, -16, -83, 15, -13, -23, -50, -37, -35, 17, -16, -87, 35, 21, -37, 3, -18, 43, 8, 0, 0, 0, 0, 0, 0, 0, 0, 34, 29, 8, -33, -50, -29, 23, 24, 71, 53, 31, -6, -18, -9, 30, 37, 46, 35, 18, -7, -4, 2, 21, 18, 32, 24, 7, -1, 2, -2, 8, 9, 21, 18, 9, 5, 10, 11, 2, 0, 30, 16, 26, 14, 16, 11, -4, 1, 0, 0, 0, 0, 0, 0, 0, 0, -14, -50, -19, -13, -31, -26, -26, -105, -17, -1, -25, -8, -37, -26, -19, -40, -28, -15, 26, 20, -12, -6, -23, -14, -9, 19, 30, 40, 37, 31, 18, -15, -5, 6, 30, 38, 35, 18, -3, 1, -15, 1, 2, 24, 21, 6, -14, -29, -30, -10, -13, 4, -1, -11, -16, -29, -60, -31, -8, 1, -11, -2, -32, -38, 0, -10, -14, 3, 11, -5, -7, 12, 0, 2, 3, -8, -2, -14, 6, -25, 12, 6, -1, 17, -5, 13, -2, 0, 19, 15, 11, 23, 14, 13, -1, 2, -4, -1, 14, 9, 12, 11, -3, -2, -14, 3, 7, 16, 12, 6, -5, -12, 5, -9, -11, 5, 11, -4, -3, -16, -19, 0, -14, 8, 9, 9, -19, -13, 24, 15, 20, 8, -4, -20, -7, 9, 25, 45, 30, 14, 18, 7, 2, -5, 20, 22, 20, 15, 11, 5, -5, -1, 22, 13, 20, 12, 15, 16, 4, 0, 15, 18, 28, 25, 22, 10, -1, -5, 7, 12, 12, 7, 6, 1, -12, -14, 5, 9, 20, 14, 8, -2, -8, -2, 15, 11, 13, 10, 4, 8, 1, -13, 31, 26, 11, 10, -17, 36, 4, 66, 54, 49, 82, 139, 124, 110, 106, -53, 9, 30, 63, 53, 109, 54, 11, 33, 28, 46, 42, 89, 100, 99, 85, 42, 31, 46, 37, 77, 49, 31, 47, 41, 3, -14, 48, 24, 50, 39, 52, 38, 27, 17, 16, 36, 22, -30, -40, -6, 12, 8, -1, -43, 30, 1, -14, -47, -111, -51, -62, -44, -42, -38, -34, -62, -44, -14, -8, -2, 2, 11, 25, -1, -45, -11, 25, 28, 43, 41, 27, 4, -47, 1, 33, 68, 72, 57, 27, 4, -55, -7, 38, 77, 80, 63, 23, 4, -46, -2, 49, 61, 63, 53, 17, 2, -38, 5, 25, 39, 36, 32, 7, -16, -38, -33, -13, -6, -22, -9, -38, -70, 110, 437, 451, 659, 1359, 0, 82, 276, 300, 573, 1120, 0, -24, -9, 5, 10, 26, 29, 32, 30, 34, -34, -19, 3, 4, 9, 14, 23, 29, 33, 33, 44, 50, 50, 67, -113, -31, 10, 5, 12, 1, 5, 13, 18, 15, 19, 23, 11, 25, 34, -13, -47, -149, -8, -9, -12, 5, -9, 1, 3, 2, 2, 6, 7, 9, 8, 3, 1, 6, 3, -2, -5, 1, 9, 35, 52, 124, 331, 45, 44, 43, 35, 38, 51, 46, 50, 41, -24, -1, -16, 8, 18, 34, 39, 43, 52, 53, 51, 46, 55, 38, -56, -53, -10, 6, -5, 10, 12, 12, 17, 20, 24, 29, 44, 38, 33, -13, -235, -48, -196, -59, -118, -104, -38, -65, -47, -28, -14, -7, -5, 6, 7, 28, 35, 41, 40, 50, 55, 49, 37, 10, 16, -10, -146, 54, 48, -7, 12, 13, 0, 124, -10, -7, -28, -21, -2, 0, 242, 140, 62, 33, 9, 5, 0, -5, -13, -41, -19, -39, -64, -68, -95, -3, -15, -15, -39, -37, -88, -22, 4045, -110, 7, -15, -30, -55, -74, -49, -87, -79, -75, -2, -13, -20, -29, -36, -56, -56, -150, -80, 21, 0, -1, 5, 19, 18, 0, -45, 69, 15, 24, 14, 0, 0, -431, -684, 60, 44, 42, 9, 30, 21, 15, -1, 3, 5, -9, -12, -2, -7, -11, -30, -10, -2, -3, -12, -11, -64, -50, -7, 0, 0, 177, 32, -61, 0, -13, -5, -5, -1, 15, 7, 14, 15, 23, 16, 11, 12, 10, 4, -4, -16, -25, -32, -51, -52, -81, -36};
         System.out.println(params.length);
         EngineConfig config = EngineInitializer.loadDefaultConfig();
         config.getMiddlegameTables()[0] = Arrays.stream(params, 0, 64).toArray();
@@ -121,6 +148,20 @@ public class TexelTunerTest {
         config.getRookOpenFileBonus()[1] = params[914];
         config.getRookSemiOpenFileBonus()[0] = params[915];
         config.getRookSemiOpenFileBonus()[1] = params[916];
+        config.getPassedPawnBonus()[0] = Arrays.stream(params, 917, 924).toArray();
+        config.getPassedPawnBonus()[1] = Arrays.stream(params, 924, 931).toArray();
+        config.getDoubledPawnPenalty()[0] = Arrays.stream(params, 931, 940).toArray();
+        config.getDoubledPawnPenalty()[1] = Arrays.stream(params, 940, 949).toArray();
+        config.getIsolatedPawnPenalty()[0] = Arrays.stream(params, 949, 958).toArray();
+        config.getIsolatedPawnPenalty()[1] = Arrays.stream(params, 958, 967).toArray();
+        config.setProtectedPassedPawnBonus(params[967]);
+        config.setKingPawnShieldPenalty(Arrays.stream(params, 968, 975).toArray());
+        config.setKingOpenFilePenalty(params[975]);
+        config.setKingSemiOpenFilePenalty(params[976]);
+        config.setKingOpenAdjacentFilePenalty(params[977]);
+        config.setKingSemiOpenAdjacentFilePenalty(params[978]);
+        config.getVirtualKingMobilityPenalty()[0] = Arrays.stream(params, 978, 1006).toArray();
+        config.getVirtualKingMobilityPenalty()[1] = Arrays.stream(params, 1006, 1034).toArray();
         System.out.println(objectMapper.writeValueAsString(config));
     }
 

@@ -120,18 +120,18 @@ public class BoardTest {
 
         Board board2 = new Board();
 
-        Assertions.assertEquals(board1.getWhitePawns(), board2.getWhitePawns());
-        Assertions.assertEquals(board1.getWhiteKnights(), board2.getWhiteKnights());
-        Assertions.assertEquals(board1.getWhiteBishops(), board2.getWhiteBishops());
-        Assertions.assertEquals(board1.getWhiteRooks(), board2.getWhiteRooks());
-        Assertions.assertEquals(board1.getWhiteQueens(), board2.getWhiteQueens());
-        Assertions.assertEquals(board1.getWhiteKing(), board2.getWhiteKing());
-        Assertions.assertEquals(board1.getBlackPawns(), board2.getBlackPawns());
-        Assertions.assertEquals(board1.getBlackKnights(), board2.getBlackKnights());
-        Assertions.assertEquals(board1.getBlackBishops(), board2.getBlackBishops());
-        Assertions.assertEquals(board1.getBlackRooks(), board2.getBlackRooks());
-        Assertions.assertEquals(board1.getBlackQueens(), board2.getBlackQueens());
-        Assertions.assertEquals(board1.getBlackKing(), board2.getBlackKing());
+        Assertions.assertEquals(board1.getPawns(true), board2.getPawns(true));
+        Assertions.assertEquals(board1.getKnights(true), board2.getKnights(true));
+        Assertions.assertEquals(board1.getBishops(true), board2.getBishops(true));
+        Assertions.assertEquals(board1.getRooks(true), board2.getRooks(true));
+        Assertions.assertEquals(board1.getQueens(true), board2.getQueens(true));
+        Assertions.assertEquals(board1.getKing(true), board2.getKing(true));
+        Assertions.assertEquals(board1.getPawns(false), board2.getPawns(false));
+        Assertions.assertEquals(board1.getKnights(false), board2.getKnights(false));
+        Assertions.assertEquals(board1.getBishops(false), board2.getBishops(false));
+        Assertions.assertEquals(board1.getRooks(false), board2.getRooks(false));
+        Assertions.assertEquals(board1.getQueens(false), board2.getQueens(false));
+        Assertions.assertEquals(board1.getKing(false), board2.getKing(false));
         Assertions.assertEquals(board1.getWhitePieces(), board2.getWhitePieces());
         Assertions.assertEquals(board1.getBlackPieces(), board2.getBlackPieces());
         Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
@@ -159,18 +159,18 @@ public class BoardTest {
 
         new MoveGenerator().generateMoves(board1);
 
-        Assertions.assertEquals(board1.getWhitePawns(), board2.getWhitePawns());
-        Assertions.assertEquals(board1.getWhiteKnights(), board2.getWhiteKnights());
-        Assertions.assertEquals(board1.getWhiteBishops(), board2.getWhiteBishops());
-        Assertions.assertEquals(board1.getWhiteRooks(), board2.getWhiteRooks());
-        Assertions.assertEquals(board1.getWhiteQueens(), board2.getWhiteQueens());
-        Assertions.assertEquals(board1.getWhiteKing(), board2.getWhiteKing());
-        Assertions.assertEquals(board1.getBlackPawns(), board2.getBlackPawns());
-        Assertions.assertEquals(board1.getBlackKnights(), board2.getBlackKnights());
-        Assertions.assertEquals(board1.getBlackBishops(), board2.getBlackBishops());
-        Assertions.assertEquals(board1.getBlackRooks(), board2.getBlackRooks());
-        Assertions.assertEquals(board1.getBlackQueens(), board2.getBlackQueens());
-        Assertions.assertEquals(board1.getBlackKing(), board2.getBlackKing());
+        Assertions.assertEquals(board1.getPawns(true), board2.getPawns(true));
+        Assertions.assertEquals(board1.getKnights(true), board2.getKnights(true));
+        Assertions.assertEquals(board1.getBishops(true), board2.getBishops(true));
+        Assertions.assertEquals(board1.getRooks(true), board2.getRooks(true));
+        Assertions.assertEquals(board1.getQueens(true), board2.getQueens(true));
+        Assertions.assertEquals(board1.getKing(true), board2.getKing(true));
+        Assertions.assertEquals(board1.getPawns(false), board2.getPawns(false));
+        Assertions.assertEquals(board1.getKnights(false), board2.getKnights(false));
+        Assertions.assertEquals(board1.getBishops(false), board2.getBishops(false));
+        Assertions.assertEquals(board1.getRooks(false), board2.getRooks(false));
+        Assertions.assertEquals(board1.getQueens(false), board2.getQueens(false));
+        Assertions.assertEquals(board1.getKing(false), board2.getKing(false));
         Assertions.assertEquals(board1.getWhitePieces(), board2.getWhitePieces());
         Assertions.assertEquals(board1.getBlackPieces(), board2.getBlackPieces());
         Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
@@ -434,48 +434,20 @@ public class BoardTest {
 
         Board board = new Board();
         board.makeMove(Notation.fromCombinedNotation("e2e4"));
-        System.out.println("1");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromCombinedNotation("d7d5"));
-        System.out.println("2");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromCombinedNotation("g1f3"));
-        System.out.println("3");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromCombinedNotation("b8c6"));
-        System.out.println("4");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromCombinedNotation("f1b5"));
-        System.out.println("5");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromCombinedNotation("c8g4"));
-        System.out.println("6");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG));
-        System.out.println("7");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromCombinedNotation("d8d7"));
-        System.out.println("8");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromNotation("f1", "e1"));
-        System.out.println("9");
-        Bitwise.print(board.getWhiteKing());
-        Bitwise.print(board.getWhiteRooks());
         board.makeMove(Notation.fromNotation("e8","c8",Move.CASTLE_FLAG));
 
         Board board2 = FEN.toBoard("2kr1bnr/pppqpppp/2n5/1B1p4/4P1b1/5N2/PPPP1PPP/RNBQR1K1 w - - 8 6");
         Assertions.assertEquals(board.getWhitePieces(), board2.getWhitePieces());
         Assertions.assertEquals(board.getBlackPieces(), board2.getBlackPieces());
-        Assertions.assertEquals(board.getWhiteRooks(), board2.getWhiteRooks());
-        Assertions.assertEquals(board.getBlackRooks(), board2.getBlackRooks());
+        Assertions.assertEquals(board.getRooks(), board2.getRooks());
 
         board.unmakeMove();
         board.unmakeMove();
@@ -491,8 +463,7 @@ public class BoardTest {
         Board board3 = new Board();
         Assertions.assertEquals(board.getWhitePieces(), board3.getWhitePieces());
         Assertions.assertEquals(board.getBlackPieces(), board3.getBlackPieces());
-        Assertions.assertEquals(board.getWhiteRooks(), board3.getWhiteRooks());
-        Assertions.assertEquals(board.getBlackRooks(), board3.getBlackRooks());
+        Assertions.assertEquals(board.getRooks(), board3.getRooks());
 
     }
 
@@ -528,11 +499,9 @@ public class BoardTest {
 
     private void assertSinglePieceBoard(Board board, int startSquare) {
         board.toggleSquare(Piece.ROOK, true, startSquare);
-        board.recalculatePieces();
         Assertions.assertEquals(Set.of(startSquare), getPiecePositions(board, true));
         Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
         board.toggleSquare(Piece.ROOK, true, startSquare);
-        board.recalculatePieces();
     }
 
 }

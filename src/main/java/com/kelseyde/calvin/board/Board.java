@@ -20,22 +20,16 @@ import java.util.Deque;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Board {
 
-    long whitePawns =   Bits.WHITE_PAWNS_START;
-    long whiteKnights = Bits.WHITE_KNIGHTS_START;
-    long whiteBishops = Bits.WHITE_BISHOPS_START;
-    long whiteRooks =   Bits.WHITE_ROOKS_START;
-    long whiteQueens =  Bits.WHITE_QUEENS_START;
-    long whiteKing =    Bits.WHITE_KING_START;
-    long blackPawns =   Bits.BLACK_PAWNS_START;
-    long blackKnights = Bits.BLACK_KNIGHTS_START;
-    long blackBishops = Bits.BLACK_BISHOPS_START;
-    long blackRooks =   Bits.BLACK_ROOKS_START;
-    long blackQueens =  Bits.BLACK_QUEENS_START;
-    long blackKing =    Bits.BLACK_KING_START;
+    long pawns =        Bits.WHITE_PAWNS_START | Bits.BLACK_PAWNS_START;
+    long knights =      Bits.WHITE_KNIGHTS_START | Bits.BLACK_KNIGHTS_START;
+    long bishops =      Bits.WHITE_BISHOPS_START | Bits.BLACK_BISHOPS_START;
+    long rooks =        Bits.WHITE_ROOKS_START | Bits.BLACK_ROOKS_START;
+    long queens =       Bits.WHITE_QUEENS_START | Bits.BLACK_QUEENS_START;
+    long kings =        Bits.WHITE_KING_START | Bits.BLACK_KING_START;
 
-    long whitePieces;
-    long blackPieces;
-    long occupied;
+    long whitePieces =  Bits.WHITE_PIECES_START;
+    long blackPieces =  Bits.BLACK_PIECES_START;
+    long occupied =     Bits.PIECES_START;
 
     Piece[] pieceList = BoardUtils.getStartingPieceList();
 
@@ -48,7 +42,6 @@ public class Board {
     public Board() {
         gameState.setZobrist(Zobrist.generateKey(this));
         gameState.setPawnZobrist(Zobrist.generatePawnKey(this));
-        recalculatePieces();
     }
 
     /**
@@ -72,7 +65,6 @@ public class Board {
         updateGameState(startSquare, endSquare, piece, capturedPiece, move);
         moveHistory.push(move);
         whiteToMove = !whiteToMove;
-        recalculatePieces();
 
     }
 
@@ -94,7 +86,6 @@ public class Board {
         else                          unmakeStandardMove(startSquare, endSquare, piece);
 
         gameState = gameStateHistory.pop();
-        recalculatePieces();
 
     }
 
@@ -107,7 +98,7 @@ public class Board {
     }
 
     private void makeCastleMove(int startSquare, int endSquare) {
-        toggleKing(whiteToMove, startSquare, endSquare);
+        toggleSquares(Piece.KING, whiteToMove, startSquare, endSquare);
         pieceList[startSquare] = null;
         pieceList[endSquare] = Piece.KING;
         gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, startSquare, endSquare, Piece.KING, whiteToMove);
@@ -121,7 +112,7 @@ public class Board {
             rookStartSquare = whiteToMove ? 0 : 56;
             rookEndSquare = whiteToMove ? 3 : 59;
         }
-        toggleRooks(whiteToMove, rookStartSquare, rookEndSquare);
+        toggleSquares(Piece.ROOK, whiteToMove, rookStartSquare, rookEndSquare);
         pieceList[rookStartSquare] = null;
         pieceList[rookEndSquare] = Piece.ROOK;
         gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, rookStartSquare, rookEndSquare, Piece.ROOK, whiteToMove);
@@ -130,7 +121,7 @@ public class Board {
     private void makeEnPassantMove(int startSquare, int endSquare) {
         toggleSquares(Piece.PAWN, whiteToMove, startSquare, endSquare);
         int pawnSquare = whiteToMove ? endSquare - 8 : endSquare + 8;
-        togglePawn(!whiteToMove, pawnSquare);
+        toggleSquare(Piece.PAWN, !whiteToMove, pawnSquare);
         pieceList[startSquare] = null;
         pieceList[pawnSquare] = null;
         pieceList[endSquare] = Piece.PAWN;
@@ -143,7 +134,7 @@ public class Board {
     }
 
     private void makePromotionMove(int startSquare, int endSquare, Piece promotionPiece, Piece capturedPiece) {
-        togglePawn(whiteToMove, startSquare);
+        toggleSquare(Piece.PAWN, whiteToMove, startSquare);
         toggleSquare(promotionPiece, whiteToMove, endSquare);
         pieceList[startSquare] = null;
         pieceList[endSquare] = promotionPiece;
@@ -193,7 +184,7 @@ public class Board {
     }
 
     private void unmakeCastlingMove(int startSquare, int endSquare) {
-        toggleKing(whiteToMove, endSquare, startSquare);
+        toggleSquares(Piece.KING, whiteToMove, endSquare, startSquare);
         boolean isKingside = BoardUtils.getFile(endSquare) == 6;
         int rookStartSquare;
         int rookEndSquare;
@@ -204,7 +195,7 @@ public class Board {
             rookStartSquare = whiteToMove ? 3 : 59;
             rookEndSquare = whiteToMove ? 0 : 56;
         }
-        toggleRooks(whiteToMove, rookStartSquare, rookEndSquare);
+        toggleSquares(Piece.ROOK, whiteToMove, rookStartSquare, rookEndSquare);
         pieceList[startSquare] = Piece.KING;
         pieceList[endSquare] = null;
         pieceList[rookEndSquare] = Piece.ROOK;
@@ -213,7 +204,7 @@ public class Board {
 
     private void unmakePromotionMove(int startSquare, int endSquare, Piece promotionPiece) {
         toggleSquare(promotionPiece, whiteToMove, endSquare);
-        togglePawn(whiteToMove, startSquare);
+        toggleSquare(Piece.PAWN, whiteToMove, startSquare);
         if (gameState.getCapturedPiece() != null) {
             toggleSquare(gameState.getCapturedPiece(), !whiteToMove, endSquare);
         }
@@ -222,9 +213,9 @@ public class Board {
     }
 
     private void unmakeEnPassantMove(int startSquare, int endSquare) {
-        togglePawns(whiteToMove, endSquare, startSquare);
+        toggleSquares(Piece.PAWN, whiteToMove, endSquare, startSquare);
         int captureSquare = whiteToMove ? endSquare - 8 : endSquare + 8;
-        togglePawn(!whiteToMove, captureSquare);
+        toggleSquare(Piece.PAWN, !whiteToMove, captureSquare);
         pieceList[startSquare] = Piece.PAWN;
         pieceList[endSquare] = null;
         pieceList[captureSquare] = Piece.PAWN;
@@ -271,61 +262,41 @@ public class Board {
 
     private void toggle(Piece type, boolean white, long toggleMask) {
         switch (type) {
-            case PAWN ->    { if (white) whitePawns ^= toggleMask;    else blackPawns ^= toggleMask; }
-            case KNIGHT ->  { if (white) whiteKnights ^= toggleMask;  else blackKnights ^= toggleMask; }
-            case BISHOP ->  { if (white) whiteBishops ^= toggleMask;  else blackBishops ^= toggleMask; }
-            case ROOK ->    { if (white) whiteRooks ^= toggleMask;    else blackRooks ^= toggleMask; }
-            case QUEEN ->   { if (white) whiteQueens ^= toggleMask;   else blackQueens ^= toggleMask; }
-            case KING ->    { if (white) whiteKing ^= toggleMask;     else blackKing ^= toggleMask; }
+            case PAWN ->    pawns ^= toggleMask;
+            case KNIGHT ->  knights ^= toggleMask;
+            case BISHOP ->  bishops ^= toggleMask;
+            case ROOK ->    rooks ^= toggleMask;
+            case QUEEN ->   queens ^= toggleMask;
+            case KING ->    kings ^= toggleMask;
         }
-    }
-
-    public void togglePawns(boolean white, int startSquare, int endSquare) {
-        if (white) whitePawns ^= (1L << startSquare | 1L << endSquare);
-        else blackPawns ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void toggleRooks(boolean white, int startSquare, int endSquare) {
-        if (white) whiteRooks ^= (1L << startSquare | 1L << endSquare);
-        else blackRooks ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void toggleKing(boolean white, int startSquare, int endSquare) {
-        if (white) whiteKing ^= (1L << startSquare | 1L << endSquare);
-        else blackKing ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void togglePawn(boolean white, int startSquare) {
-        if (white) whitePawns ^= 1L << startSquare;
-        else blackPawns ^= 1L << startSquare;
+        if (white) {
+            whitePieces ^= toggleMask;
+        } else {
+            blackPieces ^= toggleMask;
+        }
+        occupied ^= toggleMask;
     }
 
     public void removeKing(boolean white) {
+        long toggleMask = white ? (kings & whitePieces) : (kings & blackPieces);
+        kings ^= toggleMask;
         if (white) {
-            whitePieces ^= whiteKing;
-            whiteKing = 0L;
+            whitePieces ^= toggleMask;
         } else {
-            blackPieces ^= blackKing;
-            blackKing = 0L;
+            blackPieces ^= toggleMask;
         }
-        occupied = whitePieces | blackPieces;
+        occupied ^= toggleMask;
     }
 
     public void addKing(int kingSquare, boolean white) {
+        long toggleMask = 1L << kingSquare;
+        kings |= toggleMask;
         if (white) {
-            whiteKing = 1L << kingSquare;
-            whitePieces |= whiteKing;
+            whitePieces |= toggleMask;
         } else {
-            blackKing = 1L << kingSquare;
-            blackPieces |= blackKing;
+            blackPieces |= toggleMask;
         }
-        occupied = whitePieces | blackPieces;
-    }
-
-    public void recalculatePieces() {
-        whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
-        blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
-        occupied = whitePieces | blackPieces;
+        occupied |= toggleMask;
     }
 
     private int calculateCastlingRights(int startSquare, int endSquare, Piece pieceType) {
@@ -361,27 +332,33 @@ public class Board {
     }
 
     public long getPawns(boolean white) {
-        return white ? whitePawns : blackPawns;
+        long side = white ? whitePieces : blackPieces;
+        return pawns & side;
     }
 
     public long getKnights(boolean white) {
-        return white ? whiteKnights : blackKnights;
+        long side = white ? whitePieces : blackPieces;
+        return knights & side;
     }
 
     public long getBishops(boolean white) {
-        return white ? whiteBishops : blackBishops;
+        long side = white ? whitePieces : blackPieces;
+        return bishops & side;
     }
 
     public long getRooks(boolean white) {
-        return white ? whiteRooks : blackRooks;
+        long side = white ? whitePieces : blackPieces;
+        return rooks & side;
     }
 
     public long getQueens(boolean white) {
-        return white ? whiteQueens : blackQueens;
+        long side = white ? whitePieces : blackPieces;
+        return queens & side;
     }
 
     public long getKing(boolean white) {
-        return white ? whiteKing : blackKing;
+        long side = white ? whitePieces : blackPieces;
+        return kings & side;
     }
 
     public long getPieces(boolean white) {
@@ -394,16 +371,12 @@ public class Board {
 
     public boolean hasPiecesRemaining(boolean white) {
         return white ?
-                (whiteKnights != 0 || whiteBishops != 0 || whiteRooks != 0 || whiteQueens != 0) :
-                (blackKnights != 0 || blackBishops != 0 || blackRooks != 0 || blackQueens != 0);
+                (getKnights(true) != 0 || getBishops(true) != 0 || getRooks(true) != 0 || getQueens(true) != 0) :
+                (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
     }
 
     public boolean isPawnEndgame() {
-        return (whitePawns != 0 || blackPawns != 0)
-                && whiteKnights == 0 && blackKnights == 0
-                && whiteBishops == 0 && blackBishops == 0
-                && whiteRooks == 0 && blackRooks == 0
-                && whiteQueens == 0 && blackQueens == 0;
+        return (pawns != 0) && knights == 0 && bishops == 0 && rooks == 0 && queens == 0;
     }
 
 }

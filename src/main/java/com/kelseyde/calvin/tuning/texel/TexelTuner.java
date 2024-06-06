@@ -170,7 +170,7 @@ public class TexelTuner {
         return partitionedPositions;
     }
 
-    public List<String> loadFens()  throws IOException {
+    public List<String> loadFens() throws IOException {
         String fileName = String.format("src/test/resources/texel/" + positionsFileName);
         Path path = Paths.get(fileName);
         return Files.readAllLines(path);

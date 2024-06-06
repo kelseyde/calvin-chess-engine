@@ -30,7 +30,7 @@
   "lmpDepth":2,
   "lmpMultiplier":10,
   "iirDepth":4,
-  "nmpMargin":0,
+  "nmpMargin":70,
   "dpMargin":140,
   "fpMargin":[
     0,

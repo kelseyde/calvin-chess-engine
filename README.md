@@ -2,6 +2,13 @@
 
 # <div align="center"> Calvin </div>
 
+<div align="center">
+
+[![release][release-badge]][release-link]
+[![lichess-badge]][lichess-link]
+
+</div>
+
 Calvin is a chess engine written in Java. 
 
 It features a bitboard-based board representation, a traditional iterative deepening + negamax search algorithm, and a hand-crafted evaluation function. 
@@ -89,3 +96,9 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 
 <p align="center"><img src="src/main/resources/hobbes.png" width="160"></p>
+
+[release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=red
+[release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
+
+[lichess-badge]: https://img.shields.io/badge/Play-v3.4.0-yellow?logo=lichess&style=for-the-badge
+[lichess-link]: https://lichess.org/@/Calvin_Bot

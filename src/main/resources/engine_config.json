@@ -1103,10 +1103,6 @@
       5
     ]
   ],
-  "passedPawnMgBaseBonus":0,
-  "passedPawnMgMultiplier":0,
-  "passedPawnEgBaseBonus":0,
-  "passedPawnEgMultiplier":0,
   "protectedPassedPawnBonus":21,
   "bishopPairBonus":54,
   "rookOpenFileBonus":[

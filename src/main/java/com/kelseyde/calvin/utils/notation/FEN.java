@@ -88,7 +88,9 @@ public class FEN {
             board.setBlackRooks(blackRooks);
             board.setBlackQueens(blackQueens);
             board.setBlackKing(blackKing);
-            board.recalculatePieces();
+            board.setWhitePieces(whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing);
+            board.setBlackPieces(blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing);
+            board.setOccupied(board.getWhitePieces() | board.getBlackPieces());
             board.setPieceList(BoardUtils.calculatePieceList(board));
             board.setWhiteToMove(whiteToMove);
             board.getGameState().setCastlingRights(castlingRights);

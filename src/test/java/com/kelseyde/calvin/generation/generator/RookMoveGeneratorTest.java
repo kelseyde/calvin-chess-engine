@@ -64,7 +64,6 @@ public class RookMoveGeneratorTest {
         board.toggleSquare(Piece.KNIGHT, true, 26);
         board.toggleSquare(Piece.BISHOP, true, 30);
         board.toggleSquare(Piece.ROOK, true, 44);
-        board.recalculatePieces();
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
         assertLegalSquares(startSquare, Set.of(20, 27, 29, 36));

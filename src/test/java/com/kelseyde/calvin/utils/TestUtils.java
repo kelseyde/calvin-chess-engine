@@ -78,11 +78,13 @@ public class TestUtils {
         board.setBlackRooks(0L);
         board.setBlackQueens(0L);
         board.setBlackKing(0L);
+        board.setWhitePieces(0L);
+        board.setBlackPieces(0L);
+        board.setOccupied(0L);
         board.setPieceList(new Piece[64]);
 
         board.getGameState().setCastlingRights(0b0000);
 
-        board.recalculatePieces();
 
         return board;
     }

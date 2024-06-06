@@ -135,7 +135,6 @@ public class BoardUtils {
         board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.value())));
         newBoard.setMoveHistory(moveHistory);
         newBoard.setPieceList(Arrays.copyOf(board.getPieceList(), board.getPieceList().length));
-        newBoard.recalculatePieces();
         return newBoard;
     }
 

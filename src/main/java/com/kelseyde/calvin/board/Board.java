@@ -192,7 +192,7 @@ public class Board {
         }
         toggleSquares(Piece.ROOK, whiteToMove, rookStartSquare, rookEndSquare);
         updatePieceList(Piece.KING, endSquare, startSquare);
-        updatePieceList(Piece.ROOK, rookEndSquare, rookStartSquare);
+        updatePieceList(Piece.ROOK, rookStartSquare, rookEndSquare);
     }
 
     private void unmakePromotionMove(int startSquare, int endSquare, Piece promotionPiece) {
@@ -219,7 +219,7 @@ public class Board {
             toggleSquare(gameState.getCapturedPiece(), !whiteToMove, endSquare);
         }
         pieceList[startSquare] = piece;
-        pieceList[endSquare] = gameState.getCapturedPiece();
+        pieceList[endSquare] = gameState.getCapturedPiece() != null ? gameState.getCapturedPiece() : null;;
     }
 
     /**

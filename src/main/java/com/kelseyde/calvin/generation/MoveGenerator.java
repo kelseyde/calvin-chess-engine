@@ -37,6 +37,9 @@ public class MoveGenerator implements MoveGeneration {
     private long rooks;
     private long queens;
     private long king;
+    private long friendlies;
+    private long opponents;
+    private long occupied;
 
     private List<Move> legalMoves;
 
@@ -136,8 +139,6 @@ public class MoveGenerator implements MoveGeneration {
     private void generatePawnMoves(Board board) {
 
         if (pawns == 0) return;
-        long opponents = board.getPieces(!white);
-        long occupied = board.getOccupied();
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
         long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
@@ -256,7 +257,6 @@ public class MoveGenerator implements MoveGeneration {
 
     private void generateKnightMoves(Board board) {
         if (knights == 0) return;
-        long opponents = board.getPieces(!white);
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
         // Initialize filter mask based on move filter type
@@ -289,8 +289,6 @@ public class MoveGenerator implements MoveGeneration {
 
     private void generateKingMoves(Board board) {
         int startSquare = Bitwise.getNextBit(king);
-        long friendlies = board.getPieces(white);
-        long opponents = board.getPieces(!white);
 
         long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
         switch (filter) {
@@ -327,7 +325,6 @@ public class MoveGenerator implements MoveGeneration {
             return;
         }
         int startSquare = Bitwise.getNextBit(king);
-        long occupied = board.getOccupied();
 
         boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(white);
         if (isKingsideAllowed) {
@@ -365,9 +362,6 @@ public class MoveGenerator implements MoveGeneration {
     }
 
     private void generateSlidingMoves(Board board, long sliders, boolean isOrthogonal, boolean isDiagonal) {
-        long opponents = board.getPieces(!white);
-        long occupied = board.getOccupied();
-        long friendlies = board.getPieces(white);
 
         while (sliders != 0) {
             int startSquare = Bitwise.getNextBit(sliders);
@@ -616,6 +610,9 @@ public class MoveGenerator implements MoveGeneration {
         rooks = board.getRooks(white);
         queens = board.getQueens(white);
         king = board.getKing(white);
+        friendlies = board.getPieces(white);
+        opponents = board.getPieces(!white);
+        occupied = board.getOccupied();
     }
 
 }

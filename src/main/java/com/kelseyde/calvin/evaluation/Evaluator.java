@@ -87,38 +87,38 @@ public class Evaluator implements Evaluation {
         this.config = config;
         this.pawnHash = pawnHash;
 
-        pawnMgValue = config.getPieceValues()[0][Piece.PAWN.getIndex()];
-        knightMgValue = config.getPieceValues()[0][Piece.KNIGHT.getIndex()];
-        bishopMgValue = config.getPieceValues()[0][Piece.BISHOP.getIndex()];
-        rookMgValue = config.getPieceValues()[0][Piece.ROOK.getIndex()];
-        queenMgValue = config.getPieceValues()[0][Piece.QUEEN.getIndex()];
-        pawnEgValue = config.getPieceValues()[1][Piece.PAWN.getIndex()];
-        knightEgValue = config.getPieceValues()[1][Piece.KNIGHT.getIndex()];
-        bishopEgValue = config.getPieceValues()[1][Piece.BISHOP.getIndex()];
-        rookEgValue = config.getPieceValues()[1][Piece.ROOK.getIndex()];
-        queenEgValue = config.getPieceValues()[1][Piece.QUEEN.getIndex()];
+        pawnMgValue =      config.getPieceValues()[0][Piece.PAWN.getIndex()];
+        knightMgValue =    config.getPieceValues()[0][Piece.KNIGHT.getIndex()];
+        bishopMgValue =    config.getPieceValues()[0][Piece.BISHOP.getIndex()];
+        rookMgValue =      config.getPieceValues()[0][Piece.ROOK.getIndex()];
+        queenMgValue =     config.getPieceValues()[0][Piece.QUEEN.getIndex()];
+        pawnEgValue =      config.getPieceValues()[1][Piece.PAWN.getIndex()];
+        knightEgValue =    config.getPieceValues()[1][Piece.KNIGHT.getIndex()];
+        bishopEgValue =    config.getPieceValues()[1][Piece.BISHOP.getIndex()];
+        rookEgValue =      config.getPieceValues()[1][Piece.ROOK.getIndex()];
+        queenEgValue =     config.getPieceValues()[1][Piece.QUEEN.getIndex()];
 
-        pawnMgTable = config.getMiddlegameTables()[Piece.PAWN.getIndex()];
-        pawnEgTable = config.getEndgameTables()[Piece.PAWN.getIndex()];
-        knightMgTable = config.getMiddlegameTables()[Piece.KNIGHT.getIndex()];
-        knightEgTable = config.getEndgameTables()[Piece.KNIGHT.getIndex()];
-        bishopMgTable = config.getMiddlegameTables()[Piece.BISHOP.getIndex()];
-        bishopEgTable = config.getEndgameTables()[Piece.BISHOP.getIndex()];
-        rookMgTable = config.getMiddlegameTables()[Piece.ROOK.getIndex()];
-        rookEgTable = config.getEndgameTables()[Piece.ROOK.getIndex()];
-        queenMgTable = config.getMiddlegameTables()[Piece.QUEEN.getIndex()];
-        queenEgTable = config.getEndgameTables()[Piece.QUEEN.getIndex()];
-        kingMgTable = config.getMiddlegameTables()[Piece.KING.getIndex()];
-        kingEgTable = config.getEndgameTables()[Piece.KING.getIndex()];
+        pawnMgTable =      config.getMiddlegameTables()[Piece.PAWN.getIndex()];
+        pawnEgTable =      config.getEndgameTables()[Piece.PAWN.getIndex()];
+        knightMgTable =    config.getMiddlegameTables()[Piece.KNIGHT.getIndex()];
+        knightEgTable =    config.getEndgameTables()[Piece.KNIGHT.getIndex()];
+        bishopMgTable =    config.getMiddlegameTables()[Piece.BISHOP.getIndex()];
+        bishopEgTable =    config.getEndgameTables()[Piece.BISHOP.getIndex()];
+        rookMgTable =      config.getMiddlegameTables()[Piece.ROOK.getIndex()];
+        rookEgTable =      config.getEndgameTables()[Piece.ROOK.getIndex()];
+        queenMgTable =     config.getMiddlegameTables()[Piece.QUEEN.getIndex()];
+        queenEgTable =     config.getEndgameTables()[Piece.QUEEN.getIndex()];
+        kingMgTable =      config.getMiddlegameTables()[Piece.KING.getIndex()];
+        kingEgTable =      config.getEndgameTables()[Piece.KING.getIndex()];
 
         knightMgMobility = config.getMiddlegameMobilityBonus()[Piece.KNIGHT.getIndex()];
         knightEgMobility = config.getEndgameMobilityBonus()[Piece.KNIGHT.getIndex()];
         bishopMgMobility = config.getMiddlegameMobilityBonus()[Piece.BISHOP.getIndex()];
         bishopEgMobility = config.getEndgameMobilityBonus()[Piece.BISHOP.getIndex()];
-        rookMgMobility = config.getMiddlegameMobilityBonus()[Piece.ROOK.getIndex()];
-        rookEgMobility = config.getEndgameMobilityBonus()[Piece.ROOK.getIndex()];
-        queenMgMobility = config.getMiddlegameMobilityBonus()[Piece.QUEEN.getIndex()];
-        queenEgMobility = config.getEndgameMobilityBonus()[Piece.QUEEN.getIndex()];
+        rookMgMobility =   config.getMiddlegameMobilityBonus()[Piece.ROOK.getIndex()];
+        rookEgMobility =   config.getEndgameMobilityBonus()[Piece.ROOK.getIndex()];
+        queenMgMobility =  config.getMiddlegameMobilityBonus()[Piece.QUEEN.getIndex()];
+        queenEgMobility =  config.getEndgameMobilityBonus()[Piece.QUEEN.getIndex()];
     }
 
     @Override

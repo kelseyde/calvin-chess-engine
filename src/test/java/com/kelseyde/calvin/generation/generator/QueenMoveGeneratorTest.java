@@ -30,7 +30,7 @@ public class QueenMoveGeneratorTest {
         int startSquare = 28; //e4
 
         board.toggleSquare(Piece.KING, false, 0);
-        board.toggleSquare(Piece.KING, true, 64);
+        board.toggleSquare(Piece.KING, true, 63);
         board.toggleSquare(Piece.PAWN, false, 10);
         board.toggleSquare(Piece.KNIGHT, false, 14);
         board.toggleSquare(Piece.BISHOP, false, 42);
@@ -39,7 +39,6 @@ public class QueenMoveGeneratorTest {
         board.toggleSquare(Piece.KNIGHT, false, 26);
         board.toggleSquare(Piece.BISHOP, false, 30);
         board.toggleSquare(Piece.ROOK, false, 44);
-        board.recalculatePieces();
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 10, 14, 42, 46, 12, 20, 26, 27, 29, 30, 36, 44));
@@ -62,7 +61,6 @@ public class QueenMoveGeneratorTest {
         board.toggleSquare(Piece.KNIGHT, true, 26);
         board.toggleSquare(Piece.BISHOP, true, 30);
         board.toggleSquare(Piece.ROOK, true, 44);
-        board.recalculatePieces();
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
         assertLegalSquares(startSquare, Set.of(19, 21, 35, 37, 27, 29, 20, 36));

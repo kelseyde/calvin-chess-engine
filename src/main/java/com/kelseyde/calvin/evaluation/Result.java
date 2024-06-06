@@ -48,12 +48,11 @@ public class Result {
     }
 
     public static boolean isInsufficientMaterial(Board board) {
-        if (board.getWhitePawns() != 0 || board.getWhiteRooks() != 0 || board.getWhiteQueens() != 0
-                || board.getBlackPawns() != 0 || board.getBlackRooks() != 0 || board.getBlackQueens() != 0) {
+        if (board.getPawns() != 0 || board.getRooks() != 0 || board.getQueens() != 0) {
             return false;
         }
-        long whitePieces = board.getWhiteKnights() | board.getWhiteBishops();
-        long blackPieces = board.getBlackKnights() |  board.getBlackBishops();
+        long whitePieces = board.getKnights(true) | board.getBishops(true);
+        long blackPieces = board.getKnights(false) |  board.getBishops(false);
 
         return (Bitwise.countBits(whitePieces) == 0 || Bitwise.countBits(whitePieces) == 1)
                 && (Bitwise.countBits(blackPieces) == 0 || Bitwise.countBits(blackPieces) == 1);

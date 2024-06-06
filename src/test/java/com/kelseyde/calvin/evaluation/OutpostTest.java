@@ -13,8 +13,8 @@ public class OutpostTest {
 
         String fen = "6k1/p6p/2P1P3/P1p1p3/7P/2p5/8/5K2 w - - 0 1";
         Board board = FEN.toBoard(fen);
-        long whitePawns = board.getWhitePawns();
-        long blackPawns = board.getBlackPawns();
+        long whitePawns = board.getPawns(true);
+        long blackPawns = board.getPawns(false);
 
         Assertions.assertEquals(0, Bitwise.isOutpost(0, whitePawns, blackPawns, true));
         Assertions.assertEquals(0, Bitwise.isOutpost(1, whitePawns, blackPawns, true));

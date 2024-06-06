@@ -98,12 +98,12 @@ public class BoardUtils {
         Piece[] pieceList = new Piece[64];
         for (int square = 0; square < 64; square++) {
             long squareMask = 1L << square;
-            if ((squareMask & (board.getWhitePawns() | board.getBlackPawns())) != 0)          pieceList[square] = Piece.PAWN;
-            else if ((squareMask & (board.getWhiteKnights() | board.getBlackKnights())) != 0) pieceList[square] = Piece.KNIGHT;
-            else if ((squareMask & (board.getWhiteBishops() | board.getBlackBishops())) != 0) pieceList[square] = Piece.BISHOP;
-            else if ((squareMask & (board.getWhiteRooks() | board.getBlackRooks())) != 0)     pieceList[square] = Piece.ROOK;
-            else if ((squareMask & (board.getWhiteQueens() | board.getBlackQueens())) != 0)   pieceList[square] = Piece.QUEEN;
-            else if ((squareMask & (board.getWhiteKing() | board.getBlackKing())) != 0)       pieceList[square] = Piece.KING;
+            if ((squareMask & board.getPawns()) != 0)           pieceList[square] = Piece.PAWN;
+            else if ((squareMask & board.getKnights()) != 0)    pieceList[square] = Piece.KNIGHT;
+            else if ((squareMask & board.getBishops()) != 0)    pieceList[square] = Piece.BISHOP;
+            else if ((squareMask & board.getRooks()) != 0)      pieceList[square] = Piece.ROOK;
+            else if ((squareMask & board.getQueens()) != 0)     pieceList[square] = Piece.QUEEN;
+            else if ((squareMask & board.getKings()) != 0)      pieceList[square] = Piece.KING;
         }
         return pieceList;
 
@@ -111,18 +111,12 @@ public class BoardUtils {
 
     public static Board copy(Board board) {
         Board newBoard = new Board();
-        newBoard.setWhitePawns(board.getWhitePawns());
-        newBoard.setWhiteKnights(board.getWhiteKnights());
-        newBoard.setWhiteBishops(board.getWhiteBishops());
-        newBoard.setWhiteRooks(board.getWhiteRooks());
-        newBoard.setWhiteQueens(board.getWhiteQueens());
-        newBoard.setWhiteKing(board.getWhiteKing());
-        newBoard.setBlackPawns(board.getBlackPawns());
-        newBoard.setBlackKnights(board.getBlackKnights());
-        newBoard.setBlackBishops(board.getBlackBishops());
-        newBoard.setBlackRooks(board.getBlackRooks());
-        newBoard.setBlackQueens(board.getBlackQueens());
-        newBoard.setBlackKing(board.getBlackKing());
+        newBoard.setPawns(board.getPawns());
+        newBoard.setKnights(board.getKnights());
+        newBoard.setBishops(board.getBishops());
+        newBoard.setRooks(board.getRooks());
+        newBoard.setQueens(board.getQueens());
+        newBoard.setKings(board.getKings());
         newBoard.setWhitePieces(board.getWhitePieces());
         newBoard.setBlackPieces(board.getBlackPieces());
         newBoard.setOccupied(board.getOccupied());
@@ -135,7 +129,6 @@ public class BoardUtils {
         board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.value())));
         newBoard.setMoveHistory(moveHistory);
         newBoard.setPieceList(Arrays.copyOf(board.getPieceList(), board.getPieceList().length));
-        newBoard.recalculatePieces();
         return newBoard;
     }
 

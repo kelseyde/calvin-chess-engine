@@ -137,18 +137,18 @@ public class Evaluator implements Evaluation {
         long whitePieces = board.getWhitePieces();
         long blackPieces = board.getBlackPieces();
 
-        long whitePawns = board.getWhitePawns();
-        long whiteKnights = board.getWhiteKnights();
-        long whiteBishops = board.getWhiteBishops();
-        long whiteRooks = board.getWhiteRooks();
-        long whiteQueens = board.getWhiteQueens();
-        long whiteKing = board.getWhiteKing();
-        long blackPawns = board.getBlackPawns();
-        long blackKnights = board.getBlackKnights();
-        long blackBishops = board.getBlackBishops();
-        long blackRooks = board.getBlackRooks();
-        long blackQueens = board.getBlackQueens();
-        long blackKing = board.getBlackKing();
+        long whitePawns = board.getPawns(true);
+        long whiteKnights = board.getKnights(true);
+        long whiteBishops = board.getBishops(true);
+        long whiteRooks = board.getRooks(true);
+        long whiteQueens = board.getQueens(true);
+        long whiteKing = board.getKing(true);
+        long blackPawns = board.getPawns(false);
+        long blackKnights = board.getKnights(false);
+        long blackBishops = board.getBishops(false);
+        long blackRooks = board.getRooks(false);
+        long blackQueens = board.getQueens(false);
+        long blackKing = board.getKing(false);
 
         whiteKingSafetyZone = Bits.WHITE_KING_SAFETY_ZONE[Bitwise.getNextBit(whiteKing)];
         blackKingSafetyZone = Bits.BLACK_KING_SAFETY_ZONE[Bitwise.getNextBit(blackKing)];

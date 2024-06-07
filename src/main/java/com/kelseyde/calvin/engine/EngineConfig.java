@@ -79,6 +79,13 @@ public class EngineConfig {
     int[][] knightOutpostBonus;
     int[][] bishopOutpostBonus;
 
+    int[] pawnAttackOnMinorThreatBonus;
+    int[] pawnAttackOnRookThreatBonus;
+    int[] pawnAttackOnQueenThreatBonus;
+    int[] minorAttackOnRookThreatBonus;
+    int[] minorAttackOnQueenThreatBonus;
+    int[] rookAttackOnQueenThreatBonus;
+
     int[] kingPawnShieldPenalty;
     int kingSemiOpenFilePenalty;
     int kingSemiOpenAdjacentFilePenalty;

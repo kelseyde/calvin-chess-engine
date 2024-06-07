@@ -390,6 +390,31 @@ public class TexelTunerTest {
         );
     }
 
+    @Test
+    public void tuneThreats() throws IOException, ExecutionException, InterruptedException {
+        List<Integer> weights = new ArrayList<>();
+        EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
+        weights.addAll(Arrays.stream(initialConfig.getPawnAttackOnMinorThreatBonus()).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getPawnAttackOnRookThreatBonus()).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getPawnAttackOnQueenThreatBonus()).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMinorAttackOnRookThreatBonus()).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getMinorAttackOnQueenThreatBonus()).boxed().toList());
+        weights.addAll(Arrays.stream(initialConfig.getRookAttackOnQueenThreatBonus()).boxed().toList());
+        tune(
+                weights.stream().mapToInt(i -> i).toArray(),
+                (params) -> {
+                    EngineConfig config = EngineInitializer.loadDefaultConfig();
+                    config.setPawnAttackOnMinorThreatBonus(Arrays.stream(params, 0, 2).toArray());
+                    config.setPawnAttackOnRookThreatBonus(Arrays.stream(params, 2, 4).toArray());
+                    config.setPawnAttackOnQueenThreatBonus(Arrays.stream(params, 4, 6).toArray());
+                    config.setMinorAttackOnRookThreatBonus(Arrays.stream(params, 6, 8).toArray());
+                    config.setMinorAttackOnQueenThreatBonus(Arrays.stream(params, 8, 10).toArray());
+                    config.setRookAttackOnQueenThreatBonus(Arrays.stream(params, 10, 12).toArray());
+                    return config;
+                }
+        );
+    }
+
     private void tune(int[] initialParams, Function<int[], EngineConfig> createConfigFunction) throws IOException, ExecutionException, InterruptedException {
         int[] bestParams = tuner.tune(initialParams, createConfigFunction);
         EngineConfig bestConfig = createConfigFunction.apply(bestParams);

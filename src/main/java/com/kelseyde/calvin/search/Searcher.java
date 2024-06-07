@@ -281,7 +281,7 @@ public class Searcher implements Search {
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!zwNode
                 && depth <= config.getFpDepth()
-                && staticEval + (config.getFpMargin()[depth] * (int) (improving ? 1.5 : 1)) < alpha
+                && staticEval + config.getFpMargin()[depth] < alpha
                 && !isInCheck
                 && isQuiet) {
                 board.unmakeMove();

@@ -288,11 +288,20 @@ public class Searcher implements Search {
                 continue;
             }
 
+            int seeScore = see.evaluateAfterMove(board, move);
+
+            if (depth <= 3
+                    && !isInCheck
+                    && seeScore < 0 - depth * 100) {
+                board.unmakeMove();
+                continue;
+            }
+
             // Search Extensions - https://www.chessprogramming.org/Extensions
             // In certain interesting cases (e.g. promotions, or checks that do not immediately lose material), let's
             // extend the search depth by one ply.
             int extension = 0;
-            if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
+            if (isPromotion || (isCheck && seeScore >= 0)) {
                 extension = 1;
             }
 

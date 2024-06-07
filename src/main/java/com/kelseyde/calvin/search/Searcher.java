@@ -17,6 +17,8 @@ import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -182,7 +184,7 @@ public class Searcher implements Search {
         if (ply > 0 && isDraw()) return Score.DRAW_SCORE;
 
         boolean rootNode = ply == 0;
-        boolean zwNode = beta - alpha > 1;
+        boolean pvNode = beta - alpha > 1;
 
         // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
@@ -226,7 +228,7 @@ public class Searcher implements Search {
         boolean improving = isImproving(ply, staticEval);
 
 
-        if (!zwNode && !isInCheck) {
+        if (!pvNode && !isInCheck) {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
@@ -279,7 +281,7 @@ public class Searcher implements Search {
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
-            if (!zwNode
+            if (!pvNode
                 && depth <= config.getFpDepth()
                 && staticEval + config.getFpMargin()[depth] < alpha
                 && !isInCheck
@@ -288,11 +290,10 @@ public class Searcher implements Search {
                 continue;
             }
 
-            int seeScore = see.evaluateAfterMove(board, move);
-
-            if (depth <= 3
+            if (!pvNode
+                    && depth <= 3
                     && !isInCheck
-                    && seeScore < 0 - depth * 100) {
+                    && see.evaluateAfterMove(board, move) < -(4 - depth) * 360) {
                 board.unmakeMove();
                 continue;
             }
@@ -301,7 +302,7 @@ public class Searcher implements Search {
             // In certain interesting cases (e.g. promotions, or checks that do not immediately lose material), let's
             // extend the search depth by one ply.
             int extension = 0;
-            if (isPromotion || (isCheck && seeScore >= 0)) {
+            if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
                 extension = 1;
             }
 
@@ -314,7 +315,7 @@ public class Searcher implements Search {
             if (isDraw()) {
                 eval = Score.DRAW_SCORE;
             }
-            else if (zwNode && movesSearched == 0) {
+            else if (pvNode && movesSearched == 0) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
@@ -325,7 +326,7 @@ public class Searcher implements Search {
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
                 int lmpCutoff = (depth * config.getLmpMultiplier()) / (1 + (improving ? 0 : 1));
-                if (!zwNode
+                if (!pvNode
                     && !isInCheck
                     && isQuiet
                     && depth <= config.getLmpDepth()
@@ -338,10 +339,10 @@ public class Searcher implements Search {
                 // let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
                 if (depth >= config.getLmrDepth()
-                    && movesSearched >= (zwNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
+                    && movesSearched >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
                     && isQuiet) {
                     reduction = config.getLmrReductions()[depth][movesSearched];
-                    if (zwNode || isInCheck) {
+                    if (pvNode || isInCheck) {
                         reduction--;
                     }
                     if (transposition != null && transposition.getMove() != null && isCapture) {

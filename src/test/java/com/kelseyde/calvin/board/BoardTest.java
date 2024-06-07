@@ -467,6 +467,19 @@ public class BoardTest {
 
     }
 
+    @Test
+    public void testPreviousMoveWasCapture() {
+
+        String fen = "r1bqk2r/1ppp1ppp/p1n1p3/6B1/1P1PN3/8/1PP2PPP/R2QKBNR b KQkq - 0 7";
+        Board board = FEN.toBoard(fen);
+
+        board.makeMove(TestUtils.getLegalMove(board, "c6", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "e2"));
+        Assertions.assertNull(board.getGameState().getCapturedPiece());
+        Assertions.assertEquals(Piece.PAWN, board.getGameStateHistory().peek().getCapturedPiece());
+
+    }
+
     private void assertRingMasks(long ringMask, Set<Integer> expectedSquares) {
         Set<Integer> actualSquares = new HashSet<>();
         while (ringMask != 0) {

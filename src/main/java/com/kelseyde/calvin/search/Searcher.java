@@ -217,7 +217,11 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
+            staticEval = evaluator.evaluate(board);
+            if (transposition != null) {
+                staticEval = useTTScore(transposition, staticEval) ?
+                        transposition.getScore() : transposition.getStaticEval();
+            }
         }
 
         if (!zwNode && !isInCheck) {
@@ -421,9 +425,13 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int eval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            eval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
+            eval = evaluator.evaluate(board);
         }
         int standPat = eval;
+        if (transposition != null) {
+            standPat = useTTScore(transposition, standPat) ?
+                    transposition.getScore() : transposition.getStaticEval();
+        }
 
         if (isInCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
@@ -521,6 +529,11 @@ public class Searcher implements Search {
 
     private boolean hasBestMove(HashEntry transposition) {
         return transposition != null && transposition.getMove() != null;
+    }
+
+    private boolean useTTScore(HashEntry transposition, int staticEval) {
+        return !((staticEval > transposition.getScore() && transposition.getFlag() == HashFlag.LOWER)
+                || staticEval < transposition.getScore() && transposition.getFlag() == HashFlag.UPPER);
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {

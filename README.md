@@ -17,7 +17,7 @@ Calvin is ranked ~300th on the [Computer Chess Rating Lists](https://www.compute
 
 My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). It didn't take long before Calvin became much, much stronger than I am - which either says a fair bit for my coding skills, or not all that much for my chess...
 
-My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented such that first-time readers can learn too. If you find some information is missing or poorly explained, please don't hesitate to reach out and ask!
+My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented such that first-time readers can learn too. If you find some information is missing or poorly explained, please don't hesitate to let me know!
 
 ## How to Play
 

@@ -281,7 +281,7 @@ public class Searcher implements Search {
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!zwNode
                 && depth <= config.getFpDepth()
-                && staticEval + config.getFpMargin()[depth] < alpha
+                && staticEval + (config.getFpMargin()[depth] * (int) (improving ? 1.5 : 1)) < alpha
                 && !isInCheck
                 && isQuiet) {
                 board.unmakeMove();
@@ -315,11 +315,12 @@ public class Searcher implements Search {
                 // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
+                int lmpCutoff = (depth * config.getLmpMultiplier()) / (1 + (improving ? 0 : 1));
                 if (!zwNode
                     && !isInCheck
                     && isQuiet
                     && depth <= config.getLmpDepth()
-                    && movesSearched >= depth * config.getLmpMultiplier()) {
+                    && movesSearched >= lmpCutoff) {
                     board.unmakeMove();
                     continue;
                 }

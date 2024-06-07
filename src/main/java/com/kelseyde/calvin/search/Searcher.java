@@ -53,6 +53,7 @@ public class Searcher implements Search {
 
     int currentDepth;
     int maxDepth = 256;
+    int[] evalHistory = new int[maxDepth];
 
     Move bestMove;
     Move bestMoveCurrentDepth;
@@ -86,6 +87,7 @@ public class Searcher implements Search {
         start = Instant.now();
         timeout = start.plus(duration);
         nodes = 0;
+        evalHistory = new int[maxDepth];
         currentDepth = 1;
         bestMove = null;
         bestMoveCurrentDepth = null;
@@ -220,6 +222,10 @@ public class Searcher implements Search {
             staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
         }
 
+        evalHistory[ply] = staticEval;
+        boolean improving = isImproving(ply, staticEval);
+
+
         if (!zwNode && !isInCheck) {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
@@ -237,7 +243,7 @@ public class Searcher implements Search {
             // not search any further.
             if (allowNull
                 && depth >= config.getNmpDepth()
-                && staticEval >= beta - config.getNmpMargin()
+                && staticEval >= beta - (config.getNmpMargin() * (improving ? 1 : 0))
                 && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
@@ -309,11 +315,12 @@ public class Searcher implements Search {
                 // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
+                int lmpCutoff = (depth * config.getLmpMultiplier()) / (1 + (improving ? 0 : 1));
                 if (!zwNode
                     && !isInCheck
                     && isQuiet
                     && depth <= config.getLmpDepth()
-                    && movesSearched >= depth * config.getLmpMultiplier()) {
+                    && movesSearched >= lmpCutoff) {
                     board.unmakeMove();
                     continue;
                 }
@@ -551,6 +558,24 @@ public class Searcher implements Search {
 
     public SearchResult getResult() {
         return result;
+    }
+
+    /**
+     * Compute whether our position is improving relative to previous static evaluations. If we are in check, we're not
+     * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
+     */
+    private boolean isImproving(int ply, int staticEval) {
+        if (staticEval == Integer.MIN_VALUE) return false;
+        if (ply < 2) return false;
+        int lastEval = evalHistory[ply - 2];
+        if (lastEval == Integer.MIN_VALUE) {
+            if (ply < 4) return false;
+            lastEval = evalHistory[ply - 4];
+            if (lastEval == Integer.MIN_VALUE) {
+                return true;
+            }
+        }
+        return lastEval < staticEval;
     }
 
     @Override

@@ -394,22 +394,22 @@ public class TexelTunerTest {
     public void tuneThreats() throws IOException, ExecutionException, InterruptedException {
         List<Integer> weights = new ArrayList<>();
         EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
-        weights.addAll(Arrays.stream(initialConfig.getPawnAttackOnMinorThreatBonus()).boxed().toList());
-        weights.addAll(Arrays.stream(initialConfig.getPawnAttackOnRookThreatBonus()).boxed().toList());
-        weights.addAll(Arrays.stream(initialConfig.getPawnAttackOnQueenThreatBonus()).boxed().toList());
-        weights.addAll(Arrays.stream(initialConfig.getMinorAttackOnRookThreatBonus()).boxed().toList());
-        weights.addAll(Arrays.stream(initialConfig.getMinorAttackOnQueenThreatBonus()).boxed().toList());
-        weights.addAll(Arrays.stream(initialConfig.getRookAttackOnQueenThreatBonus()).boxed().toList());
+        weights.add(initialConfig.getPawnAttackOnMinorThreatBonus());
+        weights.add(initialConfig.getPawnAttackOnRookThreatBonus());
+        weights.add(initialConfig.getPawnAttackOnQueenThreatBonus());
+        weights.add(initialConfig.getMinorAttackOnRookThreatBonus());
+        weights.add(initialConfig.getMinorAttackOnQueenThreatBonus());
+        weights.add(initialConfig.getRookAttackOnQueenThreatBonus());
         tune(
                 weights.stream().mapToInt(i -> i).toArray(),
                 (params) -> {
                     EngineConfig config = EngineInitializer.loadDefaultConfig();
-                    config.setPawnAttackOnMinorThreatBonus(Arrays.stream(params, 0, 2).toArray());
-                    config.setPawnAttackOnRookThreatBonus(Arrays.stream(params, 2, 4).toArray());
-                    config.setPawnAttackOnQueenThreatBonus(Arrays.stream(params, 4, 6).toArray());
-                    config.setMinorAttackOnRookThreatBonus(Arrays.stream(params, 6, 8).toArray());
-                    config.setMinorAttackOnQueenThreatBonus(Arrays.stream(params, 8, 10).toArray());
-                    config.setRookAttackOnQueenThreatBonus(Arrays.stream(params, 10, 12).toArray());
+                    config.setPawnAttackOnMinorThreatBonus(params[0]);
+                    config.setPawnAttackOnRookThreatBonus(params[1]);
+                    config.setPawnAttackOnQueenThreatBonus(params[2]);
+                    config.setMinorAttackOnRookThreatBonus(params[3]);
+                    config.setMinorAttackOnQueenThreatBonus(params[4]);
+                    config.setRookAttackOnQueenThreatBonus(params[5]);
                     return config;
                 }
         );

@@ -1127,12 +1127,12 @@
     ]
   ],
   "bishopOutpostBonus":null,
-  "pawnAttackOnMinorThreatBonus": [5, 5],
-  "pawnAttackOnRookThreatBonus": [5, 5],
-  "pawnAttackOnQueenThreatBonus": [5, 5],
-  "minorAttackOnRookThreatBonus": [5, 5],
-  "minorAttackOnQueenThreatBonus": [5, 5],
-  "rookAttackOnQueenThreatBonus": [5, 5],
+  "pawnAttackOnMinorThreatBonus": 100,
+  "pawnAttackOnRookThreatBonus": 100,
+  "pawnAttackOnQueenThreatBonus": 100,
+  "minorAttackOnRookThreatBonus": 100,
+  "minorAttackOnQueenThreatBonus": 100,
+  "rookAttackOnQueenThreatBonus": 100,
   "kingPawnShieldPenalty":[
     0,
     -1,

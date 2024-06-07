@@ -239,12 +239,11 @@ public class Evaluator implements Evaluation {
             int attacksOnMinors = Bitwise.countBits(attacks & (board.getKnights(!white) | board.getBishops(!white)));
             int attacksOnRooks = Bitwise.countBits(attacks & board.getRooks(!white));
             int attacksOnQueens = Bitwise.countBits(attacks & board.getQueens(!white));
-            mgScore += attacksOnMinors * config.getPawnAttackOnMinorThreatBonus()[0];
-            egScore += attacksOnMinors * config.getPawnAttackOnMinorThreatBonus()[1];
-            mgScore += attacksOnRooks * config.getPawnAttackOnRookThreatBonus()[0];
-            egScore += attacksOnRooks * config.getPawnAttackOnRookThreatBonus()[1];
-            mgScore += attacksOnQueens * config.getPawnAttackOnQueenThreatBonus()[0];
-            egScore += attacksOnQueens * config.getPawnAttackOnQueenThreatBonus()[1];
+            int attacksOnMinorsScore = attacksOnMinors * config.getPawnAttackOnMinorThreatBonus();
+            int attacksOnRooksScore = attacksOnRooks * config.getPawnAttackOnRookThreatBonus();
+            int attacksOnQueensScore = attacksOnQueens * config.getPawnAttackOnQueenThreatBonus();
+            mgScore += attacksOnMinorsScore + attacksOnRooksScore + attacksOnQueensScore;
+            egScore += attacksOnMinorsScore + attacksOnRooksScore + attacksOnQueensScore;
 
             // Bonuses for a passed pawn, indexed by the number of squares away that pawn is from promotion.
             // Bonus for a passed pawn that is additionally protected by another pawn (multiplied by number of defending pawns).
@@ -301,10 +300,10 @@ public class Evaluator implements Evaluation {
 
             int attacksOnRooks = Bitwise.countBits(attacks & board.getRooks(!white));
             int attacksOnQueens = Bitwise.countBits(attacks & board.getQueens(!white));
-            mgScore += attacksOnRooks * config.getMinorAttackOnRookThreatBonus()[0];
-            egScore += attacksOnRooks * config.getMinorAttackOnRookThreatBonus()[1];
-            mgScore += attacksOnQueens * config.getMinorAttackOnQueenThreatBonus()[0];
-            egScore += attacksOnQueens * config.getMinorAttackOnQueenThreatBonus()[1];
+            int attacksOnRooksScore = attacksOnRooks * config.getMinorAttackOnRookThreatBonus();
+            int attacksOnQueensScore = attacksOnQueens * config.getMinorAttackOnQueenThreatBonus();
+            mgScore += attacksOnRooksScore + attacksOnQueensScore;
+            egScore += attacksOnRooksScore + attacksOnQueensScore;
 
             long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
@@ -343,10 +342,10 @@ public class Evaluator implements Evaluation {
 
             int attacksOnRooks = Bitwise.countBits(attacks & board.getRooks(!white));
             int attacksOnQueens = Bitwise.countBits(attacks & board.getQueens(!white));
-            mgScore += attacksOnRooks * config.getMinorAttackOnRookThreatBonus()[0];
-            egScore += attacksOnRooks * config.getMinorAttackOnRookThreatBonus()[1];
-            mgScore += attacksOnQueens * config.getMinorAttackOnQueenThreatBonus()[0];
-            egScore += attacksOnQueens * config.getMinorAttackOnQueenThreatBonus()[1];
+            int attacksOnRooksScore = attacksOnRooks * config.getMinorAttackOnRookThreatBonus();
+            int attacksOnQueensScore = attacksOnQueens * config.getMinorAttackOnQueenThreatBonus();
+            mgScore += attacksOnRooksScore + attacksOnQueensScore;
+            egScore += attacksOnRooksScore + attacksOnQueensScore;
 
             long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
@@ -391,8 +390,9 @@ public class Evaluator implements Evaluation {
             long attacks = Attacks.rookAttacks(rook, blockers);
 
             int attacksOnQueens = Bitwise.countBits(attacks & board.getQueens(!white));
-            mgScore += attacksOnQueens * config.getRookAttackOnQueenThreatBonus()[0];
-            egScore += attacksOnQueens * config.getRookAttackOnQueenThreatBonus()[1];
+            int attacksOnQueensScore = attacksOnQueens * config.getRookAttackOnQueenThreatBonus();
+            mgScore += attacksOnQueensScore;
+            egScore += attacksOnQueensScore;
 
             long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);

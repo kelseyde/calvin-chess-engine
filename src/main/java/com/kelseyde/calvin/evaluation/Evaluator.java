@@ -235,6 +235,7 @@ public class Evaluator implements Evaluation {
             mgScore += pawnMgTable[square];
             egScore += pawnEgTable[square];
 
+            // Threats
             long attacks = Attacks.pawnAttacks(1L << pawn, white);
             int attacksOnMinors = Bitwise.countBits(attacks & (board.getKnights(!white) | board.getBishops(!white)));
             int attacksOnRooks = Bitwise.countBits(attacks & board.getRooks(!white));
@@ -298,6 +299,7 @@ public class Evaluator implements Evaluation {
 
             long attacks = Attacks.knightAttacks(knight);
 
+            // Threats
             int attacksOnRooks = Bitwise.countBits(attacks & board.getRooks(!white));
             int attacksOnQueens = Bitwise.countBits(attacks & board.getQueens(!white));
             int attacksOnRooksScore = attacksOnRooks * config.getMinorAttackOnRookThreatBonus();
@@ -305,11 +307,13 @@ public class Evaluator implements Evaluation {
             mgScore += attacksOnRooksScore + attacksOnQueensScore;
             egScore += attacksOnRooksScore + attacksOnQueensScore;
 
+            // Mobility
             long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
             mgScore += knightMgMobility[moveCount];
             egScore += knightEgMobility[moveCount];
 
+            // King attack zone
             long kingAttackZone = white ? blackKingSafetyZone : whiteKingSafetyZone;
             int attackZoneAttacks = Bitwise.countBits(kingAttackZone & attacks);
             addAttackZoneScore(MINOR_PIECE_ATTACK_UNIT, attackZoneAttacks, white);
@@ -340,6 +344,7 @@ public class Evaluator implements Evaluation {
 
             long attacks = Attacks.bishopAttacks(bishop, blockers);
 
+            // Threats
             int attacksOnRooks = Bitwise.countBits(attacks & board.getRooks(!white));
             int attacksOnQueens = Bitwise.countBits(attacks & board.getQueens(!white));
             int attacksOnRooksScore = attacksOnRooks * config.getMinorAttackOnRookThreatBonus();
@@ -347,11 +352,13 @@ public class Evaluator implements Evaluation {
             mgScore += attacksOnRooksScore + attacksOnQueensScore;
             egScore += attacksOnRooksScore + attacksOnQueensScore;
 
+            // Mobility
             long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
             mgScore += bishopMgMobility[moveCount];
             egScore += bishopEgMobility[moveCount];
 
+            // King attack zone
             long kingAttackZone = white ? blackKingSafetyZone : whiteKingSafetyZone;
             int attackZoneAttacks = Bitwise.countBits(kingAttackZone & attacks);
             addAttackZoneScore(MINOR_PIECE_ATTACK_UNIT, attackZoneAttacks, white);
@@ -389,16 +396,19 @@ public class Evaluator implements Evaluation {
 
             long attacks = Attacks.rookAttacks(rook, blockers);
 
+            // Threats
             int attacksOnQueens = Bitwise.countBits(attacks & board.getQueens(!white));
             int attacksOnQueensScore = attacksOnQueens * config.getRookAttackOnQueenThreatBonus();
             mgScore += attacksOnQueensScore;
             egScore += attacksOnQueensScore;
 
+            // Mobility
             long moves = attacks &~ friendlyBlockers;
             int moveCount = Bitwise.countBits(moves);
             mgScore += rookMgMobility[moveCount];
             egScore += rookEgMobility[moveCount];
 
+            // King attack zone
             long kingAttackZone = white ? blackKingSafetyZone : whiteKingSafetyZone;
             int attackZoneAttacks = Bitwise.countBits(kingAttackZone & attacks);
             addAttackZoneScore(ROOK_ATTACK_UNIT, attackZoneAttacks, white);

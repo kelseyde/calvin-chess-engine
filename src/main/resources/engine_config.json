@@ -1244,8 +1244,12 @@
     500
   ],
   "kingSafetyScaleFactor":[
-    98,
-    110
+    95,
+    112
+  ],
+  "kingAttackZoneFactor": [
+    -181,
+    73
   ],
   "virtualKingMobilityPenalty":[
     [

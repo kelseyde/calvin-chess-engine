@@ -1247,6 +1247,10 @@
     98,
     110
   ],
+  "kingAttackZoneFactor": [
+    98,
+    100
+  ],
   "virtualKingMobilityPenalty":[
     [
       14,

@@ -86,6 +86,7 @@ public class EngineConfig {
     int kingOpenAdjacentFilePenalty;
     int kingLostCastlingRightsPenalty;
     int[] kingAttackZonePenaltyTable;
+    int[] kingAttackZoneFactor;
     int[] kingSafetyScaleFactor;
     int[][] virtualKingMobilityPenalty;
 

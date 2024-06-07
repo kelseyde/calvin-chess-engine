@@ -347,14 +347,14 @@ public class TexelTunerTest {
     public void tuneScaleFactors() throws IOException, ExecutionException, InterruptedException {
         EngineConfig initialConfig = EngineInitializer.loadDefaultConfig();
         tune(
-                new int[] {initialConfig.getMopUpScaleFactor()[0], initialConfig.getMopUpScaleFactor()[1],
-                        initialConfig.getKingSafetyScaleFactor()[0], initialConfig.getKingSafetyScaleFactor()[1]},
+                new int[] {initialConfig.getKingSafetyScaleFactor()[0], initialConfig.getKingSafetyScaleFactor()[1],
+                          initialConfig.getKingAttackZoneFactor()[0], initialConfig.getKingAttackZoneFactor()[1]},
                 (params) -> {
                     EngineConfig config = EngineInitializer.loadDefaultConfig();
-                    config.getMopUpScaleFactor()[0] = params[0];
-                    config.getMopUpScaleFactor()[1] = params[1];
-                    config.getKingSafetyScaleFactor()[0] = params[2];
-                    config.getKingSafetyScaleFactor()[1] = params[3];
+                    config.getKingSafetyScaleFactor()[0] = params[0];
+                    config.getKingSafetyScaleFactor()[1] = params[1];
+                    config.getKingAttackZoneFactor()[0] = params[2];
+                    config.getKingAttackZoneFactor()[1] = params[3];
                     return config;
                 }
         );

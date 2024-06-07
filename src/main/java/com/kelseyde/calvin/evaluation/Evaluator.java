@@ -476,6 +476,9 @@ public class Evaluator implements Evaluation {
         }
         int kingAttackZoneUnits = white ? whiteKingAttackZoneUnits : blackKingAttackZoneUnits;
         int attackZoneScore = config.getKingAttackZonePenaltyTable()[kingAttackZoneUnits];
+        int attackZoneMgScore = (int) ((attackZoneScore / 100) * config.getKingAttackZoneFactor()[0]);
+        int attackZoneEgScore = (int) ((attackZoneScore / 100) * config.getKingAttackZoneFactor()[1]);
+        addScore(attackZoneMgScore, attackZoneEgScore, white);
 
         int virtualMobilityMgPenalty = 0;
         int virtualMobilityEgPenalty = 0;
@@ -486,7 +489,7 @@ public class Evaluator implements Evaluation {
         virtualMobilityEgPenalty += config.getVirtualKingMobilityPenalty()[1][moveCount];
         addScore(virtualMobilityMgPenalty, virtualMobilityEgPenalty, white);
 
-        float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty + attackZoneScore) * phase);
+        float kingSafetyScore = (int) -((pawnShieldPenalty + openKingFilePenalty + lostCastlingRightsPenalty) * phase);
         int mgScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[0]);
         int egScore = (int) ((kingSafetyScore / 100) * config.getKingSafetyScaleFactor()[1]);
         addScore(mgScore, egScore, white);

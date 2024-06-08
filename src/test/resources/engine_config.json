@@ -1127,12 +1127,6 @@
     ]
   ],
   "bishopOutpostBonus":null,
-  "pawnAttackOnMinorThreatBonus": 25,
-  "pawnAttackOnRookThreatBonus": -5,
-  "pawnAttackOnQueenThreatBonus": 6,
-  "minorAttackOnRookThreatBonus": 16,
-  "minorAttackOnQueenThreatBonus": 15,
-  "rookAttackOnQueenThreatBonus": 15,
   "kingPawnShieldPenalty":[
     0,
     -1,

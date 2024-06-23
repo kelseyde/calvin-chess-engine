@@ -123,11 +123,11 @@ public class BoardUtils {
         newBoard.setWhiteToMove(board.isWhiteToMove());
         newBoard.setGameState(board.getGameState().copy());
         Deque<GameState> gameStateHistory = new ArrayDeque<>();
-        board.getGameStateHistory().forEach(gameState -> gameStateHistory.add(gameState.copy()));
-        newBoard.setGameStateHistory(gameStateHistory);
+        Arrays.stream(board.getGameStateHistory()).forEach(gameState -> gameStateHistory.add(gameState.copy()));
+        newBoard.setGameStateHistory(gameStateHistory.toArray(GameState[]::new));
         Deque<Move> moveHistory = new ArrayDeque<>();
-        board.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.value())));
-        newBoard.setMoveHistory(moveHistory);
+        Arrays.stream(board.getMoveHistory()).forEach(move -> moveHistory.add(new Move(move.value())));
+        newBoard.setMoveHistory(moveHistory.toArray(Move[]::new));
         newBoard.setPieceList(Arrays.copyOf(board.getPieceList(), board.getPieceList().length));
         return newBoard;
     }

@@ -36,8 +36,12 @@ public class Board {
     boolean whiteToMove = true;
 
     GameState gameState = new GameState();
-    Deque<GameState> gameStateHistory = new ArrayDeque<>();
-    Deque<Move> moveHistory = new ArrayDeque<>();
+
+    GameState[] gameStateHistory = new GameState[8000];
+    int gameStateIndex = 0;
+
+    Move[] moveHistory = new Move[8000];
+    int moveIndex = 0;
 
     public Board() {
         gameState.setZobrist(Zobrist.generateKey(this));
@@ -54,7 +58,7 @@ public class Board {
         int endSquare = move.getEndSquare();
         Piece piece = pieceList[startSquare];
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : pieceList[endSquare];
-        gameStateHistory.push(gameState.copy());
+        gameStateHistory[gameStateIndex++] = gameState.copy();
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(startSquare, endSquare);
         else if (move.isCastling())   makeCastleMove(startSquare, endSquare);
@@ -63,7 +67,7 @@ public class Board {
         else                          makeStandardMove(startSquare, endSquare, piece, capturedPiece);
 
         updateGameState(startSquare, endSquare, piece, capturedPiece, move);
-        moveHistory.push(move);
+        moveHistory[moveIndex++] = move;
         whiteToMove = !whiteToMove;
 
     }
@@ -75,7 +79,8 @@ public class Board {
     public void unmakeMove() {
 
         whiteToMove = !whiteToMove;
-        Move move = moveHistory.pop();
+        Move move = moveHistory[--moveIndex];
+
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         Piece piece = pieceAt(endSquare);
@@ -85,7 +90,7 @@ public class Board {
         else if (move.isEnPassant())  unmakeEnPassantMove(startSquare, endSquare);
         else                          unmakeStandardMove(startSquare, endSquare, piece);
 
-        gameState = gameStateHistory.pop();
+        gameState = gameStateHistory[--gameStateIndex];
 
     }
 
@@ -238,7 +243,7 @@ public class Board {
         whiteToMove = !whiteToMove;
         long newZobristKey = Zobrist.updateKeyAfterNullMove(gameState.getZobrist(), gameState.getEnPassantFile());
         GameState newGameState = new GameState(newZobristKey, gameState.getPawnZobrist(), null, -1, gameState.getCastlingRights(), 0);
-        gameStateHistory.push(gameState);
+        gameStateHistory[gameStateIndex++] = gameState;
         gameState = newGameState;
     }
 
@@ -247,7 +252,7 @@ public class Board {
      */
     public void unmakeNullMove() {
         whiteToMove = !whiteToMove;
-        gameState = gameStateHistory.pop();
+        gameState = gameStateHistory[--gameStateIndex];
     }
 
     public void toggleSquares(Piece type, boolean white, int startSquare, int endSquare) {

@@ -22,9 +22,8 @@ public class Result {
 
         int repetitionCount = 0;
         long zobrist = board.getGameState().getZobrist();
-        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
-        while (iterator.hasNext()) {
-            GameState gameState = iterator.next();
+        for (int i = board.getGameStateIndex() - 1; i >= 0 ; i--) {
+            GameState gameState = board.getGameStateHistory()[i];
             if (gameState.getZobrist() == zobrist) {
                 repetitionCount += 1;
             }
@@ -36,9 +35,8 @@ public class Result {
     public static boolean isDoubleRepetition(Board board) {
 
         long zobrist = board.getGameState().getZobrist();
-        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
-        while (iterator.hasNext()) {
-            GameState gameState = iterator.next();
+        for (int i = board.getGameStateIndex() - 1; i >= 0 ; i--) {
+            GameState gameState = board.getGameStateHistory()[i];
             if (gameState.getZobrist() == zobrist) {
                 return true;
             }

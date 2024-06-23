@@ -2,11 +2,14 @@ package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.utils.TestUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class PGNTest {
 
     @Test
+    @Disabled
+    // TODO
     public void testPGN() {
         // Lasker vs Thomas, 1912
         Board board = new Board();

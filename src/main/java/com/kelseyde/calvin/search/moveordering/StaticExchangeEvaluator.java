@@ -72,7 +72,7 @@ public class StaticExchangeEvaluator {
         if (pawns > 0) {
             long pawnAttackMask = moveGenerator.getPawnAttacks(board, square, !white);
             if ((pawnAttackMask & pawns) != 0) {
-                int pawnStartSquare = Bitwise.getNextBit(pawnAttackMask & pawns);
+                int pawnStartSquare = Bitwise.nextBit(pawnAttackMask & pawns);
                 return new Move(pawnStartSquare, square);
             }
         }
@@ -81,7 +81,7 @@ public class StaticExchangeEvaluator {
         if (knights > 0) {
             long knightAttackMask = moveGenerator.getKnightAttacks(board, square, !white);
             if ((knightAttackMask & knights) != 0) {
-                int knightStartSquare = Bitwise.getNextBit(knightAttackMask & knights);
+                int knightStartSquare = Bitwise.nextBit(knightAttackMask & knights);
                 return new Move(knightStartSquare, square);
             }
         }
@@ -90,7 +90,7 @@ public class StaticExchangeEvaluator {
         if (bishops > 0) {
             long bishopAttackMask = moveGenerator.getBishopAttacks(board, square, !white);
             if ((bishopAttackMask & bishops) != 0) {
-                int bishopStartSquare = Bitwise.getNextBit(bishopAttackMask & bishops);
+                int bishopStartSquare = Bitwise.nextBit(bishopAttackMask & bishops);
                 return new Move(bishopStartSquare, square);
             }
         }
@@ -99,7 +99,7 @@ public class StaticExchangeEvaluator {
         if (rooks > 0) {
             long rookAttackMask = moveGenerator.getRookAttacks(board, square, !white);
             if ((rookAttackMask & rooks) != 0) {
-                int rookStartSquare = Bitwise.getNextBit(rookAttackMask & rooks);
+                int rookStartSquare = Bitwise.nextBit(rookAttackMask & rooks);
                 return new Move(rookStartSquare, square);
             }
         }
@@ -108,7 +108,7 @@ public class StaticExchangeEvaluator {
         if (queens > 0) {
             long queenAttackMask = moveGenerator.getQueenAttacks(board, square, !white);
             if ((queenAttackMask & queens) != 0) {
-                int queenStartSquare = Bitwise.getNextBit(queenAttackMask & queens);
+                int queenStartSquare = Bitwise.nextBit(queenAttackMask & queens);
                 return new Move(queenStartSquare, square);
             }
         }
@@ -116,7 +116,7 @@ public class StaticExchangeEvaluator {
         long king = board.getKing(white);
         long kingAttackMask = moveGenerator.getKingAttacks(board, square, !white);
         if ((kingAttackMask & king) != 0) {
-            int kingStartSquare = Bitwise.getNextBit(kingAttackMask & king);
+            int kingStartSquare = Bitwise.nextBit(kingAttackMask & king);
             return new Move(kingStartSquare, square);
         }
         return null;

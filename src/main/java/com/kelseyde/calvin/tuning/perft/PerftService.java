@@ -13,9 +13,9 @@ public class PerftService {
     private final MoveGenerator moveGenerator = new MoveGenerator();
 
     public long perft(Board board, int depth) {
-        List<Move> moves = moveGenerator.generateMoves(board);
+        Move[] moves = moveGenerator.generateMovesArray(board);
         if (depth == 1) {
-            return moves.size();
+            return moves.length;
         }
         long totalMoveCount = 0;
         for (Move move : moves) {

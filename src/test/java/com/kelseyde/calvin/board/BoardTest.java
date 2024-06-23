@@ -470,7 +470,7 @@ public class BoardTest {
     private void assertRingMasks(long ringMask, Set<Integer> expectedSquares) {
         Set<Integer> actualSquares = new HashSet<>();
         while (ringMask != 0) {
-            int square = Bitwise.getNextBit(ringMask);
+            int square = Bitwise.nextBit(ringMask);
             actualSquares.add(square);
             ringMask = Bitwise.popBit(ringMask);
         }
@@ -482,14 +482,14 @@ public class BoardTest {
         if (whiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
-                int position = Bitwise.getNextBit(whitePieces);
+                int position = Bitwise.nextBit(whitePieces);
                 positions.add(position);
                 whitePieces = Bitwise.popBit(whitePieces);
             }
         } else {
             long blackPieces = board.getBlackPieces();
             while (blackPieces != 0) {
-                int position = Bitwise.getNextBit(blackPieces);
+                int position = Bitwise.nextBit(blackPieces);
                 positions.add(position);
                 blackPieces = Bitwise.popBit(blackPieces);
             }

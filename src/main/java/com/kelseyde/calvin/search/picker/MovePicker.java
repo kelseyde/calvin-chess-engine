@@ -32,7 +32,7 @@ public class MovePicker implements MovePicking {
     final int ply;
 
     Stage stage;
-    List<Move> moves;
+    Move[] moves;
     Move bestMove;
     int moveIndex;
     int[] scores;
@@ -91,17 +91,17 @@ public class MovePicker implements MovePicking {
     private Move pickMove(MoveFilter filter, Stage nextStage) {
 
         if (moves == null) {
-            moves = moveGenerator.generateMoves(board, filter);
+            moves = moveGenerator.generateMovesArray(board, filter);
             moveIndex = 0;
             scoreMoves();
         }
-        if (moveIndex >= moves.size()) {
+        if (moveIndex >= moves.length) {
             moves = null;
             stage = nextStage;
             return null;
         }
         sortMoves();
-        Move move = moves.get(moveIndex);
+        Move move = moves[moveIndex];
         moveIndex++;
         if (move.equals(bestMove)) {
             // Skip to the next move
@@ -115,9 +115,9 @@ public class MovePicker implements MovePicking {
      * Moves are scored using the {@link MoveOrderer}.
      */
     public void scoreMoves() {
-        scores = new int[moves.size()];
-        for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), bestMove, ply);
+        scores = new int[moves.length];
+        for (int i = 0; i < moves.length; i++) {
+            scores[i] = moveOrderer.scoreMove(board, moves[i], bestMove, ply);
         }
     }
 
@@ -125,16 +125,16 @@ public class MovePicker implements MovePicking {
      * Select the move with the highest score and move it to the head of the move list.
      */
     public void sortMoves() {
-        for (int j = moveIndex + 1; j < moves.size(); j++) {
+        for (int j = moveIndex + 1; j < moves.length; j++) {
             int firstScore = scores[moveIndex];
             int secondScore = scores[j];
             if (scores[j] > scores[moveIndex]) {
-                Move firstMove = moves.get(moveIndex);
-                Move secondMove = moves.get(j);
+                Move firstMove = moves[moveIndex];
+                Move secondMove = moves[j];
                 scores[moveIndex] = secondScore;
                 scores[j] = firstScore;
-                moves.set(moveIndex, secondMove);
-                moves.set(j, firstMove);
+                moves[moveIndex] = secondMove;
+                moves[j] = firstMove;
             }
         }
     }

@@ -150,8 +150,8 @@ public class Evaluator implements Evaluation {
         long blackQueens = board.getQueens(false);
         long blackKing = board.getKing(false);
 
-        whiteKingSafetyZone = Bits.WHITE_KING_SAFETY_ZONE[Bitwise.getNextBit(whiteKing)];
-        blackKingSafetyZone = Bits.BLACK_KING_SAFETY_ZONE[Bitwise.getNextBit(blackKing)];
+        whiteKingSafetyZone = Bits.WHITE_KING_SAFETY_ZONE[Bitwise.nextBit(whiteKing)];
+        blackKingSafetyZone = Bits.BLACK_KING_SAFETY_ZONE[Bitwise.nextBit(blackKing)];
 
         Material whiteMaterial = Material.fromBoard(board, true);
         Material blackMaterial = Material.fromBoard(board, false);
@@ -226,7 +226,7 @@ public class Evaluator implements Evaluation {
 
         long pawnsIterator = friendlyPawns;
         while (pawnsIterator > 0) {
-            int pawn = Bitwise.getNextBit(pawnsIterator);
+            int pawn = Bitwise.nextBit(pawnsIterator);
             int file = BoardUtils.getFile(pawn);
 
             int square = white ? pawn ^ 56 : pawn;
@@ -278,7 +278,7 @@ public class Evaluator implements Evaluation {
         int egScore = 0;
 
         while (knights != 0) {
-            int knight = Bitwise.getNextBit(knights);
+            int knight = Bitwise.nextBit(knights);
 
             int square = white ? knight ^ 56 : knight;
             mgScore += knightMgTable[square];
@@ -312,7 +312,7 @@ public class Evaluator implements Evaluation {
 
         long blockers = friendlyBlockers | opponentBlockers;
         while (bishops != 0) {
-            int bishop = Bitwise.getNextBit(bishops);
+            int bishop = Bitwise.nextBit(bishops);
 
             int square = white ? bishop ^ 56 : bishop;
             mgScore += bishopMgTable[square];
@@ -351,7 +351,7 @@ public class Evaluator implements Evaluation {
 
         long blockers = friendlyBlockers | opponentBlockers;
         while (rooks != 0) {
-            int rook = Bitwise.getNextBit(rooks);
+            int rook = Bitwise.nextBit(rooks);
             int file = BoardUtils.getFile(rook);
             long fileMask = Bits.FILE_MASKS[file];
 
@@ -403,7 +403,7 @@ public class Evaluator implements Evaluation {
 
         long blockers = friendlyBlockers | opponentBlockers;
         while (queens != 0) {
-            int queen = Bitwise.getNextBit(queens);
+            int queen = Bitwise.nextBit(queens);
 
             int square = white ? queen ^ 56 : queen;
             mgScore += queenMgTable[square];
@@ -440,7 +440,7 @@ public class Evaluator implements Evaluation {
         int mgScore = 0;
         int egScore = 0;
 
-        int king = Bitwise.getNextBit(friendlyKing);
+        int king = Bitwise.nextBit(friendlyKing);
         int square = white ? king ^ 56 : king;
         mgScore += kingMgTable[square];
         egScore += kingEgTable[square];
@@ -498,7 +498,7 @@ public class Evaluator implements Evaluation {
         int pawnShieldPenalty = 0;
         long pawnShield = Bitwise.getPawnShield(kingFile, pawns);
         while (pawnShield != 0) {
-            int distance = Distance.chebyshev(kingSquare, Bitwise.getNextBit(pawnShield));
+            int distance = Distance.chebyshev(kingSquare, Bitwise.nextBit(pawnShield));
             pawnShieldPenalty += config.getKingPawnShieldPenalty()[distance];
             pawnShield = Bitwise.popBit(pawnShield);
         }

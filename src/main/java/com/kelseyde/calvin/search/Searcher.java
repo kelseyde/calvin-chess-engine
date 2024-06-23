@@ -149,7 +149,7 @@ public class Searcher implements Search {
         // If no move is found within the time limit, choose the first available move
         if (result == null) {
             System.out.println("Time expired before a move was found!");
-            bestMove = moveGenerator.generateMoves(board).get(0);
+            bestMove = moveGenerator.generateMovesArray(board)[0];
             result = buildResult();
         }
 

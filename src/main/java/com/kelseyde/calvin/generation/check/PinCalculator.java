@@ -24,7 +24,7 @@ public class PinCalculator {
         pinMask = 0L;
         pinRayMasks = new long[64];
 
-        int kingSquare = Bitwise.getNextBit(board.getKing(white));
+        int kingSquare = Bitwise.nextBit(board.getKing(white));
         long friendlies = board.getPieces(white);
         long opponents = board.getPieces(!white);
 
@@ -55,7 +55,7 @@ public class PinCalculator {
      */
     private void calculatePins(int kingSquare, long friendlies, long opponents, long possiblePinners) {
         while (possiblePinners != 0) {
-            int possiblePinner = Bitwise.getNextBit(possiblePinners);
+            int possiblePinner = Bitwise.nextBit(possiblePinners);
             long ray = rayCalculator.rayBetween(kingSquare, possiblePinner);
 
             // Skip if there are opponents between the king and the possible pinner
@@ -67,7 +67,7 @@ public class PinCalculator {
             long friendliesBetween = ray & friendlies;
             // If there is exactly one friendly piece between the king and the pinner, it's pinned
             if (Bitwise.countBits(friendliesBetween) == 1) {
-                int friendlySquare = Bitwise.getNextBit(friendliesBetween);
+                int friendlySquare = Bitwise.nextBit(friendliesBetween);
                 pinMask |= friendliesBetween;
                 pinRayMasks[friendlySquare] = ray | (1L << possiblePinner);
             }

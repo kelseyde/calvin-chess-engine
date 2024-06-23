@@ -8,8 +8,10 @@ import java.util.List;
 public interface MoveGeneration {
 
     List<Move> generateMoves(Board board);
+    Move[] generateMovesArray(Board board);
 
     List<Move> generateMoves(Board board, MoveFilter filter);
+    Move[] generateMovesArray(Board board, MoveFilter filter);
 
     boolean isCheck(Board board, boolean white);
 

@@ -9,8 +9,6 @@ import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 /**
  * Selects the next move to try in a position during quiescence search. First the move from the transposition table is
  * tried before any moves are generated. Then, all the noisy moves are generated and tried in order of their MVV-LVA score.
@@ -85,7 +83,7 @@ public class QuiescentMovePicker implements MovePicking {
     private Move pickMove() {
 
         if (moves == null) {
-            moves = moveGenerator.generateMovesArray(board, filter);
+            moves = moveGenerator.generateMoves(board, filter);
             moveIndex = 0;
             scoreMoves();
         }

@@ -6,8 +6,6 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.generation.MoveGenerator;
 
-import java.util.List;
-
 public class EPerftService {
 
     private final MoveGenerator moveGenerator;
@@ -23,7 +21,7 @@ public class EPerftService {
         if (depth == 0) {
             return;
         }
-        List<Move> moves = moveGenerator.generateMoves(board);
+        Move[] moves = moveGenerator.generateMoves(board);
         for (Move move : moves) {
             board.makeMove(move);
             evaluator.evaluate(board);

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,7 @@ public class BishopMoveGeneratorTest {
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(Piece.BISHOP, true, startSquare);
         board.setPieceList(BoardUtils.calculatePieceList(board));
-        Set<Integer> legalSquares = generator.generateMoves(board).stream()
+        Set<Integer> legalSquares = Arrays.stream(generator.generateMoves(board))
                 .filter(move -> move.getStartSquare() == startSquare)
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.BISHOP)
                 .map(Move::getEndSquare)

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class RookMoveGeneratorTest {
         String fen = "k7/8/4p3/8/2n1R1b1/8/4q3/K7 w - - 0 1";
         board = FEN.toBoard(fen);
 
-        Set<Integer> legalSquares = generator.generateMoves(board).stream()
+        Set<Integer> legalSquares = Arrays.stream(generator.generateMoves(board))
                 .filter(move -> move.getStartSquare() == 28)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -45,7 +46,7 @@ public class RookMoveGeneratorTest {
 
         Board board = FEN.toBoard("K7/1R6/8/8/8/8/6r1/7k w - - 0 1");
 
-        List<Move> moves = generator.generateMoves(board).stream()
+        List<Move> moves = Arrays.stream(generator.generateMoves(board))
                 .filter(move -> board.pieceAt(move.getStartSquare()) == Piece.ROOK)
                 .toList();
 
@@ -72,7 +73,7 @@ public class RookMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(Piece.ROOK, true, startSquare);
-        Set<Integer> legalSquares = generator.generateMoves(board).stream()
+        Set<Integer> legalSquares = Arrays.stream(generator.generateMoves(board))
                 .filter(move -> move.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

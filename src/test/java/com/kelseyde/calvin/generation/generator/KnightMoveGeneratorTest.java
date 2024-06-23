@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public class KnightMoveGeneratorTest {
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
         Set<Integer> expectedLegalSquares = Set.of(26, 28, 33, 37, 49, 53, 58, 60);
-        Set<Integer> legalSquares = generator.generateMoves(board).stream()
+        Set<Integer> legalSquares = Arrays.stream(generator.generateMoves(board))
                 .filter(m -> m.getStartSquare() == 43)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -56,7 +57,7 @@ public class KnightMoveGeneratorTest {
         String fen = "2R1R3/1P3Q2/3N4/1B3B2/2P1P3/8/8/K6k w - - 0 1";
         board = FEN.toBoard(fen);
 
-        Set<Integer> legalSquares = generator.generateMoves(board).stream()
+        Set<Integer> legalSquares = Arrays.stream(generator.generateMoves(board))
                 .filter(m -> m.getStartSquare() == 43)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());
@@ -66,7 +67,7 @@ public class KnightMoveGeneratorTest {
 
     private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
         board.toggleSquare(Piece.KNIGHT, true, startSquare);
-        Set<Integer> legalSquares = generator.generateMoves(board).stream()
+        Set<Integer> legalSquares = Arrays.stream(generator.generateMoves(board))
                 .filter(m -> m.getStartSquare() == startSquare)
                 .map(Move::getEndSquare)
                 .collect(Collectors.toSet());

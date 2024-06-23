@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MoveOrdererTest {
@@ -234,7 +235,7 @@ public class MoveOrdererTest {
         String fen = "1k6/3p2pp/rnb1P3/8/N3Q3/1P5p/P1PPPpN1/1K6 b - - 0 1";
         Board board = FEN.toBoard(fen);
 
-        List<Move> legalMoves = moveGenerator.generateMoves(board);
+        List<Move> legalMoves = Arrays.asList(moveGenerator.generateMoves(board));
 
         // Previous best move
         Move previousBestMove = new Move(Notation.fromNotation("b8"), Notation.fromNotation("c7"));

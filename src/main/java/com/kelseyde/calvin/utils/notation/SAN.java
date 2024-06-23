@@ -6,8 +6,6 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.BoardUtils;
 
-import java.util.List;
-
 public class SAN {
 
     /**
@@ -31,7 +29,7 @@ public class SAN {
 
         // Check if any ambiguity exists in notation (e.g. if e2 can be reached via Nfe2 and Nbe2)
         if (pieceType != Piece.PAWN && pieceType != Piece.KING) {
-            List<Move> legalMoves = moveGenerator.generateMoves(board);
+            Move[] legalMoves = moveGenerator.generateMoves(board);
 
             for (Move legalMove : legalMoves) {
 
@@ -81,8 +79,8 @@ public class SAN {
 
         board.makeMove(move);
         if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
-            List<Move> legalMoves = moveGenerator.generateMoves(board);
-            notation += legalMoves.isEmpty() ? "#" : "+";
+            Move[] legalMoves = moveGenerator.generateMoves(board);
+            notation += legalMoves.length == 0 ? "#" : "+";
         }
         board.unmakeMove();
 

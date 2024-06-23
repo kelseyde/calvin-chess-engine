@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,8 +85,8 @@ public class TestUtils {
 
     public static Move getLegalMove(Board board, String startSquare, String endSquare) {
         Move move = Notation.fromNotation(startSquare, endSquare);
-        List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board);
-        Optional<Move> legalMove = legalMoves.stream()
+        Move[] legalMoves = MOVE_GENERATOR.generateMoves(board);
+        Optional<Move> legalMove = Arrays.stream(legalMoves)
                 .filter(m -> m.matches(move))
                 .findAny();
         if (legalMove.isEmpty()) {
@@ -95,8 +96,8 @@ public class TestUtils {
     }
 
     public static Move getLegalMove(Board board, Move move) {
-        List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board);
-        Optional<Move> legalMove = legalMoves.stream()
+        Move[] legalMoves = MOVE_GENERATOR.generateMoves(board);
+        Optional<Move> legalMove = Arrays.stream(legalMoves)
                 .filter(m -> m.matches(move))
                 .findAny();
         if (legalMove.isEmpty()) {

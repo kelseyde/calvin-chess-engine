@@ -131,8 +131,8 @@ public class Match {
     }
 
     private GameResult calculateResult(Board board) {
-        List<Move> legalMoves = moveGenerator.generateMoves(board);
-        if (legalMoves.isEmpty()) {
+        Move[] legalMoves = moveGenerator.generateMoves(board);
+        if (legalMoves.length == 0) {
             if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
                 return board.isWhiteToMove() ? GameResult.BLACK_WINS_BY_CHECKMATE : GameResult.WHITE_WINS_BY_CHECKMATE;
             } else {

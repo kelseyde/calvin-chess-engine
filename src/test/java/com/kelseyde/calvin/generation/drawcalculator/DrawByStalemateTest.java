@@ -28,7 +28,7 @@ public class DrawByStalemateTest {
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b6"));
 
         // king stalemated in the corner
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 
@@ -41,7 +41,7 @@ public class DrawByStalemateTest {
         board.makeMove(TestUtils.getLegalMove(board, "d6", "e6"));
 
         // king stalemated by king and pawn
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 
@@ -53,7 +53,7 @@ public class DrawByStalemateTest {
         board.makeMove(TestUtils.getLegalMove(board, "f5", "e6"));
 
         // king stalemated in the corner
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 
@@ -66,7 +66,7 @@ public class DrawByStalemateTest {
         board.makeMove(TestUtils.getLegalMove(board, "b2", "a2"));
 
         // even though pawn could pseudo-legally capture on h6 with check, it is pinned, therefore stalemate
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 

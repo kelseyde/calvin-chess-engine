@@ -9,7 +9,6 @@ import com.kelseyde.calvin.generation.check.PinCalculator.PinData;
 import com.kelseyde.calvin.generation.check.RayCalculator;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Generates all the legal moves in a given position.
@@ -45,11 +44,6 @@ public class MoveGenerator implements MoveGeneration {
         legalMoves = new Move[218];
     }
 
-    @Override
-    public List<Move> generateMoves(Board board) {
-        return Arrays.asList(generateMovesArray(board));
-    }
-
     /**
      * Generates all legal moves for the current board position.
      *
@@ -57,13 +51,8 @@ public class MoveGenerator implements MoveGeneration {
      * @return A list of all legal moves.
      */
     @Override
-    public Move[] generateMovesArray(Board board) {
-        return generateMovesArray(board, MoveFilter.ALL);
-    }
-
-    @Override
-    public List<Move> generateMoves(Board board, MoveFilter filter) {
-        return Arrays.asList(generateMovesArray(board, filter));
+    public Move[] generateMoves(Board board) {
+        return generateMoves(board, MoveFilter.ALL);
     }
 
     /**
@@ -74,7 +63,7 @@ public class MoveGenerator implements MoveGeneration {
      * @return A list of legal moves filtered according to the given criteria.
      */
     @Override
-    public Move[] generateMovesArray(Board board, MoveFilter filter) {
+    public Move[] generateMoves(Board board, MoveFilter filter) {
 
         white = board.isWhiteToMove();
 

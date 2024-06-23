@@ -21,7 +21,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g2", "g4"));
 
         board.makeMove(TestUtils.getLegalMove(board, "d8", "h4"));
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
     }
 
     @Test
@@ -36,7 +36,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d6"));
 
         board.makeMove(TestUtils.getLegalMove(board, "h5", "f7"));
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 
@@ -82,7 +82,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g2", "g1"));
 
         board.makeMove(TestUtils.getLegalMove(board, "e1", "d2"));
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 
@@ -129,7 +129,7 @@ public class CheckmateTest {
 
         // improving on Lasker's move, O-O-O#!
         board.makeMove(TestUtils.getLegalMove(board, "e1", "c1"));
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
 
     }
@@ -152,7 +152,7 @@ public class CheckmateTest {
         board.makeMove(TestUtils.getLegalMove(board, "g7", "g5"));
 
         board.makeMove(TestUtils.getLegalMove(board, "f5", "g6"));
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 
@@ -172,7 +172,7 @@ public class CheckmateTest {
 
         Move move = new Move(Notation.fromNotation("e2"), Notation.fromNotation("d1"), Move.PROMOTE_TO_KNIGHT_FLAG);
         board.makeMove(move);
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 
@@ -186,7 +186,7 @@ public class CheckmateTest {
         board.setPieceList(BoardUtils.calculatePieceList(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
     }
 
@@ -197,13 +197,13 @@ public class CheckmateTest {
         Board board = FEN.toBoard(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
         fen = "8/K7/2k5/8/8/8/8/1q6 b - - 0 1";
         board = FEN.toBoard(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
-        Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board).length);
 
 
     }

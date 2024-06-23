@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -335,7 +336,7 @@ public class BoardTest {
         Board board = new Board();
         board.makeMove(TestUtils.getLegalMove(board, "b1", "a3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        List<String> moves = new MoveGenerator().generateMoves(board).stream().map(Notation::toNotation).toList();
+        List<String> moves = Arrays.stream(new MoveGenerator().generateMoves(board)).map(Notation::toNotation).toList();
         System.out.println(moves.size());
         System.out.println(moves);
         Assertions.assertEquals(20, moves.size());
@@ -424,8 +425,8 @@ public class BoardTest {
 
         MoveGenerator moveGenerator = new MoveGenerator();
 
-        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.QUIET).size());
-        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY).size());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.QUIET).length);
+        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY).length);
 
     }
 

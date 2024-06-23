@@ -228,8 +228,8 @@ public class FEN {
         return Integer.toString(fiftyMoveCounter);
     }
 
-    private static String toFullMoveCounter(Deque<Move> moveHistory) {
-        int halfMoves = moveHistory.size();
+    private static String toFullMoveCounter(Move[] moveHistory) {
+        int halfMoves = moveHistory.length;
         return Integer.toString(1 + (halfMoves / 2));
     }
 

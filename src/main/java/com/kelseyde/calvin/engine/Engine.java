@@ -189,7 +189,7 @@ public class Engine {
 
     private boolean useOpeningBook() {
         long key = board.getGameState().getZobrist();
-        int moveCount = board.getMoveHistory().size();
+        int moveCount = board.getMoveHistory().length;
         return config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key);
     }
 

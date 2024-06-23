@@ -20,29 +20,23 @@ public class Result {
 
     public static boolean isThreefoldRepetition(Board board) {
 
-        int repetitionCount = 0;
-        long zobrist = board.getGameState().getZobrist();
-        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
-        while (iterator.hasNext()) {
-            GameState gameState = iterator.next();
-            if (gameState.getZobrist() == zobrist) {
-                repetitionCount += 1;
-            }
-        }
-        return repetitionCount >= 2;
+            return false;
+//        int repetitionCount = 0;
+//        long zobrist = board.getGameState().getZobrist();
+//        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
+//        while (iterator.hasNext()) {
+//            GameState gameState = iterator.next();
+//            if (gameState.getZobrist() == zobrist) {
+//                repetitionCount += 1;
+//            }
+//        }
+//        return repetitionCount >= 2;
 
     }
 
     public static boolean isDoubleRepetition(Board board) {
 
-        long zobrist = board.getGameState().getZobrist();
-        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
-        while (iterator.hasNext()) {
-            GameState gameState = iterator.next();
-            if (gameState.getZobrist() == zobrist) {
-                return true;
-            }
-        }
+
         return false;
 
     }

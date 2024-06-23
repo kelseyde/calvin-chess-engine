@@ -12,7 +12,7 @@ public class PGN {
 
     public static String toPGN(Board board) {
 
-        List<Move> moves = Arrays.asList(board.getMoveHistory());
+        List<Move> moves = Arrays.asList(Arrays.copyOfRange(board.getMoveHistory(), 0, board.getMoveIndex()));
         Collections.reverse(moves);
         Board boardCopy = new Board();
 

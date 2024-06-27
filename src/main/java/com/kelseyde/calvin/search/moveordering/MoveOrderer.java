@@ -186,6 +186,9 @@ public class MoveOrderer implements MoveOrdering {
      * @param newKiller The new killer move to be added.
      */
     public void addKillerMove(int ply, Move move) {
+        if (ply >= MAX_KILLER_PLY) {
+            return;
+        }
         // Check if the move already exists in the killer moves list
         for (int i = 0; i < KILLERS_PER_PLY; i++) {
             if (move.equals(killerMoves[ply][i])) {

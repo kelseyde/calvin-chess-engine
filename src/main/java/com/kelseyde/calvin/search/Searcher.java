@@ -102,6 +102,7 @@ public class Searcher implements Search {
         SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
+            System.out.println("depth " + currentDepth);
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestEvalCurrentDepth = 0;

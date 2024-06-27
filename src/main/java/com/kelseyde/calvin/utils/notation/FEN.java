@@ -76,26 +76,22 @@ public class FEN {
             // This implementation does not require the full move counter (parts[5]).
 
             Board board = new Board();
-            board.setWhitePawns(whitePawns);
-            board.setWhiteKnights(whiteKnights);
-            board.setWhiteBishops(whiteBishops);
-            board.setWhiteRooks(whiteRooks);
-            board.setWhiteQueens(whiteQueens);
-            board.setWhiteKing(whiteKing);
-            board.setBlackPawns(blackPawns);
-            board.setBlackKnights(blackKnights);
-            board.setBlackBishops(blackBishops);
-            board.setBlackRooks(blackRooks);
-            board.setBlackQueens(blackQueens);
-            board.setBlackKing(blackKing);
-            board.recalculatePieces();
+            board.setPawns(whitePawns | blackPawns);
+            board.setKnights(whiteKnights | blackKnights);
+            board.setBishops(whiteBishops | blackBishops);
+            board.setRooks(whiteRooks | blackRooks);
+            board.setQueens(whiteQueens | blackQueens);
+            board.setKings(whiteKing | blackKing);
+            board.setWhitePieces(whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing);
+            board.setBlackPieces(blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing);
+            board.setOccupied(board.getWhitePieces() | board.getBlackPieces());
             board.setPieceList(BoardUtils.calculatePieceList(board));
             board.setWhiteToMove(whiteToMove);
             board.getGameState().setCastlingRights(castlingRights);
             board.getGameState().setEnPassantFile(enPassantFile);
-            board.getGameState().setFiftyMoveCounter(fiftyMoveCounter);
-            board.getGameState().setZobristKey(Zobrist.generateKey(board));
-            board.getGameState().setPawnKey(Zobrist.generatePawnKey(board));
+            board.getGameState().setHalfMoveClock(fiftyMoveCounter);
+            board.getGameState().setZobrist(Zobrist.generateKey(board));
+            board.getGameState().setPawnZobrist(Zobrist.generatePawnKey(board));
 
             return board;
 
@@ -145,7 +141,7 @@ public class FEN {
             String enPassantSquare = toEnPassantSquare(board.getGameState().getEnPassantFile(), board.isWhiteToMove());
             sb.append(" ").append(enPassantSquare);
 
-            String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getFiftyMoveCounter());
+            String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getHalfMoveClock());
             sb.append(" ").append(fiftyMoveCounter);
 
             String fullMoveNumber = toFullMoveCounter(board.getMoveHistory());

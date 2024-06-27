@@ -1,8 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-
 import java.util.Optional;
 
 /**

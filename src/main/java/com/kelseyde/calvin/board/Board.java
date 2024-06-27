@@ -20,35 +20,28 @@ import java.util.Deque;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Board {
 
-    long whitePawns =   Bits.WHITE_PAWNS_START;
-    long whiteKnights = Bits.WHITE_KNIGHTS_START;
-    long whiteBishops = Bits.WHITE_BISHOPS_START;
-    long whiteRooks =   Bits.WHITE_ROOKS_START;
-    long whiteQueens =  Bits.WHITE_QUEENS_START;
-    long whiteKing =    Bits.WHITE_KING_START;
-    long blackPawns =   Bits.BLACK_PAWNS_START;
-    long blackKnights = Bits.BLACK_KNIGHTS_START;
-    long blackBishops = Bits.BLACK_BISHOPS_START;
-    long blackRooks =   Bits.BLACK_ROOKS_START;
-    long blackQueens =  Bits.BLACK_QUEENS_START;
-    long blackKing =    Bits.BLACK_KING_START;
+    long pawns =        Bits.WHITE_PAWNS_START | Bits.BLACK_PAWNS_START;
+    long knights =      Bits.WHITE_KNIGHTS_START | Bits.BLACK_KNIGHTS_START;
+    long bishops =      Bits.WHITE_BISHOPS_START | Bits.BLACK_BISHOPS_START;
+    long rooks =        Bits.WHITE_ROOKS_START | Bits.BLACK_ROOKS_START;
+    long queens =       Bits.WHITE_QUEENS_START | Bits.BLACK_QUEENS_START;
+    long kings =        Bits.WHITE_KING_START | Bits.BLACK_KING_START;
 
-    long whitePieces;
-    long blackPieces;
-    long occupied;
+    long whitePieces =  Bits.WHITE_PIECES_START;
+    long blackPieces =  Bits.BLACK_PIECES_START;
+    long occupied =     Bits.PIECES_START;
 
     Piece[] pieceList = BoardUtils.getStartingPieceList();
 
-    boolean isWhiteToMove = true;
+    boolean whiteToMove = true;
 
     GameState gameState = new GameState();
     Deque<GameState> gameStateHistory = new ArrayDeque<>();
     Deque<Move> moveHistory = new ArrayDeque<>();
 
     public Board() {
-        gameState.setZobristKey(Zobrist.generateKey(this));
-        gameState.setPawnKey(Zobrist.generatePawnKey(this));
-        recalculatePieces();
+        gameState.setZobrist(Zobrist.generateKey(this));
+        gameState.setPawnZobrist(Zobrist.generatePawnKey(this));
     }
 
     /**
@@ -61,110 +54,18 @@ public class Board {
         int endSquare = move.getEndSquare();
         Piece piece = pieceList[startSquare];
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : pieceList[endSquare];
+        gameStateHistory.push(gameState.copy());
 
-        int newFiftyMoveCounter = gameState.getFiftyMoveCounter();
-        int newEnPassantFile = -1;
-        boolean resetFiftyMoveCounter = capturedPiece != null || Piece.PAWN.equals(piece);
-        newFiftyMoveCounter = resetFiftyMoveCounter ? 0 : ++newFiftyMoveCounter;
-        long zobrist = gameState.getZobristKey();
-        long pawnZobrist = gameState.getPawnKey();
+        if (move.isPawnDoubleMove())  makePawnDoubleMove(startSquare, endSquare);
+        else if (move.isCastling())   makeCastleMove(startSquare, endSquare);
+        else if (move.isPromotion())  makePromotionMove(startSquare, endSquare, move.getPromotionPiece(), capturedPiece);
+        else if (move.isEnPassant())  makeEnPassantMove(startSquare, endSquare);
+        else                          makeStandardMove(startSquare, endSquare, piece, capturedPiece);
 
-        if (move.isPawnDoubleMove()) {
-            toggleSquares(piece, isWhiteToMove, startSquare, endSquare);
-            pieceList[startSquare] = null;
-            pieceList[endSquare] = Piece.PAWN;
-            zobrist = Zobrist.updatePiece(zobrist, startSquare, Piece.PAWN, isWhiteToMove);
-            zobrist = Zobrist.updatePiece(zobrist, endSquare, Piece.PAWN, isWhiteToMove);
-            pawnZobrist = Zobrist.updatePiece(pawnZobrist, startSquare, Piece.PAWN, isWhiteToMove);
-            pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, Piece.PAWN, isWhiteToMove);
-            newEnPassantFile = BoardUtils.getFile(endSquare);
-        }
-        else if (move.isCastling()) {
-            toggleKing(isWhiteToMove, startSquare, endSquare);
-            pieceList[startSquare] = null;
-            pieceList[endSquare] = Piece.KING;
-            zobrist = Zobrist.updatePiece(zobrist, startSquare, Piece.KING, isWhiteToMove);
-            zobrist = Zobrist.updatePiece(zobrist, endSquare, Piece.KING, isWhiteToMove);
-            boolean isKingside = BoardUtils.getFile(endSquare) == 6;
-            int rookStartSquare;
-            int rookEndSquare;
-            if (isKingside) {
-                rookStartSquare = isWhiteToMove ? 7 : 63;
-                rookEndSquare = isWhiteToMove ? 5 : 61;
-            } else {
-                rookStartSquare = isWhiteToMove ? 0 : 56;
-                rookEndSquare = isWhiteToMove ? 3 : 59;
-            }
-            toggleRooks(isWhiteToMove, rookStartSquare, rookEndSquare);
-            pieceList[rookStartSquare] = null;
-            pieceList[rookEndSquare] = Piece.ROOK;
-            zobrist = Zobrist.updatePiece(zobrist, rookStartSquare, Piece.ROOK, isWhiteToMove);
-            zobrist = Zobrist.updatePiece(zobrist, rookEndSquare, Piece.ROOK, isWhiteToMove);
-        }
-        else if (move.isPromotion()) {
-            togglePawn(isWhiteToMove, startSquare);
-            toggleSquare(move.getPromotionPiece(), isWhiteToMove, endSquare);
-            pieceList[startSquare] = null;
-            pieceList[endSquare] = move.getPromotionPiece();
-            zobrist = Zobrist.updatePiece(zobrist, startSquare, Piece.PAWN, isWhiteToMove);
-            pawnZobrist = Zobrist.updatePiece(pawnZobrist, startSquare, Piece.PAWN, isWhiteToMove);
-            if (capturedPiece != null) {
-                toggleSquare(capturedPiece, !isWhiteToMove, endSquare);
-                zobrist = Zobrist.updatePiece(zobrist, endSquare, capturedPiece, !isWhiteToMove);
-                if (capturedPiece == Piece.PAWN) {
-                    pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, capturedPiece, !isWhiteToMove);
-                }
-            }
-            zobrist = Zobrist.updatePiece(zobrist, endSquare, move.getPromotionPiece(), isWhiteToMove);
-            pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, move.getPromotionPiece(), isWhiteToMove);
-        }
-        else if (move.isEnPassant()) {
-            toggleSquares(piece, isWhiteToMove, startSquare, endSquare);
-            int pawnSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-            togglePawn(!isWhiteToMove, pawnSquare);
-            pieceList[startSquare] = null;
-            pieceList[pawnSquare] = null;
-            pieceList[endSquare] = Piece.PAWN;
-            zobrist = Zobrist.updatePiece(zobrist, startSquare, Piece.PAWN, isWhiteToMove);
-            zobrist = Zobrist.updatePiece(zobrist, pawnSquare, Piece.PAWN, !isWhiteToMove);
-            zobrist = Zobrist.updatePiece(zobrist, endSquare, Piece.PAWN, isWhiteToMove);
-            pawnZobrist = Zobrist.updatePiece(pawnZobrist, startSquare, Piece.PAWN, isWhiteToMove);
-            pawnZobrist = Zobrist.updatePiece(pawnZobrist, pawnSquare, Piece.PAWN, !isWhiteToMove);
-            pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, Piece.PAWN, isWhiteToMove);
-        }
-        else {
-            toggleSquares(piece, isWhiteToMove, startSquare, endSquare);
-            if (capturedPiece != null) {
-                toggleSquare(capturedPiece, !isWhiteToMove, endSquare);
-                zobrist = Zobrist.updatePiece(zobrist, endSquare, capturedPiece, !isWhiteToMove);
-                if (capturedPiece == Piece.PAWN) {
-                    pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, capturedPiece, !isWhiteToMove);
-                }
-            }
-            pieceList[startSquare] = null;
-            pieceList[endSquare] = piece;
-            zobrist = Zobrist.updatePiece(zobrist, startSquare, piece, isWhiteToMove);
-            zobrist = Zobrist.updatePiece(zobrist, endSquare, piece, isWhiteToMove);
-            if (piece == Piece.PAWN) {
-                pawnZobrist = Zobrist.updatePiece(pawnZobrist, startSquare, piece, isWhiteToMove);
-                pawnZobrist = Zobrist.updatePiece(pawnZobrist, endSquare, piece, isWhiteToMove);
-            }
-        }
-
-        int newCastlingRights = calculateCastlingRights(startSquare, endSquare, piece);
-
-        zobrist = Zobrist.updateCastlingRights(zobrist, gameState.getCastlingRights(), newCastlingRights);
-        zobrist = Zobrist.updateEnPassantFile(zobrist, gameState.getEnPassantFile(), newEnPassantFile);
-        zobrist = Zobrist.updateSideToMove(zobrist);
-
-        GameState newGameState = new GameState(zobrist, pawnZobrist, capturedPiece, newEnPassantFile, newCastlingRights, newFiftyMoveCounter);
-        gameStateHistory.push(gameState);
-        gameState = newGameState;
-
+        updateGameState(startSquare, endSquare, piece, capturedPiece, move);
         moveHistory.push(move);
+        whiteToMove = !whiteToMove;
 
-        isWhiteToMove = !isWhiteToMove;
-        recalculatePieces();
     }
 
     /**
@@ -173,59 +74,160 @@ public class Board {
      */
     public void unmakeMove() {
 
-        isWhiteToMove = !isWhiteToMove;
-        Move lastMove = moveHistory.pop();
-        int startSquare = lastMove.getStartSquare();
-        int endSquare = lastMove.getEndSquare();
+        whiteToMove = !whiteToMove;
+        Move move = moveHistory.pop();
+        int startSquare = move.getStartSquare();
+        int endSquare = move.getEndSquare();
         Piece piece = pieceAt(endSquare);
 
-        if (lastMove.isCastling()) {
-            toggleKing(isWhiteToMove, endSquare, startSquare);
-            boolean isKingside = BoardUtils.getFile(endSquare) == 6;
-            int rookStartSquare;
-            int rookEndSquare;
-            if (isKingside) {
-                rookStartSquare = isWhiteToMove ? 5 : 61;
-                rookEndSquare = isWhiteToMove ? 7 : 63;
-            } else {
-                rookStartSquare = isWhiteToMove ? 3 : 59;
-                rookEndSquare = isWhiteToMove ? 0 : 56;
-            }
-            toggleRooks(isWhiteToMove, rookStartSquare, rookEndSquare);
-            pieceList[startSquare] = Piece.KING;
-            pieceList[endSquare] = null;
-            pieceList[rookEndSquare] = Piece.ROOK;
-            pieceList[rookStartSquare] = null;
-        }
-        else if (lastMove.isPromotion()) {
-            toggleSquare(lastMove.getPromotionPiece(), isWhiteToMove, endSquare);
-            togglePawn(isWhiteToMove, startSquare);
-            if (gameState.getCapturedPiece() != null) {
-                toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
-            }
-            pieceList[startSquare] = Piece.PAWN;
-            pieceList[endSquare] = gameState.getCapturedPiece() != null ? gameState.getCapturedPiece() : null;
-        }
-        else if (lastMove.isEnPassant()) {
-            togglePawns(isWhiteToMove, endSquare, startSquare);
-            int captureSquare = isWhiteToMove ? endSquare - 8 : endSquare + 8;
-            togglePawn(!isWhiteToMove, captureSquare);
-            pieceList[startSquare] = Piece.PAWN;
-            pieceList[endSquare] = null;
-            pieceList[captureSquare] = Piece.PAWN;
-        }
-        else {
-            toggleSquares(piece, isWhiteToMove, endSquare, startSquare);
-            if (gameState.getCapturedPiece() != null) {
-                toggleSquare(gameState.getCapturedPiece(), !isWhiteToMove, endSquare);
-            }
-            pieceList[startSquare] = piece;
-            pieceList[endSquare] = gameState.getCapturedPiece() != null ? gameState.getCapturedPiece() : null;;
-        }
+        if (move.isCastling())        unmakeCastlingMove(startSquare, endSquare);
+        else if (move.isPromotion())  unmakePromotionMove(startSquare, endSquare, move.getPromotionPiece());
+        else if (move.isEnPassant())  unmakeEnPassantMove(startSquare, endSquare);
+        else                          unmakeStandardMove(startSquare, endSquare, piece);
 
         gameState = gameStateHistory.pop();
-        recalculatePieces();
 
+    }
+
+    private void makePawnDoubleMove(int startSquare, int endSquare) {
+        toggleSquares(Piece.PAWN, whiteToMove, startSquare, endSquare);
+        pieceList[startSquare] = null;
+        pieceList[endSquare] = Piece.PAWN;
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, startSquare, endSquare, Piece.PAWN, whiteToMove);
+        gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, startSquare, endSquare, Piece.PAWN, whiteToMove);
+    }
+
+    private void makeCastleMove(int startSquare, int endSquare) {
+        toggleSquares(Piece.KING, whiteToMove, startSquare, endSquare);
+        pieceList[startSquare] = null;
+        pieceList[endSquare] = Piece.KING;
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, startSquare, endSquare, Piece.KING, whiteToMove);
+        boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+        int rookStartSquare;
+        int rookEndSquare;
+        if (isKingside) {
+            rookStartSquare = whiteToMove ? 7 : 63;
+            rookEndSquare = whiteToMove ? 5 : 61;
+        } else {
+            rookStartSquare = whiteToMove ? 0 : 56;
+            rookEndSquare = whiteToMove ? 3 : 59;
+        }
+        toggleSquares(Piece.ROOK, whiteToMove, rookStartSquare, rookEndSquare);
+        pieceList[rookStartSquare] = null;
+        pieceList[rookEndSquare] = Piece.ROOK;
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, rookStartSquare, rookEndSquare, Piece.ROOK, whiteToMove);
+    }
+
+    private void makeEnPassantMove(int startSquare, int endSquare) {
+        toggleSquares(Piece.PAWN, whiteToMove, startSquare, endSquare);
+        int pawnSquare = whiteToMove ? endSquare - 8 : endSquare + 8;
+        toggleSquare(Piece.PAWN, !whiteToMove, pawnSquare);
+        pieceList[startSquare] = null;
+        pieceList[pawnSquare] = null;
+        pieceList[endSquare] = Piece.PAWN;
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, startSquare, Piece.PAWN, whiteToMove);
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, pawnSquare, Piece.PAWN, !whiteToMove);
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, endSquare, Piece.PAWN, whiteToMove);
+        gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, startSquare, Piece.PAWN, whiteToMove);
+        gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, pawnSquare, Piece.PAWN, !whiteToMove);
+        gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, endSquare, Piece.PAWN, whiteToMove);
+    }
+
+    private void makePromotionMove(int startSquare, int endSquare, Piece promotionPiece, Piece capturedPiece) {
+        toggleSquare(Piece.PAWN, whiteToMove, startSquare);
+        toggleSquare(promotionPiece, whiteToMove, endSquare);
+        pieceList[startSquare] = null;
+        pieceList[endSquare] = promotionPiece;
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, startSquare, Piece.PAWN, whiteToMove);
+        gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, startSquare, Piece.PAWN, whiteToMove);
+        if (capturedPiece != null) {
+            toggleSquare(capturedPiece, !whiteToMove, endSquare);
+            gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, endSquare, capturedPiece, !whiteToMove);
+            if (capturedPiece == Piece.PAWN) {
+                gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, endSquare, capturedPiece, !whiteToMove);
+            }
+        }
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, endSquare, promotionPiece, whiteToMove);
+    }
+
+    private void makeStandardMove(int startSquare, int endSquare, Piece piece, Piece capturedPiece) {
+        toggleSquares(piece, whiteToMove, startSquare, endSquare);
+        if (capturedPiece != null) {
+            toggleSquare(capturedPiece, !whiteToMove, endSquare);
+            gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, endSquare, capturedPiece, !whiteToMove);
+            if (capturedPiece == Piece.PAWN) {
+                gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, endSquare, capturedPiece, !whiteToMove);
+            }
+        }
+        pieceList[startSquare] = null;
+        pieceList[endSquare] = piece;
+        gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, startSquare, endSquare, piece, whiteToMove);
+        if (piece == Piece.PAWN) {
+            gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, startSquare, endSquare, piece, whiteToMove);
+        }
+    }
+
+    private void updateGameState(int startSquare, int endSquare, Piece piece, Piece capturedPiece, Move move) {
+        gameState.capturedPiece = capturedPiece;
+        boolean resetClock = capturedPiece != null || Piece.PAWN.equals(piece);
+        gameState.halfMoveClock = resetClock ? 0 : ++gameState.halfMoveClock;
+
+        int castlingRights = calculateCastlingRights(startSquare, endSquare, piece);
+        gameState.zobrist = Zobrist.updateCastlingRights(gameState.zobrist, gameState.castlingRights, castlingRights);
+        gameState.castlingRights = castlingRights;
+
+        int enPassantFile = move.isPawnDoubleMove() ? BoardUtils.getFile(endSquare) : -1;
+        gameState.zobrist = Zobrist.updateEnPassantFile(gameState.zobrist, gameState.enPassantFile, enPassantFile);
+        gameState.enPassantFile = enPassantFile;
+
+        gameState.zobrist = Zobrist.updateSideToMove(gameState.zobrist);
+    }
+
+    private void unmakeCastlingMove(int startSquare, int endSquare) {
+        toggleSquares(Piece.KING, whiteToMove, endSquare, startSquare);
+        boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+        int rookStartSquare;
+        int rookEndSquare;
+        if (isKingside) {
+            rookStartSquare = whiteToMove ? 5 : 61;
+            rookEndSquare = whiteToMove ? 7 : 63;
+        } else {
+            rookStartSquare = whiteToMove ? 3 : 59;
+            rookEndSquare = whiteToMove ? 0 : 56;
+        }
+        toggleSquares(Piece.ROOK, whiteToMove, rookStartSquare, rookEndSquare);
+        pieceList[startSquare] = Piece.KING;
+        pieceList[endSquare] = null;
+        pieceList[rookEndSquare] = Piece.ROOK;
+        pieceList[rookStartSquare] = null;
+    }
+
+    private void unmakePromotionMove(int startSquare, int endSquare, Piece promotionPiece) {
+        toggleSquare(promotionPiece, whiteToMove, endSquare);
+        toggleSquare(Piece.PAWN, whiteToMove, startSquare);
+        if (gameState.getCapturedPiece() != null) {
+            toggleSquare(gameState.getCapturedPiece(), !whiteToMove, endSquare);
+        }
+        pieceList[startSquare] = Piece.PAWN;
+        pieceList[endSquare] = gameState.getCapturedPiece() != null ? gameState.getCapturedPiece() : null;
+    }
+
+    private void unmakeEnPassantMove(int startSquare, int endSquare) {
+        toggleSquares(Piece.PAWN, whiteToMove, endSquare, startSquare);
+        int captureSquare = whiteToMove ? endSquare - 8 : endSquare + 8;
+        toggleSquare(Piece.PAWN, !whiteToMove, captureSquare);
+        pieceList[startSquare] = Piece.PAWN;
+        pieceList[endSquare] = null;
+        pieceList[captureSquare] = Piece.PAWN;
+    }
+
+    private void unmakeStandardMove(int startSquare, int endSquare, Piece piece) {
+        toggleSquares(piece, whiteToMove, endSquare, startSquare);
+        if (gameState.getCapturedPiece() != null) {
+            toggleSquare(gameState.getCapturedPiece(), !whiteToMove, endSquare);
+        }
+        pieceList[startSquare] = piece;
+        pieceList[endSquare] = gameState.getCapturedPiece() != null ? gameState.getCapturedPiece() : null;;
     }
 
     /**
@@ -233,9 +235,9 @@ public class Board {
      * during null-move pruning during search.
      */
     public void makeNullMove() {
-        isWhiteToMove = !isWhiteToMove;
-        long newZobristKey = Zobrist.updateKeyAfterNullMove(gameState.getZobristKey(), gameState.getEnPassantFile());
-        GameState newGameState = new GameState(newZobristKey, gameState.getPawnKey(), null, -1, gameState.getCastlingRights(), 0);
+        whiteToMove = !whiteToMove;
+        long newZobristKey = Zobrist.updateKeyAfterNullMove(gameState.getZobrist(), gameState.getEnPassantFile());
+        GameState newGameState = new GameState(newZobristKey, gameState.getPawnZobrist(), null, -1, gameState.getCastlingRights(), 0);
         gameStateHistory.push(gameState);
         gameState = newGameState;
     }
@@ -244,7 +246,7 @@ public class Board {
      * Unmake the 'null' move used during null-move pruning to try and prove a beta cut-off.
      */
     public void unmakeNullMove() {
-        isWhiteToMove = !isWhiteToMove;
+        whiteToMove = !whiteToMove;
         gameState = gameStateHistory.pop();
     }
 
@@ -260,79 +262,41 @@ public class Board {
 
     private void toggle(Piece type, boolean white, long toggleMask) {
         switch (type) {
-            case PAWN ->    { if (white) whitePawns ^= toggleMask;    else blackPawns ^= toggleMask; }
-            case KNIGHT ->  { if (white) whiteKnights ^= toggleMask;  else blackKnights ^= toggleMask; }
-            case BISHOP ->  { if (white) whiteBishops ^= toggleMask;  else blackBishops ^= toggleMask; }
-            case ROOK ->    { if (white) whiteRooks ^= toggleMask;    else blackRooks ^= toggleMask; }
-            case QUEEN ->   { if (white) whiteQueens ^= toggleMask;   else blackQueens ^= toggleMask; }
-            case KING ->    { if (white) whiteKing ^= toggleMask;     else blackKing ^= toggleMask; }
+            case PAWN ->    pawns ^= toggleMask;
+            case KNIGHT ->  knights ^= toggleMask;
+            case BISHOP ->  bishops ^= toggleMask;
+            case ROOK ->    rooks ^= toggleMask;
+            case QUEEN ->   queens ^= toggleMask;
+            case KING ->    kings ^= toggleMask;
         }
+        if (white) {
+            whitePieces ^= toggleMask;
+        } else {
+            blackPieces ^= toggleMask;
+        }
+        occupied ^= toggleMask;
     }
 
-    public void togglePawns(boolean white, int startSquare, int endSquare) {
-        if (white) whitePawns ^= (1L << startSquare | 1L << endSquare);
-        else blackPawns ^= (1L << startSquare | 1L << endSquare);
+    public void removeKing(boolean white) {
+        long toggleMask = white ? (kings & whitePieces) : (kings & blackPieces);
+        kings ^= toggleMask;
+        if (white) {
+            whitePieces ^= toggleMask;
+        } else {
+            blackPieces ^= toggleMask;
+        }
+        occupied ^= toggleMask;
     }
 
-    public void toggleKnights(boolean white, int startSquare, int endSquare) {
-        if (white) whiteKnights ^= (1L << startSquare | 1L << endSquare);
-        else blackKnights ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void toggleBishops(boolean white, int startSquare, int endSquare) {
-        if (white) whiteBishops ^= (1L << startSquare | 1L << endSquare);
-        else blackBishops ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void toggleRooks(boolean white, int startSquare, int endSquare) {
-        if (white) whiteRooks ^= (1L << startSquare | 1L << endSquare);
-        else blackRooks ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void toggleQueens(boolean white, int startSquare, int endSquare) {
-        if (white) whiteQueens ^= (1L << startSquare | 1L << endSquare);
-        else blackQueens ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void toggleKing(boolean white, int startSquare, int endSquare) {
-        if (white) whiteKing ^= (1L << startSquare | 1L << endSquare);
-        else blackKing ^= (1L << startSquare | 1L << endSquare);
-    }
-
-    public void togglePawn(boolean white, int startSquare) {
-        if (white) whitePawns ^= 1L << startSquare;
-        else blackPawns ^= 1L << startSquare;
-    }
-
-    public void toggleKnight(boolean white, int startSquare) {
-        if (white) whiteKnights ^= 1L << startSquare;
-        else blackKnights ^= 1L << startSquare;
-    }
-
-    public void toggleBishop(boolean white, int startSquare) {
-        if (white) whiteBishops ^= 1L << startSquare;
-        else blackBishops ^= 1L << startSquare;
-    }
-
-    public void toggleRook(boolean white, int startSquare) {
-        if (white) whiteRooks ^= 1L << startSquare;
-        else blackRooks ^= 1L << startSquare;
-    }
-
-    public void toggleQueen(boolean white, int startSquare) {
-        if (white) whiteQueens ^= 1L << startSquare;
-        else blackQueens ^= 1L << startSquare;
-    }
-
-    public void toggleKing(boolean white, int startSquare) {
-        if (white) whiteKing ^= 1L << startSquare;
-        else blackKing ^= 1L << startSquare;
-    }
-
-    public void recalculatePieces() {
-        whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
-        blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
-        occupied = whitePieces | blackPieces;
+    public void addKing(int kingSquare, boolean white) {
+        long toggleMask = 1L << kingSquare;
+        kings |= toggleMask;
+        if (white) {
+            whitePieces |= toggleMask;
+        } else {
+            blackPieces |= toggleMask;
+        }
+        occupied |= toggleMask;
     }
 
     private int calculateCastlingRights(int startSquare, int endSquare, Piece pieceType) {
@@ -343,7 +307,7 @@ public class Board {
         }
         // Any move by the king removes castling rights.
         if (Piece.KING.equals(pieceType)) {
-            newCastlingRights &= isWhiteToMove ? Bits.CLEAR_WHITE_CASTLING_MASK : Bits.CLEAR_BLACK_CASTLING_MASK;
+            newCastlingRights &= whiteToMove ? Bits.CLEAR_WHITE_CASTLING_MASK : Bits.CLEAR_BLACK_CASTLING_MASK;
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.
         // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
@@ -368,27 +332,33 @@ public class Board {
     }
 
     public long getPawns(boolean white) {
-        return white ? whitePawns : blackPawns;
+        long side = white ? whitePieces : blackPieces;
+        return pawns & side;
     }
 
     public long getKnights(boolean white) {
-        return white ? whiteKnights : blackKnights;
+        long side = white ? whitePieces : blackPieces;
+        return knights & side;
     }
 
     public long getBishops(boolean white) {
-        return white ? whiteBishops : blackBishops;
+        long side = white ? whitePieces : blackPieces;
+        return bishops & side;
     }
 
     public long getRooks(boolean white) {
-        return white ? whiteRooks : blackRooks;
+        long side = white ? whitePieces : blackPieces;
+        return rooks & side;
     }
 
     public long getQueens(boolean white) {
-        return white ? whiteQueens : blackQueens;
+        long side = white ? whitePieces : blackPieces;
+        return queens & side;
     }
 
     public long getKing(boolean white) {
-        return white ? whiteKing : blackKing;
+        long side = white ? whitePieces : blackPieces;
+        return kings & side;
     }
 
     public long getPieces(boolean white) {
@@ -400,20 +370,13 @@ public class Board {
     }
 
     public boolean hasPiecesRemaining(boolean white) {
-        if (white && Bitwise.countBits(whiteKnights) > 0 || Bitwise.countBits(whiteBishops) > 0 ||
-                Bitwise.countBits(whiteRooks) > 0 || Bitwise.countBits(whiteQueens) > 0) {
-            return true;
-        }
-        else return Bitwise.countBits(blackKnights) > 0 || Bitwise.countBits(blackBishops) > 0 ||
-                Bitwise.countBits(blackRooks) > 0 || Bitwise.countBits(blackQueens) > 0;
+        return white ?
+                (getKnights(true) != 0 || getBishops(true) != 0 || getRooks(true) != 0 || getQueens(true) != 0) :
+                (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
     }
 
     public boolean isPawnEndgame() {
-        return (whitePawns != 0 || blackPawns != 0)
-                && whiteKnights == 0 && blackKnights == 0
-                && whiteBishops == 0 && blackBishops == 0
-                && whiteRooks == 0 && blackRooks == 0
-                && whiteQueens == 0 && blackQueens == 0;
+        return (pawns != 0) && knights == 0 && bishops == 0 && rooks == 0 && queens == 0;
     }
 
 }

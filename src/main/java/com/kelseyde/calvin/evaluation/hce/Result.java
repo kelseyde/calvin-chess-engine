@@ -21,11 +21,11 @@ public class Result {
     public static boolean isThreefoldRepetition(Board board) {
 
         int repetitionCount = 0;
-        long zobrist = board.getGameState().getZobristKey();
+        long zobrist = board.getGameState().getZobrist();
         Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
         while (iterator.hasNext()) {
             GameState gameState = iterator.next();
-            if (gameState.getZobristKey() == zobrist) {
+            if (gameState.getZobrist() == zobrist) {
                 repetitionCount += 1;
             }
         }
@@ -35,11 +35,11 @@ public class Result {
 
     public static boolean isDoubleRepetition(Board board) {
 
-        long zobrist = board.getGameState().getZobristKey();
+        long zobrist = board.getGameState().getZobrist();
         Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
         while (iterator.hasNext()) {
             GameState gameState = iterator.next();
-            if (gameState.getZobristKey() == zobrist) {
+            if (gameState.getZobrist() == zobrist) {
                 return true;
             }
         }
@@ -48,12 +48,11 @@ public class Result {
     }
 
     public static boolean isInsufficientMaterial(Board board) {
-        if (board.getWhitePawns() != 0 || board.getWhiteRooks() != 0 || board.getWhiteQueens() != 0
-                || board.getBlackPawns() != 0 || board.getBlackRooks() != 0 || board.getBlackQueens() != 0) {
+        if (board.getPawns() != 0 || board.getRooks() != 0 || board.getQueens() != 0) {
             return false;
         }
-        long whitePieces = board.getWhiteKnights() | board.getWhiteBishops();
-        long blackPieces = board.getBlackKnights() |  board.getBlackBishops();
+        long whitePieces = board.getKnights(true) | board.getBishops(true);
+        long blackPieces = board.getKnights(false) |  board.getBishops(false);
 
         return (Bitwise.countBits(whitePieces) == 0 || Bitwise.countBits(whitePieces) == 1)
                 && (Bitwise.countBits(blackPieces) == 0 || Bitwise.countBits(blackPieces) == 1);
@@ -119,7 +118,7 @@ public class Result {
     }
 
     public static boolean isFiftyMoveRule(Board board) {
-        return board.getGameState().getFiftyMoveCounter() >= 100;
+        return board.getGameState().getHalfMoveClock() >= 100;
     }
 
 

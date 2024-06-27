@@ -1,6 +1,9 @@
 package com.kelseyde.calvin.generation;
 
-import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.check.PinCalculator;
 import com.kelseyde.calvin.generation.check.PinCalculator.PinData;
 import com.kelseyde.calvin.generation.check.RayCalculator;
@@ -302,8 +305,7 @@ public class MoveGenerator implements MoveGeneration {
         long kingMoves = Attacks.kingAttacks(startSquare) & ~friendlies & filterMask;
 
         // Temporarily remove the king from the board
-        board.toggleKing(white, startSquare);
-        board.recalculatePieces();
+        board.removeKing(white);
 
         // Generate legal king moves
         while (kingMoves != 0) {
@@ -316,8 +318,7 @@ public class MoveGenerator implements MoveGeneration {
         }
 
         // Restore the king to its original position on the board
-        board.toggleKing(white, startSquare);
-        board.recalculatePieces();
+        board.addKing(startSquare, white);
     }
 
     private void generateCastlingMoves(Board board) {
@@ -563,7 +564,7 @@ public class MoveGenerator implements MoveGeneration {
 
     private boolean leavesKingInCheck(Board board, Move move, boolean white) {
         board.makeMove(move);
-        int kingSquare = white ? Bitwise.getNextBit(board.getWhiteKing()) : Bitwise.getNextBit(board.getBlackKing());
+        int kingSquare = white ? Bitwise.getNextBit(board.getKing(true)) : Bitwise.getNextBit(board.getKing(false));
         boolean isAttacked = isAttacked(board, white, 1L << kingSquare);
         board.unmakeMove();
         return isAttacked;

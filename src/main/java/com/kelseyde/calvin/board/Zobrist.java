@@ -47,40 +47,40 @@ public class Zobrist {
         long key = 0L;
 
         for (int square = 0; square < 64; square++) {
-            if (((board.getWhitePawns() >>> square) & 1) == 1) {
+            if (((board.getPawns(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.PAWN.getIndex()];
             }
-            else if (((board.getBlackPawns() >>> square) & 1) == 1) {
+            else if (((board.getPawns(false) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.PAWN.getIndex()];
             }
-            else if (((board.getWhiteKnights() >>> square) & 1) == 1) {
+            else if (((board.getKnights(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.KNIGHT.getIndex()];
             }
-            else if (((board.getBlackKnights() >>> square) & 1) == 1) {
+            else if (((board.getKnights(false) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.KNIGHT.getIndex()];
             }
-            else if (((board.getWhiteBishops() >>> square) & 1) == 1) {
+            else if (((board.getBishops(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.BISHOP.getIndex()];
             }
-            else if (((board.getBlackBishops() >>> square) & 1) == 1) {
+            else if (((board.getBishops(false) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.BISHOP.getIndex()];
             }
-            else if (((board.getWhiteRooks() >>> square) & 1) == 1) {
+            else if (((board.getRooks(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.ROOK.getIndex()];
             }
-            else if (((board.getBlackRooks() >>> square) & 1) == 1) {
+            else if (((board.getRooks(false) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.ROOK.getIndex()];
             }
-            else if (((board.getWhiteQueens() >>> square) & 1) == 1) {
+            else if (((board.getQueens(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.QUEEN.getIndex()];
             }
-            else if (((board.getBlackQueens() >>> square) & 1) == 1) {
+            else if (((board.getQueens(false) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.QUEEN.getIndex()];
             }
-            else if (((board.getWhiteKing() >>> square) & 1) == 1) {
+            else if (((board.getKing(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.KING.getIndex()];
             }
-            else if (((board.getBlackKing() >>> square) & 1) == 1) {
+            else if (((board.getKing(false) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.KING.getIndex()];
             }
         }
@@ -100,14 +100,19 @@ public class Zobrist {
     public static long generatePawnKey(Board board) {
         long key = 0L;
         for (int square = 0; square < 64; square++) {
-            if (((board.getWhitePawns() >>> square) & 1) == 1) {
+            if (((board.getPawns(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.PAWN.getIndex()];
             }
-            else if (((board.getBlackPawns() >>> square) & 1) == 1) {
+            else if (((board.getPawns(false) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][BLACK][Piece.PAWN.getIndex()];
             }
         }
         return key;
+    }
+
+    public static long updatePiece(long key, int startSquare, int endSquare, Piece pieceType, boolean white) {
+        return key ^ PIECE_SQUARE_HASH[startSquare][white ? 0 : 1][pieceType.getIndex()]
+                   ^ PIECE_SQUARE_HASH[endSquare][white ? 0 : 1][pieceType.getIndex()];
     }
 
     public static long updatePiece(long key, int square, Piece pieceType, boolean white) {

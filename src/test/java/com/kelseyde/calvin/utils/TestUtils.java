@@ -65,24 +65,19 @@ public class TestUtils {
 
     public static Board emptyBoard() {
         Board board = new Board();
-        board.setWhitePawns(0L);
-        board.setWhiteKnights(0L);
-        board.setWhiteBishops(0L);
-        board.setWhiteRooks(0L);
-        board.setWhiteQueens(0L);
-        board.setWhiteKing(0L);
+        board.setPawns(0L);
+        board.setKnights(0L);
+        board.setBishops(0L);
+        board.setRooks(0L);
+        board.setQueens(0L);
+        board.setKings(0L);
 
-        board.setBlackPawns(0L);
-        board.setBlackKnights(0L);
-        board.setBlackBishops(0L);
-        board.setBlackRooks(0L);
-        board.setBlackQueens(0L);
-        board.setBlackKing(0L);
+        board.setWhitePieces(0L);
+        board.setBlackPieces(0L);
+        board.setOccupied(0L);
         board.setPieceList(new Piece[64]);
 
         board.getGameState().setCastlingRights(0b0000);
-
-        board.recalculatePieces();
 
         return board;
     }

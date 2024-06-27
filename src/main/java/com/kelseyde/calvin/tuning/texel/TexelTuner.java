@@ -14,8 +14,10 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,9 +26,11 @@ public class TexelTuner {
 
     public TexelTuner(String fileName) {
         this.positionsFileName = fileName;
+        this.executor = Executors.newVirtualThreadPerTaskExecutor();
     }
 
     private final String positionsFileName;
+    private final ExecutorService executor;
 
     private Map<Board, Double> positions;
     private List<Map<Board, Double>> partitions;
@@ -93,21 +97,26 @@ public class TexelTuner {
             }
             System.out.printf("tuned %s/%s params: %s%n", modifiedParams, bestParams.length, Arrays.toString(bestParams));
             System.out.printf("iteration %s completed in %s%n", iterations, Duration.between(start, Instant.now()));
-
         }
         System.out.printf("final params: %s, final error: %s%n", Arrays.toString(bestParams), bestError);
-        return bestParams;
 
+        // Shut down the executor service
+        executor.shutdown();
+
+        return bestParams;
     }
 
     public double meanSquareError(int[] params, Function<int[], EngineConfig> createConfigFunction)
             throws ExecutionException, InterruptedException {
         int totalPositions = positions.size();
-        List<CompletableFuture<Double>> threads = partitions.stream()
-                .map(partition -> CompletableFuture.supplyAsync(() -> totalError(partition, params, createConfigFunction)))
-                .toList();
-        CompletableFuture.allOf(threads.toArray(CompletableFuture[]::new)).get();
-        Double combinedResult = threads.stream().map(CompletableFuture::join).reduce(0.0, Double::sum);
+        List<Future<Double>> futures = new ArrayList<>();
+        for (Map<Board, Double> partition : partitions) {
+            futures.add(executor.submit(() -> totalError(partition, params, createConfigFunction)));
+        }
+        double combinedResult = 0.0;
+        for (Future<Double> future : futures) {
+            combinedResult += future.get();
+        }
         return combinedResult / totalPositions;
     }
 

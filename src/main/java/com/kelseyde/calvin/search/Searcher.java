@@ -15,9 +15,13 @@ import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -54,11 +58,13 @@ public class Searcher implements Search {
 
     int currentDepth;
     int maxDepth = 256;
+    int[] evalHistory = new int[maxDepth];
 
     Move bestMove;
     Move bestMoveCurrentDepth;
     int bestEval;
     int bestEvalCurrentDepth;
+    SearchResult result;
 
     public Searcher(EngineConfig config,
                     ThreadManager threadManager,
@@ -86,6 +92,7 @@ public class Searcher implements Search {
         start = Instant.now();
         timeout = start.plus(duration);
         nodes = 0;
+        evalHistory = new int[maxDepth];
         currentDepth = 1;
         bestMove = null;
         bestMoveCurrentDepth = null;
@@ -153,6 +160,8 @@ public class Searcher implements Search {
 
         // Clear move ordering cache and return the search result
         moveOrderer.clear();
+
+        this.result = result;
         return result;
 
     }
@@ -212,12 +221,15 @@ public class Searcher implements Search {
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
-
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
             staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
         }
+
+        evalHistory[ply] = staticEval;
+        boolean improving = isImproving(ply, staticEval);
+
 
         if (!zwNode && !isInCheck) {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
@@ -227,7 +239,7 @@ public class Searcher implements Search {
             if (depth <= config.getRfpDepth()
                 && staticEval - config.getRfpMargin()[depth] > beta
                 && !isMateHunting) {
-                return staticEval - config.getRfpMargin()[depth];
+                return beta;
             }
 
             // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning
@@ -236,14 +248,14 @@ public class Searcher implements Search {
             // not search any further.
             if (allowNull
                 && depth >= config.getNmpDepth()
-                && staticEval >= beta - config.getNmpMargin()
+                && staticEval >= beta - (config.getNmpMargin() * (improving ? 1 : 0))
                 && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
                     transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
-                    return eval;
+                    return beta;
                 }
             }
         }
@@ -310,11 +322,12 @@ public class Searcher implements Search {
                 // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
+                int lmpCutoff = (depth * config.getLmpMultiplier()) / (1 + (improving ? 0 : 1));
                 if (!zwNode
                     && !isInCheck
                     && isQuiet
                     && depth <= config.getLmpDepth()
-                    && movesSearched >= depth * config.getLmpMultiplier()) {
+                    && movesSearched >= lmpCutoff) {
                     evaluator.unmakeMove();
                     board.unmakeMove();
                     continue;
@@ -411,14 +424,12 @@ public class Searcher implements Search {
         QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        Move previousBestMove;
         HashEntry transposition = transpositionTable.get(getKey(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
         if (hasBestMove(transposition)) {
-            previousBestMove = transposition.getMove();
-            movePicker.setBestMove(previousBestMove);
+            movePicker.setBestMove(transposition.getMove());
         }
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -553,9 +564,30 @@ public class Searcher implements Search {
     }
 
     private long getKey() {
-        return board.getGameState().getZobristKey();
+        return board.getGameState().getZobrist();
     }
 
+    public SearchResult getResult() {
+        return result;
+    }
+
+    /**
+     * Compute whether our position is improving relative to previous static evaluations. If we are in check, we're not
+     * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
+     */
+    private boolean isImproving(int ply, int staticEval) {
+        if (staticEval == Integer.MIN_VALUE) return false;
+        if (ply < 2) return false;
+        int lastEval = evalHistory[ply - 2];
+        if (lastEval == Integer.MIN_VALUE) {
+            if (ply < 4) return false;
+            lastEval = evalHistory[ply - 4];
+            if (lastEval == Integer.MIN_VALUE) {
+                return true;
+            }
+        }
+        return lastEval < staticEval;
+    }
 
     @Override
     public TranspositionTable getTranspositionTable() {

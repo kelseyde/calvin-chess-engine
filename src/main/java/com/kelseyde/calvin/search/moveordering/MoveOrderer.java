@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.utils.BoardUtils;
-import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -186,18 +185,24 @@ public class MoveOrderer implements MoveOrdering {
      * @param ply The current ply from root.
      * @param newKiller The new killer move to be added.
      */
-    public void addKillerMove(int ply, Move newKiller) {
-        if (ply >= MAX_KILLER_PLY) {
-            return;
+    public void addKillerMove(int ply, Move move) {
+        // Check if the move already exists in the killer moves list
+        for (int i = 0; i < KILLERS_PER_PLY; i++) {
+            if (move.equals(killerMoves[ply][i])) {
+                // Move the existing killer to the front
+                for (int j = i; j > 0; j--) {
+                    killerMoves[ply][j] = killerMoves[ply][j - 1];
+                }
+                killerMoves[ply][0] = move;
+                return;
+            }
         }
-        Move firstKiller = killerMoves[ply][0];
-        Move secondKiller = killerMoves[ply][1];
-        Move thirdKiller = killerMoves[ply][2];
-        if (!newKiller.equals(firstKiller) && !newKiller.equals(secondKiller) && !newKiller.equals(thirdKiller)) {
-            killerMoves[ply][2] = secondKiller;
-            killerMoves[ply][1] = firstKiller;
-            killerMoves[ply][0] = newKiller;
+
+        // If the move is not already a killer, add it to the front and shift others
+        for (int i = KILLERS_PER_PLY - 1; i > 0; i--) {
+            killerMoves[ply][i] = killerMoves[ply][i - 1];
         }
+        killerMoves[ply][0] = move;
     }
 
     /**

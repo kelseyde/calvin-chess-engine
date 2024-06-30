@@ -475,7 +475,8 @@ public class Evaluator implements Evaluation {
             phase *= 0.4f;
         }
         int kingAttackZoneUnits = white ? whiteKingAttackZoneUnits : blackKingAttackZoneUnits;
-        int attackZoneScore = config.getKingAttackZonePenaltyTable()[kingAttackZoneUnits];
+        int attackZoneIndex = Math.min(kingAttackZoneUnits, config.getKingAttackZonePenaltyTable().length - 1);
+        int attackZoneScore = config.getKingAttackZonePenaltyTable()[attackZoneIndex];
 
         int virtualMobilityMgPenalty = 0;
         int virtualMobilityEgPenalty = 0;

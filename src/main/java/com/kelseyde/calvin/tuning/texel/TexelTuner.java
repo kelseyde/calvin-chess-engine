@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluator;
 import com.kelseyde.calvin.utils.notation.FEN;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.io.IOException;
@@ -35,9 +34,13 @@ public class TexelTuner {
     private Map<Board, Double> positions;
     private List<Map<Board, Double>> partitions;
 
-    private Delta[] deltas;
+    private int[] deltas;
+    private double[] velocities;
 
     private double k = 1.26;
+    private double learningRate = 0.01;
+    private double evalScalar = 400.0;
+    private double beta = 0.9;
 
     private int threadCount = 10;
 
@@ -46,22 +49,22 @@ public class TexelTuner {
 
         positions = loadPositions();
         partitions = partitionPositions(positions, threadCount);
-        initDeltas(initialParams.length);
+        initDeltasAndVelocities(initialParams.length);
         System.out.println("number of positions: " + positions.size());
         int[] bestParams = initialParams;
         double bestError = meanSquareError(bestParams, createConfigFunction);
         System.out.println("current best error: " + bestError);
-        int iterations = 0;
+        int epochs = 0;
 
         boolean improved = true;
         while (improved || !allDeltasOne()) {
-            iterations++;
+            epochs++;
             Instant start = Instant.now();
             improved = false;
             int modifiedParams = 0;
             for (int i = 0; i < bestParams.length; i++) {
                 int[] newParams = Arrays.copyOf(bestParams, bestParams.length);
-                int delta = deltas[i].delta;
+                int delta = deltas[i];
                 newParams[i] += delta;
                 double newError = meanSquareError(newParams, createConfigFunction);
                 System.out.printf("tuning param %s of %s, error %s%n", i, bestParams.length, newError);
@@ -72,8 +75,7 @@ public class TexelTuner {
                     bestError = newError;
                     bestParams = Arrays.copyOf(newParams, newParams.length);
                     int newDelta = delta * 2;
-                    deltas[i].setDelta(newDelta);
-                    deltas[i].setHalvedOrDoubled(Delta.DOUBLED);
+                    deltas[i] = newDelta;
                     System.out.printf("+%s improved param %s: %s%n", delta, i, bestParams[i]);
 
                 } else {
@@ -85,18 +87,21 @@ public class TexelTuner {
                         bestError = newError;
                         bestParams = Arrays.copyOf(newParams, newParams.length);
                         int newDelta = delta * 2;
-                        deltas[i].setDelta(newDelta);
-                        deltas[i].setHalvedOrDoubled(Delta.DOUBLED);
+                        deltas[i] = newDelta;
                         System.out.printf("-%s improved param %s: %s%n", delta, i, bestParams[i]);
                     } else {
                         int newDelta = Math.max(1, delta / 2);
-                        deltas[i].setDelta(newDelta);
-                        deltas[i].setHalvedOrDoubled(Delta.HALVED);
+                        deltas[i] = newDelta;
                     }
                 }
             }
+            for (int i = 0; i < bestParams.length; i++) {
+                double velocity = beta * velocities[i] + (1 - beta) * deltas[i];
+                velocities[i] = velocity;
+                bestParams[i] -= (int) (learningRate * velocity);
+            }
             System.out.printf("tuned %s/%s params: %s%n", modifiedParams, bestParams.length, Arrays.toString(bestParams));
-            System.out.printf("iteration %s completed in %s%n", iterations, Duration.between(start, Instant.now()));
+            System.out.printf("epoch %s completed in %s%n", epochs, Duration.between(start, Instant.now()));
         }
         System.out.printf("final params: %s, final error: %s%n", Arrays.toString(bestParams), bestError);
 
@@ -105,6 +110,7 @@ public class TexelTuner {
 
         return bestParams;
     }
+
 
     public double meanSquareError(int[] params, Function<int[], EngineConfig> createConfigFunction)
             throws ExecutionException, InterruptedException {
@@ -140,7 +146,7 @@ public class TexelTuner {
      * 0 indicating a loss and 1 indicating a win.
      */
     private double prediction(int eval) {
-        return 1.0 / (1.0 + Math.pow(10, (-k * eval / 400)));
+        return 1.0 / (1.0 + Math.pow(10, (-k * eval / evalScalar)));
     }
 
     private double error(double predicted, double actual) {
@@ -190,24 +196,19 @@ public class TexelTuner {
         return positions;
     }
 
-    private void initDeltas(int size) {
-        deltas = new Delta[size];
+    private void initDeltasAndVelocities(int size) {
+        deltas = new int[size];
+        velocities = new double[size];
         for (int i = 0; i < size; i++) {
-            deltas[i] = new Delta(1, Delta.DOUBLED);
+            deltas[i] = 1;
+            velocities[i] = 0.0;
         }
     }
 
     private boolean allDeltasOne() {
-        return Arrays.stream(deltas).allMatch(delta -> delta.delta == 1);
+        return Arrays.stream(deltas).allMatch(delta -> delta == 1);
     }
 
-    @Data
-    @AllArgsConstructor
-    private static class Delta {
-        private static final int HALVED = 0;
-        private static final int DOUBLED = 1;
-        private int delta;
-        private int halvedOrDoubled;
-    }
+
 
 }

@@ -192,18 +192,23 @@ public class Evaluator implements Evaluation {
 
     private void scorePawnsWithHash(Board board, long whitePawns, long blackPawns) {
 
-        long pawnKey = board.getGameState().getPawnZobrist();
-        PawnHashEntry hashEntry = pawnHash.get(pawnKey);
         int whiteScore;
         int blackScore;
-        if (hashEntry != null) {
-            whiteScore = hashEntry.whiteScore();
-            blackScore = hashEntry.blackScore();
+        if (config.isPawnHashEnabled()) {
+            long pawnKey = board.getGameState().getPawnZobrist();
+            PawnHashEntry hashEntry = pawnHash.get(pawnKey);
+            if (hashEntry != null) {
+                whiteScore = hashEntry.whiteScore();
+                blackScore = hashEntry.blackScore();
+            } else {
+                whiteScore = scorePawns(whitePawns, blackPawns, true);
+                blackScore = scorePawns(blackPawns, whitePawns, false);
+                hashEntry = PawnHashEntry.of(pawnKey, whiteScore, blackScore);
+                pawnHash.put(pawnKey, hashEntry);
+            }
         } else {
             whiteScore = scorePawns(whitePawns, blackPawns, true);
             blackScore = scorePawns(blackPawns, whitePawns, false);
-            hashEntry = PawnHashEntry.of(pawnKey, whiteScore, blackScore);
-            pawnHash.put(pawnKey, hashEntry);
         }
         addScore(PawnHashEntry.mgScore(whiteScore), PawnHashEntry.egScore(whiteScore), true);
         addScore(PawnHashEntry.mgScore(blackScore), PawnHashEntry.egScore(blackScore), false);

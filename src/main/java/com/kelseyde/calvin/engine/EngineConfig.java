@@ -20,6 +20,8 @@ public class EngineConfig {
     int minHashSizeMb;
     int maxHashSizeMb;
     int defaultHashSizeMb;
+
+    boolean pawnHashEnabled;
     int defaultPawnHashSizeMb;
 
     boolean ownBookEnabled;

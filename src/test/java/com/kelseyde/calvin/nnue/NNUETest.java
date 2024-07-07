@@ -8,7 +8,38 @@ import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 public class NNUETest {
+
+    @Test
+    public void testStartpos() {
+
+        Board board = new Board();
+        NNUE nnue = new NNUE(board);
+        System.out.println(nnue.evaluate(board));
+
+    }
+
+    @Test
+    public void testRuyLopez() {
+
+        String fen = "r1bqkbnr/1ppp1ppp/p1n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        System.out.println(nnue.evaluate(board));
+
+    }
+
+    @Test
+    public void testBlackToMove() {
+
+        String fen = "r1bqkbnr/1ppp1ppp/2n5/1p6/4P2P/5NPR/P1P1KP2/q1BQ4 b kq - 0 9";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        System.out.println(nnue.evaluate(board));
+
+    }
 
     @Test
     public void testMakeUnmakeMove() {
@@ -191,6 +222,28 @@ public class NNUETest {
         board.unmakeMove();
         Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
 
+    }
+
+
+    @Test
+    public void testSimpleEvals() {
+
+        Board board = new Board();
+        NNUE nnue = new NNUE(board);
+        System.out.println(nnue.evaluate(board));
+
+        String fen = "rn1qk1nr/ppp2ppp/8/4P3/1BP5/8/PP3KPP/RN1b1BR1 w kq - 0 10";
+        board = FEN.toBoard(fen);
+        nnue = new NNUE(board);
+        System.out.println(nnue.evaluate(board));
+
+    }
+
+    @Test
+    public void testCorrectFeatureIndices() {
+        String fen = "4b3/2k4P/2p4R/3r4/4K3/8/8/N7 w - - 0 1";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
     }
 
 }

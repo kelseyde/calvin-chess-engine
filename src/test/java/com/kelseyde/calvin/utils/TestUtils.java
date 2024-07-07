@@ -42,7 +42,7 @@ public class TestUtils {
     public static final Evaluation EVALUATOR = new Evaluator(PRD_CONFIG);
     public static final TranspositionTable TRANSPOSITION_TABLE = new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb());
     public static final ThreadManager THREAD_MANAGER = new ThreadManager();
-    public static final Searcher SEARCHER = new Searcher(PRD_CONFIG, THREAD_MANAGER, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
+    public static final Searcher SEARCHER = new Searcher(TST_CONFIG, THREAD_MANAGER, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
     public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, () -> new Evaluator(PRD_CONFIG), TRANSPOSITION_TABLE);
     public static final String QUIET_POSITIONS_FILE = "src/test/resources/texel/quiet_positions.epd";
 
@@ -105,8 +105,8 @@ public class TestUtils {
         return legalMove.get();
     }
 
-    public static List<String> loadFens() throws IOException {
-        Path path = Paths.get(QUIET_POSITIONS_FILE);
+    public static List<String> loadFens(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
         return Files.readAllLines(path);
     }
 

@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation.nnue;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 public class Network {
 
@@ -25,7 +26,7 @@ public class Network {
 
     /**
      * Weights for each connection between the hidden layer and the output layer.
-     * Size is HIDDEN_LAYER_SIZE * 2 = 512.
+     * Size is HIDDEN_LAYER_SIZE = 256
      */
     public short[] outputWeights;
 
@@ -44,7 +45,7 @@ public class Network {
     public static Network loadNetwork() {
         try {
             // Use the class loader to get the resource as an input stream
-            InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/256HL-3B5083B8.nnue");
+            InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/very_small_net.nnue");
             if (inputStream == null) {
                 throw new FileNotFoundException("NNUE file not found in resources");
             }
@@ -54,9 +55,9 @@ public class Network {
             inputStream.close();
             ByteBuffer buffer = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN);
 
-            int inputWeightsOffset = Network.INPUT_LAYER_SIZE * Network.HIDDEN_LAYER_SIZE;
-            int inputBiasesOffset = Network.HIDDEN_LAYER_SIZE;
-            int outputWeightsOffset = Network.HIDDEN_LAYER_SIZE * 2;
+            int inputWeightsOffset = INPUT_LAYER_SIZE * HIDDEN_LAYER_SIZE;
+            int inputBiasesOffset = HIDDEN_LAYER_SIZE;
+            int outputWeightsOffset = HIDDEN_LAYER_SIZE;
 
             short[] inputWeights = new short[inputWeightsOffset];
             short[] inputBiases = new short[inputBiasesOffset];

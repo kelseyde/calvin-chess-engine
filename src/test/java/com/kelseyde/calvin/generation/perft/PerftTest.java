@@ -27,6 +27,8 @@ public abstract class PerftTest {
         long totalMoveCount = perftService.perft(board, depth);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
+        float nps = (float) (totalMoveCount / performance.toMillis()) * 1000;
+        System.out.println("nps: " + nps);
         if (expectedTotalMoves == totalMoveCount) {
             writeResults(depth, performance);
         }

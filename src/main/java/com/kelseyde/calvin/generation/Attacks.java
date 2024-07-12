@@ -258,6 +258,8 @@ public class Attacks {
 
     }
 
+    public record MagicLookup(long[] attacks, long mask, long magic, int shift) {}
+
     public static MagicLookup[] initMagicLookups(long[][] allAttacks, long[] masks, long[] magics, int[] shifts) {
         MagicLookup[] magicLookups = new MagicLookup[64];
         for (int i = 0; i < 64; i++) {
@@ -278,6 +280,5 @@ public class Attacks {
         return (!isAFile || !isVectorAFileException) && (!isHFile || !isVectorHFileException);
     }
 
-    public record MagicLookup(long[] attacks, long mask, long magic, int shift) {}
 
 }

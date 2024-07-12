@@ -33,6 +33,11 @@ public class StartingPositionSPerftTest extends SPerftTest {
     }
 
     @Test
+    public void testDepthSixteen() {
+        sPerft(16);
+    }
+
+    @Test
     public void testDepthSeventeen() {
         sPerft(17);
     }

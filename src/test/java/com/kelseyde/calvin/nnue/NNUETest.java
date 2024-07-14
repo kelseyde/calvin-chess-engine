@@ -30,6 +30,7 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Evaluator hce = new Evaluator(TestUtils.PRD_CONFIG);
+        System.out.printf("%s %s hce %s nnue %s%n", name, fen, hce.evaluate(board), nnue.evaluate(board));
         System.out.printf("%s %s hce %s nnue %s%n", name, fen, hce.evaluate(board), nnue.evaluate2(board));
     }
 

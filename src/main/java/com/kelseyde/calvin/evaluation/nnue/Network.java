@@ -9,7 +9,7 @@ import java.nio.ByteOrder;
 public class Network {
 
     public static final int L0_SIZE = 768;
-    public static final int L1_SIZE = 256; // TODO what the heck is happening here
+    public static final int L1_SIZE = 256;
 
     public static Network DEFAULT = loadNetwork();
 
@@ -45,14 +45,11 @@ public class Network {
 
     public static Network loadNetwork() {
         try {
-            // Use the class loader to get the resource as an input stream
             InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/256HL-3B5083B8.nnue");
-//            InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/calvinball3-epoch40.nnue");
             if (inputStream == null) {
                 throw new FileNotFoundException("NNUE file not found in resources");
             }
 
-            // Read the entire content of the file into a byte array
             byte[] fileBytes = inputStream.readAllBytes();
             inputStream.close();
             ByteBuffer buffer = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN);
@@ -78,10 +75,6 @@ public class Network {
             }
 
             short outputBias = buffer.getShort();
-
-//            while (buffer.hasRemaining()) {
-//                System.out.println(buffer.get());
-//            }
 
             return new Network(inputWeights, inputBiases, outputWeights, outputBias);
         } catch (IOException e) {

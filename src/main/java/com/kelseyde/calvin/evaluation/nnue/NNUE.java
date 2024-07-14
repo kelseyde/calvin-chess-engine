@@ -42,16 +42,37 @@ public class NNUE implements Evaluation {
         boolean white = board.isWhiteToMove();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
-        short[] weights = Network.DEFAULT.l1weights;
-
         int eval = Network.DEFAULT.l1bias;
-        for (int i = 0; i < Network.L1_SIZE; i++) {
-            eval += crelu(us[i]) * weights[i] + crelu(them[i]) * weights[i + Network.L1_SIZE];
-        }
+        eval += forward(us, 0);
+        eval += forward(them, Network.L1_SIZE);
         eval *= SCALE;
         eval /= QAB;
-
         return eval;
+    }
+
+    private int forward(short[] features, int weightOffset) {
+        short[] weights = Network.DEFAULT.l1weights;
+        short floor = 0;
+        short ceil = QA;
+        int sum = 0;
+        int i = 0;
+
+        for (; i < SPECIES.loopBound(features.length); i += SPECIES.length()) {
+            var vFeatures = ShortVector.fromArray(SPECIES, features, i);
+            var vWeights = ShortVector.fromArray(SPECIES, weights, i + weightOffset);
+
+            var vClipped = vFeatures.min(ceil).max(floor);
+            var vResult = vClipped.mul(vWeights);
+
+            sum += vResult.reduceLanes(VectorOperators.ADD);
+        }
+
+        for (; i < features.length; i++) {
+            short clipped = (short) Math.max(Math.min(features[i], ceil), floor);
+            sum += clipped * weights[i + weightOffset];
+        }
+
+        return sum;
     }
 
     public int evaluate2(Board board) {
@@ -60,6 +81,10 @@ public class NNUE implements Evaluation {
                 forward(accumulator.whiteFeatures, accumulator.blackFeatures, Network.DEFAULT.l1weights) :
                 forward(accumulator.blackFeatures, accumulator.whiteFeatures, Network.DEFAULT.l1weights);
         return (output + Network.DEFAULT.l1bias) * SCALE / QAB;
+    }
+
+    private int forward(short[] us, short[] them, short[] weights) {
+        return forward(us, 0) + forward(them, Network.L1_SIZE);
     }
 
     public void activateAll(Board board) {
@@ -159,35 +184,6 @@ public class NNUE implements Evaluation {
 
     public static int colourIndex(boolean white) {
         return white ? 1 : 0;
-    }
-
-    private int forward(short[] us, short[] them, short[] weights) {
-        return forwardCReLU(us, weights, 0) + forwardCReLU(them, weights, Network.L1_SIZE);
-    }
-
-    private int forwardCReLU(short[] features, short[] weights, int weightOffset) {
-        short floor = 0;
-        short ceil = 255;
-        int sum = 0;
-        int length = features.length;
-        int i = 0;
-
-        for (; i < SPECIES.loopBound(length); i += SPECIES.length()) {
-            var vFeatures = ShortVector.fromArray(SPECIES, features, i);
-            var vWeights = ShortVector.fromArray(SPECIES, weights, i + weightOffset);
-
-            var vClipped = vFeatures.min(ceil).max(floor);
-            var vResult = vClipped.mul(vWeights);
-
-            sum += vResult.reduceLanes(VectorOperators.ADD);
-        }
-
-        for (; i < length; i++) {
-            short clipped = (short) Math.max(Math.min(features[i], ceil), floor);
-            sum += clipped * weights[i + weightOffset];
-        }
-
-        return sum;
     }
 
     @Override

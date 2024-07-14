@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.endgame.lichess;
+package com.kelseyde.calvin.endgame;
 
 /**
  * Stores information for a single move returned from the Lichess tablebase API.

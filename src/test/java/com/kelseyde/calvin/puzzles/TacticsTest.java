@@ -2,7 +2,6 @@ package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -18,7 +17,6 @@ import java.time.Duration;
 @Disabled
 public class TacticsTest {
 
-    private final EngineConfig config = TestUtils.TST_CONFIG;
     private Search search;
 
     @BeforeEach

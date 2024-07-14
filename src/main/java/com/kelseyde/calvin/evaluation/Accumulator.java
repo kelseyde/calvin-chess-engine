@@ -12,8 +12,8 @@ public class Accumulator {
     /**
      * Two feature vectors, one from white's perspective, one from black's.
      */
-    public short[] whiteFeatures;
-    public short[] blackFeatures;
+    public final short[] whiteFeatures;
+    public final short[] blackFeatures;
 
     public Accumulator(int featureCount) {
         this.whiteFeatures = new short[featureCount];
@@ -37,21 +37,6 @@ public class Accumulator {
 
             whiteAddVector.intoArray(whiteFeatures, i);
             blackAddVector.intoArray(blackFeatures, i);
-        }
-    }
-
-    public void sub(int wx1, int bx1) {
-        short[] weights = Network.NETWORK.inputWeights();
-
-        for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            ShortVector blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
-
-            ShortVector whiteSubVector = whiteVector.sub(ShortVector.fromArray(SPECIES, weights, i + wx1 * Network.HIDDEN_SIZE));
-            ShortVector blackSubVector = blackVector.sub(ShortVector.fromArray(SPECIES, weights, i + bx1 * Network.HIDDEN_SIZE));
-
-            whiteSubVector.intoArray(whiteFeatures, i);
-            blackSubVector.intoArray(blackFeatures, i);
         }
     }
 

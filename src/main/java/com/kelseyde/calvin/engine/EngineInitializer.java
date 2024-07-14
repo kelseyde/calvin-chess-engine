@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.engine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kelseyde.calvin.endgame.LichessTablebase;
 import com.kelseyde.calvin.endgame.Tablebase;
-import com.kelseyde.calvin.endgame.lichess.LichessTablebase;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.generation.MoveGeneration;

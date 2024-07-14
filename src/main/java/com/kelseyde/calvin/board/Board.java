@@ -227,7 +227,7 @@ public class Board {
             toggleSquare(gameState.getCapturedPiece(), !whiteToMove, endSquare);
         }
         pieceList[startSquare] = piece;
-        pieceList[endSquare] = gameState.getCapturedPiece() != null ? gameState.getCapturedPiece() : null;;
+        pieceList[endSquare] = gameState.getCapturedPiece() != null ? gameState.getCapturedPiece() : null;
     }
 
     /**

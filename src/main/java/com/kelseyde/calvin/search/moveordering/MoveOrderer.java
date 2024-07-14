@@ -183,7 +183,7 @@ public class MoveOrderer implements MoveOrdering {
      * Adds a new killer move for a given ply.
      *
      * @param ply The current ply from root.
-     * @param newKiller The new killer move to be added.
+     * @param move The new killer move to be added.
      */
     public void addKillerMove(int ply, Move move) {
         if (ply >= MAX_KILLER_PLY) {

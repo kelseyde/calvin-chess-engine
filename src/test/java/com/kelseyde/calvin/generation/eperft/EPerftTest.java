@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.generation.eperft;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.tuning.perft.EPerftService;
+import com.kelseyde.calvin.perft.EPerftService;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.io.IOException;

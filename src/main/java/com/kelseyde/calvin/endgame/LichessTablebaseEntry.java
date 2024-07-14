@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.endgame.lichess;
+package com.kelseyde.calvin.endgame;
 
 import java.util.List;
 

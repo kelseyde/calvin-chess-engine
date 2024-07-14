@@ -7,6 +7,7 @@ import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import lombok.AccessLevel;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
@@ -28,10 +29,12 @@ public class QuiescentMovePicker implements MovePicking {
     final MoveOrdering moveOrderer;
 
     final Board board;
+    @Setter
     MoveFilter filter;
     Stage stage;
 
     List<Move> moves;
+    @Setter
     Move bestMove;
     int moveIndex;
     int[] scores;
@@ -131,14 +134,6 @@ public class QuiescentMovePicker implements MovePicking {
                 moves.set(j, firstMove);
             }
         }
-    }
-
-    public void setBestMove(Move bestMove) {
-        this.bestMove = bestMove;
-    }
-
-    public void setFilter(MoveFilter filter) {
-        this.filter = filter;
     }
 
 }

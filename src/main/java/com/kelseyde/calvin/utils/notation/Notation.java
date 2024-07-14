@@ -4,7 +4,8 @@ import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class Notation {
 
@@ -29,7 +30,7 @@ public class Notation {
     }
 
     /**
-     * Generate a {@link Move} from combined albegraic notation (e.g. "e2e4"), as used in the UCI protocol.
+     * Generate a {@link Move} from combined algebraic notation (e.g. "e2e4"), as used in the UCI protocol.
      * Special case promotion: "a2a1q" - values 'q' | 'b' | 'r' | 'n'
      */
     public static Move fromCombinedNotation(String notation) {
@@ -56,15 +57,6 @@ public class Notation {
             notation += PIECE_CODE_INDEX.get(move.getPromotionPiece());
         }
         return notation;
-    }
-
-    public static String toNotation(Deque<Move> moveHistory) {
-        List<Move> moves = new ArrayList<>(moveHistory);
-        Collections.reverse(moves);
-        return moves.stream()
-                .map(Notation::toNotation)
-                .toList()
-                .toString();
     }
 
     /**

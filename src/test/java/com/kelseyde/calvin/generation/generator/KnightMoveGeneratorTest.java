@@ -64,14 +64,4 @@ public class KnightMoveGeneratorTest {
 
     }
 
-    private void assertLegalSquares(int startSquare, Set<Integer> expectedLegalSquares) {
-        board.toggleSquare(Piece.KNIGHT, true, startSquare);
-        Set<Integer> legalSquares = generator.generateMoves(board).stream()
-                .filter(m -> m.getStartSquare() == startSquare)
-                .map(Move::getEndSquare)
-                .collect(Collectors.toSet());
-        Assertions.assertEquals(expectedLegalSquares, legalSquares);
-        board = TestUtils.emptyBoard();
-    }
-
 }

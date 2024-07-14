@@ -13,8 +13,8 @@ import java.util.List;
 
 public class MovePickerTest {
 
-    private MoveGenerator moveGenerator = new MoveGenerator();
-    private MoveOrderer moveOrderer = new MoveOrderer();
+    private final MoveGenerator moveGenerator = new MoveGenerator();
+    private final MoveOrderer moveOrderer = new MoveOrderer();
 
     @Test
     public void testInCheckDoesNotGenerateMovesTwice() {

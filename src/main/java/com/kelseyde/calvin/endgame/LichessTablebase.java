@@ -1,11 +1,9 @@
-package com.kelseyde.calvin.endgame.lichess;
+package com.kelseyde.calvin.endgame;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.endgame.Tablebase;
-import com.kelseyde.calvin.endgame.TablebaseException;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
@@ -151,7 +149,7 @@ public class LichessTablebase implements Tablebase {
         if (tablebaseEntry.moves().isEmpty()) {
             throw new TablebaseException("Lichess tablebase response was empty!");
         }
-        LichessTablebaseMove bestMove = tablebaseEntry.moves().get(0);
+        LichessTablebaseMove bestMove = tablebaseEntry.moves().getFirst();
         String uci = bestMove.uci();
         return Notation.fromCombinedNotation(uci);
     }

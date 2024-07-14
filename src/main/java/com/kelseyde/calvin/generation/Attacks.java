@@ -10,10 +10,6 @@ import java.util.Set;
 
 public class Attacks {
 
-    public static final long[] WHITE_PAWN_ATTACKS = generateWhitePawnAttacks();
-
-    public static final long[] BLACK_PAWN_ATTACKS = generateBlackPawnAttacks();
-
     public static final long[] KNIGHT_ATTACKS = new long[] {
             0x0000000000020400L, 0x0000000000050800L, 0x00000000000a1100L, 0x0000000000142200L,
             0x0000000000284400L, 0x0000000000508800L, 0x0000000000a01000L, 0x0000000000402000L,
@@ -148,16 +144,6 @@ public class Attacks {
         occ      *= lookup.magic;
         occ    >>>= lookup.shift;
         return lookup.attacks[(int) occ];
-    }
-
-    public static long[] generateWhitePawnAttacks() {
-        // TODO
-        return null;
-    }
-
-    public static long[] generateBlackPawnAttacks() {
-        // ODO
-        return null;
     }
 
     public static long[] initMagicMask(boolean isOrthogonal) {

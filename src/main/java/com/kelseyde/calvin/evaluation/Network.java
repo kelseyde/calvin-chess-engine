@@ -11,7 +11,7 @@ public record Network(short[] inputWeights, short[] inputBiases, short[] outputW
     public static final int INPUT_SIZE = 768;
     public static final int HIDDEN_SIZE = 256;
 
-    public static final String FILE = "256HL-3B5083B8.nnue";
+    public static final String FILE = "calvin5mil.nnue";
 
     public static final Network NETWORK = load();
 

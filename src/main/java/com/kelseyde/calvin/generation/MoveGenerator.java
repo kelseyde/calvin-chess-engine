@@ -80,7 +80,7 @@ public class MoveGenerator implements MoveGeneration {
         checkersMask = calculateAttackerMask(board, 1L << kingSquare);
         checkersCount = Bitwise.countBits(checkersMask);
 
-        int estimatedLegalMoves = estimateLegalMoves(board);
+        int estimatedLegalMoves = estimateLegalMoves();
         legalMoves = new ArrayList<>(estimatedLegalMoves);
 
         if (checkersCount > 0 && filter == MoveFilter.QUIET) {
@@ -600,7 +600,7 @@ public class MoveGenerator implements MoveGeneration {
      * with a 'best guess', to reduce the number of times the ArrayList has to grow during move
      * generation, yielding a small increase in performance.
      */
-    private int estimateLegalMoves(Board board) {
+    private int estimateLegalMoves() {
         return (Bitwise.countBits(pawns) * 2) +
                 (Bitwise.countBits(knights) * 3) +
                 (Bitwise.countBits(bishops) * 3) +

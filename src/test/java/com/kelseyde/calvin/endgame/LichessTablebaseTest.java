@@ -1,8 +1,6 @@
-package com.kelseyde.calvin.endgame.lichess;
+package com.kelseyde.calvin.endgame;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.endgame.Tablebase;
-import com.kelseyde.calvin.endgame.TablebaseException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;

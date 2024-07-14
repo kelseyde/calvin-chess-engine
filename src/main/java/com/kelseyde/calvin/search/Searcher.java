@@ -53,7 +53,7 @@ public class Searcher implements Search {
     boolean cancelled;
 
     int currentDepth;
-    int maxDepth = 256;
+    final int maxDepth = 256;
     int[] evalHistory = new int[maxDepth];
 
     Move bestMove;
@@ -150,7 +150,7 @@ public class Searcher implements Search {
         // If no move is found within the time limit, choose the first available move
         if (result == null) {
             System.out.println("Time expired before a move was found!");
-            bestMove = moveGenerator.generateMoves(board).get(0);
+            bestMove = moveGenerator.generateMoves(board).getFirst();
             result = buildResult();
         }
 

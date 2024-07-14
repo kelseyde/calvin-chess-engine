@@ -166,81 +166,9 @@ public class Bitwise {
     }
 
     /**
-     * Determine if a pawn is passed.
-     */
-    public static boolean isPassedPawn(int pawn, long opponentPawns, boolean white) {
-        long passedPawnMask = white ? Bits.WHITE_PASSED_PAWN_MASK[pawn] : Bits.BLACK_PASSED_PAWN_MASK[pawn];
-        return (passedPawnMask & opponentPawns) == 0;
-    }
-
-    /**
-     * Determine if a pawn is isolated.
-     */
-    public static boolean isIsolatedPawn(int file, long friendlyPawns) {
-        return (Bits.ADJACENT_FILE_MASK[file] & friendlyPawns) == 0;
-    }
-
-    /**
-     * Determine if a pawn is doubled.
-     */
-    public static boolean isDoubledPawn(int file, long friendlyPawns) {
-        long fileMask = Bits.FILE_MASKS[file];
-        return countBits(friendlyPawns & fileMask) > 1;
-    }
-
-    /**
-     * Get the pawn shield bitboard.
-     */
-    public static long getPawnShield(int kingFile, long pawns) {
-        long tripleFileMask = Bits.TRIPLE_FILE_MASK[kingFile];
-        return tripleFileMask & pawns;
-    }
-
-    /**
-     * Count the number of pawn protectors.
-     */
-    public static int countPawnProtectors(int square, long friendlyPawns, boolean white) {
-        long protectionMask = white ? Bits.WHITE_PROTECTED_PAWN_MASK[square] : Bits.BLACK_PROTECTED_PAWN_MASK[square];
-        return countBits(protectionMask & friendlyPawns);
-    }
-
-    public static boolean hasPotentialPawnAttackers(int square, long opponentPawns, boolean white) {
-        if (opponentPawns == 0) return false;
-        long potentialAttackerMask = white ? Bits.WHITE_FORWARD_ADJACENT_MASK[square] : Bits.BLACK_FORWARD_ADJACENT_MASK[square];
-        return (potentialAttackerMask & opponentPawns) != 0;
-    }
-
-    /**
-     * Determine if this square is an outpost
-     * @return 0 for no outpost, 1 for single-protected outpost, 2 for double-protected outpost
-     */
-    public static int isOutpost(int square, long friendlyPawns, long opponentPawns, boolean white) {
-        return !hasPotentialPawnAttackers(square, opponentPawns, white) ?
-                countPawnProtectors(square, friendlyPawns, white) :
-                0;
-    }
-
-    /**
-     * Determine if a file is open.
-     */
-    public static boolean isOpenFile(int file, long friendlyPawns, long opponentPawns) {
-        long fileMask = Bits.FILE_MASKS[file];
-        return (fileMask & friendlyPawns) == 0 && (fileMask & opponentPawns) == 0;
-    }
-
-    /**
-     * Determine if a file is semi-open.
-     */
-    public static boolean isSemiOpenFile(int file, long friendlyPawns, long opponentPawns) {
-        long fileMask = Bits.FILE_MASKS[file];
-        return (fileMask & friendlyPawns) == 0 && (fileMask & opponentPawns) != 0;
-    }
-
-    /**
      * Print the bitboard in a human-readable format.
      */
     public static void print(long board) {
-        String s = Long.toBinaryString(board);
         for (int i = 7; i >= 0; i--) {
             for (int n = 0; n < 8; n++) {
                 int index = BoardUtils.squareIndex(i, n);

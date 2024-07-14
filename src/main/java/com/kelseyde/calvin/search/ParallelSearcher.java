@@ -221,10 +221,4 @@ public class ParallelSearcher implements Search {
         System.out.println("info threads " + searchers.stream().map(Searcher::toString).toList());
     }
 
-    public void shutdown() {
-        if (executor != null) {
-            executor.shutdown();
-        }
-    }
-
 }

@@ -46,14 +46,6 @@ public interface MoveOrdering {
     int mvvLva(Board board, Move move, Move previousBestMove);
 
     /**
-     * Get a killer move for the given ply and killer index.
-     * @param ply the ply of the killer move
-     * @param index the index of the move in the killer move array.
-     * @return the killer move
-     */
-    Move getKillerMove(int ply, int index);
-
-    /**
      * Adds a killer move for a given ply (depth) in the search.
      *
      * @param ply The depth at which the move is considered a killer move.

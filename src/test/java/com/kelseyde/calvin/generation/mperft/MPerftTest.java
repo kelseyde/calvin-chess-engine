@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.generation.mperft;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.tuning.perft.MPerftService;
+import com.kelseyde.calvin.perft.MPerftService;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 

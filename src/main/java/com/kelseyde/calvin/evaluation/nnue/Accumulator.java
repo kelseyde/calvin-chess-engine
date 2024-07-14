@@ -40,6 +40,38 @@ public class Accumulator {
         }
     }
 
+    public void addWeights(short[] features, short[] weights, int offset) {
+        int length = features.length;
+        int i = 0;
+
+        for (; i < SPECIES.loopBound(length); i += SPECIES.length()) {
+            var vFeatures = ShortVector.fromArray(SPECIES, features, i);
+            var vWeights = ShortVector.fromArray(SPECIES, weights, i + offset);
+            var vResult = vFeatures.add(vWeights);
+            vResult.intoArray(features, i);
+        }
+
+        for (; i < length; i++) {
+            features[i] -= weights[i + offset];
+        }
+    }
+
+    public void subtractWeights(short[] features, short[] weights, int offset) {
+        int length = features.length;
+        int i = 0;
+
+        for (; i < SPECIES.loopBound(length); i += SPECIES.length()) {
+            var vFeatures = ShortVector.fromArray(SPECIES, features, i);
+            var vWeights = ShortVector.fromArray(SPECIES, weights, i + offset);
+            var vResult = vFeatures.sub(vWeights);
+            vResult.intoArray(features, i);
+        }
+
+        for (; i < length; i++) {
+            features[i] -= weights[i + offset];
+        }
+    }
+
     public void sub(int wx1, int bx1) {
         short[] weights = Network.DEFAULT.l0weights;
 

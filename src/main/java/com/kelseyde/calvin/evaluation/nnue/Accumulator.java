@@ -26,7 +26,7 @@ public class Accumulator {
     }
 
     public void add(int wx1, int bx1) {
-        short[] weights = Network.DEFAULT.inputWeights;
+        short[] weights = Network.DEFAULT.l0weights;
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
             ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
@@ -41,7 +41,7 @@ public class Accumulator {
     }
 
     public void sub(int wx1, int bx1) {
-        short[] weights = Network.DEFAULT.inputWeights;
+        short[] weights = Network.DEFAULT.l0weights;
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
             ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
@@ -56,7 +56,7 @@ public class Accumulator {
     }
 
     public void addSub(int wx1, int bx1, int wx2, int bx2) {
-        short[] weights = Network.DEFAULT.inputWeights;
+        short[] weights = Network.DEFAULT.l0weights;
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
             ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
@@ -76,7 +76,7 @@ public class Accumulator {
     }
 
     public void addSubSub(int wx1, int bx1, int wx2, int bx2, int wx3, int bx3) {
-        short[] weights = Network.DEFAULT.inputWeights;
+        short[] weights = Network.DEFAULT.l0weights;
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
             ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
@@ -99,7 +99,7 @@ public class Accumulator {
     }
 
     public void addAddSubSub(int wx1, int bx1, int wx2, int bx2, int wx3, int bx3, int wx4, int bx4) {
-        short[] weights = Network.DEFAULT.inputWeights;
+        short[] weights = Network.DEFAULT.l0weights;
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
             ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);

@@ -25,9 +25,12 @@ public abstract class PerftTest {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
         long totalMoveCount = perftService.perft(board, depth);
+        long totalNodeCount = perftService.totalNodeCount;
+        System.out.println("totalMoveCount: " + totalNodeCount);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
-        float nps = (float) (totalMoveCount / performance.toMillis()) * 1000;
+
+        float nps = (float) totalNodeCount / ((float) performance.toNanos() / 1000000);
         System.out.println("nps: " + nps);
         if (expectedTotalMoves == totalMoveCount) {
             writeResults(depth, performance);

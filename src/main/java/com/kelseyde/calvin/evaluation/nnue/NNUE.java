@@ -6,20 +6,19 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.utils.BoardUtils;
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorOperators;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-
-import static com.kelseyde.calvin.evaluation.nnue.Accumulator.SPECIES;
 
 public class NNUE implements Evaluation {
 
     private static final int COLOUR_STRIDE = 64 * 6;
     private static final int PIECE_STRIDE = 64;
-//    private static final int SCALE = 410;
-    //private static final int Q = 32767;
+
+    private static final int SCALE = 400;
+    private static final int QA = 255;
+    private static final int QB = 64;
+    private static final int QAB = QA * QB;
 
     public Accumulator accumulator;
     private Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
@@ -35,18 +34,64 @@ public class NNUE implements Evaluation {
 
     @Override
     public int evaluate(Board board) {
-        int Scale = 400;
-        int Q = 255 * 64;
         boolean white = board.isWhiteToMove();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
-        short[] weights = Network.DEFAULT.outputWeights;
-        int eval = Network.DEFAULT.outputBias +
-                forwardCReLU(us, weights, 0) +
-                forwardCReLU(them, weights, Network.L1_SIZE);
-        return eval * Scale / Q;
-//        double wdl = (double) eval / Q;
-//        return (int) (Math.round(SCALE * (Math.log(wdl / (1.0 - wdl)))));
+        short[] weights = Network.DEFAULT.l1weights;
+
+        int eval = Network.DEFAULT.l1bias;
+        for (int i = 0; i < Network.L1_SIZE; i++) {
+            short activationUs = us[i];
+            short clippedUs = crelu(activationUs);
+            short weightUs = weights[i];
+
+            short activationThem = them[i];
+            short clippedThem = crelu(activationThem);
+            short weightThem = weights[i + Network.L1_SIZE];
+
+            System.out.printf("aUs: %s cUs: %s wUs: %s aThem: %s cThem: %s wThem: %s%n", activationUs, clippedUs, weightUs, activationThem, clippedThem, weightThem);
+            System.out.printf("us = %s * %s = %s --- them = %s * %s = %s%n", clippedUs, weightUs, clippedUs * weightUs, clippedThem, weightThem, clippedThem * weightThem);
+            System.out.printf("eval = %s + %s + %s = %s%n", eval, clippedUs * weightUs, clippedThem * weightThem, eval + clippedUs * weightUs + clippedThem * weightThem);
+
+            eval += crelu(us[i]) * weights[i] + crelu(them[i]) * weights[i + Network.L1_SIZE];
+            System.out.printf("                                                                 eval: %s%n", eval);
+//            System.out.println("eval: " + eval);
+        }
+
+//        System.out.println("eval1: " + eval);
+        eval *= SCALE;
+//        System.out.println("eval2: " + eval);
+        eval /= QAB;
+//        System.out.println("eval3: " + eval);
+
+        return eval;
+    }
+
+    public void activateAll(Board board) {
+
+        for (int i = 0; i < Network.L1_SIZE; i++) {
+            accumulator.whiteFeatures[i] = Network.DEFAULT.l0biases[i];
+            accumulator.blackFeatures[i] = Network.DEFAULT.l0biases[i];
+        }
+
+        activateSide(board, board.getWhitePieces(), true);
+        activateSide(board, board.getBlackPieces(), false);
+
+    }
+
+    private static short crelu(short i) {
+        return (short) Math.max(0, Math.min(i, QA));
+    }
+
+    private void activateSide(Board board, long pieces, boolean white) {
+        while (pieces != 0) {
+            int square = Bitwise.getNextBit(pieces);
+            Piece piece = board.pieceAt(square);
+            int whiteIndex = featureIndex(piece, square, white, true);
+            int blackIndex = featureIndex(piece, square, white, false);
+            accumulator.add(whiteIndex, blackIndex);
+            pieces = Bitwise.popBit(pieces);
+        }
     }
 
     @Override
@@ -66,87 +111,36 @@ public class NNUE implements Evaluation {
         int newPieceBix = featureIndex(newPiece, endSquare, white, false);
 
         if (move.isCastling()) {
-            boolean isKingside = BoardUtils.getFile(endSquare) == 6;
-            if (isKingside) {
-                int rookStart = white ? 7 : 63;
-                int rookEnd = white ? 5 : 61;
-                int rookStartWix = featureIndex(Piece.ROOK, rookStart, white, true);
-                int rookStartBix = featureIndex(Piece.ROOK, rookStart, white, false);
-                int rookEndWix = featureIndex(Piece.ROOK, rookEnd, white, true);
-                int rookEndBix = featureIndex(Piece.ROOK, rookEnd, white, false);
-                accumulator.addAddSubSub(newPieceWix, newPieceBix, rookEndWix, rookEndBix, oldPieceWix, oldPieceBix, rookStartWix, rookStartBix);
-            } else {
-                int rookStart = white ? 0 : 56;
-                int rookEnd = white ? 3 : 59;
-                int rookStartWix = featureIndex(Piece.ROOK, rookStart, white, true);
-                int rookStartBix = featureIndex(Piece.ROOK, rookStart, white, false);
-                int rookEndWix = featureIndex(Piece.ROOK, rookEnd, white, true);
-                int rookEndBix = featureIndex(Piece.ROOK, rookEnd, white, false);
-                accumulator.addAddSubSub(newPieceWix, newPieceBix, rookEndWix, rookEndBix, oldPieceWix, oldPieceBix, rookStartWix, rookStartBix);
-            }
-        }
-        else if (capturedPiece != null) {
-            int captureSquare = move.getEndSquare();
-            if (move.isEnPassant()) captureSquare = white ? endSquare - 8 : endSquare + 8;
-            int capturedPieceWix = featureIndex(capturedPiece, captureSquare, !white, true);
-            int capturedPieceBix = featureIndex(capturedPiece, captureSquare, !white, false);
-            accumulator.addSubSub(newPieceWix, newPieceBix, oldPieceWix, oldPieceBix, capturedPieceWix, capturedPieceBix);
+            handleCastleMove(white, endSquare, oldPieceWix, oldPieceBix, newPieceWix, newPieceBix);
+        } else if (capturedPiece != null) {
+            handleCapture(move, capturedPiece, white, newPieceWix, newPieceBix, oldPieceWix, oldPieceBix);
         } else {
             accumulator.addSub(newPieceWix, newPieceBix, oldPieceWix, oldPieceBix);
         }
     }
 
+    private void handleCastleMove(boolean white, int endSquare, int oldPieceWix, int oldPieceBix, int newPieceWix, int newPieceBix) {
+        boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+        int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
+        int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
+        int rookStartWix = featureIndex(Piece.ROOK, rookStart, white, true);
+        int rookStartBix = featureIndex(Piece.ROOK, rookStart, white, false);
+        int rookEndWix = featureIndex(Piece.ROOK, rookEnd, white, true);
+        int rookEndBix = featureIndex(Piece.ROOK, rookEnd, white, false);
+        accumulator.addAddSubSub(newPieceWix, newPieceBix, rookEndWix, rookEndBix, oldPieceWix, oldPieceBix, rookStartWix, rookStartBix);
+    }
+
+    private void handleCapture(Move move, Piece capturedPiece, boolean white, int newPieceWix, int newPieceBix, int oldPieceWix, int oldPieceBix) {
+        int captureSquare = move.getEndSquare();
+        if (move.isEnPassant()) captureSquare = white ? move.getEndSquare() - 8 : move.getEndSquare() + 8;
+        int capturedPieceWix = featureIndex(capturedPiece, captureSquare, !white, true);
+        int capturedPieceBix = featureIndex(capturedPiece, captureSquare, !white, false);
+        accumulator.addSubSub(newPieceWix, newPieceBix, oldPieceWix, oldPieceBix, capturedPieceWix, capturedPieceBix);
+    }
+
     @Override
     public void unmakeMove() {
         this.accumulator = accumulatorHistory.pop();
-    }
-
-    public void activateAll(Board board) {
-
-        for (int i = 0; i < Network.L1_SIZE; i++) {
-            accumulator.whiteFeatures[i] = Network.DEFAULT.inputBiases[i];
-            accumulator.blackFeatures[i] = Network.DEFAULT.inputBiases[i];
-        }
-
-        activateSide(board, board.getWhitePieces(), true);
-        activateSide(board, board.getBlackPieces(), false);
-
-    }
-
-    private int forwardCReLU(short[] features, short[] weights, int offset) {
-        short floor = 0;
-        short ceil = 255;
-        int sum = 0;
-        int length = features.length;
-        int i = 0;
-
-        for (; i < SPECIES.loopBound(length); i += SPECIES.length()) {
-            var vFeatures = ShortVector.fromArray(SPECIES, features, i);
-            var vWeights = ShortVector.fromArray(SPECIES, weights, i + offset);
-
-            var vClipped = vFeatures.min(ceil).max(floor);
-            var vResult = vClipped.mul(vWeights);
-
-            sum += vResult.reduceLanes(VectorOperators.ADD);
-        }
-
-        for (; i < length; i++) {
-            short clipped = (short) Math.max(Math.min(features[i], ceil), floor);
-            sum += clipped * weights[i + offset];
-        }
-
-        return sum;
-    }
-
-    private void activateSide(Board board, long pieces, boolean white) {
-        while (pieces != 0) {
-            int square = Bitwise.getNextBit(pieces);
-            Piece piece = board.pieceAt(square);
-            int whiteIndex = featureIndex(piece, square, white, true);
-            int blackIndex = featureIndex(piece, square, white, false);
-            accumulator.add(whiteIndex, blackIndex);
-            pieces = Bitwise.popBit(pieces);
-        }
     }
 
     private static int featureIndex(Piece piece, int square, boolean white, boolean whiteIndex) {
@@ -157,7 +151,6 @@ public class NNUE implements Evaluation {
         int colourOffset = isSideToMoveFeature ? 0 : COLOUR_STRIDE;
         return colourOffset + pieceOffset + squareIndex;
     }
-
 
     @Override
     public void clearHistory() {

@@ -9,7 +9,7 @@ import java.nio.ByteOrder;
 public class Network {
 
     public static final int L0_SIZE = 768;
-    public static final int L1_SIZE = 256;
+    public static final int L1_SIZE = 256; // TODO what the heck is happening here
 
     public static Network DEFAULT = loadNetwork();
 
@@ -17,36 +17,37 @@ public class Network {
      * The weights for each connection between the input layer and the hidden layer.
      * Size is INPUT_SIZE * HIDDEN_LAYER_SIZE = 768 * 256 = 196608
      */
-    public short[] inputWeights;
+    public short[] l0weights;
 
     /**
      * Biases for the first hidden layer.
      * Size is HIDDEN_LAYER_SIZE = 256.
      */
-    public short[] inputBiases;
+    public short[] l0biases;
 
     /**
      * Weights for each connection between the hidden layer and the output layer.
      * Size is HIDDEN_LAYER_SIZE = 256
      */
-    public short[] outputWeights;
+    public short[] l1weights;
 
     /**
      * Bias for the output layer.
      */
-    public short outputBias;
+    public short l1bias;
 
-    public Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
-        this.inputWeights = inputWeights;
-        this.inputBiases = inputBiases;
-        this.outputWeights = outputWeights;
-        this.outputBias = outputBias;
+    public Network(short[] l0weights, short[] inputBiases, short[] outputWeights, short outputBias) {
+        this.l0weights = l0weights;
+        this.l0biases = inputBiases;
+        this.l1weights = outputWeights;
+        this.l1bias = outputBias;
     }
 
     public static Network loadNetwork() {
         try {
             // Use the class loader to get the resource as an input stream
             InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/256HL-3B5083B8.nnue");
+//            InputStream inputStream = Network.class.getClassLoader().getResourceAsStream("nnue/calvinball3-epoch40.nnue");
             if (inputStream == null) {
                 throw new FileNotFoundException("NNUE file not found in resources");
             }
@@ -77,6 +78,10 @@ public class Network {
             }
 
             short outputBias = buffer.getShort();
+
+//            while (buffer.hasRemaining()) {
+//                System.out.println(buffer.get());
+//            }
 
             return new Network(inputWeights, inputBiases, outputWeights, outputBias);
         } catch (IOException e) {

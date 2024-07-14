@@ -2,7 +2,7 @@ package com.kelseyde.calvin.tuning.texel;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.nnue.NNUE;
+import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.utils.notation.FEN;
 import lombok.AllArgsConstructor;
 import lombok.Data;

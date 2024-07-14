@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.endgame.Tablebase;
 import com.kelseyde.calvin.endgame.lichess.LichessTablebase;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.nnue.NNUE;
-import com.kelseyde.calvin.evaluation.nnue.Network;
+import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.opening.OpeningBook;
@@ -29,20 +28,18 @@ import java.util.stream.Collectors;
 public class EngineInitializer {
 
     static final String DEFAULT_CONFIG_LOCATION = "/engine_config.json";
-    static final String DEFAULT_BOOK_LOCATION = "/opening_book.txt";
     static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static Engine loadEngine() {
         EngineConfig config = loadDefaultConfig();
         config.postInitialise();
-        OpeningBook book = loadDefaultOpeningBook();
+        OpeningBook book = loadDefaultOpeningBook(config);
         Tablebase tablebase = loadDefaultTablebase(config);
         TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
         Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
         Supplier<Evaluation> evaluator = NNUE::new;
         Search searcher = new ParallelSearcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
-        Network.DEFAULT = Network.loadNetwork();
         return new Engine(config, book, tablebase, moveGenerator.get(), searcher);
     }
 
@@ -60,8 +57,8 @@ public class EngineInitializer {
         }
     }
 
-    public static OpeningBook loadDefaultOpeningBook() {
-        return loadOpeningBook(DEFAULT_BOOK_LOCATION);
+    public static OpeningBook loadDefaultOpeningBook(EngineConfig config) {
+        return loadOpeningBook(config.getOwnBookFile());
     }
 
     public static Tablebase loadDefaultTablebase(EngineConfig config) {

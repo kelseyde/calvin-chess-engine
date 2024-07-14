@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation.hce;
+package com.kelseyde.calvin.evaluation;
 
 public class Score {
 

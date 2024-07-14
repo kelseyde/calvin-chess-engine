@@ -1,10 +1,9 @@
-package com.kelseyde.calvin.evaluation.nnue;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.utils.BoardUtils;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
@@ -15,25 +14,22 @@ import java.util.Deque;
 
 public class NNUE implements Evaluation {
 
-    private static final int COLOUR_STRIDE = 64 * 6;
-    private static final int PIECE_STRIDE = 64;
-
+    private static final int COLOUR_OFFSET = 64 * 6;
+    private static final int PIECE_OFFSET = 64;
     private static final int SCALE = 400;
     private static final int QA = 255;
     private static final int QB = 64;
     private static final int QAB = QA * QB;
-    private static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
-
 
     public Accumulator accumulator;
     private Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
 
     public NNUE() {
-        this.accumulator = new Accumulator(Network.L1_SIZE);
+        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
     }
 
     public NNUE(Board board) {
-        this.accumulator = new Accumulator(Network.L1_SIZE);
+        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
         activateAll(board);
     }
 
@@ -42,24 +38,25 @@ public class NNUE implements Evaluation {
         boolean white = board.isWhiteToMove();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
-        int eval = Network.DEFAULT.l1bias;
+        int eval = Network.NETWORK.outputBias();
         eval += forward(us, 0);
-        eval += forward(them, Network.L1_SIZE);
+        eval += forward(them, Network.HIDDEN_SIZE);
         eval *= SCALE;
         eval /= QAB;
         return eval;
     }
 
     private int forward(short[] features, int weightOffset) {
-        short[] weights = Network.DEFAULT.l1weights;
+        short[] weights = Network.NETWORK.outputWeights();
         short floor = 0;
         short ceil = QA;
         int sum = 0;
         int i = 0;
 
-        for (; i < SPECIES.loopBound(features.length); i += SPECIES.length()) {
-            var vFeatures = ShortVector.fromArray(SPECIES, features, i);
-            var vWeights = ShortVector.fromArray(SPECIES, weights, i + weightOffset);
+        VectorSpecies<Short> species = ShortVector.SPECIES_PREFERRED;
+        for (; i < species.loopBound(features.length); i += species.length()) {
+            var vFeatures = ShortVector.fromArray(species, features, i);
+            var vWeights = ShortVector.fromArray(species, weights, i + weightOffset);
 
             var vClipped = vFeatures.min(ceil).max(floor);
             var vResult = vClipped.mul(vWeights);
@@ -75,32 +72,16 @@ public class NNUE implements Evaluation {
         return sum;
     }
 
-    public int evaluate2(Board board) {
-        boolean white = board.isWhiteToMove();
-        int output = white ?
-                forward(accumulator.whiteFeatures, accumulator.blackFeatures, Network.DEFAULT.l1weights) :
-                forward(accumulator.blackFeatures, accumulator.whiteFeatures, Network.DEFAULT.l1weights);
-        return (output + Network.DEFAULT.l1bias) * SCALE / QAB;
-    }
-
-    private int forward(short[] us, short[] them, short[] weights) {
-        return forward(us, 0) + forward(them, Network.L1_SIZE);
-    }
-
     public void activateAll(Board board) {
 
-        for (int i = 0; i < Network.L1_SIZE; i++) {
-            accumulator.whiteFeatures[i] = Network.DEFAULT.l0biases[i];
-            accumulator.blackFeatures[i] = Network.DEFAULT.l0biases[i];
+        for (int i = 0; i < Network.HIDDEN_SIZE; i++) {
+            accumulator.whiteFeatures[i] = Network.NETWORK.inputBiases()[i];
+            accumulator.blackFeatures[i] = Network.NETWORK.inputBiases()[i];
         }
 
         activateSide(board, board.getWhitePieces(), true);
         activateSide(board, board.getBlackPieces(), false);
 
-    }
-
-    private static short crelu(short i) {
-        return (short) Math.max(0, Math.min(i, QA));
     }
 
     private void activateSide(Board board, long pieces, boolean white) {
@@ -166,36 +147,17 @@ public class NNUE implements Evaluation {
     private static int featureIndex(Piece piece, int square, boolean white, boolean whiteIndex) {
         int squareIndex = whiteIndex ? square : square ^ 56;
         int pieceIndex = piece.getIndex();
-        int pieceOffset = pieceIndex * PIECE_STRIDE;
+        int pieceOffset = pieceIndex * PIECE_OFFSET;
         boolean isSideToMoveFeature = white == whiteIndex;
-        int colourOffset = isSideToMoveFeature ? 0 : COLOUR_STRIDE;
+        int colourOffset = isSideToMoveFeature ? 0 : COLOUR_OFFSET;
         return colourOffset + pieceOffset + squareIndex;
-    }
-
-    public static int featureIndex2(Piece piece, int square, boolean white, boolean whiteIndex) {
-        int pieceIndex = piece.getIndex();
-        int colourIndex = colourIndex(white);
-        if (whiteIndex) {
-            return (colourIndex ^ 1) * COLOUR_STRIDE + pieceIndex * PIECE_STRIDE + square;
-        } else {
-            return colourIndex * COLOUR_STRIDE + pieceIndex * PIECE_STRIDE + square ^ 0x38;
-        }
-    }
-
-    public static int colourIndex(boolean white) {
-        return white ? 1 : 0;
     }
 
     @Override
     public void clearHistory() {
-        this.accumulator = new Accumulator(Network.L1_SIZE);
+        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
         this.accumulatorHistory = new ArrayDeque<>();
     }
 
-    public static void main(String[] args) {
-        Board board = new Board();
-        NNUE nnue = new NNUE(board);
-        nnue.evaluate2(board);
-    }
 
 }

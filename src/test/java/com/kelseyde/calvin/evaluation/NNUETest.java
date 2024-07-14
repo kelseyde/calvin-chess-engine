@@ -1,13 +1,7 @@
-package com.kelseyde.calvin.nnue;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.hce.Evaluator;
-import com.kelseyde.calvin.evaluation.nnue.NNUE;
-import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class NNUETest {
@@ -29,9 +23,7 @@ public class NNUETest {
     private void benchmark(String name, String fen) {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
-        Evaluator hce = new Evaluator(TestUtils.PRD_CONFIG);
-        System.out.printf("%s %s hce %s nnue %s%n", name, fen, hce.evaluate(board), nnue.evaluate(board));
-        System.out.printf("%s %s hce %s nnue %s%n", name, fen, hce.evaluate(board), nnue.evaluate2(board));
+        System.out.printf("%s %s nnue %s%n", name, fen, nnue.evaluate(board));
     }
 
 }

@@ -6,6 +6,9 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.utils.BoardUtils;
+import jdk.incubator.vector.ShortVector;
+import jdk.incubator.vector.VectorOperators;
+import jdk.incubator.vector.VectorSpecies;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -19,6 +22,8 @@ public class NNUE implements Evaluation {
     private static final int QA = 255;
     private static final int QB = 64;
     private static final int QAB = QA * QB;
+    private static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
+
 
     public Accumulator accumulator;
     private Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
@@ -41,31 +46,20 @@ public class NNUE implements Evaluation {
 
         int eval = Network.DEFAULT.l1bias;
         for (int i = 0; i < Network.L1_SIZE; i++) {
-//            short activationUs = us[i];
-//            short clippedUs = crelu(activationUs);
-//            short weightUs = weights[i];
-//
-//            short activationThem = them[i];
-//            short clippedThem = crelu(activationThem);
-//            short weightThem = weights[i + Network.L1_SIZE];
-//
-//            System.out.printf("aUs: %s cUs: %s wUs: %s aThem: %s cThem: %s wThem: %s%n", activationUs, clippedUs, weightUs, activationThem, clippedThem, weightThem);
-//            System.out.printf("us = %s * %s = %s --- them = %s * %s = %s%n", clippedUs, weightUs, clippedUs * weightUs, clippedThem, weightThem, clippedThem * weightThem);
-//            System.out.printf("eval = %s + %s + %s = %s%n", eval, clippedUs * weightUs, clippedThem * weightThem, eval + clippedUs * weightUs + clippedThem * weightThem);
-
             eval += crelu(us[i]) * weights[i] + crelu(them[i]) * weights[i + Network.L1_SIZE];
-//            System.out.printf("                                                                 eval: %s%n", eval);
-//            System.out.println("eval: " + eval);
         }
-
-//        System.out.println("eval1: " + eval);
-//        eval /= QA;
         eval *= SCALE;
-//        System.out.println("eval2: " + eval);
         eval /= QAB;
-//        System.out.println("eval3: " + eval);
 
         return eval;
+    }
+
+    public int evaluate2(Board board) {
+        boolean white = board.isWhiteToMove();
+        int output = white ?
+                forward(accumulator.whiteFeatures, accumulator.blackFeatures, Network.DEFAULT.l1weights) :
+                forward(accumulator.blackFeatures, accumulator.whiteFeatures, Network.DEFAULT.l1weights);
+        return (output + Network.DEFAULT.l1bias) * SCALE / QAB;
     }
 
     public void activateAll(Board board) {
@@ -153,10 +147,59 @@ public class NNUE implements Evaluation {
         return colourOffset + pieceOffset + squareIndex;
     }
 
+    public static int featureIndex2(Piece piece, int square, boolean white, boolean whiteIndex) {
+        int pieceIndex = piece.getIndex();
+        int colourIndex = colourIndex(white);
+        if (whiteIndex) {
+            return (colourIndex ^ 1) * COLOUR_STRIDE + pieceIndex * PIECE_STRIDE + square;
+        } else {
+            return colourIndex * COLOUR_STRIDE + pieceIndex * PIECE_STRIDE + square ^ 0x38;
+        }
+    }
+
+    public static int colourIndex(boolean white) {
+        return white ? 1 : 0;
+    }
+
+    private int forward(short[] us, short[] them, short[] weights) {
+        return forwardCReLU(us, weights, 0) + forwardCReLU(them, weights, Network.L1_SIZE);
+    }
+
+    private int forwardCReLU(short[] features, short[] weights, int weightOffset) {
+        short floor = 0;
+        short ceil = 255;
+        int sum = 0;
+        int length = features.length;
+        int i = 0;
+
+        for (; i < SPECIES.loopBound(length); i += SPECIES.length()) {
+            var vFeatures = ShortVector.fromArray(SPECIES, features, i);
+            var vWeights = ShortVector.fromArray(SPECIES, weights, i + weightOffset);
+
+            var vClipped = vFeatures.min(ceil).max(floor);
+            var vResult = vClipped.mul(vWeights);
+
+            sum += vResult.reduceLanes(VectorOperators.ADD);
+        }
+
+        for (; i < length; i++) {
+            short clipped = (short) Math.max(Math.min(features[i], ceil), floor);
+            sum += clipped * weights[i + weightOffset];
+        }
+
+        return sum;
+    }
+
     @Override
     public void clearHistory() {
         this.accumulator = new Accumulator(Network.L1_SIZE);
         this.accumulatorHistory = new ArrayDeque<>();
+    }
+
+    public static void main(String[] args) {
+        Board board = new Board();
+        NNUE nnue = new NNUE(board);
+        nnue.evaluate2(board);
     }
 
 }

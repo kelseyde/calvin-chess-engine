@@ -41,24 +41,25 @@ public class NNUE implements Evaluation {
 
         int eval = Network.DEFAULT.l1bias;
         for (int i = 0; i < Network.L1_SIZE; i++) {
-            short activationUs = us[i];
-            short clippedUs = crelu(activationUs);
-            short weightUs = weights[i];
-
-            short activationThem = them[i];
-            short clippedThem = crelu(activationThem);
-            short weightThem = weights[i + Network.L1_SIZE];
-
-            System.out.printf("aUs: %s cUs: %s wUs: %s aThem: %s cThem: %s wThem: %s%n", activationUs, clippedUs, weightUs, activationThem, clippedThem, weightThem);
-            System.out.printf("us = %s * %s = %s --- them = %s * %s = %s%n", clippedUs, weightUs, clippedUs * weightUs, clippedThem, weightThem, clippedThem * weightThem);
-            System.out.printf("eval = %s + %s + %s = %s%n", eval, clippedUs * weightUs, clippedThem * weightThem, eval + clippedUs * weightUs + clippedThem * weightThem);
+//            short activationUs = us[i];
+//            short clippedUs = crelu(activationUs);
+//            short weightUs = weights[i];
+//
+//            short activationThem = them[i];
+//            short clippedThem = crelu(activationThem);
+//            short weightThem = weights[i + Network.L1_SIZE];
+//
+//            System.out.printf("aUs: %s cUs: %s wUs: %s aThem: %s cThem: %s wThem: %s%n", activationUs, clippedUs, weightUs, activationThem, clippedThem, weightThem);
+//            System.out.printf("us = %s * %s = %s --- them = %s * %s = %s%n", clippedUs, weightUs, clippedUs * weightUs, clippedThem, weightThem, clippedThem * weightThem);
+//            System.out.printf("eval = %s + %s + %s = %s%n", eval, clippedUs * weightUs, clippedThem * weightThem, eval + clippedUs * weightUs + clippedThem * weightThem);
 
             eval += crelu(us[i]) * weights[i] + crelu(them[i]) * weights[i + Network.L1_SIZE];
-            System.out.printf("                                                                 eval: %s%n", eval);
+//            System.out.printf("                                                                 eval: %s%n", eval);
 //            System.out.println("eval: " + eval);
         }
 
 //        System.out.println("eval1: " + eval);
+//        eval /= QA;
         eval *= SCALE;
 //        System.out.println("eval2: " + eval);
         eval /= QAB;
@@ -144,7 +145,7 @@ public class NNUE implements Evaluation {
     }
 
     private static int featureIndex(Piece piece, int square, boolean white, boolean whiteIndex) {
-        int squareIndex = white ? square : square ^ 56;
+        int squareIndex = whiteIndex ? square : square ^ 56;
         int pieceIndex = piece.getIndex();
         int pieceOffset = pieceIndex * PIECE_STRIDE;
         boolean isSideToMoveFeature = white == whiteIndex;

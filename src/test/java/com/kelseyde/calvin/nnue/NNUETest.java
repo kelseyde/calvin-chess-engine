@@ -18,11 +18,11 @@ public class NNUETest {
         String startpos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         benchmark("startpos", startpos);
 
-//        String lostPos = "rnbqkbnr/pppppppp/8/8/8/8/8/3QK3 w kq - 0 1";
-//        benchmark("lostPos", lostPos);
-//
-//        String wonPos = "rn2k1nr/ppp2ppp/8/4P3/1BP3b1/8/PP3KPP/RN1q1BR1 w kq - 0 10";
-//        benchmark("wonPos", wonPos);
+        String lostPos = "rnbqkbnr/pppppppp/8/8/8/8/8/3QK3 w kq - 0 1";
+        benchmark("lostpos", lostPos);
+
+        String wonPos = "rn2k1nr/ppp2ppp/8/4P3/2P3b1/8/PP1B1KPP/RN1q1BR1 b kq - 1 10";
+        benchmark("wonpos", wonPos);
 
     }
 

@@ -1,1 +1,4 @@
-calvin5mil: running loss 0.011590
+--- calvin5mil: running loss 0.011590
+(500) Elo difference: 41.0 +/- 26.5, LOS: 99.9 %, DrawRatio: 23.7 %
+
+--- calvin500mil running loss 0.013709

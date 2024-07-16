@@ -161,6 +161,32 @@ public class Searcher implements Search {
 
     }
 
+    @Override
+    public SearchResult searchToDepth(int depth) {
+        nodes = 0;
+        evalHistory = new int[maxDepth];
+        currentDepth = depth;
+        bestMove = null;
+        bestMoveCurrentDepth = null;
+        bestEval = 0;
+        bestEvalCurrentDepth = 0;
+        cancelled = false;
+        moveOrderer.ageHistoryScores(board.isWhiteToMove());
+        int alpha = Integer.MIN_VALUE + 1;
+        int beta = Integer.MAX_VALUE - 1;
+
+        search(depth, 0, alpha, beta, true);
+
+        if (bestMoveCurrentDepth == null) {
+            System.out.println("info error: no move found at depth " + depth);
+            return null;
+        }
+        bestMove = bestMoveCurrentDepth;
+        bestEval = bestEvalCurrentDepth;
+        result = buildResult();
+        return result;
+    }
+
     /**
      * Run a single iteration of the iterative deepening search for a specific depth.
      *
@@ -535,7 +561,7 @@ public class Searcher implements Search {
     }
 
     private SearchResult buildResult() {
-        long millis = Duration.between(start, Instant.now()).toMillis();
+        long millis = start != null ? Duration.between(start, Instant.now()).toMillis() : 0;
         long nps = nodes > 0 && millis > 0 ? ((nodes / millis) * 1000) : 0;
         return new SearchResult(bestEval, bestMove, currentDepth, millis, nodes, nps);
     }

@@ -109,7 +109,7 @@ public class ParallelSearcher implements Search {
             setPosition(board);
             threadManager.reset();
             List<Thread> threads = searchers.stream()
-                    .map(searcher -> Thread.ofVirtual().start(() -> searcher.search(depth)))
+                    .map(searcher -> Thread.ofVirtual().start(() -> searcher.searchToDepth(depth)))
                     .toList();
 
             for (Thread thread : threads) {

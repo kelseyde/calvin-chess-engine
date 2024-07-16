@@ -17,3 +17,4 @@ Network: (768->256)x2->1
 Data: #1 100 million Leela fens re-scored with Calvin's own search + evaluation.
 Training: epochs 100 lr 0.001 wdl 0.1 gamma 0.5 lr-step 15
 Loss: 0.002470
+Result: (1000 games) Elo difference: 10.6 +/- 18.2, LOS: 87.4 %, DrawRatio: 27.8 %

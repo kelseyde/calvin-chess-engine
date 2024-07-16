@@ -38,7 +38,7 @@ public interface Search {
      * @param depth the depth to search to
      * @return a {@link SearchResult} containing the best move and the current eval.
      */
-    SearchResult search(int depth);
+    SearchResult searchToDepth(int depth);
 
     /**
      * @return the {@link TranspositionTable} used by the search algorithm.

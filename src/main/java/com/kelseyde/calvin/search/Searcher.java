@@ -163,10 +163,10 @@ public class Searcher implements Search {
     }
 
     @Override
-    public SearchResult search(int depth) {
+    public SearchResult searchToDepth(int depth) {
         nodes = 0;
         evalHistory = new int[maxDepth];
-        currentDepth = 1;
+        currentDepth = depth;
         bestMove = null;
         bestMoveCurrentDepth = null;
         bestEval = 0;
@@ -175,14 +175,16 @@ public class Searcher implements Search {
         moveOrderer.ageHistoryScores(board.isWhiteToMove());
         int alpha = Integer.MIN_VALUE + 1;
         int beta = Integer.MAX_VALUE - 1;
-        int eval = search(currentDepth, 0, alpha, beta, true);
 
-        // Update the best move and evaluation if a better move is found
-        if (bestMoveCurrentDepth != null) {
-            bestMove = bestMoveCurrentDepth;
-            bestEval = bestEvalCurrentDepth;
-            result = buildResult();
+        search(depth, 0, alpha, beta, true);
+
+        if (bestMoveCurrentDepth == null) {
+            System.out.println("info error: no move found at depth " + depth);
+            return null;
         }
+        bestMove = bestMoveCurrentDepth;
+        bestEval = bestEvalCurrentDepth;
+        result = buildResult();
         return result;
     }
 

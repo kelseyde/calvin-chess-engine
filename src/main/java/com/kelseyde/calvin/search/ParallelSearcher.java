@@ -104,7 +104,7 @@ public class ParallelSearcher implements Search {
     }
 
     @Override
-    public SearchResult search(int depth) {
+    public SearchResult searchToDepth(int depth) {
         try {
             setPosition(board);
             threadManager.reset();

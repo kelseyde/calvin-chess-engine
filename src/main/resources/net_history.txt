@@ -2,3 +2,10 @@
 (500) Elo difference: 41.0 +/- 26.5, LOS: 99.9 %, DrawRatio: 23.7 %
 
 --- calvin500mil running loss 0.013709
+(500) Elo difference: 1.4 +/- 26.5, LOS: 54.1 %, DrawRatio: 23.8 %
+
+--- calvin300mil: running loss 0.011613
+(500) Elo difference: 32.1 +/- 26.2, LOS: 99.2 %, DrawRatio: 26.4 %
+
+--- calvin300mil_wdl0: running loss 0.010236
+(500) Elo difference: 24.9 +/- 25.7, LOS: 97.1 %, DrawRatio: 26.4 %

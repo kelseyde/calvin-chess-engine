@@ -103,6 +103,12 @@ public class ParallelSearcher implements Search {
         }
     }
 
+    @Override
+    public SearchResult searchToDepth(int depth) {
+        setPosition(board);
+        return searchers.getFirst().searchToDepth(depth);
+    }
+
 
     /**
      * Sets the current board position for all searchers. This is done by copying the board to each searcher.

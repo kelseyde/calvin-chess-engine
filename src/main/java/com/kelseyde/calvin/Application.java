@@ -6,11 +6,14 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.train.TrainingDataScorer;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.notation.Notation;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +31,7 @@ public class Application {
     static final String[] POSITION_LABELS = new String[] { "position", "fen", "moves" };
     static final String[] GO_LABELS = new String[] { "go", "movetime", "wtime", "btime", "winc", "binc", "movestogo" };
     static final String[] SETOPTION_LABELS = new String[] { "setoption", "name", "value" };
+    static final int DEFAULT_SCORE_DEPTH = 6;
 
     public static void main(String[] args) {
         try {
@@ -44,6 +48,7 @@ public class Application {
                         case "position" ->    handlePosition(command);
                         case "go" ->          handleGo(command);
                         case "ponderhit" ->   handlePonderHit();
+                        case "scoredata" ->   handleScoreData(command);
                         case "stop" ->        handleStop();
                         case "quit" ->        handleQuit();
                         default ->            write("Unrecognised command: " + command);
@@ -141,6 +146,36 @@ public class Application {
 
     private static void handlePonderHit() {
         ENGINE.setPondering(false);
+    }
+
+    private static void handleScoreData(String command) {
+        String[] parts = command.split(" ");
+        if (parts.length < 3) {
+            write("info error invalid command; input and output file must be specified; e.g. 'scoredata input.txt output.txt'");
+            return;
+        }
+        String inputFile = parts[1];
+        String outputFile = parts[2];
+        if (!Files.exists(Path.of(inputFile))) {
+            write("info error input file " + inputFile + " does not exist");
+            return;
+        }
+        int depth = DEFAULT_SCORE_DEPTH;
+        if (parts.length > 3) {
+            try {
+                depth = Integer.parseInt(parts[3]);
+            } catch (NumberFormatException e) {
+                write("info error invalid depth; must be an integer; e.g. 'scoredata input.txt output.txt 6'");
+                return;
+            }
+        }
+        try {
+            TrainingDataScorer scorer = new TrainingDataScorer();
+            scorer.score(inputFile, outputFile, depth);
+        } catch (Exception e) {
+            write("info error " + e.getMessage());
+        }
+        write("info string score data complete");
     }
 
     private static void handleStop() {

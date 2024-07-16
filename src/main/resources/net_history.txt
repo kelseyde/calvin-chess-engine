@@ -1,11 +1,19 @@
---- calvin5mil: running loss 0.011590
-(500) Elo difference: 41.0 +/- 26.5, LOS: 99.9 %, DrawRatio: 23.7 %
+1. "beginner"
+Network: (768->256)x2->1
+Data: #1 100 million Leela fens re-scored with Calvin's own search + evaluation.
+Training: epochs 100 lr 0.001 wdl 0.3 gamma 0.5 lr-step 15
+Loss: 0.009731
+Result: (1000 games) Elo difference: 31.4 +/- 18.3, LOS: 100.0 %, DrawRatio: 25.4 %
 
---- calvin500mil running loss 0.013709
-(500) Elo difference: 1.4 +/- 26.5, LOS: 54.1 %, DrawRatio: 23.8 %
+2. "rookie"
+Network: (768->256)x2->1
+Data: #1 100 million Leela fens re-scored with Calvin's own search + evaluation.
+Training: epochs 100 lr 0.001 wdl 0.75 gamma 0.5 lr-step 15
+Loss: 0.050893
+Result: (1000 games) Elo difference: 8.3 +/- 18.6, LOS: 81.0 %, DrawRatio: 25.4 %
 
---- calvin300mil: running loss 0.011613
-(500) Elo difference: 32.1 +/- 26.2, LOS: 99.2 %, DrawRatio: 26.4 %
-
---- calvin300mil_wdl0: running loss 0.010236
-(500) Elo difference: 24.9 +/- 25.7, LOS: 97.1 %, DrawRatio: 26.4 %
+3. "novice"
+Network: (768->256)x2->1
+Data: #1 100 million Leela fens re-scored with Calvin's own search + evaluation.
+Training: epochs 100 lr 0.001 wdl 0.1 gamma 0.5 lr-step 15
+Loss: 0.002470

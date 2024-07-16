@@ -15,14 +15,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.*;
 
 public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "beginner.nnue";
+        public static final String FILE = "novice.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 256;
 
@@ -167,6 +166,20 @@ public class NNUE implements Evaluation {
         boolean isSideToMoveFeature = white == whiteIndex;
         int colourOffset = isSideToMoveFeature ? 0 : COLOUR_OFFSET;
         return colourOffset + pieceOffset + squareIndex;
+    }
+
+    public static Set<Integer> getFeatureActivations(Board board, boolean whitePerspective) {
+        Set<Integer> featureIndices = new HashSet<>();
+        long pieces = board.getWhitePieces() | board.getBlackPieces();
+        while (pieces != 0) {
+            int square = Bitwise.getNextBit(pieces);
+            Piece piece = board.pieceAt(square);
+            boolean whitePiece = (board.getWhitePieces() & 1L << square) != 0;
+            int index = featureIndex(piece, square, whitePiece, whitePerspective);
+            featureIndices.add(index);
+            pieces = Bitwise.popBit(pieces);
+        }
+        return featureIndices;
     }
 
     @Override

@@ -4,15 +4,31 @@ import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.utils.BoardUtils;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 public class NNUE implements Evaluation {
+
+    public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
+
+        public static final String FILE = "calvin300mil_wdl0.nnue";
+        public static final int INPUT_SIZE = 768;
+        public static final int HIDDEN_SIZE = 256;
+
+        public static final Network NETWORK = EngineInitializer.loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
+
+    }
 
     private static final int COLOUR_OFFSET = 64 * 6;
     private static final int PIECE_OFFSET = 64;
@@ -158,6 +174,5 @@ public class NNUE implements Evaluation {
         this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
         this.accumulatorHistory = new ArrayDeque<>();
     }
-
 
 }

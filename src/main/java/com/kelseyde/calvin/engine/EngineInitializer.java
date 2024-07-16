@@ -16,10 +16,9 @@ import com.kelseyde.calvin.transposition.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -77,6 +76,45 @@ public class EngineInitializer {
             return new OpeningBook(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static NNUE.Network loadNetwork(String file, int inputSize, int hiddenSize) {
+        try {
+            InputStream inputStream = NNUE.Network.class.getClassLoader().getResourceAsStream(file);
+            if (inputStream == null) {
+                throw new FileNotFoundException("NNUE file not found in resources");
+            }
+
+            byte[] fileBytes = inputStream.readAllBytes();
+            inputStream.close();
+            ByteBuffer buffer = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN);
+
+            int inputWeightsOffset = inputSize * hiddenSize;
+            int inputBiasesOffset = hiddenSize;
+            int outputWeightsOffset = hiddenSize * 2;
+
+            short[] inputWeights = new short[inputWeightsOffset];
+            short[] inputBiases = new short[inputBiasesOffset];
+            short[] outputWeights = new short[outputWeightsOffset];
+
+            for (int i = 0; i < inputWeightsOffset; i++) {
+                inputWeights[i] = buffer.getShort();
+            }
+
+            for (int i = 0; i < inputBiasesOffset; i++) {
+                inputBiases[i] = buffer.getShort();
+            }
+
+            for (int i = 0; i < outputWeightsOffset; i++) {
+                outputWeights[i] = buffer.getShort();
+            }
+
+            short outputBias = buffer.getShort();
+
+            return new NNUE.Network(inputWeights, inputBiases, outputWeights, outputBias);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load NNUE network", e);
         }
     }
 

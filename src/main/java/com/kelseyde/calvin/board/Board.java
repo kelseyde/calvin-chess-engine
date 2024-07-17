@@ -1,11 +1,11 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 
 /**
@@ -31,7 +31,7 @@ public class Board {
     long blackPieces =  Bits.BLACK_PIECES_START;
     long occupied =     Bits.PIECES_START;
 
-    Piece[] pieceList = BoardUtils.getStartingPieceList();
+    Piece[] pieceList = Bits.getStartingPieceList();
 
     boolean whiteToMove = true;
 
@@ -102,7 +102,7 @@ public class Board {
         pieceList[startSquare] = null;
         pieceList[endSquare] = Piece.KING;
         gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, startSquare, endSquare, Piece.KING, whiteToMove);
-        boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+        boolean isKingside = Board.file(endSquare) == 6;
         int rookStartSquare;
         int rookEndSquare;
         if (isKingside) {
@@ -176,7 +176,7 @@ public class Board {
         gameState.zobrist = Zobrist.updateCastlingRights(gameState.zobrist, gameState.castlingRights, castlingRights);
         gameState.castlingRights = castlingRights;
 
-        int enPassantFile = move.isPawnDoubleMove() ? BoardUtils.getFile(endSquare) : -1;
+        int enPassantFile = move.isPawnDoubleMove() ? Board.file(endSquare) : -1;
         gameState.zobrist = Zobrist.updateEnPassantFile(gameState.zobrist, gameState.enPassantFile, enPassantFile);
         gameState.enPassantFile = enPassantFile;
 
@@ -185,7 +185,7 @@ public class Board {
 
     private void unmakeCastlingMove(int startSquare, int endSquare) {
         toggleSquares(Piece.KING, whiteToMove, endSquare, startSquare);
-        boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+        boolean isKingside = Board.file(endSquare) == 6;
         int rookStartSquare;
         int rookEndSquare;
         if (isKingside) {
@@ -377,6 +377,49 @@ public class Board {
 
     public boolean isPawnEndgame() {
         return (pawns != 0) && knights == 0 && bishops == 0 && rooks == 0 && queens == 0;
+    }
+
+    public static int file(int sq) {
+        return sq & 0b000111;
+    }
+
+    public static int rank(int sq) {
+        return sq >>> 3;
+    }
+
+    public static int colourIndex(boolean white) {
+        return white ? 1 : 0;
+    }
+
+    public static int squareIndex(int rank, int file) {
+        return 8 * rank + file;
+    }
+
+    public static boolean isValidIndex(int square) {
+        return square >= 0 && square < 64;
+    }
+
+    public Board copy() {
+        Board newBoard = new Board();
+        newBoard.setPawns(this.getPawns());
+        newBoard.setKnights(this.getKnights());
+        newBoard.setBishops(this.getBishops());
+        newBoard.setRooks(this.getRooks());
+        newBoard.setQueens(this.getQueens());
+        newBoard.setKings(this.getKings());
+        newBoard.setWhitePieces(this.getWhitePieces());
+        newBoard.setBlackPieces(this.getBlackPieces());
+        newBoard.setOccupied(this.getOccupied());
+        newBoard.setWhiteToMove(this.isWhiteToMove());
+        newBoard.setGameState(this.getGameState().copy());
+        Deque<GameState> gameStateHistory = new ArrayDeque<>();
+        this.getGameStateHistory().forEach(gameState -> gameStateHistory.add(gameState.copy()));
+        newBoard.setGameStateHistory(gameStateHistory);
+        Deque<Move> moveHistory = new ArrayDeque<>();
+        this.getMoveHistory().forEach(move -> moveHistory.add(new Move(move.value())));
+        newBoard.setMoveHistory(moveHistory);
+        newBoard.setPieceList(Arrays.copyOf(this.getPieceList(), this.getPieceList().length));
+        return newBoard;
     }
 
 }

@@ -1,13 +1,11 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.NNUE.Network;
-import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Set;
 
 public class NNUETest {

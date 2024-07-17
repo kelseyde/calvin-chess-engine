@@ -1,7 +1,6 @@
-package com.kelseyde.calvin.utils.notation;
+package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Test;
 
 public class PGNTest {

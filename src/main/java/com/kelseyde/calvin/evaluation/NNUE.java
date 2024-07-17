@@ -5,23 +5,20 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineInitializer;
-import com.kelseyde.calvin.utils.BoardUtils;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "novice.nnue";
+        public static final String FILE = "patzer.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 256;
 
@@ -136,7 +133,7 @@ public class NNUE implements Evaluation {
     }
 
     private void handleCastleMove(boolean white, int endSquare, int oldPieceWix, int oldPieceBix, int newPieceWix, int newPieceBix) {
-        boolean isKingside = BoardUtils.getFile(endSquare) == 6;
+        boolean isKingside = Board.file(endSquare) == 6;
         int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
         int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
         int rookStartWix = featureIndex(Piece.ROOK, rookStart, white, true);

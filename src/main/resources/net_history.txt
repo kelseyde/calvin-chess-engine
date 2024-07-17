@@ -1,3 +1,5 @@
+Calvin NNUE History
+
 1. "beginner"
 Network: (768->256)x2->1
 Data: #1 100 million Leela fens re-scored with Calvin's own search + evaluation.
@@ -18,3 +20,23 @@ Data: #1 100 million Leela fens re-scored with Calvin's own search + evaluation.
 Training: epochs 100 lr 0.001 wdl 0.1 gamma 0.5 lr-step 15
 Loss: 0.002470
 Result: (1000 games) Elo difference: 10.6 +/- 18.2, LOS: 87.4 %, DrawRatio: 27.8 %
+
+4. "patzer"
+Network: (768->256)x2->1
+Data: #2 200 million Leela fens, half re-scored with Calvin's HCE, half with Calvin's "beginner" NNUE eval.
+Training: epochs 100 lr 0.001 wdl 0.3 gamma 0.5 lr-step 15
+Loss: 0.009692
+Result: (1000 games) Elo difference: 62.9 +/- 19.3, LOS: 100.0 %, DrawRatio: 21.5 %
+
+5. "woodpusher"
+Network: (768->256)x2->1
+Data: #3 300 million Leela fens, 100m re-scored with HCE, 100m rescored with "beginner", 100m with "patzer".
+Training: epochs 100 lr 0.001 wdl 0.3 gamma 0.5 lr-step 15
+Loss: 0.010052
+Result: (1000 games) Elo difference: 30.0 +/- 26.7, LOS: 98.6 %, DrawRatio: 23.8 %
+Observation: mixing in the older data from weaker versions of the engine seems to have a negative effect on the strength of the new net.
+            Will try re-training a net with only data from the latest and second-latest versions of the engine.
+
+6. "gambiteer"
+Network: (768->256)x2->1
+Data: #4 200 million Leela fens, half re-scored with "beginner", half with "patzer".

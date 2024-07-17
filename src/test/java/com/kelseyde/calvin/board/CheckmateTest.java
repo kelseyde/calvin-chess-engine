@@ -1,10 +1,9 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.utils.BoardUtils;
+import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -179,11 +178,8 @@ public class CheckmateTest {
     @Test
     public void testSimpleQueenCheckmate() {
 
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(Piece.KING, false, 48);
-        board.toggleSquare(Piece.KING, true, 42);
-        board.toggleSquare(Piece.QUEEN, true, 1);
-        board.setPieceList(BoardUtils.calculatePieceList(board));
+        String fen = "8/k7/2K5/8/8/8/8/1Q6 w - - 0 1";
+        Board board = FEN.toBoard(fen);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "b7"));
         Assertions.assertTrue(moveGenerator.generateMoves(board).isEmpty());

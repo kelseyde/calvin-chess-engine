@@ -2,8 +2,8 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.search.Searcher;
+import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +34,7 @@ public class LabelledPositionScorerTest {
             Board board = FEN.toBoard(fen);
             searcher.clearHistory();
             searcher.setPosition(board);
-            int eval = searcher.search(DEPTH).eval();
+            int eval = searcher.searchToDepth(DEPTH).eval();
             double result = Double.parseDouble(parts[1]);
             if (count % CHECKPOINT == 0) {
                 System.out.printf("Processed %d positions\n", count);

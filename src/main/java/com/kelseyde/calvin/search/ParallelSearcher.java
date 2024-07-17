@@ -6,7 +6,6 @@ import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -45,6 +44,7 @@ public class ParallelSearcher implements Search {
     int hashSize;
     Board board;
     private List<Searcher> searchers;
+    // TODO use executor
     private final ExecutorService executor;
 
     /**
@@ -135,7 +135,7 @@ public class ParallelSearcher implements Search {
     @Override
     public void setPosition(Board board) {
         this.board = board;
-        searchers.forEach(searcher -> searcher.setPosition(BoardUtils.copy(board)));
+        searchers.forEach(searcher -> searcher.setPosition(board.copy()));
     }
 
     /**

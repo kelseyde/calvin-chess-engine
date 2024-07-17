@@ -1,10 +1,10 @@
 package com.kelseyde.calvin.generation.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.evaluation.Result;
+import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ public class DrawByRepetitionTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
@@ -32,9 +32,9 @@ public class DrawByRepetitionTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
-        Assertions.assertTrue(Result.isThreefoldRepetition(board));
+        Assertions.assertTrue(Score.isThreefoldRepetition(board));
 
     }
 
@@ -57,19 +57,19 @@ public class DrawByRepetitionTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
         board.makeMove(TestUtils.getLegalMove(board, "f8", "e8"));
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         // position of pieces repeated twice, but now no castling rights
         board.makeMove(TestUtils.getLegalMove(board, "e1", "f1"));
         board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
         board.makeMove(TestUtils.getLegalMove(board, "f8", "e8"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         // position of pieces repeated thrice, but on the first occurrence castling rights were different
-        Assertions.assertFalse(Result.isThreefoldRepetition(board));
+        Assertions.assertFalse(Score.isThreefoldRepetition(board));
 
 
     }
@@ -93,7 +93,7 @@ public class DrawByRepetitionTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
         board.makeMove(TestUtils.getLegalMove(board, "f8", "e8"));
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         // position of pieces repeated twice, but different castling rights
         board.makeMove(TestUtils.getLegalMove(board, "e1", "f1"));
@@ -101,19 +101,19 @@ public class DrawByRepetitionTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
         board.makeMove(TestUtils.getLegalMove(board, "f8", "e8"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         // position of pieces repeated thrice, castling rights repeated 2 times
         board.makeMove(TestUtils.getLegalMove(board, "e1", "f1"));
         board.makeMove(TestUtils.getLegalMove(board, "e8", "f8"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "f1", "e1"));
         board.makeMove(TestUtils.getLegalMove(board, "f8", "e8"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         // position of pieces repeated four times, three times with same castling rights
-        Assertions.assertTrue(Result.isThreefoldRepetition(board));
+        Assertions.assertTrue(Score.isThreefoldRepetition(board));
 
 
     }
@@ -133,19 +133,19 @@ public class DrawByRepetitionTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         // position of pieces repeated twice, but en passant rights different
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         // position of pieces repeated thrice, but en passant rights different
-        Assertions.assertFalse(Result.isThreefoldRepetition(board));
+        Assertions.assertFalse(Score.isThreefoldRepetition(board));
 
 
     }
@@ -167,19 +167,19 @@ public class DrawByRepetitionTest {
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
         // position of pieces repeated twice, but en passant rights different
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "f3", "g1"));
         // position of pieces repeated thrice, but en passant rights different
         board.makeMove(TestUtils.getLegalMove(board, "f6", "g8"));
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
-        Assertions.assertTrue(Result.isThreefoldRepetition(board));
+        Assertions.assertTrue(Score.isThreefoldRepetition(board));
 
 
     }
@@ -194,19 +194,19 @@ public class DrawByRepetitionTest {
         board.makeMove(Notation.fromNotation("e4", "c3"));
         board.makeMove(Notation.fromNotation("e7", "c5"));
         board.makeMove(Notation.fromNotation("c3", "e4"));
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(Notation.fromNotation("c5", "e7"));
         board.makeMove(Notation.fromNotation("e4", "c3"));
         board.makeMove(Notation.fromNotation("e7", "c5"));
         board.makeMove(Notation.fromNotation("c3", "e4"));
 
-        Assertions.assertTrue(Result.isEffectiveDraw(board));
-        Assertions.assertFalse(Result.isThreefoldRepetition(board));
+        Assertions.assertTrue(Score.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isThreefoldRepetition(board));
 
         board.makeMove(Notation.fromNotation("c5", "e7"));
 
-        Assertions.assertTrue(Result.isThreefoldRepetition(board));
+        Assertions.assertTrue(Score.isThreefoldRepetition(board));
 
 
     }

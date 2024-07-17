@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.endgame;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

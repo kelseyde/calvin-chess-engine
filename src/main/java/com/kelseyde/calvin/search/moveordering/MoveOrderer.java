@@ -3,7 +3,6 @@ package com.kelseyde.calvin.search.moveordering;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -164,19 +163,12 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     private int scoreHistoryMove(Board board, int startSquare, int endSquare, int killerScore) {
-        int colourIndex = BoardUtils.getColourIndex(board.isWhiteToMove());
+        int colourIndex = Board.colourIndex(board.isWhiteToMove());
         int historyScore = historyMoves[colourIndex][startSquare][endSquare];
         if (killerScore == 0 && historyScore > 0) {
             historyScore += HISTORY_MOVE_BIAS;
         }
         return historyScore;
-    }
-
-    public Move getKillerMove(int ply, int index) {
-        if (index >= KILLERS_PER_PLY || ply > MAX_KILLER_PLY) {
-            return null;
-        }
-        return killerMoves[ply][index];
     }
 
     /**
@@ -216,7 +208,7 @@ public class MoveOrderer implements MoveOrdering {
      * @param white Whether the move is for white pieces.
      */
     public void incrementHistoryScore(int depth, Move historyMove, boolean white) {
-        int colourIndex = BoardUtils.getColourIndex(white);
+        int colourIndex = Board.colourIndex(white);
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int score = depth * depth;
@@ -224,7 +216,7 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     public void ageHistoryScores(boolean white) {
-        int colourIndex = BoardUtils.getColourIndex(white);
+        int colourIndex = Board.colourIndex(white);
         for (int startSquare = 0; startSquare < 64; startSquare++) {
             for (int endSquare = 0; endSquare < 64; endSquare++) {
                 historyMoves[colourIndex][startSquare][endSquare] /= 2;

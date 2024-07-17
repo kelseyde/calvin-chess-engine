@@ -371,7 +371,7 @@ public class MoveGenerator implements MoveGeneration {
 
         while (sliders != 0) {
             int startSquare = Bitwise.getNextBit(sliders);
-            long attackMask = getSlidingAttacks(board, startSquare, white, friendlies, occupied, isDiagonal, isOrthogonal);
+            long attackMask = getSlidingAttacks(startSquare, friendlies, occupied, isDiagonal, isOrthogonal);
 
             attackMask &= pushMask | captureMask;
 
@@ -440,19 +440,19 @@ public class MoveGenerator implements MoveGeneration {
     public long getBishopAttacks(Board board, int square, boolean white) {
         long occupied = board.getOccupied();
         long friendlies = board.getPieces(white);
-        return getSlidingAttacks(board, square, white, friendlies, occupied, true, false);
+        return getSlidingAttacks(square, friendlies, occupied, true, false);
     }
 
     public long getRookAttacks(Board board, int square, boolean white) {
         long occupied = board.getOccupied();
         long friendlies = board.getPieces(white);
-        return getSlidingAttacks(board, square, white, friendlies, occupied, false, true);
+        return getSlidingAttacks(square, friendlies, occupied, false, true);
     }
 
     public long getQueenAttacks(Board board, int square, boolean white) {
         long occupied = board.getOccupied();
         long friendlies = board.getPieces(white);
-        return getSlidingAttacks(board, square, white, friendlies, occupied, true, true);
+        return getSlidingAttacks(square, friendlies, occupied, true, true);
     }
 
     public long getKingAttacks(Board board, int square, boolean white) {
@@ -460,7 +460,7 @@ public class MoveGenerator implements MoveGeneration {
         return Attacks.kingAttacks(square) &~ friendlies;
     }
 
-    private long getSlidingAttacks(Board board, int square, boolean white, long friendlies, long occ, boolean isDiagonal, boolean isOrthogonal) {
+    private long getSlidingAttacks(int square, long friendlies, long occ, boolean isDiagonal, boolean isOrthogonal) {
         long attackMask = 0L;
         if (isOrthogonal) {
             attackMask |= Attacks.rookAttacks(square, occ);

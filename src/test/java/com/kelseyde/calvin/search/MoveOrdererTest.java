@@ -5,9 +5,9 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
+import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -81,7 +81,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("f3", "e4")));
+        Assertions.assertTrue(orderedMoves.getFirst().matches(Notation.fromNotation("f3", "e4")));
 
     }
 
@@ -133,7 +133,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertFalse(orderedMoves.get(0).matches(Notation.fromNotation("f3", "f4")));
+        Assertions.assertFalse(orderedMoves.getFirst().matches(Notation.fromNotation("f3", "f4")));
 
     }
 
@@ -159,7 +159,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("f1", "e1")));
+        Assertions.assertTrue(orderedMoves.getFirst().matches(Notation.fromNotation("f1", "e1")));
 
     }
 
@@ -179,7 +179,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("d3", "e4")));
+        Assertions.assertTrue(orderedMoves.getFirst().matches(Notation.fromNotation("d3", "e4")));
 
     }
 
@@ -222,7 +222,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, previousBestMove, 1);
 
-        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("e8", "e1")));
+        Assertions.assertTrue(orderedMoves.getFirst().matches(Notation.fromNotation("e8", "e1")));
 
     }
 

@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.utils.BoardUtils;
-
 /**
  * Contains utility methods for performing bitwise operations on bitboards.
  */
@@ -171,7 +169,7 @@ public class Bitwise {
     public static void print(long board) {
         for (int i = 7; i >= 0; i--) {
             for (int n = 0; n < 8; n++) {
-                int index = BoardUtils.squareIndex(i, n);
+                int index = Board.squareIndex(i, n);
                 boolean isBit = ((board >>> index) & 1) == 1;
                 System.out.print(isBit ? 1 : 0);
             }

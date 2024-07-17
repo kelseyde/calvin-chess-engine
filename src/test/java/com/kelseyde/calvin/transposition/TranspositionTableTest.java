@@ -3,9 +3,9 @@ package com.kelseyde.calvin.transposition;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -326,21 +326,6 @@ public class TranspositionTableTest {
         Assertions.assertEquals(999997, table.get(zobrist, 2).getScore());
         Assertions.assertEquals(999996, table.get(zobrist, 1).getScore());
         Assertions.assertEquals(999995, table.get(zobrist, 0).getScore());
-    }
-
-    @Test
-    public void testScorePositiveCheckmateThenAccessFromShallowerPly() {
-
-    }
-
-    @Test
-    public void testScoreNegativeCheckmateThenAccessFromDeeperPly() {
-
-    }
-
-    @Test
-    public void testScoreNegativeCheckmateThenAccessFromShallowerPly() {
-
     }
 
     @Test

@@ -1,12 +1,9 @@
 package com.kelseyde.calvin.generation.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.evaluation.Result;
-import com.kelseyde.calvin.utils.BoardUtils;
+import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,128 +12,76 @@ public class DrawByInsufficientMaterialTest {
     @Test
     public void testKingVersusKing() {
 
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(Piece.KING, true, 28);
+        String fen = "8/8/4k3/8/3qK3/8/8/8 w - - 0 1";
+        Board board = FEN.toBoard(fen);
 
-        board.toggleSquare(Piece.KING, false, 44);
-        board.toggleSquare(Piece.QUEEN, false, 27);
-        board.setPieceList(BoardUtils.calculatePieceList(board));
-
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "e4", "d4"));
 
         // king captures queen -> K vs K
-        Assertions.assertTrue(Result.isInsufficientMaterial(board));
+        Assertions.assertTrue(Score.isInsufficientMaterial(board));
 
     }
 
     @Test
     public void testKingVersusKingBishop() {
 
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(Piece.KING, true, 28);
-        board.toggleSquare(Piece.BISHOP, true, 25);
+        String fen = "8/8/3qk3/8/1B2K3/8/8/8 w - - 0 1";
+        Board board = FEN.toBoard(fen);
 
-        board.toggleSquare(Piece.KING, false, 44);
-        board.toggleSquare(Piece.QUEEN, false, 43);
-        board.setPieceList(BoardUtils.calculatePieceList(board));
-
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
         // bishop captures queen -> K vs KB
-        Assertions.assertTrue(Result.isInsufficientMaterial(board));
+        Assertions.assertTrue(Score.isInsufficientMaterial(board));
 
     }
 
     @Test
     public void testKingVersusKingKnight() {
 
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(Piece.KING, true, 28);
-        board.toggleSquare(Piece.KNIGHT, true, 26);
+        String fen = "8/8/3qk3/8/2N1K3/8/8/8 w - - 0 1";
+        Board board = FEN.toBoard(fen);
 
-        board.toggleSquare(Piece.KING, false, 44);
-        board.toggleSquare(Piece.QUEEN, false, 43);
-        board.setPieceList(BoardUtils.calculatePieceList(board));
-
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
         // knight captures queen -> K vs KN
-        Assertions.assertTrue(Result.isInsufficientMaterial(board));
+        Assertions.assertTrue(Score.isInsufficientMaterial(board));
 
     }
 
     @Test
     public void testKingBishopVersusKingBishop() {
 
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(Piece.KING, true, 28);
-        board.toggleSquare(Piece.BISHOP, true, 25);
+        String fen = "8/5b2/3qk3/8/1B2K3/8/8/8 w - - 0 1";
+        Board board = FEN.toBoard(fen);
 
-        board.toggleSquare(Piece.KING, false, 44);
-        board.toggleSquare(Piece.QUEEN, false, 43);
-        board.toggleSquare(Piece.BISHOP, false, 52);
-        board.setPieceList(BoardUtils.calculatePieceList(board));
-
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b4", "d6"));
 
         // bishop captures queen -> KB vs KB
-        Assertions.assertTrue(Result.isInsufficientMaterial(board));
-
-    }
-
-    @Test
-    public void testKingKnightVersusKingKnight() {
-
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(Piece.KING, true, 28);
-        board.toggleSquare(Piece.KNIGHT, true, 26);
-
-        board.toggleSquare(Piece.KING, false, 44);
-        board.toggleSquare(Piece.QUEEN, false, 43);
-        board.toggleSquare(Piece.KNIGHT, false, 52);
-        board.setPieceList(BoardUtils.calculatePieceList(board));
-
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
-
-        board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
-
-        // knight captures queen -> KN vs KN
-        Assertions.assertTrue(Result.isInsufficientMaterial(board));
+        Assertions.assertTrue(Score.isInsufficientMaterial(board));
 
     }
 
     @Test
     public void testKingKnightKnightVersusKingKnightIsNotInsufficientMaterial() {
 
-        Board board = TestUtils.emptyBoard();
-        board.toggleSquare(Piece.KING, true, 28);
-        board.toggleSquare(Piece.KNIGHT, true, 26);
+        String fen = "8/5nn1/3qk3/8/2N1K3/8/8/8 w - - 0 1";
+        Board board = FEN.toBoard(fen);
 
-        board.toggleSquare(Piece.KING, false, 44);
-        board.toggleSquare(Piece.QUEEN, false, 43);
-        board.toggleSquare(Piece.KNIGHT, false, 52);
-        board.toggleSquare(Piece.KNIGHT, false, 0);
-        board.setPieceList(BoardUtils.calculatePieceList(board));
-
-        Assertions.assertFalse(Result.isEffectiveDraw(board));
+        Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "c4", "d6"));
 
         // knight captures queen -> KNN vs KN
-        Assertions.assertFalse(Result.isInsufficientMaterial(board));
+        Assertions.assertFalse(Score.isInsufficientMaterial(board));
 
-    }
-
-    private Move move(String startSquare, String endSquare) {
-        return Notation.fromNotation(startSquare, endSquare);
     }
 
 }

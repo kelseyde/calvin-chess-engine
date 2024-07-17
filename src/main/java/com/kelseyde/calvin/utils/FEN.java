@@ -1,10 +1,9 @@
-package com.kelseyde.calvin.utils.notation;
+package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.board.Zobrist;
-import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,7 +48,7 @@ public class FEN {
             for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
                 List<String> rank = rankFileHash.get(rankIndex);
                 for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
-                    int square = BoardUtils.squareIndex(rankIndex, fileIndex);
+                    int square = Board.squareIndex(rankIndex, fileIndex);
                     String squareValue = rank.get(fileIndex);
                     long squareBB = 1L << square;
                     switch (squareValue) {
@@ -85,7 +84,7 @@ public class FEN {
             board.setWhitePieces(whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing);
             board.setBlackPieces(blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing);
             board.setOccupied(board.getWhitePieces() | board.getBlackPieces());
-            board.setPieceList(BoardUtils.calculatePieceList(board));
+            board.setPieceList(calculatePieceList(board));
             board.setWhiteToMove(whiteToMove);
             board.getGameState().setCastlingRights(castlingRights);
             board.getGameState().setEnPassantFile(enPassantFile);
@@ -108,7 +107,7 @@ public class FEN {
             for (int rank = 7; rank >= 0; rank--) {
                 int emptySquares = 0;
                 for (int file = 0; file < 8; file++) {
-                    int square = BoardUtils.squareIndex(rank, file);
+                    int square = Board.squareIndex(rank, file);
                     Piece piece = board.pieceAt(square);
                     if (piece != null) {
                         if (emptySquares != 0) {
@@ -209,7 +208,7 @@ public class FEN {
             return -1;
         }
         int square = Notation.fromNotation(enPassantSquare);
-        return BoardUtils.getFile(square);
+        return Board.file(square);
     }
 
     private static String toEnPassantSquare(int enPassantFile, boolean white) {
@@ -217,7 +216,7 @@ public class FEN {
         if (enPassantFile == -1) {
             return "-";
         }
-        return Notation.toNotation(BoardUtils.squareIndex(rank, enPassantFile));
+        return Notation.toNotation(Board.squareIndex(rank, enPassantFile));
     }
 
     private static int parseFiftyMoveCounter(String fiftyMoveCounter) {
@@ -239,6 +238,22 @@ public class FEN {
         }
         boolean isLetter = Character.isLetter(square.charAt(0));
         return isLetter ? Stream.of(square) : IntStream.range(0, Integer.parseInt(square)).mapToObj(i -> "x");
+    }
+
+    public static Piece[] calculatePieceList(Board board) {
+
+        Piece[] pieceList = new Piece[64];
+        for (int square = 0; square < 64; square++) {
+            long squareMask = 1L << square;
+            if ((squareMask & board.getPawns()) != 0)           pieceList[square] = Piece.PAWN;
+            else if ((squareMask & board.getKnights()) != 0)    pieceList[square] = Piece.KNIGHT;
+            else if ((squareMask & board.getBishops()) != 0)    pieceList[square] = Piece.BISHOP;
+            else if ((squareMask & board.getRooks()) != 0)      pieceList[square] = Piece.ROOK;
+            else if ((squareMask & board.getQueens()) != 0)     pieceList[square] = Piece.QUEEN;
+            else if ((squareMask & board.getKings()) != 0)      pieceList[square] = Piece.KING;
+        }
+        return pieceList;
+
     }
 
 

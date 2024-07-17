@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.utils.notation;
+package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;

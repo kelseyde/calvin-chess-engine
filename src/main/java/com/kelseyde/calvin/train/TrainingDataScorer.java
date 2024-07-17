@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.Evaluator;
+import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.SearchResult;
@@ -13,7 +13,7 @@ import com.kelseyde.calvin.search.ThreadManager;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.FEN;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +23,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -37,12 +38,11 @@ public class TrainingDataScorer {
     private static final int THREAD_COUNT = 20;
     private static final int BATCH_SIZE = THREAD_COUNT * 1000;
     private static final int TT_SIZE = 64;
-    private static final int SEARCH_DEPTH = 4;
 
     private ExecutorService executor;
     private List<Searcher> searchers;
 
-    public void score(String inputFile, String outputFile, int depth) {
+    public void score(String inputFile, String outputFile, int depth, int resumeOffset) {
 
         Path inputPath = Paths.get(inputFile);
         Path outputPath = Paths.get(outputFile);
@@ -54,10 +54,15 @@ public class TrainingDataScorer {
 
         try (Stream<String> lines = Files.lines(inputPath)) {
             if (!Files.exists(outputPath)) Files.createFile(outputPath);
+            int count = 0;
             AtomicInteger scored = new AtomicInteger(0);
             List<String> batch = new ArrayList<>(BATCH_SIZE);
             Iterator<String> iterator = lines.iterator();
             while (iterator.hasNext()) {
+                if (count++ < resumeOffset) {
+                    iterator.next();
+                    continue;
+                }
                 if (scored.get() > 0 && batch.isEmpty()) {
                     Duration duration = Duration.between(start, Instant.now());
                     System.out.println("info string progress: scored " + scored + " positions, total time " + duration);
@@ -65,7 +70,7 @@ public class TrainingDataScorer {
                 String line = iterator.next();
                 batch.add(line);
                 if (batch.size() == BATCH_SIZE) {
-                    List<String> scoredBatch = processBatch(batch);
+                    List<String> scoredBatch = processBatch(batch, depth);
                     batch.clear();
                     scored.addAndGet(scoredBatch.size());
                     searchers.forEach(Searcher::clearHistory);
@@ -85,7 +90,7 @@ public class TrainingDataScorer {
 
     }
 
-    private List<String> processBatch(List<String> positions) {
+    private List<String> processBatch(List<String> positions, int depth) {
         List<List<String>> partitions = partitionBatch(positions);
         List<Future<List<String>>> futures = new ArrayList<>(THREAD_COUNT);
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -94,8 +99,10 @@ public class TrainingDataScorer {
             futures.add(executor.submit(() -> {
                 List<String> scoredPartition = new ArrayList<>(partition.size());
                 for (String line : partition) {
-                    String scoredLine = scoreData(searcher, line);
-                    scoredPartition.add(scoredLine);
+                    String scoredLine = scoreData(searcher, line, depth);
+                    if (!scoredLine.isEmpty()) {
+                        scoredPartition.add(scoredLine);
+                    }
                 }
                 return scoredPartition;
             }));
@@ -105,7 +112,7 @@ public class TrainingDataScorer {
             try {
                 scoredBatch.addAll(future.get());
             } catch (Exception e) {
-                throw new RuntimeException("Failed to score batch", e);
+                throw new RuntimeException("Failed to score batch " + Arrays.toString(e.getStackTrace()) + e.getCause() + e.getMessage(), e);
             }
         }
         return scoredBatch;
@@ -126,13 +133,19 @@ public class TrainingDataScorer {
     }
 
 
-    private String scoreData(Searcher searcher, String line) {
+    private String scoreData(Searcher searcher, String line, int depth) {
         String[] parts = line.split("\\|");
         String fen = parts[0].trim();
         String result = parts[2].trim();
         Board board = FEN.toBoard(fen);
         searcher.setPosition(board);
-        SearchResult searchResult = searcher.searchToDepth(SEARCH_DEPTH);
+        SearchResult searchResult;
+        try {
+             searchResult = searcher.searchToDepth(depth);
+        } catch (Exception e) {
+            System.out.println("info error scoring fen " + fen + " " + e);
+            return "";
+        }
         int score = searchResult.eval();
         if (!board.isWhiteToMove()) score = -score;
         return String.format("%s | %s | %s", fen, score, result);
@@ -144,13 +157,8 @@ public class TrainingDataScorer {
         MoveOrdering moveOrderer = new MoveOrderer();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
         ThreadManager threadManager = new ThreadManager();
-        Evaluation evaluator = new Evaluator(config);
+        Evaluation evaluator = new NNUE();
         return new Searcher(config, threadManager, moveGenerator, moveOrderer, evaluator, transpositionTable);
-    }
-
-    public static void main(String[] args) {
-        TrainingDataScorer scorer = new TrainingDataScorer();
-        scorer.score("/Users/kelseyde/git/dan/calvin/data/archiveoutput_0.txt", "/Users/kelseyde/git/dan/calvin/data/calvin_data_0.txt", SEARCH_DEPTH);
     }
 
 }

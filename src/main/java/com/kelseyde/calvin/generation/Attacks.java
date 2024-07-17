@@ -2,13 +2,24 @@ package com.kelseyde.calvin.generation;
 
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bitwise;
-import com.kelseyde.calvin.utils.BoardUtils;
+import com.kelseyde.calvin.board.Board;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class Attacks {
+
+    // All the possible move 'vectors' for a sliding piece, i.e., the offsets for the directions in which a sliding
+    // piece is permitted to move. Bishops will use only the diagonal vectors, rooks only the orthogonal vectors, while
+    // queens will use both.
+    public static final Set<Integer> DIAGONAL_MOVE_VECTORS = Set.of(-9, -7, 7, 9);
+    public static final Set<Integer> ORTHOGONAL_MOVE_VECTORS = Set.of(-8, -1, 1, 8);
+
+    // The following sets are exceptions to the initial rule, in scenarios where the sliding piece is placed on the a or h-files.
+    // These exceptions prevent the piece from 'wrapping' around to the other side of the board.
+    public static final Set<Integer> A_FILE_OFFSET_EXCEPTIONS = Set.of(-9, -1, 7);
+    public static final Set<Integer> H_FILE_OFFSET_EXCEPTIONS = Set.of(-7, 1, 9);
 
     public static final long[] KNIGHT_ATTACKS = new long[] {
             0x0000000000020400L, 0x0000000000050800L, 0x00000000000a1100L, 0x0000000000142200L,
@@ -202,7 +213,7 @@ public class Attacks {
 
     public static long initMovementMask(int startSquare, boolean isOrthogonal) {
         long movementMask = 0L;
-        Set<Integer> vectors = isOrthogonal ? BoardUtils.ORTHOGONAL_MOVE_VECTORS : BoardUtils.DIAGONAL_MOVE_VECTORS;
+        Set<Integer> vectors = isOrthogonal ? ORTHOGONAL_MOVE_VECTORS : DIAGONAL_MOVE_VECTORS;
 
         for (int vector : vectors) {
             int currentSquare = startSquare;
@@ -211,7 +222,7 @@ public class Attacks {
             }
             for (int distance = 1; distance < 8; distance++) {
                 currentSquare = currentSquare + vector;
-                if (BoardUtils.isValidIndex(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
+                if (Board.isValidIndex(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
                     movementMask |= 1L << currentSquare;
                 } else {
                     break;
@@ -224,12 +235,12 @@ public class Attacks {
     public static long initAttackMask(int startSquare, long blockers, boolean isOrthogonal) {
 
         long attackMask = 0L;
-        Set<Integer> vectors = isOrthogonal ? BoardUtils.ORTHOGONAL_MOVE_VECTORS : BoardUtils.DIAGONAL_MOVE_VECTORS;
+        Set<Integer> vectors = isOrthogonal ? ORTHOGONAL_MOVE_VECTORS : DIAGONAL_MOVE_VECTORS;
 
         for (int vector : vectors) {
             int currentSquare = startSquare;
             for (int distance = 1; distance < 8; distance++) {
-                if (BoardUtils.isValidIndex(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
+                if (Board.isValidIndex(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
                     currentSquare = currentSquare + vector;
                     attackMask |= 1L << currentSquare;
                     if ((blockers & 1L << currentSquare) != 0) {
@@ -261,8 +272,8 @@ public class Attacks {
     private static boolean isValidVectorOffset(int square, int vectorOffset) {
         boolean isAFile = (Bits.FILE_A & 1L << square) != 0;
         boolean isHFile = (Bits.FILE_H & 1L << square) != 0;
-        boolean isVectorAFileException = BoardUtils.A_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
-        boolean isVectorHFileException = BoardUtils.H_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
+        boolean isVectorAFileException = A_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
+        boolean isVectorHFileException = H_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
         return (!isAFile || !isVectorAFileException) && (!isHFile || !isVectorHFileException);
     }
 

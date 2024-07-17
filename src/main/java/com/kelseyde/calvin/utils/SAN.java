@@ -1,10 +1,9 @@
-package com.kelseyde.calvin.utils.notation;
+package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.utils.BoardUtils;
 
 import java.util.List;
 
@@ -37,10 +36,10 @@ public class SAN {
 
                 if (legalMove.getStartSquare() != move.getStartSquare() && legalMove.getEndSquare() == move.getEndSquare()) {
                     if (board.pieceAt(legalMove.getStartSquare()) == pieceType) {
-                        int fromFileIndex = BoardUtils.getFile(move.getStartSquare());
-                        int alternateFromFileIndex = BoardUtils.getFile(legalMove.getEndSquare());
-                        int fromRankIndex = BoardUtils.getRank(move.getStartSquare());
-                        int alternateFromRankIndex = BoardUtils.getRank(legalMove.getStartSquare());
+                        int fromFileIndex = Board.file(move.getStartSquare());
+                        int alternateFromFileIndex = Board.file(legalMove.getEndSquare());
+                        int fromRankIndex = Board.rank(move.getStartSquare());
+                        int alternateFromRankIndex = Board.rank(legalMove.getStartSquare());
 
                         if (fromFileIndex != alternateFromFileIndex) {
                             notation += Notation.getFile(fromFileIndex);

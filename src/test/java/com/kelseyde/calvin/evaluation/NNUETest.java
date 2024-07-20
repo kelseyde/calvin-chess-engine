@@ -1,7 +1,9 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -31,7 +33,6 @@ public class NNUETest {
     }
 
     @Test
-    @Disabled // TODO fix this when I am not stupid
     public void testStartingPositionActivations() {
 
         Set<Integer> whitePerspectiveActivations = Set.of(
@@ -44,6 +45,23 @@ public class NNUETest {
 
         Assertions.assertEquals(NNUE.getFeatureActivations(board, true), whitePerspectiveActivations);
         Assertions.assertEquals(NNUE.getFeatureActivations(board, false), blackPerspectiveActivations);
+
+    }
+
+    @Test
+    public void testCastling() {
+
+        String fen = "r1bqk1nr/ppppbppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        Move move = Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG);
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
 
     }
 

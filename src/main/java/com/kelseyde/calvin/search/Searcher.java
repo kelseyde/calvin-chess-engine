@@ -274,9 +274,9 @@ public class Searcher implements Search {
 
             evaluator.makeMove(board, move);
             board.makeMove(move);
-            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
-                System.out.println("NNUE evaluation mismatch1!");
-            }
+//            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+//                System.out.println("NNUE evaluation mismatch1!");
+//            }
             nodes++;
 
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -292,9 +292,9 @@ public class Searcher implements Search {
                 && isQuiet) {
                 evaluator.unmakeMove();
                 board.unmakeMove();
-                if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
-                    System.out.println("NNUE evaluation mismatch1!");
-                }
+//                if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+//                    System.out.println("NNUE evaluation mismatch1!");
+//                }
                 continue;
             }
 
@@ -333,9 +333,9 @@ public class Searcher implements Search {
                     && movesSearched >= lmpCutoff) {
                     evaluator.unmakeMove();
                     board.unmakeMove();
-                    if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
-                        System.out.println("NNUE evaluation mismatch1!");
-                    }
+//                    if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+//                        System.out.println("NNUE evaluation mismatch1!");
+//                    }
                     continue;
                 }
                 // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
@@ -367,9 +367,9 @@ public class Searcher implements Search {
 
             evaluator.unmakeMove();
             board.unmakeMove();
-            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
-                System.out.println("NNUE evaluation mismatch1!");
-            }
+//            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+//                System.out.println("NNUE evaluation mismatch1!");
+//            }
 
             if (isCancelled()) {
                 return alpha;
@@ -447,9 +447,9 @@ public class Searcher implements Search {
         int eval = Integer.MIN_VALUE;
         if (!isInCheck) {
             eval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
-            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
-                System.out.println("NNUE evaluation mismatch1!");
-            }
+//            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+//                System.out.println("NNUE evaluation mismatch1!");
+//            }
         }
         int standPat = eval;
 
@@ -499,16 +499,16 @@ public class Searcher implements Search {
 
             evaluator.makeMove(board, move);
             board.makeMove(move);
-            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
-                System.out.println("NNUE evaluation mismatch1!");
-            }
+//            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+//                System.out.println("NNUE evaluation mismatch1!");
+//            }
             nodes++;
             eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             evaluator.unmakeMove();
             board.unmakeMove();
-            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
-                System.out.println("NNUE evaluation mismatch1!");
-            }
+//            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+//                System.out.println("NNUE evaluation mismatch1!");
+//            }
 
             if (eval >= beta) {
                 return beta;

@@ -65,4 +65,88 @@ public class NNUETest {
 
     }
 
+    @Test
+    public void testCapture() {
+
+        String fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        Move move = Notation.fromNotation("e4", "d5");
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+
+    }
+
+    @Test
+    public void testEnPassant() {
+
+        String fen = "rnbqkbnr/ppp2ppp/4p3/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        Move move = Notation.fromNotation("e5", "d6", Move.EN_PASSANT_FLAG);
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+
+    }
+
+    @Test
+    public void testPromotion() {
+
+        String fen = "rnbqkb1r/pP3ppp/4pn2/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 5";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        Move move = Notation.fromNotation("b7", "a8", Move.PROMOTE_TO_QUEEN_FLAG);
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+
+    }
+
+    @Test
+    public void testSymmetry() {
+
+        String fen1 = "r1bqkb1r/1ppp1ppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 3 5";
+        String fen2 = "rnbq1rk1/pppp1ppp/5n2/b3p3/4P3/P1N2N2/1PPP1PPP/R1BQKB1R w KQ - 3 5";
+
+        Board board1 = FEN.toBoard(fen1);
+        Board board2 = FEN.toBoard(fen2);
+        NNUE nnue1 = new NNUE(board1);
+        NNUE nnue2 = new NNUE(board2);
+        Assertions.assertEquals(nnue1.evaluate(board1), nnue2.evaluate(board2));
+
+    }
+
+    @Test
+    public void testNullMove() {
+
+        String fen1 = "rn1qk2r/ppp2ppp/4b3/8/1bPPn3/2N5/PP3PPP/R1BQKBNR w KQkq - 3 7";
+        Board board1 = FEN.toBoard(fen1);
+        NNUE nnue1 = new NNUE(board1);
+        int originalEval = nnue1.evaluate(board1);
+        Assertions.assertEquals(originalEval, new NNUE(board1).evaluate(board1));
+        board1.makeNullMove();
+        int nullMoveEval = nnue1.evaluate(board1);
+        Assertions.assertNotEquals(originalEval, nullMoveEval);
+        String fen2 = "rn1qk2r/ppp2ppp/4b3/8/1bPPn3/2N5/PP3PPP/R1BQKBNR b KQkq - 3 7";
+        Board board2 = FEN.toBoard(fen2);
+        Assertions.assertEquals(nullMoveEval, new NNUE(board2).evaluate(board2));
+        board1.unmakeNullMove();
+        Assertions.assertEquals(originalEval, nnue1.evaluate(board1));
+
+    }
+
 }

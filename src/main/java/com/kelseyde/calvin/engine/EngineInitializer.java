@@ -112,6 +112,12 @@ public class EngineInitializer {
 
             short outputBias = buffer.getShort();
 
+            while (buffer.hasRemaining()) {
+                if (buffer.getShort() != 0) {
+                    throw new RuntimeException("Failed to load NNUE network: invalid file format");
+                }
+            }
+
             return new NNUE.Network(inputWeights, inputBiases, outputWeights, outputBias);
         } catch (IOException e) {
             throw new RuntimeException("Failed to load NNUE network", e);

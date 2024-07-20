@@ -18,7 +18,7 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "patzer.nnue";
+        public static final String FILE = "256HL-3B5083B8.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 256;
 
@@ -77,7 +77,6 @@ public class NNUE implements Evaluation {
         }
 
         for (; i < features.length; i++) {
-            System.out.println("in here");
             short clipped = (short) Math.max(Math.min(features[i], ceil), floor);
             sum += clipped * weights[i + weightOffset];
         }
@@ -118,18 +117,18 @@ public class NNUE implements Evaluation {
         Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
 
-        int oldPieceWix = featureIndex(piece, startSquare, white, true);
-        int oldPieceBix = featureIndex(piece, startSquare, white, false);
+        int oldWhiteIdx = featureIndex(piece, startSquare, white, true);
+        int oldBlackIdx = featureIndex(piece, startSquare, white, false);
 
-        int newPieceWix = featureIndex(newPiece, endSquare, white, true);
-        int newPieceBix = featureIndex(newPiece, endSquare, white, false);
+        int newWhiteIdx = featureIndex(newPiece, endSquare, white, true);
+        int newBlackIdx = featureIndex(newPiece, endSquare, white, false);
 
         if (move.isCastling()) {
-            handleCastleMove(white, endSquare, oldPieceWix, oldPieceBix, newPieceWix, newPieceBix);
+            handleCastleMove(white, endSquare, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
         } else if (capturedPiece != null) {
-            handleCapture(move, capturedPiece, white, newPieceWix, newPieceBix, oldPieceWix, oldPieceBix);
+            handleCapture(move, capturedPiece, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         } else {
-            accumulator.addSub(newPieceWix, newPieceBix, oldPieceWix, oldPieceBix);
+            accumulator.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         }
     }
 
@@ -137,19 +136,19 @@ public class NNUE implements Evaluation {
         boolean isKingside = Board.file(endSquare) == 6;
         int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
         int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
-        int rookStartWix = featureIndex(Piece.ROOK, rookStart, white, true);
-        int rookStartBix = featureIndex(Piece.ROOK, rookStart, white, false);
-        int rookEndWix = featureIndex(Piece.ROOK, rookEnd, white, true);
-        int rookEndBix = featureIndex(Piece.ROOK, rookEnd, white, false);
-        accumulator.addAddSubSub(newPieceWix, newPieceBix, rookEndWix, rookEndBix, oldPieceWix, oldPieceBix, rookStartWix, rookStartBix);
+        int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookStart, white, true);
+        int rookStartBlackIdx = featureIndex(Piece.ROOK, rookStart, white, false);
+        int rookEndWhiteIdx = featureIndex(Piece.ROOK, rookEnd, white, true);
+        int rookEndBlackIdx = featureIndex(Piece.ROOK, rookEnd, white, false);
+        accumulator.addAddSubSub(newPieceWix, newPieceBix, rookEndWhiteIdx, rookEndBlackIdx, oldPieceWix, oldPieceBix, rookStartWhiteIdx, rookStartBlackIdx);
     }
 
     private void handleCapture(Move move, Piece capturedPiece, boolean white, int newPieceWix, int newPieceBix, int oldPieceWix, int oldPieceBix) {
         int captureSquare = move.getEndSquare();
         if (move.isEnPassant()) captureSquare = white ? move.getEndSquare() - 8 : move.getEndSquare() + 8;
-        int capturedPieceWix = featureIndex(capturedPiece, captureSquare, !white, true);
-        int capturedPieceBix = featureIndex(capturedPiece, captureSquare, !white, false);
-        accumulator.addSubSub(newPieceWix, newPieceBix, oldPieceWix, oldPieceBix, capturedPieceWix, capturedPieceBix);
+        int capturedWhiteIdx = featureIndex(capturedPiece, captureSquare, !white, true);
+        int capturedBlackIdx = featureIndex(capturedPiece, captureSquare, !white, false);
+        accumulator.addSubSub(newPieceWix, newPieceBix, oldPieceWix, oldPieceBix, capturedWhiteIdx, capturedBlackIdx);
     }
 
     @Override
@@ -157,12 +156,12 @@ public class NNUE implements Evaluation {
         this.accumulator = accumulatorHistory.pop();
     }
 
-    private static int featureIndex(Piece piece, int square, boolean white, boolean whiteIndex) {
-        int squareIndex = whiteIndex ? square : square ^ 56;
+    private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
+        int squareIndex = whitePerspective ? square : square ^ 56;
         int pieceIndex = piece.getIndex();
         int pieceOffset = pieceIndex * PIECE_OFFSET;
-        boolean isSideToMoveFeature = white == whiteIndex;
-        int colourOffset = isSideToMoveFeature ? 0 : COLOUR_OFFSET;
+        boolean ourPiece = whitePiece == whitePerspective;
+        int colourOffset = ourPiece ? 0 : COLOUR_OFFSET;
         return colourOffset + pieceOffset + squareIndex;
     }
 

@@ -26,6 +26,7 @@ public abstract class SPerftTest {
     protected void sPerft(int depth) {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
+        SEARCHER.clearHistory();
         SEARCHER.setPosition(board);
         SEARCHER.search(depth, 0, MIN_EVAL, MAX_EVAL, true);
         Instant end = Instant.now();

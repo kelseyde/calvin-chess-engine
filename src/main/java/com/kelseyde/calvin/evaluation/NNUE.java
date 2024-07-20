@@ -18,7 +18,7 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "horsey.nnue";
+        public static final String FILE = "256HL-3B5083B8.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 256;
 

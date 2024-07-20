@@ -67,13 +67,13 @@ public class NNUE implements Evaluation {
 
         VectorSpecies<Short> species = ShortVector.SPECIES_PREFERRED;
         for (; i < species.loopBound(features.length); i += species.length()) {
-            var vFeatures = ShortVector.fromArray(species, features, i);
-            var vWeights = ShortVector.fromArray(species, weights, i + weightOffset);
+            var featuresVector = ShortVector.fromArray(species, features, i);
+            var weightsVector = ShortVector.fromArray(species, weights, i + weightOffset);
 
-            var vClipped = vFeatures.min(ceil).max(floor);
-            var vResult = vClipped.mul(vWeights);
+            var clippedVector = featuresVector.min(ceil).max(floor);
+            var resultVector = clippedVector.mul(weightsVector);
 
-            sum += vResult.reduceLanes(VectorOperators.ADD);
+            sum += resultVector.reduceLanes(VectorOperators.ADD);
         }
 
         for (; i < features.length; i++) {

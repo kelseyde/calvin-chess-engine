@@ -103,28 +103,6 @@ public class ParallelSearcher implements Search {
         }
     }
 
-    @Override
-    public SearchResult searchToDepth(int depth) {
-        try {
-            setPosition(board);
-            threadManager.reset();
-            List<Thread> threads = searchers.stream()
-                    .map(searcher -> Thread.ofVirtual().start(() -> searcher.searchToDepth(depth)))
-                    .toList();
-
-            for (Thread thread : threads) {
-                thread.join();
-            }
-
-            SearchResult result = selectResult(searchers);
-            transpositionTable.incrementGeneration();
-            return result;
-        } catch (InterruptedException e) {
-            System.out.println("info error " + e);
-            return SearchResult.empty();
-        }
-    }
-
     /**
      * Sets the current board position for all searchers. This is done by copying the board to each searcher.
      * This is necessary because each searcher will modify the board during the search, so we need to ensure that
@@ -136,6 +114,11 @@ public class ParallelSearcher implements Search {
     public void setPosition(Board board) {
         this.board = board;
         searchers.forEach(searcher -> searcher.setPosition(board.copy()));
+    }
+
+    @Override
+    public void setNodeLimit(int nodeLimit) {
+        searchers.forEach(searcher -> searcher.setNodeLimit(nodeLimit));
     }
 
     /**

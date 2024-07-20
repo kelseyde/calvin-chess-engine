@@ -40,3 +40,20 @@ Observation: mixing in the older data from weaker versions of the engine seems t
 6. "gambiteer"
 Network: (768->256)x2->1
 Data: #4 200 million Leela fens, half re-scored with "beginner", half with "patzer".
+Training: epochs 100 lr 0.001 wdl 0.3 gamma 0.5 lr-step 15
+Loss: 0.010083
+Result: (1000 games) Elo difference: 49.7 +/- 19.3, LOS: 100.0 %, DrawRatio: 21.0 %
+
+7. "improver"
+Network: (768->256)x2->1
+Data: #4 200 million Leela fens re-scored with "patzer".
+Training: epochs 100 lr 0.001 wdl 0.3 gamma 0.5 lr-step 15
+Loss: 0.010083
+Result: (1000 games) Elo difference: 47.1 +/- 18.5, LOS: 99.9 %, DrawRatio: 22.1 %
+
+8. "blunderer"
+Network: (768->256)x2->1
+Data: #4 100 million Leela fens re-scored with "patzer".
+Training: epochs 100 lr 0.001 wdl 0.2 gamma 0.5 lr-step 15
+Loss: 0.005874
+Result: (1000 games) Elo difference: 18.4 +/- 29.1, LOS: 89.3 %, DrawRatio: 24.3 %

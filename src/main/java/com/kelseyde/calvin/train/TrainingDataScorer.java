@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.train;
 
+import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
@@ -38,15 +39,17 @@ public class TrainingDataScorer {
     private static final int THREAD_COUNT = 20;
     private static final int BATCH_SIZE = THREAD_COUNT * 1000;
     private static final int TT_SIZE = 64;
+    private static final Duration MAX_SEARCH_TIME = Duration.ofSeconds(30);
 
     private ExecutorService executor;
     private List<Searcher> searchers;
 
-    public void score(String inputFile, String outputFile, int depth, int resumeOffset) {
+    public void score(String inputFile, String outputFile, int softLimit, int resumeOffset) {
 
         Path inputPath = Paths.get(inputFile);
         Path outputPath = Paths.get(outputFile);
         this.executor = Executors.newVirtualThreadPerTaskExecutor();
+        Application.outputEnabled = false;
         searchers = IntStream.range(0, THREAD_COUNT)
                 .mapToObj(i -> initSearcher())
                 .toList();
@@ -70,7 +73,7 @@ public class TrainingDataScorer {
                 String line = iterator.next();
                 batch.add(line);
                 if (batch.size() == BATCH_SIZE) {
-                    List<String> scoredBatch = processBatch(batch, depth);
+                    List<String> scoredBatch = processBatch(batch, softLimit);
                     batch.clear();
                     scored.addAndGet(scoredBatch.size());
                     searchers.forEach(Searcher::clearHistory);
@@ -90,7 +93,7 @@ public class TrainingDataScorer {
 
     }
 
-    private List<String> processBatch(List<String> positions, int depth) {
+    private List<String> processBatch(List<String> positions, int softLimit) {
         List<List<String>> partitions = partitionBatch(positions);
         List<Future<List<String>>> futures = new ArrayList<>(THREAD_COUNT);
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -99,7 +102,7 @@ public class TrainingDataScorer {
             futures.add(executor.submit(() -> {
                 List<String> scoredPartition = new ArrayList<>(partition.size());
                 for (String line : partition) {
-                    String scoredLine = scoreData(searcher, line, depth);
+                    String scoredLine = scoreData(searcher, line, softLimit);
                     if (!scoredLine.isEmpty()) {
                         scoredPartition.add(scoredLine);
                     }
@@ -133,15 +136,16 @@ public class TrainingDataScorer {
     }
 
 
-    private String scoreData(Searcher searcher, String line, int depth) {
+    private String scoreData(Searcher searcher, String line, int softLimit) {
         String[] parts = line.split("\\|");
         String fen = parts[0].trim();
         String result = parts[2].trim();
         Board board = FEN.toBoard(fen);
         searcher.setPosition(board);
+        searcher.setNodeLimit(softLimit);
         SearchResult searchResult;
         try {
-             searchResult = searcher.searchToDepth(depth);
+             searchResult = searcher.search(MAX_SEARCH_TIME);
         } catch (Exception e) {
             System.out.println("info error scoring fen " + fen + " " + e);
             return "";

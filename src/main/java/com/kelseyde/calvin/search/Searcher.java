@@ -19,6 +19,7 @@ import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
@@ -52,6 +53,7 @@ public class Searcher implements Search {
     boolean cancelled;
 
     int currentDepth;
+    @Setter int nodeLimit = -1;
     final int maxDepth = 256;
     int[] evalHistory = new int[maxDepth];
 
@@ -118,7 +120,7 @@ public class Searcher implements Search {
             }
 
             // Check if search is cancelled or a checkmate is found
-            if (isCancelled() || isCheckmateFoundAtCurrentDepth(currentDepth)) {
+            if (isCancelled() || isCheckmateFoundAtCurrentDepth(currentDepth) || isNodeLimitReached()) {
                 break;
             }
 
@@ -159,32 +161,6 @@ public class Searcher implements Search {
         this.result = result;
         return result;
 
-    }
-
-    @Override
-    public SearchResult searchToDepth(int depth) {
-        nodes = 0;
-        evalHistory = new int[maxDepth];
-        currentDepth = depth;
-        bestMove = null;
-        bestMoveCurrentDepth = null;
-        bestEval = 0;
-        bestEvalCurrentDepth = 0;
-        cancelled = false;
-        moveOrderer.ageHistoryScores(board.isWhiteToMove());
-        int alpha = Integer.MIN_VALUE + 1;
-        int beta = Integer.MAX_VALUE - 1;
-
-        search(depth, 0, alpha, beta, true);
-
-        if (bestMoveCurrentDepth == null) {
-            System.out.println("info error: no move found at depth " + depth);
-            return null;
-        }
-        bestMove = bestMoveCurrentDepth;
-        bestEval = bestEvalCurrentDepth;
-        result = buildResult();
-        return result;
     }
 
     /**
@@ -564,6 +540,10 @@ public class Searcher implements Search {
 
     private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
         return Math.abs(bestEval) >= Score.MATE_SCORE - currentDepth;
+    }
+
+    private boolean isNodeLimitReached() {
+        return nodeLimit > 0 && nodes >= nodeLimit;
     }
 
     private SearchResult buildResult() {

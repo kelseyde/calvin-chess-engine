@@ -31,7 +31,8 @@ public class Application {
     static final String[] POSITION_LABELS = new String[] { "position", "fen", "moves" };
     static final String[] GO_LABELS = new String[] { "go", "movetime", "wtime", "btime", "winc", "binc", "movestogo" };
     static final String[] SETOPTION_LABELS = new String[] { "setoption", "name", "value" };
-    static final int DEFAULT_SCORE_DEPTH = 4;
+    static final int DEFAULT_NODE_SOFT_LIMIT = 5000;
+    public static boolean outputEnabled = true;
 
     public static void main(String[] args) {
         try {
@@ -160,11 +161,11 @@ public class Application {
             write("info error input file " + inputFile + " does not exist");
             return;
         }
-        int depth = DEFAULT_SCORE_DEPTH;
+        int softNodeLimit = DEFAULT_NODE_SOFT_LIMIT;
         int resumeOffset = 0;
         if (parts.length > 3) {
             try {
-                depth = Integer.parseInt(parts[3]);
+                softNodeLimit = Integer.parseInt(parts[3]);
             } catch (NumberFormatException e) {
                 write("info error invalid depth; must be an integer; e.g. 'scoredata input.txt output.txt 6'");
                 return;
@@ -180,7 +181,7 @@ public class Application {
         }
         try {
             TrainingDataScorer scorer = new TrainingDataScorer();
-            scorer.score(inputFile, outputFile, depth, resumeOffset);
+            scorer.score(inputFile, outputFile, softNodeLimit, resumeOffset);
         } catch (Exception e) {
             write("info error " + e.getMessage());
         }
@@ -198,6 +199,9 @@ public class Application {
     }
 
     public static void writeSearchInfo(SearchResult searchResult) {
+        if (!outputEnabled) {
+            return;
+        }
         int depth = searchResult.depth();
         String score = formatScore(searchResult.eval());
         long time = searchResult.time();
@@ -305,7 +309,7 @@ public class Application {
     }
 
     private static void write(String output) {
-        System.out.println(output);
+        if (outputEnabled) System.out.println(output);
     }
 
 }

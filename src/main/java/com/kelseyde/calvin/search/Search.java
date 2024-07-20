@@ -17,6 +17,11 @@ public interface Search {
     void setPosition(Board board);
 
     /**
+     * Set the maximum number of nodes that should be searched.
+     */
+    void setNodeLimit(int nodeLimit);
+
+    /**
      * Set the size of the {@link TranspositionTable}.
      */
     void setHashSize(int hashSizeMb);
@@ -32,13 +37,6 @@ public interface Search {
      * @return a {@link SearchResult} containing the best move and the current eval.
      */
     SearchResult search(Duration duration);
-
-    /**
-     * Search the current position for the best move.
-     * @param depth the depth to search to
-     * @return a {@link SearchResult} containing the best move and the current eval.
-     */
-    SearchResult searchToDepth(int depth);
 
     /**
      * @return the {@link TranspositionTable} used by the search algorithm.

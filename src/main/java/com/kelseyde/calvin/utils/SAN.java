@@ -42,12 +42,12 @@ public class SAN {
                         int alternateFromRankIndex = Board.rank(legalMove.getStartSquare());
 
                         if (fromFileIndex != alternateFromFileIndex) {
-                            notation += Notation.getFile(fromFileIndex);
+                            notation += Notation.getFileChar(move.getStartSquare());
                             break;
                         }
                         else if (fromRankIndex != alternateFromRankIndex)
                         {
-                            notation += Notation.getRank(fromRankIndex);
+                            notation += Notation.getRankChar(move.getStartSquare());
                             break;
                         }
                     }
@@ -58,19 +58,19 @@ public class SAN {
         if (capturedPieceType != null) {
             // add 'x' to indicate capture
             if (pieceType == Piece.PAWN) {
-                notation += Notation.getFile(move.getStartSquare());
+                notation += Notation.getFileChar(move.getStartSquare());
             }
             notation += "x";
         }
         else {
             // Check if capturing en passant
             if (move.isEnPassant()) {
-                notation += Notation.getFile(move.getStartSquare()) + "x";
+                notation += Notation.getFileChar(move.getStartSquare()) + "x";
             }
         }
 
-        notation += Notation.getFile(move.getEndSquare());
-        notation += Notation.getRank(move.getEndSquare());
+        notation += Notation.getFileChar(move.getEndSquare());
+        notation += Notation.getRankChar(move.getEndSquare());
 
         // Add promotion piece type
         if (move.isPromotion()) {

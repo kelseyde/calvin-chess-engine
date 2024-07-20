@@ -164,6 +164,13 @@ public class Bitwise {
     }
 
     /**
+     * Get the bitboard for a specific file.
+     */
+    public static long getFileBitboard(int file) {
+        return 0x0101010101010101L << file;
+    }
+
+    /**
      * Print the bitboard in a human-readable format.
      */
     public static void print(long board) {
@@ -178,10 +185,4 @@ public class Bitwise {
         System.out.println();
     }
 
-    /**
-     * Get the bitboard for a specific file.
-     */
-    public static long getFileBitboard(int file) {
-        return 0x0101010101010101L << file;
-    }
 }

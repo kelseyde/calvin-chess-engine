@@ -22,7 +22,6 @@ public class FEN {
         try {
 
             String[] parts = fen.split(" ");
-
             String[] files = parts[0].split("/");
 
             long whitePawns = 0L;

@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 
@@ -16,6 +17,14 @@ public class Notation {
             Piece.ROOK, "r",
             Piece.QUEEN, "q",
             Piece.KING, "k"
+    );
+
+    public static final Map<Integer, String> FILE_CHAR_MAP = Map.of(
+            0, "a", 1, "b", 2, "c", 3, "d", 4, "e", 5, "f", 6, "g", 7, "h"
+    );
+
+    public static final Map<Integer, String> RANK_CHAR_MAP = Map.of(
+            0, "1", 1, "2", 2, "3", 3, "4", 4, "5", 5, "6", 6, "7", 7, "8"
     );
 
     /**
@@ -68,34 +77,16 @@ public class Notation {
         return yAxis + xOffset;
     }
 
-    public static String toNotation(int square) {
-        return getFile(square) + getRank(square);
+    public static String toNotation(int sq) {
+        return getFileChar(sq) + getRankChar(sq);
     }
 
-    public static String getRank(int square) {
-        long bb = 1L << square;
-        if ((Bits.RANK_1 & bb) != 0) return "1";
-        if ((Bits.RANK_2 & bb) != 0) return "2";
-        if ((Bits.RANK_3 & bb) != 0) return "3";
-        if ((Bits.RANK_4 & bb) != 0) return "4";
-        if ((Bits.RANK_5 & bb) != 0) return "5";
-        if ((Bits.RANK_6 & bb) != 0) return "6";
-        if ((Bits.RANK_7 & bb) != 0) return "7";
-        if ((Bits.RANK_8 & bb) != 0) return "8";
-        return "X";
+    public static String getRankChar(int sq) {
+        return RANK_CHAR_MAP.get(Board.rank(sq));
     }
 
-    public static String getFile(int square) {
-        long bb = 1L << square;
-        if ((Bits.FILE_A & bb) != 0) return "a";
-        if ((Bits.FILE_B & bb) != 0) return "b";
-        if ((Bits.FILE_C & bb) != 0) return "c";
-        if ((Bits.FILE_D & bb) != 0) return "d";
-        if ((Bits.FILE_E & bb) != 0) return "e";
-        if ((Bits.FILE_F & bb) != 0) return "f";
-        if ((Bits.FILE_G & bb) != 0) return "g";
-        if ((Bits.FILE_H & bb) != 0) return "h";
-        return "X";
+    public static String getFileChar(int sq) {
+        return FILE_CHAR_MAP.get(Board.file(sq));
     }
 
 }

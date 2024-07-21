@@ -37,6 +37,11 @@ public class EPerftService {
             ePerft(board, depth - 1);
             evaluator.unmakeMove();
             board.unmakeMove();
+            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+                System.out.println(board.getMoveHistory().stream().map(Notation::toNotation).toList());
+                System.out.println(FEN.toFEN(board));
+                throw new IllegalArgumentException();
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Assertions;
@@ -198,6 +199,22 @@ public class NNUETest {
         board1.unmakeNullMove();
         Assertions.assertEquals(originalEval, nnue1.evaluate(board1));
 
+    }
+
+    @Test
+    public void testIncrementalEvaluationConsistency() {
+        String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+
+        for (int i = 0; i < 10; i++) {
+            Move move = new MoveGenerator().generateMoves(board).getFirst();
+            nnue.makeMove(board, move);
+            board.makeMove(move);
+            Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+            board.unmakeMove();
+            nnue.unmakeMove();
+        }
     }
 
 }

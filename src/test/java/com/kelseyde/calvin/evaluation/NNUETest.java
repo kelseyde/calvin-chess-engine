@@ -49,13 +49,64 @@ public class NNUETest {
     }
 
     @Test
-    public void testCastling() {
+    public void testWhiteKingsideCastling() {
 
         String fen = "r1bqk1nr/ppppbppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
         Move move = Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG);
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+
+    }
+
+    @Test
+    public void testWhiteQueensideCastling() {
+
+        String fen = "rnbq1rk1/pp3pbp/2pp1np1/3Pp3/4P3/2N1BP2/PPPQ2PP/R3KBNR w KQ - 0 8";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        Move move = Notation.fromNotation("e1", "c1", Move.CASTLE_FLAG);
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+
+    }
+
+    @Test
+    public void testBlackKingsideCastling() {
+
+        String fen = "rnbqk2r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 4";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        Move move = Notation.fromNotation("e8", "g8", Move.CASTLE_FLAG);
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+
+    }
+
+    @Test
+    public void testBlackQueensideCastling() {
+
+        String fen = "r3kbnr/pppq1ppp/2np4/4p3/4P3/2N1BN2/PPPQ1PPP/R3KB1R b KQkq - 0 8";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));
+        Move move = Notation.fromNotation("e8", "c8", Move.CASTLE_FLAG);
         nnue.makeMove(board, move);
         board.makeMove(move);
         Assertions.assertEquals(nnue.evaluate(board), new NNUE(board).evaluate(board));

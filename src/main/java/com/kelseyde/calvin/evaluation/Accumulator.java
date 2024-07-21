@@ -29,11 +29,11 @@ public class Accumulator {
         short[] weights = NNUE.Network.NETWORK.inputWeights();
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            ShortVector blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
+            var whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
+            var blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
 
-            ShortVector whiteAddVector = whiteVector.add(ShortVector.fromArray(SPECIES, weights, i + wx1 * NNUE.Network.HIDDEN_SIZE));
-            ShortVector blackAddVector = blackVector.add(ShortVector.fromArray(SPECIES, weights, i + bx1 * NNUE.Network.HIDDEN_SIZE));
+            var whiteAddVector = whiteVector.add(ShortVector.fromArray(SPECIES, weights, i + wx1 * NNUE.Network.HIDDEN_SIZE));
+            var blackAddVector = blackVector.add(ShortVector.fromArray(SPECIES, weights, i + bx1 * NNUE.Network.HIDDEN_SIZE));
 
             whiteAddVector.intoArray(whiteFeatures, i);
             blackAddVector.intoArray(blackFeatures, i);
@@ -44,14 +44,14 @@ public class Accumulator {
         short[] weights = NNUE.Network.NETWORK.inputWeights();
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            ShortVector blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
+            var whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
+            var blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
 
-            ShortVector whiteAddSubVector = whiteVector
+            var whiteAddSubVector = whiteVector
                     .add(ShortVector.fromArray(SPECIES, weights, i + wx1 * NNUE.Network.HIDDEN_SIZE))
                     .sub(ShortVector.fromArray(SPECIES, weights, i + wx2 * NNUE.Network.HIDDEN_SIZE));
 
-            ShortVector blackAddSubVector = blackVector
+            var blackAddSubVector = blackVector
                     .add(ShortVector.fromArray(SPECIES, weights, i + bx1 * NNUE.Network.HIDDEN_SIZE))
                     .sub(ShortVector.fromArray(SPECIES, weights, i + bx2 * NNUE.Network.HIDDEN_SIZE));
 
@@ -64,19 +64,19 @@ public class Accumulator {
         short[] weights = NNUE.Network.NETWORK.inputWeights();
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            ShortVector blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
+            var whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
+            var blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
 
-            ShortVector wx1Vector = ShortVector.fromArray(SPECIES, weights, i + wx1 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector wx2Vector = ShortVector.fromArray(SPECIES, weights, i + wx2 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector wx3Vector = ShortVector.fromArray(SPECIES, weights, i + wx3 * NNUE.Network.HIDDEN_SIZE);
+            var wx1Vector = ShortVector.fromArray(SPECIES, weights, i + wx1 * NNUE.Network.HIDDEN_SIZE);
+            var wx2Vector = ShortVector.fromArray(SPECIES, weights, i + wx2 * NNUE.Network.HIDDEN_SIZE);
+            var wx3Vector = ShortVector.fromArray(SPECIES, weights, i + wx3 * NNUE.Network.HIDDEN_SIZE);
 
-            ShortVector bx1Vector = ShortVector.fromArray(SPECIES, weights, i + bx1 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector bx2Vector = ShortVector.fromArray(SPECIES, weights, i + bx2 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector bx3Vector = ShortVector.fromArray(SPECIES, weights, i + bx3 * NNUE.Network.HIDDEN_SIZE);
+            var bx1Vector = ShortVector.fromArray(SPECIES, weights, i + bx1 * NNUE.Network.HIDDEN_SIZE);
+            var bx2Vector = ShortVector.fromArray(SPECIES, weights, i + bx2 * NNUE.Network.HIDDEN_SIZE);
+            var bx3Vector = ShortVector.fromArray(SPECIES, weights, i + bx3 * NNUE.Network.HIDDEN_SIZE);
 
-            ShortVector whiteResultVector = whiteVector.add(wx1Vector).sub(wx2Vector).sub(wx3Vector);
-            ShortVector blackResultVector = blackVector.add(bx1Vector).sub(bx2Vector).sub(bx3Vector);
+            var whiteResultVector = whiteVector.add(wx1Vector).sub(wx2Vector).sub(wx3Vector);
+            var blackResultVector = blackVector.add(bx1Vector).sub(bx2Vector).sub(bx3Vector);
 
             whiteResultVector.intoArray(whiteFeatures, i);
             blackResultVector.intoArray(blackFeatures, i);
@@ -87,21 +87,21 @@ public class Accumulator {
         short[] weights = NNUE.Network.NETWORK.inputWeights();
 
         for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            ShortVector whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            ShortVector blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
+            var whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
+            var blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
 
-            ShortVector wx1Vector = ShortVector.fromArray(SPECIES, weights, i + wx1 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector wx2Vector = ShortVector.fromArray(SPECIES, weights, i + wx2 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector wx3Vector = ShortVector.fromArray(SPECIES, weights, i + wx3 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector wx4Vector = ShortVector.fromArray(SPECIES, weights, i + wx4 * NNUE.Network.HIDDEN_SIZE);
+            var wx1Vector = ShortVector.fromArray(SPECIES, weights, i + wx1 * NNUE.Network.HIDDEN_SIZE);
+            var wx2Vector = ShortVector.fromArray(SPECIES, weights, i + wx2 * NNUE.Network.HIDDEN_SIZE);
+            var wx3Vector = ShortVector.fromArray(SPECIES, weights, i + wx3 * NNUE.Network.HIDDEN_SIZE);
+            var wx4Vector = ShortVector.fromArray(SPECIES, weights, i + wx4 * NNUE.Network.HIDDEN_SIZE);
 
-            ShortVector bx1Vector = ShortVector.fromArray(SPECIES, weights, i + bx1 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector bx2Vector = ShortVector.fromArray(SPECIES, weights, i + bx2 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector bx3Vector = ShortVector.fromArray(SPECIES, weights, i + bx3 * NNUE.Network.HIDDEN_SIZE);
-            ShortVector bx4Vector = ShortVector.fromArray(SPECIES, weights, i + bx4 * NNUE.Network.HIDDEN_SIZE);
+            var bx1Vector = ShortVector.fromArray(SPECIES, weights, i + bx1 * NNUE.Network.HIDDEN_SIZE);
+            var bx2Vector = ShortVector.fromArray(SPECIES, weights, i + bx2 * NNUE.Network.HIDDEN_SIZE);
+            var bx3Vector = ShortVector.fromArray(SPECIES, weights, i + bx3 * NNUE.Network.HIDDEN_SIZE);
+            var bx4Vector = ShortVector.fromArray(SPECIES, weights, i + bx4 * NNUE.Network.HIDDEN_SIZE);
 
-            ShortVector whiteResultVector = whiteVector.add(wx1Vector).add(wx2Vector).sub(wx3Vector).sub(wx4Vector);
-            ShortVector blackResultVector = blackVector.add(bx1Vector).add(bx2Vector).sub(bx3Vector).sub(bx4Vector);
+            var whiteResultVector = whiteVector.add(wx1Vector).add(wx2Vector).sub(wx3Vector).sub(wx4Vector);
+            var blackResultVector = blackVector.add(bx1Vector).add(bx2Vector).sub(bx3Vector).sub(bx4Vector);
 
             whiteResultVector.intoArray(whiteFeatures, i);
             blackResultVector.intoArray(blackFeatures, i);

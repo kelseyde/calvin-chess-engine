@@ -56,8 +56,6 @@ public class NNUE implements Evaluation {
     @Override
     public int evaluate(Board board) {
 
-        // Debugging code to check for mismatches between the UE eval and the eval from a newly activated network
-        // eval1: UE eval
         boolean white = board.isWhiteToMove();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
@@ -69,29 +67,10 @@ public class NNUE implements Evaluation {
                     + CRELU[them[i] - (int) Short.MIN_VALUE] * (int) weights[i + Network.HIDDEN_SIZE];
         }
 
-        eval += forward(us, 0);
-        eval += forward(them, Network.HIDDEN_SIZE);
         eval *= SCALE;
         eval /= QAB;
-
-        // eval2: newly activated eval
-//        boolean white = board.isWhiteToMove();
-//        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
-//        activateAll(board);
-//        short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
-//        short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
-//        int eval2 = Network.NETWORK.outputBias();
-//        eval2 += forward(us, 0);
-//        eval2 += forward(them, Network.HIDDEN_SIZE);
-//        eval2 *= SCALE;
-//        eval2 /= QAB;
-//
-//        // throw exception if the two evaluations do not match
-//        if (eval != eval2) {
-//            throw new IllegalArgumentException("NNUE evaluation mismatch");
-//        }
-
         return eval;
+
     }
 
     /**

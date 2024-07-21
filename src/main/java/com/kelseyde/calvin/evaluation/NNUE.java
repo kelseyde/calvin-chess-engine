@@ -33,6 +33,14 @@ public class NNUE implements Evaluation {
     private static final int QB = 64;
     private static final int QAB = QA * QB;
 
+    private final static int[] CRELU = new int[Short.MAX_VALUE - Short.MIN_VALUE + 1];
+
+    static {
+        for(int i = Short.MIN_VALUE; i <= Short.MAX_VALUE;i ++) {
+            CRELU[i - (int) Short.MIN_VALUE] = crelu((short)(i));
+        }
+    }
+
     public Accumulator accumulator;
     private Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
 
@@ -50,21 +58,28 @@ public class NNUE implements Evaluation {
 
         // Debugging code to check for mismatches between the UE eval and the eval from a newly activated network
         // eval1: UE eval
-        activateAll(board);
         boolean white = board.isWhiteToMove();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
         int eval = Network.NETWORK.outputBias();
+
+        short[] weights = Network.NETWORK.outputWeights;
+        for (int i = 0; i < Network.HIDDEN_SIZE; i++) {
+            eval += CRELU[us[i] - (int) Short.MIN_VALUE] * (int) weights[i]
+                    + CRELU[them[i] - (int) Short.MIN_VALUE] * (int) weights[i + Network.HIDDEN_SIZE];
+        }
+
         eval += forward(us, 0);
         eval += forward(them, Network.HIDDEN_SIZE);
         eval *= SCALE;
         eval /= QAB;
 
-//        // eval2: newly activated eval
+        // eval2: newly activated eval
+//        boolean white = board.isWhiteToMove();
 //        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
 //        activateAll(board);
-//        us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
-//        them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
+//        short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
+//        short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
 //        int eval2 = Network.NETWORK.outputBias();
 //        eval2 += forward(us, 0);
 //        eval2 += forward(them, Network.HIDDEN_SIZE);
@@ -97,7 +112,7 @@ public class NNUE implements Evaluation {
             var clippedVector = featuresVector.min(ceil).max(floor);
             var resultVector = clippedVector.mul(weightsVector);
 
-            sum = Math.addExact(sum,resultVector.reduceLanes(VectorOperators.ADD));
+            sum += resultVector.reduceLanes(VectorOperators.ADD);
         }
 
         for (; i < features.length; i++) {
@@ -131,29 +146,33 @@ public class NNUE implements Evaluation {
         }
     }
 
+    private static int crelu(int x) {
+        return Math.min(Math.max(x, 0), QA);
+    }
+
     @Override
     public void makeMove(Board board, Move move) {
-//        accumulatorHistory.push(accumulator.copy());
-//        boolean white = board.isWhiteToMove();
-//        int startSquare = move.getStartSquare();
-//        int endSquare = move.getEndSquare();
-//        Piece piece = board.pieceAt(startSquare);
-//        Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
-//        Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
-//
-//        int oldWhiteIdx = featureIndex(piece, startSquare, white, true);
-//        int oldBlackIdx = featureIndex(piece, startSquare, white, false);
-//
-//        int newWhiteIdx = featureIndex(newPiece, endSquare, white, true);
-//        int newBlackIdx = featureIndex(newPiece, endSquare, white, false);
-//
-//        if (move.isCastling()) {
-//            handleCastleMove(white, endSquare, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
-//        } else if (capturedPiece != null) {
-//            handleCapture(move, capturedPiece, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
-//        } else {
-//            accumulator.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
-//        }
+        accumulatorHistory.push(accumulator.copy());
+        boolean white = board.isWhiteToMove();
+        int startSquare = move.getStartSquare();
+        int endSquare = move.getEndSquare();
+        Piece piece = board.pieceAt(startSquare);
+        Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
+        Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
+
+        int oldWhiteIdx = featureIndex(piece, startSquare, white, true);
+        int oldBlackIdx = featureIndex(piece, startSquare, white, false);
+
+        int newWhiteIdx = featureIndex(newPiece, endSquare, white, true);
+        int newBlackIdx = featureIndex(newPiece, endSquare, white, false);
+
+        if (move.isCastling()) {
+            handleCastleMove(white, endSquare, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
+        } else if (capturedPiece != null) {
+            handleCapture(move, capturedPiece, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+        } else {
+            accumulator.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+        }
     }
 
     private void handleCastleMove(boolean white, int endSquare, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
@@ -177,7 +196,7 @@ public class NNUE implements Evaluation {
 
     @Override
     public void unmakeMove() {
-//        this.accumulator = accumulatorHistory.pop();
+        this.accumulator = accumulatorHistory.pop();
     }
 
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {

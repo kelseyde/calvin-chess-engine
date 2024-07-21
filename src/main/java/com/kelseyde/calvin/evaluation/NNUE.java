@@ -36,9 +36,8 @@ public class NNUE implements Evaluation {
     private final static int[] CRELU = new int[Short.MAX_VALUE - Short.MIN_VALUE + 1];
 
     static {
-        for(int i = Short.MIN_VALUE; i <= Short.MAX_VALUE;i ++) {
-            CRELU[i - (int) Short.MIN_VALUE] = crelu((short)(i));
-        }
+        for (int i = Short.MIN_VALUE; i <= Short.MAX_VALUE;i ++)
+            CRELU[i - (int) Short.MIN_VALUE] = crelu((short) (i));
     }
 
     public Accumulator accumulator;
@@ -64,7 +63,7 @@ public class NNUE implements Evaluation {
         short[] weights = Network.NETWORK.outputWeights;
         for (int i = 0; i < Network.HIDDEN_SIZE; i++) {
             eval += CRELU[us[i] - (int) Short.MIN_VALUE] * (int) weights[i]
-                    + CRELU[them[i] - (int) Short.MIN_VALUE] * (int) weights[i + Network.HIDDEN_SIZE];
+                  + CRELU[them[i] - (int) Short.MIN_VALUE] * (int) weights[i + Network.HIDDEN_SIZE];
         }
 
         eval *= SCALE;

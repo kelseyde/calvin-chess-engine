@@ -4,6 +4,8 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
+import com.kelseyde.calvin.evaluation.Evaluation;
+import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.train.TrainingDataScorer;
@@ -49,6 +51,7 @@ public class Application {
                         case "position" ->    handlePosition(command);
                         case "go" ->          handleGo(command);
                         case "ponderhit" ->   handlePonderHit();
+                        case "eval" ->        handleEval();
                         case "scoredata" ->   handleScoreData(command);
                         case "stop" ->        handleStop();
                         case "quit" ->        handleQuit();
@@ -143,6 +146,13 @@ public class Application {
             thinkTime = ENGINE.chooseThinkTime(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
         }
         ENGINE.findBestMove(thinkTime, Application::writeMove);
+    }
+
+    private static void handleEval() {
+
+        NNUE nnue = new NNUE(ENGINE.getBoard());
+        write(String.valueOf(nnue.evaluate(ENGINE.getBoard())));
+
     }
 
     private static void handlePonderHit() {

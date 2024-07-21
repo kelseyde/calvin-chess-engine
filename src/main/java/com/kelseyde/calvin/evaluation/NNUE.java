@@ -18,9 +18,9 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "patzer.nnue";
+        public static final String FILE = "net010.bin";
         public static final int INPUT_SIZE = 768;
-        public static final int HIDDEN_SIZE = 256;
+        public static final int HIDDEN_SIZE = 768;
 
         public static final Network NETWORK = EngineInitializer.loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
 
@@ -47,6 +47,9 @@ public class NNUE implements Evaluation {
 
     @Override
     public int evaluate(Board board) {
+
+        // Debugging code to check for mismatches between the UE eval and the eval from a newly activated network
+        // eval1: UE eval
         boolean white = board.isWhiteToMove();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
@@ -55,9 +58,29 @@ public class NNUE implements Evaluation {
         eval += forward(them, Network.HIDDEN_SIZE);
         eval *= SCALE;
         eval /= QAB;
+
+        // eval2: newly activated eval
+        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
+        activateAll(board);
+        us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
+        them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
+        int eval2 = Network.NETWORK.outputBias();
+        eval2 += forward(us, 0);
+        eval2 += forward(them, Network.HIDDEN_SIZE);
+        eval2 *= SCALE;
+        eval2 /= QAB;
+
+        // throw exception if the two evaluations do not match
+        if (eval != eval2) {
+            throw new IllegalArgumentException("NNUE evaluation mismatch");
+        }
+
         return eval;
     }
 
+    /**
+     * Forward pass through the network, using the clipped ReLU activation function.
+     */
     private int forward(short[] features, int weightOffset) {
         short[] weights = Network.NETWORK.outputWeights;
         short floor = 0;
@@ -132,7 +155,7 @@ public class NNUE implements Evaluation {
         }
     }
 
-    private void handleCastleMove(boolean white, int endSquare, int oldPieceWix, int oldPieceBix, int newPieceWix, int newPieceBix) {
+    private void handleCastleMove(boolean white, int endSquare, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
         boolean isKingside = Board.file(endSquare) == 6;
         int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
         int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
@@ -140,15 +163,15 @@ public class NNUE implements Evaluation {
         int rookStartBlackIdx = featureIndex(Piece.ROOK, rookStart, white, false);
         int rookEndWhiteIdx = featureIndex(Piece.ROOK, rookEnd, white, true);
         int rookEndBlackIdx = featureIndex(Piece.ROOK, rookEnd, white, false);
-        accumulator.addAddSubSub(newPieceWix, newPieceBix, rookEndWhiteIdx, rookEndBlackIdx, oldPieceWix, oldPieceBix, rookStartWhiteIdx, rookStartBlackIdx);
+        accumulator.addAddSubSub(newWhiteIdx, newBlackIdx, rookEndWhiteIdx, rookEndBlackIdx, oldWhiteIdx, oldBlackIdx, rookStartWhiteIdx, rookStartBlackIdx);
     }
 
-    private void handleCapture(Move move, Piece capturedPiece, boolean white, int newPieceWix, int newPieceBix, int oldPieceWix, int oldPieceBix) {
+    private void handleCapture(Move move, Piece capturedPiece, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
         int captureSquare = move.getEndSquare();
         if (move.isEnPassant()) captureSquare = white ? move.getEndSquare() - 8 : move.getEndSquare() + 8;
         int capturedWhiteIdx = featureIndex(capturedPiece, captureSquare, !white, true);
         int capturedBlackIdx = featureIndex(capturedPiece, captureSquare, !white, false);
-        accumulator.addSubSub(newPieceWix, newPieceBix, oldPieceWix, oldPieceBix, capturedWhiteIdx, capturedBlackIdx);
+        accumulator.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
     }
 
     @Override

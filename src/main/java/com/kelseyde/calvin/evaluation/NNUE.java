@@ -18,9 +18,9 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "lc0.nnue";
+        public static final String FILE = "patzer.nnue";
         public static final int INPUT_SIZE = 768;
-        public static final int HIDDEN_SIZE = 64;
+        public static final int HIDDEN_SIZE = 256;
 
         public static final Network NETWORK = EngineInitializer.loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
 
@@ -182,7 +182,7 @@ public class NNUE implements Evaluation {
     @Override
     public void clearHistory() {
         this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
-        this.accumulatorHistory = new ArrayDeque<>();
+        this.accumulatorHistory.clear();
     }
 
 }

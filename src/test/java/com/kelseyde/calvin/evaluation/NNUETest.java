@@ -182,6 +182,31 @@ public class NNUETest {
     }
 
     @Test
+    public void testMakeUnmakeNullMove() {
+
+        String fen = "r2q1rk1/pp3pp1/2pp1n1p/2bNp2b/2BnP2B/2PP1N1P/PP3PP1/R2Q1RK1 w - - 0 12";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        int eval1 = nnue.evaluate();
+
+        board.makeNullMove();
+        nnue = new NNUE(board);
+        int eval2 = nnue.evaluate();
+
+        Assertions.assertEquals(eval1, eval2);
+
+        NNUE nnue2 = new NNUE(board);
+        Assertions.assertEquals(eval1, nnue2.evaluate());
+
+        board.unmakeNullMove();
+        nnue = new NNUE(board);
+        int eval3 = nnue.evaluate();
+        Assertions.assertEquals(eval1, eval3);
+        Assertions.assertEquals(eval2, eval3);
+
+    }
+
+    @Test
     public void testNullMove() {
 
         String fen1 = "rn1qk2r/ppp2ppp/4b3/8/1bPPn3/2N5/PP3PPP/R1BQKBNR w KQkq - 3 7";

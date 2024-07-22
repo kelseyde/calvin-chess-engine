@@ -18,7 +18,7 @@ public class EPerftService {
     public EPerftService(Board board) {
         moveGenerator = new MoveGenerator();
         evaluator = new NNUE(board);
-        evaluator.evaluate(board);
+        evaluator.evaluate();
     }
 
     public void ePerft(Board board, int depth) {
@@ -29,7 +29,7 @@ public class EPerftService {
         for (Move move : moves) {
             evaluator.makeMove(board, move);
             board.makeMove(move);
-            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+            if (evaluator.evaluate() != new NNUE(board).evaluate()) {
                 System.out.println(board.getMoveHistory().stream().map(Notation::toNotation).toList());
                 System.out.println(FEN.toFEN(board));
                 throw new IllegalArgumentException();
@@ -37,7 +37,7 @@ public class EPerftService {
             ePerft(board, depth - 1);
             evaluator.unmakeMove();
             board.unmakeMove();
-            if (evaluator.evaluate(board) != new NNUE(board).evaluate(board)) {
+            if (evaluator.evaluate() != new NNUE(board).evaluate()) {
                 System.out.println(board.getMoveHistory().stream().map(Notation::toNotation).toList());
                 System.out.println(FEN.toFEN(board));
                 throw new IllegalArgumentException();

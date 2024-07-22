@@ -5,11 +5,11 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineInitializer;
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorOperators;
-import jdk.incubator.vector.VectorSpecies;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 
 public class NNUE implements Evaluation {
 
@@ -39,6 +39,7 @@ public class NNUE implements Evaluation {
 
     public Accumulator accumulator;
     private Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
+    private Board board;
 
     public NNUE() {
         this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
@@ -46,11 +47,12 @@ public class NNUE implements Evaluation {
 
     public NNUE(Board board) {
         this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
+        this.board = board;
         activateAll(board);
     }
 
     @Override
-    public int evaluate(Board board) {
+    public int evaluate() {
 
         boolean white = board.isWhiteToMove();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
@@ -67,35 +69,6 @@ public class NNUE implements Evaluation {
         eval /= QAB;
         return eval;
 
-    }
-
-    /**
-     * Forward pass through the network, using the clipped ReLU activation function.
-     */
-    private int forward(short[] features, int weightOffset) {
-        short[] weights = Network.NETWORK.outputWeights;
-        short floor = 0;
-        short ceil = QA;
-        int sum = 0;
-        int i = 0;
-
-        VectorSpecies<Short> species = ShortVector.SPECIES_PREFERRED;
-        for (; i < species.loopBound(features.length); i += species.length()) {
-            var featuresVector = ShortVector.fromArray(species, features, i);
-            var weightsVector = ShortVector.fromArray(species, weights, i + weightOffset);
-
-            var clippedVector = featuresVector.min(ceil).max(floor);
-            var resultVector = clippedVector.mul(weightsVector);
-
-            sum += resultVector.reduceLanes(VectorOperators.ADD);
-        }
-
-        for (; i < features.length; i++) {
-            short clipped = (short) Math.max(Math.min(features[i], ceil), floor);
-            sum += clipped * weights[i + weightOffset];
-        }
-
-        return sum;
     }
 
     public void activateAll(Board board) {
@@ -172,6 +145,12 @@ public class NNUE implements Evaluation {
     @Override
     public void unmakeMove() {
         this.accumulator = accumulatorHistory.pop();
+    }
+
+    @Override
+    public void setPosition(Board board) {
+        this.board = board;
+        activateAll(board);
     }
 
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {

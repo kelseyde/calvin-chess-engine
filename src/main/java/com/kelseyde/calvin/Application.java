@@ -150,7 +150,7 @@ public class Application {
     private static void handleEval() {
 
         NNUE nnue = new NNUE(ENGINE.getBoard());
-        write(String.valueOf(nnue.evaluate(ENGINE.getBoard())));
+        write(String.valueOf(nnue.evaluate()));
 
     }
 

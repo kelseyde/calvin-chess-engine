@@ -5,7 +5,6 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
@@ -221,7 +220,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
+            staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate();
         }
 
         evalHistory[ply] = staticEval;
@@ -434,7 +433,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int eval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            eval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate(board);
+            eval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate();
         }
         int standPat = eval;
 
@@ -509,7 +508,7 @@ public class Searcher implements Search {
     @Override
     public void setPosition(Board board) {
         this.board = board;
-        this.evaluator = new NNUE(board);
+        this.evaluator.setPosition(board);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.engine;
 
-import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.endgame.Tablebase;

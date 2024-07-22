@@ -5,7 +5,9 @@ import com.kelseyde.calvin.board.Move;
 
 public interface Evaluation {
 
-    int evaluate(Board board);
+    int evaluate();
+
+    void setPosition(Board board);
 
     void makeMove(Board board, Move move);
 

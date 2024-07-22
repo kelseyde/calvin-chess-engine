@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.utils;
 
-import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;

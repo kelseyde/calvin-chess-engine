@@ -15,13 +15,13 @@ import java.util.Deque;
 /**
  * Implementation of {@link Evaluation} using an NNUE (Efficiently Updatable Neural Network) evaluation function.
  * <p>
- * The network has an input layer of 768 neurons, each representing a piece on the board from both white and black
+ * The network has an input layer of 768 neurons, each representing the presence of a piece of each colour on a square
  * (64 squares * 6 pieces * 2 colours). Two versions of the hidden layer are accumulated: one from white's perspective
  * and one from black's. It is 'efficiently updatable' due to the fact that, on each move, only the features of the
  * relevant pieces need to be re-calculated, not the features of the entire board; this is a significant speed boost.
  * <p>
  * The network was trained on positions taken from a dataset of Leela Chess Zero, which were then re-scored with
- * Calvin's own search and evaluation.
+ * Calvin's own search and hand-crafted evaluation.
  *
  * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
  */

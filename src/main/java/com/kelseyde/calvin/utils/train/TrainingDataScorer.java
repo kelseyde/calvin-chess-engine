@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.train;
+package com.kelseyde.calvin.utils.train;
 
 import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.Board;

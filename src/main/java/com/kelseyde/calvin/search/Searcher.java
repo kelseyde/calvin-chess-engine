@@ -483,7 +483,6 @@ public class Searcher implements Search {
 
             evaluator.makeMove(board, move);
             board.makeMove(move);
-
             nodes++;
             eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             evaluator.unmakeMove();

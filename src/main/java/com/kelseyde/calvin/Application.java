@@ -7,7 +7,7 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.train.TrainingDataScorer;
+import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import lombok.AccessLevel;

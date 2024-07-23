@@ -5,19 +5,35 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineInitializer;
+import jdk.incubator.vector.ShortVector;
+import jdk.incubator.vector.VectorOperators;
+import jdk.incubator.vector.VectorSpecies;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Implementation of {@link Evaluation} using an NNUE (Efficiently Updatable Neural Network) evaluation function.
+ * <p>
+ * The network has an input layer of 768 neurons, each representing a piece on the board from both white and black
+ * (64 squares * 6 pieces * 2 colours). Two versions of the hidden layer are accumulated: one from white's perspective
+ * and one from black's. It is 'efficiently updatable' due to the fact that, on each move, only the features of the
+ * relevant pieces need to be re-calculated, not the features of the entire board; this is a significant speed boost.
+ * <p>
+ * The network was trained on positions taken from a dataset of Leela Chess Zero, which were then re-scored with
+ * Calvin's own search and evaluation.
+ *
+ * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
+ */
 public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "net010.bin";
+        public static final String FILE = "patzer.nnue";
         public static final int INPUT_SIZE = 768;
-        public static final int HIDDEN_SIZE = 768;
+        public static final int HIDDEN_SIZE = 256;
 
         public static final Network NETWORK = EngineInitializer.loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
 
@@ -26,19 +42,13 @@ public class NNUE implements Evaluation {
     private static final int COLOUR_OFFSET = 64 * 6;
     private static final int PIECE_OFFSET = 64;
     private static final int SCALE = 400;
+
     private static final int QA = 255;
     private static final int QB = 64;
     private static final int QAB = QA * QB;
 
-    private final static int[] CRELU = new int[Short.MAX_VALUE - Short.MIN_VALUE + 1];
-
-    static {
-        for (int i = Short.MIN_VALUE; i <= Short.MAX_VALUE;i ++)
-            CRELU[i - (int) Short.MIN_VALUE] = crelu((short) (i));
-    }
-
+    private final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
     public Accumulator accumulator;
-    private Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
     private Board board;
 
     public NNUE() {
@@ -58,20 +68,39 @@ public class NNUE implements Evaluation {
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
         int eval = Network.NETWORK.outputBias();
-
-        short[] weights = Network.NETWORK.outputWeights;
-        for (int i = 0; i < Network.HIDDEN_SIZE; i++) {
-            eval += CRELU[us[i] - (int) Short.MIN_VALUE] * (int) weights[i]
-                  + CRELU[them[i] - (int) Short.MIN_VALUE] * (int) weights[i + Network.HIDDEN_SIZE];
-        }
-
+        eval += forward(us, 0);
+        eval += forward(them, Network.HIDDEN_SIZE);
         eval *= SCALE;
         eval /= QAB;
         return eval;
 
     }
 
-    public void activateAll(Board board) {
+    /**
+     * Forward pass through the network, using the clipped ReLU activation function.
+     * Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
+     */
+    private int forward(short[] features, int weightOffset) {
+        short[] weights = Network.NETWORK.outputWeights;
+        short floor = 0;
+        short ceil = QA;
+        int sum = 0;
+
+        VectorSpecies<Short> species = ShortVector.SPECIES_PREFERRED;
+        for (int i = 0; i < species.loopBound(features.length); i += species.length()) {
+            var featuresVector = ShortVector.fromArray(species, features, i);
+            var weightsVector = ShortVector.fromArray(species, weights, i + weightOffset);
+
+            var clippedVector = featuresVector.min(ceil).max(floor);
+            var resultVector = clippedVector.mul(weightsVector);
+
+            sum = Math.addExact(sum,resultVector.reduceLanes(VectorOperators.ADD));
+        }
+
+        return sum;
+    }
+
+    private void activateAll(Board board) {
 
         for (int i = 0; i < Network.HIDDEN_SIZE; i++) {
             accumulator.whiteFeatures[i] = Network.NETWORK.inputBiases()[i];
@@ -94,10 +123,9 @@ public class NNUE implements Evaluation {
         }
     }
 
-    private static int crelu(int x) {
-        return Math.min(Math.max(x, 0), QA);
-    }
-
+    /**
+     * Efficiently update only the relevant features of the network after a move has been made.
+     */
     @Override
     public void makeMove(Board board, Move move) {
         accumulatorHistory.push(accumulator.copy());
@@ -153,6 +181,10 @@ public class NNUE implements Evaluation {
         activateAll(board);
     }
 
+    /**
+     * Compute the index of the feature vector for a given piece, colour and square. Features from black's perspective
+     * are mirrored (the square index is vertically flipped) in order to preserve symmetry.
+     */
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
         int squareIndex = whitePerspective ? square : square ^ 56;
         int pieceIndex = piece.getIndex();
@@ -160,20 +192,6 @@ public class NNUE implements Evaluation {
         boolean ourPiece = whitePiece == whitePerspective;
         int colourOffset = ourPiece ? 0 : COLOUR_OFFSET;
         return colourOffset + pieceOffset + squareIndex;
-    }
-
-    public static Set<Integer> getFeatureActivations(Board board, boolean whitePerspective) {
-        Set<Integer> featureIndices = new HashSet<>();
-        long pieces = board.getWhitePieces() | board.getBlackPieces();
-        while (pieces != 0) {
-            int square = Bitwise.getNextBit(pieces);
-            Piece piece = board.pieceAt(square);
-            boolean whitePiece = (board.getWhitePieces() & 1L << square) != 0;
-            int index = featureIndex(piece, square, whitePiece, whitePerspective);
-            featureIndices.add(index);
-            pieces = Bitwise.popBit(pieces);
-        }
-        return featureIndices;
     }
 
     @Override

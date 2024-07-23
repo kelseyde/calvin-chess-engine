@@ -11,8 +11,6 @@ import jdk.incubator.vector.VectorSpecies;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Implementation of {@link Evaluation} using an NNUE (Efficiently Updatable Neural Network) evaluation function.
@@ -31,7 +29,7 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "patzer.nnue";
+        public static final String FILE = "woodpusher.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 256;
 

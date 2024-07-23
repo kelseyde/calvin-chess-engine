@@ -8,8 +8,6 @@ import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-
 public class NNUETest {
 
     @Test

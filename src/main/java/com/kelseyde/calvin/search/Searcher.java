@@ -25,12 +25,18 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
+ * Classical alpha-beta search with iterative deepening. This is the main search algorithm used by the engine.
+ * </p>
+ * Alpha-beta search seeks to reduce the number of nodes that need to be evaluated in the search tree. It does this by
+ * pruning branches that are guaranteed to be worse than the best move found so far, or that are guaranteed to be 'too
+ * good' and could only be reached by sup-optimal play by the opponent.
+ * @see <a href="https://www.chessprogramming.org/Alpha-Beta">Chess Programming Wiki</a>
+ * </p>
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
  * then 3 ply and so on, until the time limit is exhausted. In case the timeout is reached in the middle of an iteration,
  * the search can still fall back on the best move found in the previous iteration. By prioritising searching the best
  * move found in the previous iteration, as well as the other ordering heuristics in the {@link MoveOrderer} -- and by
  * using a {@link TranspositionTable} -- the iterative approach is much more efficient than it might sound.
- *
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
 @NoArgsConstructor
@@ -78,9 +84,9 @@ public class Searcher implements Search {
     }
 
     /**
-     * Search for the best move in the current {@link Board} position.
-     * @param duration How long we should search
-     * @return A {@link SearchResult} containing the best move and the current evaluation.
+     * Search the current position, increasing the depth each iteration, to find the best move within the given time limit.
+     * @param duration the maximum duration to search
+     * @return a {@link SearchResult} containing the best move, the eval, and other search info.
      */
     @Override
     public SearchResult search(Duration duration) {

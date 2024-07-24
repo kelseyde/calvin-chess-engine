@@ -8,6 +8,8 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -25,6 +27,7 @@ import java.util.Deque;
  *
  * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
  */
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
@@ -37,17 +40,17 @@ public class NNUE implements Evaluation {
 
     }
 
-    private static final int COLOUR_OFFSET = 64 * 6;
-    private static final int PIECE_OFFSET = 64;
-    private static final int SCALE = 400;
+    static final int COLOUR_OFFSET = 64 * 6;
+    static final int PIECE_OFFSET = 64;
+    static final int SCALE = 400;
 
-    private static final int QA = 255;
-    private static final int QB = 64;
-    private static final int QAB = QA * QB;
+    static final int QA = 255;
+    static final int QB = 64;
+    static final int QAB = QA * QB;
 
-    private final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
-    public Accumulator accumulator;
-    private Board board;
+    final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
+    Accumulator accumulator;
+    Board board;
 
     public NNUE() {
         this.accumulator = new Accumulator(Network.HIDDEN_SIZE);

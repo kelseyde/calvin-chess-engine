@@ -4,8 +4,8 @@ import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
+import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,6 +28,7 @@ public class BlunderTest {
         String fen = "r1bqkb1r/1pp1pppp/p1n2n2/8/2BPP3/2N2N2/PP3PPP/R1BQK2R b KQkq - 0 6";
         engine.newGame();
         engine.setPosition(fen, Collections.emptyList());
+        engine.setThreadCount(1);
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("f6e4")));
@@ -629,21 +630,6 @@ public class BlunderTest {
         );
 
     }
-
-    // TODO
-//    @Test
-//    public void testStalemate() {
-//
-//        String fen = "rrk3q1/rr6/rr6/rr6/rr6/r7/P7/K7 w - - 0 1";
-//        Board board = FEN.toBoard(fen);
-//
-//        engine.setThreadCount(1);
-//        engine.setPosition(board);
-//
-//        int eval = engine.think(1000).eval();
-//        Assertions.assertEquals(0, eval);
-//
-//    }
 
     @Test
     public void testStalemate2() {

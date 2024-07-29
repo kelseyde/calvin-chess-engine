@@ -11,23 +11,25 @@
 
 Calvin is a chess engine written in Java. 
 
-It features a bitboard-based board representation, a traditional iterative deepening + negamax search algorithm, and a hand-crafted evaluation function. 
+It features a bitboard-based board representation, a traditional alpha-beta search algorithm, and an NNUE evaluation function. 
+
+The NNUE neural network was trained by the excellent [bullet](https://github.com/jw1912/bullet) trainer on a dataset of 250 million positions taken from the [Leela Chess Zero dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and HCE. The network architecture is (768->256)x2->1. 
 
 Calvin is ranked ~300th on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/404/) blitz leaderboards, and is currently playing on [Lichess](https://lichess.org/@/Calvin_Bot).
 
-My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). It didn't take long before Calvin became much, much stronger than I am - which either says a fair bit for my coding skills, or not all that much for my chess...
-
-My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented such that first-time readers can learn too. If you find some information is missing or poorly explained, please don't hesitate to let me know!
+My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented so that first-time readers can learn too. If you find some information is missing or poorly explained, don't hesitate to let me know!
 
 ## How to Play
 
 Like most modern chess engines, Calvin does not implement its own user interface. Instead, it communicates using the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, meaning it can either be interacted with directly from the command line, or by hooking it up to any popular chess GUI, such as [Arena Chess](http://www.playwitharena.de/), [Banksia](https://banksiagui.com/) or [Cute Chess](https://cutechess.com/).
 
-To run Calvin locally, you will need >= Java 21 installed on your machine. The binary calvin.jar can be downloaded from the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) section. Start up Calvin by executing the command:
+To run Calvin locally, you will need Java (minimum Java 21) installed on your machine. The binary calvin.jar can be downloaded from the TODO [Releases](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) section. Start up Calvin by executing the command:
 
 ```
-java -jar /path/to/calvin-{version-number}.jar
+java --add-modules jdk.incubator.vector -jar calvin.jar
 ```
+Please note the '--add-modules jdk.incubator.vector' - Calvin uses the incubator Vector API for SIMD operations during NNUE inference, and this module needs to enabled explicitly.
+
 From there, use the "help" option or refer to UCI documentation for further information on available commands.
 
 ## Strength
@@ -36,6 +38,7 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 
 | 	Version	 | 	Release date | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | 
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | :-----:	 | 
+| [TODO](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) | 2024-05-19 | ~2700 | - |
 | [3.4.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) | 2024-05-19 | ~2580 | - |
 | [3.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.3.0) | 2024-05-10 | ~2550 | 2453 |
 | [3.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.2.0) | 2023-12-09 | ~2400 | 2233 |
@@ -68,15 +71,6 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 - Captures are ordered using the [MVV-LVA](https://www.chessprogramming.org/MVV-LVA) (Most-Valuable-Victim, Least-Valuable-Attacker) heuristic.
 - Non-captures are ordered using the [Killer move](https://www.chessprogramming.org/Killer_Move) and [History](https://www.chessprogramming.org/History_Heuristic) heuristics.
 
-### Evaluation
-
-- [Hand-Crafted Evaluation](https://www.chessprogramming.org/Evaluation) While most cutting-edge modern engines use neural network-based NNUE evaluations, for now, Calvin features a classical hand-crafted evaluation (HCE) function. 
-- [Material](https://www.chessprogramming.org/Material) - basic material count, bishop pair bonus etc.
-- [Piece square tables](https://www.chessprogramming.org/Piece-Square_Tables) - asymettrical PSTs
-- [Pawn structure](https://www.chessprogramming.org/Pawn_Structure) - passed pawn bonuses, isolated/doubled pawn penalties.
-- [King safety](https://www.chessprogramming.org/King_Safety) - bonus for a pawn shield around the king, penalty for a pawn storm towards the king, penalty for open file around the king.
-- [Tuning](https://www.chessprogramming.org/Automated_Tuning) - All evaluation parameters are [tapered](https://www.chessprogramming.org/Tapered_Eval) based on the opening/middlegame/endgame phase, and tuned using [Texel's Tuning Method](https://www.chessprogramming.org/Texel%27s_Tuning_Method)
-
 ### Opening Book / Endgame Tablebase
 - Simple opening book loaded from a .txt file on startup. Can be disabled using the 'OwnBook' UCI option.
 - Calvin can probe the [Lichess Tablebase API](https://github.com/lichess-org/lila-tablebase) for endgames of 7 men or fewer. Can be disabled using the 'OwnTablebase' UCI option.
@@ -89,7 +83,8 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 
 ## Special Thanks To...
 
-- The [Chess Programming Wiki](https://www.chessprogramming.org) - An absolutely brilliant resource for all chess engine programmers, this wiki has been my go-to reference for every new topic. 
+- The [Chess Programming Wiki](https://www.chessprogramming.org) - A brilliant resource for all chess engine programmers, this wiki has been my go-to reference for every new topic.
+- The kind folks in the Engine Programming Discord server, who were very helpful for answering my various questions related to NNUE implementation.
 - The [TalkChess forums](https://talkchess.com/) - The home for chess engine geeks to talk about geeky chess engine stuff.
 - Other engines - I have drawn inspiration from countless others' engines, including but not limited to: [Chess Coding Adventure](https://github.com/SebLague/Chess-Coding-Adventure) (whose Youtube video inspired me to write my own engine); [Stockfish](https://github.com/official-stockfish/Stockfish) (the queen of all engines); [Leorik](https://github.com/lithander/Leorik) (whose author keeps an excellent devlog on the TalkChess forum); [Lynx](https://github.com/lynx-chess/Lynx) (my frequent Lichess rival); [Rustic](https://github.com/mvanthoor/rustic), [Simbelyne](https://github.com/sroelants/simbelmyne) and [Mantissa](https://github.com/jtheardw/mantissa) (who taught me that Rust is Cool); and many others.
 

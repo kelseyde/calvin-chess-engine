@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.generation.perft;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.tuning.perft.PerftService;
-import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.perft.PerftService;
+import com.kelseyde.calvin.utils.FEN;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
@@ -25,8 +25,13 @@ public abstract class PerftTest {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
         long totalMoveCount = perftService.perft(board, depth);
+        long totalNodeCount = perftService.totalNodeCount;
+        System.out.println("totalMoveCount: " + totalNodeCount);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
+
+        float nps = (float) totalNodeCount / ((float) performance.toNanos() / 1000000);
+        System.out.println("nps: " + nps);
         if (expectedTotalMoves == totalMoveCount) {
             writeResults(depth, performance);
         }

@@ -4,11 +4,12 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
+import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.train.TrainingDataScorer;
-import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.notation.Notation;
+import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -31,9 +32,12 @@ public class Application {
     static final String[] POSITION_LABELS = new String[] { "position", "fen", "moves" };
     static final String[] GO_LABELS = new String[] { "go", "movetime", "wtime", "btime", "winc", "binc", "movestogo" };
     static final String[] SETOPTION_LABELS = new String[] { "setoption", "name", "value" };
-    static final int DEFAULT_SCORE_DEPTH = 6;
+    static final int DEFAULT_NODE_SOFT_LIMIT = 5000;
+    public static boolean outputEnabled = true;
 
     public static void main(String[] args) {
+        write("Calvin 4.0.0 by Dan Kelsey");
+        write("type 'help' for a list of commands.");
         try {
             String command = "";
             while (!command.equals("quit")) {
@@ -43,11 +47,14 @@ public class Application {
                     switch (commandType) {
                         case "uci" ->         handleUci();
                         case "isready" ->     handleIsReady();
+                        case "help" ->        handleHelp();
                         case "setoption" ->   handleSetOption(command);
                         case "ucinewgame" ->  handleNewGame();
                         case "position" ->    handlePosition(command);
                         case "go" ->          handleGo(command);
                         case "ponderhit" ->   handlePonderHit();
+                        case "fen" ->         handleFen();
+                        case "eval" ->        handleEval();
                         case "scoredata" ->   handleScoreData(command);
                         case "stop" ->        handleStop();
                         case "quit" ->        handleQuit();
@@ -72,6 +79,36 @@ public class Application {
         write(String.format("option name OwnTablebase type check default %s", config.isOwnTablebaseEnabled()));
         write(String.format("option name Ponder type check default %s", config.isPonderEnabled()));
         write("uciok");
+    }
+
+    private static void handleHelp() {
+        write("the following commands are available:");
+        write("uci         -- print engine info");
+        write("isready     -- check if engine is ready");
+        write("setoption   -- set engine options (type 'uci' to see the available options'");
+        write("                args:");
+        write("                -- name: the name of the option to change");
+        write("                -- value: the new value for the option");
+        write("ucinewgame  -- clear the board and set up a new game");
+        write("position    -- set up the board position");
+        write("                args:");
+        write("                -- startpos: set up the starting position");
+        write("                   OR");
+        write("                -- fen: supply the position in FEN string format");
+        write("                -- moves: the moves played from the supplied position");
+        write("go          -- start searching for the best move");
+        write("                args:");
+        write("                -- movetime: the time to spend searching in milliseconds");
+        write("                   OR");
+        write("                -- wtime: white time remaining in milliseconds");
+        write("                -- btime: black time remaining in milliseconds");
+        write("                -- winc: white increment in milliseconds");
+        write("                -- binc: black increment in milliseconds");
+        write("stop        -- stop searching and return the best move");
+        write("fen         -- print the FEN string for the current position");
+        write("eval        -- evaluate the current position");
+        write("datagen     -- generate training data for neural network");
+        write("quit        -- exit the application");
     }
 
     private static void handleIsReady() {
@@ -144,6 +181,21 @@ public class Application {
         ENGINE.findBestMove(thinkTime, Application::writeMove);
     }
 
+    private static void handleEval() {
+
+        NNUE nnue = new NNUE(ENGINE.getBoard());
+        write(String.valueOf(nnue.evaluate()));
+
+    }
+
+    private static void handleFen() {
+        if (ENGINE.getBoard() != null) {
+            write(FEN.toFEN(ENGINE.getBoard()));
+        } else {
+            write("info error no position specified, please use the 'position' command first");
+        }
+    }
+
     private static void handlePonderHit() {
         ENGINE.setPondering(false);
     }
@@ -160,18 +212,27 @@ public class Application {
             write("info error input file " + inputFile + " does not exist");
             return;
         }
-        int depth = DEFAULT_SCORE_DEPTH;
+        int softNodeLimit = DEFAULT_NODE_SOFT_LIMIT;
+        int resumeOffset = 0;
         if (parts.length > 3) {
             try {
-                depth = Integer.parseInt(parts[3]);
+                softNodeLimit = Integer.parseInt(parts[3]);
             } catch (NumberFormatException e) {
                 write("info error invalid depth; must be an integer; e.g. 'scoredata input.txt output.txt 6'");
                 return;
             }
+            if (parts.length > 4) {
+                try {
+                    resumeOffset = Integer.parseInt(parts[4]);
+                } catch (NumberFormatException e) {
+                    write("info error invalid resume offset; must be an integer; e.g. 'scoredata input.txt output.txt 6 1000'");
+                    return;
+                }
+            }
         }
         try {
             TrainingDataScorer scorer = new TrainingDataScorer();
-            scorer.score(inputFile, outputFile, depth);
+            scorer.score(inputFile, outputFile, softNodeLimit, resumeOffset);
         } catch (Exception e) {
             write("info error " + e.getMessage());
         }
@@ -189,6 +250,9 @@ public class Application {
     }
 
     public static void writeSearchInfo(SearchResult searchResult) {
+        if (!outputEnabled) {
+            return;
+        }
         int depth = searchResult.depth();
         String score = formatScore(searchResult.eval());
         long time = searchResult.time();
@@ -209,7 +273,7 @@ public class Application {
         }
     }
 
-    private static void writeMove(SearchResult searchResult) {
+    public static void writeMove(SearchResult searchResult) {
         Move move = searchResult.move();
         Move ponderMove = ENGINE.extractPonderMove(move);
         boolean ponder = ENGINE.getConfig().isPonderEnabled() && ponderMove != null;
@@ -296,7 +360,7 @@ public class Application {
     }
 
     private static void write(String output) {
-        System.out.println(output);
+        if (outputEnabled) System.out.println(output);
     }
 
 }

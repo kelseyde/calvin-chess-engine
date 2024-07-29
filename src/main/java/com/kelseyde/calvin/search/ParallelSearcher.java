@@ -6,11 +6,11 @@ import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
-import com.kelseyde.calvin.utils.BoardUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +45,7 @@ public class ParallelSearcher implements Search {
     int hashSize;
     Board board;
     private List<Searcher> searchers;
+    // TODO use executor
     private final ExecutorService executor;
 
     /**
@@ -87,7 +88,7 @@ public class ParallelSearcher implements Search {
             setPosition(board);
             threadManager.reset();
             List<Thread> threads = searchers.stream()
-                    .map(searcher -> Thread.ofVirtual().start(() -> searcher.search(duration)))
+                    .map(searcher -> initThread(searcher, duration))
                     .toList();
 
             for (Thread thread : threads) {
@@ -103,13 +104,6 @@ public class ParallelSearcher implements Search {
         }
     }
 
-    @Override
-    public SearchResult searchToDepth(int depth) {
-        setPosition(board);
-        return searchers.getFirst().searchToDepth(depth);
-    }
-
-
     /**
      * Sets the current board position for all searchers. This is done by copying the board to each searcher.
      * This is necessary because each searcher will modify the board during the search, so we need to ensure that
@@ -120,7 +114,12 @@ public class ParallelSearcher implements Search {
     @Override
     public void setPosition(Board board) {
         this.board = board;
-        searchers.forEach(searcher -> searcher.setPosition(BoardUtils.copy(board)));
+        searchers.forEach(searcher -> searcher.setPosition(board.copy()));
+    }
+
+    @Override
+    public void setNodeLimit(int nodeLimit) {
+        searchers.forEach(searcher -> searcher.setNodeLimit(nodeLimit));
     }
 
     /**
@@ -145,6 +144,16 @@ public class ParallelSearcher implements Search {
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
         this.searchers = initSearchers();
+    }
+
+    private Thread initThread(Searcher searcher, Duration duration) {
+        return Thread.ofVirtual().start(() -> {
+            try {
+                searcher.search(duration);
+            } catch (Exception e) {
+                System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
+            }
+        });
     }
 
     /**
@@ -204,12 +213,6 @@ public class ParallelSearcher implements Search {
     @Override
     public void logStatistics() {
         System.out.println("info threads " + searchers.stream().map(Searcher::toString).toList());
-    }
-
-    public void shutdown() {
-        if (executor != null) {
-            executor.shutdown();
-        }
     }
 
 }

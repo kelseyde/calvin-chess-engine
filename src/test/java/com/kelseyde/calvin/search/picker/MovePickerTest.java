@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -13,8 +13,8 @@ import java.util.List;
 
 public class MovePickerTest {
 
-    private MoveGenerator moveGenerator = new MoveGenerator();
-    private MoveOrderer moveOrderer = new MoveOrderer();
+    private final MoveGenerator moveGenerator = new MoveGenerator();
+    private final MoveOrderer moveOrderer = new MoveOrderer();
 
     @Test
     public void testInCheckDoesNotGenerateMovesTwice() {

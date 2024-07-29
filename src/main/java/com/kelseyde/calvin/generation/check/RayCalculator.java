@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.generation.check;
 
-import com.kelseyde.calvin.utils.BoardUtils;
+import com.kelseyde.calvin.board.Board;
 
 public class RayCalculator {
 
@@ -14,7 +14,7 @@ public class RayCalculator {
      */
     public long rayBetween(int startSquare, int endSquare) {
         // Check for valid square indices and that the squares are not the same
-        if (!BoardUtils.isValidIndex(startSquare) || !BoardUtils.isValidIndex(endSquare) || startSquare == endSquare) {
+        if (!Board.isValidIndex(startSquare) || !Board.isValidIndex(endSquare) || startSquare == endSquare) {
             return 0L;
         }
 
@@ -29,7 +29,7 @@ public class RayCalculator {
         int currentSquare = startSquare + directionOffset;
 
         // Build the ray by setting bits from startSquare to endSquare
-        while (BoardUtils.isValidIndex(currentSquare) && currentSquare != endSquare) {
+        while (Board.isValidIndex(currentSquare) && currentSquare != endSquare) {
             ray |= 1L << currentSquare;
             currentSquare += directionOffset;
         }
@@ -47,10 +47,10 @@ public class RayCalculator {
      *         or 0 if there is no valid direction.
      */
     private int getDirectionOffset(int startSquare, int endSquare) {
-        int startRank = BoardUtils.getRank(startSquare);
-        int endRank = BoardUtils.getRank(endSquare);
-        int startFile = BoardUtils.getFile(startSquare);
-        int endFile = BoardUtils.getFile(endSquare);
+        int startRank = Board.rank(startSquare);
+        int endRank = Board.rank(endSquare);
+        int startFile = Board.file(startSquare);
+        int endFile = Board.file(endSquare);
 
         // Check if the two squares are on the same rank (row)
         if (startRank == endRank) {
@@ -61,11 +61,11 @@ public class RayCalculator {
             return startSquare > endSquare ? -8 : 8;
         }
         // Check if the two squares are on the same diagonal
-        else if (BoardUtils.getDiagonal(startSquare) == BoardUtils.getDiagonal(endSquare)) {
-            return startSquare > endSquare ? -7 : 7;
+        else if (Math.abs(startRank - endRank) == Math.abs(startFile - endFile)) {
+            return startSquare > endSquare ? (startSquare - endSquare) % 9 == 0 ? -9 : -7 : (endSquare - startSquare) % 9 == 0 ? 9 : 7;
         }
         // Check if the two squares are on the same anti-diagonal
-        else if (BoardUtils.getAntiDiagonal(startSquare) == BoardUtils.getAntiDiagonal(endSquare)) {
+        else if (startRank + startFile == endRank + endFile) {
             return startSquare > endSquare ? -9 : 9;
         }
 

@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.engine;
 
-import com.kelseyde.calvin.board.Piece;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +22,7 @@ public class EngineConfig {
     int defaultPawnHashSizeMb;
 
     boolean ownBookEnabled;
+    String ownBookFile;
     int maxBookMoves;
 
     boolean ownTablebaseEnabled;
@@ -57,49 +57,8 @@ public class EngineConfig {
     int[] fpMargin;
     int[] rfpMargin;
 
-    int[] piecePhases;
-    float totalPhase;
-    int[][] pieceValues;
-
-    int[][] middlegameTables;
-    int[][] endgameTables;
-
-    int[][] middlegameMobilityBonus;
-    int[][] endgameMobilityBonus;
-
-    int[][] isolatedPawnPenalty;
-    int[][] doubledPawnPenalty;
-    int[][] passedPawnBonus;
-    int protectedPassedPawnBonus;
-
-    int bishopPairBonus;
-    int[] rookOpenFileBonus;
-    int[] rookSemiOpenFileBonus;
-
-    int[][] knightOutpostBonus;
-    int[][] bishopOutpostBonus;
-
-    int[] kingPawnShieldPenalty;
-    int kingSemiOpenFilePenalty;
-    int kingSemiOpenAdjacentFilePenalty;
-    int kingOpenFilePenalty;
-    int kingOpenAdjacentFilePenalty;
-    int kingLostCastlingRightsPenalty;
-    int[] kingAttackZonePenaltyTable;
-    int[] kingSafetyScaleFactor;
-    int[][] virtualKingMobilityPenalty;
-
-    int kingManhattanDistanceMultiplier;
-    int kingChebyshevDistanceMultiplier;
-    int kingCenterManhattanDistanceMultiplier;
-    int[] mopUpScaleFactor;
-
-    int drawishScaleFactor;
-    int tempoBonus;
-
     public void postInitialise() {
         calculateLmrReductions();
-        calculateTotalPhase();
     }
 
     private void calculateLmrReductions() {
@@ -111,14 +70,6 @@ public class EngineConfig {
                 lmrReductions[depth][movesSearched] = (int) Math.round(lmrBase + (Math.log(movesSearched) * Math.log(depth) / lmrDivisor));
             }
         }
-    }
-
-    private void calculateTotalPhase() {
-        int knightPhase = piecePhases[Piece.KNIGHT.getIndex()];
-        int bishopPhase = piecePhases[Piece.BISHOP.getIndex()];
-        int rookPhase = piecePhases[Piece.ROOK.getIndex()];
-        int queenPhase = piecePhases[Piece.QUEEN.getIndex()];
-        totalPhase = (knightPhase * 4) + (bishopPhase * 4) + (rookPhase * 4) + (queenPhase * 2);
     }
 
 }

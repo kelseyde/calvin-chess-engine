@@ -2,8 +2,8 @@ package com.kelseyde.calvin.generation.sperft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.search.Searcher;
+import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,6 +26,7 @@ public abstract class SPerftTest {
     protected void sPerft(int depth) {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
+        SEARCHER.clearHistory();
         SEARCHER.setPosition(board);
         SEARCHER.search(depth, 0, MIN_EVAL, MAX_EVAL, true);
         Instant end = Instant.now();

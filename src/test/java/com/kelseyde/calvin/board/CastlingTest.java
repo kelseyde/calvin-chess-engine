@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
-import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -302,21 +302,6 @@ public class CastlingTest {
         // black tries to castle
         Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "g8")));
 
-    }
-
-    @Test
-    public void cannotCastleIfQueensideRookIsCaptured() {
-        // TODO
-    }
-
-    @Test
-    public void whiteCanStillKingsideCastleIfQueensideRookHasMoved() {
-        // TODO
-    }
-
-    @Test
-    public void blackCanStillQueensideCastleIfQueensideRookHasMoved() {
-        // TODO
     }
 
 }

@@ -134,6 +134,7 @@ public class NNUE implements Evaluation {
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         Piece piece = board.pieceAt(startSquare);
+        if (piece == null) return;
         Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
 

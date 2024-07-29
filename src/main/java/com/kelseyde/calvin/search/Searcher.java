@@ -23,6 +23,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Classical alpha-beta search with iterative deepening. This is the main search algorithm used by the engine.
@@ -156,7 +157,8 @@ public class Searcher implements Search {
         // If no move is found within the time limit, choose the first available move
         if (result == null) {
             System.out.println("Time expired before a move was found!");
-            bestMove = moveGenerator.generateMoves(board).getFirst();
+            List<Move> legalMoves = moveGenerator.generateMoves(board);
+            if (!legalMoves.isEmpty()) bestMove = legalMoves.getFirst();
             result = buildResult();
         }
 
@@ -278,7 +280,7 @@ public class Searcher implements Search {
             boolean isPromotion = move.getPromotionPiece() != null;
 
             evaluator.makeMove(board, move);
-            board.makeMove(move);
+            if (!board.makeMove(move)) continue;
             nodes++;
 
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -488,7 +490,7 @@ public class Searcher implements Search {
             }
 
             evaluator.makeMove(board, move);
-            board.makeMove(move);
+            if (!board.makeMove(move)) continue;
             nodes++;
             eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             evaluator.unmakeMove();

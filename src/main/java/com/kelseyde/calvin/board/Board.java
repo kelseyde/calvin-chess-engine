@@ -48,11 +48,12 @@ public class Board {
      * Updates the internal board representation with the {@link Move} just made. Toggles the piece bitboards to move the
      * piece + remove the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
      */
-    public void makeMove(Move move) {
+    public boolean makeMove(Move move) {
 
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
         Piece piece = pieceList[startSquare];
+        if (piece == null) return false;
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : pieceList[endSquare];
         gameStateHistory.push(gameState.copy());
 
@@ -65,6 +66,7 @@ public class Board {
         updateGameState(startSquare, endSquare, piece, capturedPiece, move);
         moveHistory.push(move);
         whiteToMove = !whiteToMove;
+        return true;
 
     }
 

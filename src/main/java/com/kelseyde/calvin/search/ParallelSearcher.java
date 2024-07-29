@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -87,7 +88,7 @@ public class ParallelSearcher implements Search {
             setPosition(board);
             threadManager.reset();
             List<Thread> threads = searchers.stream()
-                    .map(searcher -> Thread.ofVirtual().start(() -> searcher.search(duration)))
+                    .map(searcher -> initThread(searcher, duration))
                     .toList();
 
             for (Thread thread : threads) {
@@ -143,6 +144,16 @@ public class ParallelSearcher implements Search {
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
         this.searchers = initSearchers();
+    }
+
+    private Thread initThread(Searcher searcher, Duration duration) {
+        return Thread.ofVirtual().start(() -> {
+            try {
+                searcher.search(duration);
+            } catch (Exception e) {
+                System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
+            }
+        });
     }
 
     /**

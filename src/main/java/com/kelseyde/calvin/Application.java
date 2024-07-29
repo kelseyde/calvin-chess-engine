@@ -36,6 +36,8 @@ public class Application {
     public static boolean outputEnabled = true;
 
     public static void main(String[] args) {
+        write("Calvin 4.0.0 by Dan Kelsey");
+        write("type 'help' for a list of commands.");
         try {
             String command = "";
             while (!command.equals("quit")) {
@@ -45,11 +47,13 @@ public class Application {
                     switch (commandType) {
                         case "uci" ->         handleUci();
                         case "isready" ->     handleIsReady();
+                        case "help" ->        handleHelp();
                         case "setoption" ->   handleSetOption(command);
                         case "ucinewgame" ->  handleNewGame();
                         case "position" ->    handlePosition(command);
                         case "go" ->          handleGo(command);
                         case "ponderhit" ->   handlePonderHit();
+                        case "fen" ->         handleFen();
                         case "eval" ->        handleEval();
                         case "scoredata" ->   handleScoreData(command);
                         case "stop" ->        handleStop();
@@ -75,6 +79,22 @@ public class Application {
         write(String.format("option name OwnTablebase type check default %s", config.isOwnTablebaseEnabled()));
         write(String.format("option name Ponder type check default %s", config.isPonderEnabled()));
         write("uciok");
+    }
+
+    private static void handleHelp() {
+        write("the following commands are available:");
+        write("uci         -- print engine info");
+        write("isready     -- check if engine is ready");
+        write("setoption   -- set engine options");
+        write("ucinewgame  -- clear the board and set up a new game");
+        write("position    -- set up the board position");
+        write("go          -- start searching for the best move");
+        write("stop        -- stop searching and return the best move");
+        write("ponderhit   -- opponent played the expected move");
+        write("fen         -- print the FEN string for the current position");
+        write("eval        -- evaluate the current position");
+        write("datagen     -- generate training data for neural network");
+        write("quit        -- exit the application");
     }
 
     private static void handleIsReady() {
@@ -154,6 +174,14 @@ public class Application {
 
     }
 
+    private static void handleFen() {
+        if (ENGINE.getBoard() != null) {
+            write(FEN.toFEN(ENGINE.getBoard()));
+        } else {
+            write("info error no position specified, please use the 'position' command first");
+        }
+    }
+
     private static void handlePonderHit() {
         ENGINE.setPondering(false);
     }
@@ -231,7 +259,7 @@ public class Application {
         }
     }
 
-    private static void writeMove(SearchResult searchResult) {
+    public static void writeMove(SearchResult searchResult) {
         Move move = searchResult.move();
         Move ponderMove = ENGINE.extractPonderMove(move);
         boolean ponder = ENGINE.getConfig().isPonderEnabled() && ponderMove != null;

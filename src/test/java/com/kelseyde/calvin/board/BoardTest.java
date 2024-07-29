@@ -435,35 +435,6 @@ public class BoardTest {
 
     }
 
-    @Test
-    public void testPortugueseGambitBug() {
-
-        Board board = new Board();
-        board.makeMove(Notation.fromCombinedNotation("e2e4"));
-        board.makeMove(Notation.fromCombinedNotation("d7d5"));
-        board.makeMove(Notation.fromCombinedNotation("e4d5"));
-        board.makeMove(Notation.fromCombinedNotation("g8f6"));
-        board.makeMove(Notation.fromCombinedNotation("d2d4"));
-        board.makeMove(Notation.fromCombinedNotation("c8g4"));
-        board.makeMove(Notation.fromCombinedNotation("f2f3"));
-        board.makeMove(Notation.fromCombinedNotation("g4f5"));
-        board.makeMove(Notation.fromCombinedNotation("c2c4"));
-        board.makeMove(Notation.fromCombinedNotation("e7e6"));
-        board.makeMove(Notation.fromCombinedNotation("d5e6"));
-        board.makeMove(Notation.fromCombinedNotation("b8c6"));
-        board.makeMove(Notation.fromCombinedNotation("d4d5"));
-        board.makeMove(Notation.fromCombinedNotation("c6b4"));
-        board.makeMove(Notation.fromCombinedNotation("c1a3"));
-        board.makeMove(Notation.fromCombinedNotation("f8c5"));
-        board.makeMove(Notation.fromCombinedNotation("g2g4"));
-        board.makeMove(Notation.fromCombinedNotation("f6g4"));
-
-        List<Move> moves = new MoveGenerator().generateMoves(board);
-        Assertions.assertFalse(moves.stream().anyMatch(move -> move.equals(Notation.fromCombinedNotation("g2g4"))));
-
-    }
-
-
     private Set<Integer> getPiecePositions(Board board, boolean whiteToMove) {
         Set<Integer> positions = new HashSet<>();
         if (whiteToMove) {

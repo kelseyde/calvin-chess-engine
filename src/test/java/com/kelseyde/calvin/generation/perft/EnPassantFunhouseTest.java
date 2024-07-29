@@ -14,12 +14,6 @@ public class EnPassantFunhouseTest extends PerftTest {
     private final String subFolder = "en_passant_funhouse";
 
     @Test
-    public void testthing() {
-        TrainingDataScorer scorer = new TrainingDataScorer();
-        scorer.score("/Users/kelseyde/git/dan/calvin/data/data_extended/calvin_data_extended.txt", "/Users/kelseyde/git/dan/calvin/data/data_extended/calvin_data_extended.bin", 5000, 0);
-    }
-
-    @Test
     public void testDepthOne() {
         perft(1, 14);
     }

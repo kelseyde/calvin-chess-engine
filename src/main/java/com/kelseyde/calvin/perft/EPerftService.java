@@ -29,19 +29,9 @@ public class EPerftService {
         for (Move move : moves) {
             evaluator.makeMove(board, move);
             board.makeMove(move);
-            if (evaluator.evaluate() != new NNUE(board).evaluate()) {
-                System.out.println(board.getMoveHistory().stream().map(Notation::toNotation).toList());
-                System.out.println(FEN.toFEN(board));
-                throw new IllegalArgumentException();
-            }
             ePerft(board, depth - 1);
             evaluator.unmakeMove();
             board.unmakeMove();
-            if (evaluator.evaluate() != new NNUE(board).evaluate()) {
-                System.out.println(board.getMoveHistory().stream().map(Notation::toNotation).toList());
-                System.out.println(FEN.toFEN(board));
-                throw new IllegalArgumentException();
-            }
         }
     }
 

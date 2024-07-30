@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.engine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.endgame.LichessTablebase;
 import com.kelseyde.calvin.endgame.Tablebase;
 import com.kelseyde.calvin.evaluation.Evaluation;
@@ -39,7 +40,9 @@ public class EngineInitializer {
         Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
         Supplier<Evaluation> evaluator = NNUE::new;
         Search searcher = new ParallelSearcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
-        return new Engine(config, book, tablebase, moveGenerator.get(), searcher);
+        Engine engine = new Engine(config, book, tablebase, moveGenerator.get(), searcher);
+        engine.setPosition(new Board());
+        return engine;
     }
 
     public static EngineConfig loadDefaultConfig() {

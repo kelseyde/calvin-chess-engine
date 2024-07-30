@@ -36,8 +36,6 @@ public class Application {
     public static boolean outputEnabled = true;
 
     public static void main(String[] args) {
-        write("Calvin 4.0.0 by Dan Kelsey");
-        write("type 'help' for a list of commands.");
         try {
             String command = "";
             while (!command.equals("quit")) {
@@ -167,16 +165,25 @@ public class Application {
         ENGINE.setPondering(ponder);
         ENGINE.setSearchCancelled(false);
 
+        if ((command.contains("wtime") && !command.contains("btime")) ||
+                !command.contains("wtime") && command.contains("btime")) {
+            write("info error both wtime and btime must be specified");
+            return;
+        }
+
         int thinkTime;
         if (command.contains("movetime")) {
             thinkTime = getLabelInt(command, "movetime", GO_LABELS);
         }
-        else {
+        else if (command.contains("wtime")) {
             int timeWhiteMs = getLabelInt(command, "wtime", GO_LABELS);
             int timeBlackMs = getLabelInt(command, "btime", GO_LABELS);
             int incrementWhiteMs = getLabelInt(command, "winc", GO_LABELS);
             int incrementBlackMs = getLabelInt(command, "binc", GO_LABELS);
             thinkTime = ENGINE.chooseThinkTime(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
+        }
+        else {
+            thinkTime = Integer.MAX_VALUE;
         }
         ENGINE.findBestMove(thinkTime, Application::writeMove);
     }

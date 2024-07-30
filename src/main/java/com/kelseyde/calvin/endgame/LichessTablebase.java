@@ -149,7 +149,7 @@ public class LichessTablebase implements Tablebase {
         if (tablebaseEntry.moves().isEmpty()) {
             throw new TablebaseException("Lichess tablebase response was empty!");
         }
-        LichessTablebaseMove bestMove = tablebaseEntry.moves().getFirst();
+        LichessTablebaseMove bestMove = tablebaseEntry.moves().get(0);
         String uci = bestMove.uci();
         return Notation.fromCombinedNotation(uci);
     }

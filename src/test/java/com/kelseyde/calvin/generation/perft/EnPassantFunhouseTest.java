@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.generation.perft;
 
-import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 import lombok.Getter;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

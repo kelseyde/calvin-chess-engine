@@ -26,7 +26,7 @@ Like most engines, Calvin does not implement its own user interface. Instead, it
 To run Calvin locally, you will need Java (minimum Java 17) installed on your machine. The binary calvin.jar can be downloaded from the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) section. Start up Calvin by executing the command:
 
 ```
-java --add-modules jdk.incubator.vector -jar calvin-4.0.1.jar
+java --add-modules jdk.incubator.vector -jar calvin-chess-engine-4.0.1.jar
 ```
 Please note the '--add-modules jdk.incubator.vector' - Calvin uses the incubator Vector API for SIMD operations during NNUE inference, and this module needs to enabled explicitly.
 

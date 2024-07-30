@@ -11,9 +11,9 @@
 
 Calvin is a chess engine written in Java. 
 
-It features a bitboard-based board representation, a traditional alpha-beta search algorithm, and an NNUE evaluation function. 
+It features a a traditional alpha-beta search algorithm paired with an NNUE evaluation function. 
 
-The NNUE neural network was trained by the excellent [bullet](https://github.com/jw1912/bullet) trainer on a dataset of 250 million positions taken from the [Leela Chess Zero dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and HCE. The network architecture is (768->256)x2->1. 
+The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 250 million positions taken from the [Leela Chess Zero dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and HCE. The network architecture is (768->256)x2->1. 
 
 Calvin is ranked ~300th on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/404/) blitz leaderboards, and is currently playing on [Lichess](https://lichess.org/@/Calvin_Bot).
 
@@ -21,12 +21,12 @@ My aim with this project was to combine my passion (playing mediocre chess) with
 
 ## How to Play
 
-Like most modern chess engines, Calvin does not implement its own user interface. Instead, it communicates using the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, meaning it can either be interacted with directly from the command line, or by hooking it up to any popular chess GUI, such as [Arena Chess](http://www.playwitharena.de/), [Banksia](https://banksiagui.com/) or [Cute Chess](https://cutechess.com/).
+Like most engines, Calvin does not implement its own user interface. Instead, it communicates using the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, meaning it can either be used directly from the command line, or via any popular chess GUI, such as [Arena Chess](http://www.playwitharena.de/), [Banksia](https://banksiagui.com/) or [Cute Chess](https://cutechess.com/).
 
-To run Calvin locally, you will need Java (minimum Java 21) installed on your machine. The binary calvin.jar can be downloaded from the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) section. Start up Calvin by executing the command:
+To run Calvin locally, you will need Java (minimum Java 17) installed on your machine. The binary calvin.jar can be downloaded from the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) section. Start up Calvin by executing the command:
 
 ```
-java --add-modules jdk.incubator.vector -jar calvin.jar
+java --add-modules jdk.incubator.vector -jar calvin-4.0.1.jar
 ```
 Please note the '--add-modules jdk.incubator.vector' - Calvin uses the incubator Vector API for SIMD operations during NNUE inference, and this module needs to enabled explicitly.
 

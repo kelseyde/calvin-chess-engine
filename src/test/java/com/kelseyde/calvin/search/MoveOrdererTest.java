@@ -81,7 +81,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertTrue(orderedMoves.getFirst().matches(Notation.fromNotation("f3", "e4")));
+        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("f3", "e4")));
 
     }
 
@@ -133,7 +133,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertFalse(orderedMoves.getFirst().matches(Notation.fromNotation("f3", "f4")));
+        Assertions.assertFalse(orderedMoves.get(0).matches(Notation.fromNotation("f3", "f4")));
 
     }
 
@@ -159,7 +159,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertTrue(orderedMoves.getFirst().matches(Notation.fromNotation("f1", "e1")));
+        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("f1", "e1")));
 
     }
 
@@ -179,7 +179,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, null, 1);
 
-        Assertions.assertTrue(orderedMoves.getFirst().matches(Notation.fromNotation("d3", "e4")));
+        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("d3", "e4")));
 
     }
 
@@ -222,7 +222,7 @@ public class MoveOrdererTest {
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, moves, previousBestMove, 1);
 
-        Assertions.assertTrue(orderedMoves.getFirst().matches(Notation.fromNotation("e8", "e1")));
+        Assertions.assertTrue(orderedMoves.get(0).matches(Notation.fromNotation("e8", "e1")));
 
     }
 

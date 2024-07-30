@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
@@ -45,8 +46,6 @@ public class ParallelSearcher implements Search {
     int hashSize;
     Board board;
     private List<Searcher> searchers;
-    // TODO use executor
-    private final ExecutorService executor;
 
     /**
      * Constructs a ParallelSearcher with the given {@link EngineConfig} config and {@link Supplier} suppliers.
@@ -72,7 +71,6 @@ public class ParallelSearcher implements Search {
         this.moveOrdererSupplier = moveOrdererSupplier;
         this.evaluatorSupplier = evaluatorSupplier;
         this.searchers = initSearchers();
-        this.executor = Executors.newVirtualThreadPerTaskExecutor();
     }
 
     /**
@@ -87,18 +85,14 @@ public class ParallelSearcher implements Search {
         try {
             setPosition(board);
             threadManager.reset();
-            List<Thread> threads = searchers.stream()
+            List<CompletableFuture<SearchResult>> threads = searchers.stream()
                     .map(searcher -> initThread(searcher, duration))
                     .toList();
-
-            for (Thread thread : threads) {
-                thread.join();
-            }
 
             SearchResult result = selectResult(searchers);
             transpositionTable.incrementGeneration();
             return result;
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             System.out.println("info error " + e);
             return SearchResult.empty();
         }
@@ -146,12 +140,13 @@ public class ParallelSearcher implements Search {
         this.searchers = initSearchers();
     }
 
-    private Thread initThread(Searcher searcher, Duration duration) {
-        return Thread.ofVirtual().start(() -> {
+    private CompletableFuture<SearchResult> initThread(Searcher searcher, Duration duration) {
+        return CompletableFuture.supplyAsync(() -> {
             try {
-                searcher.search(duration);
+                return searcher.search(duration);
             } catch (Exception e) {
                 System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
+                return SearchResult.empty();
             }
         });
     }

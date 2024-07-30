@@ -158,7 +158,7 @@ public class Searcher implements Search {
         if (result == null) {
             System.out.println("Time expired before a move was found!");
             List<Move> legalMoves = moveGenerator.generateMoves(board);
-            if (!legalMoves.isEmpty()) bestMove = legalMoves.getFirst();
+            if (!legalMoves.isEmpty()) bestMove = legalMoves.get(0);
             result = buildResult();
         }
 

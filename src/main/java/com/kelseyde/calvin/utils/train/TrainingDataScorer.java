@@ -48,7 +48,6 @@ public class TrainingDataScorer {
 
         Path inputPath = Paths.get(inputFile);
         Path outputPath = Paths.get(outputFile);
-        this.executor = Executors.newVirtualThreadPerTaskExecutor();
         Application.outputEnabled = false;
         searchers = IntStream.range(0, THREAD_COUNT)
                 .mapToObj(i -> initSearcher())

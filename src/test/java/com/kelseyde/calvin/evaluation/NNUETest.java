@@ -214,7 +214,7 @@ public class NNUETest {
         NNUE nnue = new NNUE(board);
 
         for (int i = 0; i < 10; i++) {
-            Move move = new MoveGenerator().generateMoves(board).getFirst();
+            Move move = new MoveGenerator().generateMoves(board).get(0);
             nnue.makeMove(board, move);
             board.makeMove(move);
             Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());

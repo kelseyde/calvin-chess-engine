@@ -11,11 +11,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -89,7 +86,7 @@ public class ParallelSearcher implements Search {
                     .map(searcher -> initThread(searcher, duration))
                     .toList();
 
-            SearchResult result = selectResult(searchers);
+            SearchResult result = selectResult(threads).get();
             transpositionTable.incrementGeneration();
             return result;
         } catch (Exception e) {
@@ -155,14 +152,14 @@ public class ParallelSearcher implements Search {
      * Combines the {@link SearchResult} results of the different threads and selects a final result to use.
      * Simply selects the result from the thread which searched to the greatest depth.
      *
-     * @param searchers the list of searchers
      * @return the best search result
      */
-    private SearchResult selectResult(List<Searcher> searchers) {
-        return searchers.stream()
-                .map(Searcher::getResult)
-                .max(Comparator.comparingInt(SearchResult::depth))
-                .orElseThrow();
+    private CompletableFuture<SearchResult> selectResult(List<CompletableFuture<SearchResult>> threads) {
+        CompletableFuture<SearchResult> collector = CompletableFuture.completedFuture(new SearchResult(0, null, 0, 0, 0, 0));
+        for (CompletableFuture<SearchResult> thread : threads) {
+            collector = collector.thenCombine(thread, (thread1, thread2) -> thread1.depth() > thread2.depth() ? thread1 : thread2);
+        }
+        return collector;
     }
 
     /**

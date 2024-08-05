@@ -271,6 +271,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
+        int bestScore = Integer.MIN_VALUE;
 
         while (true) {
 
@@ -374,6 +375,8 @@ public class Searcher implements Search {
                 return alpha;
             }
 
+            bestScore = Math.max(bestScore, eval);
+
             if (eval >= beta) {
 
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
@@ -412,7 +415,9 @@ public class Searcher implements Search {
             return eval;
         }
 
-        if (!isInCheck) {
+        if (!isInCheck
+            && !(flag == HashFlag.UPPER && bestScore <= staticEval)
+            && !(flag == HashFlag.LOWER && bestScore >= staticEval)) {
             long pawnZobrist = board.getGameState().getPawnZobrist();
             correctionHistoryTable.updateCorrectionHistory(pawnZobrist, board.isWhiteToMove(), depth, alpha - staticEval);
         }

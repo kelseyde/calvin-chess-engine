@@ -13,6 +13,7 @@ import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.transposition.CorrectionHistoryTable;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
@@ -51,6 +52,7 @@ public class Searcher implements Search {
     Evaluation evaluator;
     StaticExchangeEvaluator see;
     TranspositionTable transpositionTable;
+    CorrectionHistoryTable correctionHistoryTable;
 
     Board board;
     int nodes;
@@ -82,6 +84,7 @@ public class Searcher implements Search {
         this.evaluator = evaluator;
         this.transpositionTable = transpositionTable;
         this.see = new StaticExchangeEvaluator();
+        this.correctionHistoryTable = new CorrectionHistoryTable();
     }
 
     /**
@@ -229,6 +232,7 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
             staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate();
+            staticEval = correctionHistoryTable.correctEvaluation(board.getGameState().getPawnZobrist(), board.isWhiteToMove(), staticEval);
         }
 
         evalHistory[ply] = staticEval;
@@ -406,6 +410,11 @@ public class Searcher implements Search {
             bestEvalCurrentDepth = eval;
             cancelled = true;
             return eval;
+        }
+
+        if (!isInCheck) {
+            long pawnZobrist = board.getGameState().getPawnZobrist();
+            correctionHistoryTable.updateCorrectionHistory(pawnZobrist, board.isWhiteToMove(), depth, alpha - staticEval);
         }
 
         transpositionTable.put(getKey(), flag, depth, ply, bestMove, staticEval, alpha);
@@ -606,6 +615,7 @@ public class Searcher implements Search {
     public void clearHistory() {
         transpositionTable.clear();
         evaluator.clearHistory();
+        correctionHistoryTable.clear();
     }
 
     @Override

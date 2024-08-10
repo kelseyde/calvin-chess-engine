@@ -95,5 +95,5 @@ If you would like to contribute, or just talk about chess/chess programming, get
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=ed5858
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
 
-[lichess-badge]: https://img.shields.io/badge/Play-v4.0.0-ffd25c?logo=lichess&style=for-the-badge
+[lichess-badge]: https://img.shields.io/badge/Play-v4.0.2-ffd25c?logo=lichess&style=for-the-badge
 [lichess-link]: https://lichess.org/@/Calvin_Bot

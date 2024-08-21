@@ -216,14 +216,18 @@ public class Searcher implements Search {
         }
         movePicker.setBestMove(previousBestMove);
 
+        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+
         // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
-        if (transposition == null && ply > 0 && depth >= config.getIirDepth()) {
+        if (!rootNode
+                && !isInCheck
+                && !hasBestMove(transposition)
+                && ply > 0
+                && depth >= config.getIirDepth()) {
             --depth;
         }
-
-        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;

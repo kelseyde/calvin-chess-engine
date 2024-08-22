@@ -303,6 +303,20 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
+            // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
+            // promotion, let's assume it's less likely to be good, and fully skip searching that move.
+            int lmpCutoff = (depth * config.getLmpMultiplier()) / (1 + (improving ? 0 : 1));
+            if (!pvNode
+                    && !isInCheck
+                    && isQuiet
+                    && depth <= config.getLmpDepth()
+                    && movesSearched >= lmpCutoff) {
+                evaluator.unmakeMove();
+                board.unmakeMove();
+                continue;
+            }
+
             // Search Extensions - https://www.chessprogramming.org/Extensions
             // In certain interesting cases (e.g. promotions, or checks that do not immediately lose material), let's
             // extend the search depth by one ply.
@@ -327,19 +341,6 @@ public class Searcher implements Search {
                 eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
             }
             else {
-                // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
-                // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
-                // promotion, let's assume it's less likely to be good, and fully skip searching that move.
-                int lmpCutoff = (depth * config.getLmpMultiplier()) / (1 + (improving ? 0 : 1));
-                if (!pvNode
-                    && !isInCheck
-                    && isQuiet
-                    && depth <= config.getLmpDepth()
-                    && movesSearched >= lmpCutoff) {
-                    evaluator.unmakeMove();
-                    board.unmakeMove();
-                    continue;
-                }
                 // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
                 // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
                 // let's save time by assuming it's less likely to be good, and reduce the search depth.

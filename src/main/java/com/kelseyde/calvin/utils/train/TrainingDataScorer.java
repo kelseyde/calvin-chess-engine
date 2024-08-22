@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,11 +41,11 @@ public class TrainingDataScorer {
     private static final int TT_SIZE = 64;
     private static final Duration MAX_SEARCH_TIME = Duration.ofSeconds(30);
 
-    private ExecutorService executor;
     private List<Searcher> searchers;
 
     public void score(String inputFile, String outputFile, int softLimit, int resumeOffset) {
 
+        System.out.printf("Scoring training data from %s to %s with soft limit %d and resume offset %d\n", inputFile, outputFile, softLimit, resumeOffset);
         Path inputPath = Paths.get(inputFile);
         Path outputPath = Paths.get(outputFile);
         Application.outputEnabled = false;
@@ -85,8 +86,6 @@ public class TrainingDataScorer {
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to read input file", e);
-        } finally {
-            executor.shutdown();
         }
 
     }
@@ -97,7 +96,7 @@ public class TrainingDataScorer {
         for (int i = 0; i < THREAD_COUNT; i++) {
             Searcher searcher = searchers.get(i);
             List<String> partition = partitions.get(i);
-            futures.add(executor.submit(() -> {
+            futures.add(CompletableFuture.supplyAsync(() -> {
                 List<String> scoredPartition = new ArrayList<>(partition.size());
                 for (String line : partition) {
                     String scoredLine = scoreData(searcher, line, softLimit);

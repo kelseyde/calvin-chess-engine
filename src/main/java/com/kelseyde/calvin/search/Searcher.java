@@ -107,6 +107,8 @@ public class Searcher implements Search {
         int alpha = Score.MIN;
         int beta = Score.MAX;
         int retryMultiplier = 0;
+        int aspMargin = config.getAspMargin();
+        int aspFailMargin = config.getAspFailMargin();
         SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
@@ -134,20 +136,18 @@ public class Searcher implements Search {
             if (eval <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
                 retryMultiplier++;
-                alpha -= config.getAspFailMargin() * retryMultiplier;
-                beta += config.getAspMargin();
+                alpha -= aspFailMargin * retryMultiplier;
                 continue;
             }
             if (eval >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
                 retryMultiplier++;
-                beta += config.getAspFailMargin() * retryMultiplier;
-                alpha -= config.getAspMargin();
+                beta += aspFailMargin * retryMultiplier;
                 continue;
             }
 
-            alpha = eval - config.getAspMargin();
-            beta = eval + config.getAspMargin();
+            alpha = eval - aspMargin;
+            beta = eval + aspMargin;
 
             // Increment depth and retry multiplier for next iteration
             retryMultiplier = 0;

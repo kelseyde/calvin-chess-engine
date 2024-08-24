@@ -283,13 +283,6 @@ public class Searcher implements Search {
             boolean isCapture = capturedPiece != null;
             boolean isPromotion = move.getPromotionPiece() != null;
 
-            evaluator.makeMove(board, move);
-            if (!board.makeMove(move)) continue;
-            nodes++;
-
-            boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
-            boolean isQuiet = !isCheck && !isCapture && !isPromotion;
-
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
@@ -297,21 +290,27 @@ public class Searcher implements Search {
                 && depth <= config.getFpDepth()
                 && staticEval + config.getFpMargin()[depth] < alpha
                 && !isInCheck
-                && isQuiet) {
-                evaluator.unmakeMove();
-                board.unmakeMove();
+                && !isCapture
+                && !isPromotion) {
                 continue;
             }
+
+            evaluator.makeMove(board, move);
+            if (!board.makeMove(move)) continue;
+            nodes++;
+
+            boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+            boolean isQuiet = !isCheck && !isCapture && !isPromotion;
 
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
             // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
             // promotion, let's assume it's less likely to be good, and fully skip searching that move.
             int lmpCutoff = (depth * config.getLmpMultiplier()) / (1 + (improving ? 0 : 1));
             if (!pvNode
-                    && !isInCheck
-                    && isQuiet
-                    && depth <= config.getLmpDepth()
-                    && movesSearched >= lmpCutoff) {
+                && !isInCheck
+                && isQuiet
+                && depth <= config.getLmpDepth()
+                && movesSearched >= lmpCutoff) {
                 evaluator.unmakeMove();
                 board.unmakeMove();
                 continue;

@@ -104,9 +104,11 @@ public class Searcher implements Search {
         cancelled = false;
         moveOrderer.ageHistoryScores(board.isWhiteToMove());
 
-        int alpha = Integer.MIN_VALUE + 1;
-        int beta = Integer.MAX_VALUE - 1;
+        int alpha = Score.MIN;
+        int beta = Score.MAX;
         int retryMultiplier = 0;
+        int aspMargin = config.getAspMargin();
+        int aspFailMargin = config.getAspFailMargin();
         SearchResult result = null;
 
         while (!isCancelled() && currentDepth < maxDepth) {
@@ -134,20 +136,18 @@ public class Searcher implements Search {
             if (eval <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
                 retryMultiplier++;
-                alpha -= config.getAspFailMargin() * retryMultiplier;
-                beta += config.getAspMargin();
+                alpha -= aspFailMargin * retryMultiplier;
                 continue;
             }
             if (eval >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
                 retryMultiplier++;
-                beta += config.getAspFailMargin() * retryMultiplier;
-                alpha -= config.getAspMargin();
+                beta += aspFailMargin * retryMultiplier;
                 continue;
             }
 
-            alpha = eval - config.getAspMargin();
-            beta = eval + config.getAspMargin();
+            alpha = eval - aspMargin;
+            beta = eval + aspMargin;
 
             // Increment depth and retry multiplier for next iteration
             retryMultiplier = 0;
@@ -188,15 +188,15 @@ public class Searcher implements Search {
         if (depth <= 0) return quiescenceSearch(alpha, beta, 1, ply);
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
-        if (ply > 0 && isDraw()) return Score.DRAW_SCORE;
+        if (ply > 0 && isDraw()) return Score.DRAW;
 
         boolean rootNode = ply == 0;
         boolean pvNode = beta - alpha > 1;
 
         // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
-        alpha = Math.max(alpha, -Score.MATE_SCORE + ply);
-        beta = Math.min(beta, Score.MATE_SCORE - ply);
+        alpha = Math.max(alpha, -Score.MATE + ply);
+        beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
         MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
@@ -332,7 +332,7 @@ public class Searcher implements Search {
 
             int eval;
             if (isDraw()) {
-                eval = Score.DRAW_SCORE;
+                eval = Score.DRAW;
             }
             else if (pvNode && movesSearched == 0) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
@@ -402,11 +402,11 @@ public class Searcher implements Search {
 
         if (movesSearched == 0) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
-            return isInCheck ? -Score.MATE_SCORE + ply : Score.DRAW_SCORE;
+            return isInCheck ? -Score.MATE + ply : Score.DRAW;
         }
         if (rootNode && movesSearched == 1) {
             // If there is only one legal move at the root node, play that move immediately.
-            int eval = isDraw() ? Score.DRAW_SCORE : staticEval;
+            int eval = isDraw() ? Score.DRAW : staticEval;
             bestMoveCurrentDepth = bestMove;
             bestEvalCurrentDepth = eval;
             cancelled = true;
@@ -510,7 +510,7 @@ public class Searcher implements Search {
         }
 
         if (movesSearched == 0 && isInCheck) {
-            return -Score.MATE_SCORE + ply;
+            return -Score.MATE + ply;
         }
 
         return alpha;
@@ -551,7 +551,7 @@ public class Searcher implements Search {
     }
 
     private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
-        return Math.abs(bestEval) >= Score.MATE_SCORE - currentDepth;
+        return Math.abs(bestEval) >= Score.MATE - currentDepth;
     }
 
     private boolean isNodeLimitReached() {

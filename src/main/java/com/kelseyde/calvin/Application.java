@@ -272,7 +272,7 @@ public class Application {
 
     private static String formatScore(int eval) {
         if (Score.isMateScore(eval)) {
-            int moves = Math.max((Score.MATE_SCORE - Math.abs(eval)) / 2, 1);
+            int moves = Math.max((Score.MATE - Math.abs(eval)) / 2, 1);
             if (eval < 0) moves = -moves;
             return "mate " + moves;
         } else {

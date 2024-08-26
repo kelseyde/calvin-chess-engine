@@ -11,7 +11,7 @@ import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.ThreadManager;
-import com.kelseyde.calvin.search.TimeLimit;
+import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
@@ -140,10 +140,10 @@ public class TrainingDataScorer {
         Board board = FEN.toBoard(fen);
         searcher.setPosition(board);
         searcher.setNodeLimit(softLimit);
-        TimeLimit timeLimit = new TimeLimit(MAX_SEARCH_TIME, MAX_SEARCH_TIME);
+        TimeControl tc = new TimeControl(MAX_SEARCH_TIME, MAX_SEARCH_TIME);
         SearchResult searchResult;
         try {
-             searchResult = searcher.search(timeLimit);
+             searchResult = searcher.search(tc);
         } catch (Exception e) {
             System.out.println("info error scoring fen " + fen + " " + e);
             return "";

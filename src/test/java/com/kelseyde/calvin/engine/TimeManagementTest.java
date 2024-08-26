@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.engine;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.search.TimeLimit;
+import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -41,9 +41,9 @@ public class TimeManagementTest {
         Duration overhead = Duration.ofMillis(50);
         for (int move = 0; move < totalMoves; move++) {
             addMove();
-            TimeLimit timeLimit = engine.chooseThinkTime((int) timeRemaining.toMillis(), 0, (int) increment.toMillis(), 0);
-            System.out.printf("Move %s, Time %s, Soft Limit %s, Hard Limit %s%n", move, timeRemaining, timeLimit.softLimit(), timeLimit.hardLimit());
-            timeRemaining = timeRemaining.minus(timeLimit.softLimit()).plus(increment).minus(overhead);
+            TimeControl tc = TimeControl.init(new Board(), (int) timeRemaining.toMillis(), 0, (int) increment.toMillis(), 0);
+            System.out.printf("Move %s, Time %s, Soft Limit %s, Hard Limit %s%n", move, timeRemaining, tc.softLimit(), tc.hardLimit());
+            timeRemaining = timeRemaining.minus(tc.softLimit()).plus(increment).minus(overhead);
         }
 
 

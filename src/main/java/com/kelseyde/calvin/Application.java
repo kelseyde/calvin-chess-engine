@@ -7,7 +7,7 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.TimeLimit;
+import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
@@ -173,23 +173,23 @@ public class Application {
             return;
         }
 
-        TimeLimit timeLimit;
+        TimeControl tc;
         if (command.contains("movetime")) {
             Duration thinkTime = Duration.ofMillis(getLabelInt(command, "movetime", GO_LABELS));
-            timeLimit = new TimeLimit(thinkTime, thinkTime);
+            tc = new TimeControl(thinkTime, thinkTime);
         }
         else if (command.contains("wtime")) {
             int timeWhiteMs = getLabelInt(command, "wtime", GO_LABELS);
             int timeBlackMs = getLabelInt(command, "btime", GO_LABELS);
             int incrementWhiteMs = getLabelInt(command, "winc", GO_LABELS);
             int incrementBlackMs = getLabelInt(command, "binc", GO_LABELS);
-            timeLimit = ENGINE.chooseThinkTime(timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
+            tc = TimeControl.init(ENGINE.getBoard(), timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
         }
         else {
             Duration thinkTime = Duration.ofMillis(Integer.MAX_VALUE);
-            timeLimit = new TimeLimit(thinkTime, thinkTime);
+            tc = new TimeControl(thinkTime, thinkTime);
         }
-        ENGINE.findBestMove(timeLimit, Application::writeMove);
+        ENGINE.findBestMove(tc, Application::writeMove);
     }
 
     private static void handleEval() {

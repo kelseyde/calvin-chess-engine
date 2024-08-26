@@ -42,8 +42,6 @@ public record TimeControl(Duration softLimit, Duration hardLimit) {
     }
 
     public boolean isSoftLimitReached(Instant start, int bestMoveStability) {
-        // Scales the soft limit based on the stability of the searches best move so far. If the best move has remained
-        // stable for several iterations, we can safely assume that we don't need to spend as much time searching further.
         Duration expired = Duration.between(start, Instant.now());
         Duration adjustedSoftLimit = adjustSoftLimit(softLimit, bestMoveStability);
         return expired.compareTo(adjustedSoftLimit) > 0;

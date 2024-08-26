@@ -8,7 +8,7 @@ import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.TimeLimit;
+import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.utils.FEN;
@@ -95,14 +95,14 @@ public class Engine {
         this.config.setPondering(pondering);
     }
 
-    public void findBestMove(TimeLimit timeLimit, Consumer<SearchResult> onThinkComplete) {
+    public void findBestMove(TimeControl tc, Consumer<SearchResult> onThinkComplete) {
 
         if (useOpeningBook()) {
             // If we are in the opening and book is enabled, select a move from the opening book
             Move bookMove = book.getBookMove(board);
             onThinkComplete.accept(new SearchResult(0, move(bookMove), 0, 0, 0, 0));
         }
-        else if (useEndgameTablebase(timeLimit)) {
+        else if (useEndgameTablebase(tc)) {
             // If we are in the endgame and tablebase is enabled, select a move from the tablebase probe
             try {
                 Move tablebaseMove = tablebase.getTablebaseMove(board);
@@ -110,32 +110,32 @@ public class Engine {
             } catch (TablebaseException e) {
                 // In case tablebase probe fails, search manually
                 System.out.println("error probing tablebase: " + e.getMessage());
-                startThinking(timeLimit, onThinkComplete);
+                startThinking(tc, onThinkComplete);
             }
         }
         else {
             // Otherwise, search for the best move.
-            startThinking(timeLimit, onThinkComplete);
+            startThinking(tc, onThinkComplete);
         }
 
     }
 
     public SearchResult think(int timeout) {
-        TimeLimit timeLimit = new TimeLimit(Duration.ofMillis(timeout), Duration.ofMillis(timeout));
-        return searcher.search(timeLimit);
+        TimeControl tc = new TimeControl(Duration.ofMillis(timeout), Duration.ofMillis(timeout));
+        return searcher.search(tc);
     }
 
-    public SearchResult think(TimeLimit timeLimit) {
-        return searcher.search(timeLimit);
+    public SearchResult think(TimeControl tc) {
+        return searcher.search(tc);
     }
 
     public boolean isThinking() {
         return think != null && !think.isDone();
     }
 
-    public void startThinking(TimeLimit timeLimit, Consumer<SearchResult> onThinkComplete) {
+    public void startThinking(TimeControl tc, Consumer<SearchResult> onThinkComplete) {
         stopThinking();
-        think = CompletableFuture.supplyAsync(() -> think(timeLimit));
+        think = CompletableFuture.supplyAsync(() -> think(tc));
         think.thenAccept(onThinkComplete);
     }
 
@@ -143,20 +143,6 @@ public class Engine {
         if (isThinking()) {
             think.cancel(true);
         }
-    }
-
-    public TimeLimit chooseThinkTime(int timeWhiteMs, int timeBlackMs, int incWhiteMs, int incBlackMs) {
-
-        boolean white = board.isWhiteToMove();
-        double time = white ? timeWhiteMs : timeBlackMs;
-        double inc = white ? incWhiteMs : incBlackMs;
-
-        double base = time / 20 + inc * 0.75;
-        Duration soft = Duration.ofMillis((int) (base * 2 / 3));
-        Duration hard = Duration.ofMillis((int) (base * 2));
-
-        return new TimeLimit(soft, hard);
-
     }
 
     public void gameOver() {
@@ -197,11 +183,11 @@ public class Engine {
         return config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key);
     }
 
-    private boolean useEndgameTablebase(TimeLimit timeLimit) {
+    private boolean useEndgameTablebase(TimeControl tc) {
         return !config.isPondering()
                 && config.isOwnTablebaseEnabled()
                 && board.countPieces() <= config.getMaxTablebaseSupportedPieces()
-                && tablebase.canProbeTablebase(timeLimit.hardLimit());
+                && tablebase.canProbeTablebase(tc.hardLimit());
     }
 
     /**

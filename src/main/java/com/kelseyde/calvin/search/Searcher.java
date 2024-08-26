@@ -55,7 +55,8 @@ public class Searcher implements Search {
     Board board;
     int nodes;
     Instant start;
-    Instant timeout;
+    Instant softTimeout;
+    Instant hardTimeout;
     boolean cancelled;
 
     int currentDepth;
@@ -86,14 +87,15 @@ public class Searcher implements Search {
 
     /**
      * Search the current position, increasing the depth each iteration, to find the best move within the given time limit.
-     * @param duration the maximum duration to search
+     * @param timeLimit the maximum duration to search
      * @return a {@link SearchResult} containing the best move, the eval, and other search info.
      */
     @Override
-    public SearchResult search(Duration duration) {
+    public SearchResult search(TimeLimit timeLimit) {
 
         start = Instant.now();
-        timeout = start.plus(duration);
+        softTimeout = start.plus(timeLimit.softLimit());
+        hardTimeout = start.plus(timeLimit.hardLimit());
         nodes = 0;
         evalHistory = new int[maxDepth];
         currentDepth = 1;
@@ -111,7 +113,7 @@ public class Searcher implements Search {
         int aspFailMargin = config.getAspFailMargin();
         SearchResult result = null;
 
-        while (!isCancelled() && currentDepth < maxDepth) {
+        while (!isSoftTimeoutReached() && currentDepth < maxDepth) {
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestEvalCurrentDepth = 0;
@@ -128,7 +130,7 @@ public class Searcher implements Search {
             }
 
             // Check if search is cancelled or a checkmate is found
-            if (isCancelled() || isCheckmateFoundAtCurrentDepth(currentDepth) || isNodeLimitReached()) {
+            if (shouldStop() || foundMate(currentDepth) || nodeLimitReached()) {
                 break;
             }
 
@@ -182,7 +184,7 @@ public class Searcher implements Search {
     public int search(int depth, int ply, int alpha, int beta, boolean allowNull) {
 
         // If timeout is reached, exit immediately
-        if (isCancelled()) return alpha;
+        if (shouldStop()) return alpha;
 
         // If depth is reached, drop into quiescence search
         if (depth <= 0) return quiescenceSearch(alpha, beta, 1, ply);
@@ -370,7 +372,7 @@ public class Searcher implements Search {
             evaluator.unmakeMove();
             board.unmakeMove();
 
-            if (isCancelled()) {
+            if (shouldStop()) {
                 return alpha;
             }
 
@@ -425,7 +427,7 @@ public class Searcher implements Search {
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
     int quiescenceSearch(int alpha, int beta, int depth, int ply) {
-        if (isCancelled()) {
+        if (shouldStop()) {
             return alpha;
         }
 
@@ -549,11 +551,11 @@ public class Searcher implements Search {
         return transposition != null && transposition.getMove() != null;
     }
 
-    private boolean isCheckmateFoundAtCurrentDepth(int currentDepth) {
+    private boolean foundMate(int currentDepth) {
         return Math.abs(bestEval) >= Score.MATE - currentDepth;
     }
 
-    private boolean isNodeLimitReached() {
+    private boolean nodeLimitReached() {
         return nodeLimit > 0 && nodes >= nodeLimit;
     }
 
@@ -563,12 +565,20 @@ public class Searcher implements Search {
         return new SearchResult(bestEval, bestMove, currentDepth, millis, nodes, nps);
     }
 
-    private boolean isCancelled() {
+    private boolean shouldStop() {
         // Exit if global search is cancelled
         if (config.isSearchCancelled()) return true;
         // Exit if local search is cancelled
         if (cancelled) return true;
-        return !config.isPondering() && (timeout != null && !Instant.now().isBefore(timeout));
+        return isHardTimeoutReached();
+    }
+
+    private boolean isHardTimeoutReached() {
+        return !config.isPondering() && (hardTimeout != null && !Instant.now().isBefore(hardTimeout));
+    }
+
+    private boolean isSoftTimeoutReached() {
+        return !config.isPondering() && (softTimeout != null && !Instant.now().isBefore(softTimeout));
     }
 
     private boolean isDraw() {

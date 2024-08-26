@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.engine;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.search.TimeLimit;
 import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -37,13 +38,12 @@ public class TimeManagementTest {
     private void simulateGame(Duration time, Duration increment, int totalMoves) {
 
         Duration timeRemaining = time;
-        Duration thinkTime;
         Duration overhead = Duration.ofMillis(50);
         for (int move = 0; move < totalMoves; move++) {
             addMove();
-            thinkTime = Duration.ofMillis(engine.chooseThinkTime((int) timeRemaining.toMillis(), 0, (int) increment.toMillis(), 0));
-            System.out.printf("Move %s, Time %s, Think %s%n", move, timeRemaining, thinkTime);
-            timeRemaining = timeRemaining.minus(thinkTime).plus(increment).minus(overhead);
+            TimeLimit timeLimit = engine.chooseThinkTime((int) timeRemaining.toMillis(), 0, (int) increment.toMillis(), 0);
+            System.out.printf("Move %s, Time %s, Soft Limit %s, Hard Limit %s%n", move, timeRemaining, timeLimit.softLimit(), timeLimit.hardLimit());
+            timeRemaining = timeRemaining.minus(timeLimit.softLimit()).plus(increment).minus(overhead);
         }
 
 

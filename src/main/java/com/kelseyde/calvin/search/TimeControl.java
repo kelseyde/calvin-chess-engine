@@ -55,7 +55,7 @@ public record TimeControl(Duration softLimit, Duration hardLimit) {
         // Scale the soft limit based on the stability of the best move. If the best move has remained stable for several
         // iterations, we can safely assume that we don't need to spend as much time searching further.
         bestMoveStability = Math.min(bestMoveStability, BEST_MOVE_STABILITY_FACTOR.length - 1);
-        double bmStabilityFactor = Math.max(BEST_MOVE_STABILITY_FACTOR[bestMoveStability], EVAL_STABILITY_FACTOR[evalStability]);
+        double bmStabilityFactor = BEST_MOVE_STABILITY_FACTOR[bestMoveStability];
 
         // Scale the soft limit based on the stability of the evaluation. If the evaluation has remained stable for several
         // iterations, we can safely assume that we don't need to spend as much time searching further.

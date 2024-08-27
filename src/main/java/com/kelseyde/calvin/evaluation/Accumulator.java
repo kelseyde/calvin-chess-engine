@@ -146,6 +146,10 @@ public class Accumulator {
 
     public record FeatureUpdate(int square, Piece piece, boolean white) {}
 
+    /**
+     * A collection of {@link FeatureUpdate} updates representing a single move. This is used to update the accumulator
+     * with the changes in features that result from a move.
+     */
     public static class AccumulatorUpdate {
 
         public FeatureUpdate[] adds = new FeatureUpdate[2];

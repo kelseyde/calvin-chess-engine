@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.FEN;
 
 import java.util.List;
 

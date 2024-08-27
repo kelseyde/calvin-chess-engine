@@ -141,29 +141,25 @@ public class NNUE implements Evaluation {
         Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
 
-        AccumulatorUpdate update;
-        if (move.isCastling()) {
-            update = handleCastleMove(move, white);
-        } else if (capturedPiece != null) {
-            update = handleCapture(move, piece, newPiece, capturedPiece, white);
-        } else {
-            update = handleStandardMove(move, piece, newPiece, white);
-        }
         Accumulator acc = accumulators[current].copy();
-        acc.update = update;
+        if (move.isCastling()) {
+            handleCastleMove(acc, move, white);
+        } else if (capturedPiece != null) {
+            handleCapture(acc, move, piece, newPiece, capturedPiece, white);
+        } else {
+            handleStandardMove(acc, move, piece, newPiece, white);
+        }
         acc.dirty = true;
         this.accumulators[++current] = acc;
     }
 
-    private AccumulatorUpdate handleStandardMove(Move move, Piece piece, Piece newPiece, boolean white) {
-        AccumulatorUpdate update = new AccumulatorUpdate();
+    private void handleStandardMove(Accumulator acc, Move move, Piece piece, Piece newPiece, boolean white) {
         FeatureUpdate add = new FeatureUpdate(move.getEndSquare(), newPiece, white);
         FeatureUpdate sub = new FeatureUpdate(move.getStartSquare(), piece, white);
-        update.pushAddSub(add, sub);
-        return update;
+        acc.update.pushAddSub(add, sub);
     }
 
-    private AccumulatorUpdate handleCastleMove(Move move, boolean white) {
+    private void handleCastleMove(Accumulator acc, Move move, boolean white) {
         boolean kingside = Board.file(move.getEndSquare()) == 6;
         int rookStart = kingside ? (white ? 7 : 63) : (white ? 0 : 56);
         int rookEnd = kingside ? (white ? 5 : 61) : (white ? 3 : 59);
@@ -171,20 +167,16 @@ public class NNUE implements Evaluation {
         FeatureUpdate kingSub = new FeatureUpdate(move.getStartSquare(), Piece.KING, white);
         FeatureUpdate rookAdd = new FeatureUpdate(rookEnd, Piece.ROOK, white);
         FeatureUpdate rookSub = new FeatureUpdate(rookStart, Piece.ROOK, white);
-        AccumulatorUpdate update = new AccumulatorUpdate();
-        update.pushAddAddSubSub(kingAdd, rookAdd, kingSub, rookSub);
-        return update;
+        acc.update.pushAddAddSubSub(kingAdd, rookAdd, kingSub, rookSub);
     }
 
-    private AccumulatorUpdate handleCapture(Move move, Piece piece, Piece newPiece, Piece capturedPiece, boolean white) {
+    private void handleCapture(Accumulator acc, Move move, Piece piece, Piece newPiece, Piece capturedPiece, boolean white) {
         int captureSquare = move.getEndSquare();
         if (move.isEnPassant()) captureSquare = white ? move.getEndSquare() - 8 : move.getEndSquare() + 8;
-        AccumulatorUpdate update = new AccumulatorUpdate();
         FeatureUpdate add = new FeatureUpdate(move.getEndSquare(), newPiece, white);
         FeatureUpdate sub1 = new FeatureUpdate(captureSquare, capturedPiece, !white);
         FeatureUpdate sub2 = new FeatureUpdate(move.getStartSquare(), piece, white);
-        update.pushAddSubSub(add, sub1, sub2);
-        return update;
+        acc.update.pushAddSubSub(add, sub1, sub2);
     }
 
     private void applyLazyUpdates() {
@@ -195,6 +187,7 @@ public class NNUE implements Evaluation {
         while (i >= 0 && accumulators[i].dirty) i--;
 
         while (i < current) {
+            if (i + 1 >= accumulators.length) break;
             Accumulator prev = accumulators[i];
             Accumulator curr = accumulators[i + 1];
             AccumulatorUpdate update = curr.update;

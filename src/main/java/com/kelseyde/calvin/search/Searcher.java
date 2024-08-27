@@ -219,7 +219,9 @@ public class Searcher implements Search {
                 bestMoveCurrentDepth = transposition.getMove();
                 bestEvalCurrentDepth = transposition.getScore();
             }
-            return transposition.getScore();
+            if (!pvNode) {
+                return transposition.getScore();
+            }
         }
         Move previousBestMove = rootNode ? bestMove : null;
         if (hasBestMove(transposition)) {

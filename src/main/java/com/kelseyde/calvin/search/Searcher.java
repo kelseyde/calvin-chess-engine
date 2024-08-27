@@ -585,7 +585,7 @@ public class Searcher implements Search {
     }
 
     private boolean isSoftTimeoutReached() {
-        return !config.isPondering() && tc.isSoftLimitReached(start, bestMoveStability, evalStability);
+        return !config.isPondering() && tc.isSoftLimitReached(start, currentDepth, bestMoveStability, evalStability);
     }
 
     private boolean isDraw() {

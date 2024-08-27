@@ -5,14 +5,15 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineInitializer;
+import com.kelseyde.calvin.evaluation.Accumulator.AccumulatorUpdate;
+import com.kelseyde.calvin.evaluation.Accumulator.FeatureUpdate;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.Arrays;
 
 /**
  * Implementation of {@link Evaluation} using an NNUE (Efficiently Updatable Neural Network) evaluation function.
@@ -48,16 +49,16 @@ public class NNUE implements Evaluation {
     static final int QB = 64;
     static final int QAB = QA * QB;
 
-    final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
-    Accumulator accumulator;
+    final Accumulator[] accumulators = new Accumulator[256];
+    int current = 0;
     Board board;
 
     public NNUE() {
-        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
+        this.accumulators[current] = new Accumulator(Network.HIDDEN_SIZE);
     }
 
     public NNUE(Board board) {
-        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
+        this.accumulators[current] = new Accumulator(Network.HIDDEN_SIZE);
         this.board = board;
         activateAll(board);
     }
@@ -65,9 +66,11 @@ public class NNUE implements Evaluation {
     @Override
     public int evaluate() {
 
+        applyLazyUpdates();
+        Accumulator acc = this.accumulators[current];
         boolean white = board.isWhiteToMove();
-        short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
-        short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
+        short[] us = white ? acc.whiteFeatures : acc.blackFeatures;
+        short[] them = white ? acc.blackFeatures : acc.whiteFeatures;
         int eval = Network.NETWORK.outputBias();
         eval += forward(us, 0);
         eval += forward(them, Network.HIDDEN_SIZE);
@@ -104,8 +107,8 @@ public class NNUE implements Evaluation {
     private void activateAll(Board board) {
 
         for (int i = 0; i < Network.HIDDEN_SIZE; i++) {
-            accumulator.whiteFeatures[i] = Network.NETWORK.inputBiases()[i];
-            accumulator.blackFeatures[i] = Network.NETWORK.inputBiases()[i];
+            this.accumulators[current].whiteFeatures[i] = Network.NETWORK.inputBiases()[i];
+            this.accumulators[current].blackFeatures[i] = Network.NETWORK.inputBiases()[i];
         }
 
         activateSide(board, board.getWhitePieces(), true);
@@ -114,12 +117,13 @@ public class NNUE implements Evaluation {
     }
 
     private void activateSide(Board board, long pieces, boolean white) {
+        Accumulator acc = this.accumulators[current];
         while (pieces != 0) {
             int square = Bitwise.getNextBit(pieces);
             Piece piece = board.pieceAt(square);
             int whiteIndex = featureIndex(piece, square, white, true);
             int blackIndex = featureIndex(piece, square, white, false);
-            accumulator.add(whiteIndex, blackIndex);
+            acc.add(whiteIndex, blackIndex);
             pieces = Bitwise.popBit(pieces);
         }
     }
@@ -129,7 +133,6 @@ public class NNUE implements Evaluation {
      */
     @Override
     public void makeMove(Board board, Move move) {
-        accumulatorHistory.push(accumulator.copy());
         boolean white = board.isWhiteToMove();
         int startSquare = move.getStartSquare();
         int endSquare = move.getEndSquare();
@@ -138,48 +141,131 @@ public class NNUE implements Evaluation {
         Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
 
-        int oldWhiteIdx = featureIndex(piece, startSquare, white, true);
-        int oldBlackIdx = featureIndex(piece, startSquare, white, false);
-
-        int newWhiteIdx = featureIndex(newPiece, endSquare, white, true);
-        int newBlackIdx = featureIndex(newPiece, endSquare, white, false);
-
+        AccumulatorUpdate update;
         if (move.isCastling()) {
-            handleCastleMove(white, endSquare, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
+            update = handleCastleMove(move, white);
         } else if (capturedPiece != null) {
-            handleCapture(move, capturedPiece, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+            update = handleCapture(move, piece, newPiece, capturedPiece, white);
         } else {
-            accumulator.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+            update = handleStandardMove(move, piece, newPiece, white);
         }
+        Accumulator acc = accumulators[current].copy();
+        acc.update = update;
+        acc.dirty = true;
+        this.accumulators[++current] = acc;
     }
 
-    private void handleCastleMove(boolean white, int endSquare, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        boolean isKingside = Board.file(endSquare) == 6;
-        int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
-        int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
-        int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookStart, white, true);
-        int rookStartBlackIdx = featureIndex(Piece.ROOK, rookStart, white, false);
-        int rookEndWhiteIdx = featureIndex(Piece.ROOK, rookEnd, white, true);
-        int rookEndBlackIdx = featureIndex(Piece.ROOK, rookEnd, white, false);
-        accumulator.addAddSubSub(newWhiteIdx, newBlackIdx, rookEndWhiteIdx, rookEndBlackIdx, oldWhiteIdx, oldBlackIdx, rookStartWhiteIdx, rookStartBlackIdx);
+    private AccumulatorUpdate handleStandardMove(Move move, Piece piece, Piece newPiece, boolean white) {
+        AccumulatorUpdate update = new AccumulatorUpdate();
+        FeatureUpdate add = new FeatureUpdate(move.getEndSquare(), newPiece, white);
+        FeatureUpdate sub = new FeatureUpdate(move.getStartSquare(), piece, white);
+        update.pushAddSub(add, sub);
+        return update;
     }
 
-    private void handleCapture(Move move, Piece capturedPiece, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
+    private AccumulatorUpdate handleCastleMove(Move move, boolean white) {
+        boolean kingside = Board.file(move.getEndSquare()) == 6;
+        int rookStart = kingside ? (white ? 7 : 63) : (white ? 0 : 56);
+        int rookEnd = kingside ? (white ? 5 : 61) : (white ? 3 : 59);
+        FeatureUpdate kingAdd = new FeatureUpdate(move.getEndSquare(), Piece.KING, white);
+        FeatureUpdate kingSub = new FeatureUpdate(move.getStartSquare(), Piece.KING, white);
+        FeatureUpdate rookAdd = new FeatureUpdate(rookEnd, Piece.ROOK, white);
+        FeatureUpdate rookSub = new FeatureUpdate(rookStart, Piece.ROOK, white);
+        AccumulatorUpdate update = new AccumulatorUpdate();
+        update.pushAddAddSubSub(kingAdd, rookAdd, kingSub, rookSub);
+        return update;
+    }
+
+    private AccumulatorUpdate handleCapture(Move move, Piece piece, Piece newPiece, Piece capturedPiece, boolean white) {
         int captureSquare = move.getEndSquare();
         if (move.isEnPassant()) captureSquare = white ? move.getEndSquare() - 8 : move.getEndSquare() + 8;
-        int capturedWhiteIdx = featureIndex(capturedPiece, captureSquare, !white, true);
-        int capturedBlackIdx = featureIndex(capturedPiece, captureSquare, !white, false);
-        accumulator.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
+        AccumulatorUpdate update = new AccumulatorUpdate();
+        FeatureUpdate add = new FeatureUpdate(move.getEndSquare(), newPiece, white);
+        FeatureUpdate sub1 = new FeatureUpdate(captureSquare, capturedPiece, !white);
+        FeatureUpdate sub2 = new FeatureUpdate(move.getStartSquare(), piece, white);
+        update.pushAddSubSub(add, sub1, sub2);
+        return update;
+    }
+
+    private void applyLazyUpdates() {
+
+        // Scan back to the last non-dirty accumulator.
+        if (!accumulators[current].dirty) return;
+        int i = current - 1;
+        while (i >= 0 && accumulators[i].dirty) i--;
+
+        while (i < current) {
+            Accumulator prev = accumulators[i];
+            Accumulator curr = accumulators[i + 1];
+            AccumulatorUpdate update = curr.update;
+            if (update.addCount == 1 && update.subCount == 1) {
+                lazyUpdateAddSub(prev, curr);
+            } else if (update.addCount == 1 && update.subCount == 2) {
+                lazyUpdateAddSubSub(prev, curr);
+            } else if (update.addCount == 2 && update.subCount == 2) {
+                lazyUpdateAddAddSubSub(prev, curr);
+            }
+            curr.dirty = false;
+            i++;
+        }
+
+    }
+
+    private void lazyUpdateAddSub(Accumulator prev, Accumulator curr) {
+        AccumulatorUpdate update = curr.update;
+        FeatureUpdate add = update.adds[0];
+        FeatureUpdate sub = update.subs[0];
+        int whiteAddIdx = featureIndex(add.piece(), add.square(), add.white(), true);
+        int blackAddIdx = featureIndex(add.piece(), add.square(), add.white(), false);
+        int whiteSubIdx = featureIndex(sub.piece(), sub.square(), sub.white(), true);
+        int blackSubIdx = featureIndex(sub.piece(), sub.square(), sub.white(), false);
+        curr.addSub(prev.whiteFeatures, prev.blackFeatures,
+                whiteAddIdx, blackAddIdx, whiteSubIdx, blackSubIdx);
+    }
+
+    private void lazyUpdateAddSubSub(Accumulator prev, Accumulator curr) {
+        AccumulatorUpdate update = curr.update;
+        FeatureUpdate add1 = update.adds[0];
+        FeatureUpdate sub1 = update.subs[0];
+        FeatureUpdate sub2 = update.subs[1];
+        int whiteAdd1Idx = featureIndex(add1.piece(), add1.square(), add1.white(), true);
+        int blackAdd1Idx = featureIndex(add1.piece(), add1.square(), add1.white(), false);
+        int whiteSub1Idx = featureIndex(sub1.piece(), sub1.square(), sub1.white(), true);
+        int blackSub1Idx = featureIndex(sub1.piece(), sub1.square(), sub1.white(), false);
+        int whiteSub2Idx = featureIndex(sub2.piece(), sub2.square(), sub2.white(), true);
+        int blackSub2Idx = featureIndex(sub2.piece(), sub2.square(), sub2.white(), false);
+        curr.addSubSub(prev.whiteFeatures, prev.blackFeatures,
+                whiteAdd1Idx, blackAdd1Idx, whiteSub1Idx, blackSub1Idx, whiteSub2Idx, blackSub2Idx);
+    }
+
+    private void lazyUpdateAddAddSubSub(Accumulator prev, Accumulator curr) {
+        AccumulatorUpdate update = curr.update;
+        FeatureUpdate add1 = update.adds[0];
+        FeatureUpdate add2 = update.adds[1];
+        FeatureUpdate sub1 = update.subs[0];
+        FeatureUpdate sub2 = update.subs[1];
+        int whiteAdd1Idx = featureIndex(add1.piece(), add1.square(), add1.white(), true);
+        int blackAdd1Idx = featureIndex(add1.piece(), add1.square(), add1.white(), false);
+        int whiteAdd2Idx = featureIndex(add2.piece(), add2.square(), add2.white(), true);
+        int blackAdd2Idx = featureIndex(add2.piece(), add2.square(), add2.white(), false);
+        int whiteSub1Idx = featureIndex(sub1.piece(), sub1.square(), sub1.white(), true);
+        int blackSub1Idx = featureIndex(sub1.piece(), sub1.square(), sub1.white(), false);
+        int whiteSub2Idx = featureIndex(sub2.piece(), sub2.square(), sub2.white(), true);
+        int blackSub2Idx = featureIndex(sub2.piece(), sub2.square(), sub2.white(), false);
+        curr.addAddSubSub(prev.whiteFeatures, prev.blackFeatures,
+                whiteAdd1Idx, blackAdd1Idx, whiteAdd2Idx, blackAdd2Idx, whiteSub1Idx, blackSub1Idx, whiteSub2Idx, blackSub2Idx);
     }
 
     @Override
     public void unmakeMove() {
-        this.accumulator = accumulatorHistory.pop();
+        current--;
     }
 
     @Override
     public void setPosition(Board board) {
         this.board = board;
+        this.current = 0;
+        this.accumulators[current] = new Accumulator(Network.HIDDEN_SIZE);
         activateAll(board);
     }
 
@@ -198,8 +284,8 @@ public class NNUE implements Evaluation {
 
     @Override
     public void clearHistory() {
-        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
-        this.accumulatorHistory.clear();
+        Arrays.fill(this.accumulators, null);
+        this.current = 0;
     }
 
 }

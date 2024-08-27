@@ -104,14 +104,14 @@ public class NNUETest {
         String fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
-        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        Assertions.assertEquals(new NNUE(board).evaluate(), nnue.evaluate());
         Move move = Notation.fromNotation("e4", "d5");
         nnue.makeMove(board, move);
         board.makeMove(move);
-        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        Assertions.assertEquals(new NNUE(board).evaluate(), nnue.evaluate());
         board.unmakeMove();
         nnue.unmakeMove();
-        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        Assertions.assertEquals(new NNUE(board).evaluate(), nnue.evaluate());
 
     }
 

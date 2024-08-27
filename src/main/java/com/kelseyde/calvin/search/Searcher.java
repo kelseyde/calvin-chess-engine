@@ -573,11 +573,11 @@ public class Searcher implements Search {
         if (config.isSearchCancelled()) return true;
         // Exit if local search is cancelled
         if (cancelled) return true;
-        return !config.isPondering() && tc.isHardLimitReached(start);
+        return !config.isPondering() && tc != null && tc.isHardLimitReached(start);
     }
 
     private boolean isSoftTimeoutReached() {
-        return !config.isPondering() && tc.isSoftLimitReached(start, bestMoveStability);
+        return !config.isPondering() && tc != null && tc.isSoftLimitReached(start, bestMoveStability);
     }
 
     private boolean isDraw() {

@@ -21,6 +21,8 @@ public record TimeControl(Duration softLimit, Duration hardLimit) {
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
     static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
+    static final double[] EVAL_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
+    static final int EVAL_STABILITY_MIN_DEPTH = 7;
 
     public static TimeControl init(Board board, int timeWhiteMs, int timeBlackMs, int incWhiteMs, int incBlackMs) {
 
@@ -41,20 +43,30 @@ public record TimeControl(Duration softLimit, Duration hardLimit) {
         return expired.compareTo(hardLimit) > 0;
     }
 
-    public boolean isSoftLimitReached(Instant start, int bestMoveStability) {
+    public boolean isSoftLimitReached(Instant start, int depth, int bestMoveStability, int evalStability) {
         Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softLimit, bestMoveStability);
+        Duration adjustedSoftLimit = adjustSoftLimit(softLimit, depth, bestMoveStability, evalStability);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 
-    private Duration adjustSoftLimit(Duration softLimit, int bestMoveStability) {
+    private Duration adjustSoftLimit(Duration softLimit, int depth, int bestMoveStability, int evalStability) {
 
         // Scale the soft limit based on the stability of the best move. If the best move has remained stable for several
         // iterations, we can safely assume that we don't need to spend as much time searching further.
         bestMoveStability = Math.min(bestMoveStability, BEST_MOVE_STABILITY_FACTOR.length - 1);
         double bmStabilityFactor = BEST_MOVE_STABILITY_FACTOR[bestMoveStability];
 
-        return Duration.ofMillis((long) (softLimit.toMillis() * bmStabilityFactor));
+        // Scale the soft limit based on the stability of the evaluation. If the evaluation has remained stable for several
+        // iterations, we can safely assume that we don't need to spend as much time searching further.
+        evalStability = Math.min(evalStability, EVAL_STABILITY_FACTOR.length - 1);
+        double evalStabilityFactor = EVAL_STABILITY_FACTOR[evalStability];
+
+        double adjustedLimit = softLimit.toMillis() * bmStabilityFactor;
+        if (depth >= EVAL_STABILITY_MIN_DEPTH) {
+            adjustedLimit *= evalStabilityFactor;
+        }
+
+        return Duration.ofMillis((long) adjustedLimit);
     }
 
 }

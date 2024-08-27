@@ -66,8 +66,12 @@ public class Searcher implements Search {
     Move bestMove;
     Move bestMoveCurrentDepth;
     int bestMoveStability;
+
     int bestEval;
     int bestEvalCurrentDepth;
+    int previousEval;
+    int evalStability;
+
     SearchResult result;
 
     public Searcher(EngineConfig config,
@@ -130,6 +134,9 @@ public class Searcher implements Search {
                 threadManager.handleSearchResult(result);
             }
 
+            // Update the eval stability if the eval is stable
+            evalStability = eval >= previousEval - 10 && eval <= previousEval + 10 ? evalStability + 1 : 0;
+
             // Check if search is cancelled or a checkmate is found
             if (isHardTimeoutReached() || foundMate(currentDepth) || nodeLimitReached()) {
                 break;
@@ -154,6 +161,7 @@ public class Searcher implements Search {
 
             // Increment depth and retry multiplier for next iteration
             retryMultiplier = 0;
+            previousEval = eval;
             currentDepth++;
         }
 
@@ -577,7 +585,7 @@ public class Searcher implements Search {
     }
 
     private boolean isSoftTimeoutReached() {
-        return !config.isPondering() && tc.isSoftLimitReached(start, bestMoveStability);
+        return !config.isPondering() && tc.isSoftLimitReached(start, currentDepth, bestMoveStability, evalStability);
     }
 
     private boolean isDraw() {

@@ -5,6 +5,17 @@ import com.kelseyde.calvin.board.Board;
 import java.time.Duration;
 import java.time.Instant;
 
+/**
+ * The amount of time the engine chooses to search is split into to two limits: hard and soft. The hard limit is checked
+ * constantly during search, and the search is aborted as soon as it is reached. The soft limit is checked at the start
+ * of each iterative deepening loop, and the engine does not bother starting a new search if it is reached.
+ * </p>
+ * The idea is that if the engine is unlikely to finish a new iteration before hitting the hard limit, then there's no
+ * point starting the iteration, since the time spent doing so is mostly wasted. That time can therefore be saved for
+ * subsequent moves.
+ * @param softLimit
+ * @param hardLimit
+ */
 public record TimeControl(Duration softLimit, Duration hardLimit) {
 
     static final double SOFT_TIME_FACTOR = 0.6666;

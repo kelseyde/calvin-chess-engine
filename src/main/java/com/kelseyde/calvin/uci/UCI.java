@@ -35,7 +35,7 @@ public class UCI {
 
     public static void run(String[] args) {
 
-        if (args[0] != null && args[0].equals("bench")) {
+        if (args.length == 1 && args[0].equals("bench")) {
             BENCH.run();
         }
 

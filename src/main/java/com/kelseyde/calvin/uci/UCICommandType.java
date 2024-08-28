@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 enum UCICommandType {
+
     UCI_INFO     ("uci",         UCI::handleUCI),
     IS_READY     ("isready",     UCI::handleIsReady),
     HELP         ("help",        UCI::handleHelp),

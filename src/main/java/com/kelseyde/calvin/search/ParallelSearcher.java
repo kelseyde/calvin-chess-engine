@@ -107,11 +107,6 @@ public class ParallelSearcher implements Search {
         searchers.forEach(searcher -> searcher.setPosition(board.copy()));
     }
 
-    @Override
-    public void setNodeLimit(int nodeLimit) {
-        searchers.forEach(searcher -> searcher.setNodeLimit(nodeLimit));
-    }
-
     /**
      * Sets the size of the {@link TranspositionTable}. This is done by creating a new transposition table with the
      * given size and setting it for all searchers.

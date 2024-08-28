@@ -121,7 +121,7 @@ public class Engine {
     }
 
     public SearchResult think(int timeout) {
-        TimeControl tc = new TimeControl(Duration.ofMillis(timeout), Duration.ofMillis(timeout));
+        TimeControl tc = new TimeControl(Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1);
         return searcher.search(tc);
     }
 

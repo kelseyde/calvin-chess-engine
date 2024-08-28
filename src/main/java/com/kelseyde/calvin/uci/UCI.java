@@ -8,6 +8,7 @@ import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
+import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
@@ -18,8 +19,6 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.kelseyde.calvin.uci.UCICommandType.QUIT;
-
 /**
  * Entrypoint for the Calvin chess engine. Calvin communicates using the Universal Chess Interface protocol (UCI).
  * This adapter acts as a UCI interface which translates the incoming commands to instructions for the {@link Engine},
@@ -29,14 +28,14 @@ import static com.kelseyde.calvin.uci.UCICommandType.QUIT;
 public class UCI {
 
     public static final Engine ENGINE = EngineInitializer.loadEngine();
+    static final Scanner READER = new Scanner(System.in);
     public static boolean outputEnabled = true;
-    static final Scanner SCANNER = new Scanner(System.in);
 
     public static void run(String[] args) {
         try {
             String input = "";
             while (!input.equals("quit")) {
-                input = SCANNER.nextLine();
+                input = READER.nextLine();
                 if (!input.isEmpty()) {
                     UCICommand command = UCICommand.parse(input);
                     command.execute();
@@ -77,13 +76,13 @@ public class UCI {
             fen = FEN.STARTING_POSITION;
         }
         else if (command.contains("fen")) {
-            fen = parseStringValue(command, "fen", "", true);
+            fen = String.join(" ", command.getStrings("fen", true));
         }
         else {
             write("info error invalid position command; expecting 'startpos' or 'fen'.");
             return;
         }
-        List<Move> moves = parseStringValues(command, "moves", false).stream()
+        List<Move> moves = command.getStrings("moves", false).stream()
                 .map(Notation::fromCombinedNotation)
                 .toList();
         ENGINE.setPosition(fen, moves);
@@ -91,33 +90,11 @@ public class UCI {
     }
 
     public static void handleGo(UCICommand command) {
-
         boolean ponder = command.contains("ponder");
         ENGINE.setPondering(ponder);
         ENGINE.setSearchCancelled(false);
-
-        if ((command.contains("wtime") && !command.contains("btime")) ||
-                !command.contains("wtime") && command.contains("btime")) {
-            write("info error both wtime and btime must be specified");
-            return;
-        }
-
-        TimeControl tc;
-        if (command.contains("movetime")) {
-            Duration thinkTime = Duration.ofMillis(parseIntValue(command, "movetime", 0, true));
-            tc = new TimeControl(thinkTime, thinkTime);
-        }
-        else if (command.contains("wtime")) {
-            int timeWhiteMs = parseIntValue(command, "wtime", 0, true);
-            int timeBlackMs = parseIntValue(command, "btime", 0, true);
-            int incrementWhiteMs = parseIntValue(command, "winc", 0, true);
-            int incrementBlackMs = parseIntValue(command, "binc", 0, true);
-            tc = TimeControl.init(ENGINE.getBoard(), timeWhiteMs, timeBlackMs, incrementWhiteMs, incrementBlackMs);
-        }
-        else {
-            Duration thinkTime = Duration.ofMillis(Integer.MAX_VALUE);
-            tc = new TimeControl(thinkTime, thinkTime);
-        }
+        GoCommand go = GoCommand.parse(command);
+        TimeControl tc = TimeControl.init(ENGINE.getBoard(), go);
         ENGINE.findBestMove(tc, UCI::writeMove);
     }
 
@@ -126,7 +103,7 @@ public class UCI {
     }
 
     public static void handleSetOption(UCICommand command) {
-        String optionType = parseStringValue(command, "name", "", true);
+        String optionType = command.getString("name", "", true);
         switch (optionType) {
             case "Hash":          setHashSize(command); break;
             case "Threads":       setThreadCount(command); break;
@@ -183,27 +160,34 @@ public class UCI {
         write("isready     -- check if engine is ready");
         write("setoption   -- set engine options (type 'uci' to see the available options'");
         write("                args:");
-        write("                -- name: the name of the option to change");
-        write("                -- value: the new value for the option");
+        write("                    -- name: the name of the option to change");
+        write("                    -- value: the new value for the option");
         write("ucinewgame  -- clear the board and set up a new game");
         write("position    -- set up the board position");
         write("                args:");
-        write("                -- startpos: set up the starting position");
-        write("                   OR");
-        write("                -- fen: supply the position in FEN string format");
-        write("                -- moves: the moves played from the supplied position");
+        write("                    -- startpos: set up the starting position");
+        write("                       OR");
+        write("                    -- fen: supply the position in FEN string format");
+        write("                    -- moves: the moves played from the supplied position");
         write("go          -- start searching for the best move");
         write("                args:");
-        write("                -- movetime: the time to spend searching in milliseconds");
-        write("                   OR");
-        write("                -- wtime: white time remaining in milliseconds");
-        write("                -- btime: black time remaining in milliseconds");
-        write("                -- winc: white increment in milliseconds");
-        write("                -- binc: black increment in milliseconds");
+        write("                    -- movetime: the time to spend searching in milliseconds");
+        write("                       OR");
+        write("                    -- wtime: white time remaining in milliseconds");
+        write("                    -- btime: black time remaining in milliseconds");
+        write("                    -- winc: white increment in milliseconds");
+        write("                    -- binc: black increment in milliseconds");
+        write("                    -- nodes: max nodes to search");
+        write("                    -- depth: max depth to search");
         write("stop        -- stop searching and return the best move");
         write("fen         -- print the FEN string for the current position");
         write("eval        -- evaluate the current position");
-        write("datagen     -- generate training data for neural network");
+        write("scoredata   -- score a data file with the engine, to train a neural network");
+        write("                args:");
+        write("                    -- input: the input file to score");
+        write("                    -- output: the output file to write the scores to");
+        write("                    -- depth: the depth to search to (default 5000)");
+        write("                    -- resume: the line number to resume from (default 0)");
         write("quit        -- exit the application");
         write("");
     }
@@ -267,7 +251,7 @@ public class UCI {
     }
 
     private static void setHashSize(UCICommand command) {
-        int hashSizeMb = parseIntValue(command, "value", -1, true);
+        int hashSizeMb = command.getInt("value", -1, true);
         int minHashSizeMb = ENGINE.getConfig().getMinHashSizeMb();
         int maxHashSizeMb = ENGINE.getConfig().getMaxHashSizeMb();
         if (hashSizeMb >= minHashSizeMb && hashSizeMb <= maxHashSizeMb) {
@@ -279,7 +263,7 @@ public class UCI {
     }
 
     private static void setThreadCount(UCICommand command) {
-        int threadCount = parseIntValue(command, "value", -1, true);
+        int threadCount = command.getInt("value", -1, true);
         int minThreadCount = ENGINE.getConfig().getMinThreadCount();
         int maxThreadCount = ENGINE.getConfig().getMaxThreadCount();
         if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
@@ -291,76 +275,21 @@ public class UCI {
     }
 
     private static void setOwnBook(UCICommand command) {
-        boolean ownBookEnabled = parseBoolValue(command, "value", false, true);
+        boolean ownBookEnabled = command.getBool("value", false, true);
         ENGINE.setOwnBookEnabled(ownBookEnabled);
         write("info string OwnBook " + ownBookEnabled);
     }
 
     private static void setOwnTablebase(UCICommand command) {
-        boolean ownTablebaseEnabled = parseBoolValue(command, "value", false, true);
+        boolean ownTablebaseEnabled = command.getBool("value", false, true);
         ENGINE.setOwnTablebaseEnabled(ownTablebaseEnabled);
         write("info string OwnTablebase " + ownTablebaseEnabled);
     }
 
     private static void setPonder(UCICommand command) {
-        boolean ponderEnabled = parseBoolValue(command, "value", false, true);
+        boolean ponderEnabled = command.getBool("value", false, true);
         ENGINE.setPonderEnabled(ponderEnabled);
         write("info string Ponder " + ponderEnabled);
-    }
-
-    private static String parseStringValue(UCICommand command, String label, String defaultValue, boolean panic) {
-        int labelIndex = Arrays.asList(command.args()).indexOf(label);
-        if (labelIndex == -1) {
-            if (panic) throw new IllegalArgumentException("missing required label " + label);
-            return defaultValue;
-        }
-        int valueIndex = labelIndex + 1;
-        if (valueIndex >= command.args().length) {
-            if (panic) throw new IllegalArgumentException("missing value for label " + label);
-            return defaultValue;
-        }
-        return command.args()[valueIndex];
-    }
-
-    private static List<String> parseStringValues(UCICommand command, String label, boolean panic) {
-        int labelIndex = Arrays.asList(command.args()).indexOf(label);
-        if (labelIndex == -1) {
-            if (panic) throw new IllegalArgumentException("missing required label " + label);
-            return new ArrayList<>();
-        }
-        int valueIndex = labelIndex + 1;
-        if (valueIndex >= command.args().length) {
-            if (panic) throw new IllegalArgumentException("missing value for label " + label);
-            return new ArrayList<>();
-        }
-        return Arrays.asList(command.args()).subList(valueIndex, command.args().length);
-    }
-
-    private static int parseIntValue(UCICommand command, String label, int defaultValue, boolean panic) {
-        String valueString = parseStringValue(command, label, String.valueOf(defaultValue), panic);
-        try {
-            return Integer.parseInt(valueString);
-        } catch (NumberFormatException e) {
-            if (panic) throw new IllegalArgumentException("invalid value for label " + label + ": " + valueString);
-            return defaultValue;
-        }
-    }
-
-    private static boolean parseBoolValue(UCICommand command, String label, boolean defaultValue, boolean panic) {
-        String valueString = parseStringValue(command, label, String.valueOf(defaultValue), panic);
-        return Boolean.parseBoolean(valueString);
-    }
-
-    public static String read() {
-        try {
-            String line = SCANNER.nextLine();
-            if (!line.isBlank()) {
-                return line;
-            }
-        } catch (NoSuchElementException e) {
-            // do nothing
-        }
-        return "";
     }
 
     public static void write(String output) {

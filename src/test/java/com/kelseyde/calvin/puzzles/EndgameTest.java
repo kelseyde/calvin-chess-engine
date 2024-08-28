@@ -36,7 +36,7 @@ public class EndgameTest {
         Board board = FEN.toBoard(fen);
         searcher.setPosition(board);
 
-        TimeControl tc = new TimeControl(Duration.ofMillis(300), Duration.ofMillis(300));
+        TimeControl tc = new TimeControl(Duration.ofMillis(300), Duration.ofMillis(300), -1, -1);
         SearchResult result = searcher.search(tc);
 
         Move bestMove = Notation.fromNotation("b2", "b7");
@@ -50,7 +50,7 @@ public class EndgameTest {
         String fen = "8/8/2k5/6KP/6P1/8/3r4/8 b - - 1 46";
         Board board = FEN.toBoard(fen);
         searcher.setPosition(board);
-        TimeControl tc = new TimeControl(Duration.ofMillis(300), Duration.ofMillis(300));
+        TimeControl tc = new TimeControl(Duration.ofMillis(300), Duration.ofMillis(300), -1, -1);
         Move move = searcher.search(tc).move();
         System.out.println(Notation.toNotation(move));
 

@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -16,7 +17,7 @@ import java.time.Instant;
  * @param softLimit
  * @param hardLimit
  */
-public record TimeControl(Duration softLimit, Duration hardLimit) {
+public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, int maxDepth) {
 
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
@@ -24,29 +25,44 @@ public record TimeControl(Duration softLimit, Duration hardLimit) {
     static final double[] EVAL_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
     static final int EVAL_STABILITY_MIN_DEPTH = 7;
 
-    public static TimeControl init(Board board, int timeWhiteMs, int timeBlackMs, int incWhiteMs, int incBlackMs) {
+    public static TimeControl init(Board board, GoCommand command) {
 
         boolean white = board.isWhiteToMove();
-        double time = white ? timeWhiteMs : timeBlackMs;
-        double inc = white ? incWhiteMs : incBlackMs;
+
+        double time;
+        double inc;
+        if (command.isMovetime()) {
+            time = command.movetime();
+            inc = 0;
+        } else if (command.isTime()) {
+            time = white ? command.wtime() : command.btime();
+            inc = white ? command.winc() : command.binc();
+        } else {
+            time = Double.MAX_VALUE;
+            inc = 0;
+        }
 
         // If we were sent negative time, just assume we have one second.
         if (time <= 0) time = 1000;
+        if (inc < 0) inc = 0;
 
         double base = time / 20 + inc * 0.75;
         Duration soft = Duration.ofMillis((int) (base * SOFT_TIME_FACTOR));
         Duration hard = Duration.ofMillis((int) (base * HARD_TIME_FACTOR));
 
-        return new TimeControl(soft, hard);
+        return new TimeControl(soft, hard, command.nodes(), command.depth());
 
     }
 
-    public boolean isHardLimitReached(Instant start) {
+    public boolean isHardLimitReached(Instant start, int depth, int nodes) {
+        if (maxNodes > 0 && nodes >= maxNodes) return true;
+        if (maxDepth > 0 && depth >= maxDepth) return true;
         Duration expired = Duration.between(start, Instant.now());
         return expired.compareTo(hardLimit) > 0;
     }
 
     public boolean isSoftLimitReached(Instant start, int depth, int bestMoveStability, int evalStability) {
+        if (maxDepth > 0 && depth >= maxDepth) return true;
         Duration expired = Duration.between(start, Instant.now());
         Duration adjustedSoftLimit = adjustSoftLimit(softLimit, depth, bestMoveStability, evalStability);
         return expired.compareTo(adjustedSoftLimit) > 0;

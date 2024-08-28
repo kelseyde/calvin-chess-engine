@@ -1,8 +1,15 @@
 package com.kelseyde.calvin.uci;
 
+import com.kelseyde.calvin.engine.EngineConfig;
+
+import java.util.List;
+import java.util.function.Consumer;
+
 public abstract class UCIOption {
 
     private String name;
+
+    private Consumer<EngineConfig> consumer;
 
     public abstract void print();
 

@@ -135,14 +135,13 @@ public class TrainingDataScorer {
     }
 
 
-    private String scoreData(Searcher searcher, String line, int softLimit) {
+    private String scoreData(Searcher searcher, String line, int softNodeLimit) {
         String[] parts = line.split("\\|");
         String fen = parts[0].trim();
         String result = parts[2].trim();
         Board board = FEN.toBoard(fen);
         searcher.setPosition(board);
-        searcher.setNodeLimit(softLimit);
-        TimeControl tc = new TimeControl(MAX_SEARCH_TIME, MAX_SEARCH_TIME);
+        TimeControl tc = new TimeControl(MAX_SEARCH_TIME, MAX_SEARCH_TIME, softNodeLimit, -1);
         SearchResult searchResult;
         try {
              searchResult = searcher.search(tc);

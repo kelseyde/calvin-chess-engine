@@ -180,7 +180,7 @@ public class Engine {
     private boolean useOpeningBook() {
         long key = board.getGameState().getZobrist();
         int moveCount = board.getMoveHistory().size();
-        return config.isOwnBookEnabled() && moveCount < config.getMaxBookMoves() && book.hasBookMove(key);
+        return config.isOwnBookEnabled() && moveCount < config.getOwnBookMaxMoves() && book.hasBookMove(key);
     }
 
     private boolean useEndgameTablebase(TimeControl tc) {

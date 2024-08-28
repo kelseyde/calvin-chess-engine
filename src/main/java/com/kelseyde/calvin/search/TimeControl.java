@@ -30,6 +30,9 @@ public record TimeControl(Duration softLimit, Duration hardLimit) {
         double time = white ? timeWhiteMs : timeBlackMs;
         double inc = white ? incWhiteMs : incBlackMs;
 
+        // If we were sent negative time, just assume we have one second.
+        if (time <= 0) time = 1000;
+
         double base = time / 20 + inc * 0.75;
         Duration soft = Duration.ofMillis((int) (base * SOFT_TIME_FACTOR));
         Duration hard = Duration.ofMillis((int) (base * HARD_TIME_FACTOR));

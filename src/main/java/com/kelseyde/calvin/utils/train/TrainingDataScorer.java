@@ -15,6 +15,7 @@ import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.FEN;
 
 import java.io.IOException;
@@ -48,7 +49,7 @@ public class TrainingDataScorer {
         System.out.printf("Scoring training data from %s to %s with soft limit %d and resume offset %d\n", inputFile, outputFile, softLimit, resumeOffset);
         Path inputPath = Paths.get(inputFile);
         Path outputPath = Paths.get(outputFile);
-        Application.outputEnabled = false;
+        UCI.outputEnabled = false;
         searchers = IntStream.range(0, THREAD_COUNT)
                 .mapToObj(i -> initSearcher())
                 .toList();
@@ -88,6 +89,7 @@ public class TrainingDataScorer {
             throw new RuntimeException("Failed to read input file", e);
         }
 
+        UCI.outputEnabled = true;
     }
 
     private List<String> processBatch(List<String> positions, int softLimit) {

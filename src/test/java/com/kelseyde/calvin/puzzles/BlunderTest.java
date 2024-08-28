@@ -4,6 +4,7 @@ import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Assertions;
@@ -20,7 +21,7 @@ import java.util.List;
 @Disabled
 public class BlunderTest {
 
-    private final Engine engine = Application.ENGINE;
+    private final Engine engine = UCI.ENGINE;
 
     @Test
     public void testDontSacKnightForCenterPawn() {

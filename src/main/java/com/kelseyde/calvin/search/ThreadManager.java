@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.search;
 
-import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.uci.UCI;
 

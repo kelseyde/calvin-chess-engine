@@ -9,15 +9,15 @@ import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
+import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
+import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 /**
@@ -30,13 +30,12 @@ public class UCI {
 
     public static final Engine ENGINE = EngineInitializer.loadEngine();
     static final Scanner READER = new Scanner(System.in);
-    static final Bench BENCH = new Bench();
     public static boolean outputEnabled = true;
 
     public static void run(String[] args) {
 
         if (args.length == 1 && args[0].equals("bench")) {
-            BENCH.run();
+            Bench.run();
         }
 
         try {
@@ -53,7 +52,6 @@ public class UCI {
         }
     }
 
-    // TODO move options to EngineConfig
     public static void handleUCI(UCICommand command) {
         write("id name Calvin");
         write("id author Dan Kelsey");
@@ -69,7 +67,7 @@ public class UCI {
     }
 
     public static void handleBench(UCICommand command) {
-        BENCH.run();
+        Bench.run();
     }
 
     public static void handleNewGame(UCICommand command) {
@@ -82,22 +80,8 @@ public class UCI {
     }
 
     public static void handlePosition(UCICommand command) {
-        String fen;
-        if (command.contains("startpos")) {
-            fen = FEN.STARTING_POSITION;
-        }
-        else if (command.contains("fen")) {
-            fen = String.join(" ", command.getStrings("fen", true));
-        }
-        else {
-            write("info error invalid position command; expecting 'startpos' or 'fen'.");
-            return;
-        }
-        List<Move> moves = command.getStrings("moves", false).stream()
-                .map(Notation::fromCombinedNotation)
-                .toList();
-        ENGINE.setPosition(fen, moves);
-
+        PositionCommand positionCommand = PositionCommand.parse(command);
+        ENGINE.setPosition(positionCommand);
     }
 
     public static void handleGo(UCICommand command) {
@@ -126,41 +110,8 @@ public class UCI {
     }
 
     public static void handleScoreData(UCICommand command) {
-        String[] parts = command.args();
-        if (parts.length < 3) {
-            write("info error invalid command; input and output file must be specified; e.g. 'scoredata input.txt output.txt'");
-            return;
-        }
-        String inputFile = parts[1];
-        String outputFile = parts[2];
-        if (!Files.exists(Path.of(inputFile))) {
-            write("info error input file " + inputFile + " does not exist");
-            return;
-        }
-        int softNodeLimit = 5000;
-        int resumeOffset = 0;
-        if (parts.length > 3) {
-            try {
-                softNodeLimit = Integer.parseInt(parts[3]);
-            } catch (NumberFormatException e) {
-                write("info error invalid depth; must be an integer; e.g. 'scoredata input.txt output.txt 6'");
-                return;
-            }
-            if (parts.length > 4) {
-                try {
-                    resumeOffset = Integer.parseInt(parts[4]);
-                } catch (NumberFormatException e) {
-                    write("info error invalid resume offset; must be an integer; e.g. 'scoredata input.txt output.txt 6 1000'");
-                    return;
-                }
-            }
-        }
-        try {
-            TrainingDataScorer scorer = new TrainingDataScorer();
-            scorer.score(inputFile, outputFile, softNodeLimit, resumeOffset);
-        } catch (Exception e) {
-            writeError("error scoring data", e);
-        }
+        TrainingDataScorer scorer = new TrainingDataScorer();
+        ScoreDataCommand.parse(command).ifPresent(scorer::score);
         write("info string score data complete");
     }
 

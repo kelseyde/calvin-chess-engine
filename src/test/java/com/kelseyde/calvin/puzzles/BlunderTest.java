@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.puzzles;
 
-import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
@@ -32,7 +31,7 @@ public class BlunderTest {
         engine.setThreadCount(1);
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("f6e4")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("f6e4")));
 
     }
 
@@ -44,8 +43,8 @@ public class BlunderTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("f3d4")));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("e2d4")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("f3d4")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("e2d4")));
 
     }
 
@@ -58,7 +57,7 @@ public class BlunderTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("h1g1")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("h1g1")));
 
     }
 
@@ -71,7 +70,7 @@ public class BlunderTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("d8d3")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("d8d3")));
 
     }
 
@@ -84,7 +83,7 @@ public class BlunderTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("f6e4")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("f6e4")));
 
     }
 
@@ -105,7 +104,7 @@ public class BlunderTest {
 
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("c3e4")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("c3e4")));
 
     }
 
@@ -116,7 +115,7 @@ public class BlunderTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("g7g5")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("g7g5")));
     }
 
     @Test
@@ -128,11 +127,11 @@ public class BlunderTest {
         System.out.println(Notation.toNotation(move));
 
         List<Move> goodMoves = List.of(
-                Notation.fromCombinedNotation("a5d2"),
-                Notation.fromCombinedNotation("h7h6"),
-                Notation.fromCombinedNotation("a5a6"),
-                Notation.fromCombinedNotation("a5b6"),
-                Notation.fromCombinedNotation("a7a6"));
+                Notation.fromUCI("a5d2"),
+                Notation.fromUCI("h7h6"),
+                Notation.fromUCI("a5a6"),
+                Notation.fromUCI("a5b6"),
+                Notation.fromUCI("a7a6"));
 
         Assertions.assertTrue(goodMoves.stream().anyMatch(move::equals));
 
@@ -145,7 +144,7 @@ public class BlunderTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertFalse(move.matches(Notation.fromCombinedNotation("c4c7")));
+        Assertions.assertFalse(move.matches(Notation.fromUCI("c4c7")));
 
     }
 
@@ -156,7 +155,7 @@ public class BlunderTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertTrue(move.matches(Notation.fromCombinedNotation("f1g1")));
+        Assertions.assertTrue(move.matches(Notation.fromUCI("f1g1")));
 
     }
 
@@ -168,8 +167,8 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("c5e4"))
-            ||  move.matches(Notation.fromCombinedNotation("e2e4"))
+                move.matches(Notation.fromUCI("c5e4"))
+            ||  move.matches(Notation.fromUCI("e2e4"))
         );
 
     }
@@ -182,7 +181,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("b8b3"))
+                move.matches(Notation.fromUCI("b8b3"))
         );
 
     }
@@ -195,7 +194,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("a5c7"))
+                move.matches(Notation.fromUCI("a5c7"))
         );
 
     }
@@ -208,7 +207,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("c2d3"))
+                move.matches(Notation.fromUCI("c2d3"))
         );
 
     }
@@ -221,7 +220,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("d1d4")));
+                move.matches(Notation.fromUCI("d1d4")));
 
     }
 
@@ -233,7 +232,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("g4e5")));
+                move.matches(Notation.fromUCI("g4e5")));
 
     }
 
@@ -245,7 +244,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("g4f3")));
+                move.matches(Notation.fromUCI("g4f3")));
 
     }
 
@@ -257,7 +256,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("c6d5")));
+                move.matches(Notation.fromUCI("c6d5")));
 
     }
 
@@ -269,7 +268,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("b3b6"))
+                move.matches(Notation.fromUCI("b3b6"))
         );
 
     }
@@ -282,7 +281,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("e8f8"))
+                move.matches(Notation.fromUCI("e8f8"))
         );
 
     }
@@ -295,7 +294,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("e8d8"))
+                move.matches(Notation.fromUCI("e8d8"))
         );
 
     }
@@ -308,7 +307,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("e8e5"))
+                move.matches(Notation.fromUCI("e8e5"))
         );
 
     }
@@ -321,7 +320,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("a8d8"))
+                move.matches(Notation.fromUCI("a8d8"))
         );
 
     }
@@ -334,7 +333,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("f8f3"))
+                move.matches(Notation.fromUCI("f8f3"))
         );
 
     }
@@ -347,7 +346,7 @@ public class BlunderTest {
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("d5c4"))
+                move.matches(Notation.fromUCI("d5c4"))
         );
 
     }
@@ -360,7 +359,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("g5g4"))
+                move.matches(Notation.fromUCI("g5g4"))
         );
 
     }
@@ -373,7 +372,7 @@ public class BlunderTest {
         Move move = engine.think(200).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("g3d6"))
+                move.matches(Notation.fromUCI("g3d6"))
         );
 
     }
@@ -386,7 +385,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("f8f3"))
+                move.matches(Notation.fromUCI("f8f3"))
         );
 
     }
@@ -399,7 +398,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("h2g1"))
+                move.matches(Notation.fromUCI("h2g1"))
         );
 
     }
@@ -412,7 +411,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("b7f3"))
+                move.matches(Notation.fromUCI("b7f3"))
         );
 
     }
@@ -425,7 +424,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("f8c5"))
+                move.matches(Notation.fromUCI("f8c5"))
         );
 
     }
@@ -438,7 +437,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("h6h5"))
+                move.matches(Notation.fromUCI("h6h5"))
         );
 
     }
@@ -451,7 +450,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("f4f5"))
+                move.matches(Notation.fromUCI("f4f5"))
         );
 
     }
@@ -464,7 +463,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("e5h2"))
+                move.matches(Notation.fromUCI("e5h2"))
         );
 
     }
@@ -477,8 +476,8 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("c7c8")) ||
-                        move.matches(Notation.fromCombinedNotation("a6a8"))
+                move.matches(Notation.fromUCI("c7c8")) ||
+                        move.matches(Notation.fromUCI("a6a8"))
         );
 
     }
@@ -491,11 +490,11 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("c7c6"))
+                move.matches(Notation.fromUCI("c7c6"))
         );
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("a8b8")) ||
-                        move.matches(Notation.fromCombinedNotation("a8a7"))
+                move.matches(Notation.fromUCI("a8b8")) ||
+                        move.matches(Notation.fromUCI("a8a7"))
         );
 
     }
@@ -508,7 +507,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("e4c5"))
+                move.matches(Notation.fromUCI("e4c5"))
         );
 
     }
@@ -521,7 +520,7 @@ public class BlunderTest {
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("f6f7"))
+                move.matches(Notation.fromUCI("f6f7"))
         );
 
     }
@@ -534,7 +533,7 @@ public class BlunderTest {
         Move move = engine.think(4000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("d8e7"))
+                move.matches(Notation.fromUCI("d8e7"))
         );
 
     }
@@ -547,7 +546,7 @@ public class BlunderTest {
         Move move = engine.think(4000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("h7h6"))
+                move.matches(Notation.fromUCI("h7h6"))
         );
 
     }
@@ -560,7 +559,7 @@ public class BlunderTest {
         Move move = engine.think(1360).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("c6e5"))
+                move.matches(Notation.fromUCI("c6e5"))
         );
 
     }
@@ -573,7 +572,7 @@ public class BlunderTest {
         Move move = engine.think(1360).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("d4c6"))
+                move.matches(Notation.fromUCI("d4c6"))
         );
 
     }
@@ -586,7 +585,7 @@ public class BlunderTest {
         Move move = engine.think(1360).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
-                move.matches(Notation.fromCombinedNotation("e2f2"))
+                move.matches(Notation.fromUCI("e2f2"))
         );
 
     }
@@ -596,20 +595,20 @@ public class BlunderTest {
 
         String fen = "4K3/5p2/4q2p/8/4kb2/8/8/8 w - - 10 81";
         Board board = FEN.toBoard(fen);
-        board.makeMove(Notation.fromCombinedNotation("e8d8"));
-        board.makeMove(Notation.fromCombinedNotation("e6e5"));
-        board.makeMove(Notation.fromCombinedNotation("d8d7"));
-        board.makeMove(Notation.fromCombinedNotation("e5e6"));
-        board.makeMove(Notation.fromCombinedNotation("d7d8"));
-        board.makeMove(Notation.fromCombinedNotation("e6e5"));
-        board.makeMove(Notation.fromCombinedNotation("d8d7"));
+        board.makeMove(Notation.fromUCI("e8d8"));
+        board.makeMove(Notation.fromUCI("e6e5"));
+        board.makeMove(Notation.fromUCI("d8d7"));
+        board.makeMove(Notation.fromUCI("e5e6"));
+        board.makeMove(Notation.fromUCI("d7d8"));
+        board.makeMove(Notation.fromUCI("e6e5"));
+        board.makeMove(Notation.fromUCI("d8d7"));
 
         engine.setPosition(board);
 
         Move move = engine.think(200).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
-                move.matches(Notation.fromCombinedNotation("e5e6"))
+                move.matches(Notation.fromUCI("e5e6"))
         );
 
     }

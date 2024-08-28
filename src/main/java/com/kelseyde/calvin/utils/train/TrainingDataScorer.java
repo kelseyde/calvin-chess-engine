@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.utils.train;
 
-import com.kelseyde.calvin.Application;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
@@ -16,6 +15,7 @@ import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.FEN;
 
 import java.io.IOException;
@@ -44,11 +44,12 @@ public class TrainingDataScorer {
 
     private List<Searcher> searchers;
 
-    public void score(String inputFile, String outputFile, int softLimit, int resumeOffset) {
+    public void score(ScoreDataCommand command) {
 
-        System.out.printf("Scoring training data from %s to %s with soft limit %d and resume offset %d\n", inputFile, outputFile, softLimit, resumeOffset);
-        Path inputPath = Paths.get(inputFile);
-        Path outputPath = Paths.get(outputFile);
+        System.out.printf("Scoring training data from %s to %s with soft limit %d and resume offset %d\n",
+                command.inputFile(), command.outputFile(), command.softNodeLimit(), command.resumeOffset());
+        Path inputPath = Paths.get(command.inputFile());
+        Path outputPath = Paths.get(command.outputFile());
         UCI.outputEnabled = false;
         searchers = IntStream.range(0, THREAD_COUNT)
                 .mapToObj(i -> initSearcher())
@@ -62,7 +63,7 @@ public class TrainingDataScorer {
             List<String> batch = new ArrayList<>(BATCH_SIZE);
             Iterator<String> iterator = lines.iterator();
             while (iterator.hasNext()) {
-                if (count++ < resumeOffset) {
+                if (count++ < command.resumeOffset()) {
                     iterator.next();
                     continue;
                 }
@@ -73,7 +74,7 @@ public class TrainingDataScorer {
                 String line = iterator.next();
                 batch.add(line);
                 if (batch.size() == BATCH_SIZE) {
-                    List<String> scoredBatch = processBatch(batch, softLimit);
+                    List<String> scoredBatch = processBatch(batch, command.softNodeLimit());
                     batch.clear();
                     scored.addAndGet(scoredBatch.size());
                     searchers.forEach(Searcher::clearHistory);

@@ -1,8 +1,15 @@
 package com.kelseyde.calvin.uci;
 
+import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.Notation;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public record UCICommand(UCICommandType type, String[] args) {
 
@@ -82,6 +89,63 @@ public record UCICommand(UCICommandType type, String[] args) {
 
         public boolean isTime() {
             return wtime > 0 && btime > 0;
+        }
+
+    }
+
+    public record PositionCommand(String fen, List<Move> moves) {
+
+        public static PositionCommand parse(UCICommand command) {
+            String fen;
+            if (command.contains("startpos")) {
+                fen = FEN.STARTPOS;
+            } else if (command.contains("fen")) {
+                fen = command.getString("fen", "", false);
+            } else {
+                UCI.write("info error invalid position command; expecting 'startpos' or 'fen'.");
+                fen = FEN.STARTPOS;
+            }
+            List<Move> moves = command.getStrings("moves", false).stream()
+                    .map(Notation::fromUCI)
+                    .toList();
+            return new PositionCommand(fen, moves);
+        }
+
+    }
+
+    public record ScoreDataCommand(String inputFile, String outputFile, int softNodeLimit, int resumeOffset) {
+
+        public static Optional<ScoreDataCommand> parse(UCICommand command) {
+            String[] parts = command.args();
+            if (parts.length < 3) {
+                UCI.write("info error invalid command; input and output file must be specified; e.g. 'scoredata input.txt output.txt'");
+                return Optional.empty();
+            }
+            String inputFile = parts[1];
+            String outputFile = parts[2];
+            if (!Files.exists(Path.of(inputFile))) {
+                UCI.write("info error input file " + inputFile + " does not exist");
+                return Optional.empty();
+            }
+            int softNodeLimit = 5000;
+            int resumeOffset = 0;
+            if (parts.length > 3) {
+                try {
+                    softNodeLimit = Integer.parseInt(parts[3]);
+                } catch (NumberFormatException e) {
+                    UCI.write("info error invalid depth; must be an integer; e.g. 'scoredata input.txt output.txt 6'");
+                    return Optional.empty();
+                }
+                if (parts.length > 4) {
+                    try {
+                        resumeOffset = Integer.parseInt(parts[4]);
+                    } catch (NumberFormatException e) {
+                        UCI.write("info error invalid resume offset; must be an integer; e.g. 'scoredata input.txt output.txt 6 1000'");
+                        return Optional.empty();
+                    }
+                }
+            }
+            return Optional.of(new ScoreDataCommand(inputFile, outputFile, softNodeLimit, resumeOffset));
         }
 
     }

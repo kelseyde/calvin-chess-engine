@@ -63,7 +63,7 @@ public class EndgameTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(3000).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromCombinedNotation("e1f1"), move);
+        Assertions.assertEquals(Notation.fromUCI("e1f1"), move);
 
     }
 
@@ -75,7 +75,7 @@ public class EndgameTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(3000).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromCombinedNotation("g5h6"), move);
+        Assertions.assertEquals(Notation.fromUCI("g5h6"), move);
 
     }
 
@@ -87,7 +87,7 @@ public class EndgameTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(3000).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromCombinedNotation("h3h4"), move);
+        Assertions.assertEquals(Notation.fromUCI("h3h4"), move);
 
     }
 
@@ -99,7 +99,7 @@ public class EndgameTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(3000).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromCombinedNotation("f4d5"), move);
+        Assertions.assertEquals(Notation.fromUCI("f4d5"), move);
 
     }
 
@@ -111,7 +111,7 @@ public class EndgameTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(3000).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromCombinedNotation("h5f5"), move);
+        Assertions.assertEquals(Notation.fromUCI("h5f5"), move);
 
     }
 
@@ -123,7 +123,7 @@ public class EndgameTest {
         engine.setPosition(fen, Collections.emptyList());
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromCombinedNotation("e6d6"), move);
+        Assertions.assertEquals(Notation.fromUCI("e6d6"), move);
 
     }
 

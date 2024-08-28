@@ -15,6 +15,7 @@ enum UCICommandType {
     PONDERHIT    ("ponderhit",   UCI::handlePonderHit),
     FEN          ("fen",         UCI::handleFen),
     EVAL         ("eval",        UCI::handleEval),
+    BENCH        ("bench",       UCI::handleBench),
     SCORE_DATA   ("scoredata",   UCI::handleScoreData),
     STOP         ("stop",        UCI::handleStop),
     QUIT         ("quit",        UCI::handleQuit),

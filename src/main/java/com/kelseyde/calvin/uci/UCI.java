@@ -9,6 +9,7 @@ import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
+import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
@@ -29,9 +30,15 @@ public class UCI {
 
     public static final Engine ENGINE = EngineInitializer.loadEngine();
     static final Scanner READER = new Scanner(System.in);
+    static final Bench BENCH = new Bench();
     public static boolean outputEnabled = true;
 
     public static void run(String[] args) {
+
+        if (args[0] != null && args[0].equals("bench")) {
+            BENCH.run();
+        }
+
         try {
             String input = "";
             while (!input.equals("quit")) {
@@ -59,6 +66,10 @@ public class UCI {
         write(String.format("option name OwnTablebase type check default %s", config.isOwnTablebaseEnabled()));
         write(String.format("option name Ponder type check default %s", config.isPonderEnabled()));
         write("uciok");
+    }
+
+    public static void handleBench(UCICommand command) {
+        BENCH.run();
     }
 
     public static void handleNewGame(UCICommand command) {

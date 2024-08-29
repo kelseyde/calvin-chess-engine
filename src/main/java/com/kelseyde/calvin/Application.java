@@ -10,6 +10,7 @@ import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.train.TrainingDataFilterer;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -56,6 +57,7 @@ public class Application {
                         case "fen" ->         handleFen();
                         case "eval" ->        handleEval();
                         case "scoredata" ->   handleScoreData(command);
+                        case "filterdata" ->  handleFilterData(command);
                         case "stop" ->        handleStop();
                         case "quit" ->        handleQuit();
                         default ->            write("Unrecognised command: " + command);
@@ -248,6 +250,13 @@ public class Application {
             write("info error " + e.getMessage());
         }
         write("info string score data complete");
+    }
+
+    private static void handleFilterData(String command) {
+        String[] parts = command.split(" ");
+        String inputFile = parts[1];
+        String outputFile = parts[2];
+        new TrainingDataFilterer().filter(inputFile, outputFile);
     }
 
     private static void handleStop() {

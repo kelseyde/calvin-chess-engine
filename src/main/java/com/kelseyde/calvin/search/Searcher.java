@@ -16,6 +16,7 @@ import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.utils.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -280,12 +281,14 @@ public class Searcher implements Search {
         }
 
         Move bestMove = null;
+        int bestScore = Integer.MIN_VALUE;
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
 
         while (true) {
 
             Move move = movePicker.pickNextMove();
+            System.out.println(Notation.toNotation(move));
             if (move == null) break;
             if (bestMove == null) bestMove = move;
             movesSearched++;
@@ -387,20 +390,24 @@ public class Searcher implements Search {
 
             if (eval >= beta) {
 
-                // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
+                System.out.println("beta");
+                flag = HashFlag.LOWER;
+                bestMove = move;
+                bestScore = beta;
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
                     moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
                 }
 
-                return beta;
+                break;
             }
 
             if (eval > alpha) {
+                System.out.println("alpha");
                 // We have found a new best move
                 bestMove = move;
+                bestScore = eval;
                 alpha = eval;
                 flag = HashFlag.EXACT;
                 if (rootNode) {
@@ -412,7 +419,8 @@ public class Searcher implements Search {
 
         if (movesSearched == 0) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
-            return isInCheck ? -Score.MATE + ply : Score.DRAW;
+            flag = HashFlag.EXACT;
+            bestScore =  isInCheck ? -Score.MATE + ply : Score.DRAW;
         }
         if (rootNode && movesSearched == 1) {
             // If there is only one legal move at the root node, play that move immediately.
@@ -423,7 +431,7 @@ public class Searcher implements Search {
             return eval;
         }
 
-        transpositionTable.put(getKey(), flag, depth, ply, bestMove, staticEval, alpha);
+        transpositionTable.put(getKey(), flag, depth, ply, bestMove, staticEval, bestScore);
         return alpha;
 
     }

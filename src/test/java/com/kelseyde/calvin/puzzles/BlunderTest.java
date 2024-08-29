@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Assertions;
@@ -27,7 +28,7 @@ public class BlunderTest {
 
         String fen = "r1bqkb1r/1pp1pppp/p1n2n2/8/2BPP3/2N2N2/PP3PPP/R1BQK2R b KQkq - 0 6";
         engine.newGame();
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         engine.setThreadCount(1);
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
@@ -40,7 +41,7 @@ public class BlunderTest {
 
         String fen = "rnbqk2r/ppp2ppp/3b1n2/4p3/3pP3/5N2/PPPPNPPP/1RBQKB1R w Kkq - 4 6";
         engine.newGame();
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(move.matches(Notation.fromUCI("f3d4")));
@@ -54,7 +55,7 @@ public class BlunderTest {
         String fen = "r1b1kbnr/ppp2ppp/2n1p3/3q4/3P4/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 5";
 
         engine.newGame();
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(move.matches(Notation.fromUCI("h1g1")));
@@ -67,7 +68,7 @@ public class BlunderTest {
         String fen = "rnbq1rk1/ppp2ppp/5n2/4p3/2P5/3P2P1/PQ2PP1P/R1B1KBNR b KQ - 2 9";
 
         engine.newGame();
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(move.matches(Notation.fromUCI("d8d3")));
@@ -80,7 +81,7 @@ public class BlunderTest {
         String fen = "r2qkb1r/ppp1pppp/2n2n2/3p4/3PP3/2N2P1P/PPP2P2/R1BQKB1R b KQkq - 0 6";
 
         engine.newGame();
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(move.matches(Notation.fromUCI("f6e4")));
@@ -100,7 +101,7 @@ public class BlunderTest {
         moves.add(Notation.fromNotation("c5", "e7"));
         moves.add(Notation.fromNotation("e4", "c3"));
         moves.add(Notation.fromNotation("e7", "c5"));
-        engine.setPosition(fen, moves);
+        engine.setPosition(new PositionCommand(fen, moves));
 
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
@@ -112,7 +113,7 @@ public class BlunderTest {
     public void testDontPushPawnShield() {
 
         String fen = "r1bq2k1/ppp1nppp/5b2/3pN3/3P1B2/2PB4/P1P2PPP/1R2Q1K1 b - - 2 14";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(move.matches(Notation.fromUCI("g7g5")));
@@ -122,7 +123,7 @@ public class BlunderTest {
     public void testDontTrapOwnQueen() {
 
         String fen = "r1b2rk1/ppp2ppp/2n1pn2/q5N1/2PP4/P2B1N2/1P1Q1PPP/R3K2R b KQ - 0 11";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
 
@@ -141,7 +142,7 @@ public class BlunderTest {
     public void testDontSacQueenForKnight() {
 
         String fen = "rnb1kb1r/ppN1pppp/5n2/8/P1qppB2/2P5/4NPPP/R2QK2R b KQkq - 1 11";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(move.matches(Notation.fromUCI("c4c7")));
@@ -152,7 +153,7 @@ public class BlunderTest {
     public void testIgnoreQueenKnightMatingAttack() {
 
         String fen = "r4rk1/pp2ppb1/3p1npp/4n3/4P3/1BN1BP1q/PPP2P1P/R2Q1R1K w - - 5 15";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(move.matches(Notation.fromUCI("f1g1")));
@@ -163,7 +164,7 @@ public class BlunderTest {
     public void testDontBlunderRook() {
 
         String fen = "r7/p5kp/1p3np1/2n1B3/2P1B3/5P1P/Pr3P2/3R2K1 b - - 0 31";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -177,7 +178,7 @@ public class BlunderTest {
     public void testDontBlunderRook2() {
 
         String fen = "1rb3k1/p1q3pp/4pr2/5p2/2pP4/1PQ3P1/4PPBP/2R1K2R b K - 0 21";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -190,7 +191,7 @@ public class BlunderTest {
     public void testDontBlunderQueen() {
 
         String fen = "2b3k1/p5pp/4pr2/q4p2/3P4/2Q3P1/4PPBP/2R1K2R b K - 2 25";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -203,7 +204,7 @@ public class BlunderTest {
     public void testDontBlunderQueenDiscoveredCheck() {
 
         String fen = "3r1rk1/1p4pp/1p6/1P2p1p1/P4nP1/2BnK1RP/2BQ1P1q/5R2 w - - 0 37";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -216,7 +217,7 @@ public class BlunderTest {
     public void testDontBlunderQueen2() {
 
         String fen = "r3kbnr/pp1qpp1p/2np2p1/8/3pP3/2N2N2/PPP2PPP/R1BQ1RK1 w kq - 0 8";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -228,7 +229,7 @@ public class BlunderTest {
     public void testDontWalkIntoPin() {
 
         String fen = "r1b1kb1r/pppp1ppp/2n5/2q1P1B1/2Bp2n1/5N2/PPPNQPPP/R3K2R b KQkq - 6 8";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -240,7 +241,7 @@ public class BlunderTest {
     public void testDontBlunderBishop() {
 
         String fen = "r3kbnr/pp3ppp/2p5/8/4P1b1/5P2/PP2BP1P/RNBK3R b kq - 0 10";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -252,7 +253,7 @@ public class BlunderTest {
     public void testDontSacBishopForTwoPawns() {
 
         String fen = "r2q1rk1/1pp2ppp/p1b5/3P4/n1P5/4QN2/P2N1PPP/1R3RK1 b - - 0 19";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -264,7 +265,7 @@ public class BlunderTest {
     public void testDontBlunderRook3() {
 
         String fen = "3r4/4kp2/q1p2p1b/p1p1pP2/2P3Qp/1R2N2P/PP1r1PPK/1R6 w - - 4 41";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -277,7 +278,7 @@ public class BlunderTest {
     public void testDontMoveKingBeforeCastling() {
 
         String fen = "r1bqk2r/ppp2ppp/2n1pb2/8/3P4/2PB1N2/PP3PPP/R1BQ1RK1 b kq - 3 9";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -290,7 +291,7 @@ public class BlunderTest {
     public void testDontMoveKingBeforeCastling2() {
 
         String fen = "rn2kb1r/pp4pp/2p1p3/3n4/1qNP1p2/2N5/PPP1Q1PP/R1B2RK1 b kq - 5 14";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -303,7 +304,7 @@ public class BlunderTest {
     public void testDontSacExchangeForSpeculativeCompensation() {
 
         String fen = "4r1k1/5pp1/7p/p3Bq2/Prb2P2/R1Q5/1P2p1PP/4R2K b - - 1 33";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -316,7 +317,7 @@ public class BlunderTest {
     public void testCastleOutOfDanger() {
 
         String fen = "r3k2r/pppqppb1/4b2p/4P2Q/3pP3/2N4P/PPP1BP1P/2KR3R b kq - 2 14";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -329,7 +330,7 @@ public class BlunderTest {
     public void testDontSacExchangeForSpeculativeCompensation2() {
 
         String fen = "5r2/kb4p1/p1p1p1qp/3pP3/3Pr3/1Q3NPP/PPR3K1/5R2 b - - 6 29";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -342,7 +343,7 @@ public class BlunderTest {
     public void testDontLetOpponentBuildBigCenter() {
 
         String fen = "4kb1r/3r1ppp/1q2p3/p2p1b2/2PP4/1P2P3/1B1NQPPP/R4RK1 b k - 0 17";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(500).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -355,7 +356,7 @@ public class BlunderTest {
     public void testDontLosePawnInDrawnEndgame() {
 
         String fen = "8/8/4k3/6p1/1R2Bb1p/5P1P/1p1r1P2/4K3 b - - 9 57";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -368,7 +369,7 @@ public class BlunderTest {
     public void testOneMoveToPreventMateThreat() {
 
         String fen = "4Q3/5p1k/5Pp1/5bP1/p7/3p1Nb1/q2B4/6K1 b - - 5 65";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(200).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -381,7 +382,7 @@ public class BlunderTest {
     public void testDontSacExchangeAgain() {
 
         String fen = "5r2/kb4p1/p1p1p1qp/3pP3/3Pr3/1Q3NPP/PPR3K1/5R2 b - - 6 29";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -394,7 +395,7 @@ public class BlunderTest {
     public void testAvoidForcedDraw() {
 
         String fen = "R7/2p1k2p/1r1pBpqb/3P4/1P2bP2/2P3P1/1B5K/4Q3 w - - 5 51";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -407,7 +408,7 @@ public class BlunderTest {
     public void testDontSacBishopOnF3() {
 
         String fen = "7k/1b2Bp1p/5p2/p3pq2/1pP5/1r3P2/1P3QPP/4R1K1 b - - 1 33";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -420,7 +421,7 @@ public class BlunderTest {
     public void testDontMoveBishopWhereItCanBeKicked() {
 
         String fen = "r1b1kb1r/ppp2ppp/2n2n2/q3p3/4P3/P1NP1N2/1P3PPP/R1BQKB1R b KQkq - 2 7";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -433,7 +434,7 @@ public class BlunderTest {
     public void testDontOpenHFileToKing() {
 
         String fen = "4rrk1/p4pp1/1p5p/5PP1/2P5/P1PQpq2/4R1R1/2K5 b - - 0 35";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -446,7 +447,7 @@ public class BlunderTest {
     public void testDefendAgainstHeavyPieceMatingAttack() {
 
         String fen = "4r1k1/p4pp1/1p6/5P2/2P1rq2/P1PQp3/4R3/1K5R b - - 6 39";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -459,7 +460,7 @@ public class BlunderTest {
     public void testDontSacBishopTacticWhenKingIsInDanger() {
 
         String fen = "3r2k1/5rp1/p1R3N1/1p2b2P/6Q1/P2q4/5PP1/5RK1 b - - 4 34";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -472,7 +473,7 @@ public class BlunderTest {
     public void testDontLetOpponentBuildQueenBishopBattery() {
 
         String fen = "5rk1/2q2pp1/b4b2/rpp2Q2/2P3P1/1B2PN1P/P5K1/3R1R2 b - - 2 25";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -486,7 +487,7 @@ public class BlunderTest {
     public void testDontBlockBishopAttackOnRookWithFreePawn() {
 
         String fen = "r1bq1rk1/2pn1pp1/p3pb1p/8/Pp1PB3/2N1PN2/1P3PPP/R2QK2R b KQ - 1 13";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -503,7 +504,7 @@ public class BlunderTest {
     public void testDontHangKnightForTwoPawns() {
 
         String fen = "3rrqk1/2pp1pp1/p6p/4P2Q/Bp2nP2/2P5/PP2R1PP/3R2K1 b - - 0 22";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -516,7 +517,7 @@ public class BlunderTest {
     public void testDontThrowDrawnOppositeBishopsEndgame() {
 
         String fen = "8/8/1kp2P2/1p3K2/p1B5/P1P5/1b6/8 w - - 0 53";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -529,7 +530,7 @@ public class BlunderTest {
     public void testDontAllowDesperadoOnF7() {
 
         String fen = "rnbqkb1r/pppp1ppp/8/4N3/4n3/8/PPPPQPPP/RNB1KB1R b KQkq - 1 4";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(4000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
@@ -542,7 +543,7 @@ public class BlunderTest {
     public void testDontAllowBishopSacOnH6() {
 
         String fen = "2rqbrk1/1p2bppp/4pn2/p3N3/1n1P1B2/2N4Q/PP3PPP/1BRR2K1 b - - 1 17";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(4000).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -555,7 +556,7 @@ public class BlunderTest {
     public void testDontBlunderKnight() {
 
         String fen = "3rn3/1p3bpk/2nB3p/p1p1P3/8/1PP2P1P/P2R2P1/4R1K1 b - - 2 32";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1360).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -568,7 +569,7 @@ public class BlunderTest {
     public void testDontSacKnightForPawn() {
 
         String fen = "3r2k1/1p4p1/p2q3p/3P1p2/2QNp1b1/P5P1/1P3PPK/4R3 w - - 4 27";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1360).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertFalse(
@@ -581,7 +582,7 @@ public class BlunderTest {
     public void testDontMissCrushingAttack() {
 
         String fen = "3rk3/bp4p1/4p1p1/N3Pp2/5P1P/PQ4P1/1P1pqPK1/3R4 b - - 5 31";
-        engine.setPosition(fen, Collections.emptyList());
+        engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = engine.think(1360).move();
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(

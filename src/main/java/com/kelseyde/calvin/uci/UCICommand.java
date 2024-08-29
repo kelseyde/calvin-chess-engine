@@ -100,7 +100,7 @@ public record UCICommand(UCICommandType type, String[] args) {
             if (command.contains("startpos")) {
                 fen = FEN.STARTPOS;
             } else if (command.contains("fen")) {
-                fen = command.getString("fen", "", false);
+                fen = String.join(" ", command.getStrings("fen", true));
             } else {
                 UCI.write("info error invalid position command; expecting 'startpos' or 'fen'.");
                 fen = FEN.STARTPOS;

@@ -21,7 +21,7 @@ import java.util.Objects;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TranspositionTable {
 
-    static final int ENTRY_SIZE_BYTES = 32;
+    static final int ENTRY_SIZE_BYTES = 24;
     static final int CHECKMATE_BOUND = 1000000 - 256;
 
     final int tableSize;

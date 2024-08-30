@@ -3,6 +3,7 @@ package com.kelseyde.calvin.transposition;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -151,8 +152,11 @@ public class TranspositionTableTest {
 
         Assertions.assertEquals(10, entry.getStaticEval());
 
-        entry.setStaticEval(-4234);
-        Assertions.assertEquals(-4234, entry.getStaticEval());
+        entry.setStaticEval(-1);
+        Assertions.assertEquals(-1, entry.getStaticEval());
+
+        entry.setStaticEval(Score.MIN);
+        Assertions.assertEquals(Score.MIN, entry.getStaticEval());
     }
 
     @Test

@@ -4,14 +4,16 @@ import com.kelseyde.calvin.board.Move;
 import lombok.AllArgsConstructor;
 
 /**
- * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encodes the relevant
- * information about the position.
+ * Entry in the {@link TranspositionTable}. Contains a short key and a 64-bit value which encodes the relevant
+ * information about the position, along with an int metadata that contains generation and static evaluation.
  * </p>
  *
  * Key encoding:
- * 0-31: 32 bits representing half of the zobrist hash. Used to verify that the position truly matches.
- * 32-47: 16 bits representing the generation of the entry, i.e. how old it is. Used to gradually replace old entries.
- * 48-63: 16 bits representing the static eval of the position. Re-used to save calling the evaluation function again.
+ * 0-15: 16 bits representing part of the zobrist hash. Used to verify that the position truly matches.
+ *
+ * Metadata encoding:
+ * 0-15: 16 bits representing the generation of the entry, i.e., how old it is. Used to gradually replace old entries.
+ * 16-31: 16 bits representing the static eval of the position. Re-used to save calling the evaluation function again.
  * </p>
  *
  * Value encoding:
@@ -23,57 +25,55 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class HashEntry {
 
-    private static final long ZOBRIST_PART_MASK = 0x00000000ffffffffL;
-    private static final long GENERATION_MASK = 0x0000ffff00000000L;
-    private static final long STATIC_EVAL_MASK = 0xffff000000000000L;
     private static final long SCORE_MASK = 0xffffffff00000000L;
     private static final long MOVE_MASK = 0x00000000ffff0000L;
     private static final long FLAG_MASK = 0x000000000000f000L;
     private static final long DEPTH_MASK = 0x0000000000000fffL;
 
-    private long key;
-    private long value;
+    private short key;  // 16 bits representing part of the zobrist key
+    private long value; // 64 bits representing the value encoding
+    private int metadata; // 32 bits representing generation (0-15) and static evaluation (16-31)
 
     /**
-     * Extracts the 48-bits representing the zobrist part of the given zobrist key.
+     * Extracts the 16-bits representing the zobrist part of the given zobrist key.
      */
-    public static long zobristPart(long zobrist) {
-        return zobrist & ZOBRIST_PART_MASK;
+    public static short zobristPart(long zobrist) {
+        return (short) (zobrist & 0xFFFF);
     }
 
     /**
-     * Returns the 48-bits representing zobrist part of the hash entry key.
+     * Returns the 16-bits representing the zobrist part of the hash entry key.
      */
-    public long getZobristPart() {
-        return key & ZOBRIST_PART_MASK;
+    public short getZobristPart() {
+        return key;
     }
 
     /**
-     * Gets the generation part of this entry's key.
+     * Gets the generation part of this entry's metadata.
      */
     public int getGeneration() {
-        return (int) ((key & GENERATION_MASK) >>> 32);
+        return (metadata & 0xFFFF);
     }
 
     /**
-     * Sets the generation part of this entry's key.
+     * Sets the generation part of this entry's metadata.
      */
     public void setGeneration(int generation) {
-        key = (key & ~GENERATION_MASK) | ((long) generation << 32);
+        metadata = (metadata & 0xFFFF0000) | (generation & 0xFFFF);
     }
 
     /**
-     * Gets the static eval part of this entry's key.
+     * Gets the static eval part of this entry's metadata.
      */
     public int getStaticEval() {
-        return (short) ((key & STATIC_EVAL_MASK) >>> 48);
+        return (short) (metadata >>> 16); // Cast to short to interpret as signed 16-bit integer
     }
 
     /**
-     * Sets the static eval part of this entry's key.
+     * Sets the static eval part of this entry's metadata.
      */
     public void setStaticEval(int staticEval) {
-        key = (key & ~STATIC_EVAL_MASK) | ((long) (staticEval & 0xFFFF) << 48);
+        metadata = (metadata & 0x0000FFFF) | (staticEval << 16);
     }
 
     /**
@@ -88,22 +88,22 @@ public class HashEntry {
      * Sets the score in this entry's value.
      */
     public void setScore(int score) {
-        value = (value &~ SCORE_MASK) | (long) score << 32;
+        value = (value & ~SCORE_MASK) | ((long) score << 32);
     }
 
     /**
      * Creates a new {@link HashEntry} with the adjusted score.
      */
     public HashEntry withAdjustedScore(int score) {
-        long newValue = (value &~ SCORE_MASK) | (long) score << 32;
-        return new HashEntry(key, newValue);
+        long newValue = (value & ~SCORE_MASK) | ((long) score << 32);
+        return new HashEntry(key, newValue, metadata);
     }
 
     /**
      * Sets the move in this entry's value.
      */
     public void setMove(Move move) {
-        value = (value &~ MOVE_MASK) | (long) move.value() << 16;
+        value = (value & ~MOVE_MASK) | ((long) move.value() << 16);
     }
 
     /**
@@ -141,15 +141,17 @@ public class HashEntry {
      * @return a new {@link HashEntry}
      */
     public static HashEntry of(long zobristKey, int score, int staticEval, Move move, HashFlag flag, int depth, int generation) {
-        // Build the key using 32 bits for the zobrist part, 16 bits for the generation part, and 16 bits for the static evaluation part.
-        long key = (zobristKey & ZOBRIST_PART_MASK) | ((long) generation << 32) | ((long) (staticEval & 0xFFFF) << 48);
+        // Extract the 16-bit zobrist part from the Zobrist key
+        short key = zobristPart(zobristKey);
         // Get the 16-bit encoded move
         long moveValue = move != null ? move.value() : 0;
         // Get the 3-bit encoded flag
         long flagValue = HashFlag.value(flag);
-        // Combine the score, move, flag and depth to create the hash entry value
-        long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
-        return new HashEntry(key, value);
+        // Combine the score, move, flag, and depth to create the hash entry value
+        long value = ((long) score << 32) | (moveValue << 16) | (flagValue << 12) | depth;
+        // Combine generation and staticEval into metadata
+        int metadata = (staticEval << 16) | (generation & 0xFFFF);
+        return new HashEntry(key, value, metadata);
     }
 
 }

@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,6 +39,8 @@ public class MovePicker implements MovePicking {
     Move bestMove;
     int moveIndex;
     int[] scores;
+
+    public int swaps = 0;
 
     /**
      * Constructs a MovePicker with the specified move generator, move orderer, board, and ply.
@@ -102,8 +105,7 @@ public class MovePicker implements MovePicking {
             stage = nextStage;
             return null;
         }
-        sortMoves();
-        Move move = moves.get(moveIndex);
+        Move move = pick();
         moveIndex++;
         if (move.equals(bestMove)) {
             // Skip to the next move
@@ -126,19 +128,39 @@ public class MovePicker implements MovePicking {
     /**
      * Select the move with the highest score and move it to the head of the move list.
      */
-    public void sortMoves() {
+    public Move pick() {
+        int bestIndex = moveIndex;
+        Move bestMove = moves.get(moveIndex);
+        swaps = 0;
         for (int j = moveIndex + 1; j < moves.size(); j++) {
-            int firstScore = scores[moveIndex];
-            int secondScore = scores[j];
-            if (scores[j] > scores[moveIndex]) {
-                Move firstMove = moves.get(moveIndex);
-                Move secondMove = moves.get(j);
-                scores[moveIndex] = secondScore;
-                scores[j] = firstScore;
-                moves.set(moveIndex, secondMove);
-                moves.set(j, firstMove);
+            if (scores[j] > scores[bestIndex]) {
+                bestIndex = j;
+                bestMove = moves.get(j);
             }
+//            int firstScore = scores[moveIndex];
+//            int secondScore = scores[j];
+//            if (scores[j] > scores[moveIndex]) {
+//                Move firstMove = moves.get(moveIndex);
+//                Move secondMove = moves.get(j);
+//                scores[moveIndex] = secondScore;
+//                scores[j] = firstScore;
+//                moves.set(moveIndex, secondMove);
+//                moves.set(j, firstMove);
+//                swaps++;
+//            }
         }
+        if (bestIndex != moveIndex) {
+            Collections.swap(moves, moveIndex, bestIndex);
+
+//            Move temp = moves.get(moveIndex);
+//            moves.set(moveIndex, bestMove);
+//            moves.set(bestIndex, temp);
+            int tempScore = scores[moveIndex];
+            scores[moveIndex] = scores[bestIndex];
+            scores[bestIndex] = tempScore;
+            swaps++;
+        }
+        return bestMove;
     }
 
 }

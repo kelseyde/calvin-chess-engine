@@ -39,12 +39,12 @@ public class MovePickerTest {
     @Test
     public void testMovePickerPerformance() {
 
-        // 4.3 - 4.5 , 45000
+        // 8.7 - 8.8 , 45000
 
         Instant start = Instant.now();
         int totalSwaps = 0;
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 3000; i++) {
             for (String fen : Bench.FENS) {
                 Board board = FEN.toBoard(fen);
                 MovePicker picker = new MovePicker(moveGenerator, moveOrderer, board, 0);

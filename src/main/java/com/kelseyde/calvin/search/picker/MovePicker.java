@@ -102,8 +102,7 @@ public class MovePicker implements MovePicking {
             stage = nextStage;
             return null;
         }
-        sortMoves();
-        Move move = moves.get(moveIndex);
+        Move move = sortMoves();
         moveIndex++;
         if (move.equals(bestMove)) {
             // Skip to the next move
@@ -126,19 +125,32 @@ public class MovePicker implements MovePicking {
     /**
      * Select the move with the highest score and move it to the head of the move list.
      */
-    public void sortMoves() {
-        for (int j = moveIndex + 1; j < moves.size(); j++) {
-            int firstScore = scores[moveIndex];
-            int secondScore = scores[j];
-            if (scores[j] > scores[moveIndex]) {
-                Move firstMove = moves.get(moveIndex);
-                Move secondMove = moves.get(j);
-                scores[moveIndex] = secondScore;
-                scores[j] = firstScore;
-                moves.set(moveIndex, secondMove);
-                moves.set(j, firstMove);
+    public Move sortMoves() {
+
+        int bestIndex = moveIndex;
+        int bestScore = scores[moveIndex];
+
+        for (int i = moveIndex + 1; i < moves.size(); i++) {
+            int newScore = scores[i];
+            if (newScore > bestScore) {
+                bestIndex = i;
+                bestScore = newScore;
             }
         }
+
+        Move bestMove = moves.get(bestIndex);
+        swapMoves(moveIndex, bestIndex);
+        return bestMove;
+
+    }
+
+    private void swapMoves(int i, int j) {
+        Move temp = moves.get(i);
+        moves.set(i, moves.get(j));
+        moves.set(j, temp);
+        int tempScore = scores[i];
+        scores[i] = scores[j];
+        scores[j] = tempScore;
     }
 
 }

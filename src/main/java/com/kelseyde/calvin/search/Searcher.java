@@ -225,7 +225,7 @@ public class Searcher implements Search {
         if (hasBestMove(transposition)) {
             previousBestMove = transposition.getMove();
         }
-        movePicker.setBestMove(previousBestMove);
+        movePicker.setTtMove(previousBestMove);
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
@@ -448,7 +448,7 @@ public class Searcher implements Search {
             return transposition.getScore();
         }
         if (hasBestMove(transposition)) {
-            movePicker.setBestMove(transposition.getMove());
+            movePicker.setTtMove(transposition.getMove());
         }
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());

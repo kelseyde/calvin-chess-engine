@@ -22,8 +22,6 @@ import java.util.Objects;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TranspositionTable {
 
-    static final int ENTRY_SIZE_BYTES = 32;
-
     final int tableSize;
     HashEntry[] entries;
 
@@ -35,7 +33,7 @@ public class TranspositionTable {
      * Constructs a transposition table of the given size in megabytes.
      */
     public TranspositionTable(int tableSizeMb) {
-        this.tableSize = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
+        this.tableSize = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
         entries = new HashEntry[tableSize];
         tries = 0;
         hits = 0;

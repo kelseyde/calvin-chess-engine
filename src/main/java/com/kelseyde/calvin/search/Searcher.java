@@ -269,7 +269,7 @@ public class Searcher implements Search {
                 && staticEval >= beta - (config.getNmpMargin() * (improving ? 1 : 0))
                 && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 board.makeNullMove();
-                int eval = -search(depth - 1 - (2 + depth / 7), ply + 1, -beta, -beta + 1, false);
+                int eval = -search(depth - 1 - (2 + depth / 3), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
                     transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);

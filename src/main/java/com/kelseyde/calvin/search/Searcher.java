@@ -507,7 +507,7 @@ public class Searcher implements Search {
             evaluator.makeMove(board, move);
             if (!board.makeMove(move)) continue;
             nodes++;
-            eval = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
+            eval = isDraw() ? Score.DRAW : -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             evaluator.unmakeMove();
             board.unmakeMove();
 

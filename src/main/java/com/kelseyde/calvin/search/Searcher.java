@@ -8,11 +8,11 @@ import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
-import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
-import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
-import com.kelseyde.calvin.search.picker.MovePicker;
-import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.search.moveordering.See;
+import com.kelseyde.calvin.search.moveordering.tables.HistoryTable;
+import com.kelseyde.calvin.search.moveordering.tables.KillerTable;
+import com.kelseyde.calvin.search.moveordering.AlphaBetaMovePicker;
+import com.kelseyde.calvin.search.moveordering.QuiescentMovePicker;
 import com.kelseyde.calvin.transposition.HashEntry;
 import com.kelseyde.calvin.transposition.HashFlag;
 import com.kelseyde.calvin.transposition.TranspositionTable;
@@ -35,8 +35,8 @@ import java.util.List;
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
  * then 3 ply and so on, until the time limit is exhausted. In case the timeout is reached in the middle of an iteration,
  * the search can still fall back on the best move found in the previous iteration. By prioritising searching the best
- * move found in the previous iteration, as well as the other ordering heuristics in the {@link MoveOrderer} -- and by
- * using a {@link TranspositionTable} -- the iterative approach is much more efficient than it might sound.
+ * move found in the previous iteration, as well as the other ordering heuristics -- and via the {@link TranspositionTable}
+ * -- the iterative approach is much more efficient than it might sound.
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
 @NoArgsConstructor
@@ -46,9 +46,7 @@ public class Searcher implements Search {
     EngineConfig config;
     ThreadManager threadManager;
     MoveGeneration moveGenerator;
-    MoveOrdering moveOrderer;
     Evaluation evaluator;
-    StaticExchangeEvaluator see;
     TranspositionTable transpositionTable;
 
     Board board;
@@ -60,6 +58,9 @@ public class Searcher implements Search {
     int currentDepth;
     final int maxDepth = 256;
     int[] evalHistory = new int[maxDepth];
+
+    final KillerTable killerTable = new KillerTable();
+    final HistoryTable historyTable = new HistoryTable();
 
     Move bestMoveRoot;
     Move bestMoveCurrentDepth;
@@ -75,16 +76,13 @@ public class Searcher implements Search {
     public Searcher(EngineConfig config,
                     ThreadManager threadManager,
                     MoveGeneration moveGenerator,
-                    MoveOrdering moveOrderer,
                     Evaluation evaluator,
                     TranspositionTable transpositionTable) {
         this.config = config;
         this.threadManager = threadManager;
         this.moveGenerator = moveGenerator;
-        this.moveOrderer = moveOrderer;
         this.evaluator = evaluator;
         this.transpositionTable = transpositionTable;
-        this.see = new StaticExchangeEvaluator();
     }
 
     /**
@@ -106,7 +104,7 @@ public class Searcher implements Search {
         bestScoreRoot = 0;
         bestScoreCurrentDepth = 0;
         cancelled = false;
-        moveOrderer.ageHistoryScores(board.isWhiteToMove());
+        historyTable.ageHistoryScores(board.isWhiteToMove());
 
         int alpha = Score.MIN;
         int beta = Score.MAX;
@@ -172,7 +170,7 @@ public class Searcher implements Search {
         }
 
         // Clear move ordering cache and return the search result
-        moveOrderer.clear();
+        killerTable.clear();
 
         this.result = result;
         return result;
@@ -208,7 +206,7 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
-        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
+        AlphaBetaMovePicker movePicker = new AlphaBetaMovePicker(moveGenerator, killerTable, historyTable, board, ply);
 
         // Probe the transposition table in case this node has been searched before
         HashEntry transposition = transpositionTable.get(getKey(), ply);
@@ -330,7 +328,7 @@ public class Searcher implements Search {
             // In certain interesting cases (e.g. promotions, or checks that do not immediately lose material), let's
             // extend the search depth by one ply.
             int extension = 0;
-            if (isPromotion || (isCheck && see.evaluateAfterMove(board, move) >= 0)) {
+            if (isPromotion || (isCheck && See.evaluateAfterMove(board, move) >= 0)) {
                 extension = 1;
             }
 
@@ -390,8 +388,8 @@ public class Searcher implements Search {
                 transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
-                    moveOrderer.addKillerMove(ply, move);
-                    moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
+                    killerTable.add(ply, move);
+                    historyTable.increment(depth, move, board.isWhiteToMove());
                 }
 
                 return beta;
@@ -439,7 +437,7 @@ public class Searcher implements Search {
             return alpha;
         }
 
-        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, board);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry transposition = transpositionTable.get(getKey(), ply);
@@ -496,7 +494,7 @@ public class Searcher implements Search {
                 // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
-                int seeScore = see.evaluate(board, move);
+                int seeScore = See.evaluate(board, move);
                 boolean isBadCapture = (depth <= 3 && seeScore < 0) || (depth > 3 && seeScore <= 0);
                 if (isBadCapture) {
                     continue;

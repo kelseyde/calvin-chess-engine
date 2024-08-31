@@ -3,18 +3,18 @@ package com.kelseyde.calvin.perft;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 
 import java.util.List;
 
 public class MPerftService {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
-    private final MoveOrderer moveOrderer = new MoveOrderer();
+    //private final MoveOrderer moveOrderer = new MoveOrderer();
 
     public int perft(Board board, int depth) {
         List<Move> moves = moveGenerator.generateMoves(board);
-        moves = moveOrderer.orderMoves(board, moves, null, 0);
+        //TODO remove
+        //moves = moveOrderer.orderMoves(board, moves, null, 0);
         if (depth == 1) {
             return moves.size();
         }

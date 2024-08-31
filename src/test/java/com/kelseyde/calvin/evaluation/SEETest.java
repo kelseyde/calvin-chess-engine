@@ -2,16 +2,16 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.search.moveordering.See;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class StaticExchangeEvaluatorTest {
+public class SEETest {
 
-    private static final StaticExchangeEvaluator see = new StaticExchangeEvaluator();
+    private static final See see = new See();
 
     @Test
     public void testSimpleCapturePawn() {

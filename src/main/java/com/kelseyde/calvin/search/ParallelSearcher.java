@@ -5,7 +5,6 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.transposition.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -35,7 +34,6 @@ public class ParallelSearcher implements Search {
 
     final EngineConfig config;
     final Supplier<MoveGeneration> moveGeneratorSupplier;
-    final Supplier<MoveOrdering> moveOrdererSupplier;
     final Supplier<Evaluation> evaluatorSupplier;
     final ThreadManager threadManager;
     TranspositionTable transpositionTable;
@@ -50,13 +48,11 @@ public class ParallelSearcher implements Search {
      *
      * @param config the engine configuration
      * @param moveGeneratorSupplier supplier for move generation
-     * @param moveOrdererSupplier supplier for move ordering
      * @param evaluatorSupplier supplier for evaluation
      * @param transpositionTable the shared transposition table
      */
     public ParallelSearcher(EngineConfig config,
                             Supplier<MoveGeneration> moveGeneratorSupplier,
-                            Supplier<MoveOrdering> moveOrdererSupplier,
                             Supplier<Evaluation> evaluatorSupplier,
                             TranspositionTable transpositionTable) {
         this.config = config;
@@ -65,7 +61,6 @@ public class ParallelSearcher implements Search {
         this.threadManager = new ThreadManager();
         this.transpositionTable = transpositionTable;
         this.moveGeneratorSupplier = moveGeneratorSupplier;
-        this.moveOrdererSupplier = moveOrdererSupplier;
         this.evaluatorSupplier = evaluatorSupplier;
         this.searchers = initSearchers();
     }
@@ -178,9 +173,8 @@ public class ParallelSearcher implements Search {
      */
     private Searcher initSearcher() {
         MoveGeneration moveGenerator = this.moveGeneratorSupplier.get();
-        MoveOrdering moveOrderer = this.moveOrdererSupplier.get();
         Evaluation evaluator = this.evaluatorSupplier.get();
-        return new Searcher(config, threadManager, moveGenerator, moveOrderer, evaluator, transpositionTable);
+        return new Searcher(config, threadManager, moveGenerator, evaluator, transpositionTable);
     }
 
     /**

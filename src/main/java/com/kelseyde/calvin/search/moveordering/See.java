@@ -17,11 +17,11 @@ import com.kelseyde.calvin.generation.MoveGenerator;
  *
  * @see <a href="https://www.chessprogramming.org/Static_Exchange_Evaluation">Chess Programming Wiki</a>
  */
-public class StaticExchangeEvaluator {
+public class See {
 
-    private final MoveGenerator moveGenerator = new MoveGenerator();
+    private static final MoveGenerator moveGenerator = new MoveGenerator();
 
-    public int evaluate(Board board, Move move) {
+    public static int evaluate(Board board, Move move) {
 
         int score = 0;
         int square = move.getEndSquare();
@@ -45,7 +45,7 @@ public class StaticExchangeEvaluator {
      * The same SEE evaluation, but with the first move already made on the board. Used during search to evaluate whether
      * a check should be extended
      */
-    public int evaluateAfterMove(Board board, Move move) {
+    public static int evaluateAfterMove(Board board, Move move) {
 
         int score = 0;
         int square = move.getEndSquare();
@@ -64,7 +64,7 @@ public class StaticExchangeEvaluator {
     }
 
 
-    private Move getLeastValuableAttacker(Board board, int square) {
+    private static Move getLeastValuableAttacker(Board board, int square) {
 
         boolean white = board.isWhiteToMove();
 

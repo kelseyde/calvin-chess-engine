@@ -388,14 +388,14 @@ public class Searcher implements Search {
             if (eval >= beta) {
 
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
+                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, eval);
                 if (!isCapture) {
                     // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
                     moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
                 }
 
-                return beta;
+                return eval;
             }
 
             if (eval > alpha) {

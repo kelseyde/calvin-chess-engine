@@ -283,6 +283,7 @@ public class Searcher implements Search {
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
         List<Move> quietsSearched = null;
+        List<Move> capturesSearched = null;
 
         while (true) {
 
@@ -384,6 +385,8 @@ public class Searcher implements Search {
 
             if (isQuiet && quietsSearched == null) {
                 quietsSearched = new ArrayList<>();
+            } else if (isCapture && capturesSearched == null) {
+                capturesSearched = new ArrayList<>();
             }
 
             if (shouldStop()) {
@@ -400,6 +403,13 @@ public class Searcher implements Search {
                     moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
                     for (Move quiet : quietsSearched) {
                         moveOrderer.decrementHistoryScore(depth, quiet, board.isWhiteToMove());
+                    }
+                }
+                else if (isCapture) {
+                    // Captures which cause a beta cut-off are stored as history moves for future move ordering
+                    moveOrderer.incrementCaptureScore(depth, move, board.isWhiteToMove());
+                    for (Move capture : capturesSearched) {
+                        moveOrderer.decrementHistoryScore(depth, capture, board.isWhiteToMove());
                     }
                 }
 

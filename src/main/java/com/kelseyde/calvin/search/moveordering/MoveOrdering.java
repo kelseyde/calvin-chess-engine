@@ -64,6 +64,10 @@ public interface MoveOrdering {
 
     void decrementHistoryScore(int depth, Move historyMove, boolean white);
 
+    void incrementCaptureScore(int depth, Move historyMove, boolean white);
+
+    void decrementCaptureScore(int depth, Move historyMove, boolean white);
+
     void ageHistoryScores(boolean white);
 
     /**

@@ -50,6 +50,7 @@ public class MoveOrderer implements MoveOrdering {
 
     Move[][] killerMoves = new Move[MAX_KILLER_PLY][KILLERS_PER_PLY];
     final int[][][] historyMoves = new int[2][64][64];
+    final int[][][] captureMoves = new int[2][64][64];
 
     /**
      * Orders the given list of moves based on the defined move-ordering strategy.
@@ -97,7 +98,7 @@ public class MoveOrderer implements MoveOrdering {
         Piece capturedPiece = board.pieceAt(endSquare);
         boolean isCapture = capturedPiece != null;
         if (isCapture) {
-            moveScore += scoreCapture(board, startSquare, capturedPiece);
+            moveScore += scoreCapture(board, startSquare, endSquare, capturedPiece);
         }
         // Non-captures are sorted using killer score + history score
         else {
@@ -129,10 +130,11 @@ public class MoveOrderer implements MoveOrdering {
         return Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
     }
 
-    private int scoreCapture(Board board, int startSquare, Piece capturedPiece) {
+    private int scoreCapture(Board board, int startSquare, int endSquare, Piece capturedPiece) {
         Piece piece = board.pieceAt(startSquare);
         int captureScore = 0;
         captureScore += MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
+        captureScore += scoreCaptureMove(board, startSquare, endSquare);
         int materialDelta = capturedPiece.getValue() - piece.getValue();
         if (materialDelta > 0) {
             captureScore += WINNING_CAPTURE_BIAS;
@@ -169,6 +171,11 @@ public class MoveOrderer implements MoveOrdering {
             historyScore += HISTORY_MOVE_BIAS;
         }
         return historyScore;
+    }
+
+    private int scoreCaptureMove(Board board, int startSquare, int endSquare) {
+        int colourIndex = Board.colourIndex(board.isWhiteToMove());
+        return captureMoves[colourIndex][startSquare][endSquare];
     }
 
     /**
@@ -223,11 +230,28 @@ public class MoveOrderer implements MoveOrdering {
         historyMoves[colourIndex][startSquare][endSquare] -= score;
     }
 
+    public void incrementCaptureScore(int depth, Move capture, boolean white) {
+        int colourIndex = Board.colourIndex(white);
+        int startSquare = capture.getStartSquare();
+        int endSquare = capture.getEndSquare();
+        int score = depth * depth;
+        captureMoves[colourIndex][startSquare][endSquare] += score;
+    }
+
+    public void decrementCaptureScore(int depth, Move capture, boolean white) {
+        int colourIndex = Board.colourIndex(white);
+        int startSquare = capture.getStartSquare();
+        int endSquare = capture.getEndSquare();
+        int score = depth * depth;
+        captureMoves[colourIndex][startSquare][endSquare] -= score;
+    }
+
     public void ageHistoryScores(boolean white) {
         int colourIndex = Board.colourIndex(white);
         for (int startSquare = 0; startSquare < 64; startSquare++) {
             for (int endSquare = 0; endSquare < 64; endSquare++) {
                 historyMoves[colourIndex][startSquare][endSquare] /= 2;
+                captureMoves[colourIndex][startSquare][endSquare] /= 2;
             }
         }
     }

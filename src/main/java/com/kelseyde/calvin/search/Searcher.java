@@ -22,6 +22,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -281,6 +282,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
+        List<Move> quietsSearched = null;
 
         while (true) {
 
@@ -380,6 +382,10 @@ public class Searcher implements Search {
             evaluator.unmakeMove();
             board.unmakeMove();
 
+            if (isQuiet && quietsSearched == null) {
+                quietsSearched = new ArrayList<>();
+            }
+
             if (shouldStop()) {
                 return alpha;
             }
@@ -388,14 +394,19 @@ public class Searcher implements Search {
 
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
                 transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
-                if (!isCapture) {
-                    // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
+                if (isQuiet) {
+                    // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
                     moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
+                    for (Move quiet : quietsSearched) {
+                        moveOrderer.decrementHistoryScore(depth, quiet, board.isWhiteToMove());
+                    }
                 }
 
                 return beta;
             }
+
+            if (isQuiet) quietsSearched.add(move);
 
             if (eval > alpha) {
                 // We have found a new best move

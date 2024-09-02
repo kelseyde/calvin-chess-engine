@@ -34,7 +34,7 @@ public class MoveOrderer implements MoveOrdering {
     static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
     static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
-    public static final int KILLER_MOVE_BIAS = 6 * MILLION;
+    static final int KILLER_MOVE_BIAS = 6 * MILLION;
     static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
     static final int HISTORY_MOVE_BIAS = 4 * MILLION;
     static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
@@ -110,7 +110,7 @@ public class MoveOrderer implements MoveOrdering {
 
             int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
             int historyScore = historyTable.score(move, board.isWhiteToMove(), HISTORY_MOVE_BIAS, killerScore == 0);
-            int contHistScore = contHistTable.score(prevMove, prevPiece, move, piece);
+            int contHistScore = contHistTable.score(prevMove, prevPiece, move, piece, board.isWhiteToMove());
             moveScore += killerScore + historyScore + contHistScore;
         }
 
@@ -173,11 +173,10 @@ public class MoveOrderer implements MoveOrdering {
      */
     public void addHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
         historyTable.add(depth, historyMove, white);
-        Move currentMove = ss.getMove(ply);
         Piece currentPiece = ss.getMovedPiece(ply);
         Move prevMove = ss.getMove(ply - 1);
         Piece prevPiece = ss.getMovedPiece(ply - 1);
-        contHistTable.add(prevMove, prevPiece, currentMove, currentPiece, depth);
+        contHistTable.add(prevMove, prevPiece, historyMove, currentPiece, depth, white);
     }
 
     public void subHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
@@ -186,7 +185,7 @@ public class MoveOrderer implements MoveOrdering {
         Piece currentPiece = ss.getMovedPiece(ply);
         Move prevMove = ss.getMove(ply - 1);
         Piece prevPiece = ss.getMovedPiece(ply - 1);
-        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth);
+        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth, white);
     }
 
     public void ageHistoryScores(boolean white) {

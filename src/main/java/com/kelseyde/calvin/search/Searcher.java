@@ -56,11 +56,10 @@ public class Searcher implements Search {
     int nodes;
     Instant start;
     TimeControl tc;
-    SearchStack ss;
+    SearchStack ss = new SearchStack();
     boolean cancelled;
 
     int currentDepth;
-    final int maxDepth = 256;
 
     Move bestMoveRoot;
     Move bestMoveCurrentDepth;
@@ -116,7 +115,7 @@ public class Searcher implements Search {
         int aspFailMargin = config.getAspFailMargin();
         SearchResult result = null;
 
-        while (!shouldStopSoft() && currentDepth < maxDepth) {
+        while (!shouldStopSoft() && currentDepth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestScoreCurrentDepth = 0;
@@ -291,7 +290,7 @@ public class Searcher implements Search {
             if (bestMove == null) bestMove = move;
             movesSearched++;
 
-            Piece piece = board.pieceAt(move.getTo());
+            Piece piece = board.pieceAt(move.getFrom());
             Piece capturedPiece = board.pieceAt(move.getTo());
             boolean isCapture = capturedPiece != null;
             boolean isPromotion = move.getPromotionPiece() != null;
@@ -399,9 +398,9 @@ public class Searcher implements Search {
                 if (isQuiet) {
                     // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
-                    moveOrderer.addHistoryScore(move, new SearchStack(), depth, 0, board.isWhiteToMove());
+                    moveOrderer.addHistoryScore(move, ss, depth, ply, board.isWhiteToMove());
                     for (Move quiet : quietsSearched) {
-                        moveOrderer.subHistoryScore(quiet, null, depth, 0, board.isWhiteToMove());
+                        moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
                     }
                 }
 

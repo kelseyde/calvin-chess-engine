@@ -1,34 +1,37 @@
 package com.kelseyde.calvin.tables;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 
 public class ContHistTable {
 
-    int[][][][] table = new int[6][64][6][64];
+    int[][][][][] table = new int[2][6][64][6][64];
 
-    public void add(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth) {
+    public void add(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white) {
         if (prevMove != null && prevPiece != null && currMove != null && currPiece != null) {
-            update(prevMove, prevPiece, currMove, currPiece, depth * depth);
+            update(prevMove, prevPiece, currMove, currPiece, depth * depth, white);
         }
     }
 
-    public void sub(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth) {
+    public void sub(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white) {
         if (prevMove != null && prevPiece != null && currMove != null && currPiece != null) {
-            update(prevMove, prevPiece, currMove, currPiece, -depth * depth);
+            update(prevMove, prevPiece, currMove, currPiece, -depth * depth, white);
         }
     }
 
-    public int score(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece) {
+    public int score(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {
+        int colourIndex = Board.colourIndex(white);
         if (prevMove != null && prevPiece != null && currMove != null && currPiece != null) {
-            return table[prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()];
+            return table[colourIndex][prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()];
         }
         return 0;
     }
 
-    private void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int update) {
+    private void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int update, boolean white) {
+        int colourIndex = Board.colourIndex(white);
         if (prevMove != null && prevPiece != null && currMove != null && currPiece != null) {
-            table[prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()] += update;
+            table[colourIndex][prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()] += update;
         }
     }
 
@@ -38,7 +41,7 @@ public class ContHistTable {
     }
 
     public void clear() {
-        table = new int[6][64][6][64];
+        table = new int[2][6][64][6][64];
     }
 
 }

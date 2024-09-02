@@ -39,6 +39,8 @@ public class MoveOrderer implements MoveOrdering {
     static final int KILLERS_PER_PLY = 3;
     static final int MAX_KILLER_PLY = 32;
     static final int KILLER_MOVE_ORDER_BONUS = 10000;
+    static final int MAX_HISTORY_BONUS = 1200;
+    static final int MAX_HISTORY_SCORE = 8192;
 
     public static final int[][] MVV_LVA_TABLE = new int[][] {
             new int[] {15, 14, 13, 12, 11, 10},  // victim P, attacker P, N, B, R, Q, K
@@ -214,7 +216,7 @@ public class MoveOrderer implements MoveOrdering {
         int current = historyMoves[colourIndex][startSquare][endSquare];
         int update = Math.min(16 * depth * depth + 32 * depth + 16, 1200);
         int score = gravity(current, update);
-        historyMoves[colourIndex][startSquare][endSquare] += score;
+        historyMoves[colourIndex][startSquare][endSquare] = score;
     }
 
     public void decrementHistoryScore(int depth, Move historyMove, boolean white) {
@@ -222,13 +224,13 @@ public class MoveOrderer implements MoveOrdering {
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int current = historyMoves[colourIndex][startSquare][endSquare];
-        int update = Math.min(16 * depth * depth + 32 * depth + 16, 1200);
+        int update = Math.min(16 * depth * depth + 32 * depth + 16, MAX_HISTORY_BONUS);
         int score = gravity(current, -update);
-        historyMoves[colourIndex][startSquare][endSquare] += score;
+        historyMoves[colourIndex][startSquare][endSquare] = score;
     }
 
     private int gravity(int current, int update) {
-        return current + update - current * Math.abs(update) / 8192;
+        return current + update - current * Math.abs(update) / MAX_HISTORY_SCORE;
     }
 
     public void ageHistoryScores(boolean white) {

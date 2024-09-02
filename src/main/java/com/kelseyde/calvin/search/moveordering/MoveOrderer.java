@@ -3,6 +3,8 @@ package com.kelseyde.calvin.search.moveordering;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.tables.ContHistTable;
 import com.kelseyde.calvin.tables.HistoryTable;
 import com.kelseyde.calvin.tables.KillerTable;
 import lombok.AccessLevel;
@@ -50,20 +52,21 @@ public class MoveOrderer implements MoveOrdering {
 
     final KillerTable killerTable = new KillerTable();
     final HistoryTable historyTable = new HistoryTable();
+    final ContHistTable contHistTable = new ContHistTable();
 
     /**
      * Orders the given list of moves based on the defined move-ordering strategy.
      *
      * @param board             The current board state.
      * @param moves             The list of moves to be ordered.
-     * @param previousBestMove  The best move found at an earlier ply.
+     * @param ttMove            The best move found at an earlier ply.
      * @param ply               The number of ply from the root node.
      * @return                  The ordered list of moves.
      */
-    public List<Move> orderMoves(Board board, List<Move> moves, Move previousBestMove, int ply) {
+    public List<Move> orderMoves(Board board, SearchStack ss, List<Move> moves, Move ttMove, int ply) {
         List<Move> orderedMoves = new ArrayList<>(moves);
         // Sort moves based on their scores in descending order
-        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, move, previousBestMove, ply)));
+        orderedMoves.sort(Comparator.comparingInt(move -> -scoreMove(board, ss, move, ttMove, ply)));
         return orderedMoves;
     }
 
@@ -72,18 +75,18 @@ public class MoveOrderer implements MoveOrdering {
      *
      * @param board            The current board state.
      * @param move             The move to be scored.
-     * @param previousBestMove The best move found at an earlier ply.
+     * @param ttMove           The best move found at an earlier ply.
      * @param ply              The number of ply from the root node.
      * @return                 The score of the move.
      */
-    public int scoreMove(Board board, Move move, Move previousBestMove, int ply) {
+    public int scoreMove(Board board, SearchStack ss, Move move, Move ttMove, int ply) {
 
         int startSquare = move.getFrom();
         int endSquare = move.getTo();
         int moveScore = 0;
 
         // The previous best move from the transposition table is searched first.
-        if (move.equals(previousBestMove)) {
+        if (move.equals(ttMove)) {
             moveScore += PREVIOUS_BEST_MOVE_BIAS;
         }
 
@@ -101,9 +104,14 @@ public class MoveOrderer implements MoveOrdering {
         }
         // Non-captures are sorted using killer score + history score
         else {
+            Piece piece = board.pieceAt(startSquare);
+            Move prevMove = ss.getMove(ply - 1);
+            Piece prevPiece = ss.getMovedPiece(ply - 1);
+
             int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
             int historyScore = historyTable.score(move, board.isWhiteToMove(), HISTORY_MOVE_BIAS, killerScore == 0);
-            moveScore += killerScore + historyScore;
+            int contHistScore = contHistTable.score(prevMove, prevPiece, move, piece);
+            moveScore += killerScore + historyScore + contHistScore;
         }
 
         if (move.isCastling()) {
@@ -157,20 +165,33 @@ public class MoveOrderer implements MoveOrdering {
     /**
      * Adds a history move for a given ply and color.
      *
-     * @param depth The current search depth.
      * @param historyMove The history move to be added.
-     * @param white Whether the move is for white pieces.
+     * @param ss          The search stack.
+     * @param depth       The current search depth.
+     * @param ply
+     * @param white       Whether the move is for white pieces.
      */
-    public void incrementHistoryScore(int depth, Move historyMove, boolean white) {
+    public void addHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
         historyTable.add(depth, historyMove, white);
+        Move currentMove = ss.getMove(ply);
+        Piece currentPiece = ss.getMovedPiece(ply);
+        Move prevMove = ss.getMove(ply - 1);
+        Piece prevPiece = ss.getMovedPiece(ply - 1);
+        contHistTable.add(prevMove, prevPiece, currentMove, currentPiece, depth);
     }
 
-    public void decrementHistoryScore(int depth, Move historyMove, boolean white) {
+    public void subHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
         historyTable.sub(depth, historyMove, white);
+        Move currentMove = ss.getMove(ply);
+        Piece currentPiece = ss.getMovedPiece(ply);
+        Move prevMove = ss.getMove(ply - 1);
+        Piece prevPiece = ss.getMovedPiece(ply - 1);
+        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth);
     }
 
     public void ageHistoryScores(boolean white) {
         historyTable.ageScores(white);
+        contHistTable.ageScores(white);
     }
 
     public void clear() {

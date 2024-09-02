@@ -13,8 +13,13 @@ public class SearchStack {
         }
     }
 
+    public SearchStackEntry get(int ply) {
+        return ply >= 0 && ply < Search.MAX_DEPTH ? stack[ply] : null;
+    }
+
     public int getStaticEval(int ply) {
-        return stack[ply].staticEval;
+        SearchStackEntry entry = get(ply);
+        return entry != null ? entry.staticEval : 0;
     }
 
     public void setStaticEval(int ply, int score) {
@@ -22,16 +27,21 @@ public class SearchStack {
     }
 
     public Move getMove(int ply) {
-        return stack[ply].move;
-    }
-
-    public void setMove(int ply, Move move, Piece movedPiece) {
-        stack[ply].move = move;
-        stack[ply].movedPiece = movedPiece;
+        SearchStackEntry entry = get(ply);
+        return entry != null ? entry.move : null;
     }
 
     public Piece getMovedPiece(int ply) {
-        return stack[ply].movedPiece;
+        SearchStackEntry entry = get(ply);
+        return entry != null ? entry.movedPiece : null;
+    }
+
+    public void setMove(int ply, Move move, Piece movedPiece) {
+        if (ply < 0 || ply >= Search.MAX_DEPTH) {
+            return;
+        }
+        stack[ply].move = move;
+        stack[ply].movedPiece = movedPiece;
     }
 
     public void clear() {

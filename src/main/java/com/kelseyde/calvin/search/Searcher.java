@@ -209,7 +209,7 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
-        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
+        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
 
         // Probe the transposition table in case this node has been searched before
         HashEntry transposition = transpositionTable.get(getKey(), ply);
@@ -399,9 +399,9 @@ public class Searcher implements Search {
                 if (isQuiet) {
                     // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
-                    moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
+                    moveOrderer.addHistoryScore(move, new SearchStack(), depth, 0, board.isWhiteToMove());
                     for (Move quiet : quietsSearched) {
-                        moveOrderer.decrementHistoryScore(depth, quiet, board.isWhiteToMove());
+                        moveOrderer.subHistoryScore(quiet, null, depth, 0, board.isWhiteToMove());
                     }
                 }
 

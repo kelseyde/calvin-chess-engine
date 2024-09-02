@@ -211,7 +211,9 @@ public class MoveOrderer implements MoveOrdering {
         int colourIndex = Board.colourIndex(white);
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
-        int score = depth * depth;
+        int current = historyMoves[colourIndex][startSquare][endSquare];
+        int update = Math.min(16 * depth * depth + 32 * depth + 16, 1200);
+        int score = gravity(current, update);
         historyMoves[colourIndex][startSquare][endSquare] += score;
     }
 
@@ -219,8 +221,14 @@ public class MoveOrderer implements MoveOrdering {
         int colourIndex = Board.colourIndex(white);
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
-        int score = depth * depth;
-        historyMoves[colourIndex][startSquare][endSquare] -= score;
+        int current = historyMoves[colourIndex][startSquare][endSquare];
+        int update = Math.min(16 * depth * depth + 32 * depth + 16, 1200);
+        int score = gravity(current, -update);
+        historyMoves[colourIndex][startSquare][endSquare] += score;
+    }
+
+    private int gravity(int current, int update) {
+        return current + update - current * Math.abs(update) / 8192;
     }
 
     public void ageHistoryScores(boolean white) {

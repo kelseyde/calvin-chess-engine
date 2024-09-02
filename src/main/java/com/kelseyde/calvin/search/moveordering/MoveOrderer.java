@@ -38,6 +38,7 @@ public class MoveOrderer implements MoveOrdering {
 
     static final int KILLERS_PER_PLY = 3;
     static final int MAX_KILLER_PLY = 32;
+    static final int MAX_HISTORY_SCORE = 4096;
     static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
     public static final int[][] MVV_LVA_TABLE = new int[][] {
@@ -208,19 +209,24 @@ public class MoveOrderer implements MoveOrdering {
      * @param white Whether the move is for white pieces.
      */
     public void incrementHistoryScore(int depth, Move historyMove, boolean white) {
-        int colourIndex = Board.colourIndex(white);
-        int startSquare = historyMove.getStartSquare();
-        int endSquare = historyMove.getEndSquare();
-        int score = depth * depth;
-        historyMoves[colourIndex][startSquare][endSquare] += score;
+        int update = depth * depth;
+        addHistoryScore(historyMove, white, update);
     }
 
     public void decrementHistoryScore(int depth, Move historyMove, boolean white) {
+        int update = -(depth * depth);
+        addHistoryScore(historyMove, white, update);
+    }
+
+    public void addHistoryScore(Move historyMove, boolean white, int score) {
         int colourIndex = Board.colourIndex(white);
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
-        int score = depth * depth;
-        historyMoves[colourIndex][startSquare][endSquare] -= score;
+        // Apply history gravity
+        int currentScore = historyMoves[colourIndex][startSquare][endSquare];
+        int clampedScore = Math.min(MAX_HISTORY_SCORE, Math.max(-MAX_HISTORY_SCORE, score));
+        int updatedScore = clampedScore - currentScore * Math.abs(clampedScore) / MAX_HISTORY_SCORE;
+        historyMoves[colourIndex][startSquare][endSquare] += updatedScore;
     }
 
     public void ageHistoryScores(boolean white) {

@@ -214,8 +214,8 @@ public class MoveOrderer implements MoveOrdering {
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int current = historyMoves[colourIndex][startSquare][endSquare];
-        int update = Math.min(16 * depth * depth + 32 * depth + 16, 1200);
-        int score = gravity(current, update);
+        int bonus = bonus(depth);
+        int score = gravity(current, bonus);
         historyMoves[colourIndex][startSquare][endSquare] = score;
     }
 
@@ -224,9 +224,13 @@ public class MoveOrderer implements MoveOrdering {
         int startSquare = historyMove.getStartSquare();
         int endSquare = historyMove.getEndSquare();
         int current = historyMoves[colourIndex][startSquare][endSquare];
-        int update = Math.min(16 * depth * depth + 32 * depth + 16, MAX_HISTORY_BONUS);
-        int score = gravity(current, -update);
+        int bonus = bonus(depth);
+        int score = gravity(current, -bonus);
         historyMoves[colourIndex][startSquare][endSquare] = score;
+    }
+
+    private int bonus(int depth) {
+        return Math.min(16 * depth * depth + 32 * depth + 16, MAX_HISTORY_BONUS);
     }
 
     private int gravity(int current, int update) {

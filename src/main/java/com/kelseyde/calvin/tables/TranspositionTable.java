@@ -1,7 +1,9 @@
-package com.kelseyde.calvin.transposition;
+package com.kelseyde.calvin.tables;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.tables.hash.HashEntry;
+import com.kelseyde.calvin.tables.hash.HashFlag;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -194,16 +196,6 @@ public class TranspositionTable {
      */
     private int retrieveMateScore(int score, int plyFromRoot) {
         return score > 0 ? score + plyFromRoot : score - plyFromRoot;
-    }
-
-    /**
-     * Prints the statistics of the transposition table.
-     */
-    public void printStatistics() {
-        long fill = Arrays.stream(entries).filter(Objects::nonNull).count();
-        float fillPercentage = ((float) fill / tableSize) * 100;
-        float hitPercentage = ((float) hits / tries) * 100;
-         System.out.printf("TT %s -- size: %s / %s (%s), tries: %s, hits: %s (%s)%n", this.hashCode(), fill, entries.length, fillPercentage, tries, hits, hitPercentage);
     }
 
 }

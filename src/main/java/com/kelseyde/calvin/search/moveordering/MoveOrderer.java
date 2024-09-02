@@ -3,6 +3,8 @@ package com.kelseyde.calvin.search.moveordering;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.tables.HistoryTable;
+import com.kelseyde.calvin.tables.KillerTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -30,26 +32,24 @@ public class MoveOrderer implements MoveOrdering {
     static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
     static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
     static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
-    static final int KILLER_MOVE_BIAS = 6 * MILLION;
+    public static final int KILLER_MOVE_BIAS = 6 * MILLION;
     static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
     static final int HISTORY_MOVE_BIAS = 4 * MILLION;
     static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
     static final int CASTLING_BIAS = 2 * MILLION;
 
-    static final int KILLERS_PER_PLY = 3;
-    static final int MAX_KILLER_PLY = 32;
-    static final int KILLER_MOVE_ORDER_BONUS = 10000;
+    public static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
     public static final int[][] MVV_LVA_TABLE = new int[][] {
-            new int[] {15, 14, 13, 12, 11, 10},  // victim P, attacker P, N, B, R, Q, K
-            new int[] {25, 24, 23, 22, 21, 20},  // victim N, attacker P, N, B, R, Q, K
-            new int[] {35, 34, 33, 32, 31, 30},  // victim B, attacker P, N, B, R, Q, K
-            new int[] {45, 44, 43, 42, 41, 40},  // victim R, attacker P, N, B, R, Q, K
-            new int[] {55, 54, 53, 52, 51, 50},  // victim Q, attacker P, N, B, R, Q, K
+            new int[] { 15, 14, 13, 12, 11, 10 },  // victim P, attacker P, N, B, R, Q, K
+            new int[] { 25, 24, 23, 22, 21, 20 },  // victim N, attacker P, N, B, R, Q, K
+            new int[] { 35, 34, 33, 32, 31, 30 },  // victim B, attacker P, N, B, R, Q, K
+            new int[] { 45, 44, 43, 42, 41, 40 },  // victim R, attacker P, N, B, R, Q, K
+            new int[] { 55, 54, 53, 52, 51, 50 },  // victim Q, attacker P, N, B, R, Q, K
     };
 
-    Move[][] killerMoves = new Move[MAX_KILLER_PLY][KILLERS_PER_PLY];
-    final int[][][] historyMoves = new int[2][64][64];
+    final KillerTable killerTable = new KillerTable();
+    final HistoryTable historyTable = new HistoryTable();
 
     /**
      * Orders the given list of moves based on the defined move-ordering strategy.
@@ -78,8 +78,8 @@ public class MoveOrderer implements MoveOrdering {
      */
     public int scoreMove(Board board, Move move, Move previousBestMove, int ply) {
 
-        int startSquare = move.getStartSquare();
-        int endSquare = move.getEndSquare();
+        int startSquare = move.getFrom();
+        int endSquare = move.getTo();
         int moveScore = 0;
 
         // The previous best move from the transposition table is searched first.
@@ -101,8 +101,8 @@ public class MoveOrderer implements MoveOrdering {
         }
         // Non-captures are sorted using killer score + history score
         else {
-            int killerScore = scoreKillerMove(move, ply);
-            int historyScore = scoreHistoryMove(board, startSquare, endSquare, killerScore);
+            int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
+            int historyScore = historyTable.score(move, board.isWhiteToMove(), HISTORY_MOVE_BIAS, killerScore == 0);
             moveScore += killerScore + historyScore;
         }
 
@@ -117,8 +117,8 @@ public class MoveOrderer implements MoveOrdering {
     @Override
     public int mvvLva(Board board, Move move, Move previousBestMove) {
         if (move.equals(previousBestMove)) return PREVIOUS_BEST_MOVE_BIAS;
-        int startSquare = move.getStartSquare();
-        int endSquare = move.getEndSquare();
+        int startSquare = move.getFrom();
+        int endSquare = move.getTo();
         Piece capturedPiece = board.pieceAt(endSquare);
         if (capturedPiece == null) return 0;
         Piece piece = board.pieceAt(startSquare);
@@ -144,33 +144,6 @@ public class MoveOrderer implements MoveOrdering {
         return captureScore;
     }
 
-    private int scoreKillerMove(Move move, int ply) {
-        if (ply >= MAX_KILLER_PLY) {
-            return 0;
-        }
-        else if (move.equals(killerMoves[ply][0])) {
-            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 3);
-        }
-        else if (move.equals(killerMoves[ply][1])) {
-            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS * 2);
-        }
-        else if (move.equals(killerMoves[ply][2])) {
-            return KILLER_MOVE_BIAS + (KILLER_MOVE_ORDER_BONUS);
-        }
-        else {
-            return 0;
-        }
-    }
-
-    private int scoreHistoryMove(Board board, int startSquare, int endSquare, int killerScore) {
-        int colourIndex = Board.colourIndex(board.isWhiteToMove());
-        int historyScore = historyMoves[colourIndex][startSquare][endSquare];
-        if (killerScore == 0 && historyScore > 0) {
-            historyScore += HISTORY_MOVE_BIAS;
-        }
-        return historyScore;
-    }
-
     /**
      * Adds a new killer move for a given ply.
      *
@@ -178,26 +151,7 @@ public class MoveOrderer implements MoveOrdering {
      * @param move The new killer move to be added.
      */
     public void addKillerMove(int ply, Move move) {
-        if (ply >= MAX_KILLER_PLY) {
-            return;
-        }
-        // Check if the move already exists in the killer moves list
-        for (int i = 0; i < KILLERS_PER_PLY; i++) {
-            if (move.equals(killerMoves[ply][i])) {
-                // Move the existing killer to the front
-                for (int j = i; j > 0; j--) {
-                    killerMoves[ply][j] = killerMoves[ply][j - 1];
-                }
-                killerMoves[ply][0] = move;
-                return;
-            }
-        }
-
-        // If the move is not already a killer, add it to the front and shift others
-        for (int i = KILLERS_PER_PLY - 1; i > 0; i--) {
-            killerMoves[ply][i] = killerMoves[ply][i - 1];
-        }
-        killerMoves[ply][0] = move;
+        killerTable.add(ply, move);
     }
 
     /**
@@ -208,32 +162,19 @@ public class MoveOrderer implements MoveOrdering {
      * @param white Whether the move is for white pieces.
      */
     public void incrementHistoryScore(int depth, Move historyMove, boolean white) {
-        int colourIndex = Board.colourIndex(white);
-        int startSquare = historyMove.getStartSquare();
-        int endSquare = historyMove.getEndSquare();
-        int score = depth * depth;
-        historyMoves[colourIndex][startSquare][endSquare] += score;
+        historyTable.add(depth, historyMove, white);
     }
 
     public void decrementHistoryScore(int depth, Move historyMove, boolean white) {
-        int colourIndex = Board.colourIndex(white);
-        int startSquare = historyMove.getStartSquare();
-        int endSquare = historyMove.getEndSquare();
-        int score = depth * depth;
-        historyMoves[colourIndex][startSquare][endSquare] -= score;
+        historyTable.sub(depth, historyMove, white);
     }
 
     public void ageHistoryScores(boolean white) {
-        int colourIndex = Board.colourIndex(white);
-        for (int startSquare = 0; startSquare < 64; startSquare++) {
-            for (int endSquare = 0; endSquare < 64; endSquare++) {
-                historyMoves[colourIndex][startSquare][endSquare] /= 2;
-            }
-        }
+        historyTable.ageScores(white);
     }
 
     public void clear() {
-        killerMoves = new Move[MAX_KILLER_PLY][KILLERS_PER_PLY];
+        killerTable.clear();
     }
 
 }

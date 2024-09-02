@@ -56,11 +56,11 @@ public class Searcher implements Search {
     int nodes;
     Instant start;
     TimeControl tc;
+    SearchStack ss;
     boolean cancelled;
 
     int currentDepth;
     final int maxDepth = 256;
-    int[] evalHistory = new int[maxDepth];
 
     Move bestMoveRoot;
     Move bestMoveCurrentDepth;
@@ -98,8 +98,8 @@ public class Searcher implements Search {
 
         start = Instant.now();
         tc = timeControl;
+        ss = new SearchStack();
         nodes = 0;
-        evalHistory = new int[maxDepth];
         currentDepth = 1;
         bestMoveRoot = null;
         bestMoveCurrentDepth = null;
@@ -247,7 +247,7 @@ public class Searcher implements Search {
             staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate();
         }
 
-        evalHistory[ply] = staticEval;
+        ss.setStaticEval(ply, staticEval);
         boolean improving = isImproving(ply, staticEval);
 
         if (!pvNode && !isInCheck) {
@@ -291,6 +291,7 @@ public class Searcher implements Search {
             if (bestMove == null) bestMove = move;
             movesSearched++;
 
+            Piece piece = board.pieceAt(move.getStartSquare());
             Piece capturedPiece = board.pieceAt(move.getEndSquare());
             boolean isCapture = capturedPiece != null;
             boolean isPromotion = move.getPromotionPiece() != null;
@@ -309,6 +310,7 @@ public class Searcher implements Search {
 
             evaluator.makeMove(board, move);
             if (!board.makeMove(move)) continue;
+            ss.setMove(ply, move, piece);
             nodes++;
 
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -611,10 +613,10 @@ public class Searcher implements Search {
     private boolean isImproving(int ply, int staticEval) {
         if (staticEval == Integer.MIN_VALUE) return false;
         if (ply < 2) return false;
-        int lastEval = evalHistory[ply - 2];
+        int lastEval = ss.getStaticEval(ply - 2);
         if (lastEval == Integer.MIN_VALUE) {
             if (ply < 4) return false;
-            lastEval = evalHistory[ply - 4];
+            lastEval = ss.getStaticEval(ply - 4);
             if (lastEval == Integer.MIN_VALUE) {
                 return true;
             }

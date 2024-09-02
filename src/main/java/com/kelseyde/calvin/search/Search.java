@@ -9,6 +9,8 @@ import com.kelseyde.calvin.transposition.TranspositionTable;
  */
 public interface Search {
 
+    static int MAX_DEPTH = 256;
+
     /**
      * Set the position of the {@link Board}.
      */

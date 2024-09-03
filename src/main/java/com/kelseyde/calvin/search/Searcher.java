@@ -407,6 +407,9 @@ public class Searcher implements Search {
                     for (Move quiet : quietsSearched) {
                         moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
                     }
+                    for (Move capture : capturesSearched) {
+                        moveOrderer.subCaptureScore(capture, piece, capturedPiece, depth, board.isWhiteToMove());
+                    }
                 }
                 else if (isCapture) {
                     moveOrderer.addCaptureScore(move, piece, capturedPiece, depth, board.isWhiteToMove());

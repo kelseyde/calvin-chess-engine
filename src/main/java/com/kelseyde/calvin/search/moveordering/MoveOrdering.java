@@ -2,6 +2,7 @@ package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack;
 
 import java.util.List;
@@ -66,6 +67,10 @@ public interface MoveOrdering {
     void addHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white);
 
     void subHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white);
+
+    void addCaptureScore(Move move, Piece piece, Piece capturedPiece, int depth, boolean white);
+
+    void subCaptureScore(Move move, Piece piece, Piece capturedPiece, int depth, boolean white);
 
     void ageHistoryScores(boolean white);
 

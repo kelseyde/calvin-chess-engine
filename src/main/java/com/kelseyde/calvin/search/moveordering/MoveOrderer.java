@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.tables.history.CaptHistTable;
 import com.kelseyde.calvin.tables.history.ContHistTable;
 import com.kelseyde.calvin.tables.history.HistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
@@ -56,6 +57,7 @@ public class MoveOrderer implements MoveOrdering {
     final KillerTable killerTable = new KillerTable();
     final HistoryTable historyTable = new HistoryTable();
     //final ContHistTable contHistTable = new ContHistTable();
+    final CaptHistTable captHistTable = new CaptHistTable();
 
     /**
      * Orders the given list of moves based on the defined move-ordering strategy.
@@ -103,7 +105,7 @@ public class MoveOrderer implements MoveOrdering {
         Piece capturedPiece = board.pieceAt(endSquare);
         boolean isCapture = capturedPiece != null;
         if (isCapture) {
-            moveScore += scoreCapture(board, startSquare, capturedPiece);
+            moveScore += scoreCapture(board, startSquare, endSquare, capturedPiece, board.isWhiteToMove());
         }
         // Non-captures are sorted using killer score + history score
         else {
@@ -143,19 +145,21 @@ public class MoveOrderer implements MoveOrdering {
         return Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
     }
 
-    private int scoreCapture(Board board, int startSquare, Piece capturedPiece) {
+    private int scoreCapture(Board board, int startSquare, int endSquare, Piece capturedPiece, boolean white) {
         Piece piece = board.pieceAt(startSquare);
-        int captureScore = 0;
-        captureScore += MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
+        int mvvLvaScore = MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
+        int captHistScore = captHistTable.get(piece, capturedPiece, endSquare, white);
         int materialDelta = capturedPiece.getValue() - piece.getValue();
-        if (materialDelta > 0) {
-            captureScore += WINNING_CAPTURE_BIAS;
+
+        int base;
+        if (materialDelta > 0 || captHistScore > 0) {
+            base = WINNING_CAPTURE_BIAS;
         } else if (materialDelta == 0) {
-            captureScore += EQUAL_CAPTURE_BIAS;
+            base = EQUAL_CAPTURE_BIAS;
         } else {
-            captureScore += LOSING_CAPTURE_BIAS;
+            base = LOSING_CAPTURE_BIAS;
         }
-        return captureScore;
+        return base + mvvLvaScore + captHistScore;
     }
 
     /**
@@ -194,8 +198,19 @@ public class MoveOrderer implements MoveOrdering {
 //        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth, white);
     }
 
+    @Override
+    public void addCaptureScore(Move move, Piece piece, Piece capturedPiece, int depth, boolean white) {
+        captHistTable.add(piece, capturedPiece, move.getTo(), depth, white);
+    }
+
+    @Override
+    public void subCaptureScore(Move move, Piece piece, Piece capturedPiece, int depth, boolean white) {
+        captHistTable.sub(piece, capturedPiece, move.getTo(), depth, white);
+    }
+
     public void ageHistoryScores(boolean white) {
         historyTable.ageScores(white);
+        captHistTable.ageScores();
     }
 
     public void clear() {

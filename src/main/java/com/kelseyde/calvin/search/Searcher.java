@@ -282,6 +282,7 @@ public class Searcher implements Search {
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
         List<Move> quietsSearched = null;
+        List<Move> capturesSearched = null;
 
         while (true) {
 
@@ -387,6 +388,9 @@ public class Searcher implements Search {
             if (isQuiet && quietsSearched == null) {
                 quietsSearched = new ArrayList<>();
             }
+            else if (isCapture && capturesSearched == null) {
+                capturesSearched = new ArrayList<>();
+            }
 
             if (shouldStop()) {
                 return alpha;
@@ -402,6 +406,12 @@ public class Searcher implements Search {
                     moveOrderer.addHistoryScore(move, ss, depth, ply, board.isWhiteToMove());
                     for (Move quiet : quietsSearched) {
                         moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
+                    }
+                }
+                else if (isCapture) {
+                    moveOrderer.addCaptureScore(move, piece, capturedPiece, depth, board.isWhiteToMove());
+                    for (Move capture : capturesSearched) {
+                        moveOrderer.subCaptureScore(capture, piece, capturedPiece, depth, board.isWhiteToMove());
                     }
                 }
 

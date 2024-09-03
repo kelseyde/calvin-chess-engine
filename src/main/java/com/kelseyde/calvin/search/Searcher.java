@@ -16,6 +16,7 @@ import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
+import com.kelseyde.calvin.utils.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -361,8 +362,7 @@ public class Searcher implements Search {
                     && movesSearched >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
                     && isQuiet) {
                     reduction = config.getLmrReductions()[depth][movesSearched];
-                    // TODO remove in check reduction reduction
-                    if (pvNode || isInCheck) {
+                    if (pvNode) {
                         reduction--;
                     }
                     if (transposition != null && transposition.getMove() != null && isCapture) {
@@ -639,4 +639,5 @@ public class Searcher implements Search {
     public void logStatistics() {
         //log.info(statistics.generateReport());
     }
+
 }

@@ -361,6 +361,7 @@ public class Searcher implements Search {
                     && movesSearched >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
                     && isQuiet) {
                     reduction = config.getLmrReductions()[depth][movesSearched];
+                    // TODO remove in check reduction reduction
                     if (pvNode || isInCheck) {
                         reduction--;
                     }

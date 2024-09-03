@@ -55,7 +55,7 @@ public class MoveOrderer implements MoveOrdering {
 
     final KillerTable killerTable = new KillerTable();
     final HistoryTable historyTable = new HistoryTable();
-    final ContHistTable contHistTable = new ContHistTable();
+    //final ContHistTable contHistTable = new ContHistTable();
 
     /**
      * Orders the given list of moves based on the defined move-ordering strategy.
@@ -107,16 +107,17 @@ public class MoveOrderer implements MoveOrdering {
         }
         // Non-captures are sorted using killer score + history score
         else {
-            Piece piece = board.pieceAt(startSquare);
-            Move prevMove = ss.getMove(ply - 1);
-            Piece prevPiece = ss.getMovedPiece(ply - 1);
+//            Piece piece = board.pieceAt(startSquare);
+//            Move prevMove = ss.getMove(ply - 1);
+//            Piece prevPiece = ss.getMovedPiece(ply - 1);
 
             int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
             int historyScore = historyTable.get(move, board.isWhiteToMove());
-            int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
-            int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
+            //int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
+            //int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
+            int historyBase = killerScore == 0 && historyScore > 0 ? HISTORY_MOVE_BIAS : 0;
 
-            moveScore += killerScore + historyBase + historyScore + contHistScore;
+            moveScore += killerScore + historyBase + historyScore;
         }
 
         if (move.isCastling()) {
@@ -178,35 +179,23 @@ public class MoveOrderer implements MoveOrdering {
      */
     public void addHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
         historyTable.add(depth, historyMove, white);
-        Piece currentPiece = ss.getMovedPiece(ply);
-        Move prevMove = ss.getMove(ply - 1);
-        Piece prevPiece = ss.getMovedPiece(ply - 1);
-        contHistTable.add(prevMove, prevPiece, historyMove, currentPiece, depth, white);
+//        Piece currentPiece = ss.getMovedPiece(ply);
+//        Move prevMove = ss.getMove(ply - 1);
+//        Piece prevPiece = ss.getMovedPiece(ply - 1);
+//        contHistTable.add(prevMove, prevPiece, historyMove, currentPiece, depth, white);
     }
 
     public void subHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
         historyTable.sub(depth, historyMove, white);
-        Move currentMove = ss.getMove(ply);
-        Piece currentPiece = ss.getMovedPiece(ply);
-        Move prevMove = ss.getMove(ply - 1);
-        Piece prevPiece = ss.getMovedPiece(ply - 1);
-        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth, white);
+//        Move currentMove = ss.getMove(ply);
+//        Piece currentPiece = ss.getMovedPiece(ply);
+//        Move prevMove = ss.getMove(ply - 1);
+//        Piece prevPiece = ss.getMovedPiece(ply - 1);
+//        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth, white);
     }
 
     public void ageHistoryScores(boolean white) {
         historyTable.ageScores(white);
-    }
-
-    private int bonus(int depth) {
-        return Math.min(16 * depth * depth + 32 * depth + 16, MAX_HISTORY_BONUS);
-    }
-
-    /**
-     * Applying a gravity formula to history updates has the effect of scaling up updates when they are unexpected, and
-     * scaling them down when they are expected. It has the added benefit of clamping the score within a reasonable range.
-     */
-    private int gravity(int current, int update) {
-        return current + update - current * Math.abs(update) / MAX_HISTORY_SCORE;
     }
 
     public void clear() {

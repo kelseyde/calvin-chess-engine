@@ -9,22 +9,23 @@ public class ContHistTable extends AbstractHistoryTable {
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;
 
-    int[][][][][] table = new int[2][6][64][6][64];
+    // [stm][prevPiece][prevTo][currPiece][currTo]
+    int[][][][] table = new int[6][64][6][64];
 
     public int get(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {
         if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
             return 0;
         }
-        int colourIndex = Board.colourIndex(white);
-        return table[colourIndex][prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()];
+//        int colourIndex = Board.colourIndex(white);
+        return table[prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()];
     }
 
     public void set(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int update, boolean white) {
         if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
             return;
         }
-        int colourIndex = Board.colourIndex(white);
-        table[colourIndex][prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()] = update;
+//        int colourIndex = Board.colourIndex(white);
+        table[prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()] = update;
     }
 
     public void add(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white) {
@@ -48,7 +49,7 @@ public class ContHistTable extends AbstractHistoryTable {
     }
 
     public void clear() {
-        table = new int[2][6][64][6][64];
+        table = new int[6][64][6][64];
     }
 
     @Override

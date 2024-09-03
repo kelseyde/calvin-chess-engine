@@ -42,9 +42,6 @@ public class MoveOrderer implements MoveOrdering {
 
     public static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
-    static final int MAX_HISTORY_BONUS = 1200;
-    static final int MAX_HISTORY_SCORE = 8192;
-
     public static final int[][] MVV_LVA_TABLE = new int[][] {
             new int[] { 15, 14, 13, 12, 11, 10 },  // victim P, attacker P, N, B, R, Q, K
             new int[] { 25, 24, 23, 22, 21, 20 },  // victim N, attacker P, N, B, R, Q, K
@@ -55,7 +52,7 @@ public class MoveOrderer implements MoveOrdering {
 
     final KillerTable killerTable = new KillerTable();
     final HistoryTable historyTable = new HistoryTable();
-    //final ContHistTable contHistTable = new ContHistTable();
+    final ContHistTable contHistTable = new ContHistTable();
 
     /**
      * Orders the given list of moves based on the defined move-ordering strategy.
@@ -107,17 +104,16 @@ public class MoveOrderer implements MoveOrdering {
         }
         // Non-captures are sorted using killer score + history score
         else {
-//            Piece piece = board.pieceAt(startSquare);
-//            Move prevMove = ss.getMove(ply - 1);
-//            Piece prevPiece = ss.getMovedPiece(ply - 1);
+            Piece piece = board.pieceAt(startSquare);
+            Move prevMove = ss.getMove(ply - 1);
+            Piece prevPiece = ss.getMovedPiece(ply - 1);
 
             int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
             int historyScore = historyTable.get(move, board.isWhiteToMove());
-            //int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
-            //int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
-            int historyBase = killerScore == 0 && historyScore > 0 ? HISTORY_MOVE_BIAS : 0;
+            int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
+            int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
 
-            moveScore += killerScore + historyBase + historyScore;
+            moveScore += killerScore + historyBase + historyScore + contHistScore;
         }
 
         if (move.isCastling()) {
@@ -179,19 +175,19 @@ public class MoveOrderer implements MoveOrdering {
      */
     public void addHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
         historyTable.add(depth, historyMove, white);
-//        Piece currentPiece = ss.getMovedPiece(ply);
-//        Move prevMove = ss.getMove(ply - 1);
-//        Piece prevPiece = ss.getMovedPiece(ply - 1);
-//        contHistTable.add(prevMove, prevPiece, historyMove, currentPiece, depth, white);
+        Piece currentPiece = ss.getMovedPiece(ply);
+        Move prevMove = ss.getMove(ply - 1);
+        Piece prevPiece = ss.getMovedPiece(ply - 1);
+        contHistTable.add(prevMove, prevPiece, historyMove, currentPiece, depth, white);
     }
 
     public void subHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
         historyTable.sub(depth, historyMove, white);
-//        Move currentMove = ss.getMove(ply);
-//        Piece currentPiece = ss.getMovedPiece(ply);
-//        Move prevMove = ss.getMove(ply - 1);
-//        Piece prevPiece = ss.getMovedPiece(ply - 1);
-//        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth, white);
+        Move currentMove = ss.getMove(ply);
+        Piece currentPiece = ss.getMovedPiece(ply);
+        Move prevMove = ss.getMove(ply - 1);
+        Piece prevPiece = ss.getMovedPiece(ply - 1);
+        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth, white);
     }
 
     public void ageHistoryScores(boolean white) {

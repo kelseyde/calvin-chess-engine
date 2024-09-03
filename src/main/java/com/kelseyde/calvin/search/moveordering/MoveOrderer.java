@@ -42,6 +42,9 @@ public class MoveOrderer implements MoveOrdering {
 
     public static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
+    static final int MAX_HISTORY_BONUS = 1200;
+    static final int MAX_HISTORY_SCORE = 8192;
+
     public static final int[][] MVV_LVA_TABLE = new int[][] {
             new int[] { 15, 14, 13, 12, 11, 10 },  // victim P, attacker P, N, B, R, Q, K
             new int[] { 25, 24, 23, 22, 21, 20 },  // victim N, attacker P, N, B, R, Q, K
@@ -191,6 +194,18 @@ public class MoveOrderer implements MoveOrdering {
     public void ageHistoryScores(boolean white) {
         historyTable.ageScores(white);
         contHistTable.ageScores(white);
+    }
+
+    private int bonus(int depth) {
+        return Math.min(16 * depth * depth + 32 * depth + 16, MAX_HISTORY_BONUS);
+    }
+
+    /**
+     * Applying a gravity formula to history updates has the effect of scaling up updates when they are unexpected, and
+     * scaling them down when they are expected. It has the added benefit of clamping the score within a reasonable range.
+     */
+    private int gravity(int current, int update) {
+        return current + update - current * Math.abs(update) / MAX_HISTORY_SCORE;
     }
 
     public void clear() {

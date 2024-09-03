@@ -233,6 +233,10 @@ public class MoveOrderer implements MoveOrdering {
         return Math.min(16 * depth * depth + 32 * depth + 16, MAX_HISTORY_BONUS);
     }
 
+    /**
+     * Applying a gravity formula to history updates has the effect of scaling up updates when they are unexpected, and
+     * scaling them down when they are expected. It has the added benefit of clamping the score within a reasonable range.
+     */
     private int gravity(int current, int update) {
         return current + update - current * Math.abs(update) / MAX_HISTORY_SCORE;
     }

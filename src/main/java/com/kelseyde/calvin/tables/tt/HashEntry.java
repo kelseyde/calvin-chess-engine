@@ -1,7 +1,6 @@
-package com.kelseyde.calvin.tables.hash;
+package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.tables.TranspositionTable;
 import lombok.AllArgsConstructor;
 
 /**

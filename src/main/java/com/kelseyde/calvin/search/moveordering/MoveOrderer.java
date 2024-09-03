@@ -4,9 +4,9 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.tables.ContHistTable;
-import com.kelseyde.calvin.tables.HistoryTable;
-import com.kelseyde.calvin.tables.KillerTable;
+import com.kelseyde.calvin.tables.history.ContHistTable;
+import com.kelseyde.calvin.tables.history.HistoryTable;
+import com.kelseyde.calvin.tables.history.KillerTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -112,9 +112,11 @@ public class MoveOrderer implements MoveOrdering {
             Piece prevPiece = ss.getMovedPiece(ply - 1);
 
             int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
-            int historyScore = historyTable.score(move, board.isWhiteToMove(), HISTORY_MOVE_BIAS, killerScore == 0);
-            int contHistScore = contHistTable.score(prevMove, prevPiece, move, piece, board.isWhiteToMove());
-            moveScore += killerScore + historyScore + contHistScore;
+            int historyScore = historyTable.get(move, board.isWhiteToMove());
+            int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
+            int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
+
+            moveScore += killerScore + historyBase + historyScore + contHistScore;
         }
 
         if (move.isCastling()) {
@@ -193,7 +195,6 @@ public class MoveOrderer implements MoveOrdering {
 
     public void ageHistoryScores(boolean white) {
         historyTable.ageScores(white);
-        contHistTable.ageScores(white);
     }
 
     private int bonus(int depth) {

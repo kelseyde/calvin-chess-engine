@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.tables.TranspositionTable;
+import com.kelseyde.calvin.tables.tt.TranspositionTable;
 
 /**
  * Search for the best move/evaluation (encapsulated in a {@link SearchResult}) within a give time limit.

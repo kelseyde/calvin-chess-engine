@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.tables;
+package com.kelseyde.calvin.tables.history;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.Search;

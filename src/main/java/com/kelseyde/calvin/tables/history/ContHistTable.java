@@ -10,7 +10,7 @@ public class ContHistTable extends AbstractHistoryTable {
     private static final int MAX_SCORE = 8192;
     private static final int COLOUR_STRIDE = 6;
 
-    // [stm][prevPiece][prevTo][currPiece][currTo]
+    // [prevPiece][prevTo][currPiece][currTo]
     int[][][][] table = new int[12][64][12][64];
 
     public int get(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {

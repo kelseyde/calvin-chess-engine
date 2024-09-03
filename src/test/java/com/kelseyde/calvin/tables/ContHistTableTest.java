@@ -34,6 +34,18 @@ public class ContHistTableTest {
     }
 
     @Test
+    public void testAddOppositeColour() {
+        ContHistTable contHistTable = new ContHistTable();
+        Move prevMove = Notation.fromUCI("e2e4");
+        Piece prevPiece = Piece.PAWN;
+        int depth = 8;
+        Move currMove = Notation.fromUCI("d5e4");
+        Piece currPiece = Piece.PAWN;
+        contHistTable.add(prevMove, prevPiece, currMove, currPiece, depth, true);
+        assertEquals(0, contHistTable.get(prevMove, prevPiece, currMove, currPiece, false));
+    }
+
+    @Test
     public void testSub() {
         ContHistTable contHistTable = new ContHistTable();
         Move prevMove = Notation.fromUCI("e2e4");

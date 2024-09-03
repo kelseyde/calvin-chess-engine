@@ -8,24 +8,27 @@ public class ContHistTable extends AbstractHistoryTable {
 
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;
+    private static final int COLOUR_STRIDE = 6;
 
     // [stm][prevPiece][prevTo][currPiece][currTo]
-    int[][][][] table = new int[6][64][6][64];
+    int[][][][] table = new int[12][64][12][64];
 
     public int get(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {
         if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
             return 0;
         }
-//        int colourIndex = Board.colourIndex(white);
-        return table[prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()];
+        int currPieceIndex = pieceIndex(currPiece, white);
+        int prevPieceIndex = pieceIndex(prevPiece, !white);
+        return table[prevPieceIndex][prevMove.getTo()][currPieceIndex][currMove.getTo()];
     }
 
     public void set(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int update, boolean white) {
         if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
             return;
         }
-//        int colourIndex = Board.colourIndex(white);
-        table[prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()] = update;
+        int currPieceIndex = pieceIndex(currPiece, white);
+        int prevPieceIndex = pieceIndex(prevPiece, !white);
+        table[prevPieceIndex][prevMove.getTo()][currPieceIndex][currMove.getTo()] = update;
     }
 
     public void add(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white) {
@@ -49,7 +52,11 @@ public class ContHistTable extends AbstractHistoryTable {
     }
 
     public void clear() {
-        table = new int[6][64][6][64];
+        table = new int[12][64][12][64];
+    }
+
+    private int pieceIndex(Piece piece, boolean white) {
+        return piece.getIndex() + (white ? 0 : COLOUR_STRIDE);
     }
 
     @Override

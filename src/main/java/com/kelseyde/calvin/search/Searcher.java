@@ -305,6 +305,7 @@ public class Searcher implements Search {
                 && !isInCheck
                 && !isCapture
                 && !isPromotion) {
+                movePicker.setSkipQuiets(true);
                 continue;
             }
 
@@ -327,6 +328,7 @@ public class Searcher implements Search {
                 && movesSearched >= lmpCutoff) {
                 evaluator.unmakeMove();
                 board.unmakeMove();
+                movePicker.setSkipQuiets(true);
                 continue;
             }
 

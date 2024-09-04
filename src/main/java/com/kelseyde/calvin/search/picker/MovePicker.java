@@ -35,8 +35,8 @@ public class MovePicker implements MovePicking {
     final int ply;
 
     Stage stage;
-    @Setter
-    Move ttMove;
+    @Setter Move ttMove;
+    @Setter boolean skipQuiets;
     int moveIndex;
     ScoredMove[] moves;
 
@@ -93,6 +93,12 @@ public class MovePicker implements MovePicking {
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
     private Move pickMove(MoveFilter filter, Stage nextStage) {
+
+        if (stage == Stage.QUIET && skipQuiets) {
+            stage = nextStage;
+            moves = null;
+            return null;
+        }
 
         if (moves == null) {
             List<Move> stagedMoves = moveGenerator.generateMoves(board, filter);

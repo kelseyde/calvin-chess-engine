@@ -10,7 +10,7 @@ import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
-import com.kelseyde.calvin.search.moveordering.see.SEE;
+import com.kelseyde.calvin.search.moveordering.SEE;
 import com.kelseyde.calvin.search.moveordering.see.SEEAfterMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;

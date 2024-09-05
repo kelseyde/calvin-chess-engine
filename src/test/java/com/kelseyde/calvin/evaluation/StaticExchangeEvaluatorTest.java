@@ -2,7 +2,7 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.search.moveordering.see.SEE;
+import com.kelseyde.calvin.search.moveordering.SEE;
 import com.kelseyde.calvin.search.moveordering.see.SEEAfterMove;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;

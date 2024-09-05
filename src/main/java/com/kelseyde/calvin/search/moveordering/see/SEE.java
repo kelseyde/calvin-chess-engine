@@ -1,22 +1,13 @@
-package com.kelseyde.calvin.search.moveordering.see;
+package com.kelseyde.calvin.search.moveordering;
 
 import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.generation.Attacks;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.utils.Notation;
 
-/**
- * SEE, or 'Static Exchange Evaluation' function, calculates the change in material balance after a series of exchanges
- * on a single square. Very similar to the human player's heuristic of 'counting the attackers and defenders', it returns
- * an int value signifying the material loss or gain if all possible attackers and defenders of that square are traded
- * away.
- * Used in the quiescence search to prune capture nodes which are obviously detrimental to the side to move (like
- * exchanging your queen for a pawn). This improves search speed at the cost of potentially missing some tactical complications
- * elsewhere on the board.
- *
- * @see <a href="https://www.chessprogramming.org/Static_Exchange_Evaluation">Chess Programming Wiki</a>
- */
 public class SEE {
 
     private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
@@ -29,9 +20,16 @@ public class SEE {
         Piece nextVictim = move.isPromotion() ? move.getPromotionPiece() : board.pieceAt(from);
         int balance = moveScore(board, move) - threshold;
 
-        if (balance < 0) return false;
+        if (balance < 0)
+            return false;
+
         balance -= nextVictim.getValue();
-        if (balance >= 0) return true;
+
+        if (balance >= 0)
+            return true;
+
+        long bishops = board.getBishops() | board.getQueens();
+        long rooks = board.getRooks() | board.getQueens();
 
         long occ = board.getOccupied();
         occ = (occ ^ (1L << from)) | (1L << to);
@@ -46,19 +44,37 @@ public class SEE {
         white = !white;
 
         while (true) {
-            long friendlyAttackers = attackers & board.getPieces(white);
-            if (friendlyAttackers == 0) break;
-            nextVictim = getLeastValuableAttacker(board, friendlyAttackers, white);
-            occ ^= 1L << Bitwise.getNextBit(friendlyAttackers & board.getPieces(nextVictim, white));
+            long myAttackers = attackers & board.getPieces(white);
+
+            // If we have no more attackers left we lose
+            if (myAttackers == 0)
+                break;
+
+            // Get next least valuable attacker
+            nextVictim = getLeastValuableAttacker(board, myAttackers, white, bishops, rooks);
+
+            // Remove this attacker from the occupied
+            occ ^= 1L << Bitwise.getNextBit(myAttackers & board.getPieces(nextVictim, white));
+
+            // Make sure we did not add any already used attacks
             attackers &= occ;
+
+            // Swap the turn
             white = !white;
+
+            // Negamax the balance and add the value of the next victim
             balance = -balance - 1 - nextVictim.getValue();
+
+            // As a slide speed up for move legality checking, if our last attacking
+            // piece is a king, and our opponent still has attackers, then we've
+            // lost as the move we followed would be illegal
             if (balance >= 0) {
                 if (nextVictim == Piece.KING & (attackers & board.getPieces(white)) != 0) {
                     white = !white;
                 }
                 break;
             }
+
         }
 
         return board.isWhiteToMove() != white;
@@ -80,24 +96,24 @@ public class SEE {
 
     }
 
-    private static Piece getLeastValuableAttacker(Board board, long attackers, boolean white) {
+    private static Piece getLeastValuableAttacker(Board board, long myAttackers, boolean white, long bishops, long rooks) {
         Piece nextVictim;
-        if ((attackers & board.getPawns(white)) != 0) {
+        if ((myAttackers & board.getPawns(white)) != 0) {
             nextVictim = Piece.PAWN;
         }
-        else if ((attackers & board.getKnights(white)) != 0) {
+        else if ((myAttackers & board.getKnights(white)) != 0) {
             nextVictim = Piece.KNIGHT;
         }
-        else if ((attackers & (board.getBishops() | board.getQueens())) != 0) {
+        else if ((myAttackers & bishops) != 0) {
             nextVictim = Piece.BISHOP;
         }
-        else if ((attackers & (board.getRooks() | board.getQueens())) != 0) {
+        else if ((myAttackers & rooks) != 0) {
             nextVictim = Piece.ROOK;
         }
-        else if ((attackers & board.getQueens(white)) != 0) {
+        else if ((myAttackers & board.getQueens(white)) != 0) {
             nextVictim = Piece.QUEEN;
         }
-        else if ((attackers & board.getKing(white)) != 0) {
+        else if ((myAttackers & board.getKing(white)) != 0) {
             nextVictim = Piece.KING;
         }
         else {
@@ -108,11 +124,11 @@ public class SEE {
 
     private static long getAttackers(Board board, int square, boolean white) {
         return MOVE_GENERATOR.getPawnAttacks(board, square, !white) & board.getPawns(white) |
-               MOVE_GENERATOR.getKnightAttacks(board, square, white) & board.getKnights(white) |
-               MOVE_GENERATOR.getBishopAttacks(board, square, white) & board.getBishops(white) |
-               MOVE_GENERATOR.getRookAttacks(board, square, white) & board.getRooks(white) |
-               MOVE_GENERATOR.getQueenAttacks(board, square, white) & board.getQueens(white) |
-               MOVE_GENERATOR.getKingAttacks(board, square, white) & board.getKing(white);
+                MOVE_GENERATOR.getKnightAttacks(board, square, white) & board.getKnights(white) |
+                MOVE_GENERATOR.getBishopAttacks(board, square, white) & board.getBishops(white) |
+                MOVE_GENERATOR.getRookAttacks(board, square, white) & board.getRooks(white) |
+                MOVE_GENERATOR.getQueenAttacks(board, square, white) & board.getQueens(white) |
+                MOVE_GENERATOR.getKingAttacks(board, square, white) & board.getKing(white);
     }
 
 

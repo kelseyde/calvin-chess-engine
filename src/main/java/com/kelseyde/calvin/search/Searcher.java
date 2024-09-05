@@ -13,15 +13,17 @@ import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
-import com.kelseyde.calvin.transposition.HashEntry;
-import com.kelseyde.calvin.transposition.HashFlag;
-import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.tables.tt.HashEntry;
+import com.kelseyde.calvin.tables.tt.HashFlag;
+import com.kelseyde.calvin.tables.tt.TranspositionTable;
+import com.kelseyde.calvin.utils.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,11 +57,10 @@ public class Searcher implements Search {
     int nodes;
     Instant start;
     TimeControl tc;
+    SearchStack ss = new SearchStack();
     boolean cancelled;
 
     int currentDepth;
-    final int maxDepth = 256;
-    int[] evalHistory = new int[maxDepth];
 
     Move bestMoveRoot;
     Move bestMoveCurrentDepth;
@@ -97,8 +98,8 @@ public class Searcher implements Search {
 
         start = Instant.now();
         tc = timeControl;
+        ss = new SearchStack();
         nodes = 0;
-        evalHistory = new int[maxDepth];
         currentDepth = 1;
         bestMoveRoot = null;
         bestMoveCurrentDepth = null;
@@ -115,7 +116,7 @@ public class Searcher implements Search {
         int aspFailMargin = config.getAspFailMargin();
         SearchResult result = null;
 
-        while (!shouldStopSoft() && currentDepth < maxDepth) {
+        while (!shouldStopSoft() && currentDepth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestScoreCurrentDepth = 0;
@@ -208,7 +209,7 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
-        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ply);
+        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
 
         // Probe the transposition table in case this node has been searched before
         HashEntry transposition = transpositionTable.get(getKey(), ply);
@@ -246,7 +247,7 @@ public class Searcher implements Search {
             staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate();
         }
 
-        evalHistory[ply] = staticEval;
+        ss.setStaticEval(ply, staticEval);
         boolean improving = isImproving(ply, staticEval);
 
         if (!pvNode && !isInCheck) {
@@ -281,6 +282,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
+        List<Move> quietsSearched = null;
 
         while (true) {
 
@@ -289,7 +291,8 @@ public class Searcher implements Search {
             if (bestMove == null) bestMove = move;
             movesSearched++;
 
-            Piece capturedPiece = board.pieceAt(move.getEndSquare());
+            Piece piece = board.pieceAt(move.getFrom());
+            Piece capturedPiece = board.pieceAt(move.getTo());
             boolean isCapture = capturedPiece != null;
             boolean isPromotion = move.getPromotionPiece() != null;
 
@@ -302,11 +305,13 @@ public class Searcher implements Search {
                 && !isInCheck
                 && !isCapture
                 && !isPromotion) {
+                movePicker.setSkipQuiets(true);
                 continue;
             }
 
             evaluator.makeMove(board, move);
             if (!board.makeMove(move)) continue;
+            ss.setMove(ply, move, piece);
             nodes++;
 
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -323,6 +328,7 @@ public class Searcher implements Search {
                 && movesSearched >= lmpCutoff) {
                 evaluator.unmakeMove();
                 board.unmakeMove();
+                movePicker.setSkipQuiets(true);
                 continue;
             }
 
@@ -343,7 +349,7 @@ public class Searcher implements Search {
             if (isDraw()) {
                 eval = Score.DRAW;
             }
-            else if (pvNode && movesSearched == 0) {
+            else if (pvNode && movesSearched == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
@@ -358,7 +364,7 @@ public class Searcher implements Search {
                     && movesSearched >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
                     && isQuiet) {
                     reduction = config.getLmrReductions()[depth][movesSearched];
-                    if (pvNode || isInCheck) {
+                    if (pvNode) {
                         reduction--;
                     }
                     if (transposition != null && transposition.getMove() != null && isCapture) {
@@ -380,6 +386,10 @@ public class Searcher implements Search {
             evaluator.unmakeMove();
             board.unmakeMove();
 
+            if (isQuiet && quietsSearched == null) {
+                quietsSearched = new ArrayList<>();
+            }
+
             if (shouldStop()) {
                 return alpha;
             }
@@ -388,14 +398,19 @@ public class Searcher implements Search {
 
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
                 transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
-                if (!isCapture) {
-                    // Non-captures which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
+                if (isQuiet) {
+                    // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
-                    moveOrderer.incrementHistoryScore(depth, move, board.isWhiteToMove());
+                    moveOrderer.addHistoryScore(move, ss, depth, ply, board.isWhiteToMove());
+                    for (Move quiet : quietsSearched) {
+                        moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
+                    }
                 }
 
                 return beta;
             }
+
+            if (isQuiet) quietsSearched.add(move);
 
             if (eval > alpha) {
                 // We have found a new best move
@@ -488,7 +503,7 @@ public class Searcher implements Search {
                 // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
                 // is bad for us no matter what we do, and not bother searching any further
-                Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getEndSquare());
+                Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getTo());
                 boolean isFutile = capturedPiece != null && (standPat + capturedPiece.getValue() + config.getDpMargin() < alpha) && !move.isPromotion();
                 if (isFutile) {
                     continue;
@@ -574,11 +589,11 @@ public class Searcher implements Search {
         if (config.isSearchCancelled()) return true;
         // Exit if local search is cancelled
         if (cancelled) return true;
-        return !config.isPondering() && tc != null && tc.isHardLimitReached(start, currentDepth, nodes);
+        return !config.isPondering() && tc != null && tc.isHardLimitReached(start, currentDepth);
     }
 
     private boolean shouldStopSoft() {
-        return !config.isPondering() && tc != null && tc.isSoftLimitReached(start, currentDepth, bestMoveStability, evalStability);
+        return !config.isPondering() && tc != null && tc.isSoftLimitReached(start, currentDepth, nodes, bestMoveStability, evalStability);
     }
 
     private boolean isDraw() {
@@ -600,10 +615,10 @@ public class Searcher implements Search {
     private boolean isImproving(int ply, int staticEval) {
         if (staticEval == Integer.MIN_VALUE) return false;
         if (ply < 2) return false;
-        int lastEval = evalHistory[ply - 2];
+        int lastEval = ss.getStaticEval(ply - 2);
         if (lastEval == Integer.MIN_VALUE) {
             if (ply < 4) return false;
-            lastEval = evalHistory[ply - 4];
+            lastEval = ss.getStaticEval(ply - 4);
             if (lastEval == Integer.MIN_VALUE) {
                 return true;
             }
@@ -626,4 +641,5 @@ public class Searcher implements Search {
     public void logStatistics() {
         //log.info(statistics.generateReport());
     }
+
 }

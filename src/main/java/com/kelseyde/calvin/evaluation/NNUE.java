@@ -134,8 +134,8 @@ public class NNUE implements Evaluation {
     @Override
     public void makeMove(Board board, Move move) {
         boolean white = board.isWhiteToMove();
-        int startSquare = move.getStartSquare();
-        int endSquare = move.getEndSquare();
+        int startSquare = move.getFrom();
+        int endSquare = move.getTo();
         Piece piece = board.pieceAt(startSquare);
         if (piece == null) return;
         Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
@@ -154,28 +154,28 @@ public class NNUE implements Evaluation {
     }
 
     private void handleStandardMove(Accumulator acc, Move move, Piece piece, Piece newPiece, boolean white) {
-        FeatureUpdate add = new FeatureUpdate(move.getEndSquare(), newPiece, white);
-        FeatureUpdate sub = new FeatureUpdate(move.getStartSquare(), piece, white);
+        FeatureUpdate add = new FeatureUpdate(move.getTo(), newPiece, white);
+        FeatureUpdate sub = new FeatureUpdate(move.getFrom(), piece, white);
         acc.update.pushAddSub(add, sub);
     }
 
     private void handleCastleMove(Accumulator acc, Move move, boolean white) {
-        boolean kingside = Board.file(move.getEndSquare()) == 6;
+        boolean kingside = Board.file(move.getTo()) == 6;
         int rookStart = kingside ? (white ? 7 : 63) : (white ? 0 : 56);
         int rookEnd = kingside ? (white ? 5 : 61) : (white ? 3 : 59);
-        FeatureUpdate kingAdd = new FeatureUpdate(move.getEndSquare(), Piece.KING, white);
-        FeatureUpdate kingSub = new FeatureUpdate(move.getStartSquare(), Piece.KING, white);
+        FeatureUpdate kingAdd = new FeatureUpdate(move.getTo(), Piece.KING, white);
+        FeatureUpdate kingSub = new FeatureUpdate(move.getFrom(), Piece.KING, white);
         FeatureUpdate rookAdd = new FeatureUpdate(rookEnd, Piece.ROOK, white);
         FeatureUpdate rookSub = new FeatureUpdate(rookStart, Piece.ROOK, white);
         acc.update.pushAddAddSubSub(kingAdd, rookAdd, kingSub, rookSub);
     }
 
     private void handleCapture(Accumulator acc, Move move, Piece piece, Piece newPiece, Piece capturedPiece, boolean white) {
-        int captureSquare = move.getEndSquare();
-        if (move.isEnPassant()) captureSquare = white ? move.getEndSquare() - 8 : move.getEndSquare() + 8;
-        FeatureUpdate add = new FeatureUpdate(move.getEndSquare(), newPiece, white);
+        int captureSquare = move.getTo();
+        if (move.isEnPassant()) captureSquare = white ? move.getTo() - 8 : move.getTo() + 8;
+        FeatureUpdate add = new FeatureUpdate(move.getTo(), newPiece, white);
         FeatureUpdate sub1 = new FeatureUpdate(captureSquare, capturedPiece, !white);
-        FeatureUpdate sub2 = new FeatureUpdate(move.getStartSquare(), piece, white);
+        FeatureUpdate sub2 = new FeatureUpdate(move.getFrom(), piece, white);
         acc.update.pushAddSubSub(add, sub1, sub2);
     }
 

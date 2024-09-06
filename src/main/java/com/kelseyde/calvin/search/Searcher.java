@@ -229,6 +229,7 @@ public class Searcher implements Search {
         movePicker.setTtMove(previousBestMove);
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+        movePicker.setInCheck(isInCheck);
 
         // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a

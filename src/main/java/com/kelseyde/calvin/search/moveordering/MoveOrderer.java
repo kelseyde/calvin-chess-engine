@@ -183,11 +183,10 @@ public class MoveOrderer implements MoveOrdering {
 
     public void subHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {
         historyTable.sub(depth, historyMove, white);
-        Move currentMove = ss.getMove(ply);
         Piece currentPiece = ss.getMovedPiece(ply);
         Move prevMove = ss.getMove(ply - 1);
         Piece prevPiece = ss.getMovedPiece(ply - 1);
-        contHistTable.sub(prevMove, prevPiece, currentMove, currentPiece, depth, white);
+        contHistTable.sub(prevMove, prevPiece, historyMove, currentPiece, depth, white);
     }
 
     public void ageHistoryScores(boolean white) {

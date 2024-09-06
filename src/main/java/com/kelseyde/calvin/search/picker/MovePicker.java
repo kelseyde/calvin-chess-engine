@@ -37,6 +37,7 @@ public class MovePicker implements MovePicking {
     Stage stage;
     @Setter Move ttMove;
     @Setter boolean skipQuiets;
+    @Setter boolean inCheck;
     int moveIndex;
     ScoredMove[] moves;
 
@@ -94,7 +95,7 @@ public class MovePicker implements MovePicking {
      */
     private Move pickMove(MoveFilter filter, Stage nextStage) {
 
-        if (stage == Stage.QUIET && skipQuiets) {
+        if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
             stage = nextStage;
             moves = null;
             return null;

@@ -76,12 +76,13 @@ public class TrainingDataScorer {
                 }
                 if (scored.get() > 0 && batch.isEmpty()) {
                     Duration duration = Duration.between(start, Instant.now());
-                    int total = scored.get() + excluded.get();
+                    int total = scored.get() + excluded.get() + command.resumeOffset();
+                    int totalSinceResume = total - command.resumeOffset();
                     int remaining = TOTAL_POSITIONS_PER_FILE - command.resumeOffset() - total;
                     double rate = (double) total / duration.toMillis() * 1000;
                     Duration estimate = Duration.ofSeconds((long) (remaining / rate));
-                    System.out.printf("info string processed %d positions, scored %d, excluded %d, total time %s, positions/s %s, estimated time remaining %s\n",
-                            total, scored.get(), excluded.get(), duration, rate, estimate);
+                    System.out.printf("processed %d, since resume %d, scored %d, excluded %d, time %s, pos/s %s, remaining pos %s remaining time %s\n",
+                            total, totalSinceResume, scored.get(), excluded.get(), duration, rate, remaining, estimate);
                 }
                 String line = iterator.next();
                 batch.add(line);

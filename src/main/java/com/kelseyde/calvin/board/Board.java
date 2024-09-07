@@ -367,6 +367,10 @@ public class Board {
         return white ? whitePieces : blackPieces;
     }
 
+    public long key() {
+        return gameState.getZobrist();
+    }
+
     public int countPieces() {
         return Bitwise.countBits(occupied);
     }

@@ -450,11 +450,12 @@ public class Searcher implements Search {
             return eval;
         }
 
-        if (!isInCheck &&
-                (ttEntry == null ||
-                        (ttEntry.getFlag() == HashFlag.EXACT
-                                || ttEntry.getFlag() == HashFlag.UPPER && alpha < staticEval
-                                || ttEntry.getFlag() == HashFlag.LOWER && alpha > staticEval))) {
+        if (!isInCheck
+//                && (ttEntry == null ||
+//                        (ttEntry.getFlag() == HashFlag.EXACT
+//                                || ttEntry.getFlag() == HashFlag.UPPER && alpha < staticEval
+//                                || ttEntry.getFlag() == HashFlag.LOWER && alpha > staticEval))
+        ) {
             long pawnZobrist = board.getGameState().getPawnZobrist();
             corrHistTable.updateCorrectionHistory(pawnZobrist, board.isWhiteToMove(), depth, alpha, staticEval);
         }
@@ -649,7 +650,7 @@ public class Searcher implements Search {
         return lastEval < staticEval;
     }
 
-    public TranspositionTable getTt() {
+    public TranspositionTable getTranspositionTable() {
         return tt;
     }
 

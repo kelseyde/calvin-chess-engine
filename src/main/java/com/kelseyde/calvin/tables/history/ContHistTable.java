@@ -59,6 +59,18 @@ public class ContHistTable extends AbstractHistoryTable {
         return piece.getIndex() + (white ? 0 : COLOUR_STRIDE);
     }
 
+    public void ageScores(boolean white) {
+        for (int prevPiece = 0; prevPiece < 12; prevPiece++) {
+            for (int prevTo = 0; prevTo < 64; prevTo++) {
+                for (int currPiece = 0; currPiece < 12; currPiece++) {
+                    for (int currTo = 0; currTo < 64; currTo++) {
+                        table[prevPiece][prevTo][currPiece][currTo] /= 2;
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     protected int getMaxScore() {
         return MAX_SCORE;

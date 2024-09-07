@@ -191,6 +191,7 @@ public class MoveOrderer implements MoveOrdering {
 
     public void ageHistoryScores(boolean white) {
         historyTable.ageScores(white);
+        contHistTable.ageScores(white);
     }
 
     public void clear() {

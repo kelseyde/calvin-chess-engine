@@ -48,6 +48,9 @@ public class NNUE implements Evaluation {
     static final int QB = 64;
     static final int QAB = QA * QB;
 
+    static final int MATERIAL_BASE = 22400;
+    static final int MATERIAL_FACTOR = 32768;
+
     final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
     Accumulator accumulator;
     Board board;
@@ -73,6 +76,7 @@ public class NNUE implements Evaluation {
         eval += forward(them, Network.HIDDEN_SIZE);
         eval *= SCALE;
         eval /= QAB;
+        eval = scaleEval(board, eval);
         return eval;
 
     }
@@ -181,6 +185,21 @@ public class NNUE implements Evaluation {
     public void setPosition(Board board) {
         this.board = board;
         activateAll(board);
+    }
+
+    private int scaleEval(Board board, int eval) {
+        int materialPhase = materialPhase(board);
+        eval = eval * materialPhase / MATERIAL_FACTOR;
+        eval = eval * (200 - board.getGameState().getHalfMoveClock()) / 200;
+        return eval;
+    }
+
+    private int materialPhase(Board board) {
+        long knights = Bitwise.countBits(board.getKnights());
+        long bishops = Bitwise.countBits(board.getBishops());
+        long rooks = Bitwise.countBits(board.getRooks());
+        long queens = Bitwise.countBits(board.getQueens());
+        return (int) (MATERIAL_BASE + 3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
     }
 
     /**

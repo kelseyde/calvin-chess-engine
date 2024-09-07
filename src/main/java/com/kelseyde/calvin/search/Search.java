@@ -1,9 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.transposition.TranspositionTable;
-
-import java.time.Duration;
+import com.kelseyde.calvin.tables.tt.TranspositionTable;
 
 /**
  * Search for the best move/evaluation (encapsulated in a {@link SearchResult}) within a give time limit.
@@ -11,15 +9,12 @@ import java.time.Duration;
  */
 public interface Search {
 
+    static int MAX_DEPTH = 256;
+
     /**
      * Set the position of the {@link Board}.
      */
     void setPosition(Board board);
-
-    /**
-     * Set the maximum number of nodes that should be searched.
-     */
-    void setNodeLimit(int nodeLimit);
 
     /**
      * Set the size of the {@link TranspositionTable}.
@@ -33,10 +28,10 @@ public interface Search {
 
     /**
      * Search the current position for the best move.
-     * @param duration How long to search for
+     * @param timeControl How long to search for
      * @return a {@link SearchResult} containing the best move and the current eval.
      */
-    SearchResult search(Duration duration);
+    SearchResult search(TimeControl timeControl);
 
     /**
      * @return the {@link TranspositionTable} used by the search algorithm.

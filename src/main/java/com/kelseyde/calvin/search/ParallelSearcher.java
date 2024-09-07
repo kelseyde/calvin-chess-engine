@@ -1,15 +1,15 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
-import com.kelseyde.calvin.transposition.TranspositionTable;
+import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -74,16 +74,16 @@ public class ParallelSearcher implements Search {
      * Searches for the best move within the given duration. Does so by starting a new thread for each searcher and
      * waiting for all threads to finish. The best result is then selected from the results of the individual searchers.
      *
-     * @param duration the maximum duration to search
+     * @param timeControl the maximum duration to search
      * @return the best search result found
      */
     @Override
-    public SearchResult search(Duration duration) {
+    public SearchResult search(TimeControl timeControl) {
         try {
             setPosition(board);
             threadManager.reset();
             List<CompletableFuture<SearchResult>> threads = searchers.stream()
-                    .map(searcher -> initThread(searcher, duration))
+                    .map(searcher -> initThread(searcher, timeControl))
                     .toList();
 
             SearchResult result = selectResult(threads).get();
@@ -106,11 +106,6 @@ public class ParallelSearcher implements Search {
     public void setPosition(Board board) {
         this.board = board;
         searchers.forEach(searcher -> searcher.setPosition(board.copy()));
-    }
-
-    @Override
-    public void setNodeLimit(int nodeLimit) {
-        searchers.forEach(searcher -> searcher.setNodeLimit(nodeLimit));
     }
 
     /**
@@ -137,10 +132,10 @@ public class ParallelSearcher implements Search {
         this.searchers = initSearchers();
     }
 
-    private CompletableFuture<SearchResult> initThread(Searcher searcher, Duration duration) {
+    private CompletableFuture<SearchResult> initThread(Searcher searcher, TimeControl tc) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return searcher.search(duration);
+                return searcher.search(tc);
             } catch (Exception e) {
                 System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
                 return SearchResult.empty();
@@ -157,7 +152,12 @@ public class ParallelSearcher implements Search {
     private CompletableFuture<SearchResult> selectResult(List<CompletableFuture<SearchResult>> threads) {
         CompletableFuture<SearchResult> collector = CompletableFuture.completedFuture(new SearchResult(0, null, 0, 0, 0, 0));
         for (CompletableFuture<SearchResult> thread : threads) {
-            collector = collector.thenCombine(thread, (thread1, thread2) -> thread1.depth() > thread2.depth() ? thread1 : thread2);
+            collector = collector.thenCombine(thread, (thread1, thread2) -> {
+                SearchResult best = thread1.depth() > thread2.depth() ? thread1 : thread2;
+                int bestEval = best.eval();
+                Move bestMove = best.move();
+                return new SearchResult(bestEval, bestMove, best.depth(), best.time(), thread1.nodes() + thread2.nodes(), best.nps());
+            });
         }
         return collector;
     }

@@ -32,7 +32,7 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "woodpusher.nnue";
+        public static final String FILE = "tactician.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 256;
 
@@ -47,6 +47,11 @@ public class NNUE implements Evaluation {
     static final int QA = 255;
     static final int QB = 64;
     static final int QAB = QA * QB;
+
+    static final int MATERIAL_BASE = 22400;
+    static final int MATERIAL_FACTOR = 32768;
+
+    static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
 
     final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
     Accumulator accumulator;
@@ -73,6 +78,7 @@ public class NNUE implements Evaluation {
         eval += forward(them, Network.HIDDEN_SIZE);
         eval *= SCALE;
         eval /= QAB;
+        eval = scaleEval(board, eval);
         return eval;
 
     }
@@ -83,19 +89,17 @@ public class NNUE implements Evaluation {
      */
     private int forward(short[] features, int weightOffset) {
         short[] weights = Network.NETWORK.outputWeights;
-        short floor = 0;
-        short ceil = QA;
+
+        var floor = ShortVector.broadcast(SPECIES, 0);
+        var ceil = ShortVector.broadcast(SPECIES, QA);
         int sum = 0;
 
-        VectorSpecies<Short> species = ShortVector.SPECIES_PREFERRED;
-        for (int i = 0; i < species.loopBound(features.length); i += species.length()) {
-            var featuresVector = ShortVector.fromArray(species, features, i);
-            var weightsVector = ShortVector.fromArray(species, weights, i + weightOffset);
-
-            var clippedVector = featuresVector.min(ceil).max(floor);
-            var resultVector = clippedVector.mul(weightsVector);
-
-            sum = Math.addExact(sum,resultVector.reduceLanes(VectorOperators.ADD));
+        for (int i = 0; i < SPECIES.loopBound(features.length); i += SPECIES.length()) {
+            sum += ShortVector.fromArray(SPECIES, features, i)
+                    .min(ceil)
+                    .max(floor)
+                    .mul(ShortVector.fromArray(SPECIES, weights, i + weightOffset))
+                    .reduceLanes(VectorOperators.ADD);
         }
 
         return sum;
@@ -131,8 +135,8 @@ public class NNUE implements Evaluation {
     public void makeMove(Board board, Move move) {
         accumulatorHistory.push(accumulator.copy());
         boolean white = board.isWhiteToMove();
-        int startSquare = move.getStartSquare();
-        int endSquare = move.getEndSquare();
+        int startSquare = move.getFrom();
+        int endSquare = move.getTo();
         Piece piece = board.pieceAt(startSquare);
         if (piece == null) return;
         Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
@@ -165,8 +169,8 @@ public class NNUE implements Evaluation {
     }
 
     private void handleCapture(Move move, Piece capturedPiece, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
-        int captureSquare = move.getEndSquare();
-        if (move.isEnPassant()) captureSquare = white ? move.getEndSquare() - 8 : move.getEndSquare() + 8;
+        int captureSquare = move.getTo();
+        if (move.isEnPassant()) captureSquare = white ? move.getTo() - 8 : move.getTo() + 8;
         int capturedWhiteIdx = featureIndex(capturedPiece, captureSquare, !white, true);
         int capturedBlackIdx = featureIndex(capturedPiece, captureSquare, !white, false);
         accumulator.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
@@ -181,6 +185,21 @@ public class NNUE implements Evaluation {
     public void setPosition(Board board) {
         this.board = board;
         activateAll(board);
+    }
+
+    private int scaleEval(Board board, int eval) {
+        int materialPhase = materialPhase(board);
+        eval = eval * materialPhase / MATERIAL_FACTOR;
+        eval = eval * (200 - board.getGameState().getHalfMoveClock()) / 200;
+        return eval;
+    }
+
+    private int materialPhase(Board board) {
+        long knights = Bitwise.countBits(board.getKnights());
+        long bishops = Bitwise.countBits(board.getBishops());
+        long rooks = Bitwise.countBits(board.getRooks());
+        long queens = Bitwise.countBits(board.getQueens());
+        return (int) (MATERIAL_BASE + 3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
     }
 
     /**

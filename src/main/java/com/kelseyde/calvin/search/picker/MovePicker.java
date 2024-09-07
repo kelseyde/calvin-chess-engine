@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import lombok.AccessLevel;
@@ -21,7 +22,7 @@ import java.util.List;
 public class MovePicker implements MovePicking {
 
     public enum Stage {
-        BEST_MOVE,
+        TT_MOVE,
         NOISY,
         QUIET,
         END
@@ -30,14 +31,15 @@ public class MovePicker implements MovePicking {
     final MoveGeneration moveGenerator;
     final MoveOrdering moveOrderer;
     final Board board;
+    final SearchStack ss;
     final int ply;
 
     Stage stage;
-    List<Move> moves;
-    @Setter
-    Move bestMove;
+    @Setter Move ttMove;
+    @Setter boolean skipQuiets;
+    @Setter boolean inCheck;
     int moveIndex;
-    int[] scores;
+    ScoredMove[] moves;
 
     /**
      * Constructs a MovePicker with the specified move generator, move orderer, board, and ply.
@@ -47,12 +49,13 @@ public class MovePicker implements MovePicking {
      * @param board         the current state of the board
      * @param ply           the number of ply from the root position
      */
-    public MovePicker(MoveGeneration moveGenerator, MoveOrdering moveOrderer, Board board, int ply) {
+    public MovePicker(MoveGeneration moveGenerator, MoveOrdering moveOrderer, Board board, SearchStack ss, int ply) {
         this.moveGenerator = moveGenerator;
         this.moveOrderer = moveOrderer;
         this.board = board;
+        this.ss = ss;
         this.ply = ply;
-        this.stage = Stage.BEST_MOVE;
+        this.stage = Stage.TT_MOVE;
     }
 
     /**
@@ -66,7 +69,7 @@ public class MovePicker implements MovePicking {
         Move nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case BEST_MOVE -> pickBestMove();
+                case TT_MOVE -> pickTTMove();
                 case NOISY -> pickMove(MoveFilter.NOISY, Stage.QUIET);
                 case QUIET -> pickMove(MoveFilter.QUIET, Stage.END);
                 case END -> null;
@@ -80,9 +83,9 @@ public class MovePicker implements MovePicking {
     /**
      * Select the best move from the transposition table and advance to the next stage.
      */
-    private Move pickBestMove() {
+    private Move pickTTMove() {
         stage = Stage.NOISY;
-        return bestMove;
+        return ttMove;
     }
 
     /**
@@ -92,20 +95,25 @@ public class MovePicker implements MovePicking {
      */
     private Move pickMove(MoveFilter filter, Stage nextStage) {
 
-        if (moves == null) {
-            moves = moveGenerator.generateMoves(board, filter);
-            moveIndex = 0;
-            scoreMoves();
+        if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
+            stage = nextStage;
+            moves = null;
+            return null;
         }
-        if (moveIndex >= moves.size()) {
+
+        if (moves == null) {
+            List<Move> stagedMoves = moveGenerator.generateMoves(board, filter);
+            scoreMoves(stagedMoves);
+            moveIndex = 0;
+        }
+        if (moveIndex >= moves.length) {
             moves = null;
             stage = nextStage;
             return null;
         }
-        sortMoves();
-        Move move = moves.get(moveIndex);
+        Move move = pick();
         moveIndex++;
-        if (move.equals(bestMove)) {
+        if (move.equals(ttMove)) {
             // Skip to the next move
             return pickMove(filter, nextStage);
         }
@@ -116,29 +124,29 @@ public class MovePicker implements MovePicking {
     /**
      * Moves are scored using the {@link MoveOrderer}.
      */
-    public void scoreMoves() {
-        scores = new int[moves.size()];
-        for (int i = 0; i < moves.size(); i++) {
-            scores[i] = moveOrderer.scoreMove(board, moves.get(i), bestMove, ply);
+    public void scoreMoves(List<Move> stagedMoves) {
+        moves = new ScoredMove[stagedMoves.size()];
+        for (int i = 0; i < stagedMoves.size(); i++) {
+            moves[i] = new ScoredMove(stagedMoves.get(i), moveOrderer.scoreMove(board, ss, stagedMoves.get(i), ttMove, ply));
         }
     }
 
     /**
      * Select the move with the highest score and move it to the head of the move list.
      */
-    public void sortMoves() {
-        for (int j = moveIndex + 1; j < moves.size(); j++) {
-            int firstScore = scores[moveIndex];
-            int secondScore = scores[j];
-            if (scores[j] > scores[moveIndex]) {
-                Move firstMove = moves.get(moveIndex);
-                Move secondMove = moves.get(j);
-                scores[moveIndex] = secondScore;
-                scores[j] = firstScore;
-                moves.set(moveIndex, secondMove);
-                moves.set(j, firstMove);
+    public Move pick() {
+        for (int j = moveIndex + 1; j < moves.length; j++) {
+            if (moves[j].score() > moves[moveIndex].score()) {
+                swap(moveIndex, j);
             }
         }
+        return moves[moveIndex].move();
+    }
+
+    private void swap(int i, int j) {
+        ScoredMove temp = moves[i];
+        moves[i] = moves[j];
+        moves[j] = temp;
     }
 
 }

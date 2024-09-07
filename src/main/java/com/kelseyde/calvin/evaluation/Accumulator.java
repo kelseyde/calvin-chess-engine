@@ -7,113 +7,122 @@ import java.util.Arrays;
 
 public class Accumulator {
 
-    public static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
+    private static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
+    private static final int HIDDEN_SIZE = NNUE.Network.HIDDEN_SIZE;
+    private static final short[] WEIGHTS = NNUE.Network.NETWORK.inputWeights();
 
     /**
      * Two feature vectors, one from white's perspective, one from black's.
      */
     public final short[] whiteFeatures;
     public final short[] blackFeatures;
+    private final int featureCount;
+    private final int loopLength;
 
     public Accumulator(int featureCount) {
         this.whiteFeatures = new short[featureCount];
         this.blackFeatures = new short[featureCount];
+        this.featureCount = featureCount;
+        this.loopLength = SPECIES.loopBound(featureCount);
     }
 
     public Accumulator(short[] whiteFeatures, short[] blackFeatures) {
         this.whiteFeatures = whiteFeatures;
         this.blackFeatures = blackFeatures;
+        this.featureCount = whiteFeatures.length;
+        this.loopLength = SPECIES.loopBound(this.featureCount);
     }
 
     public void add(int wx1, int bx1) {
-        short[] weights = NNUE.Network.NETWORK.inputWeights();
-        int hiddenSize = NNUE.Network.HIDDEN_SIZE;
+        int wOffset = wx1 * HIDDEN_SIZE;
+        int bOffset = bx1 * HIDDEN_SIZE;
 
-        for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            var whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            var blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
+        for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
-            var whiteAddVector = whiteVector.add(ShortVector.fromArray(SPECIES, weights, i + wx1 * hiddenSize));
-            var blackAddVector = blackVector.add(ShortVector.fromArray(SPECIES, weights, i + bx1 * hiddenSize));
+            ShortVector.fromArray(SPECIES, whiteFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset))
+                    .intoArray(whiteFeatures, i);
 
-            whiteAddVector.intoArray(whiteFeatures, i);
-            blackAddVector.intoArray(blackFeatures, i);
+            ShortVector.fromArray(SPECIES, blackFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset))
+                    .intoArray(blackFeatures, i);
+
         }
     }
 
     public void addSub(int wx1, int bx1, int wx2, int bx2) {
-        short[] weights = NNUE.Network.NETWORK.inputWeights();
-        int hiddenSize = NNUE.Network.HIDDEN_SIZE;
+        int wOffset1 = wx1 * HIDDEN_SIZE;
+        int bOffset1 = bx1 * HIDDEN_SIZE;
+        int wOffset2 = wx2 * HIDDEN_SIZE;
+        int bOffset2 = bx2 * HIDDEN_SIZE;
 
-        for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            var whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            var blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
+        for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
-            var whiteAddSubVector = whiteVector
-                    .add(ShortVector.fromArray(SPECIES, weights, i + wx1 * hiddenSize))
-                    .sub(ShortVector.fromArray(SPECIES, weights, i + wx2 * hiddenSize));
+            ShortVector.fromArray(SPECIES, whiteFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset2))
+                    .intoArray(whiteFeatures, i);
 
-            var blackAddSubVector = blackVector
-                    .add(ShortVector.fromArray(SPECIES, weights, i + bx1 * hiddenSize))
-                    .sub(ShortVector.fromArray(SPECIES, weights, i + bx2 * hiddenSize));
+            ShortVector.fromArray(SPECIES, blackFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset2))
+                    .intoArray(blackFeatures, i);
 
-            whiteAddSubVector.intoArray(whiteFeatures, i);
-            blackAddSubVector.intoArray(blackFeatures, i);
         }
     }
 
     public void addSubSub(int wx1, int bx1, int wx2, int bx2, int wx3, int bx3) {
-        short[] weights = NNUE.Network.NETWORK.inputWeights();
-        int hiddenSize = NNUE.Network.HIDDEN_SIZE;
+        int wOffset1 = wx1 * HIDDEN_SIZE;
+        int bOffset1 = bx1 * HIDDEN_SIZE;
+        int wOffset2 = wx2 * HIDDEN_SIZE;
+        int bOffset2 = bx2 * HIDDEN_SIZE;
+        int wOffset3 = wx3 * HIDDEN_SIZE;
+        int bOffset3 = bx3 * HIDDEN_SIZE;
 
-        for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            var whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            var blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
+        for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
-            var whiteAddVector1 = ShortVector.fromArray(SPECIES, weights, i + wx1 * hiddenSize);
-            var whiteSubVector1 = ShortVector.fromArray(SPECIES, weights, i + wx2 * hiddenSize);
-            var whiteSubVector2 = ShortVector.fromArray(SPECIES, weights, i + wx3 * hiddenSize);
+            ShortVector.fromArray(SPECIES, whiteFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset3))
+                    .intoArray(whiteFeatures, i);
 
-            var blackAddVector1 = ShortVector.fromArray(SPECIES, weights, i + bx1 * hiddenSize);
-            var blackSubVector1 = ShortVector.fromArray(SPECIES, weights, i + bx2 * hiddenSize);
-            var blackSubVector2 = ShortVector.fromArray(SPECIES, weights, i + bx3 * hiddenSize);
+            ShortVector.fromArray(SPECIES, blackFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset3))
+                    .intoArray(blackFeatures, i);
 
-            var whiteResultVector = whiteVector.add(whiteAddVector1).sub(whiteSubVector1).sub(whiteSubVector2);
-            var blackResultVector = blackVector.add(blackAddVector1).sub(blackSubVector1).sub(blackSubVector2);
-
-            whiteResultVector.intoArray(whiteFeatures, i);
-            blackResultVector.intoArray(blackFeatures, i);
         }
     }
 
     public void addAddSubSub(int wx1, int bx1, int wx2, int bx2, int wx3, int bx3, int wx4, int bx4) {
         short[] weights = NNUE.Network.NETWORK.inputWeights();
-        int hiddenSize = NNUE.Network.HIDDEN_SIZE;
+        int wOffset1 = wx1 * HIDDEN_SIZE;
+        int bOffset1 = bx1 * HIDDEN_SIZE;
+        int wOffset2 = wx2 * HIDDEN_SIZE;
+        int bOffset2 = bx2 * HIDDEN_SIZE;
+        int wOffset3 = wx3 * HIDDEN_SIZE;
+        int bOffset3 = bx3 * HIDDEN_SIZE;
+        int wOffset4 = wx4 * HIDDEN_SIZE;
+        int bOffset4 = bx4 * HIDDEN_SIZE;
 
-        for (int i = 0; i < SPECIES.loopBound(whiteFeatures.length); i += SPECIES.length()) {
-            var whiteVector = ShortVector.fromArray(SPECIES, whiteFeatures, i);
-            var blackVector = ShortVector.fromArray(SPECIES, blackFeatures, i);
+        for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
-            var whiteAddVector1 = ShortVector.fromArray(SPECIES, weights, i + wx1 * hiddenSize);
-            var whiteAddVector2 = ShortVector.fromArray(SPECIES, weights, i + wx2 * hiddenSize);
-            var whiteSubVector1 = ShortVector.fromArray(SPECIES, weights, i + wx3 * hiddenSize);
-            var whiteSubVector2 = ShortVector.fromArray(SPECIES, weights, i + wx4 * hiddenSize);
+            ShortVector.fromArray(SPECIES, whiteFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, weights, i + wOffset1))
+                    .add(ShortVector.fromArray(SPECIES, weights, i + wOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + wOffset3))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + wOffset4))
+                    .intoArray(whiteFeatures, i);
 
-            var blackAddVector1 = ShortVector.fromArray(SPECIES, weights, i + bx1 * hiddenSize);
-            var blackAddVector2 = ShortVector.fromArray(SPECIES, weights, i + bx2 * hiddenSize);
-            var blackSubVector1 = ShortVector.fromArray(SPECIES, weights, i + bx3 * hiddenSize);
-            var blackSubVector2 = ShortVector.fromArray(SPECIES, weights, i + bx4 * hiddenSize);
+            ShortVector.fromArray(SPECIES, blackFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, weights, i + bOffset1))
+                    .add(ShortVector.fromArray(SPECIES, weights, i + bOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + bOffset3))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + bOffset4))
+                    .intoArray(blackFeatures, i);
 
-            var whiteResultVector = whiteVector
-                    .add(whiteAddVector1).add(whiteAddVector2)
-                    .sub(whiteSubVector1).sub(whiteSubVector2);
-
-            var blackResultVector = blackVector
-                    .add(blackAddVector1).add(blackAddVector2)
-                    .sub(blackSubVector1).sub(blackSubVector2);
-
-            whiteResultVector.intoArray(whiteFeatures, i);
-            blackResultVector.intoArray(blackFeatures, i);
         }
     }
 

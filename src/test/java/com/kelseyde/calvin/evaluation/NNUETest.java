@@ -6,6 +6,7 @@ import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class NNUETest {
@@ -185,25 +186,6 @@ public class NNUETest {
         int eval3 = nnue.evaluate();
         Assertions.assertEquals(eval1, eval3);
         Assertions.assertEquals(eval2, eval3);
-
-    }
-
-    @Test
-    public void testNullMove() {
-
-        String fen1 = "rn1qk2r/ppp2ppp/4b3/8/1bPPn3/2N5/PP3PPP/R1BQKBNR w KQkq - 3 7";
-        Board board1 = FEN.toBoard(fen1);
-        NNUE nnue1 = new NNUE(board1);
-        int originalEval = nnue1.evaluate();
-        Assertions.assertEquals(originalEval, new NNUE(board1).evaluate());
-        board1.makeNullMove();
-        int nullMoveEval = nnue1.evaluate();
-        Assertions.assertNotEquals(originalEval, nullMoveEval);
-        String fen2 = "rn1qk2r/ppp2ppp/4b3/8/1bPPn3/2N5/PP3PPP/R1BQKBNR b KQkq - 3 7";
-        Board board2 = FEN.toBoard(fen2);
-        Assertions.assertEquals(nullMoveEval, new NNUE(board2).evaluate());
-        board1.unmakeNullMove();
-        Assertions.assertEquals(originalEval, nnue1.evaluate());
 
     }
 

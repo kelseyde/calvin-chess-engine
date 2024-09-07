@@ -78,8 +78,8 @@ public class TrainingDataScorer {
                     Duration duration = Duration.between(start, Instant.now());
                     int total = scored.get() + excluded.get() + command.resumeOffset();
                     int totalSinceResume = total - command.resumeOffset();
-                    int remaining = TOTAL_POSITIONS_PER_FILE - command.resumeOffset() - total;
-                    double rate = (double) total / duration.toMillis() * 1000;
+                    int remaining = TOTAL_POSITIONS_PER_FILE - total;
+                    double rate = (double) totalSinceResume / duration.getSeconds();
                     Duration estimate = Duration.ofSeconds((long) (remaining / rate));
                     System.out.printf("processed %d, since resume %d, scored %d, excluded %d, time %s, pos/s %s, remaining pos %s remaining time %s\n",
                             total, totalSinceResume, scored.get(), excluded.get(), duration, rate, remaining, estimate);

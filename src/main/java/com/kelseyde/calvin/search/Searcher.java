@@ -13,11 +13,10 @@ import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
-import com.kelseyde.calvin.tables.history.CorrectionHistoryTable;
+import com.kelseyde.calvin.tables.history.CorrHistTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
-import com.kelseyde.calvin.utils.Notation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -52,8 +51,8 @@ public class Searcher implements Search {
     MoveOrdering moveOrderer;
     Evaluation evaluator;
     StaticExchangeEvaluator see;
-    TranspositionTable transpositionTable;
-    CorrectionHistoryTable correctionHistoryTable;
+    TranspositionTable tt;
+    CorrHistTable corrHistTable;
 
     Board board;
     int nodes;
@@ -80,15 +79,15 @@ public class Searcher implements Search {
                     MoveGeneration moveGenerator,
                     MoveOrdering moveOrderer,
                     Evaluation evaluator,
-                    TranspositionTable transpositionTable) {
+                    TranspositionTable tt) {
         this.config = config;
         this.threadManager = threadManager;
         this.moveGenerator = moveGenerator;
         this.moveOrderer = moveOrderer;
         this.evaluator = evaluator;
-        this.transpositionTable = transpositionTable;
+        this.tt = tt;
         this.see = new StaticExchangeEvaluator();
-        this.correctionHistoryTable = new CorrectionHistoryTable();
+        this.corrHistTable = new CorrHistTable();
     }
 
     /**
@@ -215,19 +214,20 @@ public class Searcher implements Search {
         MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
 
         // Probe the transposition table in case this node has been searched before
-        HashEntry transposition = transpositionTable.get(getKey(), ply);
-        if (isUsefulTransposition(transposition, depth, alpha, beta)) {
-            if (rootNode && transposition.getMove() != null) {
-                bestMoveCurrentDepth = transposition.getMove();
-                bestScoreCurrentDepth = transposition.getScore();
+        HashEntry ttEntry = tt.get(getKey(), ply);
+        HashFlag ttFlag = ttEntry != null ? ttEntry.getFlag() : null;
+        if (isUsefulTransposition(ttEntry, depth, alpha, beta)) {
+            if (rootNode && ttEntry.getMove() != null) {
+                bestMoveCurrentDepth = ttEntry.getMove();
+                bestScoreCurrentDepth = ttEntry.getScore();
             }
             if (!pvNode) {
-                return transposition.getScore();
+                return ttEntry.getScore();
             }
         }
         Move previousBestMove = rootNode ? bestMoveRoot : null;
-        if (hasBestMove(transposition)) {
-            previousBestMove = transposition.getMove();
+        if (hasBestMove(ttEntry)) {
+            previousBestMove = ttEntry.getMove();
         }
         movePicker.setTtMove(previousBestMove);
 
@@ -239,7 +239,7 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && !isInCheck
-                && !hasBestMove(transposition)
+                && !hasBestMove(ttEntry)
                 && ply > 0
                 && depth >= config.getIirDepth()) {
             --depth;
@@ -248,8 +248,8 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            staticEval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate();
-            staticEval = correctionHistoryTable.correctEvaluation(board.getGameState().getPawnZobrist(), board.isWhiteToMove(), staticEval);
+            staticEval = ttEntry != null ? ttEntry.getStaticEval() : evaluator.evaluate();
+            staticEval = corrHistTable.correctEvaluation(board.getGameState().getPawnZobrist(), board.isWhiteToMove(), staticEval);
         }
 
         ss.setStaticEval(ply, staticEval);
@@ -278,14 +278,13 @@ public class Searcher implements Search {
                 int eval = -search(depth - 1 - (2 + depth / 3), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
-                    transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
+                    tt.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
                     return beta;
                 }
             }
         }
 
         Move bestMove = null;
-        int bestScore = Integer.MIN_VALUE;
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
         List<Move> quietsSearched = null;
@@ -351,15 +350,15 @@ public class Searcher implements Search {
                 extension = 1;
             }
 
-            int eval;
+            int score;
             if (isDraw()) {
-                eval = Score.DRAW;
+                score = Score.DRAW;
             }
             else if (pvNode && movesSearched == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
+                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
             }
             else {
                 // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
@@ -373,19 +372,19 @@ public class Searcher implements Search {
                     if (pvNode) {
                         reduction--;
                     }
-                    if (transposition != null && transposition.getMove() != null && isCapture) {
+                    if (ttEntry != null && ttEntry.getMove() != null && isCapture) {
                         reduction++;
                     }
                 }
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                eval = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha, true);
+                score = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha, true);
 
-                if (eval > alpha && (eval < beta || reduction > 0)) {
+                if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    eval = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
+                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
                 }
             }
 
@@ -400,12 +399,10 @@ public class Searcher implements Search {
                 return alpha;
             }
 
-            bestScore = Math.max(bestScore, eval);
-
-            if (eval >= beta) {
+            if (score >= beta) {
 
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
+                tt.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
                 if (isQuiet) {
                     // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
@@ -415,19 +412,27 @@ public class Searcher implements Search {
                     }
                 }
 
+                if (!isInCheck &&
+                        (ttEntry == null || (ttFlag == HashFlag.EXACT
+                                || ttFlag == HashFlag.UPPER && beta < staticEval
+                                || ttFlag == HashFlag.LOWER && beta > staticEval))) {
+                    long pawnZobrist = board.getGameState().getPawnZobrist();
+                    corrHistTable.updateCorrectionHistory(pawnZobrist, board.isWhiteToMove(), depth, beta, staticEval);
+                }
+
                 return beta;
             }
 
             if (isQuiet) quietsSearched.add(move);
 
-            if (eval > alpha) {
+            if (score > alpha) {
                 // We have found a new best move
                 bestMove = move;
-                alpha = eval;
+                alpha = score;
                 flag = HashFlag.EXACT;
                 if (rootNode) {
                     bestMoveCurrentDepth = move;
-                    bestScoreCurrentDepth = eval;
+                    bestScoreCurrentDepth = score;
                 }
             }
         }
@@ -445,14 +450,16 @@ public class Searcher implements Search {
             return eval;
         }
 
-        if (!isInCheck
-            && !(flag == HashFlag.UPPER && bestScore <= staticEval)
-            && !(flag == HashFlag.LOWER && bestScore >= staticEval)) {
+        if (!isInCheck &&
+                (ttEntry == null ||
+                        (ttEntry.getFlag() == HashFlag.EXACT
+                                || ttEntry.getFlag() == HashFlag.UPPER && alpha < staticEval
+                                || ttEntry.getFlag() == HashFlag.LOWER && alpha > staticEval))) {
             long pawnZobrist = board.getGameState().getPawnZobrist();
-            correctionHistoryTable.updateCorrectionHistory(pawnZobrist, board.isWhiteToMove(), depth, alpha - staticEval);
+            corrHistTable.updateCorrectionHistory(pawnZobrist, board.isWhiteToMove(), depth, alpha, staticEval);
         }
 
-        transpositionTable.put(getKey(), flag, depth, ply, bestMove, staticEval, alpha);
+        tt.put(getKey(), flag, depth, ply, bestMove, staticEval, alpha);
         return alpha;
 
     }
@@ -472,22 +479,23 @@ public class Searcher implements Search {
         QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        HashEntry transposition = transpositionTable.get(getKey(), ply);
-        if (isUsefulTransposition(transposition, 1, alpha, beta)) {
-            return transposition.getScore();
+        HashEntry ttEntry = tt.get(getKey(), ply);
+        if (isUsefulTransposition(ttEntry, 1, alpha, beta)) {
+            return ttEntry.getScore();
         }
-        if (hasBestMove(transposition)) {
-            movePicker.setTtMove(transposition.getMove());
+        if (hasBestMove(ttEntry)) {
+            movePicker.setTtMove(ttEntry.getMove());
         }
 
         boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
-        int eval = Integer.MIN_VALUE;
+        int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            eval = transposition != null ? transposition.getStaticEval() : evaluator.evaluate();
+            staticEval = ttEntry != null ? ttEntry.getStaticEval() : evaluator.evaluate();
+            staticEval = corrHistTable.correctEvaluation(board.getGameState().getPawnZobrist(), board.isWhiteToMove(), staticEval);
         }
-        int standPat = eval;
+        int standPat = staticEval;
 
         if (isInCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
@@ -496,11 +504,11 @@ public class Searcher implements Search {
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
-            if (eval >= beta) {
+            if (staticEval >= beta) {
                 return beta;
             }
-            if (eval > alpha) {
-                alpha = eval;
+            if (staticEval > alpha) {
+                alpha = staticEval;
             }
             MoveFilter filter = depth == 1 ? MoveFilter.NOISY : MoveFilter.CAPTURES_ONLY;
             movePicker.setFilter(filter);
@@ -536,15 +544,15 @@ public class Searcher implements Search {
             evaluator.makeMove(board, move);
             if (!board.makeMove(move)) continue;
             nodes++;
-            eval = isDraw() ? Score.DRAW : -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
+            int score = isDraw() ? Score.DRAW : -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             evaluator.unmakeMove();
             board.unmakeMove();
 
-            if (eval >= beta) {
+            if (score >= beta) {
                 return beta;
             }
-            if (eval > alpha) {
-                alpha = eval;
+            if (score > alpha) {
+                alpha = score;
             }
         }
 
@@ -564,7 +572,7 @@ public class Searcher implements Search {
 
     @Override
     public void setHashSize(int hashSizeMb) {
-        this.transpositionTable = new TranspositionTable(hashSizeMb);
+        this.tt = new TranspositionTable(hashSizeMb);
     }
 
     @Override
@@ -641,16 +649,15 @@ public class Searcher implements Search {
         return lastEval < staticEval;
     }
 
-    @Override
-    public TranspositionTable getTranspositionTable() {
-        return transpositionTable;
+    public TranspositionTable getTt() {
+        return tt;
     }
 
     @Override
     public void clearHistory() {
-        transpositionTable.clear();
+        tt.clear();
         evaluator.clearHistory();
-        correctionHistoryTable.clear();
+        corrHistTable.clear();
     }
 
     @Override

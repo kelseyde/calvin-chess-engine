@@ -2,7 +2,7 @@ package com.kelseyde.calvin.tables.history;
 
 import com.kelseyde.calvin.board.Board;
 
-public class CorrectionHistoryTable {
+public class CorrHistTable {
 
     public static final int GRAIN = 256;
     public static final int SCALE = 256;
@@ -12,26 +12,28 @@ public class CorrectionHistoryTable {
 
     int[][] entries;
 
-    public CorrectionHistoryTable() {
+    public CorrHistTable() {
         this.entries = new int[2][TABLE_SIZE];
     }
 
-    public void updateCorrectionHistory(long pawnHash, boolean white, int depth, int diff) {
+    public void updateCorrectionHistory(long pawnHash, boolean white, int depth, int score, int staticEval) {
+
         int colourIndex = Board.colourIndex(white);
         int pawnIndex = getIndex(pawnHash);
         int entry = entries[colourIndex][pawnIndex];
-        int scaled = diff * GRAIN;
-        int weight = Math.min(16, depth + 1);
+
+        int scaled = (score - staticEval) * GRAIN;
+        int weight = Math.min(depth + 1, 16);
         int update = entry * (SCALE - weight) + scaled * weight;
         entry = clamp(update / SCALE, -MAX, MAX);
         entries[colourIndex][pawnIndex] = entry;
     }
 
-    public int correctEvaluation(long pawnHash, boolean white, int rawEval) {
+    public int correctEvaluation(long pawnHash, boolean white, int staticEval) {
         int colourIndex = Board.colourIndex(white);
         int pawnIndex = getIndex(pawnHash);
         int entry = entries[colourIndex][pawnIndex];
-        return rawEval + entry / GRAIN;
+        return staticEval + entry / GRAIN;
     }
 
     public void clear() {

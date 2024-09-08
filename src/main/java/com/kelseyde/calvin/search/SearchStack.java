@@ -28,7 +28,7 @@ public class SearchStack {
 
     public Move getMove(int ply) {
         SearchStackEntry entry = get(ply);
-        return entry != null ? entry.move : null;
+        return entry != null ? entry.playedMove : null;
     }
 
     public Piece getMovedPiece(int ply) {
@@ -40,8 +40,20 @@ public class SearchStack {
         if (ply < 0 || ply >= Search.MAX_DEPTH) {
             return;
         }
-        stack[ply].move = move;
+        stack[ply].playedMove = move;
         stack[ply].movedPiece = movedPiece;
+    }
+
+    public Move getExcludedMove(int ply) {
+        SearchStackEntry entry = get(ply);
+        return entry != null ? entry.excludedMove : null;
+    }
+
+    public void setExcludedMove(int ply, Move move) {
+        if (ply < 0 || ply >= Search.MAX_DEPTH) {
+            return;
+        }
+        stack[ply].excludedMove = move;
     }
 
     public void clear() {
@@ -52,7 +64,8 @@ public class SearchStack {
 
     public static class SearchStackEntry {
         public int staticEval;
-        public Move move;
+        public Move playedMove;
+        public Move excludedMove;
         public Piece movedPiece;
     }
 

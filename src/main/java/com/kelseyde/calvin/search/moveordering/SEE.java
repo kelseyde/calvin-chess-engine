@@ -6,6 +6,16 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.generation.MoveGenerator;
 
+/**
+ * SEE, or 'Static Exchange Evaluation' function, calculates the change in material balance after a series of exchanges
+ * on a single square. Very similar to the human player's heuristic of 'counting the attackers and defenders', it returns
+ * an int value signifying the material loss or gain if all possible attackers and defenders of that square are traded
+ * away.
+ * Used in the quiescence search to prune capture nodes which are obviously detrimental to the side to move (like
+ * exchanging your queen for a pawn). This speeds up search at the cost of potentially missing tactical complications.
+ *
+ * @see <a href="https://www.chessprogramming.org/Static_Exchange_Evaluation">Chess Programming Wiki</a>
+ */
 public class SEE {
 
     private static final MoveGenerator MOVEGEN = new MoveGenerator();

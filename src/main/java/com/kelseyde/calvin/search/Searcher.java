@@ -11,6 +11,7 @@ import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.SEE;
+import com.kelseyde.calvin.search.moveordering.SEEAfterMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -334,7 +335,7 @@ public class Searcher implements Search {
             // In certain interesting cases (e.g. promotions, or checks that do not immediately lose material), let's
             // extend the search depth by one ply.
             int extension = 0;
-            if (isCheck) {
+            if (isPromotion || (isCheck && SEEAfterMove.see(board, move) >= 0)) {
                 extension = 1;
             }
 

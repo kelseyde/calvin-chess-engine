@@ -257,7 +257,7 @@ public class Searcher implements Search {
             // is a cut-node and will fail-high, and not search any further.
             boolean isMateHunting = Score.isMateScore(alpha);
             if (depth <= config.getRfpDepth()
-                && staticEval - config.getRfpMargin()[depth] > beta
+                && staticEval - depth * config.getRfpMargin()[improving ? 1 : 0] >= beta
                 && !isMateHunting) {
                 return beta;
             }

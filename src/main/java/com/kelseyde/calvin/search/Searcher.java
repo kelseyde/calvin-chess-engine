@@ -403,6 +403,7 @@ public class Searcher implements Search {
                     // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
                     moveOrderer.addHistoryScore(move, ss, depth, ply, board.isWhiteToMove());
+                    moveOrderer.addCounterMove(move, ss, ply, board.isWhiteToMove());
                     for (Move quiet : quietsSearched) {
                         moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
                     }

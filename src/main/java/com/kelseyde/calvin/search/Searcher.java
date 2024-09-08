@@ -209,6 +209,8 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
+        moveOrderer.getKillerTable().clear(ply + 1);
+
         MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
 
         // Probe the transposition table in case this node has been searched before

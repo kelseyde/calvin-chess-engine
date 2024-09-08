@@ -54,6 +54,8 @@ public interface MoveOrdering {
      */
     void addKillerMove(int ply, Move newKiller);
 
+    void addCounterMove(Move move, SearchStack ss, int ply, boolean white);
+
     /**
      * Adds a move to the history heuristic table.
      *

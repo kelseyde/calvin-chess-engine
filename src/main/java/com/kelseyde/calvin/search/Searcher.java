@@ -212,7 +212,7 @@ public class Searcher implements Search {
         MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
 
         // Probe the transposition table in case this node has been searched before
-        HashEntry transposition = transpositionTable.get(getKey(), ply);
+        HashEntry transposition = transpositionTable.get(board.key(), ply);
         if (isUsefulTransposition(transposition, depth, alpha, beta)) {
             if (rootNode && transposition.getMove() != null) {
                 bestMoveCurrentDepth = transposition.getMove();
@@ -274,7 +274,7 @@ public class Searcher implements Search {
                 int eval = -search(depth - 1 - (2 + depth / 3), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
                 if (eval >= beta) {
-                    transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
+                    transpositionTable.put(board.key(), HashFlag.LOWER, depth, ply, previousBestMove, staticEval, beta);
                     return beta;
                 }
             }
@@ -329,6 +329,7 @@ public class Searcher implements Search {
                 && movesSearched >= lmpCutoff) {
                 evaluator.unmakeMove();
                 board.unmakeMove();
+                ss.unsetMove(ply);
                 movePicker.setSkipQuiets(true);
                 continue;
             }
@@ -386,6 +387,7 @@ public class Searcher implements Search {
 
             evaluator.unmakeMove();
             board.unmakeMove();
+            ss.unsetMove(ply);
 
             if (isQuiet && quietsSearched == null) {
                 quietsSearched = new ArrayList<>();
@@ -398,11 +400,12 @@ public class Searcher implements Search {
             if (eval >= beta) {
 
                 // This is a beta cut-off - the opponent won't let us get here as they already have better alternatives
-                transpositionTable.put(getKey(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
+                transpositionTable.put(board.key(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
                 if (isQuiet) {
                     // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
                     moveOrderer.addKillerMove(ply, move);
                     moveOrderer.addHistoryScore(move, ss, depth, ply, board.isWhiteToMove());
+                    moveOrderer.addCounterMove(move, ss, ply, board.isWhiteToMove());
                     for (Move quiet : quietsSearched) {
                         moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
                     }
@@ -438,7 +441,7 @@ public class Searcher implements Search {
             return eval;
         }
 
-        transpositionTable.put(getKey(), flag, depth, ply, bestMove, staticEval, alpha);
+        transpositionTable.put(board.key(), flag, depth, ply, bestMove, staticEval, alpha);
         return alpha;
 
     }
@@ -458,7 +461,7 @@ public class Searcher implements Search {
         QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        HashEntry transposition = transpositionTable.get(getKey(), ply);
+        HashEntry transposition = transpositionTable.get(board.key(), ply);
         if (isUsefulTransposition(transposition, 1, alpha, beta)) {
             return transposition.getScore();
         }
@@ -590,7 +593,7 @@ public class Searcher implements Search {
         if (config.isSearchCancelled()) return true;
         // Exit if local search is cancelled
         if (cancelled) return true;
-        return !config.isPondering() && tc != null && tc.isHardLimitReached(start, currentDepth);
+        return !config.isPondering() && tc != null && tc.isHardLimitReached(start, currentDepth, nodes);
     }
 
     private boolean shouldStopSoft() {
@@ -599,10 +602,6 @@ public class Searcher implements Search {
 
     private boolean isDraw() {
         return Score.isEffectiveDraw(board);
-    }
-
-    private long getKey() {
-        return board.getGameState().getZobrist();
     }
 
     public SearchResult getResult() {

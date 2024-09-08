@@ -54,7 +54,8 @@ public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, 
 
     }
 
-    public boolean isHardLimitReached(Instant start, int depth) {
+    public boolean isHardLimitReached(Instant start, int depth, int nodes) {
+        if (nodes % 4096 != 0) return false;
         if (maxDepth > 0 && depth >= maxDepth) return true;
         Duration expired = Duration.between(start, Instant.now());
         return expired.compareTo(hardLimit) > 0;

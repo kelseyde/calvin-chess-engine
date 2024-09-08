@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.ContHistTable;
+import com.kelseyde.calvin.tables.history.CounterMoveTable;
 import com.kelseyde.calvin.tables.history.HistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
 import lombok.AccessLevel;
@@ -30,11 +31,12 @@ import java.util.List;
 public class MoveOrderer implements MoveOrdering {
 
     static final int MILLION = 1000000;
-    static final int PREVIOUS_BEST_MOVE_BIAS = 10 * MILLION;
-    static final int QUEEN_PROMOTION_BIAS = 9 * MILLION;
-    static final int WINNING_CAPTURE_BIAS = 8 * MILLION;
-    static final int EQUAL_CAPTURE_BIAS = 7 * MILLION;
-    static final int KILLER_MOVE_BIAS = 6 * MILLION;
+    static final int PREVIOUS_BEST_MOVE_BIAS = 11 * MILLION;
+    static final int QUEEN_PROMOTION_BIAS = 10 * MILLION;
+    static final int WINNING_CAPTURE_BIAS = 9 * MILLION;
+    static final int EQUAL_CAPTURE_BIAS = 8 * MILLION;
+    static final int KILLER_MOVE_BIAS = 7 * MILLION;
+    static final int COUNTER_MOVE_BIAS = 6 * MILLION;
     static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
     static final int HISTORY_MOVE_BIAS = 4 * MILLION;
     static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
@@ -51,6 +53,7 @@ public class MoveOrderer implements MoveOrdering {
     };
 
     final KillerTable killerTable = new KillerTable();
+    final CounterMoveTable counterMoveTable = new CounterMoveTable();
     final HistoryTable historyTable = new HistoryTable();
     final ContHistTable contHistTable = new ContHistTable();
 
@@ -83,6 +86,7 @@ public class MoveOrderer implements MoveOrdering {
 
         int startSquare = move.getFrom();
         int endSquare = move.getTo();
+        boolean white = board.isWhiteToMove();
         int moveScore = 0;
 
         // The previous best move from the transposition table is searched first.
@@ -109,11 +113,12 @@ public class MoveOrderer implements MoveOrdering {
             Piece prevPiece = ss.getMovedPiece(ply - 1);
 
             int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
+            int counterMoveScore = killerScore == 0 && counterMoveTable.isCounterMove(prevPiece, prevMove, white, move) ? COUNTER_MOVE_BIAS : 0;
             int historyScore = historyTable.get(move, board.isWhiteToMove());
             int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
-            int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
+            int historyBase = killerScore == 0 && counterMoveScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
 
-            moveScore += killerScore + historyBase + historyScore + contHistScore;
+            moveScore += killerScore + counterMoveScore + historyBase + historyScore;
         }
 
         if (move.isCastling()) {
@@ -164,6 +169,12 @@ public class MoveOrderer implements MoveOrdering {
         killerTable.add(ply, move);
     }
 
+    public void addCounterMove(Move move, SearchStack ss, int ply, boolean white) {
+        Piece prevPiece = ss.getMovedPiece(ply - 1);
+        Move prevMove = ss.getMove(ply - 1);
+        counterMoveTable.add(prevPiece, prevMove, white, move);
+    }
+
     /**
      * Adds a history move for a given ply and color.
      *
@@ -191,11 +202,11 @@ public class MoveOrderer implements MoveOrdering {
 
     public void ageHistoryScores(boolean white) {
         historyTable.ageScores(white);
-        contHistTable.ageScores(white);
     }
 
     public void clear() {
         killerTable.clear();
+        counterMoveTable.clear();
     }
 
 }

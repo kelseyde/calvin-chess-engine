@@ -20,7 +20,7 @@ public class CounterMoveTable {
 
     // Table indexed by [piece][to]
     private Move[][] table = new Move[12][64];
-
+    
     public boolean isCounterMove(Piece prevPiece, Move prevMove, boolean white, Move move) {
         if (prevPiece == null || prevMove == null) return false;
         int pieceIndex = prevPiece.getIndex() + (white ? 0 : COLOUR_STRIDE);

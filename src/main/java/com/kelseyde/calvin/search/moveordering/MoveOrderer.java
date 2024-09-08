@@ -53,7 +53,7 @@ public class MoveOrderer implements MoveOrdering {
     };
 
     final KillerTable killerTable = new KillerTable();
-    final CounterMoveTable counterMoveTable = new CounterMoveTable();
+    //final CounterMoveTable counterMoveTable = new CounterMoveTable();
     final HistoryTable historyTable = new HistoryTable();
     final ContHistTable contHistTable = new ContHistTable();
 
@@ -113,12 +113,12 @@ public class MoveOrderer implements MoveOrdering {
             Piece prevPiece = ss.getMovedPiece(ply - 1);
 
             int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
-            int counterMoveScore = killerScore == 0 && counterMoveTable.isCounterMove(prevPiece, prevMove, white, move) ? COUNTER_MOVE_BIAS : 0;
+            //int counterMoveScore = killerScore == 0 && counterMoveTable.isCounterMove(prevPiece, prevMove, white, move) ? COUNTER_MOVE_BIAS : 0;
             int historyScore = historyTable.get(move, board.isWhiteToMove());
             int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
-            int historyBase = killerScore == 0 && counterMoveScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
+            int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
 
-            moveScore += killerScore + counterMoveScore + historyBase + historyScore;
+            moveScore += killerScore + historyBase + historyScore;
         }
 
         if (move.isCastling()) {
@@ -170,9 +170,9 @@ public class MoveOrderer implements MoveOrdering {
     }
 
     public void addCounterMove(Move move, SearchStack ss, int ply, boolean white) {
-        Piece prevPiece = ss.getMovedPiece(ply - 1);
-        Move prevMove = ss.getMove(ply - 1);
-        counterMoveTable.add(prevPiece, prevMove, white, move);
+//        Piece prevPiece = ss.getMovedPiece(ply - 1);
+//        Move prevMove = ss.getMove(ply - 1);
+//        counterMoveTable.add(prevPiece, prevMove, white, move);
     }
 
     /**
@@ -206,7 +206,7 @@ public class MoveOrderer implements MoveOrdering {
 
     public void clear() {
         killerTable.clear();
-        counterMoveTable.clear();
+        //counterMoveTable.clear();
     }
 
 }

@@ -329,6 +329,7 @@ public class Searcher implements Search {
                 && movesSearched >= lmpCutoff) {
                 evaluator.unmakeMove();
                 board.unmakeMove();
+                ss.unsetMove(ply);
                 movePicker.setSkipQuiets(true);
                 continue;
             }
@@ -386,6 +387,7 @@ public class Searcher implements Search {
 
             evaluator.unmakeMove();
             board.unmakeMove();
+            ss.unsetMove(ply);
 
             if (isQuiet && quietsSearched == null) {
                 quietsSearched = new ArrayList<>();

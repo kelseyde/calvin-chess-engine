@@ -6,8 +6,8 @@ import com.kelseyde.calvin.board.Piece;
 
 public class ContHistTable extends AbstractHistoryTable {
 
-    private static final int MAX_BONUS = 1200;
-    private static final int MAX_SCORE = 8192;
+    private static final int MAX_BONUS = 600;
+    private static final int MAX_SCORE = 4096;
     private static final int COLOUR_STRIDE = 6;
 
     // [prevPiece][prevTo][currPiece][currTo]

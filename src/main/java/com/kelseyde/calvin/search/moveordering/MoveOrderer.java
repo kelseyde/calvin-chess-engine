@@ -146,6 +146,11 @@ public class MoveOrderer implements MoveOrdering {
         return MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
     }
 
+    @Override
+    public KillerTable getKillerTable() {
+        return killerTable;
+    }
+
     private int scorePromotion(Piece promotionPiece) {
         return Piece.QUEEN == promotionPiece ? QUEEN_PROMOTION_BIAS : UNDER_PROMOTION_BIAS;
     }

@@ -131,6 +131,21 @@ public class HashEntry {
         return (int) (value & DEPTH_MASK);
     }
 
+    public boolean isSufficientDepth(int depth) {
+        return getDepth() >= depth;
+    }
+
+    /**
+     * Check if the hit from the transposition table is 'useful' in the current search. A TT-hit is useful either if it
+     * 1) contains an exact evaluation, so we don't need to search any further, 2) contains a fail-high greater than our
+     * current beta value, or 3) contains a fail-low lesser than our current alpha value.
+     */
+    public boolean isWithinBounds(int alpha, int beta) {
+        return getFlag().equals(HashFlag.EXACT) ||
+                (getFlag().equals(HashFlag.UPPER) && getScore() <= alpha) ||
+                (getFlag().equals(HashFlag.LOWER) && getScore() >= beta);
+    }
+
     /**
      * Creates a new {@link HashEntry} with the specified parameters.
      *

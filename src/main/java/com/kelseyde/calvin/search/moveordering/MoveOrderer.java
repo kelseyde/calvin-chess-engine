@@ -44,8 +44,6 @@ public class MoveOrderer implements MoveOrdering {
 
     public static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
-    static final int MAX_HISTORY_BONUS = 1200;
-    static final int MAX_HISTORY_SCORE = 8192;
 
     public static final int[][] MVV_LVA_TABLE = new int[][] {
             new int[] { 15, 14, 13, 12, 11, 10 },  // victim P, attacker P, N, B, R, Q, K
@@ -122,7 +120,7 @@ public class MoveOrderer implements MoveOrdering {
             int historyScore = historyTable.get(move, white);
             //int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
             //int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
-            int historyBase = killerScore == 0 && counterMoveScore == 0 && historyScore > 0 ? HISTORY_MOVE_BIAS : 0;
+            int historyBase = killerScore == 0 && historyScore > 0 ? HISTORY_MOVE_BIAS : 0;
 
             moveScore += killerScore + historyBase + historyScore;
         }

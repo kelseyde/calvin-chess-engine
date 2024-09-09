@@ -19,7 +19,6 @@ public abstract class MPerftTest {
     private static final MPerftService mPerftService = new MPerftService();
 
     protected abstract String getFen();
-
     protected abstract String getSubFolder();
 
     protected void perft(int depth, int expectedTotalMoves) {

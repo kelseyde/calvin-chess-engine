@@ -44,7 +44,9 @@ public class SAN {
                         if (fromFileIndex != alternateFromFileIndex) {
                             notation += Notation.getFileChar(move.getFrom());
                             break;
-                        } else if (fromRankIndex != alternateFromRankIndex) {
+                        }
+                        else if (fromRankIndex != alternateFromRankIndex)
+                        {
                             notation += Notation.getRankChar(move.getFrom());
                             break;
                         }
@@ -59,7 +61,8 @@ public class SAN {
                 notation += Notation.getFileChar(move.getFrom());
             }
             notation += "x";
-        } else {
+        }
+        else {
             // Check if capturing en passant
             if (move.isEnPassant()) {
                 notation += Notation.getFileChar(move.getFrom()) + "x";

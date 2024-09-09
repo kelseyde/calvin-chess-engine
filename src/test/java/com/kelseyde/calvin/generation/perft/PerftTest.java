@@ -19,7 +19,6 @@ public abstract class PerftTest {
     private static final PerftService perftService = new PerftService();
 
     protected abstract String getFen();
-
     protected abstract String getSubFolder();
 
     protected void perft(int depth, long expectedTotalMoves) {

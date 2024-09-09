@@ -61,7 +61,7 @@ public class Score {
             return false;
         }
         long whitePieces = board.getKnights(true) | board.getBishops(true);
-        long blackPieces = board.getKnights(false) | board.getBishops(false);
+        long blackPieces = board.getKnights(false) |  board.getBishops(false);
 
         return (Bitwise.countBits(whitePieces) == 0 || Bitwise.countBits(whitePieces) == 1)
                 && (Bitwise.countBits(blackPieces) == 0 || Bitwise.countBits(blackPieces) == 1);

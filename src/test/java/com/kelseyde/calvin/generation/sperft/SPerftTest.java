@@ -21,7 +21,6 @@ public abstract class SPerftTest {
     private static final Searcher SEARCHER = TestUtils.SEARCHER;
 
     protected abstract String getFen();
-
     protected abstract String getSubFolder();
 
     protected void sPerft(int depth) {

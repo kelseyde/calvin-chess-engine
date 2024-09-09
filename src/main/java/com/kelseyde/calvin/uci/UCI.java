@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
  * Entrypoint for the Calvin chess engine. Calvin communicates using the Universal Chess Interface protocol (UCI).
  * This adapter acts as a UCI interface which translates the incoming commands to instructions for the {@link Engine},
  * which is responsible for actually playing the game of chess.
- *
  * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
  */
 public class UCI {
@@ -101,23 +100,12 @@ public class UCI {
     public static void handleSetOption(UCICommand command) {
         String optionType = command.getString("name", "", true);
         switch (optionType) {
-            case "Hash":
-                setHashSize(command);
-                break;
-            case "Threads":
-                setThreadCount(command);
-                break;
-            case "OwnBook":
-                setOwnBook(command);
-                break;
-            case "OwnTablebase":
-                setOwnTablebase(command);
-                break;
-            case "Ponder":
-                setPonder(command);
-                break;
-            default:
-                write("unrecognised option name " + optionType);
+            case "Hash":          setHashSize(command); break;
+            case "Threads":       setThreadCount(command); break;
+            case "OwnBook":       setOwnBook(command); break;
+            case "OwnTablebase":  setOwnTablebase(command); break;
+            case "Ponder":        setPonder(command); break;
+            default:              write("unrecognised option name " + optionType);
         }
     }
 

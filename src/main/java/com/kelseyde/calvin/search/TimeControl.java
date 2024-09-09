@@ -14,7 +14,6 @@ import java.time.Instant;
  * The idea is that if the engine is unlikely to finish a new iteration before hitting the hard limit, then there's no
  * point starting the iteration, since the time spent doing so is mostly wasted. That time can therefore be saved for
  * subsequent moves.
- *
  * @param softLimit
  * @param hardLimit
  */
@@ -22,8 +21,8 @@ public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, 
 
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
-    static final double[] BEST_MOVE_STABILITY_FACTOR = new double[]{2.50, 1.20, 0.90, 0.80, 0.75};
-    static final double[] EVAL_STABILITY_FACTOR = new double[]{1.25, 1.15, 1.00, 0.94, 0.88};
+    static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
+    static final double[] EVAL_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
     static final int EVAL_STABILITY_MIN_DEPTH = 7;
 
     public static TimeControl init(Board board, GoCommand command) {

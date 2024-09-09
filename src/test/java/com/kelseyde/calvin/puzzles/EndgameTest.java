@@ -105,7 +105,7 @@ public class EndgameTest {
     }
 
     @Test
-    public void testZugzwang5() {
+    public void  testZugzwang5() {
 
         String fen = "3R4/p5pk/K5np/2p4Q/2P5/8/8/8 w - - 0 1";
         Engine engine = TestUtils.getEngine();
@@ -117,7 +117,7 @@ public class EndgameTest {
     }
 
     @Test
-    public void testZugzwang6() {
+    public void  testZugzwang6() {
 
         String fen = "2k5/2P5/4K3/8/8/8/8/8 w - - 0 1";
         Engine engine = TestUtils.getEngine();

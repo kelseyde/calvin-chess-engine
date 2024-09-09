@@ -88,7 +88,7 @@ public class LichessTablebase implements Tablebase {
     /**
      * Builds the HTTP request to query the Lichess tablebase.
      *
-     * @param board the current board position.
+     * @param board   the current board position.
      * @return the constructed HttpRequest.
      * @throws URISyntaxException if the URI syntax is invalid.
      */

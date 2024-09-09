@@ -14,7 +14,6 @@ import java.util.Random;
  * Simple implementation of an opening book that retrieves moves from a .txt file of FEN positions from grandmaster games.
  * Each position has >= 1 moves, weighted by the number of times that move has been played. The move is selected semi-randomly,
  * with a weighted bias towards the moves that have been played the most frequently.
- *
  * @see <a href="https://www.chessprogramming.org/Opening_Book">Chess Programming Wiki</a>
  * </p>
  * The opening book is enabled by default. It can be disabled via the 'OwnBook' UCI command.
@@ -24,8 +23,7 @@ import java.util.Random;
  */
 public class OpeningBook {
 
-    public record BookMove(Move move, int frequency) {
-    }
+    public record BookMove(Move move, int frequency) {}
 
     private final Map<Long, BookMove[]> movesByPosition;
     private final Random random = new Random();

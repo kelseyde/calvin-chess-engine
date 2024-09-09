@@ -163,7 +163,7 @@ public class TrainingDataScorer {
         TimeControl tc = new TimeControl(MAX_SEARCH_TIME, MAX_SEARCH_TIME, softNodeLimit, -1);
         SearchResult searchResult;
         try {
-            searchResult = searcher.search(tc);
+             searchResult = searcher.search(tc);
         } catch (Exception e) {
             System.out.println("info error scoring fen " + fen + " " + e);
             return "";

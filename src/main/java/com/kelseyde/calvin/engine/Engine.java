@@ -102,7 +102,8 @@ public class Engine {
             // If we are in the opening and book is enabled, select a move from the opening book
             Move bookMove = book.getBookMove(board);
             onThinkComplete.accept(new SearchResult(0, move(bookMove), 0, 0, 0, 0));
-        } else if (useEndgameTablebase(tc)) {
+        }
+        else if (useEndgameTablebase(tc)) {
             // If we are in the endgame and tablebase is enabled, select a move from the tablebase probe
             try {
                 Move tablebaseMove = tablebase.getTablebaseMove(board);
@@ -112,7 +113,8 @@ public class Engine {
                 System.out.println("error probing tablebase: " + e.getMessage());
                 startThinking(tc, onThinkComplete);
             }
-        } else {
+        }
+        else {
             // Otherwise, search for the best move.
             startThinking(tc, onThinkComplete);
         }

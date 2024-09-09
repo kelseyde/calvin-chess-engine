@@ -11,8 +11,7 @@ public class PinCalculator {
     private long pinMask;
     private long[] pinRayMasks;
 
-    public record PinData(long pinMask, long[] pinRayMasks) {
-    }
+    public record PinData(long pinMask, long[] pinRayMasks) {}
 
     /**
      * Calculates the pin mask and pin ray masks for the given board position.
@@ -49,9 +48,9 @@ public class PinCalculator {
     /**
      * Calculates pins between the king and potential pinners.
      *
-     * @param kingSquare      The square of the king.
-     * @param friendlies      The bitboard of friendly pieces.
-     * @param opponents       The bitboard of opponent pieces.
+     * @param kingSquare The square of the king.
+     * @param friendlies The bitboard of friendly pieces.
+     * @param opponents The bitboard of opponent pieces.
      * @param possiblePinners The bitboard of possible pinners.
      */
     private void calculatePins(int kingSquare, long friendlies, long opponents, long possiblePinners) {

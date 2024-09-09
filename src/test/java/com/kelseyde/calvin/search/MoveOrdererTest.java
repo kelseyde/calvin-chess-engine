@@ -126,7 +126,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("g1", "f1"),
                 Notation.fromNotation("f3", "f4"),
                 Notation.fromNotation("h2", "h4")
-        ));
+                ));
 
         Move killerMove = new Move(21, 29);
         moveOrderer.addKillerMove(2, killerMove);
@@ -153,7 +153,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("h2", "h3"),
                 Notation.fromNotation("f1", "e1"),
                 Notation.fromNotation("e2", "e7")
-        ));
+                ));
 
         moveOrderer.addHistoryScore(Notation.fromNotation("f1", "e1"), new SearchStack(), 5, 0, true);
 
@@ -175,7 +175,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("h1", "g2"),
 //                NotationUtils.fromNotation("f3", "e4", PieceType.QUEEN),
                 Notation.fromNotation("d3", "e4")
-        ));
+                ));
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, new SearchStack(), moves, null, 1);
 
@@ -195,7 +195,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("h1", "g2"),
                 Notation.fromNotation("f3", "e4"),
                 Notation.fromNotation("d3", "e4")
-        ));
+                ));
 
         List<Move> orderedMoves = moveOrderer.orderMoves(board, new SearchStack(), moves, null, 1);
 
@@ -216,7 +216,7 @@ public class MoveOrdererTest {
                 Notation.fromNotation("f7", "f5"),
                 Notation.fromNotation("h6", "h5"),
                 Notation.fromNotation("e8", "e1")
-        ));
+                ));
 
         Move previousBestMove = Notation.fromNotation("e8", "e1");
 

@@ -32,7 +32,6 @@ import java.util.List;
  * Alpha-beta search seeks to reduce the number of nodes that need to be evaluated in the search tree. It does this by
  * pruning branches that are guaranteed to be worse than the best move found so far, or that are guaranteed to be 'too
  * good' and could only be reached by sup-optimal play by the opponent.
- *
  * @see <a href="https://www.chessprogramming.org/Alpha-Beta">Chess Programming Wiki</a>
  * </p>
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
@@ -89,7 +88,6 @@ public class Searcher implements Search {
 
     /**
      * Search the current position, increasing the depth each iteration, to find the best move within the given time limit.
-     *
      * @param timeControl the maximum duration to search
      * @return a {@link SearchResult} containing the best move, the eval, and other search info.
      */
@@ -185,11 +183,11 @@ public class Searcher implements Search {
     /**
      * Run a single iteration of the iterative deepening search for a specific depth.
      *
-     * @param depth     The number of ply deeper left to go in the current search ('ply remaining').
-     * @param ply       The number of ply already examined in the current search ('ply from root').
-     * @param alpha     The lower bound for child nodes at the current search depth.
-     * @param beta      The upper bound for child nodes at the current search depth.
-     * @param allowNull Whether to allow null-move pruning in this search iteration.
+     * @param depth               The number of ply deeper left to go in the current search ('ply remaining').
+     * @param ply                 The number of ply already examined in the current search ('ply from root').
+     * @param alpha               The lower bound for child nodes at the current search depth.
+     * @param beta                The upper bound for child nodes at the current search depth.
+     * @param allowNull           Whether to allow null-move pruning in this search iteration.
      */
     public int search(int depth, int ply, int alpha, int beta, boolean allowNull) {
 
@@ -269,8 +267,8 @@ public class Searcher implements Search {
             // is a cut-node and will fail-high, and not search any further.
             boolean isMateHunting = Score.isMateScore(alpha);
             if (depth <= config.getRfpDepth()
-                    && staticEval - depth * config.getRfpMargin()[improving ? 1 : 0] >= beta
-                    && !isMateHunting) {
+                && staticEval - depth * config.getRfpMargin()[improving ? 1 : 0] >= beta
+                && !isMateHunting) {
                 return beta;
             }
 
@@ -279,9 +277,9 @@ public class Searcher implements Search {
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
             if (allowNull
-                    && depth >= config.getNmpDepth()
-                    && staticEval >= beta - (config.getNmpMargin() * (improving ? 1 : 0))
-                    && board.hasPiecesRemaining(board.isWhiteToMove())) {
+                && depth >= config.getNmpDepth()
+                && staticEval >= beta - (config.getNmpMargin() * (improving ? 1 : 0))
+                && board.hasPiecesRemaining(board.isWhiteToMove())) {
                 board.makeNullMove();
                 int eval = -search(depth - 1 - (2 + depth / 3), ply + 1, -beta, -beta + 1, false);
                 board.unmakeNullMove();
@@ -315,11 +313,11 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
-                    && depth <= config.getFpDepth()
-                    && staticEval + config.getFpMargin()[depth] < alpha
-                    && !inCheck
-                    && !isCapture
-                    && !isPromotion) {
+                && depth <= config.getFpDepth()
+                && staticEval + config.getFpMargin()[depth] < alpha
+                && !inCheck
+                && !isCapture
+                && !isPromotion) {
                 movePicker.setSkipQuiets(true);
                 continue;
             }
@@ -340,10 +338,10 @@ public class Searcher implements Search {
             // promotion, let's assume it's less likely to be good, and fully skip searching that move.
             int lmpCutoff = (depth * config.getLmpMultiplier()) / (1 + (improving ? 0 : 1));
             if (!pvNode
-                    && !inCheck
-                    && isQuiet
-                    && depth <= config.getLmpDepth()
-                    && movesSearched >= lmpCutoff) {
+                && !inCheck
+                && isQuiet
+                && depth <= config.getLmpDepth()
+                && movesSearched >= lmpCutoff) {
                 evaluator.unmakeMove();
                 board.unmakeMove();
                 ss.unsetMove(ply);
@@ -367,19 +365,21 @@ public class Searcher implements Search {
             int score;
             if (isDraw()) {
                 score = Score.DRAW;
-            } else if (pvNode && movesSearched == 1) {
+            }
+            else if (pvNode && movesSearched == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
                 score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
-            } else {
+            }
+            else {
                 // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
                 // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
                 // let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
                 if (depth >= config.getLmrDepth()
-                        && movesSearched >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
-                        && isQuiet) {
+                    && movesSearched >= (pvNode ? config.getLmrMinSearchedMoves() : config.getLmrMinSearchedMoves() - 1)
+                    && isQuiet) {
                     reduction = config.getLmrReductions()[depth][movesSearched];
                     if (pvNode) {
                         reduction--;

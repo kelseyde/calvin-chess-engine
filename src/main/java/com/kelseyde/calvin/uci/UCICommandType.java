@@ -5,21 +5,21 @@ import java.util.function.Consumer;
 
 enum UCICommandType {
 
-    UCI_INFO("uci", UCI::handleUCI),
-    IS_READY("isready", UCI::handleIsReady),
-    HELP("help", UCI::handleHelp),
-    SET_OPTION("setoption", UCI::handleSetOption),
-    UCI_NEWGAME("ucinewgame", UCI::handleNewGame),
-    POSITION("position", UCI::handlePosition),
-    GO("go", UCI::handleGo),
-    PONDERHIT("ponderhit", UCI::handlePonderHit),
-    FEN("fen", UCI::handleFen),
-    EVAL("eval", UCI::handleEval),
-    BENCH("bench", UCI::handleBench),
-    SCORE_DATA("scoredata", UCI::handleScoreData),
-    STOP("stop", UCI::handleStop),
-    QUIT("quit", UCI::handleQuit),
-    UNKNOWN("unknown", UCI::handleUnknown);
+    UCI_INFO     ("uci",         UCI::handleUCI),
+    IS_READY     ("isready",     UCI::handleIsReady),
+    HELP         ("help",        UCI::handleHelp),
+    SET_OPTION   ("setoption",   UCI::handleSetOption),
+    UCI_NEWGAME  ("ucinewgame",  UCI::handleNewGame),
+    POSITION     ("position",    UCI::handlePosition),
+    GO           ("go",          UCI::handleGo),
+    PONDERHIT    ("ponderhit",   UCI::handlePonderHit),
+    FEN          ("fen",         UCI::handleFen),
+    EVAL         ("eval",        UCI::handleEval),
+    BENCH        ("bench",       UCI::handleBench),
+    SCORE_DATA   ("scoredata",   UCI::handleScoreData),
+    STOP         ("stop",        UCI::handleStop),
+    QUIT         ("quit",        UCI::handleQuit),
+    UNKNOWN      ("unknown",     UCI::handleUnknown);
 
     final String name;
     final CommandConsumer consumer;
@@ -42,7 +42,7 @@ enum UCICommandType {
         @Override
         default void accept(UCICommand command) {
             try {
-                acceptThrows(command);
+               acceptThrows(command);
             } catch (Exception e) {
                 UCI.writeError("error processing command", e);
             }

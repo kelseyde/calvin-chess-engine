@@ -410,7 +410,7 @@ public class BoardTest {
         board.makeMove(Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG));
         board.makeMove(Notation.fromUCI("d8d7"));
         board.makeMove(Notation.fromNotation("f1", "e1"));
-        board.makeMove(Notation.fromNotation("e8", "c8", Move.CASTLE_FLAG));
+        board.makeMove(Notation.fromNotation("e8","c8",Move.CASTLE_FLAG));
 
         Board board2 = FEN.toBoard("2kr1bnr/pppqpppp/2n5/1B1p4/4P1b1/5N2/PPPP1PPP/RNBQR1K1 w - - 8 6");
         Assertions.assertEquals(board.getWhitePieces(), board2.getWhitePieces());

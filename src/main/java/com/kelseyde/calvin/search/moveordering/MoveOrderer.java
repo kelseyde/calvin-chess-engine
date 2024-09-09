@@ -118,7 +118,7 @@ public class MoveOrderer implements MoveOrdering {
             int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, white);
             int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
 
-            moveScore += killerScore + historyBase + historyScore;
+            moveScore += killerScore + historyBase + contHistScore + historyScore;
         }
 
         if (move.isCastling()) {

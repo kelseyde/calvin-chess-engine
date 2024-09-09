@@ -44,6 +44,7 @@ public class MoveOrderer implements MoveOrdering {
 
     public static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
+
     public static final int[][] MVV_LVA_TABLE = new int[][] {
             new int[] { 15, 14, 13, 12, 11, 10 },  // victim P, attacker P, N, B, R, Q, K
             new int[] { 25, 24, 23, 22, 21, 20 },  // victim N, attacker P, N, B, R, Q, K
@@ -113,9 +114,8 @@ public class MoveOrderer implements MoveOrdering {
             Piece prevPiece = ss.getMovedPiece(ply - 1);
 
             int killerScore = killerTable.score(move, ply, KILLER_MOVE_BIAS, KILLER_MOVE_ORDER_BONUS);
-            //int counterMoveScore = killerScore == 0 && counterMoveTable.isCounterMove(prevPiece, prevMove, white, move) ? COUNTER_MOVE_BIAS : 0;
-            int historyScore = historyTable.get(move, board.isWhiteToMove());
-            int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, board.isWhiteToMove());
+            int historyScore = historyTable.get(move, white);
+            int contHistScore = contHistTable.get(prevMove, prevPiece, move, piece, white);
             int historyBase = killerScore == 0 && (historyScore > 0 || contHistScore > 0) ? HISTORY_MOVE_BIAS : 0;
 
             moveScore += killerScore + historyBase + historyScore;
@@ -138,6 +138,11 @@ public class MoveOrderer implements MoveOrdering {
         if (capturedPiece == null) return 0;
         Piece piece = board.pieceAt(startSquare);
         return MVV_LVA_TABLE[capturedPiece.getIndex()][piece.getIndex()];
+    }
+
+    @Override
+    public KillerTable getKillerTable() {
+        return killerTable;
     }
 
     private int scorePromotion(Piece promotionPiece) {

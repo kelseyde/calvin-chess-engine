@@ -202,9 +202,4 @@ public class ParallelSearcher implements Search {
         searchers.forEach(Searcher::clearHistory);
     }
 
-    @Override
-    public void logStatistics() {
-        System.out.println("info threads " + searchers.stream().map(Searcher::toString).toList());
-    }
-
 }

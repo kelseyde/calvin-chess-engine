@@ -44,6 +44,14 @@ public class SearchStack {
         stack[ply].movedPiece = movedPiece;
     }
 
+    public void unsetMove(int ply) {
+        if (ply < 0 || ply >= Search.MAX_DEPTH) {
+            return;
+        }
+        stack[ply].move = null;
+        stack[ply].movedPiece = null;
+    }
+
     public void clear() {
         for (int i = 0; i < Search.MAX_DEPTH; i++) {
             stack[i] = new SearchStackEntry();

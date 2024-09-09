@@ -26,6 +26,7 @@
 
   "aspMargin":25,
   "aspFailMargin":150,
+  "aspMaxReduction":3,
   "nmpDepth":0,
   "fpDepth":6,
   "rfpDepth":5,
@@ -39,6 +40,6 @@
   "nmpMargin":70,
   "dpMargin":140,
   "fpMargin": [ 0, 120, 200, 375, 425, 500, 550 ],
-  "rfpMargin":[ 0, 120, 240, 360, 480, 480 ]
+  "rfpMargin":[ 74, 40 ]
 
 }

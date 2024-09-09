@@ -20,16 +20,16 @@ import java.util.Deque;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Board {
 
-    long pawns =        Bits.WHITE_PAWNS_START | Bits.BLACK_PAWNS_START;
-    long knights =      Bits.WHITE_KNIGHTS_START | Bits.BLACK_KNIGHTS_START;
-    long bishops =      Bits.WHITE_BISHOPS_START | Bits.BLACK_BISHOPS_START;
-    long rooks =        Bits.WHITE_ROOKS_START | Bits.BLACK_ROOKS_START;
-    long queens =       Bits.WHITE_QUEENS_START | Bits.BLACK_QUEENS_START;
-    long kings =        Bits.WHITE_KING_START | Bits.BLACK_KING_START;
+    long pawns = Bits.WHITE_PAWNS_START | Bits.BLACK_PAWNS_START;
+    long knights = Bits.WHITE_KNIGHTS_START | Bits.BLACK_KNIGHTS_START;
+    long bishops = Bits.WHITE_BISHOPS_START | Bits.BLACK_BISHOPS_START;
+    long rooks = Bits.WHITE_ROOKS_START | Bits.BLACK_ROOKS_START;
+    long queens = Bits.WHITE_QUEENS_START | Bits.BLACK_QUEENS_START;
+    long kings = Bits.WHITE_KING_START | Bits.BLACK_KING_START;
 
-    long whitePieces =  Bits.WHITE_PIECES_START;
-    long blackPieces =  Bits.BLACK_PIECES_START;
-    long occupied =     Bits.PIECES_START;
+    long whitePieces = Bits.WHITE_PIECES_START;
+    long blackPieces = Bits.BLACK_PIECES_START;
+    long occupied = Bits.PIECES_START;
 
     Piece[] pieceList = Bits.getStartingPieceList();
 
@@ -57,11 +57,11 @@ public class Board {
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : pieceList[endSquare];
         gameStateHistory.push(gameState.copy());
 
-        if (move.isPawnDoubleMove())  makePawnDoubleMove(startSquare, endSquare);
-        else if (move.isCastling())   makeCastleMove(startSquare, endSquare);
-        else if (move.isPromotion())  makePromotionMove(startSquare, endSquare, move.getPromotionPiece(), capturedPiece);
-        else if (move.isEnPassant())  makeEnPassantMove(startSquare, endSquare);
-        else                          makeStandardMove(startSquare, endSquare, piece, capturedPiece);
+        if (move.isPawnDoubleMove()) makePawnDoubleMove(startSquare, endSquare);
+        else if (move.isCastling()) makeCastleMove(startSquare, endSquare);
+        else if (move.isPromotion()) makePromotionMove(startSquare, endSquare, move.getPromotionPiece(), capturedPiece);
+        else if (move.isEnPassant()) makeEnPassantMove(startSquare, endSquare);
+        else makeStandardMove(startSquare, endSquare, piece, capturedPiece);
 
         updateGameState(startSquare, endSquare, piece, capturedPiece, move);
         moveHistory.push(move);
@@ -82,10 +82,10 @@ public class Board {
         int endSquare = move.getTo();
         Piece piece = pieceAt(endSquare);
 
-        if (move.isCastling())        unmakeCastlingMove(startSquare, endSquare);
-        else if (move.isPromotion())  unmakePromotionMove(startSquare, endSquare, move.getPromotionPiece());
-        else if (move.isEnPassant())  unmakeEnPassantMove(startSquare, endSquare);
-        else                          unmakeStandardMove(startSquare, endSquare, piece);
+        if (move.isCastling()) unmakeCastlingMove(startSquare, endSquare);
+        else if (move.isPromotion()) unmakePromotionMove(startSquare, endSquare, move.getPromotionPiece());
+        else if (move.isEnPassant()) unmakeEnPassantMove(startSquare, endSquare);
+        else unmakeStandardMove(startSquare, endSquare, piece);
 
         gameState = gameStateHistory.pop();
 
@@ -264,12 +264,12 @@ public class Board {
 
     private void toggle(Piece type, boolean white, long toggleMask) {
         switch (type) {
-            case PAWN ->    pawns ^= toggleMask;
-            case KNIGHT ->  knights ^= toggleMask;
-            case BISHOP ->  bishops ^= toggleMask;
-            case ROOK ->    rooks ^= toggleMask;
-            case QUEEN ->   queens ^= toggleMask;
-            case KING ->    kings ^= toggleMask;
+            case PAWN -> pawns ^= toggleMask;
+            case KNIGHT -> knights ^= toggleMask;
+            case BISHOP -> bishops ^= toggleMask;
+            case ROOK -> rooks ^= toggleMask;
+            case QUEEN -> queens ^= toggleMask;
+            case KING -> kings ^= toggleMask;
         }
         if (white) {
             whitePieces ^= toggleMask;

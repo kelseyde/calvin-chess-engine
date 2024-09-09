@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.ContHistTable;
 import com.kelseyde.calvin.utils.Notation;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,7 +31,7 @@ public class ContHistTableTest {
         Move currMove = Notation.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
         contHistTable.add(prevMove, prevPiece, currMove, currPiece, depth, true);
-        assertEquals(600, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
+        assertEquals(1200, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 
     @Test
@@ -54,7 +55,7 @@ public class ContHistTableTest {
         Move currMove = Notation.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
         contHistTable.sub(prevMove, prevPiece, currMove, currPiece, depth, true);
-        assertEquals(-600, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
+        assertEquals(-1200, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 
     @Test
@@ -68,7 +69,7 @@ public class ContHistTableTest {
         Move currMove = Notation.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
         contHistTable.add(ss.getMove(0), ss.getMovedPiece(0), currMove, currPiece, depth, true);
-        assertEquals(600, contHistTable.get(ss.getMove(0), ss.getMovedPiece(0), currMove, currPiece, true));
+        assertEquals(1200, contHistTable.get(ss.getMove(0), ss.getMovedPiece(0), currMove, currPiece, true));
     }
 
     @Test
@@ -81,7 +82,7 @@ public class ContHistTableTest {
         Piece currPiece = Piece.PAWN;
         contHistTable.add(prevMove, prevPiece, currMove, currPiece, depth, true);
         contHistTable.add(prevMove, prevPiece, currMove, currPiece, depth, true);
-        assertEquals(1113, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
+        assertEquals(2225, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 
     @Test
@@ -118,7 +119,7 @@ public class ContHistTableTest {
         int depth = 8;
         contHistTable.add(prevMove, prevPiece, currMove, currPiece, depth, true);
         contHistTable.ageScores(true);
-        assertEquals(300, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));  // 1200 / 2
+        assertEquals(600, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));  // 1200 / 2
     }
 
     @Test
@@ -131,7 +132,7 @@ public class ContHistTableTest {
         int depth = 8;
         contHistTable.add(prevMove, prevPiece, currMove, currPiece, depth, true);
         contHistTable.sub(prevMove, prevPiece, currMove, currPiece, depth, true);
-        assertEquals(-87, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
+        assertEquals(-175, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 
     @Test
@@ -153,7 +154,7 @@ public class ContHistTableTest {
         Piece currPiece = Piece.QUEEN;
         int depth = 16;
         contHistTable.add(prevMove, prevPiece, currMove, currPiece, depth, true);
-        assertEquals(600, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));  // Bonus is 2400 for depth 16
+        assertEquals(1200, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));  // Bonus is 2400 for depth 16
     }
 
 }

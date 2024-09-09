@@ -42,7 +42,7 @@ public interface MoveOrdering {
      * Scores a move using the Most Valuable Victim - Least Valuable Aggressor (MVV-LVA) heuristic.
      *
      * @param board The current board position.
-     * @param move The move to be scored.
+     * @param move  The move to be scored.
      * @return The MVV-LVA score of the move.
      */
     int mvvLva(Board board, Move move, Move previousBestMove);
@@ -52,7 +52,7 @@ public interface MoveOrdering {
     /**
      * Adds a killer move for a given ply (depth) in the search.
      *
-     * @param ply The depth at which the move is considered a killer move.
+     * @param ply       The depth at which the move is considered a killer move.
      * @param newKiller The move to be added as a killer move.
      */
     void addKillerMove(int ply, Move newKiller);

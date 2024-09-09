@@ -17,15 +17,15 @@ import java.util.List;
 
 /**
  * Implementation of {@link MoveOrdering} using the following move-ordering strategy:
- *  1. Previous best move found at an earlier ply
- *  2. Queen promotions
- *  3. Winning captures (sub-ordered using MVV-LVA)
- *  4. Equal captures (sub-ordered using MVV-LVA)
- *  5. Killer moves
- *  6. Losing captures (sub-ordered using MVV-LVA)
- *  7. Under-promotions
- *  8. History moves
- *  9. Everything else.
+ * 1. Previous best move found at an earlier ply
+ * 2. Queen promotions
+ * 3. Winning captures (sub-ordered using MVV-LVA)
+ * 4. Equal captures (sub-ordered using MVV-LVA)
+ * 5. Killer moves
+ * 6. Losing captures (sub-ordered using MVV-LVA)
+ * 7. Under-promotions
+ * 8. History moves
+ * 9. Everything else.
  */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MoveOrderer implements MoveOrdering {
@@ -45,12 +45,12 @@ public class MoveOrderer implements MoveOrdering {
     public static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
 
-    public static final int[][] MVV_LVA_TABLE = new int[][] {
-            new int[] { 15, 14, 13, 12, 11, 10 },  // victim P, attacker P, N, B, R, Q, K
-            new int[] { 25, 24, 23, 22, 21, 20 },  // victim N, attacker P, N, B, R, Q, K
-            new int[] { 35, 34, 33, 32, 31, 30 },  // victim B, attacker P, N, B, R, Q, K
-            new int[] { 45, 44, 43, 42, 41, 40 },  // victim R, attacker P, N, B, R, Q, K
-            new int[] { 55, 54, 53, 52, 51, 50 },  // victim Q, attacker P, N, B, R, Q, K
+    public static final int[][] MVV_LVA_TABLE = new int[][]{
+            new int[]{15, 14, 13, 12, 11, 10},  // victim P, attacker P, N, B, R, Q, K
+            new int[]{25, 24, 23, 22, 21, 20},  // victim N, attacker P, N, B, R, Q, K
+            new int[]{35, 34, 33, 32, 31, 30},  // victim B, attacker P, N, B, R, Q, K
+            new int[]{45, 44, 43, 42, 41, 40},  // victim R, attacker P, N, B, R, Q, K
+            new int[]{55, 54, 53, 52, 51, 50},  // victim Q, attacker P, N, B, R, Q, K
     };
 
     final KillerTable killerTable = new KillerTable();
@@ -61,11 +61,11 @@ public class MoveOrderer implements MoveOrdering {
     /**
      * Orders the given list of moves based on the defined move-ordering strategy.
      *
-     * @param board             The current board state.
-     * @param moves             The list of moves to be ordered.
-     * @param ttMove            The best move found at an earlier ply.
-     * @param ply               The number of ply from the root node.
-     * @return                  The ordered list of moves.
+     * @param board  The current board state.
+     * @param moves  The list of moves to be ordered.
+     * @param ttMove The best move found at an earlier ply.
+     * @param ply    The number of ply from the root node.
+     * @return The ordered list of moves.
      */
     public List<Move> orderMoves(Board board, SearchStack ss, List<Move> moves, Move ttMove, int ply) {
         List<Move> orderedMoves = new ArrayList<>(moves);
@@ -77,11 +77,11 @@ public class MoveOrderer implements MoveOrdering {
     /**
      * Scores a move based on various heuristics such as previous best move, MVV-LVA, killer moves, and history moves.
      *
-     * @param board            The current board state.
-     * @param move             The move to be scored.
-     * @param ttMove           The best move found at an earlier ply.
-     * @param ply              The number of ply from the root node.
-     * @return                 The score of the move.
+     * @param board  The current board state.
+     * @param move   The move to be scored.
+     * @param ttMove The best move found at an earlier ply.
+     * @param ply    The number of ply from the root node.
+     * @return The score of the move.
      */
     public int scoreMove(Board board, SearchStack ss, Move move, Move ttMove, int ply) {
 
@@ -167,7 +167,7 @@ public class MoveOrderer implements MoveOrdering {
     /**
      * Adds a new killer move for a given ply.
      *
-     * @param ply The current ply from root.
+     * @param ply  The current ply from root.
      * @param move The new killer move to be added.
      */
     public void addKillerMove(int ply, Move move) {
@@ -186,7 +186,7 @@ public class MoveOrderer implements MoveOrdering {
      * @param historyMove The history move to be added.
      * @param ss          The search stack.
      * @param depth       The current search depth.
-     * @param ply
+     * @param ply         The current ply.
      * @param white       Whether the move is for white pieces.
      */
     public void addHistoryScore(Move historyMove, SearchStack ss, int depth, int ply, boolean white) {

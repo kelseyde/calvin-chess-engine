@@ -169,7 +169,7 @@ public class BlunderTest {
         System.out.println(Notation.toNotation(move));
         Assertions.assertTrue(
                 move.matches(Notation.fromUCI("c5e4"))
-            ||  move.matches(Notation.fromUCI("e2e4"))
+                        || move.matches(Notation.fromUCI("e2e4"))
         );
 
     }

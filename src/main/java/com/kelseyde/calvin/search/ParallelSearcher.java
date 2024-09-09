@@ -48,11 +48,11 @@ public class ParallelSearcher implements Search {
      * Constructs a ParallelSearcher with the given {@link EngineConfig} config and {@link Supplier} suppliers.
      * The suppliers are used to create the necessary components for each search thread.
      *
-     * @param config the engine configuration
+     * @param config                the engine configuration
      * @param moveGeneratorSupplier supplier for move generation
-     * @param moveOrdererSupplier supplier for move ordering
-     * @param evaluatorSupplier supplier for evaluation
-     * @param transpositionTable the shared transposition table
+     * @param moveOrdererSupplier   supplier for move ordering
+     * @param evaluatorSupplier     supplier for evaluation
+     * @param transpositionTable    the shared transposition table
      */
     public ParallelSearcher(EngineConfig config,
                             Supplier<MoveGeneration> moveGeneratorSupplier,

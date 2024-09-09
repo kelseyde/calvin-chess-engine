@@ -123,7 +123,7 @@ public class MoveGenerator implements MoveGeneration {
     /**
      * Checks if the specified side is in check.
      *
-     * @param board   The current board state.
+     * @param board The current board state.
      * @param white Indicates whether the side in question is white.
      * @return True if the specified side is in check, otherwise false.
      */
@@ -141,12 +141,12 @@ public class MoveGenerator implements MoveGeneration {
         int opponentKing = Bitwise.getNextBit(board.getKing(!white));
 
         long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
-        switch (filter) {
-            case ALL -> Bits.ALL_SQUARES;
-            case CAPTURES_ONLY -> opponents;
-            case NOISY -> opponents | Attacks.pawnAttacks(1L << opponentKing, !white);
-            case QUIET -> ~opponents & ~Attacks.pawnAttacks(1L << opponentKing, !white);
-        };
+                switch (filter) {
+                    case ALL -> Bits.ALL_SQUARES;
+                    case CAPTURES_ONLY -> opponents;
+                    case NOISY -> opponents | Attacks.pawnAttacks(1L << opponentKing, !white);
+                    case QUIET -> ~opponents & ~Attacks.pawnAttacks(1L << opponentKing, !white);
+                };
         if (filterMask == Bits.NO_SQUARES) {
             return;
         }
@@ -261,12 +261,12 @@ public class MoveGenerator implements MoveGeneration {
 
         // Initialize filter mask based on move filter type
         long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
-        switch (filter) {
-            case ALL -> Bits.ALL_SQUARES;
-            case CAPTURES_ONLY -> opponents;
-            case NOISY -> opponents | Attacks.knightAttacks(opponentKing);
-            case QUIET -> ~opponents & ~Attacks.knightAttacks(opponentKing);
-        };
+                switch (filter) {
+                    case ALL -> Bits.ALL_SQUARES;
+                    case CAPTURES_ONLY -> opponents;
+                    case NOISY -> opponents | Attacks.knightAttacks(opponentKing);
+                    case QUIET -> ~opponents & ~Attacks.knightAttacks(opponentKing);
+                };
         if (filterMask == Bits.NO_SQUARES) {
             return;
         }
@@ -293,11 +293,11 @@ public class MoveGenerator implements MoveGeneration {
         long opponents = board.getPieces(!white);
 
         long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
-        switch (filter) {
-            case ALL -> Bits.ALL_SQUARES;
-            case CAPTURES_ONLY, NOISY -> opponents;
-            case QUIET -> ~opponents;
-        };
+                switch (filter) {
+                    case ALL -> Bits.ALL_SQUARES;
+                    case CAPTURES_ONLY, NOISY -> opponents;
+                    case QUIET -> ~opponents;
+                };
         if (filterMask == Bits.NO_SQUARES) {
             return;
         }
@@ -377,12 +377,14 @@ public class MoveGenerator implements MoveGeneration {
 
             // Apply move filters
             long filterMask = checkersCount > 0 ? Bits.ALL_SQUARES :
-            switch (filter) {
-                case ALL -> Bits.ALL_SQUARES;
-                case CAPTURES_ONLY -> opponents;
-                case NOISY -> getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
-                case QUIET -> ~getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
-            };
+                    switch (filter) {
+                        case ALL -> Bits.ALL_SQUARES;
+                        case CAPTURES_ONLY -> opponents;
+                        case NOISY ->
+                                getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
+                        case QUIET ->
+                                ~getCaptureAndCheckMask(board, white, opponents, occupied, isDiagonal, isOrthogonal);
+                    };
             if (filterMask == Bits.NO_SQUARES) {
                 return;
             }
@@ -420,13 +422,13 @@ public class MoveGenerator implements MoveGeneration {
         long friendlies = board.getPieces(white);
 
         long leftCapture = white ?
-                Bitwise.shiftNorthWest(squareBB) &~ friendlies &~ Bits.FILE_H :
-                Bitwise.shiftSouthWest(squareBB) &~ friendlies &~ Bits.FILE_H;
+                Bitwise.shiftNorthWest(squareBB) & ~friendlies & ~Bits.FILE_H :
+                Bitwise.shiftSouthWest(squareBB) & ~friendlies & ~Bits.FILE_H;
         attackMask |= leftCapture;
 
         long rightCapture = white ?
-                Bitwise.shiftNorthEast(squareBB) &~ friendlies &~ Bits.FILE_A :
-                Bitwise.shiftSouthEast(squareBB) &~ friendlies &~ Bits.FILE_A;
+                Bitwise.shiftNorthEast(squareBB) & ~friendlies & ~Bits.FILE_A :
+                Bitwise.shiftSouthEast(squareBB) & ~friendlies & ~Bits.FILE_A;
         attackMask |= rightCapture;
 
         return attackMask;
@@ -434,7 +436,7 @@ public class MoveGenerator implements MoveGeneration {
 
     public long getKnightAttacks(Board board, int square, boolean white) {
         long friendlies = board.getPieces(white);
-        return Attacks.knightAttacks(square) &~ friendlies;
+        return Attacks.knightAttacks(square) & ~friendlies;
     }
 
     public long getBishopAttacks(Board board, int square, boolean white) {
@@ -457,7 +459,7 @@ public class MoveGenerator implements MoveGeneration {
 
     public long getKingAttacks(Board board, int square, boolean white) {
         long friendlies = board.getPieces(white);
-        return Attacks.kingAttacks(square) &~ friendlies;
+        return Attacks.kingAttacks(square) & ~friendlies;
     }
 
     private long getSlidingAttacks(int square, long friendlies, long occ, boolean isDiagonal, boolean isOrthogonal) {
@@ -468,7 +470,7 @@ public class MoveGenerator implements MoveGeneration {
         if (isDiagonal) {
             attackMask |= Attacks.bishopAttacks(square, occ);
         }
-        return attackMask &~ friendlies;
+        return attackMask & ~friendlies;
     }
 
     private long calculateAttackerMask(Board board, long squareMask) {
@@ -556,9 +558,9 @@ public class MoveGenerator implements MoveGeneration {
 
     private List<Move> getPromotionMoves(int startSquare, int endSquare) {
         return List.of(new Move(startSquare, endSquare, Move.PROMOTE_TO_QUEEN_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
-                        new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_ROOK_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_BISHOP_FLAG),
+                new Move(startSquare, endSquare, Move.PROMOTE_TO_KNIGHT_FLAG));
     }
 
 

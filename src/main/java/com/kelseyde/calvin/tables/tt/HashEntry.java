@@ -7,13 +7,13 @@ import lombok.AllArgsConstructor;
  * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encodes the relevant
  * information about the position.
  * </p>
- *
+ * <p>
  * Key encoding:
  * 0-31: 32 bits representing half of the zobrist hash. Used to verify that the position truly matches.
  * 32-47: 16 bits representing the generation of the entry, i.e. how old it is. Used to gradually replace old entries.
  * 48-63: 16 bits representing the static eval of the position. Re-used to save calling the evaluation function again.
  * </p>
- *
+ * <p>
  * Value encoding:
  * 0-11: the depth to which this position was last searched.
  * 12-15: the {@link HashFlag} indicating what type of node this is.
@@ -90,14 +90,14 @@ public class HashEntry {
      * Sets the score in this entry's value.
      */
     public void setScore(int score) {
-        value = (value &~ SCORE_MASK) | (long) score << 32;
+        value = (value & ~SCORE_MASK) | (long) score << 32;
     }
 
     /**
      * Creates a new {@link HashEntry} with the adjusted score.
      */
     public HashEntry withAdjustedScore(int score) {
-        long newValue = (value &~ SCORE_MASK) | (long) score << 32;
+        long newValue = (value & ~SCORE_MASK) | (long) score << 32;
         return new HashEntry(key, newValue);
     }
 
@@ -105,7 +105,7 @@ public class HashEntry {
      * Sets the move in this entry's value.
      */
     public void setMove(Move move) {
-        value = (value &~ MOVE_MASK) | (long) move.value() << 16;
+        value = (value & ~MOVE_MASK) | (long) move.value() << 16;
     }
 
     /**
@@ -150,10 +150,10 @@ public class HashEntry {
      * Creates a new {@link HashEntry} with the specified parameters.
      *
      * @param zobristKey the Zobrist key
-     * @param score the score
-     * @param move the move
-     * @param flag the flag
-     * @param depth the depth
+     * @param score      the score
+     * @param move       the move
+     * @param flag       the flag
+     * @param depth      the depth
      * @param generation the generation
      * @return a new {@link HashEntry}
      */

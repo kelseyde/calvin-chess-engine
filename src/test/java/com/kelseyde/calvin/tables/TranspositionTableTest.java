@@ -117,7 +117,7 @@ public class TranspositionTableTest {
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
-        HashEntry entry = HashEntry.of(zobristKey, score,  0, move, flag, depth, 0);
+        HashEntry entry = HashEntry.of(zobristKey, score, 0, move, flag, depth, 0);
 
         Assertions.assertEquals(Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG), entry.getMove());
 
@@ -133,7 +133,7 @@ public class TranspositionTableTest {
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
-        HashEntry entry = HashEntry.of(zobristKey, score, 0,  move, flag, depth, 0);
+        HashEntry entry = HashEntry.of(zobristKey, score, 0, move, flag, depth, 0);
 
         Assertions.assertEquals(0, entry.getGeneration());
 
@@ -150,7 +150,7 @@ public class TranspositionTableTest {
         HashFlag flag = HashFlag.LOWER;
         Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
         int staticEval = 10;
-        HashEntry entry = HashEntry.of(zobristKey, score, staticEval,  move, flag, depth, 0);
+        HashEntry entry = HashEntry.of(zobristKey, score, staticEval, move, flag, depth, 0);
 
         Assertions.assertEquals(10, entry.getStaticEval());
 
@@ -171,7 +171,7 @@ public class TranspositionTableTest {
         int depth = 3;
         int ply = 2;
 
-        table.put(board.getGameState().getZobrist(), flag, depth, ply, bestMove,  0, eval);
+        table.put(board.getGameState().getZobrist(), flag, depth, ply, bestMove, 0, eval);
 
         // Do some more searching, return to this position
 
@@ -189,7 +189,7 @@ public class TranspositionTableTest {
         bestMove = Notation.fromNotation("g8", "f6");
         eval = 28666;
         depth = 256;
-        table.put(board.getGameState().getZobrist(), flag, depth, ply + 1, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, depth, ply + 1, bestMove, 0, eval);
 
         entry = table.get(board.getGameState().getZobrist(), ply);
         Assertions.assertNotNull(entry);
@@ -204,7 +204,7 @@ public class TranspositionTableTest {
         bestMove = null;
         eval = 1000000;
         depth = 10;
-        table.put(board.getGameState().getZobrist(), flag, depth, ply + 2, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, depth, ply + 2, bestMove, 0, eval);
 
         entry = table.get(board.getGameState().getZobrist(), ply);
         Assertions.assertNotNull(entry);
@@ -228,7 +228,7 @@ public class TranspositionTableTest {
         int depth = 3;
         int ply = 25;
 
-        table.put(board.getGameState().getZobrist(), flag, depth, ply, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, depth, ply, bestMove, 0, eval);
 
         board.unmakeMove();
         board.unmakeMove();
@@ -258,7 +258,7 @@ public class TranspositionTableTest {
         int depth = 3;
         int ply = 255;
 
-        table.put(board.getGameState().getZobrist(), flag, depth, ply, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, depth, ply, bestMove, 0, eval);
 
         // Do some more searching, return to this position
 
@@ -283,11 +283,11 @@ public class TranspositionTableTest {
         int plyRemaining = 10;
         int plyFromRoot = 0;
 
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  1000000);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0, 1000000);
 
         Assertions.assertEquals(1000000, table.get(board.getGameState().getZobrist(), 0).getScore());
 
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -1000000);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0, -1000000);
 
         Assertions.assertEquals(-1000000, table.get(board.getGameState().getZobrist(), 0).getScore());
 
@@ -301,11 +301,11 @@ public class TranspositionTableTest {
         int plyRemaining = 10;
         int plyFromRoot = 1;
 
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  1000000);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0, 1000000);
 
         Assertions.assertEquals(999999, table.get(board.getGameState().getZobrist(), 0).getScore());
 
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -1000000);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0, -1000000);
 
         Assertions.assertEquals(-999999, table.get(board.getGameState().getZobrist(), 0).getScore());
 
@@ -321,7 +321,7 @@ public class TranspositionTableTest {
         int plyRemaining = 10;
         int plyFromRoot = 5;
 
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0, eval);
 
         Assertions.assertEquals(1000000, table.get(zobrist, 5).getScore());
         Assertions.assertEquals(999999, table.get(zobrist, 4).getScore());
@@ -341,13 +341,13 @@ public class TranspositionTableTest {
         int plyFromRoot = 0;
         int plyRemaining = 12;
 
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0, eval);
 
         flag = HashFlag.UPPER;
         eval = 70;
         plyRemaining = 11;
         bestMove = Notation.fromNotation("d2", "d4");
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0, eval);
 
         assertEntry(zobrist, 60, Notation.fromNotation("e2", "e4"), HashFlag.EXACT, 12);
 
@@ -363,20 +363,20 @@ public class TranspositionTableTest {
         int plyFromRoot = 0;
         int plyRemaining = 12;
 
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0, eval);
 
         flag = HashFlag.UPPER;
         eval = 70;
         plyRemaining = 13;
         bestMove = Notation.fromNotation("d2", "d4");
-        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getGameState().getZobrist(), flag, plyRemaining, plyFromRoot, bestMove, 0, eval);
 
         assertEntry(zobrist, 60, bestMove, flag, 13);
 
     }
 
     private void assertEntry(long zobrist, int score, Move move, HashFlag flag, int depth) {
-        HashEntry entry = HashEntry.of(zobrist, score, 0,  move, flag, depth, 0);
+        HashEntry entry = HashEntry.of(zobrist, score, 0, move, flag, depth, 0);
         Assertions.assertEquals(HashEntry.zobristPart(zobrist), entry.getZobristPart());
         Assertions.assertEquals(depth, entry.getDepth());
         Assertions.assertEquals(score, entry.getScore());

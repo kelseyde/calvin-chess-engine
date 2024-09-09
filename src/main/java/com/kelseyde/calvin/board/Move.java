@@ -15,6 +15,7 @@ import java.util.Optional;
  * For more information on move encoding, see <a href="https://www.chessprogramming.org/Encoding_Moves">Chess Programming Wiki</a>.
  * <p>
  * Largely inspired by Sebastian Lague's Chess Coding Adventure:
+ *
  * @see <a href="https://github.com/SebLague/Chess-Coding-Adventure">Chess Coding Adventure</a>
  */
 public record Move(int value) {
@@ -48,7 +49,7 @@ public record Move(int value) {
      *
      * @param from The starting square of the move (0 - 63).
      * @param to   The ending square of the move (0 - 63).
-     * @param flag        The special move flag representing additional move information.
+     * @param flag The special move flag representing additional move information.
      */
     public Move(int from, int to, int flag) {
         this(from | (to << 6) | (flag << 12));

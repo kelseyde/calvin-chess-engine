@@ -13,6 +13,7 @@ import java.time.Duration;
  * Tablebases cover every possible configuration of pieces and side-to-move possible up to a certain number of pieces
  * remaining. The current largest tablebases cover up to seven pieces remaining.
  * </p>
+ *
  * @see <a href="https://www.chessprogramming.org/Endgame_Tablebases">Chess Programming Wiki</a>
  */
 public interface Tablebase {

@@ -14,12 +14,12 @@ public abstract class UCIOption {
 
     public class Check extends UCIOption {
 
-            private boolean defaultValue;
+        private boolean defaultValue;
 
-            @Override
-            public void print() {
-                UCI.write("option name " + name + " type check default " + defaultValue);
-            }
+        @Override
+        public void print() {
+            UCI.write("option name " + name + " type check default " + defaultValue);
+        }
 
     }
 

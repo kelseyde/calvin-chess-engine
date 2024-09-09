@@ -19,77 +19,77 @@ public class FEN {
 
     public static Board toBoard(String fen) {
 
-            String[] parts = fen.split(" ");
-            String[] files = parts[0].split("/");
+        String[] parts = fen.split(" ");
+        String[] files = parts[0].split("/");
 
-            long whitePawns = 0L;
-            long whiteKnights = 0L;
-            long whiteBishops = 0L;
-            long whiteRooks = 0L;
-            long whiteQueens = 0L;
-            long whiteKing = 0L;
-            long blackPawns = 0L;
-            long blackKnights = 0L;
-            long blackBishops = 0L;
-            long blackRooks = 0L;
-            long blackQueens = 0L;
-            long blackKing = 0L;
+        long whitePawns = 0L;
+        long whiteKnights = 0L;
+        long whiteBishops = 0L;
+        long whiteRooks = 0L;
+        long whiteQueens = 0L;
+        long whiteKing = 0L;
+        long blackPawns = 0L;
+        long blackKnights = 0L;
+        long blackBishops = 0L;
+        long blackRooks = 0L;
+        long blackQueens = 0L;
+        long blackKing = 0L;
 
-            List<List<String>> rankFileHash = Arrays.stream(files)
-                    .map(file -> Arrays.stream(file.split(""))
-                            .flatMap(FEN::parseSquare)
-                            .toList())
-                    .collect(Collectors.toList());
-            Collections.reverse(rankFileHash);
+        List<List<String>> rankFileHash = Arrays.stream(files)
+                .map(file -> Arrays.stream(file.split(""))
+                        .flatMap(FEN::parseSquare)
+                        .toList())
+                .collect(Collectors.toList());
+        Collections.reverse(rankFileHash);
 
-            for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
-                List<String> rank = rankFileHash.get(rankIndex);
-                for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
-                    int square = Board.squareIndex(rankIndex, fileIndex);
-                    String squareValue = rank.get(fileIndex);
-                    long squareBB = 1L << square;
-                    switch (squareValue) {
-                        case "P" -> whitePawns |= squareBB;
-                        case "N" -> whiteKnights |= squareBB;
-                        case "B" -> whiteBishops |= squareBB;
-                        case "R" -> whiteRooks |= squareBB;
-                        case "Q" -> whiteQueens |= squareBB;
-                        case "K" -> whiteKing |= squareBB;
-                        case "p" -> blackPawns |= squareBB;
-                        case "n" -> blackKnights |= squareBB;
-                        case "b" -> blackBishops |= squareBB;
-                        case "r" -> blackRooks |= squareBB;
-                        case "q" -> blackQueens |= squareBB;
-                        case "k" -> blackKing |= squareBB;
-                    }
+        for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
+            List<String> rank = rankFileHash.get(rankIndex);
+            for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
+                int square = Board.squareIndex(rankIndex, fileIndex);
+                String squareValue = rank.get(fileIndex);
+                long squareBB = 1L << square;
+                switch (squareValue) {
+                    case "P" -> whitePawns |= squareBB;
+                    case "N" -> whiteKnights |= squareBB;
+                    case "B" -> whiteBishops |= squareBB;
+                    case "R" -> whiteRooks |= squareBB;
+                    case "Q" -> whiteQueens |= squareBB;
+                    case "K" -> whiteKing |= squareBB;
+                    case "p" -> blackPawns |= squareBB;
+                    case "n" -> blackKnights |= squareBB;
+                    case "b" -> blackBishops |= squareBB;
+                    case "r" -> blackRooks |= squareBB;
+                    case "q" -> blackQueens |= squareBB;
+                    case "k" -> blackKing |= squareBB;
                 }
             }
+        }
 
-            boolean whiteToMove = parseSideToMove(parts[1]);
-            int castlingRights = parseCastlingRights(parts[2]);
-            int enPassantFile = parseEnPassantFile(parts[3]);
-            int fiftyMoveCounter = parts.length > 4 ? parseFiftyMoveCounter(parts[4]) : 0;
-            // This implementation does not require the full move counter (parts[5]).
+        boolean whiteToMove = parseSideToMove(parts[1]);
+        int castlingRights = parseCastlingRights(parts[2]);
+        int enPassantFile = parseEnPassantFile(parts[3]);
+        int fiftyMoveCounter = parts.length > 4 ? parseFiftyMoveCounter(parts[4]) : 0;
+        // This implementation does not require the full move counter (parts[5]).
 
-            Board board = new Board();
-            board.setPawns(whitePawns | blackPawns);
-            board.setKnights(whiteKnights | blackKnights);
-            board.setBishops(whiteBishops | blackBishops);
-            board.setRooks(whiteRooks | blackRooks);
-            board.setQueens(whiteQueens | blackQueens);
-            board.setKings(whiteKing | blackKing);
-            board.setWhitePieces(whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing);
-            board.setBlackPieces(blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing);
-            board.setOccupied(board.getWhitePieces() | board.getBlackPieces());
-            board.setPieceList(calculatePieceList(board));
-            board.setWhiteToMove(whiteToMove);
-            board.getGameState().setCastlingRights(castlingRights);
-            board.getGameState().setEnPassantFile(enPassantFile);
-            board.getGameState().setHalfMoveClock(fiftyMoveCounter);
-            board.getGameState().setZobrist(Zobrist.generateKey(board));
-            board.getGameState().setPawnZobrist(Zobrist.generatePawnKey(board));
+        Board board = new Board();
+        board.setPawns(whitePawns | blackPawns);
+        board.setKnights(whiteKnights | blackKnights);
+        board.setBishops(whiteBishops | blackBishops);
+        board.setRooks(whiteRooks | blackRooks);
+        board.setQueens(whiteQueens | blackQueens);
+        board.setKings(whiteKing | blackKing);
+        board.setWhitePieces(whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing);
+        board.setBlackPieces(blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing);
+        board.setOccupied(board.getWhitePieces() | board.getBlackPieces());
+        board.setPieceList(calculatePieceList(board));
+        board.setWhiteToMove(whiteToMove);
+        board.getGameState().setCastlingRights(castlingRights);
+        board.getGameState().setEnPassantFile(enPassantFile);
+        board.getGameState().setHalfMoveClock(fiftyMoveCounter);
+        board.getGameState().setZobrist(Zobrist.generateKey(board));
+        board.getGameState().setPawnZobrist(Zobrist.generatePawnKey(board));
 
-            return board;
+        return board;
 
     }
 
@@ -144,7 +144,6 @@ public class FEN {
             throw new IllegalArgumentException(board.toString(), e);
         }
     }
-
 
 
     private static boolean parseSideToMove(String sideToMove) {
@@ -238,12 +237,12 @@ public class FEN {
         Piece[] pieceList = new Piece[64];
         for (int square = 0; square < 64; square++) {
             long squareMask = 1L << square;
-            if ((squareMask & board.getPawns()) != 0)           pieceList[square] = Piece.PAWN;
-            else if ((squareMask & board.getKnights()) != 0)    pieceList[square] = Piece.KNIGHT;
-            else if ((squareMask & board.getBishops()) != 0)    pieceList[square] = Piece.BISHOP;
-            else if ((squareMask & board.getRooks()) != 0)      pieceList[square] = Piece.ROOK;
-            else if ((squareMask & board.getQueens()) != 0)     pieceList[square] = Piece.QUEEN;
-            else if ((squareMask & board.getKings()) != 0)      pieceList[square] = Piece.KING;
+            if ((squareMask & board.getPawns()) != 0) pieceList[square] = Piece.PAWN;
+            else if ((squareMask & board.getKnights()) != 0) pieceList[square] = Piece.KNIGHT;
+            else if ((squareMask & board.getBishops()) != 0) pieceList[square] = Piece.BISHOP;
+            else if ((squareMask & board.getRooks()) != 0) pieceList[square] = Piece.ROOK;
+            else if ((squareMask & board.getQueens()) != 0) pieceList[square] = Piece.QUEEN;
+            else if ((squareMask & board.getKings()) != 0) pieceList[square] = Piece.KING;
         }
         return pieceList;
 

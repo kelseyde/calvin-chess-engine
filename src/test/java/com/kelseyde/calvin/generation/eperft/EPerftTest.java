@@ -16,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 public abstract class EPerftTest {
 
     protected abstract String getFen();
+
     protected abstract String getSubFolder();
 
     protected void ePerft(int depth) {

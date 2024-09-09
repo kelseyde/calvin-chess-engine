@@ -21,7 +21,7 @@ public class Attacks {
     public static final Set<Integer> A_FILE_OFFSET_EXCEPTIONS = Set.of(-9, -1, 7);
     public static final Set<Integer> H_FILE_OFFSET_EXCEPTIONS = Set.of(-7, 1, 9);
 
-    public static final long[] KNIGHT_ATTACKS = new long[] {
+    public static final long[] KNIGHT_ATTACKS = new long[]{
             0x0000000000020400L, 0x0000000000050800L, 0x00000000000a1100L, 0x0000000000142200L,
             0x0000000000284400L, 0x0000000000508800L, 0x0000000000a01000L, 0x0000000000402000L,
             0x0000000002040004L, 0x0000000005080008L, 0x000000000a110011L, 0x0000000014220022L,
@@ -40,7 +40,7 @@ public class Attacks {
             0x0044280000000000L, 0x0088500000000000L, 0x0010a00000000000L, 0x0020400000000000L
     };
 
-    public static final long[] KING_ATTACKS = new long[] {
+    public static final long[] KING_ATTACKS = new long[]{
             0x0000000000000302L, 0x0000000000000705L, 0x0000000000000e0aL, 0x0000000000001c14L,
             0x0000000000003828L, 0x0000000000007050L, 0x000000000000e0a0L, 0x000000000000c040L,
             0x0000000000030203L, 0x0000000000070507L, 0x00000000000e0a0eL, 0x00000000001c141cL,
@@ -59,7 +59,7 @@ public class Attacks {
             0x2838000000000000L, 0x5070000000000000L, 0xa0e0000000000000L, 0x40c0000000000000L
     };
 
-    public static final long[] ROOK_MAGICS = new long[] {
+    public static final long[] ROOK_MAGICS = new long[]{
             0x0080001020400080L, 0x0040001000200040L, 0x0080081000200080L, 0x0080040800100080L,
             0x0080020400080080L, 0x0080010200040080L, 0x0080008001000200L, 0x0080002040800100L,
             0x0000800020400080L, 0x0000400020005000L, 0x0000801000200080L, 0x0000800800100080L,
@@ -78,7 +78,7 @@ public class Attacks {
             0x0001000204080011L, 0x0001000204000801L, 0x0001000082000401L, 0x0001FFFAABFAD1A2L
     };
 
-    public static final long[] BISHOP_MAGICS = new long[] {
+    public static final long[] BISHOP_MAGICS = new long[]{
             0x0002020202020200L, 0x0002020202020000L, 0x0004010202000000L, 0x0004040080000000L,
             0x0001104000000000L, 0x0000821040000000L, 0x0000410410400000L, 0x0000104104104000L,
             0x0000040404040400L, 0x0000020202020200L, 0x0000040102020000L, 0x0000040400800000L,
@@ -107,7 +107,7 @@ public class Attacks {
             53, 54, 54, 54, 54, 54, 54, 53,
             53, 54, 54, 53, 53, 53, 53, 53
     };
-    public static final int[] BISHOP_SHIFTS = new int[] {
+    public static final int[] BISHOP_SHIFTS = new int[]{
             58, 59, 59, 59, 59, 59, 59, 58,
             59, 59, 59, 59, 59, 59, 59, 59,
             59, 59, 57, 57, 57, 57, 59, 59,
@@ -129,8 +129,8 @@ public class Attacks {
 
     public static long pawnAttacks(long pawns, boolean white) {
         return white ?
-                (Bitwise.shiftNorthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftNorthEast(pawns) &~ Bits.FILE_A) :
-                (Bitwise.shiftSouthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftSouthEast(pawns) &~ Bits.FILE_A);
+                (Bitwise.shiftNorthWest(pawns) & ~Bits.FILE_H) | (Bitwise.shiftNorthEast(pawns) & ~Bits.FILE_A) :
+                (Bitwise.shiftSouthWest(pawns) & ~Bits.FILE_H) | (Bitwise.shiftSouthEast(pawns) & ~Bits.FILE_A);
     }
 
     public static long kingAttacks(int square) {
@@ -151,9 +151,9 @@ public class Attacks {
 
     public static long sliderAttacks(int sq, long occ, MagicLookup[] lookups) {
         MagicLookup lookup = lookups[sq];
-        occ      &= lookup.mask;
-        occ      *= lookup.magic;
-        occ    >>>= lookup.shift;
+        occ &= lookup.mask;
+        occ *= lookup.magic;
+        occ >>>= lookup.shift;
         return lookup.attacks[(int) occ];
     }
 
@@ -255,7 +255,8 @@ public class Attacks {
 
     }
 
-    public record MagicLookup(long[] attacks, long mask, long magic, int shift) {}
+    public record MagicLookup(long[] attacks, long mask, long magic, int shift) {
+    }
 
     public static MagicLookup[] initMagicLookups(long[][] allAttacks, long[] masks, long[] magics, int[] shifts) {
         MagicLookup[] magicLookups = new MagicLookup[64];

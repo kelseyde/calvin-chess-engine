@@ -35,9 +35,12 @@ public class MovePicker implements MovePicking {
     final int ply;
 
     Stage stage;
-    @Setter Move ttMove;
-    @Setter boolean skipQuiets;
-    @Setter boolean inCheck;
+    @Setter
+    Move ttMove;
+    @Setter
+    boolean skipQuiets;
+    @Setter
+    boolean inCheck;
     int moveIndex;
     ScoredMove[] moves;
 
@@ -90,7 +93,8 @@ public class MovePicker implements MovePicking {
 
     /**
      * Select the next move from the move list.
-     * @param filter the move generation filter to use, if the moves are not yet generated
+     *
+     * @param filter    the move generation filter to use, if the moves are not yet generated
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
     private Move pickMove(MoveFilter filter, Stage nextStage) {

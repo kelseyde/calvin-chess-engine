@@ -8,9 +8,9 @@ public class RayCalculator {
      * Calculates the ray (bitboard) between two squares on the chessboard.
      *
      * @param startSquare The starting square index (0-63).
-     * @param endSquare The ending square index (0-63).
+     * @param endSquare   The ending square index (0-63).
      * @return A bitboard representing the ray between the start and end squares,
-     *         or 0L if there is no valid ray.
+     * or 0L if there is no valid ray.
      */
     public long rayBetween(int startSquare, int endSquare) {
         // Check for valid square indices and that the squares are not the same
@@ -42,9 +42,9 @@ public class RayCalculator {
      * Determines the direction offset between two squares on the chessboard.
      *
      * @param startSquare The starting square index (0-63).
-     * @param endSquare The ending square index (0-63).
+     * @param endSquare   The ending square index (0-63).
      * @return The direction offset to traverse from startSquare to endSquare,
-     *         or 0 if there is no valid direction.
+     * or 0 if there is no valid direction.
      */
     private int getDirectionOffset(int startSquare, int endSquare) {
         int startRank = Board.rank(startSquare);

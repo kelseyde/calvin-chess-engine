@@ -211,6 +211,7 @@ public class MoveOrderer implements MoveOrdering {
 
     public void clear() {
         killerTable.clear();
+        historyTable.clear();
         //counterMoveTable.clear();
     }
 

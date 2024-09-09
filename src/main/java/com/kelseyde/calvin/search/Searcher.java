@@ -171,7 +171,7 @@ public class Searcher implements Search {
         }
 
         // Clear move ordering cache and return the search result
-        moveOrderer.clear();
+        moveOrderer.getKillerTable().clear();
 
         return result;
 
@@ -613,6 +613,7 @@ public class Searcher implements Search {
     public void clearHistory() {
         tt.clear();
         evaluator.clearHistory();
+        moveOrderer.clear();
     }
 
 }

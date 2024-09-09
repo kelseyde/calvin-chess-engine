@@ -249,6 +249,10 @@ public class Searcher implements Search {
         }
 
         ss.setStaticEval(ply, staticEval);
+
+        // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
+        // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
+        // should be more cautious in our alpha pruning - where the eval is too low.
         boolean improving = isImproving(ply, staticEval);
 
         if (!pvNode && !isInCheck) {

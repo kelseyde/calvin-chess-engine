@@ -52,6 +52,10 @@ public class NNUE implements Evaluation {
     static final int MATERIAL_FACTOR = 32768;
 
     static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
+    static final int UPPER_BOUND = SPECIES.loopBound(Network.HIDDEN_SIZE);
+
+    static final ShortVector FLOOR = ShortVector.broadcast(SPECIES, 0);
+    static final ShortVector CEIL = ShortVector.broadcast(SPECIES, QA);
 
     final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
     Accumulator accumulator;
@@ -89,15 +93,12 @@ public class NNUE implements Evaluation {
      */
     private int forward(short[] features, int weightOffset) {
         short[] weights = Network.NETWORK.outputWeights;
-
-        var floor = ShortVector.broadcast(SPECIES, 0);
-        var ceil = ShortVector.broadcast(SPECIES, QA);
         int sum = 0;
 
-        for (int i = 0; i < SPECIES.loopBound(features.length); i += SPECIES.length()) {
+        for (int i = 0; i < UPPER_BOUND; i += SPECIES.length()) {
             sum += ShortVector.fromArray(SPECIES, features, i)
-                    .min(ceil)
-                    .max(floor)
+                    .min(CEIL)
+                    .max(FLOOR)
                     .mul(ShortVector.fromArray(SPECIES, weights, i + weightOffset))
                     .reduceLanes(VectorOperators.ADD);
         }

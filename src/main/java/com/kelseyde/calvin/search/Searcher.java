@@ -295,6 +295,8 @@ public class Searcher implements Search {
         }
 
         Move bestMove = null;
+        int bestScore = Score.MIN;
+        boolean bestMoveIsQuiet = false;
         HashFlag flag = HashFlag.UPPER;
         int movesSearched = 0;
         List<Move> quietsSearched = new ArrayList<>();
@@ -411,21 +413,23 @@ public class Searcher implements Search {
                 return alpha;
             }
 
-            if (score >= beta) {
-                tt.put(board.key(), HashFlag.LOWER, depth, ply, move, staticEval, beta);
-                if (isQuiet) {
-                    updateHistory(move, depth, ply, quietsSearched);
-                }
-                return beta;
+            if (score > bestScore) {
+                bestScore = score;
             }
 
             if (score > alpha) {
                 bestMove = move;
+                bestMoveIsQuiet = isQuiet;
                 alpha = score;
                 flag = HashFlag.EXACT;
                 if (rootNode) {
                     bestMoveCurrentDepth = move;
                     bestScoreCurrentDepth = score;
+                }
+
+                if (score >= beta) {
+                    flag = HashFlag.LOWER;
+                    break;
                 }
             }
         }
@@ -434,17 +438,13 @@ public class Searcher implements Search {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
-        if (rootNode && movesSearched == 1) {
-            // If there is only one legal move at the root node, play that move immediately.
-            int eval = isDraw() ? Score.DRAW : staticEval;
-            bestMoveCurrentDepth = bestMove;
-            bestScoreCurrentDepth = eval;
-            cancelled = true;
-            return eval;
+
+        if (bestMove != null && bestMoveIsQuiet) {
+            updateHistory(bestMove, depth, ply, quietsSearched);
         }
 
-        tt.put(board.key(), flag, depth, ply, bestMove, staticEval, alpha);
-        return alpha;
+        tt.put(board.key(), flag, depth, ply, bestMove, staticEval, bestScore);
+        return bestScore;
 
     }
 

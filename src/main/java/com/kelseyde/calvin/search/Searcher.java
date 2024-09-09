@@ -109,9 +109,13 @@ public class Searcher implements Search {
 
         int alpha = Score.MIN;
         int beta = Score.MAX;
+
         int retries = 0;
-        int aspirationMargin = config.getAspMargin();
-        int aspirationFailMargin = config.getAspFailMargin();
+        int aspReduction = 0;
+        int aspMaxReduction = config.getAspMaxReduction();
+        int aspMargin = config.getAspMargin();
+        int aspFailMargin = config.getAspFailMargin();
+
         SearchResult result = null;
 
         while (!shouldStopSoft() && currentDepth < Search.MAX_DEPTH) {
@@ -120,7 +124,7 @@ public class Searcher implements Search {
             bestScoreCurrentDepth = 0;
 
             // Perform alpha-beta search for the current depth
-            int eval = search(currentDepth, 0, alpha, beta, true);
+            int eval = search(currentDepth - aspReduction, 0, alpha, beta, true);
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrentDepth != null) {
@@ -142,19 +146,21 @@ public class Searcher implements Search {
             // Adjust the aspiration window in case the score fell outside the current window
             if (eval <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
+                aspReduction = 0;
                 retries++;
-                alpha -= aspirationFailMargin * retries;
+                alpha -= aspFailMargin * retries;
                 continue;
             }
             if (eval >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
+                aspReduction = Math.min(aspMaxReduction, aspReduction + 1);
                 retries++;
-                beta += aspirationFailMargin * retries;
+                beta += aspFailMargin * retries;
                 continue;
             }
 
-            alpha = eval - aspirationMargin;
-            beta = eval + aspirationMargin;
+            alpha = eval - aspMargin;
+            beta = eval + aspMargin;
 
             // Increment depth and retry multiplier for next iteration
             retries = 0;

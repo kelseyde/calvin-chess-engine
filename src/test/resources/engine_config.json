@@ -26,6 +26,7 @@
 
   "aspMargin":25,
   "aspFailMargin":150,
+  "aspMaxReduction":3,
   "nmpDepth":0,
   "fpDepth":6,
   "rfpDepth":4,

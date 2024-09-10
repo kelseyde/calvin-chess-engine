@@ -113,10 +113,10 @@ public class Searcher implements Search {
         int beta = Score.MAX;
 
         int retries = 0;
-        int aspReduction = 0;
-        int aspMaxReduction = config.getAspMaxReduction();
-        int aspMargin = config.getAspMargin();
-        int aspFailMargin = config.getAspFailMargin();
+        int reduction = 0;
+        int maxReduction = config.getAspMaxReduction();
+        int margin = config.getAspMargin();
+        int failMargin = config.getAspFailMargin();
 
         SearchResult result = null;
 
@@ -124,9 +124,11 @@ public class Searcher implements Search {
             // Reset variables for the current depth iteration
             bestMoveCurrentDepth = null;
             bestScoreCurrentDepth = 0;
+            int searchDepth = currentDepth - reduction;
+            int delta = failMargin * retries;
 
             // Perform alpha-beta search for the current depth
-            int score = search(currentDepth - aspReduction, 0, alpha, beta);
+            int score = search(searchDepth, 0, alpha, beta);
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrentDepth != null) {
@@ -145,26 +147,32 @@ public class Searcher implements Search {
                 break;
             }
 
+            // Aspiration windows - https://www.chessprogramming.org/Aspiration_Windows
+            // Use the search score from the previous iteration to guess the score from the current iteration.
+            // Test this hypothesis by narrowing the alpha-beta window around this guess, causing more cut-offs and
+            // thus speeding up the search. If the true score is outside the window, a costly re-search is required.
+
             // Adjust the aspiration window in case the score fell outside the current window
             if (score <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
-                aspReduction = 0;
+                reduction = 0;
                 retries++;
-                alpha -= aspFailMargin * retries;
+                alpha -= delta;
                 continue;
             }
             if (score >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
-                aspReduction = Math.min(aspMaxReduction, aspReduction + 1);
+                reduction = Math.min(maxReduction, reduction + 1);
                 retries++;
-                beta += aspFailMargin * retries;
+                beta += delta;
                 continue;
             }
 
-            alpha = score - aspMargin;
-            beta = score + aspMargin;
+            // Center the aspiration window around the score from the current iteration, to be used next time.
+            alpha = score - margin;
+            beta = score + margin;
 
-            // Increment depth and retry multiplier for next iteration
+            // Increment depth and reset retry counter for next iteration
             retries = 0;
             previousEval = score;
             currentDepth++;

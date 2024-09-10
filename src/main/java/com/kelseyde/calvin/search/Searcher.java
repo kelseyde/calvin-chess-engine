@@ -268,6 +268,8 @@ public class Searcher implements Search {
         // should be more cautious in our alpha pruning - where the eval is too low.
         boolean improving = isImproving(ply, staticEval);
 
+        // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
+        // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning

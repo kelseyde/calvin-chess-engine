@@ -2,6 +2,8 @@
 
 ### Search
 
+- [ ] SPSA tune
+- [ ] PV table
 - [ ] Singular extensions
 - [ ] MultiCut
 - [ ] ProbCut
@@ -10,6 +12,7 @@
 - [ ] History leaf pruning
 - [ ] SEE pruning
 - [ ] Faster SEE
+- [ ] Syzygy TB
 - [ ] Check root legal moves, if only one, play instantly
 
 ### Move generation / Move ordering
@@ -19,6 +22,8 @@
 - [ ] Try copy/make rather than make/unmake
 - [ ] Conthist
 - [ ] Capthist
+- [ ] Threats
+- [ ] Countermoves
 - [ ] Add Killers, History etc. stages to MovePicker.
 
 ### Evaluation
@@ -29,6 +34,10 @@
 - [ ] Datagen
 - [ ] Pawn corrhist
 - [ ] Material corrhist
+
+### Time management
+
+- [ ] Node TM
 
 ### UCI
 

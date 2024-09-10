@@ -53,6 +53,8 @@ public class EngineConfig {
     int iirDepth;
     int nmpMargin;
     int dpMargin;
+    int razorDepth;
+    int razorMargin;
     int[][] lmrReductions;
     int[] fpMargin;
     int[] rfpMargin;

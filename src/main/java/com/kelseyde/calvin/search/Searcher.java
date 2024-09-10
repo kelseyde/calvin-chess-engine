@@ -268,6 +268,8 @@ public class Searcher implements Search {
         // should be more cautious in our alpha pruning - where the eval is too low.
         boolean improving = isImproving(ply, staticEval);
 
+        // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
+        // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
@@ -278,6 +280,18 @@ public class Searcher implements Search {
                 && staticEval - depth * config.getRfpMargin()[improving ? 1 : 0] >= beta
                 && !isMateHunting) {
                 return beta;
+            }
+
+            // Razoring - https://www.chessprogramming.org/Razoring
+            // At low depths, if we think this node will fail low, do a quick quiescence search to get a 'quieter' score.
+            // If the score is still below alpha, we can assume this position is a cut-node exit early.
+            if (depth <= config.getRazorDepth()
+                && Math.abs(alpha) < 2000
+                && staticEval + config.getRazorMargin() * depth < alpha) {
+                int razorScore = quiescenceSearch(alpha, beta, 1, ply);
+                if (razorScore < alpha) {
+                    return razorScore;
+                }
             }
 
             // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning

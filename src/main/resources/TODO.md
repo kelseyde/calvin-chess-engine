@@ -13,7 +13,7 @@
 - [ ] SEE pruning
 - [ ] Faster SEE
 - [ ] Syzygy TB
-- [ ] Check root legal moves, if only one, play instantly
+- [X] Check root legal moves, if only one, play instantly
 
 ### Move generation / Move ordering
 

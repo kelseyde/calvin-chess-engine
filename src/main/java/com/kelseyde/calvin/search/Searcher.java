@@ -149,8 +149,8 @@ public class Searcher implements Search {
 
             // Aspiration windows - https://www.chessprogramming.org/Aspiration_Windows
             // Use the search score from the previous iteration to guess the score from the current iteration.
-            // Test this hypothesis by narrowing the alpha-beta window around this guess, causing more cut-offs and
-            // thus speeding up the search. If the true score is outside the window, a costly re-search is required.
+            // Based on this guess, we can narrow the alpha-beta window around the previous score, causing more cut-offs
+            // and thus speeding up the search. If the true score is outside the window, a costly re-search is required.
 
             // Adjust the aspiration window in case the score fell outside the current window
             if (score <= alpha) {

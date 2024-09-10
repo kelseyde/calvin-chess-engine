@@ -21,7 +21,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +94,12 @@ public class Searcher implements Search {
     public SearchResult search(TimeControl timeControl) {
 
         start = Instant.now();
+
+        List<Move> rootMoves = moveGenerator.generateMoves(board);
+        if (rootMoves.size() == 1) {
+            return handleOnlyOneLegalMove(rootMoves);
+        }
+
         tc = timeControl;
         ss = new SearchStack();
         nodes = 0;
@@ -608,6 +613,15 @@ public class Searcher implements Search {
             }
         }
         return lastEval < staticEval;
+    }
+
+    private SearchResult handleOnlyOneLegalMove(List<Move> rootMoves) {
+        // If there is only one legal move, play it immediately
+        Move move = rootMoves.get(0);
+        int eval = evaluator.evaluate();
+        SearchResult result = SearchResult.of(move, eval, 1, start, 1);
+        threadManager.handleSearchResult(result);
+        return result;
     }
 
     @Override

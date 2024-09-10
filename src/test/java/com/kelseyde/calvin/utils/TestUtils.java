@@ -41,12 +41,12 @@ public class TestUtils {
     public static final Evaluation EVALUATOR = new NNUE();
     public static final TranspositionTable TRANSPOSITION_TABLE = new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb());
     public static final ThreadManager THREAD_MANAGER = new ThreadManager();
-    public static final Searcher SEARCHER = new Searcher(TST_CONFIG, THREAD_MANAGER, MOVE_GENERATOR, MOVE_ORDERER, EVALUATOR, TRANSPOSITION_TABLE);
-    public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, MoveGenerator::new, MoveOrderer::new, NNUE::new, TRANSPOSITION_TABLE);
+    public static final Searcher SEARCHER = new Searcher(TST_CONFIG, THREAD_MANAGER, TRANSPOSITION_TABLE);
+    public static final Search PARALLEL_SEARCHER = new ParallelSearcher(PRD_CONFIG, TRANSPOSITION_TABLE);
     public static final String QUIET_POSITIONS_FILE = "src/test/resources/texel/quiet_positions.epd";
 
     public static Engine getEngine() {
-        return new Engine(PRD_CONFIG, OPENING_BOOK, TABLEBASE, new MoveGenerator(), new Searcher(PRD_CONFIG, new ThreadManager(), new MoveGenerator(), new MoveOrderer(), new NNUE(), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
+        return new Engine(PRD_CONFIG, OPENING_BOOK, TABLEBASE, new Searcher(PRD_CONFIG, new ThreadManager(), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
     }
 
     private static EngineConfig loadConfig(String configLocation) {

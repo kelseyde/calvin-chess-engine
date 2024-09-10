@@ -5,9 +5,11 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
+import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
@@ -70,18 +72,13 @@ public class Searcher implements Search {
     int previousEval;
     int evalStability;
 
-    public Searcher(EngineConfig config,
-                    ThreadManager threadManager,
-                    MoveGeneration moveGenerator,
-                    MoveOrdering moveOrderer,
-                    Evaluation evaluator,
-                    TranspositionTable tt) {
+    public Searcher(EngineConfig config, ThreadManager threadManager, TranspositionTable tt) {
         this.config = config;
         this.threadManager = threadManager;
-        this.moveGenerator = moveGenerator;
-        this.moveOrderer = moveOrderer;
-        this.evaluator = evaluator;
         this.tt = tt;
+        this.moveGenerator = new MoveGenerator();
+        this.moveOrderer = new MoveOrderer();
+        this.evaluator = new NNUE();
         this.see = new StaticExchangeEvaluator();
     }
 

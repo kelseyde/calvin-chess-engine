@@ -216,8 +216,6 @@ public class Searcher implements Search {
 
         moveOrderer.getKillerTable().clear(ply + 1);
 
-        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
-
         // Probe the transposition table in case this node has been searched before. If so, we can potentially re-use the
         // result of the previous search and save some time, only if the following conditions are met:
         //  a) we are not in a PV node,
@@ -236,6 +234,8 @@ public class Searcher implements Search {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.getMove();
         }
+
+        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
         movePicker.setTtMove(ttMove);
 
         boolean inCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -373,6 +373,7 @@ public class Searcher implements Search {
 
             int score;
             if (isDraw()) {
+                // No need to search if the position is a legal draw (3-fold, insufficient material, or 50-move rule).
                 score = Score.DRAW;
             }
             else if (pvNode && movesSearched == 1) {
@@ -422,6 +423,7 @@ public class Searcher implements Search {
             }
 
             if (score > alpha) {
+                // If the score is better than alpha, we have a new best move.
                 bestMove = move;
                 bestMoveIsQuiet = isQuiet;
                 alpha = score;
@@ -432,6 +434,8 @@ public class Searcher implements Search {
                 }
 
                 if (score >= beta) {
+                    // If the score is greater than beta, the position is outside the bounds of the current alpha-beta
+                    // window. Our opponent won't allow us to reach this position, so we can cut off the search here.
                     flag = HashFlag.LOWER;
                     break;
                 }
@@ -444,10 +448,13 @@ public class Searcher implements Search {
         }
 
         if (bestMove != null && bestMoveIsQuiet) {
+            // If the best move is a quiet move, update the history tables to be used for move ordering in future searches.
             updateHistory(bestMove, depth, ply, quietsSearched);
         }
 
+        // Store the best move and score in the transposition table for future reference.
         tt.put(board.key(), flag, depth, ply, bestMove, staticEval, bestScore);
+
         return bestScore;
 
     }

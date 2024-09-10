@@ -52,6 +52,18 @@ public class SearchStack {
         stack[ply].movedPiece = null;
     }
 
+    public void setNullMoveAllowed(int ply, boolean nullAllowed) {
+        if (ply < 0 || ply >= Search.MAX_DEPTH) {
+            return;
+        }
+        stack[ply].nullMoveAllowed = nullAllowed;
+    }
+
+    public boolean isNullMoveAllowed(int ply) {
+        SearchStackEntry entry = get(ply);
+        return entry != null && entry.nullMoveAllowed;
+    }
+
     public void clear() {
         for (int i = 0; i < Search.MAX_DEPTH; i++) {
             stack[i] = new SearchStackEntry();
@@ -62,6 +74,7 @@ public class SearchStack {
         public int staticEval;
         public Move move;
         public Piece movedPiece;
+        public boolean nullMoveAllowed = true;
     }
 
 }

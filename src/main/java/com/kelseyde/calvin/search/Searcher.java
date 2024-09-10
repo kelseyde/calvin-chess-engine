@@ -126,7 +126,7 @@ public class Searcher implements Search {
             bestScoreCurrentDepth = 0;
 
             // Perform alpha-beta search for the current depth
-            int eval = search(currentDepth - aspReduction, 0, alpha, beta, true);
+            int score = search(currentDepth - aspReduction, 0, alpha, beta);
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrentDepth != null) {
@@ -138,22 +138,22 @@ public class Searcher implements Search {
             }
 
             // Update the eval stability if the eval is stable
-            evalStability = eval >= previousEval - 10 && eval <= previousEval + 10 ? evalStability + 1 : 0;
+            evalStability = score >= previousEval - 10 && score <= previousEval + 10 ? evalStability + 1 : 0;
 
             // Check if search is cancelled or a checkmate is found
-            if (shouldStop() || Score.isMateScore(eval)) {
+            if (shouldStop() || Score.isMateScore(score)) {
                 break;
             }
 
             // Adjust the aspiration window in case the score fell outside the current window
-            if (eval <= alpha) {
+            if (score <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
                 aspReduction = 0;
                 retries++;
                 alpha -= aspFailMargin * retries;
                 continue;
             }
-            if (eval >= beta) {
+            if (score >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
                 aspReduction = Math.min(aspMaxReduction, aspReduction + 1);
                 retries++;
@@ -161,12 +161,12 @@ public class Searcher implements Search {
                 continue;
             }
 
-            alpha = eval - aspMargin;
-            beta = eval + aspMargin;
+            alpha = score - aspMargin;
+            beta = score + aspMargin;
 
             // Increment depth and retry multiplier for next iteration
             retries = 0;
-            previousEval = eval;
+            previousEval = score;
             currentDepth++;
         }
 
@@ -192,9 +192,8 @@ public class Searcher implements Search {
      * @param ply                 The number of ply already examined in the current search ('ply from root').
      * @param alpha               The lower bound for child nodes at the current search depth.
      * @param beta                The upper bound for child nodes at the current search depth.
-     * @param allowNull           Whether to allow null-move pruning in this search iteration.
      */
-    public int search(int depth, int ply, int alpha, int beta, boolean allowNull) {
+    public int search(int depth, int ply, int alpha, int beta) {
 
         // If timeout is reached, exit immediately
         if (shouldStop()) return alpha;
@@ -283,16 +282,19 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
-            if (allowNull
+            if (ss.isNullMoveAllowed(ply)
                 && depth >= config.getNmpDepth()
                 && staticEval >= beta - (config.getNmpMargin() * (improving ? 1 : 0))
                 && board.hasPiecesRemaining(board.isWhiteToMove())) {
+                ss.setNullMoveAllowed(ply + 1, false);
                 board.makeNullMove();
-                int eval = -search(depth - 1 - (2 + depth / 3), ply + 1, -beta, -beta + 1, false);
+                int r = 3 + depth / 3;
+                int score = -search(depth - r, ply + 1, -beta, -beta + 1);
                 board.unmakeNullMove();
-                if (eval >= beta) {
+                ss.setNullMoveAllowed(ply + 1, true);
+                if (score >= beta) {
                     tt.put(board.key(), HashFlag.LOWER, depth, ply, ttMove, staticEval, beta);
-                    return beta;
+                    return Score.isMateScore(score) ? beta : score;
                 }
             }
 
@@ -380,7 +382,7 @@ public class Searcher implements Search {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
+                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
             }
             else {
                 // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
@@ -401,12 +403,12 @@ public class Searcher implements Search {
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha, true);
+                score = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, true);
+                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
                 }
             }
 

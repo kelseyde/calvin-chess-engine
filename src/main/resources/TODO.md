@@ -12,9 +12,11 @@
 - [ ] Faster SEE
 - [ ] Check root legal moves, if only one, play instantly
 
-### Move ordering
+### Move generation / Move ordering
 
+- [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [ ] The Great `MovePicker` Rewrite`™`
+- [ ] Try copy/make rather than make/unmake
 - [ ] Conthist
 - [ ] Capthist
 - [ ] Add Killers, History etc. stages to MovePicker.

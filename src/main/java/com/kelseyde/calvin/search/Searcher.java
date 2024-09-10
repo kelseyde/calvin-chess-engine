@@ -126,7 +126,7 @@ public class Searcher implements Search {
             bestScoreCurrentDepth = 0;
 
             // Perform alpha-beta search for the current depth
-            int eval = search(currentDepth - aspReduction, 0, alpha, beta);
+            int score = search(currentDepth - aspReduction, 0, alpha, beta);
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrentDepth != null) {
@@ -138,22 +138,22 @@ public class Searcher implements Search {
             }
 
             // Update the eval stability if the eval is stable
-            evalStability = eval >= previousEval - 10 && eval <= previousEval + 10 ? evalStability + 1 : 0;
+            evalStability = score >= previousEval - 10 && score <= previousEval + 10 ? evalStability + 1 : 0;
 
             // Check if search is cancelled or a checkmate is found
-            if (shouldStop() || Score.isMateScore(eval)) {
+            if (shouldStop() || Score.isMateScore(score)) {
                 break;
             }
 
             // Adjust the aspiration window in case the score fell outside the current window
-            if (eval <= alpha) {
+            if (score <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
                 aspReduction = 0;
                 retries++;
                 alpha -= aspFailMargin * retries;
                 continue;
             }
-            if (eval >= beta) {
+            if (score >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
                 aspReduction = Math.min(aspMaxReduction, aspReduction + 1);
                 retries++;
@@ -161,12 +161,12 @@ public class Searcher implements Search {
                 continue;
             }
 
-            alpha = eval - aspMargin;
-            beta = eval + aspMargin;
+            alpha = score - aspMargin;
+            beta = score + aspMargin;
 
             // Increment depth and retry multiplier for next iteration
             retries = 0;
-            previousEval = eval;
+            previousEval = score;
             currentDepth++;
         }
 

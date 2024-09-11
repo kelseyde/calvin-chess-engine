@@ -290,7 +290,7 @@ public class Searcher implements Search {
             if (depth <= config.getRfpDepth()
                 && staticEval - depth * config.getRfpMargin()[improving ? 1 : 0] >= beta
                 && !isMateHunting) {
-                return beta;
+                return staticEval;
             }
 
             // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning
@@ -504,7 +504,7 @@ public class Searcher implements Search {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
             if (staticEval >= beta) {
-                return beta;
+                return staticEval;
             }
             if (staticEval > alpha) {
                 alpha = staticEval;
@@ -514,6 +514,8 @@ public class Searcher implements Search {
         }
 
         int movesSearched = 0;
+
+        int bestScore = alpha;
 
         while (true) {
 
@@ -548,8 +550,11 @@ public class Searcher implements Search {
             evaluator.unmakeMove();
             board.unmakeMove();
 
+            if (score > bestScore) {
+                bestScore = score;
+            }
             if (score >= beta) {
-                return beta;
+                return score;
             }
             if (score > alpha) {
                 alpha = score;
@@ -560,7 +565,7 @@ public class Searcher implements Search {
             return -Score.MATE + ply;
         }
 
-        return alpha;
+        return bestScore;
 
     }
 

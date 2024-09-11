@@ -11,7 +11,7 @@
 - [ ] Razoring
 - [ ] History leaf pruning
 - [ ] SEE pruning
-- [ ] Faster SEE
+- [x] Faster SEE
 - [ ] Syzygy TB
 - [ ] Check root legal moves, if only one, play instantly
 

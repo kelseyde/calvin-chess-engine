@@ -12,7 +12,7 @@ import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
-import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.search.moveordering.SEE;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -51,7 +51,6 @@ public class Searcher implements Search {
     MoveGeneration moveGenerator;
     MoveOrdering moveOrderer;
     Evaluation evaluator;
-    StaticExchangeEvaluator see;
     TranspositionTable tt;
 
     Board board;
@@ -79,7 +78,6 @@ public class Searcher implements Search {
         this.moveGenerator = new MoveGenerator();
         this.moveOrderer = new MoveOrderer();
         this.evaluator = new NNUE();
-        this.see = new StaticExchangeEvaluator();
     }
 
     /**
@@ -534,9 +532,8 @@ public class Searcher implements Search {
                 // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
-                int seeScore = see.evaluate(board, move);
-                if ((depth <= 3 && seeScore < 0)
-                        || (depth > 3 && seeScore <= 0)) {
+                int seeThreshold = depth <= 3 ? 0 : 1;
+                if (!SEE.see(board, move, seeThreshold)) {
                     continue;
                 }
             }

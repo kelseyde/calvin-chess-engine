@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.search.thread.ThreadManager;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;

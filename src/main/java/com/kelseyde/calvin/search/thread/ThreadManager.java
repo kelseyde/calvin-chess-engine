@@ -1,6 +1,7 @@
-package com.kelseyde.calvin.search;
+package com.kelseyde.calvin.search.thread;
 
 import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.uci.UCI;
 
 public class ThreadManager {

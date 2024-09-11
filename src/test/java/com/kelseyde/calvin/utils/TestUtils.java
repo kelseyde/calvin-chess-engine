@@ -16,7 +16,7 @@ import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.ThreadManager;
+import com.kelseyde.calvin.search.thread.ThreadManager;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;

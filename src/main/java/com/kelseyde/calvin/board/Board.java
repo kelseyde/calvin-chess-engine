@@ -371,6 +371,10 @@ public class Board {
         return gameState.getZobrist();
     }
 
+    public long pawnKey() {
+        return gameState.getPawnZobrist();
+    }
+
     public int countPieces() {
         return Bitwise.countBits(occupied);
     }

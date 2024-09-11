@@ -16,7 +16,7 @@ public class CorrHistTable {
         this.entries = new int[2][TABLE_SIZE];
     }
 
-    public void updateCorrectionHistory(long pawnHash, boolean white, int depth, int score, int staticEval) {
+    public void update(long pawnHash, boolean white, int depth, int score, int staticEval) {
 
         int colourIndex = Board.colourIndex(white);
         int pawnIndex = getIndex(pawnHash);

@@ -9,6 +9,7 @@ import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
@@ -461,14 +462,8 @@ public class Searcher implements Search {
             updateHistory(bestMove, depth, ply, quietsSearched);
         }
 
-        if (!inCheck
-                && (ttEntry == null ||
-                (ttEntry.getFlag() == HashFlag.EXACT
-                        || ttEntry.getFlag() == HashFlag.UPPER && alpha < staticEval
-                        || ttEntry.getFlag() == HashFlag.LOWER && alpha > staticEval))
-        ) {
-            long pawnZobrist = board.getGameState().getPawnZobrist();
-            corrHistTable.updateCorrectionHistory(pawnZobrist, board.isWhiteToMove(), depth, alpha, staticEval);
+        if (!inCheck && (bestMove == null || bestMoveIsQuiet)) {
+            corrHistTable.update(board.pawnKey(), board.isWhiteToMove(), depth, bestScore, staticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.

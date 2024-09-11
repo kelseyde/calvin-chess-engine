@@ -66,6 +66,7 @@ public class Searcher implements Search {
     Move bestMoveRoot;
     Move bestMoveCurrentDepth;
     int bestMoveStability;
+    List<Move> legalMoves;
 
     int bestScoreRoot;
     int bestScoreCurrentDepth;
@@ -92,9 +93,9 @@ public class Searcher implements Search {
 
         start = Instant.now();
 
-        List<Move> rootMoves = moveGenerator.generateMoves(board);
-        if (rootMoves.size() == 1) {
-            return handleOnlyOneLegalMove(rootMoves);
+        legalMoves = moveGenerator.generateMoves(board);
+        if (legalMoves.size() == 1) {
+            return handleOnlyOneLegalMove(legalMoves);
         }
 
         tc = timeControl;
@@ -607,7 +608,8 @@ public class Searcher implements Search {
     }
 
     private boolean shouldStopSoft() {
-        return !config.isPondering() && tc != null && tc.isSoftLimitReached(start, currentDepth, nodes, bestMoveStability, evalStability);
+        return !config.isPondering() && tc != null
+                && tc.isSoftLimitReached(start, currentDepth, nodes, bestMoveStability, evalStability, legalMoves);
     }
 
     private boolean isDraw() {

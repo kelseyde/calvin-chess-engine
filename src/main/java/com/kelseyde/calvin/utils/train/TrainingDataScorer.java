@@ -185,12 +185,9 @@ public class TrainingDataScorer {
 
     private Searcher initSearcher() {
         EngineConfig config = EngineInitializer.loadDefaultConfig();
-        MoveGeneration moveGenerator = new MoveGenerator();
-        MoveOrdering moveOrderer = new MoveOrderer();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
         ThreadManager threadManager = new ThreadManager();
-        Evaluation evaluator = new NNUE();
-        return new Searcher(config, threadManager, moveGenerator, moveOrderer, evaluator, transpositionTable);
+        return new Searcher(config, threadManager, transpositionTable);
     }
 
 }

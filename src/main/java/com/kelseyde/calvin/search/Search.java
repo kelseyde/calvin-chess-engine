@@ -43,9 +43,4 @@ public interface Search {
      */
     void clearHistory();
 
-    /**
-     * Print the current search statistics.
-     */
-    void logStatistics();
-
 }

@@ -28,7 +28,7 @@ public abstract class SPerftTest {
         Instant start = Instant.now();
         SEARCHER.clearHistory();
         SEARCHER.setPosition(board);
-        SEARCHER.search(depth, 0, MIN_EVAL, MAX_EVAL, true);
+        SEARCHER.search(depth, 0, MIN_EVAL, MAX_EVAL);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);
         writeResults(depth, performance);

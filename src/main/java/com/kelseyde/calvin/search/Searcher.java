@@ -229,8 +229,8 @@ public class Searcher implements Search {
         //  b) it was searched to a sufficient depth, and
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
         HashEntry ttEntry = tt.get(board.key(), ply);
-        if (ttEntry != null
-                && !pvNode
+        if (!pvNode
+                && ttEntry != null
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
             return ttEntry.getScore();
@@ -286,10 +286,9 @@ public class Searcher implements Search {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
-            boolean isMateHunting = Score.isMateScore(alpha);
             if (depth <= config.getRfpDepth()
                 && staticEval - depth * config.getRfpMargin()[improving ? 1 : 0] >= beta
-                && !isMateHunting) {
+                && !Score.isMateScore(alpha)) {
                 return staticEval;
             }
 
@@ -301,12 +300,16 @@ public class Searcher implements Search {
                 && depth >= config.getNmpDepth()
                 && staticEval >= beta - (config.getNmpMargin() * (improving ? 1 : 0))
                 && board.hasPiecesRemaining(board.isWhiteToMove())) {
+
                 ss.setNullMoveAllowed(ply + 1, false);
                 board.makeNullMove();
+
                 int r = 3 + depth / 3;
                 int score = -search(depth - r, ply + 1, -beta, -beta + 1);
+
                 board.unmakeNullMove();
                 ss.setNullMoveAllowed(ply + 1, true);
+
                 if (score >= beta) {
                     tt.put(board.key(), HashFlag.LOWER, depth, ply, ttMove, staticEval, beta);
                     return Score.isMateScore(score) ? beta : score;
@@ -326,7 +329,6 @@ public class Searcher implements Search {
 
             Move move = movePicker.pickNextMove();
             if (move == null) break;
-            // TODO test removing
             if (bestMove == null) bestMove = move;
             movesSearched++;
 

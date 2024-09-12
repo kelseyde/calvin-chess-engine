@@ -270,7 +270,7 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             if (ttEntry != null) {
-                staticEval = ttEntry.isWithinBounds(alpha, beta) ? ttEntry.getScore() : ttEntry.getStaticEval();
+                staticEval = ttEntry.isWithinBounds(staticEval, staticEval) ? ttEntry.getScore() : ttEntry.getStaticEval();
             } else {
                 staticEval = evaluator.evaluate();
             }
@@ -499,7 +499,7 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
             if (ttEntry != null) {
-                staticEval = ttEntry.isWithinBounds(alpha, beta) ? ttEntry.getScore() : ttEntry.getStaticEval();
+                staticEval = ttEntry.isWithinBounds(staticEval, staticEval) ? ttEntry.getScore() : ttEntry.getStaticEval();
             } else {
                 staticEval = evaluator.evaluate();
             }

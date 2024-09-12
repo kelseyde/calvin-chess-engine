@@ -269,7 +269,11 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : evaluator.evaluate();
+            if (ttEntry != null) {
+                staticEval = ttEntry.isWithinBounds(alpha, beta) ? ttEntry.getScore() : ttEntry.getStaticEval();
+            } else {
+                staticEval = evaluator.evaluate();
+            }
         }
 
         ss.setStaticEval(ply, staticEval);
@@ -333,8 +337,7 @@ public class Searcher implements Search {
             movesSearched++;
 
             Piece piece = board.pieceAt(move.getFrom());
-            Piece capturedPiece = board.pieceAt(move.getTo());
-            boolean isCapture = capturedPiece != null;
+            boolean isCapture = board.isCapture(move);
             boolean isPromotion = move.getPromotionPiece() != null;
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
@@ -495,7 +498,11 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : evaluator.evaluate();
+            if (ttEntry != null) {
+                staticEval = ttEntry.isWithinBounds(alpha, beta) ? ttEntry.getScore() : ttEntry.getStaticEval();
+            } else {
+                staticEval = evaluator.evaluate();
+            }
         }
 
         if (isInCheck) {

@@ -371,18 +371,22 @@ public class Board {
         return gameState.getZobrist();
     }
 
+    public long pawnKey() {
+        return gameState.getPawnZobrist();
+    }
+
     public int countPieces() {
         return Bitwise.countBits(occupied);
+    }
+
+    public boolean isCapture(Move move) {
+        return move.isEnPassant() || pieceList[move.getTo()] != null;
     }
 
     public boolean hasPiecesRemaining(boolean white) {
         return white ?
                 (getKnights(true) != 0 || getBishops(true) != 0 || getRooks(true) != 0 || getQueens(true) != 0) :
                 (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
-    }
-
-    public boolean isPawnEndgame() {
-        return (pawns != 0) && knights == 0 && bishops == 0 && rooks == 0 && queens == 0;
     }
 
     public static int file(int sq) {

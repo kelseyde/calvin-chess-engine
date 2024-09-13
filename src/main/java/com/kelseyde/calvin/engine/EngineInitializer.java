@@ -4,15 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.endgame.LichessTablebase;
 import com.kelseyde.calvin.endgame.Tablebase;
-import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
-import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
-import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -21,7 +16,6 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -36,11 +30,8 @@ public class EngineInitializer {
         OpeningBook book = loadDefaultOpeningBook(config);
         Tablebase tablebase = loadDefaultTablebase(config);
         TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
-        Supplier<MoveGeneration> moveGenerator = MoveGenerator::new;
-        Supplier<MoveOrdering> moveOrderer = MoveOrderer::new;
-        Supplier<Evaluation> evaluator = NNUE::new;
-        Search searcher = new ParallelSearcher(config, moveGenerator, moveOrderer, evaluator, transpositionTable);
-        Engine engine = new Engine(config, book, tablebase, moveGenerator.get(), searcher);
+        Search searcher = new ParallelSearcher(config, transpositionTable);
+        Engine engine = new Engine(config, book, tablebase, searcher);
         engine.setPosition(new Board());
         return engine;
     }

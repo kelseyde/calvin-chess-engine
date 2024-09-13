@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.endgame.Tablebase;
 import com.kelseyde.calvin.endgame.TablebaseException;
 import com.kelseyde.calvin.generation.MoveGeneration;
+import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
@@ -42,12 +43,12 @@ public class Engine {
     CompletableFuture<SearchResult> think;
     Board board;
 
-    public Engine(EngineConfig config, OpeningBook book, Tablebase tablebase, MoveGeneration moveGenerator, Search searcher) {
+    public Engine(EngineConfig config, OpeningBook book, Tablebase tablebase, Search searcher) {
         this.config = config;
         this.book = book;
         this.tablebase = tablebase;
-        this.moveGenerator = moveGenerator;
         this.searcher = searcher;
+        this.moveGenerator = new MoveGenerator();
     }
 
     public void newGame() {

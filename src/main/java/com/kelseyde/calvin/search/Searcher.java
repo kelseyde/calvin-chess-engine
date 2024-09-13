@@ -10,6 +10,7 @@ import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
 import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
@@ -319,14 +320,12 @@ public class Searcher implements Search {
         }
 
         Move bestMove = null;
-        CaptureMove bestCapture = null;
         int bestScore = Score.MIN;
-        boolean bestMoveIsQuiet = false;
-        boolean bestMoveIsCapture = false;
         HashFlag flag = HashFlag.UPPER;
+
         int movesSearched = 0;
         List<Move> quietsSearched = new ArrayList<>();
-        List<CaptureMove> capturesSearched = new ArrayList<>();
+        List<PlayedMove> capturesSearched = new ArrayList<>();
 
         while (true) {
 
@@ -355,15 +354,15 @@ public class Searcher implements Search {
 
             evaluator.makeMove(board, move);
             if (!board.makeMove(move)) continue;
-            ss.setMove(ply, move, piece);
             nodes++;
 
             boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
+            ss.setMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
             if (isQuiet) {
                 quietsSearched.add(move);
             } else if (isCapture) {
-                capturesSearched.add(new CaptureMove(move, piece, capturedPiece));
+                capturesSearched.add(new PlayedMove(move, piece, capturedPiece, true, false));
             }
 
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
@@ -436,11 +435,8 @@ public class Searcher implements Search {
             if (score > alpha) {
                 // If the score is better than alpha, we have a new best move.
                 bestMove = move;
-                bestMoveIsQuiet = isQuiet;
-                bestMoveIsCapture = isCapture;
-                if (isCapture) {
-                    bestCapture = new CaptureMove(move, piece, capturedPiece);
-                }
+                ss.setBestMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
+
                 alpha = score;
                 flag = HashFlag.EXACT;
                 if (rootNode) {
@@ -463,12 +459,12 @@ public class Searcher implements Search {
         }
 
         if (bestMove != null) {
-            if (bestMoveIsQuiet) {
-                // If the best move is a quiet move, update the history tables to be used for move ordering in future searches.
-                updateQuietHistory(bestMove, depth, ply, quietsSearched, capturesSearched);
+            PlayedMove best = ss.getBestMove(ply);
+            if (best.isCapture()) {
+                updateQuietHistory(best, depth, ply, quietsSearched, capturesSearched);
             }
-            else if (bestMoveIsCapture) {
-                updateCaptureHistory(bestMove, bestCapture.piece(), bestCapture.capturedPiece(), capturesSearched, depth);
+            else if (best.isQuiet()) {
+                updateCaptureHistory(best, depth, capturesSearched);
             }
         }
 
@@ -601,29 +597,29 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void updateQuietHistory(Move move, int depth, int ply, List<Move> quietsSearched, List<CaptureMove> capturesSearched) {
+    private void updateQuietHistory(PlayedMove move, int depth, int ply, List<Move> quietsSearched, List<PlayedMove> capturesSearched) {
         // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
-        moveOrderer.addKillerMove(ply, move);
-        moveOrderer.addHistoryScore(move, ss, depth, ply, board.isWhiteToMove());
-        moveOrderer.addCounterMove(move, ss, ply, board.isWhiteToMove());
+        moveOrderer.addKillerMove(ply, move.getMove());
+        moveOrderer.addHistoryScore(move.getMove(), ss, depth, ply, board.isWhiteToMove());
+        moveOrderer.addCounterMove(move.getMove(), ss, ply, board.isWhiteToMove());
         for (Move quiet : quietsSearched) {
-            if (quiet.equals(move)) continue;
+            if (quiet.equals(move.getMove())) continue;
             moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
         }
-        for (CaptureMove captureMove : capturesSearched) {
-            if (captureMove.move().equals(move)) continue;
+        for (PlayedMove captureMove : capturesSearched) {
+            if (captureMove.equals(move)) continue;
             moveOrderer.getCaptureHistoryTable()
-                    .sub(captureMove.piece(), captureMove.move().getTo(), captureMove.capturedPiece(), board.isWhiteToMove(), depth);
+                    .sub(captureMove.getPiece(), captureMove.getMove().getTo(), captureMove.getCaptured(), board.isWhiteToMove(), depth);
         }
     }
 
-    private void updateCaptureHistory(Move move, Piece piece, Piece capturedPiece, List<CaptureMove> capturesSearched, int depth) {
-        int to = move.getTo();
-        moveOrderer.getCaptureHistoryTable().add(piece, to, capturedPiece, board.isWhiteToMove(), depth);
-        for (CaptureMove captureMove : capturesSearched) {
-            if (captureMove.move().equals(move)) continue;
+    private void updateCaptureHistory(PlayedMove move, int depth, List<PlayedMove> capturesSearched) {
+        int to = move.getMove().getTo();
+        moveOrderer.getCaptureHistoryTable().add(move.getPiece(), to, move.getCaptured(), board.isWhiteToMove(), depth);
+        for (PlayedMove captureMove : capturesSearched) {
+            if (captureMove.equals(move)) continue;
             moveOrderer.getCaptureHistoryTable()
-                    .sub(captureMove.piece(), captureMove.move().getTo(), captureMove.capturedPiece(), board.isWhiteToMove(), depth);
+                    .sub(captureMove.getPiece(), captureMove.getMove().getTo(), captureMove.getCaptured(), board.isWhiteToMove(), depth);
         }
     }
 
@@ -681,7 +677,5 @@ public class Searcher implements Search {
         evaluator.clearHistory();
         moveOrderer.clear();
     }
-
-    private record CaptureMove(Move move, Piece piece , Piece capturedPiece) {}
 
 }

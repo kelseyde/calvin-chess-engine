@@ -4,7 +4,9 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.tables.history.*;
+import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
+import com.kelseyde.calvin.tables.history.HistoryTable;
+import com.kelseyde.calvin.tables.history.KillerTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -31,15 +33,14 @@ public class MoveOrderer implements MoveOrdering {
     static final int PREVIOUS_BEST_MOVE_BIAS = 11 * MILLION;
     static final int QUEEN_PROMOTION_BIAS = 10 * MILLION;
     static final int WINNING_CAPTURE_BIAS = 9 * MILLION;
-    static final int EQUAL_CAPTURE_BIAS = 8 * MILLION;
-    static final int KILLER_MOVE_BIAS = 7 * MILLION;
-    static final int COUNTER_MOVE_BIAS = 6 * MILLION;
-    static final int LOSING_CAPTURE_BIAS = 5 * MILLION;
-    static final int HISTORY_MOVE_BIAS = 4 * MILLION;
-    static final int UNDER_PROMOTION_BIAS = 3 * MILLION;
-    static final int CASTLING_BIAS = 2 * MILLION;
+    static final int KILLER_MOVE_BIAS = 8 * MILLION;
+    static final int COUNTER_MOVE_BIAS = 7 * MILLION;
+    static final int LOSING_CAPTURE_BIAS = 6 * MILLION;
+    static final int HISTORY_MOVE_BIAS = 5 * MILLION;
+    static final int UNDER_PROMOTION_BIAS = 4 * MILLION;
+    static final int CASTLING_BIAS = 3 * MILLION;
 
-    public static final int MVV_OFFSET = 100000;
+    public static final int MVV_OFFSET = 5000;
     public static final int KILLER_MOVE_ORDER_BONUS = 10000;
 
 
@@ -163,13 +164,7 @@ public class MoveOrderer implements MoveOrdering {
 
         // Separate captures into winning, equal, and losing
         int materialDelta = capturedPiece.getValue() - piece.getValue();
-        if (materialDelta > 0) {
-            captureScore += WINNING_CAPTURE_BIAS;
-        } else if (materialDelta == 0) {
-            captureScore += EQUAL_CAPTURE_BIAS;
-        } else {
-            captureScore += LOSING_CAPTURE_BIAS;
-        }
+        captureScore += materialDelta >= 0 ? WINNING_CAPTURE_BIAS : LOSING_CAPTURE_BIAS;
 
         // Add MVV score to the capture score
         captureScore += MVV_OFFSET * capturedPiece.getIndex();

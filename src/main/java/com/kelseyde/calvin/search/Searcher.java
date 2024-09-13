@@ -331,7 +331,7 @@ public class Searcher implements Search {
 
             Move move = movePicker.pickNextMove();
             if (move == null) break;
-            if (bestMove == null) bestMove = move;
+            //if (bestMove == null) bestMove = move;
             movesSearched++;
 
             Piece piece = board.pieceAt(move.getFrom());
@@ -460,10 +460,10 @@ public class Searcher implements Search {
 
         if (bestMove != null) {
             PlayedMove best = ss.getBestMove(ply);
-            if (best.isCapture()) {
+            if (best.isQuiet()) {
                 updateQuietHistory(best, depth, ply, quietsSearched, capturesSearched);
             }
-            else if (best.isQuiet()) {
+            else if (best.isCapture()) {
                 updateCaptureHistory(best, depth, capturesSearched);
             }
         }

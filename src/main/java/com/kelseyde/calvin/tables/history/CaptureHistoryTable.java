@@ -1,12 +1,9 @@
 package com.kelseyde.calvin.tables.history;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 
 public class CaptureHistoryTable extends AbstractHistoryTable {
-
-    public static record CaptureMove(Move move, Piece piece , Piece capturedPiece) {}
 
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;

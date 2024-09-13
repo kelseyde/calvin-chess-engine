@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search.moveordering;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
 
 import java.util.List;
@@ -48,6 +49,8 @@ public interface MoveOrdering {
     int mvvLva(Board board, Move move, Move previousBestMove);
 
     KillerTable getKillerTable();
+
+    CaptureHistoryTable getCaptureHistoryTable();
 
     /**
      * Adds a killer move for a given ply (depth) in the search.

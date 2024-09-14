@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AlphaBetaMovePickerTest {
+public class MovePickerTest {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 

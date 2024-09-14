@@ -381,10 +381,6 @@ public class Board {
                 (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
     }
 
-    public boolean isPawnEndgame() {
-        return (pawns != 0) && knights == 0 && bishops == 0 && rooks == 0 && queens == 0;
-    }
-
     public static int file(int sq) {
         return sq & 0b000111;
     }

@@ -22,14 +22,13 @@ public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, 
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
 
-    static final double NODE_TIME_BASE = 1.5;
-    static final double NODE_TIME_SCALE = 1.75;
-    static final double NODE_TIME_MIN = 0.15;
-
     static final double SOFT_TIME_SCALE_MIN = 0.125;
+    static final double SOFT_TIME_SCALE_MAX = 2.5;
 
     static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
     static final double[] SCORE_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
+
+    static final int UCI_OVERHEAD = 50;
 
     public static TimeControl init(Board board, GoCommand command) {
 
@@ -80,12 +79,13 @@ public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, 
 
         double scale = 1.0;
 
-        double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
-
         // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
         // of the search has been spent on the best move, we can assume that the best move is more likely to be correct,
         // and therefore we can spend less time searching further.
-        scale *= Math.max((NODE_TIME_BASE - bestMoveNodeFraction) * NODE_TIME_SCALE, NODE_TIME_MIN);
+        if (bestMoveNodes > 0) {
+            double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
+            scale *= (1.5 - bestMoveNodeFraction) * 1.35;
+        }
 
         // Scale the soft limit based on the stability of the best move. If the best move has remained stable for several
         // iterations, we can safely assume that we don't need to spend as much time searching further.
@@ -97,9 +97,15 @@ public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, 
         scoreStability = Math.min(scoreStability, SCORE_STABILITY_FACTOR.length - 1);
         scale *= SCORE_STABILITY_FACTOR[scoreStability];
 
-        scale = Math.max(scale, SOFT_TIME_SCALE_MIN);
+        // Clamp the scale factor to a reasonable range.
+        scale = Math.min(Math.max(scale, SOFT_TIME_SCALE_MIN), SOFT_TIME_SCALE_MAX);
 
-        return Duration.ofMillis((long) (softLimit.toMillis() * scale));
+        long scaled = (long) (softLimit.toMillis() * scale);
+
+        // Ensure the scaled limit is at least the hard limit plus some overhead to account for UCI communication.
+        scaled = Math.min(scaled, hardLimit.toMillis() - UCI_OVERHEAD);
+
+        return Duration.ofMillis(scaled);
     }
 
 }

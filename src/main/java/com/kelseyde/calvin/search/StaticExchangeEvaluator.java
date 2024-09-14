@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.moveordering;
+package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;

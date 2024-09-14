@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.moveordering;
+package com.kelseyde.calvin.search.picker;
 
 public class MoveBonus {
 

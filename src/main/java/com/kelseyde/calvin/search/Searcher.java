@@ -11,8 +11,6 @@ import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
-import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -20,7 +18,6 @@ import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
@@ -38,20 +35,18 @@ import java.util.List;
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
  * then 3 ply and so on, until the time limit is exhausted. In case the timeout is reached in the middle of an iteration,
  * the search can still fall back on the best move found in the previous iteration. By prioritising searching the best
- * move found in the previous iteration, as well as the other ordering heuristics in the {@link MoveOrderer} -- and by
- * using a {@link TranspositionTable} -- the iterative approach is much more efficient than it might sound.
+ * move found in the previous iteration -- and by using a {@link TranspositionTable} -- the iterative approach is much
+ * more efficient than it might sound.
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
-@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Searcher implements Search {
 
-    EngineConfig config;
-    ThreadManager threadManager;
-    MoveGeneration moveGenerator;
-    MoveOrderer moveOrderer;
-    Evaluation evaluator;
-    StaticExchangeEvaluator see;
+    final EngineConfig config;
+    final ThreadManager threadManager;
+    final MoveGeneration moveGenerator;
+    final Evaluation evaluator;
+    final StaticExchangeEvaluator see;
     TranspositionTable tt;
 
     Board board;
@@ -59,6 +54,7 @@ public class Searcher implements Search {
     Instant start;
     TimeControl tc;
     SearchStack ss = new SearchStack();
+    final SearchHistory history = new SearchHistory();
     boolean cancelled;
 
     int currentDepth;
@@ -77,7 +73,6 @@ public class Searcher implements Search {
         this.threadManager = threadManager;
         this.tt = tt;
         this.moveGenerator = new MoveGenerator();
-        this.moveOrderer = new MoveOrderer();
         this.evaluator = new NNUE();
         this.see = new StaticExchangeEvaluator();
     }
@@ -107,7 +102,7 @@ public class Searcher implements Search {
         bestScoreRoot = 0;
         bestScoreCurrentDepth = 0;
         cancelled = false;
-        moveOrderer.getHistoryTable().ageScores(board.isWhiteToMove());
+        history.getHistoryTable().ageScores(board.isWhiteToMove());
 
         int alpha = Score.MIN;
         int beta = Score.MAX;
@@ -187,7 +182,7 @@ public class Searcher implements Search {
         }
 
         // Clear move ordering cache and return the search result
-        moveOrderer.getKillerTable().clear();
+        history.getKillerTable().clear();
 
         return result;
 
@@ -221,7 +216,7 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
-        moveOrderer.getKillerTable().clear(ply + 1);
+        history.getKillerTable().clear(ply + 1);
 
         // Probe the transposition table in case this node has been searched before. If so, we can potentially re-use the
         // result of the previous search and save some time, only if the following conditions are met:
@@ -242,7 +237,7 @@ public class Searcher implements Search {
             ttMove = ttEntry.getMove();
         }
 
-        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
+        MovePicker movePicker = new MovePicker(moveGenerator, ss, history, board, ply);
         movePicker.setTtMove(ttMove);
 
         boolean inCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
@@ -486,7 +481,7 @@ public class Searcher implements Search {
             return alpha;
         }
 
-        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board, ply);
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, ss, history, board, ply);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry ttEntry = tt.get(board.key(), ply);
@@ -598,11 +593,11 @@ public class Searcher implements Search {
 
     private void updateQuietHistory(PlayedMove bestMove, int depth, int ply, List<Move> quietsSearched, List<PlayedMove> capturesSearched) {
 
-        moveOrderer.getKillerTable().add(ply, bestMove.getMove());
+        history.getKillerTable().add(ply, bestMove.getMove());
 
         for (Move quiet : quietsSearched) {
             boolean good = bestMove.getMove().equals(quiet);
-            moveOrderer.getHistoryTable().update(quiet, board.isWhiteToMove(), good);
+            history.getHistoryTable().update(quiet, board.isWhiteToMove(), good);
         }
 
         for (PlayedMove captureMove : capturesSearched) {
@@ -610,7 +605,7 @@ public class Searcher implements Search {
             Piece piece = captureMove.getPiece();
             int to = captureMove.getMove().getTo();
             Piece captured = captureMove.getCaptured();
-            moveOrderer.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
+            history.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
         }
 
     }
@@ -621,7 +616,7 @@ public class Searcher implements Search {
             Piece piece = capture.getPiece();
             int to = capture.getMove().getTo();
             Piece captured = capture.getCaptured();
-            moveOrderer.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
+            history.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
         }
     }
 
@@ -677,9 +672,7 @@ public class Searcher implements Search {
     public void clearHistory() {
         tt.clear();
         evaluator.clearHistory();
-        moveOrderer.getKillerTable().clear();
-        moveOrderer.getHistoryTable().clear();
-        moveOrderer.getCaptureHistoryTable().clear();
+        history.clear();
     }
 
 }

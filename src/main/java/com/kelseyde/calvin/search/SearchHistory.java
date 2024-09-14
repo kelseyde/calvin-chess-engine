@@ -30,10 +30,10 @@ public class SearchHistory {
         for (PlayedMove quietMove : quietsSearched) {
             boolean good = bestMove.getMove().equals(quietMove.getMove());
             historyTable.update(quietMove.getMove(), depth, white, good);
-
-            Move prevMove = ss.getMove(ply - 1);
-            Piece prevPiece = ss.getMovedPiece(ply - 1);
-            contHistTable.update(prevMove, prevPiece, quietMove.getMove(), quietMove.getPiece(), depth, white, good);
+//
+//            Move prevMove = ss.getMove(ply - 1);
+//            Piece prevPiece = ss.getMovedPiece(ply - 1);
+//            contHistTable.update(prevMove, prevPiece, quietMove.getMove(), quietMove.getPiece(), depth, white, good);
         }
 
         for (PlayedMove captureMove : capturesSearched) {

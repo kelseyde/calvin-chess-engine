@@ -160,7 +160,12 @@ public class MovePicker {
         int killerIndex = history.getKillerTable().getIndex(move, ply);
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_BONUS * KillerTable.KILLERS_PER_PLY - killerIndex : 0;
         int historyScore = history.getHistoryTable().get(move, board.isWhiteToMove());
-        int base = killerScore > 0 ? MoveBonus.KILLER_MOVE_BIAS : MoveBonus.QUIET_MOVE_BIAS;
+        int base = 0;
+        if (killerScore > 0) {
+            base = MoveBonus.KILLER_MOVE_BIAS;
+        } else if (historyScore > 0) {
+            base = MoveBonus.QUIET_MOVE_BIAS;
+        }
         return base + killerScore + historyScore;
     }
 

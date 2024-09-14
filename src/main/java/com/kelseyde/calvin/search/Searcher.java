@@ -53,6 +53,9 @@ public class Searcher implements Search {
     TimeControl tc;
     Board board;
 
+    Move bestMoveCurrent;
+    int bestScoreCurrent;
+
     public Searcher(EngineConfig config, TranspositionTable tt, ThreadData td) {
         this.config = config;
         this.tt = tt;
@@ -96,6 +99,9 @@ public class Searcher implements Search {
 
         while (!shouldStopSoft() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
+            bestMoveCurrent = null;
+            bestScoreCurrent = 0;
+
             int searchDepth = td.depth - reduction;
             int delta = failMargin * retries;
 
@@ -103,13 +109,11 @@ public class Searcher implements Search {
             int score = search(searchDepth, 0, alpha, beta);
 
             // Update the best move and evaluation if a better move is found
-            Move move = ss.getBestMove(0).getMove();
-            history.updateBestMoveStability(bestMoveRoot, move);
-            history.updateBestScoreStability(bestScoreRoot, score);
-
-            if (move != null) {
-                bestMoveRoot = move;
-                bestScoreRoot = score;
+            if (bestMoveCurrent != null) {
+                history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
+                history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
+                bestMoveRoot = bestMoveCurrent;
+                bestScoreRoot = bestScoreCurrent;
                 if (td.isMainThread()) {
                     SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td.depth, td.start, td.nodes);
                     UCI.writeSearchInfo(result);
@@ -399,10 +403,14 @@ public class Searcher implements Search {
             if (score > alpha) {
                 // If the score is better than alpha, we have a new best move.
                 bestMove = move;
-                ss.setBestMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
-
                 alpha = score;
                 flag = HashFlag.EXACT;
+
+                ss.setBestMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
+                if (rootNode) {
+                    bestMoveCurrent = move;
+                    bestScoreCurrent = score;
+                }
 
                 if (score >= beta) {
                     // If the score is greater than beta, the position is outside the bounds of the current alpha-beta

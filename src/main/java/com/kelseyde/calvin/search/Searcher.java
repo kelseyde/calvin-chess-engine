@@ -6,13 +6,12 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
+import com.kelseyde.calvin.evaluation.SEE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
-import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
+import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -20,10 +19,8 @@ import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,48 +35,35 @@ import java.util.List;
  * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
  * then 3 ply and so on, until the time limit is exhausted. In case the timeout is reached in the middle of an iteration,
  * the search can still fall back on the best move found in the previous iteration. By prioritising searching the best
- * move found in the previous iteration, as well as the other ordering heuristics in the {@link MoveOrderer} -- and by
- * using a {@link TranspositionTable} -- the iterative approach is much more efficient than it might sound.
+ * move found in the previous iteration -- and by using a {@link TranspositionTable} -- the iterative approach is much
+ * more efficient than it might sound.
  * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
-@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Searcher implements Search {
 
-    EngineConfig config;
-    ThreadManager threadManager;
-    MoveGeneration moveGenerator;
-    MoveOrdering moveOrderer;
-    Evaluation evaluator;
-    StaticExchangeEvaluator see;
-    TranspositionTable tt;
+    final EngineConfig config;
+    final TranspositionTable tt;
+    final MoveGeneration movegen;
+    final Evaluation eval;
+    final SearchHistory history;
+    final SearchStack ss;
+    final ThreadData td;
 
-    Board board;
-    int nodes;
-    Instant start;
+    Move bestMoveCurrent;
+    int bestScoreCurrent;
+
     TimeControl tc;
-    SearchStack ss = new SearchStack();
-    boolean cancelled;
+    Board board;
 
-    int currentDepth;
-
-    Move bestMoveRoot;
-    Move bestMoveCurrentDepth;
-    int bestMoveStability;
-
-    int bestScoreRoot;
-    int bestScoreCurrentDepth;
-    int previousEval;
-    int evalStability;
-
-    public Searcher(EngineConfig config, ThreadManager threadManager, TranspositionTable tt) {
+    public Searcher(EngineConfig config, TranspositionTable tt, ThreadData td) {
         this.config = config;
-        this.threadManager = threadManager;
         this.tt = tt;
-        this.moveGenerator = new MoveGenerator();
-        this.moveOrderer = new MoveOrderer();
-        this.evaluator = new NNUE();
-        this.see = new StaticExchangeEvaluator();
+        this.td = td;
+        this.eval = new NNUE();
+        this.ss = new SearchStack();
+        this.history = new SearchHistory();
+        this.movegen = new MoveGenerator();
     }
 
     /**
@@ -90,24 +74,18 @@ public class Searcher implements Search {
     @Override
     public SearchResult search(TimeControl timeControl) {
 
-        start = Instant.now();
-
-        List<Move> rootMoves = moveGenerator.generateMoves(board);
+        List<Move> rootMoves = movegen.generateMoves(board);
         if (rootMoves.size() == 1) {
             return handleOnlyOneLegalMove(rootMoves);
         }
 
         tc = timeControl;
-        ss = new SearchStack();
-        nodes = 0;
-        currentDepth = 1;
-        bestMoveRoot = null;
-        bestMoveCurrentDepth = null;
-        bestMoveStability = 0;
-        bestScoreRoot = 0;
-        bestScoreCurrentDepth = 0;
-        cancelled = false;
-        moveOrderer.ageHistoryScores(board.isWhiteToMove());
+        ss.clear();
+        td.reset();
+        history.reset();
+
+        Move bestMoveRoot = null;
+        int bestScoreRoot = 0;
 
         int alpha = Score.MIN;
         int beta = Score.MAX;
@@ -118,29 +96,28 @@ public class Searcher implements Search {
         int margin = config.getAspMargin();
         int failMargin = config.getAspFailMargin();
 
-        SearchResult result = null;
-
-        while (!shouldStopSoft() && currentDepth < Search.MAX_DEPTH) {
+        while (!shouldStopSoft() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
-            bestMoveCurrentDepth = null;
-            bestScoreCurrentDepth = 0;
-            int searchDepth = currentDepth - reduction;
+            bestMoveCurrent = null;
+            bestScoreCurrent = 0;
+
+            int searchDepth = td.depth - reduction;
             int delta = failMargin * retries;
 
             // Perform alpha-beta search for the current depth
             int score = search(searchDepth, 0, alpha, beta);
 
             // Update the best move and evaluation if a better move is found
-            if (bestMoveCurrentDepth != null) {
-                bestMoveStability = bestMoveRoot != null && bestMoveRoot.equals(bestMoveCurrentDepth) ? bestMoveStability + 1 : 0;
-                bestMoveRoot = bestMoveCurrentDepth;
-                bestScoreRoot = bestScoreCurrentDepth;
-                result = SearchResult.of(bestMoveRoot, bestScoreRoot, currentDepth, start, nodes);
-                threadManager.handleSearchResult(result);
+            if (bestMoveCurrent != null) {
+                history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
+                history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
+                bestMoveRoot = bestMoveCurrent;
+                bestScoreRoot = bestScoreCurrent;
+                if (td.isMainThread()) {
+                    SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td);
+                    UCI.writeSearchInfo(result);
+                }
             }
-
-            // Update the eval stability if the eval is stable
-            evalStability = score >= previousEval - 10 && score <= previousEval + 10 ? evalStability + 1 : 0;
 
             // Check if search is cancelled or a checkmate is found
             if (shouldStop() || Score.isMateScore(score)) {
@@ -174,22 +151,13 @@ public class Searcher implements Search {
 
             // Increment depth and reset retry counter for next iteration
             retries = 0;
-            previousEval = score;
-            currentDepth++;
-        }
-
-        // If no move is found within the time limit, choose the first available move
-        if (result == null) {
-            UCI.write("info error time expired before a move was found");
-            List<Move> legalMoves = moveGenerator.generateMoves(board);
-            if (!legalMoves.isEmpty()) bestMoveRoot = legalMoves.get(0);
-            result = SearchResult.of(bestMoveRoot, 0, currentDepth, start, nodes);
+            td.depth++;
         }
 
         // Clear move ordering cache and return the search result
-        moveOrderer.getKillerTable().clear();
+        history.getKillerTable().clear();
 
-        return result;
+        return SearchResult.of(bestMoveRoot, bestScoreRoot, td);
 
     }
 
@@ -221,7 +189,7 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
-        moveOrderer.getKillerTable().clear(ply + 1);
+        history.getKillerTable().clear(ply + 1);
 
         // Probe the transposition table in case this node has been searched before. If so, we can potentially re-use the
         // result of the previous search and save some time, only if the following conditions are met:
@@ -236,16 +204,16 @@ public class Searcher implements Search {
             return ttEntry.getScore();
         }
 
-        Move ttMove = rootNode ? bestMoveRoot : null;
+        Move ttMove = null;
         if (ttEntry != null && ttEntry.getMove() != null) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.getMove();
         }
 
-        MovePicker movePicker = new MovePicker(moveGenerator, moveOrderer, board, ss, ply);
+        MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply);
         movePicker.setTtMove(ttMove);
 
-        boolean inCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+        boolean inCheck = movegen.isCheck(board, board.isWhiteToMove());
         movePicker.setInCheck(inCheck);
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
@@ -269,7 +237,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : evaluator.evaluate();
+            staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
         }
 
         ss.setStaticEval(ply, staticEval);
@@ -320,16 +288,17 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = Score.MIN;
-        boolean bestMoveIsQuiet = false;
         HashFlag flag = HashFlag.UPPER;
+
         int movesSearched = 0;
         List<Move> quietsSearched = new ArrayList<>();
+        List<PlayedMove> capturesSearched = new ArrayList<>();
 
         while (true) {
 
             Move move = movePicker.pickNextMove();
             if (move == null) break;
-            if (bestMove == null) bestMove = move;
+            //if (bestMove == null) bestMove = move;
             movesSearched++;
 
             Piece piece = board.pieceAt(move.getFrom());
@@ -350,15 +319,17 @@ public class Searcher implements Search {
                 continue;
             }
 
-            evaluator.makeMove(board, move);
+            eval.makeMove(board, move);
             if (!board.makeMove(move)) continue;
-            ss.setMove(ply, move, piece);
-            nodes++;
+            td.nodes++;
 
-            boolean isCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+            boolean isCheck = movegen.isCheck(board, board.isWhiteToMove());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
+            ss.setMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
             if (isQuiet) {
                 quietsSearched.add(move);
+            } else if (isCapture) {
+                capturesSearched.add(new PlayedMove(move, piece, capturedPiece, true, false));
             }
 
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
@@ -370,7 +341,7 @@ public class Searcher implements Search {
                 && isQuiet
                 && depth <= config.getLmpDepth()
                 && movesSearched >= lmpCutoff) {
-                evaluator.unmakeMove();
+                eval.unmakeMove();
                 board.unmakeMove();
                 ss.unsetMove(ply);
                 movePicker.setSkipQuiets(true);
@@ -416,7 +387,7 @@ public class Searcher implements Search {
                 }
             }
 
-            evaluator.unmakeMove();
+            eval.unmakeMove();
             board.unmakeMove();
             ss.unsetMove(ply);
 
@@ -431,12 +402,13 @@ public class Searcher implements Search {
             if (score > alpha) {
                 // If the score is better than alpha, we have a new best move.
                 bestMove = move;
-                bestMoveIsQuiet = isQuiet;
                 alpha = score;
                 flag = HashFlag.EXACT;
+
+                ss.setBestMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
                 if (rootNode) {
-                    bestMoveCurrentDepth = move;
-                    bestScoreCurrentDepth = score;
+                    bestMoveCurrent = move;
+                    bestScoreCurrent = score;
                 }
 
                 if (score >= beta) {
@@ -453,9 +425,14 @@ public class Searcher implements Search {
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
-        if (bestMove != null && bestMoveIsQuiet) {
-            // If the best move is a quiet move, update the history tables to be used for move ordering in future searches.
-            updateHistory(bestMove, depth, ply, quietsSearched);
+        if (bestMove != null) {
+            PlayedMove best = ss.getBestMove(ply);
+            if (best.isQuiet()) {
+                updateQuietHistory(best, ply, quietsSearched, capturesSearched);
+            }
+            else if (best.isCapture()) {
+                updateCaptureHistory(best, capturesSearched);
+            }
         }
 
         // Store the best move and score in the transposition table for future reference.
@@ -477,7 +454,7 @@ public class Searcher implements Search {
             return alpha;
         }
 
-        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry ttEntry = tt.get(board.key(), ply);
@@ -490,12 +467,12 @@ public class Searcher implements Search {
             movePicker.setTtMove(ttEntry.getMove());
         }
 
-        boolean isInCheck = moveGenerator.isCheck(board, board.isWhiteToMove());
+        boolean isInCheck = movegen.isCheck(board, board.isWhiteToMove());
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!isInCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : evaluator.evaluate();
+            staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
         }
 
         if (isInCheck) {
@@ -538,18 +515,18 @@ public class Searcher implements Search {
                 // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
-                int seeScore = see.evaluate(board, move);
+                int seeScore = SEE.see(board, move);
                 if ((depth <= 3 && seeScore < 0)
                         || (depth > 3 && seeScore <= 0)) {
                     continue;
                 }
             }
 
-            evaluator.makeMove(board, move);
+            eval.makeMove(board, move);
             if (!board.makeMove(move)) continue;
-            nodes++;
+            td.nodes++;
             int score = isDraw() ? Score.DRAW : -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
-            evaluator.unmakeMove();
+            eval.unmakeMove();
             board.unmakeMove();
 
             if (score > bestScore) {
@@ -574,12 +551,12 @@ public class Searcher implements Search {
     @Override
     public void setPosition(Board board) {
         this.board = board;
-        this.evaluator.setPosition(board);
+        this.eval.setPosition(board);
     }
 
     @Override
     public void setHashSize(int hashSizeMb) {
-        this.tt = new TranspositionTable(hashSizeMb);
+        this.tt.resize(hashSizeMb);
     }
 
     @Override
@@ -587,27 +564,48 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void updateHistory(Move move, int depth, int ply, List<Move> quietsSearched) {
-        // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
-        moveOrderer.addKillerMove(ply, move);
-        moveOrderer.addHistoryScore(move, ss, depth, ply, board.isWhiteToMove());
-        moveOrderer.addCounterMove(move, ss, ply, board.isWhiteToMove());
+    private void updateQuietHistory(
+            PlayedMove bestMove, int ply, List<Move> quietsSearched, List<PlayedMove> capturesSearched) {
+
+        history.getKillerTable().add(ply, bestMove.getMove());
+
         for (Move quiet : quietsSearched) {
-            if (quiet.equals(move)) continue;
-            moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
+            boolean good = bestMove.getMove().equals(quiet);
+            history.getHistoryTable().update(quiet, board.isWhiteToMove(), good);
+        }
+
+        for (PlayedMove captureMove : capturesSearched) {
+            boolean good = bestMove.equals(captureMove);
+            Piece piece = captureMove.getPiece();
+            int to = captureMove.getMove().getTo();
+            Piece captured = captureMove.getCaptured();
+            history.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
+        }
+
+    }
+
+    private void updateCaptureHistory(PlayedMove bestMove, List<PlayedMove> capturesSearched) {
+        for (PlayedMove capture : capturesSearched) {
+            boolean good = bestMove.equals(capture);
+            Piece piece = capture.getPiece();
+            int to = capture.getMove().getTo();
+            Piece captured = capture.getCaptured();
+            history.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
         }
     }
 
     private boolean shouldStop() {
         // Exit if global search is cancelled
         if (config.isSearchCancelled()) return true;
-        // Exit if local search is cancelled
-        if (cancelled) return true;
-        return !config.isPondering() && tc != null && tc.isHardLimitReached(start, currentDepth, nodes);
+        return !config.isPondering() && tc != null && tc.isHardLimitReached(td.start, td.depth, td.nodes);
     }
 
     private boolean shouldStopSoft() {
-        return !config.isPondering() && tc != null && tc.isSoftLimitReached(start, currentDepth, nodes, bestMoveStability, evalStability);
+        if (config.isPondering() || tc == null)
+            return false;
+        int bestMoveStability = history.getBestMoveStability();
+        int scoreStability = history.getBestScoreStability();
+        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveStability, scoreStability);
     }
 
     private boolean isDraw() {
@@ -635,9 +633,10 @@ public class Searcher implements Search {
     private SearchResult handleOnlyOneLegalMove(List<Move> rootMoves) {
         // If there is only one legal move, play it immediately
         Move move = rootMoves.get(0);
-        int eval = evaluator.evaluate();
-        SearchResult result = SearchResult.of(move, eval, 1, start, 1);
-        threadManager.handleSearchResult(result);
+        int eval = this.eval.evaluate();
+        SearchResult result = SearchResult.of(move, eval, td);
+        if (td.isMainThread())
+            UCI.writeSearchInfo(result);
         return result;
     }
 
@@ -649,8 +648,8 @@ public class Searcher implements Search {
     @Override
     public void clearHistory() {
         tt.clear();
-        evaluator.clearHistory();
-        moveOrderer.clear();
+        eval.clearHistory();
+        history.clear();
     }
 
 }

@@ -2,7 +2,6 @@ package com.kelseyde.calvin.tables.history;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.search.Search;
 
 /**
  * The {@link CounterMoveTable} is similar to the {@link KillerTable} in that is stores moves that caused a cut-off.

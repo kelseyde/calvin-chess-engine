@@ -7,7 +7,7 @@ import com.kelseyde.calvin.tables.history.ContHistTable;
 import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ContHistTableTest {
 
@@ -51,7 +51,7 @@ public class ContHistTableTest {
         SearchStack ss = new SearchStack();
         Move prevMove = Notation.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
-        ss.setMove(0, prevMove, prevPiece);
+        ss.setMove(0, prevMove, prevPiece, null, false, false);
         int depth = 8;
         Move currMove = Notation.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;

@@ -19,9 +19,9 @@ import com.kelseyde.calvin.generation.MoveGenerator;
  */
 public class SEE {
 
-    private final MoveGenerator moveGenerator = new MoveGenerator();
+    private static final MoveGenerator MOVEGEN = new MoveGenerator();
 
-    public int evaluate(Board board, Move move) {
+    public static int see(Board board, Move move) {
 
         int score = 0;
         int square = move.getTo();
@@ -34,43 +34,21 @@ public class SEE {
             /* The opponent should have the option of 'standing pat' - that is, declining to continue the capture
              sequence if it would lead to a loss of material.
              Therefore, we return the minimum of the stand-pat score and the capture score. */
-            score = Math.min(score, score - evaluate(board, leastValuableAttacker));
+            score = Math.min(score, score - see(board, leastValuableAttacker));
         }
         board.unmakeMove();
         return score;
 
     }
 
-    /**
-     * The same SEE evaluation, but with the first move already made on the board. Used during search to evaluate whether
-     * a check should be extended
-     */
-    public int evaluateAfterMove(Board board, Move move) {
 
-        int score = 0;
-        int square = move.getTo();
-        Piece capturedPiece = board.getGameState().getCapturedPiece();
-        score += capturedPiece != null ? capturedPiece.getValue() : 0;
-
-        Move leastValuableAttacker = getLeastValuableAttacker(board, square);
-        if (leastValuableAttacker != null) {
-            /* The opponent should have the option of 'standing pat' - that is, declining to continue the capture
-             sequence if it would lead to a loss of material.
-             Therefore, we return the minimum of the stand-pat score and the capture score. */
-            score = Math.min(score, score - evaluate(board, leastValuableAttacker));
-        }
-        return score;
-
-    }
-
-
-    private Move getLeastValuableAttacker(Board board, int square) {
+    private static Move getLeastValuableAttacker(Board board, int square) {
 
         boolean white = board.isWhiteToMove();
 
         long pawns = board.getPawns(white);
         if (pawns > 0) {
-            long pawnAttackMask = moveGenerator.getPawnAttacks(board, square, !white);
+            long pawnAttackMask = MOVEGEN.getPawnAttacks(board, square, !white);
             if ((pawnAttackMask & pawns) != 0) {
                 int pawnStartSquare = Bitwise.getNextBit(pawnAttackMask & pawns);
                 return new Move(pawnStartSquare, square);
@@ -79,7 +57,7 @@ public class SEE {
 
         long knights = board.getKnights(white);
         if (knights > 0) {
-            long knightAttackMask = moveGenerator.getKnightAttacks(board, square, !white);
+            long knightAttackMask = MOVEGEN.getKnightAttacks(board, square, !white);
             if ((knightAttackMask & knights) != 0) {
                 int knightStartSquare = Bitwise.getNextBit(knightAttackMask & knights);
                 return new Move(knightStartSquare, square);
@@ -88,7 +66,7 @@ public class SEE {
 
         long bishops = board.getBishops(white);
         if (bishops > 0) {
-            long bishopAttackMask = moveGenerator.getBishopAttacks(board, square, !white);
+            long bishopAttackMask = MOVEGEN.getBishopAttacks(board, square, !white);
             if ((bishopAttackMask & bishops) != 0) {
                 int bishopStartSquare = Bitwise.getNextBit(bishopAttackMask & bishops);
                 return new Move(bishopStartSquare, square);
@@ -97,7 +75,7 @@ public class SEE {
 
         long rooks = board.getRooks(white);
         if (rooks > 0) {
-            long rookAttackMask = moveGenerator.getRookAttacks(board, square, !white);
+            long rookAttackMask = MOVEGEN.getRookAttacks(board, square, !white);
             if ((rookAttackMask & rooks) != 0) {
                 int rookStartSquare = Bitwise.getNextBit(rookAttackMask & rooks);
                 return new Move(rookStartSquare, square);
@@ -106,7 +84,7 @@ public class SEE {
 
         long queens = board.getQueens(white);
         if (queens > 0) {
-            long queenAttackMask = moveGenerator.getQueenAttacks(board, square, !white);
+            long queenAttackMask = MOVEGEN.getQueenAttacks(board, square, !white);
             if ((queenAttackMask & queens) != 0) {
                 int queenStartSquare = Bitwise.getNextBit(queenAttackMask & queens);
                 return new Move(queenStartSquare, square);
@@ -114,7 +92,7 @@ public class SEE {
         }
 
         long king = board.getKing(white);
-        long kingAttackMask = moveGenerator.getKingAttacks(board, square, !white);
+        long kingAttackMask = MOVEGEN.getKingAttacks(board, square, !white);
         if ((kingAttackMask & king) != 0) {
             int kingStartSquare = Bitwise.getNextBit(kingAttackMask & king);
             return new Move(kingStartSquare, square);

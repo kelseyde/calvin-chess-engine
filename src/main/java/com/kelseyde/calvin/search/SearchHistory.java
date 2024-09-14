@@ -18,14 +18,18 @@ public class SearchHistory {
 
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {
         if (bestMovePrevious == null || bestMoveCurrent == null) {
-            bestMoveStability = 0;
             return;
         }
         bestMoveStability = bestMovePrevious.equals(bestMoveCurrent) ? bestMoveStability + 1 : 0;
     }
 
     public void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
-        bestScoreStability = scorePrevious - 10 <= scoreCurrent && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
+        bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
+    }
+
+    public void resetStability() {
+        bestMoveStability = 0;
+        bestScoreStability = 0;
     }
 
     public void clear() {

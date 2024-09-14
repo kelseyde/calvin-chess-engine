@@ -6,10 +6,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.ThreadManager;
-import com.kelseyde.calvin.search.TimeControl;
+import com.kelseyde.calvin.search.*;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
@@ -181,8 +178,7 @@ public class TrainingDataScorer {
     private Searcher initSearcher() {
         EngineConfig config = EngineInitializer.loadDefaultConfig();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
-        ThreadManager threadManager = new ThreadManager();
-        return new Searcher(config, threadManager, transpositionTable);
+        return new Searcher(config, transpositionTable, new ThreadData(true));
     }
 
 }

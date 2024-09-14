@@ -4,13 +4,10 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
-import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class SEETest {
-
-    private static final SEE see = new SEE();
 
     @Test
     public void testSimpleCapturePawn() {
@@ -19,7 +16,7 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("e4", "d5");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(100, score);
 
@@ -32,7 +29,7 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("d5", "e4");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(320, score);
 
@@ -45,7 +42,7 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("e4", "d5");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(330, score);
 
@@ -58,7 +55,7 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("d6", "e4");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(500, score);
 
@@ -71,7 +68,7 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("e4", "d5");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(900, score);
 
@@ -84,7 +81,7 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("e4", "d5");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(-800, score);
 
@@ -97,7 +94,7 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("c7", "d5");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(330, score);
 
@@ -111,7 +108,7 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("b3", "d5");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(100, score);
 
@@ -125,13 +122,13 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("d4", "e4");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(-400, score);
 
         move = Notation.fromNotation("d4", "c4");
 
-        score = see.evaluate(board, move);
+        score = SEE.see(board, move);
 
         Assertions.assertEquals(500, score);
 
@@ -145,13 +142,13 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("e4", "d5");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(400, score);
 
         move = Notation.fromNotation("c4", "d5");
 
-        score = see.evaluate(board, move);
+        score = SEE.see(board, move);
 
         Assertions.assertEquals(-300, score);
 
@@ -165,24 +162,9 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Notation.fromNotation("e4", "d5");
 
-        int score = see.evaluate(board, move);
+        int score = SEE.see(board, move);
 
         Assertions.assertEquals(0, score);
-
-    }
-
-    @Test
-    public void testSeeAfterCheck() {
-
-        String fen = "4n1kb/5ppp/7P/8/8/8/1Q6/B5K1 w - - 0 1";
-
-        Board board = FEN.toBoard(fen);
-        Move move = Notation.fromNotation("b2", "g7");
-        board.makeMove(TestUtils.getLegalMove(board, move));
-
-        int score = see.evaluateAfterMove(board, move);
-
-        Assertions.assertEquals(-580, score);
 
     }
 

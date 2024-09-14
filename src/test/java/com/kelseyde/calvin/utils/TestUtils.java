@@ -12,7 +12,7 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.ThreadManager;
+import com.kelseyde.calvin.search.ThreadData;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 
 import java.io.IOException;
@@ -32,11 +32,10 @@ public class TestUtils {
     public static final Tablebase TABLEBASE = new LichessTablebase(PRD_CONFIG);
     public static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
     public static final TranspositionTable TRANSPOSITION_TABLE = new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb());
-    public static final ThreadManager THREAD_MANAGER = new ThreadManager();
-    public static final Searcher SEARCHER = new Searcher(TST_CONFIG, THREAD_MANAGER, TRANSPOSITION_TABLE);
+    public static final Searcher SEARCHER = new Searcher(TST_CONFIG, TRANSPOSITION_TABLE, new ThreadData(true));
 
     public static Engine getEngine() {
-        return new Engine(PRD_CONFIG, OPENING_BOOK, TABLEBASE, new Searcher(PRD_CONFIG, new ThreadManager(), new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb())));
+        return new Engine(PRD_CONFIG, OPENING_BOOK, TABLEBASE, new Searcher(PRD_CONFIG, new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb()), new ThreadData(true)));
     }
 
     private static EngineConfig loadConfig(String configLocation) {

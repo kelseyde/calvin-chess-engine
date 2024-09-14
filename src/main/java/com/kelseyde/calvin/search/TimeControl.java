@@ -22,6 +22,12 @@ public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, 
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
 
+    static final double NODE_TIME_BASE = 1.5;
+    static final double NODE_TIME_SCALE = 1.75;
+    static final double NODE_TIME_MIN = 0.15;
+
+    static final double SOFT_TIME_SCALE_MIN = 0.125;
+
     static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
     static final double[] SCORE_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
 
@@ -60,28 +66,40 @@ public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, 
         return expired.compareTo(hardLimit) > 0;
     }
 
-    public boolean isSoftLimitReached(Instant start, int depth, int nodes, int bestMoveStability, int evalStability) {
+    public boolean isSoftLimitReached(
+            Instant start, int depth, int nodes, int bestMoveNodes, int bestMoveStability, int evalStability) {
         if (maxDepth > 0 && depth >= maxDepth) return true;
         if (maxNodes > 0 && nodes >= maxNodes) return true;
         Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softLimit, bestMoveStability, evalStability);
+        Duration adjustedSoftLimit = adjustSoftLimit(softLimit, nodes, bestMoveNodes, bestMoveStability, evalStability);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 
-    private Duration adjustSoftLimit(Duration softLimit, int bestMoveStability, int scoreStability) {
+    private Duration adjustSoftLimit(
+            Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int scoreStability) {
+
+        double scale = 1.0;
+
+        double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
+
+        // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
+        // of the search has been spent on the best move, we can assume that the best move is more likely to be correct,
+        // and therefore we can spend less time searching further.
+        scale *= Math.max((NODE_TIME_BASE - bestMoveNodeFraction) * NODE_TIME_SCALE, NODE_TIME_MIN);
 
         // Scale the soft limit based on the stability of the best move. If the best move has remained stable for several
         // iterations, we can safely assume that we don't need to spend as much time searching further.
         bestMoveStability = Math.min(bestMoveStability, BEST_MOVE_STABILITY_FACTOR.length - 1);
-        double bmStabilityFactor = BEST_MOVE_STABILITY_FACTOR[bestMoveStability];
+        scale *= BEST_MOVE_STABILITY_FACTOR[bestMoveStability];
 
         // Scale the soft limit based on the stability of the search score. If the evaluation has remained stable for
         // several iterations, we can safely assume that we don't need to spend as much time searching further.
         scoreStability = Math.min(scoreStability, SCORE_STABILITY_FACTOR.length - 1);
-        double scoreStabilityFactor = SCORE_STABILITY_FACTOR[scoreStability];
+        scale *= SCORE_STABILITY_FACTOR[scoreStability];
 
-        double adjustedLimit = softLimit.toMillis() * bmStabilityFactor * scoreStabilityFactor;
-        return Duration.ofMillis((long) adjustedLimit);
+        scale = Math.max(scale, SOFT_TIME_SCALE_MIN);
+
+        return Duration.ofMillis((long) (softLimit.toMillis() * scale));
     }
 
 }

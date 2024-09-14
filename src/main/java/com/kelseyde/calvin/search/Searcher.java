@@ -17,7 +17,6 @@ import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
-import com.kelseyde.calvin.uci.UCI;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
@@ -48,26 +47,15 @@ public class Searcher implements Search {
     final MoveGeneration moveGenerator;
     final Evaluation evaluator;
     final SEE see;
-    TranspositionTable tt;
-
-    Board board;
-    int nodes;
-    Instant start;
-    TimeControl tc;
     final SearchStack ss;
     final SearchHistory history;
-    boolean cancelled;
+    final TranspositionTable tt;
 
+    Board board;
+    Instant start;
+    TimeControl tc;
     int currentDepth;
-
-    Move bestMoveRoot;
-    Move bestMoveCurrentDepth;
-    int bestMoveStability;
-
-    int bestScoreRoot;
-    int bestScoreCurrentDepth;
-    int previousEval;
-    int evalStability;
+    int nodes;
 
     public Searcher(EngineConfig config, ThreadManager threadManager, TranspositionTable tt) {
         this.config = config;
@@ -99,12 +87,8 @@ public class Searcher implements Search {
         ss.clear();
         nodes = 0;
         currentDepth = 1;
-        bestMoveRoot = null;
-        bestMoveCurrentDepth = null;
-        bestMoveStability = 0;
-        bestScoreRoot = 0;
-        bestScoreCurrentDepth = 0;
-        cancelled = false;
+        Move bestMoveRoot = null;
+        int bestScoreRoot = 0;
         history.getHistoryTable().ageScores(board.isWhiteToMove());
 
         int alpha = Score.MIN;
@@ -116,12 +100,8 @@ public class Searcher implements Search {
         int margin = config.getAspMargin();
         int failMargin = config.getAspFailMargin();
 
-        SearchResult result = null;
-
         while (!shouldStopSoft() && currentDepth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
-            bestMoveCurrentDepth = null;
-            bestScoreCurrentDepth = 0;
             int searchDepth = currentDepth - reduction;
             int delta = failMargin * retries;
 
@@ -129,16 +109,15 @@ public class Searcher implements Search {
             int score = search(searchDepth, 0, alpha, beta);
 
             // Update the best move and evaluation if a better move is found
-            if (bestMoveCurrentDepth != null) {
-                bestMoveStability = bestMoveRoot != null && bestMoveRoot.equals(bestMoveCurrentDepth) ? bestMoveStability + 1 : 0;
-                bestMoveRoot = bestMoveCurrentDepth;
-                bestScoreRoot = bestScoreCurrentDepth;
-                result = SearchResult.of(bestMoveRoot, bestScoreRoot, currentDepth, start, nodes);
-                threadManager.handleSearchResult(result);
-            }
+            Move move = ss.getBestMove(0).getMove();
+            history.updateBestMoveStability(bestMoveRoot, move);
+            history.updateBestScoreStability(bestScoreRoot, score);
 
-            // Update the eval stability if the eval is stable
-            evalStability = score >= previousEval - 10 && score <= previousEval + 10 ? evalStability + 1 : 0;
+            if (move != null) {
+                bestMoveRoot = move;
+                bestScoreRoot = score;
+                threadManager.handleSearchResult(SearchResult.of(bestMoveRoot, bestScoreRoot, currentDepth, start, nodes));
+            }
 
             // Check if search is cancelled or a checkmate is found
             if (shouldStop() || Score.isMateScore(score)) {
@@ -172,22 +151,13 @@ public class Searcher implements Search {
 
             // Increment depth and reset retry counter for next iteration
             retries = 0;
-            previousEval = score;
             currentDepth++;
-        }
-
-        // If no move is found within the time limit, choose the first available move
-        if (result == null) {
-            UCI.write("info error time expired before a move was found");
-            List<Move> legalMoves = moveGenerator.generateMoves(board);
-            if (!legalMoves.isEmpty()) bestMoveRoot = legalMoves.get(0);
-            result = SearchResult.of(bestMoveRoot, 0, currentDepth, start, nodes);
         }
 
         // Clear move ordering cache and return the search result
         history.getKillerTable().clear();
 
-        return result;
+        return SearchResult.of(bestMoveRoot, bestScoreRoot, currentDepth, start, nodes);
 
     }
 
@@ -234,7 +204,7 @@ public class Searcher implements Search {
             return ttEntry.getScore();
         }
 
-        Move ttMove = rootNode ? bestMoveRoot : null;
+        Move ttMove = null;
         if (ttEntry != null && ttEntry.getMove() != null) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.getMove();
@@ -436,10 +406,6 @@ public class Searcher implements Search {
 
                 alpha = score;
                 flag = HashFlag.EXACT;
-                if (rootNode) {
-                    bestMoveCurrentDepth = move;
-                    bestScoreCurrentDepth = score;
-                }
 
                 if (score >= beta) {
                     // If the score is greater than beta, the position is outside the bounds of the current alpha-beta
@@ -586,7 +552,7 @@ public class Searcher implements Search {
 
     @Override
     public void setHashSize(int hashSizeMb) {
-        this.tt = new TranspositionTable(hashSizeMb);
+        this.tt.resize(hashSizeMb);
     }
 
     @Override
@@ -626,13 +592,15 @@ public class Searcher implements Search {
     private boolean shouldStop() {
         // Exit if global search is cancelled
         if (config.isSearchCancelled()) return true;
-        // Exit if local search is cancelled
-        if (cancelled) return true;
         return !config.isPondering() && tc != null && tc.isHardLimitReached(start, currentDepth, nodes);
     }
 
     private boolean shouldStopSoft() {
-        return !config.isPondering() && tc != null && tc.isSoftLimitReached(start, currentDepth, nodes, bestMoveStability, evalStability);
+        if (config.isPondering() || tc == null)
+            return false;
+        int bestMoveStability = history.getBestMoveStability();
+        int scoreStability = history.getBestScoreStability();
+        return tc.isSoftLimitReached(start, currentDepth, nodes, bestMoveStability, scoreStability);
     }
 
     private boolean isDraw() {

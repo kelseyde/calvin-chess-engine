@@ -158,7 +158,7 @@ public class MovePicker {
 
     protected int scoreQuiet(Board board, Move move, int ply) {
         int killerIndex = history.getKillerTable().getIndex(move, ply);
-        int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * KillerTable.KILLERS_PER_PLY - killerIndex : 0;
+        int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
         int historyScore = history.getHistoryTable().get(move, board.isWhiteToMove());
         int base = 0;
         if (killerScore > 0) {

@@ -38,6 +38,7 @@ public class MovePicker {
     Move ttMove;
     boolean skipQuiets;
     boolean inCheck;
+
     int moveIndex;
     ScoredMove[] moves;
 

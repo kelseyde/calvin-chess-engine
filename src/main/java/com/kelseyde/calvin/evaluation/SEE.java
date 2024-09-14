@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search;
+package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Bitwise;
 import com.kelseyde.calvin.board.Board;
@@ -17,7 +17,7 @@ import com.kelseyde.calvin.generation.MoveGenerator;
  *
  * @see <a href="https://www.chessprogramming.org/Static_Exchange_Evaluation">Chess Programming Wiki</a>
  */
-public class StaticExchangeEvaluator {
+public class SEE {
 
     private final MoveGenerator moveGenerator = new MoveGenerator();
 

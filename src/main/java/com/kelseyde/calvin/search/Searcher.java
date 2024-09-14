@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
+import com.kelseyde.calvin.evaluation.SEE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
@@ -46,15 +47,15 @@ public class Searcher implements Search {
     final ThreadManager threadManager;
     final MoveGeneration moveGenerator;
     final Evaluation evaluator;
-    final StaticExchangeEvaluator see;
+    final SEE see;
     TranspositionTable tt;
 
     Board board;
     int nodes;
     Instant start;
     TimeControl tc;
-    SearchStack ss = new SearchStack();
-    final SearchHistory history = new SearchHistory();
+    final SearchStack ss;
+    final SearchHistory history;
     boolean cancelled;
 
     int currentDepth;
@@ -74,7 +75,9 @@ public class Searcher implements Search {
         this.tt = tt;
         this.moveGenerator = new MoveGenerator();
         this.evaluator = new NNUE();
-        this.see = new StaticExchangeEvaluator();
+        this.see = new SEE();
+        this.ss = new SearchStack();
+        this.history = new SearchHistory();
     }
 
     /**
@@ -93,7 +96,7 @@ public class Searcher implements Search {
         }
 
         tc = timeControl;
-        ss = new SearchStack();
+        ss.clear();
         nodes = 0;
         currentDepth = 1;
         bestMoveRoot = null;

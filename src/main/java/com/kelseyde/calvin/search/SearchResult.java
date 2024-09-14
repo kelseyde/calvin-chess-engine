@@ -11,10 +11,10 @@ public record SearchResult(int eval, Move move, int depth, long time, int nodes,
         return new SearchResult(0, null, 0, 0, 0, 0);
     }
 
-    public static SearchResult of(Move move, int score, int depth, Instant start, int nodes) {
-        long millis = start != null ? Duration.between(start, Instant.now()).toMillis() : 0;
-        long nps = nodes > 0 && millis > 0 ? ((nodes / millis) * 1000) : 0;
-        return new SearchResult(score, move, depth, millis, nodes, nps);
+    public static SearchResult of(Move move, int score, ThreadData td) {
+        long millis = td.start != null ? Duration.between(td.start, Instant.now()).toMillis() : 0;
+        long nps = td.nodes > 0 && millis > 0 ? ((td.nodes / millis) * 1000) : 0;
+        return new SearchResult(score, move, td.depth, millis, td.nodes, nps);
     }
 
 }

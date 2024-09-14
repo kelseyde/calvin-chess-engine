@@ -145,7 +145,7 @@ public class MovePicker {
 
         // Separate captures into winning and losing
         int materialDelta = capturedPiece.getValue() - piece.getValue();
-        captureScore += materialDelta >= 0 ? MoveBonus.WINNING_CAPTURE_BIAS : MoveBonus.LOSING_CAPTURE_BIAS;
+        captureScore += materialDelta >= 0 ? MoveBonus.WINNING_CAPTURE_BONUS : MoveBonus.LOSING_CAPTURE_BONUS;
 
         // Add MVV score to the capture score
         captureScore += MoveBonus.MVV_OFFSET * capturedPiece.getIndex();
@@ -158,19 +158,19 @@ public class MovePicker {
 
     protected int scoreQuiet(Board board, Move move, int ply) {
         int killerIndex = history.getKillerTable().getIndex(move, ply);
-        int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_BONUS * KillerTable.KILLERS_PER_PLY - killerIndex : 0;
+        int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * KillerTable.KILLERS_PER_PLY - killerIndex : 0;
         int historyScore = history.getHistoryTable().get(move, board.isWhiteToMove());
         int base = 0;
         if (killerScore > 0) {
-            base = MoveBonus.KILLER_MOVE_BIAS;
+            base = MoveBonus.KILLER_MOVE_BONUS;
         } else if (historyScore > 0) {
-            base = MoveBonus.QUIET_MOVE_BIAS;
+            base = MoveBonus.QUIET_MOVE_BONUS;
         }
         return base + killerScore + historyScore;
     }
 
     protected int scorePromotion(Move move) {
-        return move.getPromotionPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMOTION_BIAS : MoveBonus.UNDER_PROMOTION_BIAS;
+        return move.getPromotionPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
     }
 
     /**
@@ -190,5 +190,7 @@ public class MovePicker {
         moves[i] = moves[j];
         moves[j] = temp;
     }
+
+    public record ScoredMove(Move move, int score) {}
 
 }

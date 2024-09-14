@@ -27,9 +27,11 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public void resetStability() {
+    public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
+        historyTable.ageScores(true);
+        historyTable.ageScores(false);
     }
 
     public void clear() {

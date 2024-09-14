@@ -50,11 +50,11 @@ public class Searcher implements Search {
     final SearchStack ss;
     final ThreadData td;
 
-    TimeControl tc;
-    Board board;
-
     Move bestMoveCurrent;
     int bestScoreCurrent;
+
+    TimeControl tc;
+    Board board;
 
     public Searcher(EngineConfig config, TranspositionTable tt, ThreadData td) {
         this.config = config;
@@ -82,8 +82,7 @@ public class Searcher implements Search {
         tc = timeControl;
         ss.clear();
         td.reset();
-        history.resetStability();
-        history.getHistoryTable().ageScores(board.isWhiteToMove());
+        history.reset();
 
         Move bestMoveRoot = null;
         int bestScoreRoot = 0;
@@ -115,7 +114,7 @@ public class Searcher implements Search {
                 bestMoveRoot = bestMoveCurrent;
                 bestScoreRoot = bestScoreCurrent;
                 if (td.isMainThread()) {
-                    SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td.depth, td.start, td.nodes);
+                    SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td);
                     UCI.writeSearchInfo(result);
                 }
             }
@@ -158,7 +157,7 @@ public class Searcher implements Search {
         // Clear move ordering cache and return the search result
         history.getKillerTable().clear();
 
-        return SearchResult.of(bestMoveRoot, bestScoreRoot, td.depth, td.start, td.nodes);
+        return SearchResult.of(bestMoveRoot, bestScoreRoot, td);
 
     }
 
@@ -635,7 +634,7 @@ public class Searcher implements Search {
         // If there is only one legal move, play it immediately
         Move move = rootMoves.get(0);
         int eval = this.eval.evaluate();
-        SearchResult result = SearchResult.of(move, eval, 1, td.start, 1);
+        SearchResult result = SearchResult.of(move, eval, td);
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;

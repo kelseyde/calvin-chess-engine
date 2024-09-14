@@ -18,7 +18,6 @@ import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.ThreadManager;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 
 import java.io.IOException;
@@ -37,7 +36,7 @@ public class TestUtils {
     public static final OpeningBook OPENING_BOOK = EngineInitializer.loadDefaultOpeningBook(PRD_CONFIG);
     public static final Tablebase TABLEBASE = new LichessTablebase(PRD_CONFIG);
     public static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
-    public static final MoveOrdering MOVE_ORDERER = new MoveOrderer();
+    public static final MoveOrderer MOVE_ORDERER = new MoveOrderer();
     public static final Evaluation EVALUATOR = new NNUE();
     public static final TranspositionTable TRANSPOSITION_TABLE = new TranspositionTable(PRD_CONFIG.getDefaultHashSizeMb());
     public static final ThreadManager THREAD_MANAGER = new ThreadManager();

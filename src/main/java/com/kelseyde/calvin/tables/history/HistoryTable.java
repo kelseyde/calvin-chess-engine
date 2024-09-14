@@ -10,6 +10,16 @@ public class HistoryTable extends AbstractHistoryTable {
 
     int[][][] table = new int[2][64][64];
 
+    public void update(Move move, boolean white, boolean good) {
+        int colourIndex = Board.colourIndex(white);
+        int startSquare = move.getFrom();
+        int endSquare = move.getTo();
+        int current = table[colourIndex][startSquare][endSquare];
+        int bonus = good ? MAX_BONUS : -MAX_BONUS;
+        int update = gravity(current, bonus);
+        table[colourIndex][startSquare][endSquare] = update;
+    }
+
     public int get(Move historyMove, boolean white) {
         int colourIndex = Board.colourIndex(white);
         int startSquare = historyMove.getFrom();

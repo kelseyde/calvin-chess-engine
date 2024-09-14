@@ -12,7 +12,6 @@ import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.search.moveordering.StaticExchangeEvaluator;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
@@ -50,7 +49,7 @@ public class Searcher implements Search {
     EngineConfig config;
     ThreadManager threadManager;
     MoveGeneration moveGenerator;
-    MoveOrdering moveOrderer;
+    MoveOrderer moveOrderer;
     Evaluation evaluator;
     StaticExchangeEvaluator see;
     TranspositionTable tt;
@@ -108,7 +107,7 @@ public class Searcher implements Search {
         bestScoreRoot = 0;
         bestScoreCurrentDepth = 0;
         cancelled = false;
-        moveOrderer.ageHistoryScores(board.isWhiteToMove());
+        moveOrderer.getHistoryTable().ageScores(board.isWhiteToMove());
 
         int alpha = Score.MIN;
         int beta = Score.MAX;
@@ -487,7 +486,7 @@ public class Searcher implements Search {
             return alpha;
         }
 
-        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board);
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(moveGenerator, moveOrderer, board, ply);
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry ttEntry = tt.get(board.key(), ply);
@@ -597,29 +596,32 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void updateQuietHistory(PlayedMove move, int depth, int ply, List<Move> quietsSearched, List<PlayedMove> capturesSearched) {
-        // Quiet moves which cause a beta cut-off are stored as 'killer' and 'history' moves for future move ordering
-        moveOrderer.addKillerMove(ply, move.getMove());
-        moveOrderer.addHistoryScore(move.getMove(), ss, depth, ply, board.isWhiteToMove());
-        moveOrderer.addCounterMove(move.getMove(), ss, ply, board.isWhiteToMove());
+    private void updateQuietHistory(PlayedMove bestMove, int depth, int ply, List<Move> quietsSearched, List<PlayedMove> capturesSearched) {
+
+        moveOrderer.getKillerTable().add(ply, bestMove.getMove());
+
         for (Move quiet : quietsSearched) {
-            if (quiet.equals(move.getMove())) continue;
-            moveOrderer.subHistoryScore(quiet, ss, depth, ply, board.isWhiteToMove());
+            boolean good = bestMove.getMove().equals(quiet);
+            moveOrderer.getHistoryTable().update(quiet, board.isWhiteToMove(), good);
         }
+
         for (PlayedMove captureMove : capturesSearched) {
-            if (captureMove.equals(move)) continue;
-            moveOrderer.getCaptureHistoryTable()
-                    .sub(captureMove.getPiece(), captureMove.getMove().getTo(), captureMove.getCaptured(), board.isWhiteToMove(), depth);
+            boolean good = bestMove.equals(captureMove);
+            Piece piece = captureMove.getPiece();
+            int to = captureMove.getMove().getTo();
+            Piece captured = captureMove.getCaptured();
+            moveOrderer.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
         }
+
     }
 
-    private void updateCaptureHistory(PlayedMove move, int depth, List<PlayedMove> capturesSearched) {
-        int to = move.getMove().getTo();
-        moveOrderer.getCaptureHistoryTable().add(move.getPiece(), to, move.getCaptured(), board.isWhiteToMove(), depth);
-        for (PlayedMove captureMove : capturesSearched) {
-            if (captureMove.equals(move)) continue;
-            moveOrderer.getCaptureHistoryTable()
-                    .sub(captureMove.getPiece(), captureMove.getMove().getTo(), captureMove.getCaptured(), board.isWhiteToMove(), depth);
+    private void updateCaptureHistory(PlayedMove bestMove, int depth, List<PlayedMove> capturesSearched) {
+        for (PlayedMove capture : capturesSearched) {
+            boolean good = bestMove.equals(capture);
+            Piece piece = capture.getPiece();
+            int to = capture.getMove().getTo();
+            Piece captured = capture.getCaptured();
+            moveOrderer.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
         }
     }
 
@@ -675,7 +677,9 @@ public class Searcher implements Search {
     public void clearHistory() {
         tt.clear();
         evaluator.clearHistory();
-        moveOrderer.clear();
+        moveOrderer.getKillerTable().clear();
+        moveOrderer.getHistoryTable().clear();
+        moveOrderer.getCaptureHistoryTable().clear();
     }
 
 }

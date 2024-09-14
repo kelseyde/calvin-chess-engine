@@ -5,7 +5,6 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
@@ -26,7 +25,7 @@ public class QuiescentMovePicker implements MovePicking {
     }
 
     final MoveGeneration moveGenerator;
-    final MoveOrdering moveOrderer;
+    final MoveOrderer moveOrderer;
 
     final Board board;
     @Setter
@@ -37,6 +36,7 @@ public class QuiescentMovePicker implements MovePicking {
     Move ttMove;
     ScoredMove[] moves;
     int moveIndex;
+    int ply;
 
     /**
      * Constructs a MovePicker with the specified move generator, move orderer, board, and ply.
@@ -45,10 +45,11 @@ public class QuiescentMovePicker implements MovePicking {
      * @param moveOrderer   the move orderer to use for scoring and ordering moves
      * @param board         the current state of the board
      */
-    public QuiescentMovePicker(MoveGeneration moveGenerator, MoveOrdering moveOrderer, Board board) {
+    public QuiescentMovePicker(MoveGeneration moveGenerator, MoveOrderer moveOrderer, Board board, int ply) {
         this.moveGenerator = moveGenerator;
         this.moveOrderer = moveOrderer;
         this.board = board;
+        this.ply = ply;
         this.stage = Stage.TT_MOVE;
     }
 
@@ -112,7 +113,7 @@ public class QuiescentMovePicker implements MovePicking {
     public void scoreMoves(List<Move> stagedMoves) {
         moves = new ScoredMove[stagedMoves.size()];
         for (int i = 0; i < stagedMoves.size(); i++) {
-            moves[i] = new ScoredMove(stagedMoves.get(i), moveOrderer.mvvLva(board, stagedMoves.get(i), ttMove));
+            moves[i] = new ScoredMove(stagedMoves.get(i), moveOrderer.scoreMove(board, stagedMoves.get(i), ttMove, ply));
         }
     }
 

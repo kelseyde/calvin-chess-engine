@@ -10,12 +10,13 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
 
     int[][][][] table = new int[2][6][64][6];
 
-    public void update(Piece piece, int to, Piece captured, boolean white, boolean good) {
+    public void update(Piece piece, int to, Piece captured, int depth, boolean white, boolean good) {
         int colourIndex = Board.colourIndex(white);
         int pieceIndex = piece.getIndex();
         int capturedIndex = captured.getIndex();
         int current = table[colourIndex][pieceIndex][to][capturedIndex];
-        int bonus = good ? MAX_BONUS : -MAX_BONUS;
+        int bonus = bonus(depth);
+        if (!good) bonus = -bonus;
         int update = gravity(current, bonus);
         table[colourIndex][pieceIndex][to][capturedIndex] = update;
     }

@@ -291,7 +291,7 @@ public class Searcher implements Search {
         HashFlag flag = HashFlag.UPPER;
 
         int movesSearched = 0;
-        List<Move> quietsSearched = new ArrayList<>();
+        List<PlayedMove> quietsSearched = new ArrayList<>();
         List<PlayedMove> capturesSearched = new ArrayList<>();
 
         while (true) {
@@ -327,7 +327,7 @@ public class Searcher implements Search {
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
             ss.setMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
             if (isQuiet) {
-                quietsSearched.add(move);
+                quietsSearched.add(new PlayedMove(move, piece, capturedPiece, false, true));
             } else if (isCapture) {
                 capturesSearched.add(new PlayedMove(move, piece, capturedPiece, true, false));
             }
@@ -425,13 +425,14 @@ public class Searcher implements Search {
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
+        // TODO test switching back to only updating history on beta cutoffs
         if (bestMove != null) {
             PlayedMove best = ss.getBestMove(ply);
             if (best.isQuiet()) {
-                updateQuietHistory(best, ply, quietsSearched, capturesSearched);
+                history.updateQuietHistory(best, board.isWhiteToMove(), depth, ply, ss, quietsSearched, capturesSearched);
             }
             else if (best.isCapture()) {
-                updateCaptureHistory(best, capturesSearched);
+                history.updateCaptureHistory(best, board.isWhiteToMove(), depth, capturesSearched);
             }
         }
 
@@ -562,36 +563,6 @@ public class Searcher implements Search {
     @Override
     public void setThreadCount(int threadCount) {
         // do nothing as this implementation is single-threaded
-    }
-
-    private void updateQuietHistory(
-            PlayedMove bestMove, int ply, List<Move> quietsSearched, List<PlayedMove> capturesSearched) {
-
-        history.getKillerTable().add(ply, bestMove.getMove());
-
-        for (Move quiet : quietsSearched) {
-            boolean good = bestMove.getMove().equals(quiet);
-            history.getHistoryTable().update(quiet, board.isWhiteToMove(), good);
-        }
-
-        for (PlayedMove captureMove : capturesSearched) {
-            boolean good = bestMove.equals(captureMove);
-            Piece piece = captureMove.getPiece();
-            int to = captureMove.getMove().getTo();
-            Piece captured = captureMove.getCaptured();
-            history.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
-        }
-
-    }
-
-    private void updateCaptureHistory(PlayedMove bestMove, List<PlayedMove> capturesSearched) {
-        for (PlayedMove capture : capturesSearched) {
-            boolean good = bestMove.equals(capture);
-            Piece piece = capture.getPiece();
-            int to = capture.getMove().getTo();
-            Piece captured = capture.getCaptured();
-            history.getCaptureHistoryTable().update(piece, to, captured, board.isWhiteToMove(), good);
-        }
     }
 
     private boolean shouldStop() {

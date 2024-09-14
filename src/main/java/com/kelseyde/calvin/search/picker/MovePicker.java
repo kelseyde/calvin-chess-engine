@@ -157,16 +157,23 @@ public class MovePicker {
     }
 
     protected int scoreQuiet(Board board, Move move, int ply) {
+        boolean white = board.isWhiteToMove();
+        Piece piece = board.pieceAt(move.getFrom());
         int killerIndex = history.getKillerTable().getIndex(move, ply);
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
-        int historyScore = history.getHistoryTable().get(move, board.isWhiteToMove());
+        int historyScore = history.getHistoryTable().get(move, white);
+        Move prevMove = ss.getMove(ply - 1);
+        Piece prevPiece = ss.getMovedPiece(ply - 1);
+        int contHistScore = history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
+
         int base = 0;
         if (killerScore > 0) {
             base = MoveBonus.KILLER_MOVE_BONUS;
-        } else if (historyScore > 0) {
+        } else if (historyScore > 0 || contHistScore > 0) {
             base = MoveBonus.QUIET_MOVE_BONUS;
         }
-        return base + killerScore + historyScore;
+
+        return base + killerScore + historyScore + contHistScore;
     }
 
     protected int scorePromotion(Move move) {

@@ -129,9 +129,9 @@ public class MovePicker {
             return scorePromotion(move);
         }
 
-        Piece capturedPiece = board.pieceAt(endSquare);
-        if (capturedPiece != null) {
-            return scoreCapture(board, startSquare, endSquare, capturedPiece);
+        Piece captured = board.pieceAt(endSquare);
+        if (captured != null) {
+            return scoreCapture(board, startSquare, endSquare, captured);
         }
         else {
             return scoreQuiet(board, move, ply);
@@ -139,19 +139,19 @@ public class MovePicker {
 
     }
 
-    protected int scoreCapture(Board board, int startSquare, int endSquare, Piece capturedPiece) {
-        Piece piece = board.pieceAt(startSquare);
+    protected int scoreCapture(Board board, int from, int to, Piece captured) {
+        Piece piece = board.pieceAt(from);
         int captureScore = 0;
 
         // Separate captures into winning and losing
-        int materialDelta = capturedPiece.getValue() - piece.getValue();
+        int materialDelta = captured.getValue() - piece.getValue();
         captureScore += materialDelta >= 0 ? MoveBonus.WINNING_CAPTURE_BONUS : MoveBonus.LOSING_CAPTURE_BONUS;
 
         // Add MVV score to the capture score
-        captureScore += MoveBonus.MVV_OFFSET * capturedPiece.getIndex();
+        captureScore += MoveBonus.MVV_OFFSET * captured.getIndex();
 
         // Tie-break with capture history
-        captureScore += history.getCaptureHistoryTable().get(piece, endSquare, capturedPiece, board.isWhiteToMove());
+        captureScore += history.getCaptureHistoryTable().get(piece, to, captured, board.isWhiteToMove());
 
         return captureScore;
     }

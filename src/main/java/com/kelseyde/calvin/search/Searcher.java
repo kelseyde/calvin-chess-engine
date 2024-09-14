@@ -496,6 +496,7 @@ public class Searcher implements Search {
         int movesSearched = 0;
 
         int bestScore = alpha;
+        int futilityScore = bestScore + config.getQsFpMargin();
 
         while (true) {
 
@@ -513,10 +514,21 @@ public class Searcher implements Search {
                         && (staticEval + capturedPiece.getValue() + config.getDpMargin() < alpha)) {
                     continue;
                 }
-                // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
+
+                int seeScore = SEE.see(board, move);
+
+                // Futility Pruning
+                // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
+                // win material when the static eval plus some margin is sufficiently below alpha.
+                if (capturedPiece != null
+                    && futilityScore <= alpha
+                    && seeScore <= 0) {
+                    continue;
+                }
+
+                // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
-                int seeScore = SEE.see(board, move);
                 if ((depth <= 3 && seeScore < 0)
                         || (depth > 3 && seeScore <= 0)) {
                     continue;

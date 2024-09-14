@@ -15,13 +15,13 @@ public class ThreadData {
     public ThreadData(boolean mainThread) {
         this.mainThread = mainThread;
         this.nodes = 0;
-        this.depth = 0;
+        this.depth = 1;
     }
 
     public void reset() {
         this.start = Instant.now();
         this.nodes = 0;
-        this.depth = 0;
+        this.depth = 1;
     }
 
 }

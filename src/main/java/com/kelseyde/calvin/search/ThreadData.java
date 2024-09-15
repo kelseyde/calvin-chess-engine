@@ -11,17 +11,20 @@ public class ThreadData {
     public Instant start;
     public int nodes;
     public int depth;
+    public int depthLogged;
 
     public ThreadData(boolean mainThread) {
         this.mainThread = mainThread;
         this.nodes = 0;
         this.depth = 1;
+        this.depthLogged = 0;
     }
 
     public void reset() {
         this.start = Instant.now();
         this.nodes = 0;
         this.depth = 1;
+        this.depthLogged = 0;
     }
 
 }

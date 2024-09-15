@@ -7,6 +7,7 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.search.ThreadData;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
@@ -16,6 +17,8 @@ import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -181,15 +184,14 @@ public class UCI {
         write("info error unknown command " + command.args()[0]);
     }
 
-    public static void writeSearchInfo(SearchResult searchResult) {
-        int depth = searchResult.depth();
-        String score = formatScore(searchResult.eval());
-        long time = searchResult.time();
-        int nodes = searchResult.nodes();
-        long nps = searchResult.nps();
+    public static void writeSearchInfo(int bestScore, ThreadData td) {
+        if (td.depth <= td.depthLogged) return;
+        long millis = td.start != null ? Duration.between(td.start, Instant.now()).toMillis() : 0;
+        long nps = td.nodes > 0 && millis > 0 ? ((td.nodes / millis) * 1000) : 0;
+        String score = formatScore(bestScore);
         String pv = ENGINE.extractPrincipalVariation().stream()
                 .map(Notation::toNotation).collect(Collectors.joining(" "));
-        write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
+        write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", td.depth, score, td.nodes, millis, nps, pv));
     }
 
     private static String formatScore(int eval) {

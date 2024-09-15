@@ -114,8 +114,8 @@ public class Searcher implements Search {
                 bestMoveRoot = bestMoveCurrent;
                 bestScoreRoot = bestScoreCurrent;
                 if (td.isMainThread()) {
-                    SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td);
-                    UCI.writeSearchInfo(result);
+                    UCI.writeSearchInfo(bestScoreRoot, td);
+                    td.depthLogged = td.depth;
                 }
             }
 
@@ -453,9 +453,12 @@ public class Searcher implements Search {
             return alpha;
         }
 
+        boolean pvNode = beta - alpha > 1;
+
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry ttEntry = tt.get(board.key(), ply);
-        if (ttEntry != null
+        if (!pvNode
+                && ttEntry != null
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
             return ttEntry.getScore();
@@ -617,8 +620,10 @@ public class Searcher implements Search {
         Move move = rootMoves.get(0);
         int eval = this.eval.evaluate();
         SearchResult result = SearchResult.of(move, eval, td);
-        if (td.isMainThread())
-            UCI.writeSearchInfo(result);
+        if (td.isMainThread()) {
+            UCI.writeSearchInfo(eval, td);
+            td.depthLogged = td.depth;
+        }
         return result;
     }
 

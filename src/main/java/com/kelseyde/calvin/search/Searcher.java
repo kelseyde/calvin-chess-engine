@@ -210,11 +210,9 @@ public class Searcher implements Search {
             ttMove = ttEntry.getMove();
         }
 
-        MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply);
-        movePicker.setTtMove(ttMove);
-
         boolean inCheck = movegen.isCheck(board, board.isWhiteToMove());
-        movePicker.setInCheck(inCheck);
+
+        MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
         // If we are in check then there if a forcing sequence, so we could benefit from searching one ply deeper to
@@ -455,8 +453,6 @@ public class Searcher implements Search {
             return alpha;
         }
 
-        QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply);
-
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry ttEntry = tt.get(board.key(), ply);
         if (ttEntry != null
@@ -464,19 +460,22 @@ public class Searcher implements Search {
                 && ttEntry.isWithinBounds(alpha, beta)) {
             return ttEntry.getScore();
         }
+        Move ttMove = null;
         if (ttEntry != null && ttEntry.getMove() != null) {
-            movePicker.setTtMove(ttEntry.getMove());
+            ttMove = ttEntry.getMove();
         }
 
-        boolean isInCheck = movegen.isCheck(board, board.isWhiteToMove());
+        boolean inCheck = movegen.isCheck(board, board.isWhiteToMove());
+
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
-        if (!isInCheck) {
+        if (!inCheck) {
             staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
         }
 
-        if (isInCheck) {
+        if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.
             movePicker.setFilter(MoveFilter.ALL);
@@ -504,7 +503,7 @@ public class Searcher implements Search {
             if (move == null) break;
             movesSearched++;
 
-            if (!isInCheck) {
+            if (!inCheck) {
                 // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
                 // is bad for us no matter what we do, and not bother searching any further
@@ -553,7 +552,7 @@ public class Searcher implements Search {
             }
         }
 
-        if (movesSearched == 0 && isInCheck) {
+        if (movesSearched == 0 && inCheck) {
             return -Score.MATE + ply;
         }
 

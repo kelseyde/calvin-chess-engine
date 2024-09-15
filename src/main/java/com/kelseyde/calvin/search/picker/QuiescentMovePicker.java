@@ -13,8 +13,9 @@ public class QuiescentMovePicker extends MovePicker {
 
     private MoveFilter filter;
 
-    public QuiescentMovePicker(MoveGeneration movegen, SearchStack ss, SearchHistory history, Board board, int ply) {
-        super(movegen, ss, history, board, ply);
+    public QuiescentMovePicker(
+            MoveGeneration movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+        super(movegen, ss, history, board, ply, ttMove, inCheck);
         this.skipQuiets = true;
     }
 

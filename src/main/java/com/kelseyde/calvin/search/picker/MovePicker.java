@@ -42,13 +42,16 @@ public class MovePicker {
     int moveIndex;
     ScoredMove[] moves;
 
-    public MovePicker(MoveGeneration movegen, SearchStack ss, SearchHistory history, Board board, int ply) {
+    public MovePicker(
+            MoveGeneration movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;
         this.ss = ss;
         this.ply = ply;
-        this.stage = Stage.TT_MOVE;
+        this.ttMove = ttMove;
+        this.inCheck = inCheck;
+        this.stage = ttMove != null ? Stage.TT_MOVE : Stage.NOISY;
     }
 
     public Move pickNextMove() {
@@ -186,6 +189,13 @@ public class MovePicker {
      * Select the move with the highest score and move it to the head of the move list.
      */
     protected Move pick() {
+//        ScoredMove nextMove = moves[moveIndex];
+//        if (nextMove.move.equals(ttMove)) {
+//            moveIndex++;
+//            if (moveIndex >= moves.length) {
+//                return null;
+//            }
+//        }
         for (int j = moveIndex + 1; j < moves.length; j++) {
             if (moves[j].score() > moves[moveIndex].score()) {
                 swap(moveIndex, j);
@@ -193,6 +203,16 @@ public class MovePicker {
         }
         return moves[moveIndex].move();
     }
+
+//    protected Move pick() {
+//        for (int j = moveIndex + 1; j < moves.length; j++) {
+//            ScoredMove move = moves[j];
+//            if (!move.move().equals(ttMove) && move.score() > moves[moveIndex].score()) {
+//                swap(moveIndex, j);
+//            }
+//        }
+//        return moves[moveIndex].move();
+//    }
 
     protected void swap(int i, int j) {
         ScoredMove temp = moves[i];

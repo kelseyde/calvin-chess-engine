@@ -25,15 +25,13 @@ public class KillerTable {
         }
     }
 
-    public int score(Move move, int ply, int base, int bonus) {
-        if (ply >= Search.MAX_DEPTH) return 0;
-
+    public int getIndex(Move move, int ply) {
         for (int i = 0; i < KILLERS_PER_PLY; i++) {
             if (move.equals(table[ply][i])) {
-                return base + (bonus * (KILLERS_PER_PLY - i));
+                return i;
             }
         }
-        return 0;
+        return -1;
     }
 
     public void clear(int ply) {

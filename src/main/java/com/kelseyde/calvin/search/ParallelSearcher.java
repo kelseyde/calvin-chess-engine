@@ -31,7 +31,6 @@ import java.util.stream.IntStream;
 public class ParallelSearcher implements Search {
 
     final EngineConfig config;
-    final ThreadManager threadManager;
     TranspositionTable tt;
     int threadCount;
     int hashSize;
@@ -49,7 +48,6 @@ public class ParallelSearcher implements Search {
         this.config = config;
         this.hashSize = config.getDefaultHashSizeMb();
         this.threadCount = config.getDefaultThreadCount();
-        this.threadManager = new ThreadManager();
         this.tt = tt;
         this.searchers = initSearchers();
     }
@@ -65,7 +63,6 @@ public class ParallelSearcher implements Search {
     public SearchResult search(TimeControl timeControl) {
         try {
             setPosition(board);
-            threadManager.reset();
             List<CompletableFuture<SearchResult>> threads = searchers.stream()
                     .map(searcher -> initThread(searcher, timeControl))
                     .toList();
@@ -152,7 +149,9 @@ public class ParallelSearcher implements Search {
      * @return the list of initialized searchers
      */
     private List<Searcher> initSearchers() {
-        return IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+        return IntStream.range(0, threadCount)
+                .mapToObj(i -> initSearcher(i == 0))
+                .toList();
     }
 
     /**
@@ -160,8 +159,9 @@ public class ParallelSearcher implements Search {
      *
      * @return the initialized searcher
      */
-    private Searcher initSearcher() {
-        return new Searcher(config, threadManager, tt);
+    private Searcher initSearcher(boolean mainThread) {
+        ThreadData td = new ThreadData(mainThread);
+        return new Searcher(config, tt, td);
     }
 
     /**

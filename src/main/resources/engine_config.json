@@ -30,7 +30,7 @@
   "nmpDepth":0,
   "fpDepth":6,
   "rfpDepth":5,
-  "lmrDepth":3,
+  "lmrDepth":2,
   "lmrMinSearchedMoves":3,
   "lmrBase":0.85,
   "lmrDivisor":3.12,
@@ -39,6 +39,7 @@
   "iirDepth":4,
   "nmpMargin":70,
   "dpMargin":140,
+  "qsFpMargin": 100,
   "fpMargin": [ 0, 120, 200, 375, 425, 500, 550 ],
   "rfpMargin":[ 74, 40 ]
 

@@ -4,17 +4,9 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
-import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
-import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.ThreadManager;
-import com.kelseyde.calvin.search.TimeControl;
-import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
+import com.kelseyde.calvin.search.*;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
@@ -185,12 +177,8 @@ public class TrainingDataScorer {
 
     private Searcher initSearcher() {
         EngineConfig config = EngineInitializer.loadDefaultConfig();
-        MoveGeneration moveGenerator = new MoveGenerator();
-        MoveOrdering moveOrderer = new MoveOrderer();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
-        ThreadManager threadManager = new ThreadManager();
-        Evaluation evaluator = new NNUE();
-        return new Searcher(config, threadManager, moveGenerator, moveOrderer, evaluator, transpositionTable);
+        return new Searcher(config, transpositionTable, new ThreadData(true));
     }
 
 }

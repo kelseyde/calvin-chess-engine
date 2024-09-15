@@ -3,9 +3,6 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -34,11 +31,7 @@ import java.util.stream.IntStream;
 public class ParallelSearcher implements Search {
 
     final EngineConfig config;
-    final Supplier<MoveGeneration> moveGeneratorSupplier;
-    final Supplier<MoveOrdering> moveOrdererSupplier;
-    final Supplier<Evaluation> evaluatorSupplier;
-    final ThreadManager threadManager;
-    TranspositionTable transpositionTable;
+    TranspositionTable tt;
     int threadCount;
     int hashSize;
     Board board;
@@ -49,24 +42,13 @@ public class ParallelSearcher implements Search {
      * The suppliers are used to create the necessary components for each search thread.
      *
      * @param config the engine configuration
-     * @param moveGeneratorSupplier supplier for move generation
-     * @param moveOrdererSupplier supplier for move ordering
-     * @param evaluatorSupplier supplier for evaluation
-     * @param transpositionTable the shared transposition table
+     * @param tt the shared transposition table
      */
-    public ParallelSearcher(EngineConfig config,
-                            Supplier<MoveGeneration> moveGeneratorSupplier,
-                            Supplier<MoveOrdering> moveOrdererSupplier,
-                            Supplier<Evaluation> evaluatorSupplier,
-                            TranspositionTable transpositionTable) {
+    public ParallelSearcher(EngineConfig config, TranspositionTable tt) {
         this.config = config;
         this.hashSize = config.getDefaultHashSizeMb();
         this.threadCount = config.getDefaultThreadCount();
-        this.threadManager = new ThreadManager();
-        this.transpositionTable = transpositionTable;
-        this.moveGeneratorSupplier = moveGeneratorSupplier;
-        this.moveOrdererSupplier = moveOrdererSupplier;
-        this.evaluatorSupplier = evaluatorSupplier;
+        this.tt = tt;
         this.searchers = initSearchers();
     }
 
@@ -81,13 +63,12 @@ public class ParallelSearcher implements Search {
     public SearchResult search(TimeControl timeControl) {
         try {
             setPosition(board);
-            threadManager.reset();
             List<CompletableFuture<SearchResult>> threads = searchers.stream()
                     .map(searcher -> initThread(searcher, timeControl))
                     .toList();
 
             SearchResult result = selectResult(threads).get();
-            transpositionTable.incrementGeneration();
+            tt.incrementGeneration();
             return result;
         } catch (Exception e) {
             System.out.println("info error " + e);
@@ -117,7 +98,7 @@ public class ParallelSearcher implements Search {
     @Override
     public void setHashSize(int hashSizeMb) {
         this.hashSize = hashSizeMb;
-        this.transpositionTable = new TranspositionTable(this.hashSize);
+        this.tt = new TranspositionTable(this.hashSize);
         this.searchers = initSearchers();
     }
 
@@ -168,7 +149,9 @@ public class ParallelSearcher implements Search {
      * @return the list of initialized searchers
      */
     private List<Searcher> initSearchers() {
-        return IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+        return IntStream.range(0, threadCount)
+                .mapToObj(i -> initSearcher(i == 0))
+                .toList();
     }
 
     /**
@@ -176,11 +159,9 @@ public class ParallelSearcher implements Search {
      *
      * @return the initialized searcher
      */
-    private Searcher initSearcher() {
-        MoveGeneration moveGenerator = this.moveGeneratorSupplier.get();
-        MoveOrdering moveOrderer = this.moveOrdererSupplier.get();
-        Evaluation evaluator = this.evaluatorSupplier.get();
-        return new Searcher(config, threadManager, moveGenerator, moveOrderer, evaluator, transpositionTable);
+    private Searcher initSearcher(boolean mainThread) {
+        ThreadData td = new ThreadData(mainThread);
+        return new Searcher(config, tt, td);
     }
 
     /**
@@ -190,7 +171,7 @@ public class ParallelSearcher implements Search {
      */
     @Override
     public TranspositionTable getTranspositionTable() {
-        return transpositionTable;
+        return tt;
     }
 
     /**
@@ -198,13 +179,8 @@ public class ParallelSearcher implements Search {
      */
     @Override
     public void clearHistory() {
-        transpositionTable.clear();
+        tt.clear();
         searchers.forEach(Searcher::clearHistory);
-    }
-
-    @Override
-    public void logStatistics() {
-        System.out.println("info threads " + searchers.stream().map(Searcher::toString).toList());
     }
 
 }

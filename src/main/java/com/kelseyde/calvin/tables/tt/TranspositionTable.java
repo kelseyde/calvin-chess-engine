@@ -19,7 +19,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TranspositionTable {
 
-    final int tableSize;
+    int tableSize;
     HashEntry[] entries;
 
     int tries;
@@ -144,6 +144,14 @@ public class TranspositionTable {
      */
     public void incrementGeneration() {
         generation++;
+    }
+
+    public void resize(int tableSizeMb) {
+        this.tableSize = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
+        entries = new HashEntry[tableSize];
+        tries = 0;
+        hits = 0;
+        generation = 0;
     }
 
     /**

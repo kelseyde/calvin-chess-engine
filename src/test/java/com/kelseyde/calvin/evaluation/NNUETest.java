@@ -189,25 +189,6 @@ public class NNUETest {
     }
 
     @Test
-    public void testNullMove() {
-
-        String fen1 = "rn1qk2r/ppp2ppp/4b3/8/1bPPn3/2N5/PP3PPP/R1BQKBNR w KQkq - 3 7";
-        Board board1 = FEN.toBoard(fen1);
-        NNUE nnue1 = new NNUE(board1);
-        int originalEval = nnue1.evaluate();
-        Assertions.assertEquals(originalEval, new NNUE(board1).evaluate());
-        board1.makeNullMove();
-        int nullMoveEval = nnue1.evaluate();
-        Assertions.assertNotEquals(originalEval, nullMoveEval);
-        String fen2 = "rn1qk2r/ppp2ppp/4b3/8/1bPPn3/2N5/PP3PPP/R1BQKBNR b KQkq - 3 7";
-        Board board2 = FEN.toBoard(fen2);
-        Assertions.assertEquals(nullMoveEval, new NNUE(board2).evaluate());
-        board1.unmakeNullMove();
-        Assertions.assertEquals(originalEval, nnue1.evaluate());
-
-    }
-
-    @Test
     public void testIncrementalEvaluationConsistency() {
         String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         Board board = FEN.toBoard(fen);

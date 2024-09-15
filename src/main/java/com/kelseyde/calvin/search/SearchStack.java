@@ -2,6 +2,8 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 public class SearchStack {
 
@@ -28,20 +30,50 @@ public class SearchStack {
 
     public Move getMove(int ply) {
         SearchStackEntry entry = get(ply);
-        return entry != null ? entry.move : null;
+        return entry != null && entry.currentMove != null ? entry.currentMove.move : null;
     }
 
     public Piece getMovedPiece(int ply) {
         SearchStackEntry entry = get(ply);
-        return entry != null ? entry.movedPiece : null;
+        return entry != null && entry.currentMove != null ? entry.currentMove.piece : null;
     }
 
-    public void setMove(int ply, Move move, Piece movedPiece) {
+    public void setMove(int ply, Move move, Piece piece, Piece captured, boolean capture, boolean quiet) {
         if (ply < 0 || ply >= Search.MAX_DEPTH) {
             return;
         }
-        stack[ply].move = move;
-        stack[ply].movedPiece = movedPiece;
+        stack[ply].currentMove = new PlayedMove(move, piece, captured, capture, quiet);
+    }
+
+    public void unsetMove(int ply) {
+        if (ply < 0 || ply >= Search.MAX_DEPTH) {
+            return;
+        }
+        stack[ply].currentMove = null;
+    }
+
+    public void setBestMove(int ply, Move move, Piece piece, Piece captured, boolean capture, boolean quiet) {
+        if (ply < 0 || ply >= Search.MAX_DEPTH) {
+            return;
+        }
+        stack[ply].bestMove = new PlayedMove(move, piece, captured, capture, quiet);
+    }
+
+    public PlayedMove getBestMove(int ply) {
+        SearchStackEntry entry = get(ply);
+        return entry != null ? entry.bestMove : null;
+    }
+
+    public void setNullMoveAllowed(int ply, boolean nullAllowed) {
+        if (ply < 0 || ply >= Search.MAX_DEPTH) {
+            return;
+        }
+        stack[ply].nullMoveAllowed = nullAllowed;
+    }
+
+    public boolean isNullMoveAllowed(int ply) {
+        SearchStackEntry entry = get(ply);
+        return entry != null && entry.nullMoveAllowed;
     }
 
     public void clear() {
@@ -52,8 +84,19 @@ public class SearchStack {
 
     public static class SearchStackEntry {
         public int staticEval;
-        public Move move;
-        public Piece movedPiece;
+        public PlayedMove currentMove;
+        public PlayedMove bestMove;
+        public boolean nullMoveAllowed = true;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class PlayedMove {
+        private Move move;
+        private Piece piece;
+        private Piece captured;
+        private boolean capture;
+        private boolean quiet;
     }
 
 }

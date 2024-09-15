@@ -4,17 +4,9 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
-import com.kelseyde.calvin.evaluation.Evaluation;
-import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
-import com.kelseyde.calvin.generation.MoveGeneration;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.ThreadManager;
-import com.kelseyde.calvin.search.TimeControl;
-import com.kelseyde.calvin.search.moveordering.MoveOrderer;
-import com.kelseyde.calvin.search.moveordering.MoveOrdering;
+import com.kelseyde.calvin.search.*;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
@@ -78,8 +70,8 @@ public class TrainingDataScorer {
                     Duration duration = Duration.between(start, Instant.now());
                     int total = scored.get() + excluded.get() + command.resumeOffset();
                     int totalSinceResume = total - command.resumeOffset();
-                    int remaining = TOTAL_POSITIONS_PER_FILE - command.resumeOffset() - total;
-                    double rate = (double) total / duration.toMillis() * 1000;
+                    int remaining = TOTAL_POSITIONS_PER_FILE - total;
+                    double rate = (double) totalSinceResume / duration.getSeconds();
                     Duration estimate = Duration.ofSeconds((long) (remaining / rate));
                     System.out.printf("processed %d, since resume %d, scored %d, excluded %d, time %s, pos/s %s, remaining pos %s remaining time %s\n",
                             total, totalSinceResume, scored.get(), excluded.get(), duration, rate, remaining, estimate);
@@ -185,12 +177,8 @@ public class TrainingDataScorer {
 
     private Searcher initSearcher() {
         EngineConfig config = EngineInitializer.loadDefaultConfig();
-        MoveGeneration moveGenerator = new MoveGenerator();
-        MoveOrdering moveOrderer = new MoveOrderer();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
-        ThreadManager threadManager = new ThreadManager();
-        Evaluation evaluator = new NNUE();
-        return new Searcher(config, threadManager, moveGenerator, moveOrderer, evaluator, transpositionTable);
+        return new Searcher(config, transpositionTable, new ThreadData(true));
     }
 
 }

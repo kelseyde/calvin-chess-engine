@@ -40,6 +40,7 @@ public class EngineConfig {
     int maxPossibleMoves = 250;
     int aspMargin;
     int aspFailMargin;
+    int aspMaxReduction;
     int nmpDepth;
     int fpDepth;
     int rfpDepth;
@@ -52,6 +53,7 @@ public class EngineConfig {
     int iirDepth;
     int nmpMargin;
     int dpMargin;
+    int qsFpMargin;
     int[][] lmrReductions;
     int[] fpMargin;
     int[] rfpMargin;

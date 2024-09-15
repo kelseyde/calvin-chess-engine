@@ -1,6 +1,0 @@
-- [ ] MultiCut/Probcut
-- [ ] Singular Extension
-- [ ] Razoring
-- [ ] Improve Texel Tuner gradient descent algorithm
-- [ ] Datagen function for Texel/NNUE tuning
-- [ ] NNUE

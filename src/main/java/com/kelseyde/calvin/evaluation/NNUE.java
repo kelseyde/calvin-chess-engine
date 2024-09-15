@@ -33,9 +33,9 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "tactician.nnue";
+        public static final String FILE = "daybreak.nnue";
         public static final int INPUT_SIZE = 768;
-        public static final int HIDDEN_SIZE = 256;
+        public static final int HIDDEN_SIZE = 384;
 
         public static final Network NETWORK = EngineInitializer.loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
 
@@ -48,6 +48,16 @@ public class NNUE implements Evaluation {
     static final int QA = 255;
     static final int QB = 64;
     static final int QAB = QA * QB;
+
+    static final int MATERIAL_BASE = 22400;
+    static final int MATERIAL_FACTOR = 32768;
+
+    static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
+    static final int UPPER_BOUND = SPECIES.loopBound(Network.HIDDEN_SIZE);
+
+    static final ShortVector FLOOR = ShortVector.broadcast(SPECIES, 0);
+    static final ShortVector CEIL = ShortVector.broadcast(SPECIES, QA);
+
 
     final Accumulator[] accumulators = new Accumulator[256];
     int current = 0;
@@ -76,6 +86,7 @@ public class NNUE implements Evaluation {
         eval += forward(them, Network.HIDDEN_SIZE);
         eval *= SCALE;
         eval /= QAB;
+        eval = scaleEval(board, eval);
         return eval;
 
     }
@@ -86,19 +97,14 @@ public class NNUE implements Evaluation {
      */
     private int forward(short[] features, int weightOffset) {
         short[] weights = Network.NETWORK.outputWeights;
-        short floor = 0;
-        short ceil = QA;
         int sum = 0;
 
-        VectorSpecies<Short> species = ShortVector.SPECIES_PREFERRED;
-        for (int i = 0; i < species.loopBound(features.length); i += species.length()) {
-            var featuresVector = ShortVector.fromArray(species, features, i);
-            var weightsVector = ShortVector.fromArray(species, weights, i + weightOffset);
-
-            var clippedVector = featuresVector.min(ceil).max(floor);
-            var resultVector = clippedVector.mul(weightsVector);
-
-            sum += resultVector.reduceLanes(VectorOperators.ADD);
+        for (int i = 0; i < UPPER_BOUND; i += SPECIES.length()) {
+            sum += ShortVector.fromArray(SPECIES, features, i)
+                    .min(CEIL)
+                    .max(FLOOR)
+                    .mul(ShortVector.fromArray(SPECIES, weights, i + weightOffset))
+                    .reduceLanes(VectorOperators.ADD);
         }
 
         return sum;
@@ -260,6 +266,21 @@ public class NNUE implements Evaluation {
         this.current = 0;
         this.accumulators[current] = new Accumulator(Network.HIDDEN_SIZE);
         activateAll(board);
+    }
+
+    private int scaleEval(Board board, int eval) {
+        int materialPhase = materialPhase(board);
+        eval = eval * materialPhase / MATERIAL_FACTOR;
+        eval = eval * (200 - board.getGameState().getHalfMoveClock()) / 200;
+        return eval;
+    }
+
+    private int materialPhase(Board board) {
+        long knights = Bitwise.countBits(board.getKnights());
+        long bishops = Bitwise.countBits(board.getBishops());
+        long rooks = Bitwise.countBits(board.getRooks());
+        long queens = Bitwise.countBits(board.getQueens());
+        return (int) (MATERIAL_BASE + 3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
     }
 
     /**

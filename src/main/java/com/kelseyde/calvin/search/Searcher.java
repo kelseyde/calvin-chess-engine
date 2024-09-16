@@ -434,6 +434,7 @@ public class Searcher implements Search {
             }
         }
 
+        // todo exclude best move checks?
         if (!inCheck && (bestMove == null || board.isQuiet(bestMove)) &&
             !(flag == HashFlag.LOWER && staticEval >= bestScore) &&
             !(flag == HashFlag.UPPER && staticEval <= bestScore)) {

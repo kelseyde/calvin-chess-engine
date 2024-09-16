@@ -145,9 +145,6 @@ public class Board {
         if (capturedPiece != null) {
             toggleSquare(capturedPiece, !whiteToMove, endSquare);
             gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, endSquare, capturedPiece, !whiteToMove);
-            if (capturedPiece == Piece.PAWN) {
-                gameState.pawnZobrist = Zobrist.updatePiece(gameState.pawnZobrist, endSquare, capturedPiece, !whiteToMove);
-            }
         }
         gameState.zobrist = Zobrist.updatePiece(gameState.zobrist, endSquare, promotionPiece, whiteToMove);
     }
@@ -365,6 +362,14 @@ public class Board {
 
     public long getPieces(boolean white) {
         return white ? whitePieces : blackPieces;
+    }
+
+    public boolean isCapture(Move move) {
+        return move.isEnPassant() || pieceAt(move.getTo()) != null;
+    }
+
+    public boolean isQuiet(Move move) {
+        return !move.isPromotion() && !isCapture(move);
     }
 
     public long key() {

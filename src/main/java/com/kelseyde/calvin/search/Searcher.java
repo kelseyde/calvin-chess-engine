@@ -14,7 +14,6 @@ import com.kelseyde.calvin.generation.MoveGenerator;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
-import com.kelseyde.calvin.tables.history.CorrHistTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -50,7 +49,6 @@ public class Searcher implements Search {
     final SearchHistory history;
     final SearchStack ss;
     final ThreadData td;
-    final CorrHistTable corrHistTable;
 
 
     Move bestMoveCurrent;
@@ -67,7 +65,6 @@ public class Searcher implements Search {
         this.ss = new SearchStack();
         this.history = new SearchHistory();
         this.movegen = new MoveGenerator();
-        this.corrHistTable = new CorrHistTable();
     }
 
     /**
@@ -237,12 +234,12 @@ public class Searcher implements Search {
         }
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
+        int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
-            staticEval = corrHistTable.correctEvaluation(board.getGameState().getPawnZobrist(), board.isWhiteToMove(), staticEval);
+            rawStaticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = history.correctEvaluation(board, rawStaticEval);
         }
-
         ss.setStaticEval(ply, staticEval);
 
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
@@ -437,12 +434,14 @@ public class Searcher implements Search {
             }
         }
 
-        if (!inCheck && (bestMove == null || bestMoveIsQuiet)) {
-            corrHistTable.update(board.pawnKey(), board.isWhiteToMove(), depth, bestScore, staticEval);
+        if (!inCheck && (bestMove == null || board.isQuiet(bestMove)) &&
+            !(flag == HashFlag.LOWER && staticEval >= bestScore) &&
+            !(flag == HashFlag.UPPER && staticEval <= bestScore)) {
+            history.updateCorrectionHistory(board, depth, bestScore, staticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.
-        tt.put(board.key(), flag, depth, ply, bestMove, staticEval, bestScore);
+        tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
 
         return bestScore;
 
@@ -477,10 +476,11 @@ public class Searcher implements Search {
         QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
+        int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
-            staticEval = corrHistTable.correctEvaluation(board.getGameState().getPawnZobrist(), board.isWhiteToMove(), staticEval);
+            rawStaticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = history.correctEvaluation(board, rawStaticEval);
         }
 
         if (inCheck) {
@@ -496,8 +496,7 @@ public class Searcher implements Search {
             if (staticEval > alpha) {
                 alpha = staticEval;
             }
-            MoveFilter filter = depth == 1 ? MoveFilter.NOISY : MoveFilter.CAPTURES_ONLY;
-            movePicker.setFilter(filter);
+            movePicker.setFilter(depth == 1 ? MoveFilter.NOISY : MoveFilter.CAPTURES_ONLY);
         }
 
         int movesSearched = 0;
@@ -640,7 +639,6 @@ public class Searcher implements Search {
         tt.clear();
         eval.clearHistory();
         history.clear();
-        corrHistTable.clear();
     }
 
 }

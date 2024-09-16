@@ -1,12 +1,10 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.HistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
+import com.kelseyde.calvin.tables.history.*;
 import lombok.Data;
 
 import java.util.List;
@@ -18,6 +16,7 @@ public class SearchHistory {
     private HistoryTable historyTable = new HistoryTable();
     private ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
     private CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
+    private CorrectionHistoryTable pawnCorrHistTable = new CorrectionHistoryTable();
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -67,6 +66,14 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
+    public int correctEvaluation(Board board, int staticEval) {
+        return pawnCorrHistTable.correctEvaluation(board.pawnKey(), board.isWhiteToMove(), staticEval);
+    }
+
+    public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
+        pawnCorrHistTable.update(board.pawnKey(), board.isWhiteToMove(), depth, score, staticEval);
+    }
+
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
@@ -78,6 +85,7 @@ public class SearchHistory {
         killerTable.clear();
         historyTable.clear();
         captureHistoryTable.clear();
+        pawnCorrHistTable.clear();
     }
 
 }

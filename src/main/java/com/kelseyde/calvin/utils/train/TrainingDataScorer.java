@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -35,6 +36,7 @@ public class TrainingDataScorer {
     // 2220 pos/s current avg
 
     private static final int THREAD_COUNT = 20;
+    private static final int THREAD_TIMEOUT_SECONDS = 15;
     private static final int BATCH_SIZE = THREAD_COUNT * 1000;
     private static final int TT_SIZE = 64;
     private static final int TOTAL_POSITIONS_PER_FILE = 100000000;
@@ -113,7 +115,7 @@ public class TrainingDataScorer {
         List<String> scoredBatch = new ArrayList<>(positions.size());
         for (Future<List<String>> future : futures) {
             try {
-                scoredBatch.addAll(future.get());
+                scoredBatch.addAll(future.get(THREAD_TIMEOUT_SECONDS, TimeUnit.SECONDS));
             } catch (Exception e) {
                 throw new RuntimeException("Failed to score batch " + Arrays.toString(e.getStackTrace()) + e.getCause() + e.getMessage(), e);
             }

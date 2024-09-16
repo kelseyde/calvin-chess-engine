@@ -42,8 +42,8 @@
 //        for (int move = 0; move < totalMoves; move++) {
 //            addMove();
 //            TimeControl tc = TimeControl.init(new Board(), (int) timeRemaining.toMillis(), 0, (int) increment.toMillis(), 0);
-//            System.out.printf("Move %s, Time %s, Soft Limit %s, Hard Limit %s%n", move, timeRemaining, tc.softLimit(), tc.hardLimit());
-//            timeRemaining = timeRemaining.minus(tc.softLimit()).plus(increment).minus(overhead);
+//            System.out.printf("Move %s, Time %s, Soft Limit %s, Hard Limit %s%n", move, timeRemaining, tc.softTime(), tc.hardTime());
+//            timeRemaining = timeRemaining.minus(tc.softTime()).plus(increment).minus(overhead);
 //        }
 //
 //

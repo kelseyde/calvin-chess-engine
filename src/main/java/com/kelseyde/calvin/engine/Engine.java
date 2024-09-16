@@ -123,7 +123,7 @@ public class Engine {
     }
 
     public SearchResult think(int timeout) {
-        TimeControl tc = new TimeControl(Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1);
+        TimeControl tc = new TimeControl(Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1, -1);
         return searcher.search(tc);
     }
 
@@ -189,7 +189,7 @@ public class Engine {
         return !config.isPondering()
                 && config.isOwnTablebaseEnabled()
                 && board.countPieces() <= config.getMaxTablebaseSupportedPieces()
-                && tablebase.canProbeTablebase(tc.hardLimit());
+                && tablebase.canProbeTablebase(tc.hardTime());
     }
 
     /**

@@ -435,6 +435,101 @@ public class BoardTest {
 
     }
 
+    @Test
+    public void testNonPawnKeyGeneration() {
+
+        // pawn moves
+        String fen1 = "rnbqkbnr/1ppppppp/8/8/p7/PPP5/3PPPPP/RNBQKBNR w KQkq - 0 4";
+        String fen2 = "rnbqkbnr/1ppppppp/8/8/p7/PPPP4/4PPPP/RNBQKBNR b KQkq - 0 4";
+
+        long[] keys1 = Zobrist.generateNonPawnKeys(FEN.toBoard(fen1));
+        long[] keys2 = Zobrist.generateNonPawnKeys(FEN.toBoard(fen2));
+
+        Assertions.assertEquals(keys1[0], keys2[0]);
+        Assertions.assertEquals(keys1[1], keys2[1]);
+
+        // white piece moves
+        fen1 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+        fen2 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
+
+        keys1 = Zobrist.generateNonPawnKeys(FEN.toBoard(fen1));
+        keys2 = Zobrist.generateNonPawnKeys(FEN.toBoard(fen2));
+
+        Assertions.assertNotEquals(keys1[0], keys2[0]);
+        Assertions.assertEquals(keys1[1], keys2[1]);
+
+        // black piece moves
+        fen1 = "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2";
+        fen2 = "rnbqk1nr/pppp1ppp/8/2b1p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3";
+
+        keys1 = Zobrist.generateNonPawnKeys(FEN.toBoard(fen1));
+        keys2 = Zobrist.generateNonPawnKeys(FEN.toBoard(fen2));
+
+        Assertions.assertNotEquals(keys1[1], keys2[1]);
+        Assertions.assertEquals(keys1[0], keys2[0]);
+
+    }
+
+    @Test
+    public void testNonPawnKeyUnmakeMove() {
+
+
+
+    }
+
+    @Test
+    public void testNonPawnKeyUpdates() {
+
+        String fen = "rnbqkbnr/1ppppppp/8/8/p7/PPP5/3PPPPP/RNBQKBNR w KQkq - 0 4";
+        Board board = FEN.toBoard(fen);
+        long[] keysBefore = board.getState().nonPawnKeys;
+        long[] freshKeysBefore = Zobrist.generateNonPawnKeys(board);
+        Assertions.assertEquals(keysBefore[0], freshKeysBefore[0]);
+        Assertions.assertEquals(keysBefore[1], freshKeysBefore[1]);
+
+        Move move = Notation.fromUCI("d2d3");
+        board.makeMove(move);
+        long[] keysAfter = board.getState().nonPawnKeys;
+        long[] freshKeyAfters = Zobrist.generateNonPawnKeys(board);
+        Assertions.assertEquals(keysAfter[0], freshKeyAfters[0]);
+        Assertions.assertEquals(keysAfter[1], freshKeyAfters[1]);
+
+        Assertions.assertEquals(keysBefore[0], keysAfter[0]);
+        Assertions.assertEquals(keysBefore[1], keysAfter[1]);
+
+    }
+
+    @Test
+    public void testMultipleNonPawnMoves() {
+
+        Board board = new Board();
+        List<Move> moves = List.of(
+          Notation.fromUCI("a2a3"),
+          Notation.fromUCI("a7a6"),
+          Notation.fromUCI("e2e3"),
+          Notation.fromUCI("d7d5"),
+          Notation.fromUCI("e3e4")
+        );
+
+        for (Move move : moves) {
+
+            System.out.println("move: " + Notation.toNotation(move));
+            long[] keysBefore = board.getState().nonPawnKeys;
+            long[] freshKeysBefore = Zobrist.generateNonPawnKeys(board);
+            Assertions.assertEquals(keysBefore[0], freshKeysBefore[0]);
+            Assertions.assertEquals(keysBefore[1], freshKeysBefore[1]);
+            board.makeMove(move);
+            long[] keysAfter = board.getState().nonPawnKeys;
+            long[] freshKeyAfters = Zobrist.generateNonPawnKeys(board);
+            Assertions.assertEquals(keysAfter[0], freshKeyAfters[0]);
+            Assertions.assertEquals(keysAfter[1], freshKeyAfters[1]);
+            Assertions.assertEquals(keysBefore[0], keysAfter[0]);
+            Assertions.assertEquals(keysBefore[1], keysAfter[1]);
+
+        }
+
+    }
+
     private Set<Integer> getPiecePositions(Board board, boolean whiteToMove) {
         Set<Integer> positions = new HashSet<>();
         if (whiteToMove) {

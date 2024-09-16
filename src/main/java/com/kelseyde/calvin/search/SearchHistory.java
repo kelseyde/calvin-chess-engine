@@ -71,17 +71,18 @@ public class SearchHistory {
         boolean white = board.isWhiteToMove();
 
         int pawnCorrection = pawnCorrHistTable.getCorrection(board.pawnKey(), white);
-        int whiteNonPawnCorrection = nonPawnCorrHistTable.getCorrection(board.nonPawnKey(true), white);
-        int blackNonPawnCorrection = nonPawnCorrHistTable.getCorrection(board.nonPawnKey(false), white);
+//        int whiteNonPawnCorrection = nonPawnCorrHistTable.getCorrection(board.nonPawnKey(true), white);
+//        int blackNonPawnCorrection = nonPawnCorrHistTable.getCorrection(board.nonPawnKey(false), white);
 
-        return staticEval + pawnCorrection + (whiteNonPawnCorrection + blackNonPawnCorrection) / 2;
+//        return staticEval + pawnCorrection + (whiteNonPawnCorrection + blackNonPawnCorrection) / 2;
+        return staticEval + pawnCorrection;
     }
 
     public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
         boolean white = board.isWhiteToMove();
         pawnCorrHistTable.update(board.pawnKey(), white, depth, score, staticEval);
-        nonPawnCorrHistTable.update(board.nonPawnKey(true), white, depth, score, staticEval);
-        nonPawnCorrHistTable.update(board.nonPawnKey(false), white, depth, score, staticEval);
+//        nonPawnCorrHistTable.update(board.nonPawnKey(true), white, depth, score, staticEval);
+//        nonPawnCorrHistTable.update(board.nonPawnKey(false), white, depth, score, staticEval);
     }
 
     public void reset() {

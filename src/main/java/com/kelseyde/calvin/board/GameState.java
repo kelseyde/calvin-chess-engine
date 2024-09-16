@@ -16,7 +16,7 @@ public class GameState {
 
     long key = 0L;
     long pawnKey = 0L;
-    long[] nonPawnKey = new long[2];
+    long[] nonPawnKeys = new long[2];
     Piece capturedPiece;
     int enPassantFile = -1;
     int castlingRights = Bits.INITIAL_CASTLING_RIGHTS;
@@ -33,7 +33,8 @@ public class GameState {
     }
 
     public GameState copy() {
-        return new GameState(key, pawnKey, nonPawnKey, capturedPiece, enPassantFile, castlingRights, halfMoveClock);
+        long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
+        return new GameState(key, pawnKey, nonPawnKeysCopy, capturedPiece, enPassantFile, castlingRights, halfMoveClock);
     }
 
 }

@@ -191,7 +191,7 @@ public class NNUE implements Evaluation {
     private int scaleEval(Board board, int eval) {
         int materialPhase = materialPhase(board);
         eval = eval * materialPhase / MATERIAL_FACTOR;
-        eval = eval * (200 - board.getGameState().getHalfMoveClock()) / 200;
+        eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
         return eval;
     }
 

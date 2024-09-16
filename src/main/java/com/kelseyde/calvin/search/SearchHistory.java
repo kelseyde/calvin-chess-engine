@@ -17,6 +17,7 @@ public class SearchHistory {
     private ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
     private CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
     private CorrectionHistoryTable pawnCorrHistTable = new CorrectionHistoryTable();
+    private CorrectionHistoryTable nonPawnCorrHistTable = new CorrectionHistoryTable();
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -67,11 +68,20 @@ public class SearchHistory {
     }
 
     public int correctEvaluation(Board board, int staticEval) {
-        return pawnCorrHistTable.correctEvaluation(board.pawnKey(), board.isWhiteToMove(), staticEval);
+        boolean white = board.isWhiteToMove();
+
+        int pawnCorrection = pawnCorrHistTable.getCorrection(board.pawnKey(), white);
+        int whiteNonPawnCorrection = nonPawnCorrHistTable.getCorrection(board.nonPawnKey(true), white);
+        int blackNonPawnCorrection = nonPawnCorrHistTable.getCorrection(board.nonPawnKey(false), white);
+
+        return staticEval + pawnCorrection + (whiteNonPawnCorrection + blackNonPawnCorrection) / 2;
     }
 
     public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
-        pawnCorrHistTable.update(board.pawnKey(), board.isWhiteToMove(), depth, score, staticEval);
+        boolean white = board.isWhiteToMove();
+        pawnCorrHistTable.update(board.pawnKey(), white, depth, score, staticEval);
+        nonPawnCorrHistTable.update(board.nonPawnKey(true), white, depth, score, staticEval);
+        nonPawnCorrHistTable.update(board.nonPawnKey(false), white, depth, score, staticEval);
     }
 
     public void reset() {
@@ -86,6 +96,7 @@ public class SearchHistory {
         historyTable.clear();
         captureHistoryTable.clear();
         pawnCorrHistTable.clear();
+        nonPawnCorrHistTable.clear();
     }
 
 }

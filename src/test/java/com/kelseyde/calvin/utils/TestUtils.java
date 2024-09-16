@@ -65,7 +65,7 @@ public class TestUtils {
         board.setOccupied(0L);
         board.setPieceList(new Piece[64]);
 
-        board.getGameState().setCastlingRights(0b0000);
+        board.getState().setCastlingRights(0b0000);
 
         return board;
     }

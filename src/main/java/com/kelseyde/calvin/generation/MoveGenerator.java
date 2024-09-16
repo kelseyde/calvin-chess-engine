@@ -198,8 +198,8 @@ public class MoveGenerator implements MoveGeneration {
                 rightCaptures = Bitwise.popBit(rightCaptures);
             }
 
-            if (board.getGameState().getEnPassantFile() >= 0) {
-                long enPassantFile = Bitwise.getFileBitboard(board.getGameState().getEnPassantFile());
+            if (board.getState().getEnPassantFile() >= 0) {
+                long enPassantFile = Bitwise.getFileBitboard(board.getState().getEnPassantFile());
                 long leftEnPassants = Bitwise.pawnLeftEnPassants(pawns, enPassantFile, white);
                 long rightEnPassants = Bitwise.pawnRightEnPassants(pawns, enPassantFile, white);
                 while (leftEnPassants != 0) {
@@ -329,12 +329,12 @@ public class MoveGenerator implements MoveGeneration {
         int startSquare = Bitwise.getNextBit(king);
         long occupied = board.getOccupied();
 
-        boolean isKingsideAllowed = board.getGameState().isKingsideCastlingAllowed(white);
+        boolean isKingsideAllowed = board.getState().isKingsideCastlingAllowed(white);
         if (isKingsideAllowed) {
             generateCastlingMove(board, white, true, startSquare, occupied);
         }
 
-        boolean isQueensideAllowed = board.getGameState().isQueensideCastlingAllowed(white);
+        boolean isQueensideAllowed = board.getState().isQueensideCastlingAllowed(white);
         if (isQueensideAllowed) {
             generateCastlingMove(board, white, false, startSquare, occupied);
         }

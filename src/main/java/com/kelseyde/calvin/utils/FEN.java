@@ -83,11 +83,11 @@ public class FEN {
             board.setOccupied(board.getWhitePieces() | board.getBlackPieces());
             board.setPieceList(calculatePieceList(board));
             board.setWhiteToMove(whiteToMove);
-            board.getGameState().setCastlingRights(castlingRights);
-            board.getGameState().setEnPassantFile(enPassantFile);
-            board.getGameState().setHalfMoveClock(fiftyMoveCounter);
-            board.getGameState().setZobrist(Zobrist.generateKey(board));
-            board.getGameState().setPawnZobrist(Zobrist.generatePawnKey(board));
+            board.getState().setCastlingRights(castlingRights);
+            board.getState().setEnPassantFile(enPassantFile);
+            board.getState().setHalfMoveClock(fiftyMoveCounter);
+            board.getState().setKey(Zobrist.generateKey(board));
+            board.getState().setPawnKey(Zobrist.generatePawnKey(board));
 
             return board;
 
@@ -127,16 +127,16 @@ public class FEN {
             String whiteToMove = toSideToMove(board.isWhiteToMove());
             sb.append(" ").append(whiteToMove);
 
-            String castlingRights = toCastlingRights(board.getGameState().getCastlingRights());
+            String castlingRights = toCastlingRights(board.getState().getCastlingRights());
             sb.append(" ").append(castlingRights);
 
-            String enPassantSquare = toEnPassantSquare(board.getGameState().getEnPassantFile(), board.isWhiteToMove());
+            String enPassantSquare = toEnPassantSquare(board.getState().getEnPassantFile(), board.isWhiteToMove());
             sb.append(" ").append(enPassantSquare);
 
-            String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getHalfMoveClock());
+            String fiftyMoveCounter = toFiftyMoveCounter(board.getState().getHalfMoveClock());
             sb.append(" ").append(fiftyMoveCounter);
 
-            String fullMoveNumber = toFullMoveCounter(board.getMoveHistory());
+            String fullMoveNumber = toFullMoveCounter(board.getMoves());
             sb.append(" ").append(fullMoveNumber);
 
             return sb.toString();

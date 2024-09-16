@@ -85,14 +85,14 @@ public class Zobrist {
             }
         }
 
-        int enPassantFile = board.getGameState().getEnPassantFile() + 1;
+        int enPassantFile = board.getState().getEnPassantFile() + 1;
         key ^= EN_PASSANT_FILE[enPassantFile];
 
         if (board.isWhiteToMove()) {
             key ^= BLACK_TO_MOVE;
         }
 
-        key ^= CASTLING_RIGHTS[board.getGameState().getCastlingRights()];
+        key ^= CASTLING_RIGHTS[board.getState().getCastlingRights()];
 
         return key;
     }
@@ -110,13 +110,50 @@ public class Zobrist {
         return key;
     }
 
+    public static long[] generateNonPawnKeys(Board board) {
+        long[] keys = new long[2];
+        for (int square = 0; square < 64; square++) {
+            if (((board.getKnights(true) >>> square) & 1) == 1) {
+                keys[WHITE] ^= PIECE_SQUARE_HASH[square][WHITE][Piece.KNIGHT.getIndex()];
+            }
+            else if (((board.getKnights(false) >>> square) & 1) == 1) {
+                keys[BLACK] ^= PIECE_SQUARE_HASH[square][BLACK][Piece.KNIGHT.getIndex()];
+            }
+            if (((board.getBishops(true) >>> square) & 1) == 1) {
+                keys[WHITE] ^= PIECE_SQUARE_HASH[square][WHITE][Piece.BISHOP.getIndex()];
+            }
+            else if (((board.getBishops(false) >>> square) & 1) == 1) {
+                keys[BLACK] ^= PIECE_SQUARE_HASH[square][BLACK][Piece.BISHOP.getIndex()];
+            }
+            if (((board.getRooks(true) >>> square) & 1) == 1) {
+                keys[WHITE] ^= PIECE_SQUARE_HASH[square][WHITE][Piece.ROOK.getIndex()];
+            }
+            else if (((board.getRooks(false) >>> square) & 1) == 1) {
+                keys[BLACK] ^= PIECE_SQUARE_HASH[square][BLACK][Piece.ROOK.getIndex()];
+            }
+            if (((board.getQueens(true) >>> square) & 1) == 1) {
+                keys[WHITE] ^= PIECE_SQUARE_HASH[square][WHITE][Piece.QUEEN.getIndex()];
+            }
+            else if (((board.getQueens(false) >>> square) & 1) == 1) {
+                keys[BLACK] ^= PIECE_SQUARE_HASH[square][BLACK][Piece.QUEEN.getIndex()];
+            }
+            if (((board.getKing(true) >>> square) & 1) == 1) {
+                keys[WHITE] ^= PIECE_SQUARE_HASH[square][WHITE][Piece.KING.getIndex()];
+            }
+            else if (((board.getKing(false) >>> square) & 1) == 1) {
+                keys[BLACK] ^= PIECE_SQUARE_HASH[square][BLACK][Piece.KING.getIndex()];
+            }
+        }
+        return keys;
+    }
+
     public static long updatePiece(long key, int startSquare, int endSquare, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[startSquare][white ? 0 : 1][pieceType.getIndex()]
-                   ^ PIECE_SQUARE_HASH[endSquare][white ? 0 : 1][pieceType.getIndex()];
+        return key ^ PIECE_SQUARE_HASH[startSquare][Colour.index(white)][pieceType.getIndex()]
+                   ^ PIECE_SQUARE_HASH[endSquare][Colour.index(white)][pieceType.getIndex()];
     }
 
     public static long updatePiece(long key, int square, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[square][white ? 0 : 1][pieceType.getIndex()];
+        return key ^ PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.getIndex()];
     }
 
     public static long updateCastlingRights(long key, int oldCastlingRights, int newCastlingRights) {

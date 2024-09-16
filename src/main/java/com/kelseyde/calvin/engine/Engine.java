@@ -155,7 +155,7 @@ public class Engine {
     public Move extractPonderMove(Move bestMove) {
         TranspositionTable transpositionTable = searcher.getTranspositionTable();
         board.makeMove(bestMove);
-        long zobristKey = board.getGameState().getZobrist();
+        long zobristKey = board.getState().getKey();
         HashEntry entry = transpositionTable.get(zobristKey, 0);
         board.unmakeMove();
         return entry != null ? entry.getMove() : null;
@@ -166,7 +166,7 @@ public class Engine {
         TranspositionTable transpositionTable = searcher.getTranspositionTable();
         int moveCount = 0;
         while (moveCount <= 12) {
-            long zobristKey = board.getGameState().getZobrist();
+            long zobristKey = board.getState().getKey();
             HashEntry entry = transpositionTable.get(zobristKey, 0);
             if (entry == null || entry.getMove() == null) {
                 break;
@@ -180,8 +180,8 @@ public class Engine {
     }
 
     private boolean useOpeningBook() {
-        long key = board.getGameState().getZobrist();
-        int moveCount = board.getMoveHistory().size();
+        long key = board.getState().getKey();
+        int moveCount = board.getMoves().size();
         return config.isOwnBookEnabled() && moveCount < config.getOwnBookMaxMoves() && book.hasBookMove(key);
     }
 

@@ -14,27 +14,28 @@ import java.time.Instant;
  * The idea is that if the engine is unlikely to finish a new iteration before hitting the hard limit, then there's no
  * point starting the iteration, since the time spent doing so is mostly wasted. That time can therefore be saved for
  * subsequent moves.
- * @param softLimit
- * @param hardLimit
+ *
+ * @param softTime
+ * @param hardTime
+ * @param hardNodes
  */
-public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, int maxDepth) {
+public record TimeControl(Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth) {
 
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
+
     static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
-    static final double[] EVAL_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
-    static final int EVAL_STABILITY_MIN_DEPTH = 7;
+    static final double[] SCORE_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
 
     public static TimeControl init(Board board, GoCommand command) {
-
-        boolean white = board.isWhiteToMove();
 
         double time;
         double inc;
         if (command.isMovetime()) {
             time = command.movetime();
             inc = 0;
-        } else if (command.isTime()) {
+        } else if (command.isTimeAndInc()) {
+            boolean white = board.isWhiteToMove();
             time = white ? command.wtime() : command.btime();
             inc = white ? command.winc() : command.binc();
         } else {
@@ -50,42 +51,39 @@ public record TimeControl(Duration softLimit, Duration hardLimit, int maxNodes, 
         Duration soft = Duration.ofMillis((int) (base * SOFT_TIME_FACTOR));
         Duration hard = Duration.ofMillis((int) (base * HARD_TIME_FACTOR));
 
-        return new TimeControl(soft, hard, command.nodes(), command.depth());
+        return new TimeControl(soft, hard, command.nodes(), -1, command.depth());
 
     }
 
     public boolean isHardLimitReached(Instant start, int depth, int nodes) {
         if (nodes % 4096 != 0) return false;
+        if (hardNodes > 0 && nodes >= hardNodes) return true;
         if (maxDepth > 0 && depth >= maxDepth) return true;
         Duration expired = Duration.between(start, Instant.now());
-        return expired.compareTo(hardLimit) > 0;
+        return expired.compareTo(hardTime) > 0;
     }
 
     public boolean isSoftLimitReached(Instant start, int depth, int nodes, int bestMoveStability, int evalStability) {
         if (maxDepth > 0 && depth >= maxDepth) return true;
-        if (maxNodes > 0 && nodes >= maxNodes) return true;
+        if (softNodes > 0 && nodes >= softNodes) return true;
         Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softLimit, depth, bestMoveStability, evalStability);
+        Duration adjustedSoftLimit = adjustSoftLimit(softTime, bestMoveStability, evalStability);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 
-    private Duration adjustSoftLimit(Duration softLimit, int depth, int bestMoveStability, int evalStability) {
+    private Duration adjustSoftLimit(Duration softLimit, int bestMoveStability, int scoreStability) {
 
         // Scale the soft limit based on the stability of the best move. If the best move has remained stable for several
         // iterations, we can safely assume that we don't need to spend as much time searching further.
         bestMoveStability = Math.min(bestMoveStability, BEST_MOVE_STABILITY_FACTOR.length - 1);
         double bmStabilityFactor = BEST_MOVE_STABILITY_FACTOR[bestMoveStability];
 
-        // Scale the soft limit based on the stability of the evaluation. If the evaluation has remained stable for several
-        // iterations, we can safely assume that we don't need to spend as much time searching further.
-        evalStability = Math.min(evalStability, EVAL_STABILITY_FACTOR.length - 1);
-        double evalStabilityFactor = EVAL_STABILITY_FACTOR[evalStability];
+        // Scale the soft limit based on the stability of the search score. If the evaluation has remained stable for
+        // several iterations, we can safely assume that we don't need to spend as much time searching further.
+        scoreStability = Math.min(scoreStability, SCORE_STABILITY_FACTOR.length - 1);
+        double scoreStabilityFactor = SCORE_STABILITY_FACTOR[scoreStability];
 
-        double adjustedLimit = softLimit.toMillis() * bmStabilityFactor;
-        if (depth >= EVAL_STABILITY_MIN_DEPTH) {
-            adjustedLimit *= evalStabilityFactor;
-        }
-
+        double adjustedLimit = softLimit.toMillis() * bmStabilityFactor * scoreStabilityFactor;
         return Duration.ofMillis((long) adjustedLimit);
     }
 

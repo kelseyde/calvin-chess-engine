@@ -39,6 +39,7 @@
   "iirDepth":4,
   "nmpMargin":70,
   "dpMargin":140,
+  "qsFpMargin": 100,
   "fpMargin": [ 0, 120, 200, 375, 425, 500, 550 ],
   "rfpMargin":[ 74, 40 ]
 }

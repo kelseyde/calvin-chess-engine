@@ -319,6 +319,7 @@ public class Searcher implements Search {
 
             eval.makeMove(board, move);
             if (!board.makeMove(move)) continue;
+            int nodesBefore = td.nodes;
             td.nodes++;
 
             boolean isCheck = movegen.isCheck(board, board.isWhite());
@@ -388,6 +389,10 @@ public class Searcher implements Search {
             eval.unmakeMove();
             board.unmakeMove();
             ss.unsetMove(ply);
+
+            if (rootNode) {
+                td.addNodes(move, td.nodes - nodesBefore);
+            }
 
             if (shouldStop()) {
                 return alpha;
@@ -589,7 +594,8 @@ public class Searcher implements Search {
             return false;
         int bestMoveStability = history.getBestMoveStability();
         int scoreStability = history.getBestScoreStability();
-        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveStability, scoreStability);
+        int bestMoveNodes = td.getNodes(bestMoveCurrent);
+        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
     private boolean isDraw() {

@@ -142,7 +142,7 @@ public class NNUE implements Evaluation {
         Piece piece = board.pieceAt(from);
         if (piece == null) return;
         Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
-        Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
+        Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
 
         int oldWhiteIdx = featureIndex(piece, from, white, true);
         int oldBlackIdx = featureIndex(piece, from, white, false);
@@ -152,8 +152,8 @@ public class NNUE implements Evaluation {
 
         if (move.isCastling()) {
             handleCastleMove(white, to, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
-        } else if (capturedPiece != null) {
-            handleCapture(move, capturedPiece, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+        } else if (captured != null) {
+            handleCapture(move, captured, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         } else {
             accumulator.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         }
@@ -170,11 +170,11 @@ public class NNUE implements Evaluation {
         accumulator.addAddSubSub(newWhiteIdx, newBlackIdx, rookEndWhiteIdx, rookEndBlackIdx, oldWhiteIdx, oldBlackIdx, rookStartWhiteIdx, rookStartBlackIdx);
     }
 
-    private void handleCapture(Move move, Piece capturedPiece, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
+    private void handleCapture(Move move, Piece captured, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
         int captureSquare = move.to();
         if (move.isEnPassant()) captureSquare = white ? move.to() - 8 : move.to() + 8;
-        int capturedWhiteIdx = featureIndex(capturedPiece, captureSquare, !white, true);
-        int capturedBlackIdx = featureIndex(capturedPiece, captureSquare, !white, false);
+        int capturedWhiteIdx = featureIndex(captured, captureSquare, !white, true);
+        int capturedBlackIdx = featureIndex(captured, captureSquare, !white, false);
         accumulator.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
     }
 

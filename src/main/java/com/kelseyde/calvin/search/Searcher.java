@@ -300,8 +300,8 @@ public class Searcher implements Search {
             movesSearched++;
 
             Piece piece = board.pieceAt(move.from());
-            Piece capturedPiece = board.pieceAt(move.to());
-            boolean isCapture = capturedPiece != null;
+            Piece captured = board.pieceAt(move.to());
+            boolean isCapture = captured != null;
             boolean isPromotion = move.promoPiece() != null;
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
@@ -323,11 +323,11 @@ public class Searcher implements Search {
 
             boolean isCheck = movegen.isCheck(board, board.isWhite());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
-            ss.setMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
+            ss.setMove(ply, move, piece, captured, isCapture, isQuiet);
             if (isQuiet) {
-                quietsSearched.add(new PlayedMove(move, piece, capturedPiece, false, true));
+                quietsSearched.add(new PlayedMove(move, piece, captured, false, true));
             } else if (isCapture) {
-                capturesSearched.add(new PlayedMove(move, piece, capturedPiece, true, false));
+                capturesSearched.add(new PlayedMove(move, piece, captured, true, false));
             }
 
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
@@ -403,7 +403,7 @@ public class Searcher implements Search {
                 alpha = score;
                 flag = HashFlag.EXACT;
 
-                ss.setBestMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
+                ss.setBestMove(ply, move, piece, captured, isCapture, isQuiet);
                 if (rootNode) {
                     bestMoveCurrent = move;
                     bestScoreCurrent = score;
@@ -509,10 +509,10 @@ public class Searcher implements Search {
                 // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
                 // is bad for us no matter what we do, and not bother searching any further
-                Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
-                if (capturedPiece != null
+                Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
+                if (captured != null
                         && !move.isPromotion()
-                        && (staticEval + capturedPiece.getValue() + config.getDpMargin() < alpha)) {
+                        && (staticEval + captured.getValue() + config.getDpMargin() < alpha)) {
                     continue;
                 }
 
@@ -521,7 +521,7 @@ public class Searcher implements Search {
                 // Futility Pruning
                 // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
                 // win material when the static eval plus some margin is sufficiently below alpha.
-                if (capturedPiece != null
+                if (captured != null
                     && futilityScore <= alpha
                     && seeScore <= 0) {
                     continue;

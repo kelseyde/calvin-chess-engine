@@ -54,16 +54,16 @@ public class Board {
         final int to = move.getTo();
         final Piece piece = pieces[from];
         if (piece == null) return false;
-        final Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : pieces[to];
+        final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
         stateHistory.push(state.copy());
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
         else if (move.isCastling())   makeCastleMove(from, to);
-        else if (move.isPromotion())  makePromotionMove(from, to, move.getPromoPiece(), capturedPiece);
+        else if (move.isPromotion())  makePromotionMove(from, to, move.getPromoPiece(), captured);
         else if (move.isEnPassant())  makeEnPassantMove(from, to);
-        else                          makeStandardMove(from, to, piece, capturedPiece);
+        else                          makeStandardMove(from, to, piece, captured);
 
-        updateGameState(from, to, piece, capturedPiece, move);
+        updateGameState(from, to, piece, captured, move);
         moves.push(move);
         white = !white;
         return true;

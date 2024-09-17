@@ -26,6 +26,10 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
     static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
     static final double[] SCORE_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
 
+    static final int NODE_TM_MIN_DEPTH = 5;
+    static final double NODE_TM_BASE = 1.5;
+    static final double NODE_TM_SCALE = 1.35;
+
     static final int UCI_OVERHEAD = 50;
 
     public static TimeControl init(Board board, GoCommand command) {
@@ -79,14 +83,6 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
 
         double scale = 1.0;
 
-        // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
-        // of the search has been spent on the best move, we can assume that the best move is more likely to be correct,
-        // and therefore we can spend less time searching further.
-        if (depth > 5 && bestMoveNodes > 0) {
-            double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
-            scale *= (1.5 - bestMoveNodeFraction) * 1.35;
-        }
-
         // Scale the soft limit based on the stability of the best move. If the best move has remained stable for several
         // iterations, we can safely assume that we don't need to spend as much time searching further.
         bestMoveStability = Math.min(bestMoveStability, BEST_MOVE_STABILITY_FACTOR.length - 1);
@@ -96,6 +92,14 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
         // several iterations, we can safely assume that we don't need to spend as much time searching further.
         scoreStability = Math.min(scoreStability, SCORE_STABILITY_FACTOR.length - 1);
         scale *= SCORE_STABILITY_FACTOR[scoreStability];
+
+        // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
+        // of the search has been spent on the best move, we can assume that the best move is more likely to be correct,
+        // and therefore we can spend less time searching further.
+        if (depth > NODE_TM_MIN_DEPTH && bestMoveNodes > 0) {
+            double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
+            scale *= (NODE_TM_BASE - bestMoveNodeFraction) * NODE_TM_SCALE;
+        }
 
         // Clamp the scale factor to a reasonable range.
         scale = Math.min(Math.max(scale, SOFT_TIME_SCALE_MIN), SOFT_TIME_SCALE_MAX);

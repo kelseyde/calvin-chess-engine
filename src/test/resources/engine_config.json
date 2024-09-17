@@ -40,6 +40,7 @@
   "nmpMargin":70,
   "dpMargin":140,
   "qsFpMargin": 100,
-  "fpMargin": [ 0, 120, 200, 375, 425, 500, 550 ],
+  "fpMargin": 275,
+  "fpScale": 65,
   "rfpMargin":[ 74, 40 ]
 }

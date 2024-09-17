@@ -309,7 +309,7 @@ public class Searcher implements Search {
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
                 && depth <= config.getFpDepth()
-                && staticEval + config.getFpMargin()[depth] < alpha
+                && staticEval + config.getFpMargin() + depth * config.getFpScale() <= alpha
                 && !inCheck
                 && !isCapture
                 && !isPromotion) {

@@ -30,13 +30,13 @@ public class PerftService {
     }
 
     private void log(Board board, int depth, Set<Move> moves) {
-        List<String> moveHistory = board.getMoveHistory().stream().map(Notation::toNotation).toList();
+        List<String> moveHistory = board.getMoves().stream().map(Notation::toNotation).toList();
         List<String> legalMoves = moves.stream().map(Notation::toNotation).toList();
         System.out.printf("perft(%s) -- %s: %s -- %s%n", depth, moveHistory, legalMoves.size(), legalMoves);
     }
 
     private void log(Board board, int depth, int count) {
-        List<String> moveHistory = board.getMoveHistory().stream().map(Notation::toNotation).toList();
+        List<String> moveHistory = board.getMoves().stream().map(Notation::toNotation).toList();
         System.out.printf("perft(%s) -- %s: %s %n", depth, moveHistory, count);
     }
 

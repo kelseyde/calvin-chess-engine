@@ -85,14 +85,14 @@ public class Zobrist {
             }
         }
 
-        int enPassantFile = board.getGameState().getEnPassantFile() + 1;
+        int enPassantFile = board.getState().getEnPassantFile() + 1;
         key ^= EN_PASSANT_FILE[enPassantFile];
 
-        if (board.isWhiteToMove()) {
+        if (board.isWhite()) {
             key ^= BLACK_TO_MOVE;
         }
 
-        key ^= CASTLING_RIGHTS[board.getGameState().getCastlingRights()];
+        key ^= CASTLING_RIGHTS[board.getState().getRights()];
 
         return key;
     }
@@ -110,13 +110,13 @@ public class Zobrist {
         return key;
     }
 
-    public static long updatePiece(long key, int startSquare, int endSquare, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[startSquare][white ? 0 : 1][pieceType.getIndex()]
-                   ^ PIECE_SQUARE_HASH[endSquare][white ? 0 : 1][pieceType.getIndex()];
+    public static long updatePiece(long key, int from, int to, Piece pieceType, boolean white) {
+        return key ^ PIECE_SQUARE_HASH[from][Colour.index(white)][pieceType.getIndex()]
+                   ^ PIECE_SQUARE_HASH[to][Colour.index(white)][pieceType.getIndex()];
     }
 
     public static long updatePiece(long key, int square, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[square][white ? 0 : 1][pieceType.getIndex()];
+        return key ^ PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.getIndex()];
     }
 
     public static long updateCastlingRights(long key, int oldCastlingRights, int newCastlingRights) {

@@ -46,7 +46,7 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "a7", "a6"));
         board.makeMove(TestUtils.getLegalMove(board, "b5", "a4"));
 
-        Assertions.assertEquals(7, board.getMoveHistory().size());
+        Assertions.assertEquals(7, board.getMoves().size());
 
     }
 
@@ -54,42 +54,42 @@ public class BoardTest {
     public void testBoardHistoryPreservesCastlingRights() {
 
         Board board = new Board();
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
 
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
         board.makeMove(TestUtils.getLegalMove(board, "e1", "e2"));
 
-        Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getState().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
-        Assertions.assertTrue(board.getGameStateHistory().peek().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameStateHistory().peek().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameStateHistory().peek().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getGameStateHistory().peek().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(false));
 
         board.makeMove(TestUtils.getLegalMove(board, "f7", "f6"));
 
-        Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getState().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
-        Assertions.assertFalse(board.getGameStateHistory().peek().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getGameStateHistory().peek().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameStateHistory().peek().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getGameStateHistory().peek().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getStateHistory().peek().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getStateHistory().peek().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(false));
 
     }
 
@@ -134,9 +134,9 @@ public class BoardTest {
         Assertions.assertEquals(board1.getWhitePieces(), board2.getWhitePieces());
         Assertions.assertEquals(board1.getBlackPieces(), board2.getBlackPieces());
         Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
-        Assertions.assertEquals(board1.isWhiteToMove(), board2.isWhiteToMove());
+        Assertions.assertEquals(board1.isWhite(), board2.isWhite());
 
-        Assertions.assertEquals(board1.getGameState(), board2.getGameState());
+        Assertions.assertEquals(board1.getState(), board2.getState());
 
     }
 
@@ -173,9 +173,9 @@ public class BoardTest {
         Assertions.assertEquals(board1.getWhitePieces(), board2.getWhitePieces());
         Assertions.assertEquals(board1.getBlackPieces(), board2.getBlackPieces());
         Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
-        Assertions.assertEquals(board1.isWhiteToMove(), board2.isWhiteToMove());
+        Assertions.assertEquals(board1.isWhite(), board2.isWhite());
 
-        Assertions.assertEquals(board1.getGameState(), board2.getGameState());
+        Assertions.assertEquals(board1.getState(), board2.getState());
 
     }
 
@@ -235,7 +235,7 @@ public class BoardTest {
         board.makeMove(new Move(51, 35));
         board.makeMove(new Move(28, 35));
 
-        List<Move> moveHistory = board.getMoveHistory().stream().toList();
+        List<Move> moveHistory = board.getMoves().stream().toList();
         Assertions.assertEquals(3, moveHistory.size());
         Assertions.assertTrue(new Move(28, 35).matches(moveHistory.get(0)));
         Assertions.assertTrue(new Move(51, 35).matches(moveHistory.get(1)));
@@ -243,7 +243,7 @@ public class BoardTest {
 
         board.unmakeMove();
 
-        moveHistory = board.getMoveHistory().stream().toList();
+        moveHistory = board.getMoves().stream().toList();
         Assertions.assertEquals(2, moveHistory.size());
         Assertions.assertTrue(new Move(51, 35).matches(moveHistory.get(0)));
         Assertions.assertTrue(new Move(12, 28).matches(moveHistory.get(1)));
@@ -254,19 +254,19 @@ public class BoardTest {
     public void testUnmakeMoveHandlesTurnSwitching() {
 
         Board board = new Board();
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
 
         board.makeMove(new Move(12, 28));
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
 
         board.makeMove(new Move(51, 35));
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
 
         board.makeMove(new Move(28, 35));
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
 
         board.unmakeMove();
-        Assertions.assertTrue(board.isWhiteToMove());
+        Assertions.assertTrue(board.isWhite());
 
     }
 
@@ -282,18 +282,18 @@ public class BoardTest {
         board.makeMove(new Move(61, 52));
         // castles
         board.makeMove(new Move(4, 6, Move.CASTLE_FLAG));
-        Assertions.assertFalse(board.isWhiteToMove());
-        Assertions.assertFalse(board.getGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.isWhite());
+        Assertions.assertFalse(board.getState().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
         board.unmakeMove();
-        Assertions.assertTrue(board.isWhiteToMove());
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getGameState().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getGameState().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.isWhite());
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
     }
 
@@ -309,7 +309,7 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
         // scholar's mate
         board.makeMove(TestUtils.getLegalMove(board, "h5", "f7"));
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
         // todo
 
     }
@@ -344,15 +344,15 @@ public class BoardTest {
     public void testMakeNullMoveChangesSideToMove() {
 
         Board board = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R w KQkq - 1 6");
-        long initialZobrist = board.getGameState().getZobrist();
-        Assertions.assertTrue(board.isWhiteToMove());
+        long initialZobrist = board.getState().getKey();
+        Assertions.assertTrue(board.isWhite());
         board.makeNullMove();
-        Assertions.assertFalse(board.isWhiteToMove());
+        Assertions.assertFalse(board.isWhite());
         Board board2 = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R b KQkq - 1 6");
-        Assertions.assertEquals(board.getGameState().getZobrist(), board2.getGameState().getZobrist());
+        Assertions.assertEquals(board.getState().getKey(), board2.getState().getKey());
         board.unmakeNullMove();
-        Assertions.assertTrue(board.isWhiteToMove());
-        Assertions.assertEquals(initialZobrist, board.getGameState().getZobrist());
+        Assertions.assertTrue(board.isWhite());
+        Assertions.assertEquals(initialZobrist, board.getState().getKey());
 
     }
 
@@ -360,13 +360,13 @@ public class BoardTest {
     public void testUnmakeMoveResetsEnPassantFile() {
 
         Board board = FEN.toBoard("r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3");
-        long initialZobrist = board.getGameState().getZobrist();
-        Assertions.assertEquals(3, board.getGameState().getEnPassantFile());
+        long initialZobrist = board.getState().getKey();
+        Assertions.assertEquals(3, board.getState().getEnPassantFile());
         board.makeNullMove();
-        Assertions.assertEquals(-1, board.getGameState().getEnPassantFile());
+        Assertions.assertEquals(-1, board.getState().getEnPassantFile());
         board.unmakeNullMove();
-        Assertions.assertEquals(3, board.getGameState().getEnPassantFile());
-        Assertions.assertEquals(initialZobrist, board.getGameState().getZobrist());
+        Assertions.assertEquals(3, board.getState().getEnPassantFile());
+        Assertions.assertEquals(initialZobrist, board.getState().getKey());
 
     }
 
@@ -374,13 +374,13 @@ public class BoardTest {
     public void testUnmakeMoveResetsFiftyMoveCounter() {
 
         Board board = FEN.toBoard("8/4n3/2kn4/8/3B4/5K2/8/8 w - - 4 3");
-        long initialZobrist = board.getGameState().getZobrist();
-        Assertions.assertEquals(4, board.getGameState().getHalfMoveClock());
+        long initialZobrist = board.getState().getKey();
+        Assertions.assertEquals(4, board.getState().getHalfMoveClock());
         board.makeNullMove();
-        Assertions.assertEquals(0, board.getGameState().getHalfMoveClock());
+        Assertions.assertEquals(0, board.getState().getHalfMoveClock());
         board.unmakeNullMove();
-        Assertions.assertEquals(4, board.getGameState().getHalfMoveClock());
-        Assertions.assertEquals(initialZobrist, board.getGameState().getZobrist());
+        Assertions.assertEquals(4, board.getState().getHalfMoveClock());
+        Assertions.assertEquals(initialZobrist, board.getState().getKey());
 
     }
 
@@ -455,11 +455,11 @@ public class BoardTest {
         return positions;
     }
 
-    private void assertSinglePieceBoard(Board board, int startSquare) {
-        board.toggleSquare(Piece.ROOK, true, startSquare);
-        Assertions.assertEquals(Set.of(startSquare), getPiecePositions(board, true));
+    private void assertSinglePieceBoard(Board board, int from) {
+        board.toggleSquare(Piece.ROOK, true, from);
+        Assertions.assertEquals(Set.of(from), getPiecePositions(board, true));
         Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
-        board.toggleSquare(Piece.ROOK, true, startSquare);
+        board.toggleSquare(Piece.ROOK, true, from);
     }
 
 }

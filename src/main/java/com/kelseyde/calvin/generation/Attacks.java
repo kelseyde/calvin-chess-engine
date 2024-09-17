@@ -211,12 +211,12 @@ public class Attacks {
         return blockerBitboards;
     }
 
-    public static long initMovementMask(int startSquare, boolean isOrthogonal) {
+    public static long initMovementMask(int from, boolean isOrthogonal) {
         long movementMask = 0L;
         Set<Integer> vectors = isOrthogonal ? ORTHOGONAL_MOVE_VECTORS : DIAGONAL_MOVE_VECTORS;
 
         for (int vector : vectors) {
-            int currentSquare = startSquare;
+            int currentSquare = from;
             if (!isValidVectorOffset(currentSquare, vector)) {
                 continue;
             }
@@ -232,13 +232,13 @@ public class Attacks {
         return movementMask;
     }
 
-    public static long initAttackMask(int startSquare, long blockers, boolean isOrthogonal) {
+    public static long initAttackMask(int from, long blockers, boolean isOrthogonal) {
 
         long attackMask = 0L;
         Set<Integer> vectors = isOrthogonal ? ORTHOGONAL_MOVE_VECTORS : DIAGONAL_MOVE_VECTORS;
 
         for (int vector : vectors) {
-            int currentSquare = startSquare;
+            int currentSquare = from;
             for (int distance = 1; distance < 8; distance++) {
                 if (Board.isValidIndex(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
                     currentSquare = currentSquare + vector;

@@ -81,13 +81,13 @@ public class FEN {
             board.setWhitePieces(whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing);
             board.setBlackPieces(blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing);
             board.setOccupied(board.getWhitePieces() | board.getBlackPieces());
-            board.setPieceList(calculatePieceList(board));
-            board.setWhiteToMove(whiteToMove);
-            board.getGameState().setCastlingRights(castlingRights);
-            board.getGameState().setEnPassantFile(enPassantFile);
-            board.getGameState().setHalfMoveClock(fiftyMoveCounter);
-            board.getGameState().setZobrist(Zobrist.generateKey(board));
-            board.getGameState().setPawnZobrist(Zobrist.generatePawnKey(board));
+            board.setPieces(calculatePieceList(board));
+            board.setWhite(whiteToMove);
+            board.getState().setRights(castlingRights);
+            board.getState().setEnPassantFile(enPassantFile);
+            board.getState().setHalfMoveClock(fiftyMoveCounter);
+            board.getState().setKey(Zobrist.generateKey(board));
+            board.getState().setPawnKey(Zobrist.generatePawnKey(board));
 
             return board;
 
@@ -124,19 +124,19 @@ public class FEN {
                 }
             }
 
-            String whiteToMove = toSideToMove(board.isWhiteToMove());
+            String whiteToMove = toSideToMove(board.isWhite());
             sb.append(" ").append(whiteToMove);
 
-            String castlingRights = toCastlingRights(board.getGameState().getCastlingRights());
+            String castlingRights = toCastlingRights(board.getState().getRights());
             sb.append(" ").append(castlingRights);
 
-            String enPassantSquare = toEnPassantSquare(board.getGameState().getEnPassantFile(), board.isWhiteToMove());
+            String enPassantSquare = toEnPassantSquare(board.getState().getEnPassantFile(), board.isWhite());
             sb.append(" ").append(enPassantSquare);
 
-            String fiftyMoveCounter = toFiftyMoveCounter(board.getGameState().getHalfMoveClock());
+            String fiftyMoveCounter = toFiftyMoveCounter(board.getState().getHalfMoveClock());
             sb.append(" ").append(fiftyMoveCounter);
 
-            String fullMoveNumber = toFullMoveCounter(board.getMoveHistory());
+            String fullMoveNumber = toFullMoveCounter(board.getMoves());
             sb.append(" ").append(fullMoveNumber);
 
             return sb.toString();

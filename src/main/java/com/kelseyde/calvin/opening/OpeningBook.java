@@ -35,7 +35,7 @@ public class OpeningBook {
             if (entry.isBlank()) continue;
             String[] entryData = entry.trim().split("\n");
             String fen = entryData[0];
-            long key = FEN.toBoard(fen).getGameState().getZobrist();
+            long key = FEN.toBoard(fen).getState().getKey();
             BookMove[] bookMoves = Arrays.stream(entryData, 1, entryData.length)
                     .map(this::parseBookMove)
                     .toArray(BookMove[]::new);
@@ -48,7 +48,7 @@ public class OpeningBook {
     }
 
     public Move getBookMove(Board board) {
-        long key = board.getGameState().getZobrist();
+        long key = board.getState().getKey();
         BookMove[] bookMoves = movesByPosition.get(key);
         if (bookMoves == null) {
             return null;

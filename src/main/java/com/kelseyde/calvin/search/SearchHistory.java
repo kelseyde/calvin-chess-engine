@@ -23,24 +23,26 @@ public class SearchHistory {
     private int bestScoreStability = 0;
 
     public void updateQuietHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quietsSearched, List<PlayedMove> capturesSearched) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quietsSearched, List<PlayedMove> capturesSearched, boolean failHigh) {
 
-        killerTable.add(ply, bestMove.getMove());
-
-        for (PlayedMove quietMove : quietsSearched) {
-            boolean good = bestMove.getMove().equals(quietMove.getMove());
-            historyTable.update(quietMove.getMove(), depth, white, good);
-//
-//            Move prevMove = ss.getMove(ply - 1);
-//            Piece prevPiece = ss.getMovedPiece(ply - 1);
-//            contHistTable.update(prevMove, prevPiece, quietMove.getMove(), quietMove.getPiece(), depth, white, good);
+        if (failHigh) {
+            killerTable.add(ply, bestMove.getMove());
         }
 
-        for (PlayedMove captureMove : capturesSearched) {
-            boolean good = bestMove.equals(captureMove);
-            Piece piece = captureMove.getPiece();
-            int to = captureMove.getMove().getTo();
-            Piece captured = captureMove.getCaptured();
+        for (PlayedMove quiet : quietsSearched) {
+            boolean good = bestMove.getMove().equals(quiet.getMove());
+            historyTable.update(quiet.getMove(), depth, white, good);
+
+            Move prevMove = ss.getMove(ply - 1);
+            Piece prevPiece = ss.getMovedPiece(ply - 1);
+            contHistTable.update(prevMove, prevPiece, quiet.getMove(), quiet.getPiece(), depth, white, good);
+        }
+
+        for (PlayedMove capture : capturesSearched) {
+            boolean good = bestMove.equals(capture);
+            Piece piece = capture.getPiece();
+            int to = capture.getMove().to();
+            Piece captured = capture.getCaptured();
             captureHistoryTable.update(piece, to, captured, depth, white, good);
         }
 
@@ -50,7 +52,7 @@ public class SearchHistory {
         for (PlayedMove capture : capturesSearched) {
             boolean good = bestMove.equals(capture);
             Piece piece = capture.getPiece();
-            int to = capture.getMove().getTo();
+            int to = capture.getMove().to();
             Piece captured = capture.getCaptured();
             captureHistoryTable.update(piece, to, captured, depth, white, good);
         }
@@ -77,6 +79,7 @@ public class SearchHistory {
     public void clear() {
         killerTable.clear();
         historyTable.clear();
+        contHistTable.clear();
         captureHistoryTable.clear();
     }
 

@@ -21,17 +21,13 @@ public class ThreadData {
         this.depth = 1;
     }
 
-    public void setNodes(Move move, int nodes) {
-        int from = move.getFrom();
-        int to = move.getTo();
-        nodesPerMove[from][to] = nodes;
+    public void addNodes(Move move, int nodes) {
+        nodesPerMove[move.from()][move.to()] += nodes;
     }
 
     public int getNodes(Move move) {
         if (move == null) return 0;
-        int from = move.getFrom();
-        int to = move.getTo();
-        return nodesPerMove[from][to];
+        return nodesPerMove[move.from()][move.to()];
     }
 
     public void reset() {

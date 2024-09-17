@@ -391,7 +391,7 @@ public class Searcher implements Search {
             ss.unsetMove(ply);
 
             if (rootNode) {
-                td.setNodes(move, td.nodes - nodesBefore);
+                td.addNodes(move, td.nodes - nodesBefore);
             }
 
             if (shouldStop()) {

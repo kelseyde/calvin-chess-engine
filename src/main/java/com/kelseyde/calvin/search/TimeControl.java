@@ -34,7 +34,8 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
         double inc;
         if (command.isMovetime()) {
             time = command.movetime();
-            inc = 0;
+            Duration movetime = Duration.ofMillis((long) time);
+            return new TimeControl(movetime, movetime, -1, -1, -1);
         } else if (command.isTimeAndInc()) {
             boolean white = board.isWhite();
             time = white ? command.wtime() : command.btime();
@@ -69,19 +70,19 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
         if (maxDepth > 0 && depth >= maxDepth) return true;
         if (softNodes > 0 && nodes >= softNodes) return true;
         Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability);
+        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 
     private Duration adjustSoftLimit(
-            Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int scoreStability) {
+            Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int scoreStability, int depth) {
 
         double scale = 1.0;
 
         // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
         // of the search has been spent on the best move, we can assume that the best move is more likely to be correct,
         // and therefore we can spend less time searching further.
-        if (bestMoveNodes > 0) {
+        if (depth > 5 && bestMoveNodes > 0) {
             double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
             scale *= (1.5 - bestMoveNodeFraction) * 1.35;
         }

@@ -57,6 +57,7 @@ public class NNUE implements Evaluation {
     static final ShortVector FLOOR = ShortVector.broadcast(SPECIES, 0);
     static final ShortVector CEIL = ShortVector.broadcast(SPECIES, QA);
 
+    // TODO test using array with single allocation at startup
     final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
     Accumulator accumulator;
     Board board;

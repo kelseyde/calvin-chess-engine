@@ -50,8 +50,8 @@ public class Board {
      */
     public boolean makeMove(Move move) {
 
-        final int from = move.getFrom();
-        final int to = move.getTo();
+        final int from = move.from();
+        final int to = move.to();
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
@@ -59,7 +59,7 @@ public class Board {
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
         else if (move.isCastling())   makeCastleMove(from, to);
-        else if (move.isPromotion())  makePromotionMove(from, to, move.getPromoPiece(), captured);
+        else if (move.isPromotion())  makePromotionMove(from, to, move.promoPiece(), captured);
         else if (move.isEnPassant())  makeEnPassantMove(from, to);
         else                          makeStandardMove(from, to, piece, captured);
 
@@ -78,12 +78,12 @@ public class Board {
 
         white = !white;
         final Move move = moves.pop();
-        final int from = move.getFrom();
-        final int to = move.getTo();
+        final int from = move.from();
+        final int to = move.to();
         final Piece piece = pieceAt(to);
 
         if (move.isCastling())        unmakeCastlingMove(from, to);
-        else if (move.isPromotion())  unmakePromotionMove(from, to, move.getPromoPiece());
+        else if (move.isPromotion())  unmakePromotionMove(from, to, move.promoPiece());
         else if (move.isEnPassant())  unmakeEnPassantMove(from, to);
         else                          unmakeStandardMove(from, to, piece);
 

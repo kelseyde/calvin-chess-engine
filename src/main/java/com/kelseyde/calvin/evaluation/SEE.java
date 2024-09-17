@@ -24,7 +24,7 @@ public class SEE {
     public static int see(Board board, Move move) {
 
         int score = 0;
-        int square = move.getTo();
+        int square = move.to();
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
         score += capturedPiece != null ? capturedPiece.getValue() : 0;
 

@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.tables.history;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 
@@ -13,8 +12,8 @@ public class HistoryTable extends AbstractHistoryTable {
 
     public void update(Move move, int depth, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
-        int from = move.getFrom();
-        int to = move.getTo();
+        int from = move.from();
+        int to = move.to();
         int current = table[colourIndex][from][to];
         int bonus = bonus(depth);
         if (!good) bonus = -bonus;
@@ -24,15 +23,15 @@ public class HistoryTable extends AbstractHistoryTable {
 
     public int get(Move historyMove, boolean white) {
         int colourIndex = Colour.index(white);
-        int from = historyMove.getFrom();
-        int to = historyMove.getTo();
+        int from = historyMove.from();
+        int to = historyMove.to();
         return table[colourIndex][from][to];
     }
 
     public void set(Move historyMove, boolean white, int update) {
         int colourIndex = Colour.index(white);
-        int from = historyMove.getFrom();
-        int to = historyMove.getTo();
+        int from = historyMove.from();
+        int to = historyMove.to();
         table[colourIndex][from][to] = update;
     }
 

@@ -299,10 +299,10 @@ public class Searcher implements Search {
             //if (bestMove == null) bestMove = move;
             movesSearched++;
 
-            Piece piece = board.pieceAt(move.getFrom());
-            Piece capturedPiece = board.pieceAt(move.getTo());
+            Piece piece = board.pieceAt(move.from());
+            Piece capturedPiece = board.pieceAt(move.to());
             boolean isCapture = capturedPiece != null;
-            boolean isPromotion = move.getPromoPiece() != null;
+            boolean isPromotion = move.promoPiece() != null;
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
@@ -509,7 +509,7 @@ public class Searcher implements Search {
                 // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
                 // is bad for us no matter what we do, and not bother searching any further
-                Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.getTo());
+                Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
                 if (capturedPiece != null
                         && !move.isPromotion()
                         && (staticEval + capturedPiece.getValue() + config.getDpMargin() < alpha)) {

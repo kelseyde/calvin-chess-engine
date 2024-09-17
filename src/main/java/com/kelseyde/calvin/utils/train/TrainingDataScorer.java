@@ -157,7 +157,7 @@ public class TrainingDataScorer {
             return "";
         }
         Move bestMove = searchResult.move();
-        boolean isCapture = board.pieceAt(bestMove.getTo()) != null;
+        boolean isCapture = board.pieceAt(bestMove.to()) != null;
         if (isCapture) {
             // Filter out positions where the best move is a capture
             return "";

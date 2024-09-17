@@ -122,8 +122,8 @@ public class MovePicker {
 
     protected int scoreMove(Board board, Move move, Move ttMove, int ply) {
 
-        int from = move.getFrom();
-        int to = move.getTo();
+        int from = move.from();
+        int to = move.to();
 
         if (move.equals(ttMove)) {
             return MoveBonus.TT_MOVE_BONUS;
@@ -161,7 +161,7 @@ public class MovePicker {
 
     protected int scoreQuiet(Board board, Move move, int ply) {
         boolean white = board.isWhite();
-        Piece piece = board.pieceAt(move.getFrom());
+        Piece piece = board.pieceAt(move.from());
 
         // Check if the move is a killer move
         int killerIndex = history.getKillerTable().getIndex(move, ply);
@@ -187,7 +187,7 @@ public class MovePicker {
     }
 
     protected int scorePromotion(Move move) {
-        return move.getPromoPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
+        return move.promoPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
     }
 
     /**

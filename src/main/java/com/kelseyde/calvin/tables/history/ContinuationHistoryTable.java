@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.tables.history;
 
-import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -25,7 +24,7 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
             return 0;
         }
         int colourIndex = Colour.index(white);
-        return table[colourIndex][prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()];
+        return table[colourIndex][prevPiece.getIndex()][prevMove.to()][currPiece.getIndex()][currMove.to()];
     }
 
     public void set(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int update, boolean white) {
@@ -33,7 +32,7 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
             return;
         }
         int colourIndex = Colour.index(white);
-        table[colourIndex][prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()] = update;
+        table[colourIndex][prevPiece.getIndex()][prevMove.to()][currPiece.getIndex()][currMove.to()] = update;
     }
 
     public void clear() {

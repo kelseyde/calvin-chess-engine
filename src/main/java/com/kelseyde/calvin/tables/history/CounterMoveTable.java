@@ -23,14 +23,14 @@ public class CounterMoveTable {
     public boolean isCounterMove(Piece prevPiece, Move prevMove, boolean white, Move move) {
         if (prevPiece == null || prevMove == null) return false;
         int pieceIndex = prevPiece.getIndex() + (white ? 0 : COLOUR_STRIDE);
-        Move counterMove = table[pieceIndex][prevMove.getTo()];
+        Move counterMove = table[pieceIndex][prevMove.to()];
         return counterMove != null && counterMove.equals(move);
     }
 
     public void add(Piece prevPiece, Move prevMove, boolean white, Move move) {
         if (prevPiece == null || prevMove == null) return;
         int pieceIndex = prevPiece.getIndex() + (white ? 0 : COLOUR_STRIDE);
-        table[pieceIndex][prevMove.getTo()] = move;
+        table[pieceIndex][prevMove.to()] = move;
     }
 
     public Move get(Piece piece, int to, boolean white) {

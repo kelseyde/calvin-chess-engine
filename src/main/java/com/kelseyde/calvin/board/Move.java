@@ -59,7 +59,7 @@ public record Move(short value) {
      *
      * @return The starting square of the move (0 - 63).
      */
-    public int getFrom() {
+    public int from() {
         return value & FROM_MASK;
     }
 
@@ -68,7 +68,7 @@ public record Move(short value) {
      *
      * @return The ending square of the move (0 - 63).
      */
-    public int getTo() {
+    public int to() {
         return (value & TO_MASK) >>> 6;
     }
 
@@ -77,32 +77,13 @@ public record Move(short value) {
      *
      * @return The piece type to which a pawn is promoted, or null if no promotion occurs.
      */
-    public Piece getPromoPiece() {
+    public Piece promoPiece() {
         return switch (value >>> 12) {
             case PROMOTE_TO_QUEEN_FLAG -> Piece.QUEEN;
             case PROMOTE_TO_ROOK_FLAG -> Piece.ROOK;
             case PROMOTE_TO_BISHOP_FLAG -> Piece.BISHOP;
             case PROMOTE_TO_KNIGHT_FLAG -> Piece.KNIGHT;
             default -> null;
-        };
-    }
-
-    /**
-     * Retrieves the special move flag representing additional move information.
-     *
-     * @param pieceType The type of piece to which a pawn is promoted.
-     * @return The special move flag indicating pawn promotion.
-     */
-    public static short getPromotionFlag(Piece pieceType) {
-        if (pieceType == null) {
-            return NO_FLAG;
-        }
-        return switch (pieceType) {
-            case QUEEN -> PROMOTE_TO_QUEEN_FLAG;
-            case ROOK -> PROMOTE_TO_ROOK_FLAG;
-            case BISHOP -> PROMOTE_TO_BISHOP_FLAG;
-            case KNIGHT -> PROMOTE_TO_KNIGHT_FLAG;
-            default -> NO_FLAG;
         };
     }
 
@@ -151,10 +132,11 @@ public record Move(short value) {
     // TODO Optional is slow, replace it
     public boolean matches(Move move) {
         if (move == null) return false;
-        boolean squareMatch = getFrom() == move.getFrom() && getTo() == move.getTo();
-        boolean promotionMatch = Optional.ofNullable(getPromoPiece())
-                .map(piece -> piece.equals(move.getPromoPiece()))
+        boolean squareMatch = from() == move.from() && to() == move.to();
+        boolean promotionMatch = Optional.ofNullable(promoPiece())
+                .map(piece -> piece.equals(move.promoPiece()))
                 .orElse(true);
         return squareMatch && promotionMatch;
     }
+
 }

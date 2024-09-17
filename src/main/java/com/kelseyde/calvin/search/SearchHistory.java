@@ -41,7 +41,7 @@ public class SearchHistory {
         for (PlayedMove capture : capturesSearched) {
             boolean good = bestMove.equals(capture);
             Piece piece = capture.getPiece();
-            int to = capture.getMove().getTo();
+            int to = capture.getMove().to();
             Piece captured = capture.getCaptured();
             captureHistoryTable.update(piece, to, captured, depth, white, good);
         }
@@ -52,7 +52,7 @@ public class SearchHistory {
         for (PlayedMove capture : capturesSearched) {
             boolean good = bestMove.equals(capture);
             Piece piece = capture.getPiece();
-            int to = capture.getMove().getTo();
+            int to = capture.getMove().to();
             Piece captured = capture.getCaptured();
             captureHistoryTable.update(piece, to, captured, depth, white, good);
         }

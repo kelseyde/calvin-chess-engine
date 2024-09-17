@@ -424,16 +424,8 @@ public class Searcher implements Search {
         }
 
         // TODO test switching back to only updating history on beta cutoffs
-        // TODO simplify into single call to history
         if (bestMove != null) {
-            PlayedMove best = ss.getBestMove(ply);
-            boolean failHigh = bestScore >= beta;
-            if (best.isQuiet()) {
-                history.updateQuietHistory(best, board.isWhite(), depth, ply, ss, quietsSearched, capturesSearched, failHigh);
-            }
-            else if (best.isCapture()) {
-                history.updateCaptureHistory(best, board.isWhite(), depth, capturesSearched);
-            }
+            history.updateHistory(ss.getBestMove(ply), board.isWhite(), depth, ply, bestScore, beta, ss, quietsSearched, capturesSearched);
         }
 
         // Store the best move and score in the transposition table for future reference.

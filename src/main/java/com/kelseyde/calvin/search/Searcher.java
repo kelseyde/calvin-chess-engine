@@ -183,6 +183,9 @@ public class Searcher implements Search {
         boolean rootNode = ply == 0;
         boolean pvNode = beta - alpha > 1;
 
+        Move excludedMove = ss.getExcludedMove(ply);
+        boolean excluded = excludedMove != null;
+
         // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
         alpha = Math.max(alpha, -Score.MATE + ply);
@@ -197,15 +200,16 @@ public class Searcher implements Search {
         //  b) it was searched to a sufficient depth, and
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
         HashEntry ttEntry = tt.get(board.key(), ply);
+        boolean ttHit = ttEntry != null;
         if (!pvNode
-                && ttEntry != null
+                && ttHit
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
             return ttEntry.getScore();
         }
 
         Move ttMove = null;
-        if (ttEntry != null && ttEntry.getMove() != null) {
+        if (ttHit && ttEntry.getMove() != null) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.getMove();
         }
@@ -235,7 +239,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
         }
 
         ss.setStaticEval(ply, staticEval);
@@ -247,7 +251,7 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
         // can employ to prune the node and its entire subtree, without searching any moves.
-        if (!pvNode && !inCheck) {
+        if (!pvNode && !inCheck && !excluded) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
@@ -281,6 +285,19 @@ public class Searcher implements Search {
                     return Score.isMateScore(score) ? beta : score;
                 }
             }
+
+            int probcutBeta = beta + 300;
+            int probcutDepth = Math.max(1, depth - 3);
+
+            if (depth >= 7
+                && !Score.isMateScore(beta)
+                && (ttMove == null || !board.isQuiet(ttMove))
+                && !(ttHit && ttEntry.getDepth() >= probcutDepth && ttEntry.getScore() < probcutBeta)) {
+
+                int seeThreshold = probcutBeta - staticEval;
+
+            }
+
 
         }
 
@@ -369,7 +386,7 @@ public class Searcher implements Search {
                     if (pvNode) {
                         reduction--;
                     }
-                    if (ttEntry != null && ttEntry.getMove() != null && isCapture) {
+                    if (ttHit && ttEntry.getMove() != null && isCapture) {
                         reduction++;
                     }
                 }
@@ -457,13 +474,14 @@ public class Searcher implements Search {
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry ttEntry = tt.get(board.key(), ply);
-        if (ttEntry != null
+        boolean ttHit = ttEntry != null;
+        if (ttHit
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
             return ttEntry.getScore();
         }
         Move ttMove = null;
-        if (ttEntry != null && ttEntry.getMove() != null) {
+        if (ttHit && ttEntry.getMove() != null) {
             ttMove = ttEntry.getMove();
         }
 
@@ -474,7 +492,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
         }
 
         if (inCheck) {

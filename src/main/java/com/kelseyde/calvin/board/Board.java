@@ -365,6 +365,14 @@ public class Board {
         return white ? whitePieces : blackPieces;
     }
 
+    public boolean isCapture(Move move) {
+        return move.isEnPassant() || pieceAt(move.to()) != null;
+    }
+
+    public boolean isQuiet(Move move) {
+        return !isCapture(move) && !move.isPromotion();
+    }
+
     public long key() {
         return state.getKey();
     }

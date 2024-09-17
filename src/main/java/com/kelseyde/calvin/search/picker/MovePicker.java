@@ -162,23 +162,28 @@ public class MovePicker {
     protected int scoreQuiet(Board board, Move move, int ply) {
         boolean white = board.isWhite();
         Piece piece = board.pieceAt(move.from());
+        Move prevMove = ss.getMove(ply - 1);
+        Piece prevPiece = ss.getMovedPiece(ply - 1);
 
         // Check if the move is a killer move
         int killerIndex = history.getKillerTable().getIndex(move, ply);
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
+        // Check if the move is a counter move
+        boolean isCounterMove = history.getCounterMoveTable().isCounterMove(prevPiece, prevMove, white, move);
+
         // Get the history score for the move
         int historyScore = history.getHistoryTable().get(move, white);
 
         // Get the continuation history score for the move
-        Move prevMove = ss.getMove(ply - 1);
-        Piece prevPiece = ss.getMovedPiece(ply - 1);
         int contHistScore = history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
 
         // Killers are ordered higher than normal history moves
         int base = 0;
         if (killerScore > 0) {
             base = MoveBonus.KILLER_MOVE_BONUS;
+        } else if (isCounterMove) {
+            base = MoveBonus.COUNTER_MOVE_BONUS;
         } else if (historyScore > 0 || contHistScore > 0) {
             base = MoveBonus.QUIET_MOVE_BONUS;
         }

@@ -12,9 +12,10 @@ public class MoveBonus {
     static final int QUEEN_PROMO_BONUS = 9 * MILLION;
     static final int WINNING_CAPTURE_BONUS = 8 * MILLION;
     static final int KILLER_MOVE_BONUS = 7 * MILLION;
-    static final int LOSING_CAPTURE_BONUS = 6 * MILLION;
-    static final int QUIET_MOVE_BONUS = 5 * MILLION;
-    static final int UNDER_PROMO_BONUS = 4 * MILLION;
+    static final int COUNTER_MOVE_BONUS = 6 * MILLION;
+    static final int LOSING_CAPTURE_BONUS = 5 * MILLION;
+    static final int QUIET_MOVE_BONUS = 4 * MILLION;
+    static final int UNDER_PROMO_BONUS = 3 * MILLION;
 
     static final int MVV_OFFSET = 5000;
     static final int KILLER_OFFSET = 10000;

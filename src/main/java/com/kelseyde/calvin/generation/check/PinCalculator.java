@@ -9,7 +9,7 @@ public class PinCalculator {
     private final RayCalculator rayCalculator = new RayCalculator();
 
     private long pinMask;
-    private long[] pinRayMasks;
+    private long[] pinRayMasks = new long[64];
 
     public record PinData(long pinMask, long[] pinRayMasks) {}
 
@@ -22,7 +22,6 @@ public class PinCalculator {
      */
     public PinData calculatePinMask(Board board, boolean white) {
         pinMask = 0L;
-        pinRayMasks = new long[64];
 
         int kingSquare = Bitwise.getNextBit(board.getKing(white));
         long friendlies = board.getPieces(white);

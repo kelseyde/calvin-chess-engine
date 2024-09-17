@@ -7,6 +7,8 @@ import com.kelseyde.calvin.board.Piece;
 import java.util.List;
 import java.util.Map;
 
+import static com.kelseyde.calvin.board.Move.*;
+
 public class Notation {
 
     public static final Map<Piece, String> PIECE_CODE_INDEX = Map.of(
@@ -29,12 +31,12 @@ public class Notation {
     /**
      * Generate a {@link Move} from algebraic notation of the start and end square (e.g. "e2", "e4" -> new Move(12, 28))
      */
-    public static Move fromNotation(String startSquare, String endSquare) {
-        return new Move(fromNotation(startSquare), fromNotation(endSquare));
+    public static Move fromNotation(String from, String to) {
+        return new Move(fromNotation(from), fromNotation(to));
     }
 
-    public static Move fromNotation(String startSquare, String endSquare, int flag) {
-        return new Move(fromNotation(startSquare), fromNotation(endSquare), flag);
+    public static Move fromNotation(String from, String to, int flag) {
+        return new Move(fromNotation(from), fromNotation(to), flag);
     }
 
     /**
@@ -42,27 +44,27 @@ public class Notation {
      * Special case promotion: "a2a1q" - values 'q' | 'b' | 'r' | 'n'
      */
     public static Move fromUCI(String notation) {
-        int startSquare = fromNotation(notation.substring(0, 2));
-        int endSquare = fromNotation(notation.substring(2, 4));
+        int from = fromNotation(notation.substring(0, 2));
+        int to = fromNotation(notation.substring(2, 4));
 
-        int flag = Move.NO_FLAG;
+        int flag = NO_FLAG;
         if (notation.length() == 5) {
             String pieceCode = notation.substring(4, 5);
             Piece promotionPieceType = PIECE_CODE_INDEX.entrySet().stream()
                     .filter(entry -> entry.getValue().equalsIgnoreCase(pieceCode))
                     .findAny().orElseThrow().getKey();
-            flag = Move.getPromotionFlag(promotionPieceType);
+            flag = getPromotionFlag(promotionPieceType);
         }
-        return new Move(startSquare, endSquare, flag);
+        return new Move(from, to, flag);
     }
 
     public static String toNotation(Move move) {
         if (move == null) {
             return "-";
         }
-        String notation = toNotation(move.getFrom()) + toNotation(move.getTo());
-        if (move.getPromotionPiece() != null) {
-            notation += PIECE_CODE_INDEX.get(move.getPromotionPiece());
+        String notation = toNotation(move.from()) + toNotation(move.to());
+        if (move.promoPiece() != null) {
+            notation += PIECE_CODE_INDEX.get(move.promoPiece());
         }
         return notation;
     }
@@ -86,6 +88,25 @@ public class Notation {
 
     public static String getFileChar(int sq) {
         return FILE_CHAR_MAP.get(Board.file(sq));
+    }
+
+    /**
+     * Retrieves the special move flag representing additional move information.
+     *
+     * @param pieceType The type of piece to which a pawn is promoted.
+     * @return The special move flag indicating pawn promotion.
+     */
+    public static short getPromotionFlag(Piece pieceType) {
+        if (pieceType == null) {
+            return NO_FLAG;
+        }
+        return switch (pieceType) {
+            case QUEEN -> PROMOTE_TO_QUEEN_FLAG;
+            case ROOK -> PROMOTE_TO_ROOK_FLAG;
+            case BISHOP -> PROMOTE_TO_BISHOP_FLAG;
+            case KNIGHT -> PROMOTE_TO_KNIGHT_FLAG;
+            default -> NO_FLAG;
+        };
     }
 
 }

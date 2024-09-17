@@ -8,7 +8,7 @@ public class Bitwise {
     /**
      * Get the index of the least-significant bit in the bitboard. Used for iterating through all the set bits.
      */
-    public static int getNextBit(long board) {
+    public static int getNextBit(final long board) {
         return Long.numberOfTrailingZeros(board);
     }
 

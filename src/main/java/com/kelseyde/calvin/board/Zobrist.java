@@ -111,12 +111,12 @@ public class Zobrist {
     }
 
     public static long updatePiece(long key, int from, int to, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[from][white ? 0 : 1][pieceType.getIndex()]
-                   ^ PIECE_SQUARE_HASH[to][white ? 0 : 1][pieceType.getIndex()];
+        return key ^ PIECE_SQUARE_HASH[from][Colour.index(white)][pieceType.getIndex()]
+                   ^ PIECE_SQUARE_HASH[to][Colour.index(white)][pieceType.getIndex()];
     }
 
     public static long updatePiece(long key, int square, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[square][white ? 0 : 1][pieceType.getIndex()];
+        return key ^ PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.getIndex()];
     }
 
     public static long updateCastlingRights(long key, int oldCastlingRights, int newCastlingRights) {

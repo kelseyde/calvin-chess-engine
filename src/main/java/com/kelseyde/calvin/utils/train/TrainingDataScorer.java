@@ -143,7 +143,7 @@ public class TrainingDataScorer {
         String fen = parts[0].trim();
         String result = parts[2].trim();
         Board board = FEN.toBoard(fen);
-        if (MOVE_GENERATOR.isCheck(board, board.isWhiteToMove())) {
+        if (MOVE_GENERATOR.isCheck(board, board.isWhite())) {
             // Filter out positions where the side to move is in check
             return "";
         }
@@ -167,7 +167,7 @@ public class TrainingDataScorer {
             // Filter out positions where there is forced mate
             return "";
         }
-        if (!board.isWhiteToMove()) score = -score;
+        if (!board.isWhite()) score = -score;
         return String.format("%s | %s | %s", fen, score, result);
     }
 

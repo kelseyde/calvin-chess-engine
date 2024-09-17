@@ -14,25 +14,25 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GameState {
 
-    long zobrist = 0L;
-    long pawnZobrist = 0L;
-    Piece capturedPiece;
+    long key = 0L;
+    long pawnKey = 0L;
+    Piece captured;
     int enPassantFile = -1;
-    int castlingRights = Bits.INITIAL_CASTLING_RIGHTS;
+    int rights = Bits.INITIAL_CASTLING_RIGHTS;
     int halfMoveClock = 0;
 
     public boolean isKingsideCastlingAllowed(boolean white) {
         long kingsideMask = white ? 0b0001 : 0b0100;
-        return (castlingRights & kingsideMask) == kingsideMask;
+        return (rights & kingsideMask) == kingsideMask;
     }
 
     public boolean isQueensideCastlingAllowed(boolean white) {
         long queensideMask = white ? 0b0010 : 0b1000;
-        return (castlingRights & queensideMask) == queensideMask;
+        return (rights & queensideMask) == queensideMask;
     }
 
     public GameState copy() {
-        return new GameState(zobrist, pawnZobrist, capturedPiece, enPassantFile, castlingRights, halfMoveClock);
+        return new GameState(key, pawnKey, captured, enPassantFile, rights, halfMoveClock);
     }
 
 }

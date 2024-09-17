@@ -61,8 +61,8 @@ public class Notation {
             return "-";
         }
         String notation = toNotation(move.getFrom()) + toNotation(move.getTo());
-        if (move.getPromotionPiece() != null) {
-            notation += PIECE_CODE_INDEX.get(move.getPromotionPiece());
+        if (move.getPromoPiece() != null) {
+            notation += PIECE_CODE_INDEX.get(move.getPromoPiece());
         }
         return notation;
     }

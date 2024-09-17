@@ -154,13 +154,13 @@ public class MovePicker {
         captureScore += MoveBonus.MVV_OFFSET * captured.getIndex();
 
         // Tie-break with capture history
-        captureScore += history.getCaptureHistoryTable().get(piece, to, captured, board.isWhiteToMove());
+        captureScore += history.getCaptureHistoryTable().get(piece, to, captured, board.isWhite());
 
         return captureScore;
     }
 
     protected int scoreQuiet(Board board, Move move, int ply) {
-        boolean white = board.isWhiteToMove();
+        boolean white = board.isWhite();
         Piece piece = board.pieceAt(move.getFrom());
 
         // Check if the move is a killer move
@@ -187,7 +187,7 @@ public class MovePicker {
     }
 
     protected int scorePromotion(Move move) {
-        return move.getPromotionPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
+        return move.getPromoPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
     }
 
     /**

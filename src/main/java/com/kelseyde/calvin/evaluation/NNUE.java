@@ -75,7 +75,7 @@ public class NNUE implements Evaluation {
     @Override
     public int evaluate() {
 
-        boolean white = board.isWhiteToMove();
+        boolean white = board.isWhite();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
         int eval = Network.NETWORK.outputBias();
@@ -136,12 +136,12 @@ public class NNUE implements Evaluation {
     @Override
     public void makeMove(Board board, Move move) {
         accumulatorHistory.push(accumulator.copy());
-        boolean white = board.isWhiteToMove();
+        boolean white = board.isWhite();
         int startSquare = move.getFrom();
         int endSquare = move.getTo();
         Piece piece = board.pieceAt(startSquare);
         if (piece == null) return;
-        Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
+        Piece newPiece = move.isPromotion() ? move.getPromoPiece() : piece;
         Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
 
         int oldWhiteIdx = featureIndex(piece, startSquare, white, true);
@@ -192,7 +192,7 @@ public class NNUE implements Evaluation {
     private int scaleEval(Board board, int eval) {
         int materialPhase = materialPhase(board);
         eval = eval * materialPhase / MATERIAL_FACTOR;
-        eval = eval * (200 - board.getGameState().getHalfMoveClock()) / 200;
+        eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
         return eval;
     }
 

@@ -77,7 +77,7 @@ public record Move(int value) {
      *
      * @return The piece type to which a pawn is promoted, or null if no promotion occurs.
      */
-    public Piece getPromotionPiece() {
+    public Piece getPromoPiece() {
         return switch (value >>> 12) {
             case PROMOTE_TO_QUEEN_FLAG -> Piece.QUEEN;
             case PROMOTE_TO_ROOK_FLAG -> Piece.ROOK;
@@ -152,8 +152,8 @@ public record Move(int value) {
     public boolean matches(Move move) {
         if (move == null) return false;
         boolean squareMatch = getFrom() == move.getFrom() && getTo() == move.getTo();
-        boolean promotionMatch = Optional.ofNullable(getPromotionPiece())
-                .map(piece -> piece.equals(move.getPromotionPiece()))
+        boolean promotionMatch = Optional.ofNullable(getPromoPiece())
+                .map(piece -> piece.equals(move.getPromoPiece()))
                 .orElse(true);
         return squareMatch && promotionMatch;
     }

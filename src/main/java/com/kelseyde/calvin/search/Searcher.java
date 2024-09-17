@@ -210,7 +210,7 @@ public class Searcher implements Search {
             ttMove = ttEntry.getMove();
         }
 
-        boolean inCheck = movegen.isCheck(board, board.isWhiteToMove());
+        boolean inCheck = movegen.isCheck(board, board.isWhite());
 
         MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -265,7 +265,7 @@ public class Searcher implements Search {
             if (ss.isNullMoveAllowed(ply)
                 && depth >= config.getNmpDepth()
                 && staticEval >= beta - (config.getNmpMargin() * (improving ? 1 : 0))
-                && board.hasPiecesRemaining(board.isWhiteToMove())) {
+                && board.hasPiecesRemaining(board.isWhite())) {
 
                 ss.setNullMoveAllowed(ply + 1, false);
                 board.makeNullMove();
@@ -302,7 +302,7 @@ public class Searcher implements Search {
             Piece piece = board.pieceAt(move.getFrom());
             Piece capturedPiece = board.pieceAt(move.getTo());
             boolean isCapture = capturedPiece != null;
-            boolean isPromotion = move.getPromotionPiece() != null;
+            boolean isPromotion = move.getPromoPiece() != null;
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
@@ -321,7 +321,7 @@ public class Searcher implements Search {
             if (!board.makeMove(move)) continue;
             td.nodes++;
 
-            boolean isCheck = movegen.isCheck(board, board.isWhiteToMove());
+            boolean isCheck = movegen.isCheck(board, board.isWhite());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
             ss.setMove(ply, move, piece, capturedPiece, isCapture, isQuiet);
             if (isQuiet) {
@@ -429,10 +429,10 @@ public class Searcher implements Search {
             PlayedMove best = ss.getBestMove(ply);
             boolean failHigh = bestScore >= beta;
             if (best.isQuiet()) {
-                history.updateQuietHistory(best, board.isWhiteToMove(), depth, ply, ss, quietsSearched, capturesSearched, failHigh);
+                history.updateQuietHistory(best, board.isWhite(), depth, ply, ss, quietsSearched, capturesSearched, failHigh);
             }
             else if (best.isCapture()) {
-                history.updateCaptureHistory(best, board.isWhiteToMove(), depth, capturesSearched);
+                history.updateCaptureHistory(best, board.isWhite(), depth, capturesSearched);
             }
         }
 
@@ -467,7 +467,7 @@ public class Searcher implements Search {
             ttMove = ttEntry.getMove();
         }
 
-        boolean inCheck = movegen.isCheck(board, board.isWhiteToMove());
+        boolean inCheck = movegen.isCheck(board, board.isWhite());
 
         QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 

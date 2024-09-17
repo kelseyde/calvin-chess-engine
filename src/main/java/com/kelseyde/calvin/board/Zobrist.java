@@ -85,14 +85,14 @@ public class Zobrist {
             }
         }
 
-        int enPassantFile = board.getGameState().getEnPassantFile() + 1;
+        int enPassantFile = board.getState().getEnPassantFile() + 1;
         key ^= EN_PASSANT_FILE[enPassantFile];
 
-        if (board.isWhiteToMove()) {
+        if (board.isWhite()) {
             key ^= BLACK_TO_MOVE;
         }
 
-        key ^= CASTLING_RIGHTS[board.getGameState().getCastlingRights()];
+        key ^= CASTLING_RIGHTS[board.getState().getRights()];
 
         return key;
     }

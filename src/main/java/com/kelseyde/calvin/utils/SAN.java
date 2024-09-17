@@ -74,12 +74,12 @@ public class SAN {
 
         // Add promotion piece type
         if (move.isPromotion()) {
-            Piece promotionPieceType = move.getPromotionPiece();
+            Piece promotionPieceType = move.getPromoPiece();
             notation += "=" + Notation.PIECE_CODE_INDEX.get(promotionPieceType).toUpperCase();
         }
 
         board.makeMove(move);
-        if (moveGenerator.isCheck(board, board.isWhiteToMove())) {
+        if (moveGenerator.isCheck(board, board.isWhite())) {
             List<Move> legalMoves = moveGenerator.generateMoves(board);
             notation += legalMoves.isEmpty() ? "#" : "+";
         }

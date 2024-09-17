@@ -35,7 +35,7 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
             time = command.movetime();
             inc = 0;
         } else if (command.isTimeAndInc()) {
-            boolean white = board.isWhiteToMove();
+            boolean white = board.isWhite();
             time = white ? command.wtime() : command.btime();
             inc = white ? command.winc() : command.binc();
         } else {

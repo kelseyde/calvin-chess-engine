@@ -13,27 +13,27 @@ public class HistoryTable extends AbstractHistoryTable {
 
     public void update(Move move, int depth, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
-        int startSquare = move.getFrom();
-        int endSquare = move.getTo();
-        int current = table[colourIndex][startSquare][endSquare];
+        int from = move.getFrom();
+        int to = move.getTo();
+        int current = table[colourIndex][from][to];
         int bonus = bonus(depth);
         if (!good) bonus = -bonus;
         int update = gravity(current, bonus);
-        table[colourIndex][startSquare][endSquare] = update;
+        table[colourIndex][from][to] = update;
     }
 
     public int get(Move historyMove, boolean white) {
         int colourIndex = Colour.index(white);
-        int startSquare = historyMove.getFrom();
-        int endSquare = historyMove.getTo();
-        return table[colourIndex][startSquare][endSquare];
+        int from = historyMove.getFrom();
+        int to = historyMove.getTo();
+        return table[colourIndex][from][to];
     }
 
     public void set(Move historyMove, boolean white, int update) {
         int colourIndex = Colour.index(white);
-        int startSquare = historyMove.getFrom();
-        int endSquare = historyMove.getTo();
-        table[colourIndex][startSquare][endSquare] = update;
+        int from = historyMove.getFrom();
+        int to = historyMove.getTo();
+        table[colourIndex][from][to] = update;
     }
 
     public void add(int depth, Move historyMove, boolean white) {
@@ -52,9 +52,9 @@ public class HistoryTable extends AbstractHistoryTable {
 
     public void ageScores(boolean white) {
         int colourIndex = Colour.index(white);
-        for (int startSquare = 0; startSquare < 64; startSquare++) {
-            for (int endSquare = 0; endSquare < 64; endSquare++) {
-                table[colourIndex][startSquare][endSquare] /= 2;
+        for (int from = 0; from < 64; from++) {
+            for (int to = 0; to < 64; to++) {
+                table[colourIndex][from][to] /= 2;
             }
         }
     }

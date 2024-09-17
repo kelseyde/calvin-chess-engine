@@ -122,8 +122,8 @@ public class MovePicker {
 
     protected int scoreMove(Board board, Move move, Move ttMove, int ply) {
 
-        int startSquare = move.getFrom();
-        int endSquare = move.getTo();
+        int from = move.getFrom();
+        int to = move.getTo();
 
         if (move.equals(ttMove)) {
             return MoveBonus.TT_MOVE_BONUS;
@@ -132,9 +132,9 @@ public class MovePicker {
             return scorePromotion(move);
         }
 
-        Piece captured = board.pieceAt(endSquare);
+        Piece captured = board.pieceAt(to);
         if (captured != null) {
-            return scoreCapture(board, startSquare, endSquare, captured);
+            return scoreCapture(board, from, to, captured);
         }
         else {
             return scoreQuiet(board, move, ply);

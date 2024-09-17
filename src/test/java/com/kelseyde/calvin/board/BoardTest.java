@@ -455,11 +455,11 @@ public class BoardTest {
         return positions;
     }
 
-    private void assertSinglePieceBoard(Board board, int startSquare) {
-        board.toggleSquare(Piece.ROOK, true, startSquare);
-        Assertions.assertEquals(Set.of(startSquare), getPiecePositions(board, true));
+    private void assertSinglePieceBoard(Board board, int from) {
+        board.toggleSquare(Piece.ROOK, true, from);
+        Assertions.assertEquals(Set.of(from), getPiecePositions(board, true));
         Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
-        board.toggleSquare(Piece.ROOK, true, startSquare);
+        board.toggleSquare(Piece.ROOK, true, from);
     }
 
 }

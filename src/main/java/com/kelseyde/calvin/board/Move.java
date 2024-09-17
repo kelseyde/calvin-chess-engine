@@ -17,7 +17,7 @@ import java.util.Optional;
  * Largely inspired by Sebastian Lague's Chess Coding Adventure:
  * @see <a href="https://github.com/SebLague/Chess-Coding-Adventure">Chess Coding Adventure</a>
  */
-public record Move(int value) {
+public record Move(short value) {
 
     // Special move flags
     public static final short NO_FLAG = 0b0000;
@@ -40,7 +40,7 @@ public record Move(int value) {
      * @param to   The ending square of the move (0 - 63).
      */
     public Move(int from, int to) {
-        this(from | to << 6);
+        this((short) (from | to << 6));
     }
 
     /**
@@ -51,7 +51,7 @@ public record Move(int value) {
      * @param flag        The special move flag representing additional move information.
      */
     public Move(int from, int to, int flag) {
-        this(from | (to << 6) | (flag << 12));
+        this((short) (from | (to << 6) | (flag << 12)));
     }
 
     /**

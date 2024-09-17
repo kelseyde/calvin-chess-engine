@@ -70,14 +70,14 @@ public class TestUtils {
         return board;
     }
 
-    public static Move getLegalMove(Board board, String startSquare, String endSquare) {
-        Move move = Notation.fromNotation(startSquare, endSquare);
+    public static Move getLegalMove(Board board, String from, String to) {
+        Move move = Notation.fromNotation(from, to);
         List<Move> legalMoves = MOVE_GENERATOR.generateMoves(board);
         Optional<Move> legalMove = legalMoves.stream()
                 .filter(m -> m.matches(move))
                 .findAny();
         if (legalMove.isEmpty()) {
-            throw new IllegalMoveException(String.format("Illegal move! %s%s", startSquare, endSquare));
+            throw new IllegalMoveException(String.format("Illegal move! %s%s", from, to));
         }
         return legalMove.get();
     }

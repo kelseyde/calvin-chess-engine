@@ -137,21 +137,21 @@ public class NNUE implements Evaluation {
     public void makeMove(Board board, Move move) {
         accumulatorHistory.push(accumulator.copy());
         boolean white = board.isWhite();
-        int startSquare = move.getFrom();
-        int endSquare = move.getTo();
-        Piece piece = board.pieceAt(startSquare);
+        int from = move.getFrom();
+        int to = move.getTo();
+        Piece piece = board.pieceAt(from);
         if (piece == null) return;
         Piece newPiece = move.isPromotion() ? move.getPromoPiece() : piece;
-        Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
+        Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
 
-        int oldWhiteIdx = featureIndex(piece, startSquare, white, true);
-        int oldBlackIdx = featureIndex(piece, startSquare, white, false);
+        int oldWhiteIdx = featureIndex(piece, from, white, true);
+        int oldBlackIdx = featureIndex(piece, from, white, false);
 
-        int newWhiteIdx = featureIndex(newPiece, endSquare, white, true);
-        int newBlackIdx = featureIndex(newPiece, endSquare, white, false);
+        int newWhiteIdx = featureIndex(newPiece, to, white, true);
+        int newBlackIdx = featureIndex(newPiece, to, white, false);
 
         if (move.isCastling()) {
-            handleCastleMove(white, endSquare, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
+            handleCastleMove(white, to, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
         } else if (capturedPiece != null) {
             handleCapture(move, capturedPiece, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         } else {
@@ -159,8 +159,8 @@ public class NNUE implements Evaluation {
         }
     }
 
-    private void handleCastleMove(boolean white, int endSquare, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        boolean isKingside = Board.file(endSquare) == 6;
+    private void handleCastleMove(boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
+        boolean isKingside = Board.file(to) == 6;
         int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
         int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
         int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookStart, white, true);

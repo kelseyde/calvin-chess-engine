@@ -477,23 +477,34 @@ public class MoveGenerator implements MoveGeneration {
             final int square = Bitwise.getNextBit(squareMask);
 
             final long opponentPawns = board.getPawns(!white);
-            final long pawnAttackMask = getPawnAttacks(board, square, white);
-            attackerMask |= pawnAttackMask & opponentPawns;
+            if (opponentPawns != 0) {
+                final long pawnAttackMask = getPawnAttacks(board, square, white);
+                attackerMask |= pawnAttackMask & opponentPawns;
+            }
 
             final long opponentKnights = board.getKnights(!white);
-            final long knightAttackMask = getKnightAttacks(board, square, white);
-            attackerMask |= knightAttackMask & opponentKnights;
+            if (opponentKnights != 0) {
+                final long knightAttackMask = getKnightAttacks(board, square, white);
+                attackerMask |= knightAttackMask & opponentKnights;
+            }
 
             final long opponentBishops = board.getBishops(!white);
             final long bishopAttackMask = getBishopAttacks(board, square, white);
-            attackerMask |= bishopAttackMask & opponentBishops;
+            if (opponentBishops != 0) {
+                attackerMask |= bishopAttackMask & opponentBishops;
+            }
 
             final long opponentRooks = board.getRooks(!white);
             final long rookAttackMask = getRookAttacks(board, square, white);
-            attackerMask |= rookAttackMask & opponentRooks;
+            if (opponentRooks != 0) {
+                attackerMask |= rookAttackMask & opponentRooks;
+            }
 
             final long opponentQueens = board.getQueens(!white);
-            attackerMask |= (bishopAttackMask | rookAttackMask) & opponentQueens;
+            if (opponentQueens != 0) {
+                final long queenAttackMask = getQueenAttacks(board, square, white);
+                attackerMask |= queenAttackMask & opponentQueens;
+            }
 
             final long opponentKing = board.getKing(!white);
             final long kingAttackMask = getKingAttacks(board, square, white);

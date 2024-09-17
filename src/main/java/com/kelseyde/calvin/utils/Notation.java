@@ -29,12 +29,12 @@ public class Notation {
     /**
      * Generate a {@link Move} from algebraic notation of the start and end square (e.g. "e2", "e4" -> new Move(12, 28))
      */
-    public static Move fromNotation(String startSquare, String endSquare) {
-        return new Move(fromNotation(startSquare), fromNotation(endSquare));
+    public static Move fromNotation(String from, String to) {
+        return new Move(fromNotation(from), fromNotation(to));
     }
 
-    public static Move fromNotation(String startSquare, String endSquare, int flag) {
-        return new Move(fromNotation(startSquare), fromNotation(endSquare), flag);
+    public static Move fromNotation(String from, String to, int flag) {
+        return new Move(fromNotation(from), fromNotation(to), flag);
     }
 
     /**
@@ -42,8 +42,8 @@ public class Notation {
      * Special case promotion: "a2a1q" - values 'q' | 'b' | 'r' | 'n'
      */
     public static Move fromUCI(String notation) {
-        int startSquare = fromNotation(notation.substring(0, 2));
-        int endSquare = fromNotation(notation.substring(2, 4));
+        int from = fromNotation(notation.substring(0, 2));
+        int to = fromNotation(notation.substring(2, 4));
 
         int flag = Move.NO_FLAG;
         if (notation.length() == 5) {
@@ -53,7 +53,7 @@ public class Notation {
                     .findAny().orElseThrow().getKey();
             flag = Move.getPromotionFlag(promotionPieceType);
         }
-        return new Move(startSquare, endSquare, flag);
+        return new Move(from, to, flag);
     }
 
     public static String toNotation(Move move) {

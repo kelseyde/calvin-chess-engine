@@ -366,7 +366,7 @@ public class Board {
     }
 
     public boolean isCapture(Move move) {
-        return move.isEnPassant() || pieceAt(move.getTo()) != null;
+        return move.isEnPassant() || pieceAt(move.to()) != null;
     }
 
     public boolean isQuiet(Move move) {
@@ -374,11 +374,11 @@ public class Board {
     }
 
     public long key() {
-        return gameState.getKey();
+        return state.getKey();
     }
 
     public long pawnKey() {
-        return gameState.getPawnKey();
+        return state.getPawnKey();
     }
 
     public int countPieces() {

@@ -69,11 +69,11 @@ public class SearchHistory {
     }
 
     public int correctEvaluation(Board board, int staticEval) {
-        return pawnCorrHistTable.correctEvaluation(board.pawnKey(), board.isWhiteToMove(), staticEval);
+        return pawnCorrHistTable.correctEvaluation(board.pawnKey(), board.isWhite(), staticEval);
     }
 
     public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
-        pawnCorrHistTable.update(board.pawnKey(), board.isWhiteToMove(), depth, score, staticEval);
+        pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
     }
 
     public void reset() {

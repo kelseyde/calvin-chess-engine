@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.tables.history;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Colour;
 
 public class CorrectionHistoryTable {
 
@@ -17,7 +18,7 @@ public class CorrectionHistoryTable {
     }
 
     public void update(long key, boolean white, int depth, int score, int staticEval) {
-        int colourIndex = Board.colourIndex(white);
+        int colourIndex = Colour.index(white);
         int hashIndex = hashIndex(key);
         int entry = entries[colourIndex][hashIndex];
 
@@ -29,7 +30,7 @@ public class CorrectionHistoryTable {
     }
 
     public int correctEvaluation(long pawnHash, boolean white, int staticEval) {
-        int colourIndex = Board.colourIndex(white);
+        int colourIndex = Colour.index(white);
         int pawnIndex = hashIndex(pawnHash);
         int entry = entries[colourIndex][pawnIndex];
         return staticEval + entry / GRAIN;

@@ -56,7 +56,7 @@ public class TrainingDataScorer {
         Path outputPath = Paths.get(command.outputFile());
         UCI.outputEnabled = false;
         searchers = IntStream.range(0, THREAD_COUNT)
-                .mapToObj(i -> initSearcher())
+                .mapToObj(this::initSearcher)
                 .toList();
         Instant start = Instant.now();
 
@@ -105,14 +105,18 @@ public class TrainingDataScorer {
             Searcher searcher = searchers.get(i);
             List<String> partition = partitions.get(i);
             futures.add(CompletableFuture.supplyAsync(() -> {
-                List<String> scoredPartition = new ArrayList<>(partition.size());
-                for (String line : partition) {
-                    String scoredLine = scoreData(searcher, line, command);
-                    if (!scoredLine.isEmpty()) {
-                        scoredPartition.add(scoredLine);
+                try {
+                    List<String> scoredPartition = new ArrayList<>(partition.size());
+                    for (String line : partition) {
+                        String scoredLine = scoreData(searcher, line, command);
+                        if (!scoredLine.isEmpty()) {
+                            scoredPartition.add(scoredLine);
+                        }
                     }
+                    return scoredPartition;
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to score partition " + Arrays.toString(e.getStackTrace()) + e.getCause() + e.getMessage(), e);
                 }
-                return scoredPartition;
             }));
         }
         List<String> scoredBatch = new ArrayList<>(positions.size());
@@ -160,6 +164,10 @@ public class TrainingDataScorer {
             return "";
         }
         Move bestMove = searchResult.move();
+        if (bestMove == null) {
+            // Filter out positions where there is no best move
+            return "";
+        }
         boolean isCapture = board.pieceAt(bestMove.to()) != null;
         if (isCapture) {
             // Filter out positions where the best move is a capture
@@ -174,10 +182,10 @@ public class TrainingDataScorer {
         return String.format("%s | %s | %s", fen, score, result);
     }
 
-    private Searcher initSearcher() {
+    private Searcher initSearcher(int i) {
         EngineConfig config = EngineInitializer.loadDefaultConfig();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
-        return new Searcher(config, transpositionTable, new ThreadData(true));
+        return new Searcher(config, transpositionTable, new ThreadData(i == 0));
     }
 
     private void logProgress(Instant start, ScoreDataCommand command, AtomicInteger scored, AtomicInteger excluded) {

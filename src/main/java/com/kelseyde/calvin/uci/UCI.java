@@ -204,12 +204,13 @@ public class UCI {
 
     public static void writeMove(SearchResult searchResult) {
         Move move = searchResult.move();
-        Move ponderMove = ENGINE.extractPonderMove(move);
-        boolean ponder = ENGINE.getConfig().isPonderEnabled() && ponderMove != null;
-        String message = ponder ?
-                String.format("bestmove %s ponder %s", Notation.toNotation(move), Notation.toNotation(ponderMove)) :
-                String.format("bestmove %s", Notation.toNotation(move));
-        write(message);
+        boolean ponderEnabled = ENGINE.getConfig().isPonderEnabled();
+        if (ponderEnabled && move != null) {
+            Move ponderMove = ENGINE.extractPonderMove(move);
+            write(String.format("bestmove %s ponder %s", Notation.toNotation(move), Notation.toNotation(ponderMove)));
+        } else {
+            write(String.format("bestmove %s", Notation.toNotation(move)));
+        }
     }
 
     private static void setHashSize(UCICommand command) {

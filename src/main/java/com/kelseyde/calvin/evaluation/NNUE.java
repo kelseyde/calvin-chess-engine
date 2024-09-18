@@ -32,7 +32,7 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "daybreak.nnue";
+        public static final String FILE = "dawn.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 384;
 
@@ -57,6 +57,7 @@ public class NNUE implements Evaluation {
     static final ShortVector FLOOR = ShortVector.broadcast(SPECIES, 0);
     static final ShortVector CEIL = ShortVector.broadcast(SPECIES, QA);
 
+    // TODO test using array with single allocation at startup
     final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
     Accumulator accumulator;
     Board board;
@@ -74,7 +75,7 @@ public class NNUE implements Evaluation {
     @Override
     public int evaluate() {
 
-        boolean white = board.isWhiteToMove();
+        boolean white = board.isWhite();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
         int eval = Network.NETWORK.outputBias();
@@ -135,31 +136,31 @@ public class NNUE implements Evaluation {
     @Override
     public void makeMove(Board board, Move move) {
         accumulatorHistory.push(accumulator.copy());
-        boolean white = board.isWhiteToMove();
-        int startSquare = move.getFrom();
-        int endSquare = move.getTo();
-        Piece piece = board.pieceAt(startSquare);
+        boolean white = board.isWhite();
+        int from = move.from();
+        int to = move.to();
+        Piece piece = board.pieceAt(from);
         if (piece == null) return;
-        Piece newPiece = move.isPromotion() ? move.getPromotionPiece() : piece;
-        Piece capturedPiece = move.isEnPassant() ? Piece.PAWN : board.pieceAt(endSquare);
+        Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
+        Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
 
-        int oldWhiteIdx = featureIndex(piece, startSquare, white, true);
-        int oldBlackIdx = featureIndex(piece, startSquare, white, false);
+        int oldWhiteIdx = featureIndex(piece, from, white, true);
+        int oldBlackIdx = featureIndex(piece, from, white, false);
 
-        int newWhiteIdx = featureIndex(newPiece, endSquare, white, true);
-        int newBlackIdx = featureIndex(newPiece, endSquare, white, false);
+        int newWhiteIdx = featureIndex(newPiece, to, white, true);
+        int newBlackIdx = featureIndex(newPiece, to, white, false);
 
         if (move.isCastling()) {
-            handleCastleMove(white, endSquare, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
-        } else if (capturedPiece != null) {
-            handleCapture(move, capturedPiece, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+            handleCastleMove(white, to, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
+        } else if (captured != null) {
+            handleCapture(move, captured, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         } else {
             accumulator.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         }
     }
 
-    private void handleCastleMove(boolean white, int endSquare, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        boolean isKingside = Board.file(endSquare) == 6;
+    private void handleCastleMove(boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
+        boolean isKingside = Board.file(to) == 6;
         int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
         int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
         int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookStart, white, true);
@@ -169,11 +170,11 @@ public class NNUE implements Evaluation {
         accumulator.addAddSubSub(newWhiteIdx, newBlackIdx, rookEndWhiteIdx, rookEndBlackIdx, oldWhiteIdx, oldBlackIdx, rookStartWhiteIdx, rookStartBlackIdx);
     }
 
-    private void handleCapture(Move move, Piece capturedPiece, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
-        int captureSquare = move.getTo();
-        if (move.isEnPassant()) captureSquare = white ? move.getTo() - 8 : move.getTo() + 8;
-        int capturedWhiteIdx = featureIndex(capturedPiece, captureSquare, !white, true);
-        int capturedBlackIdx = featureIndex(capturedPiece, captureSquare, !white, false);
+    private void handleCapture(Move move, Piece captured, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
+        int captureSquare = move.to();
+        if (move.isEnPassant()) captureSquare = white ? move.to() - 8 : move.to() + 8;
+        int capturedWhiteIdx = featureIndex(captured, captureSquare, !white, true);
+        int capturedBlackIdx = featureIndex(captured, captureSquare, !white, false);
         accumulator.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
     }
 
@@ -191,7 +192,7 @@ public class NNUE implements Evaluation {
     private int scaleEval(Board board, int eval) {
         int materialPhase = materialPhase(board);
         eval = eval * materialPhase / MATERIAL_FACTOR;
-        eval = eval * (200 - board.getGameState().getHalfMoveClock()) / 200;
+        eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
         return eval;
     }
 

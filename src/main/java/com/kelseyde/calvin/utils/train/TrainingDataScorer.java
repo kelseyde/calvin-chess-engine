@@ -6,7 +6,10 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.*;
+import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.search.Searcher;
+import com.kelseyde.calvin.search.ThreadData;
+import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
@@ -53,7 +56,7 @@ public class TrainingDataScorer {
         Path outputPath = Paths.get(command.outputFile());
         UCI.outputEnabled = false;
         searchers = IntStream.range(0, THREAD_COUNT)
-                .mapToObj(i -> initSearcher())
+                .mapToObj(this::initSearcher)
                 .toList();
         Instant start = Instant.now();
 
@@ -102,14 +105,18 @@ public class TrainingDataScorer {
             Searcher searcher = searchers.get(i);
             List<String> partition = partitions.get(i);
             futures.add(CompletableFuture.supplyAsync(() -> {
-                List<String> scoredPartition = new ArrayList<>(partition.size());
-                for (String line : partition) {
-                    String scoredLine = scoreData(searcher, line, command);
-                    if (!scoredLine.isEmpty()) {
-                        scoredPartition.add(scoredLine);
+                try {
+                    List<String> scoredPartition = new ArrayList<>(partition.size());
+                    for (String line : partition) {
+                        String scoredLine = scoreData(searcher, line, command);
+                        if (!scoredLine.isEmpty()) {
+                            scoredPartition.add(scoredLine);
+                        }
                     }
+                    return scoredPartition;
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to score partition " + Arrays.toString(e.getStackTrace()) + e.getCause() + e.getMessage(), e);
                 }
-                return scoredPartition;
             }));
         }
         List<String> scoredBatch = new ArrayList<>(positions.size());
@@ -143,7 +150,7 @@ public class TrainingDataScorer {
         String fen = parts[0].trim();
         String result = parts[2].trim();
         Board board = FEN.toBoard(fen);
-        if (MOVE_GENERATOR.isCheck(board, board.isWhiteToMove())) {
+        if (MOVE_GENERATOR.isCheck(board, board.isWhite())) {
             // Filter out positions where the side to move is in check
             return "";
         }
@@ -157,7 +164,11 @@ public class TrainingDataScorer {
             return "";
         }
         Move bestMove = searchResult.move();
-        boolean isCapture = board.pieceAt(bestMove.getTo()) != null;
+        if (bestMove == null) {
+            // Filter out positions where there is no best move
+            return "";
+        }
+        boolean isCapture = board.pieceAt(bestMove.to()) != null;
         if (isCapture) {
             // Filter out positions where the best move is a capture
             return "";
@@ -167,14 +178,14 @@ public class TrainingDataScorer {
             // Filter out positions where there is forced mate
             return "";
         }
-        if (!board.isWhiteToMove()) score = -score;
+        if (!board.isWhite()) score = -score;
         return String.format("%s | %s | %s", fen, score, result);
     }
 
-    private Searcher initSearcher() {
+    private Searcher initSearcher(int i) {
         EngineConfig config = EngineInitializer.loadDefaultConfig();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
-        return new Searcher(config, transpositionTable, new ThreadData(true));
+        return new Searcher(config, transpositionTable, new ThreadData(i == 0));
     }
 
     private void logProgress(Instant start, ScoreDataCommand command, AtomicInteger scored, AtomicInteger excluded) {

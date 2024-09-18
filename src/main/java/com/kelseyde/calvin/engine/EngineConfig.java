@@ -54,9 +54,10 @@ public class EngineConfig {
     int nmpMargin;
     int dpMargin;
     int qsFpMargin;
-    int[][] lmrReductions;
-    int[] fpMargin;
+    int fpMargin;
+    int fpScale;
     int[] rfpMargin;
+    int[][] lmrReductions;
 
     public void postInitialise() {
         calculateLmrReductions();

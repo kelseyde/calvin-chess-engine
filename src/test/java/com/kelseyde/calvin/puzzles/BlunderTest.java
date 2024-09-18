@@ -24,6 +24,13 @@ public class BlunderTest {
     private final Engine engine = UCI.ENGINE;
 
     @Test
+    public void testDebugFen() {
+
+
+
+    }
+
+    @Test
     public void testDontSacKnightForCenterPawn() {
 
         String fen = "r1bqkb1r/1pp1pppp/p1n2n2/8/2BPP3/2N2N2/PP3PPP/R1BQK2R b KQkq - 0 6";

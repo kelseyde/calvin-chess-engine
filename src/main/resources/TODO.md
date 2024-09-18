@@ -20,24 +20,27 @@
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [ ] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
-- [ ] Conthist
-- [ ] Capthist
+- [ ] 1-ply Conthist
+- [ ] 2-ply Conthist
+- [x] Capthist
 - [ ] Threats
 - [ ] Countermoves
 - [ ] Add Killers, History etc. stages to MovePicker.
 
 ### Evaluation
 
+- [ ] Find solution to CCRL/ChessGUI/Vector API issue
 - [ ] Lazy NNUE updates
-- [ ] New net, bigger HL size
+- [x] New net, bigger HL size
 - [ ] Screlu
+- [ ] Output buckets
 - [ ] Datagen
 - [ ] Pawn corrhist
 - [ ] Material corrhist
 
 ### Time management
 
-- [ ] Node TM
+- [x] Node TM
 
 ### UCI
 

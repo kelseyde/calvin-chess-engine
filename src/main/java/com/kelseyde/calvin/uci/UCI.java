@@ -34,6 +34,8 @@ public class UCI {
 
     public static void run(String[] args) {
 
+        write("Calvin by Dan Kelsey");
+
         if (args.length == 1 && args[0].equals("bench")) {
             Bench.run();
         }

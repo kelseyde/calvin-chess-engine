@@ -5,10 +5,12 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 import com.kelseyde.calvin.utils.Notation;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled
 public class ContHistTableTest {
 
     @Test

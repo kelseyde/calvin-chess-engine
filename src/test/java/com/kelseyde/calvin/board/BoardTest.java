@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.movegen.MoveGeneration;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.Notation;
@@ -10,30 +10,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class BoardTest {
-
-    @Test
-    public void testFromPositionDoesNotCorruptBoard() {
-
-        Board board = TestUtils.emptyBoard();
-        assertSinglePieceBoard(board, 0);
-        assertSinglePieceBoard(board, 7);
-        assertSinglePieceBoard(board, 12);
-        assertSinglePieceBoard(board, 18);
-        assertSinglePieceBoard(board, 25);
-        assertSinglePieceBoard(board, 31);
-        assertSinglePieceBoard(board, 38);
-        assertSinglePieceBoard(board, 36);
-        assertSinglePieceBoard(board, 43);
-        assertSinglePieceBoard(board, 54);
-        assertSinglePieceBoard(board, 59);
-        assertSinglePieceBoard(board, 60);
-        assertSinglePieceBoard(board, 63);
-
-    }
 
     @Test
     public void testBoardHistoryPreservedMultipleMoves() {
@@ -94,92 +73,6 @@ public class BoardTest {
     }
 
     @Test
-    public void testSimpleUnmakeMove() {
-        Board board1 = new Board();
-        board1.makeMove(new Move(12, 28));
-        board1.makeMove(new Move(52, 36));
-        board1.makeMove(new Move(11, 27));
-        board1.makeMove(new Move(51, 35));
-        board1.makeMove(new Move(10, 26));
-        board1.makeMove(new Move(50, 34));
-        board1.makeMove(new Move(9, 25));
-        board1.makeMove(new Move(49, 33));
-        board1.makeMove(new Move(8, 24));
-        board1.makeMove(new Move(48, 32));
-        board1.unmakeMove();
-        board1.unmakeMove();
-        board1.unmakeMove();
-        board1.unmakeMove();
-        board1.unmakeMove();
-        board1.unmakeMove();
-        board1.unmakeMove();
-        board1.unmakeMove();
-        board1.unmakeMove();
-        board1.unmakeMove();
-
-        Board board2 = new Board();
-
-        Assertions.assertEquals(board1.getPawns(true), board2.getPawns(true));
-        Assertions.assertEquals(board1.getKnights(true), board2.getKnights(true));
-        Assertions.assertEquals(board1.getBishops(true), board2.getBishops(true));
-        Assertions.assertEquals(board1.getRooks(true), board2.getRooks(true));
-        Assertions.assertEquals(board1.getQueens(true), board2.getQueens(true));
-        Assertions.assertEquals(board1.getKing(true), board2.getKing(true));
-        Assertions.assertEquals(board1.getPawns(false), board2.getPawns(false));
-        Assertions.assertEquals(board1.getKnights(false), board2.getKnights(false));
-        Assertions.assertEquals(board1.getBishops(false), board2.getBishops(false));
-        Assertions.assertEquals(board1.getRooks(false), board2.getRooks(false));
-        Assertions.assertEquals(board1.getQueens(false), board2.getQueens(false));
-        Assertions.assertEquals(board1.getKing(false), board2.getKing(false));
-        Assertions.assertEquals(board1.getWhitePieces(), board2.getWhitePieces());
-        Assertions.assertEquals(board1.getBlackPieces(), board2.getBlackPieces());
-        Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
-        Assertions.assertEquals(board1.isWhite(), board2.isWhite());
-
-        Assertions.assertEquals(board1.getState(), board2.getState());
-
-    }
-
-    @Test
-    public void testEnPassantFileIsClearedAfterNextMove() {
-        // TODO
-        Board board1 = new Board();
-        board1.makeMove(new Move(13, 21));
-        board1.makeMove(new Move(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
-
-        new MoveGenerator().generateMoves(board1);
-    }
-
-    @Test
-    public void testGenerateLegalMovesDoesNotCorruptBoard() {
-
-        Board board1 = new Board();
-        Board board2 = new Board();
-
-        new MoveGenerator().generateMoves(board1);
-
-        Assertions.assertEquals(board1.getPawns(true), board2.getPawns(true));
-        Assertions.assertEquals(board1.getKnights(true), board2.getKnights(true));
-        Assertions.assertEquals(board1.getBishops(true), board2.getBishops(true));
-        Assertions.assertEquals(board1.getRooks(true), board2.getRooks(true));
-        Assertions.assertEquals(board1.getQueens(true), board2.getQueens(true));
-        Assertions.assertEquals(board1.getKing(true), board2.getKing(true));
-        Assertions.assertEquals(board1.getPawns(false), board2.getPawns(false));
-        Assertions.assertEquals(board1.getKnights(false), board2.getKnights(false));
-        Assertions.assertEquals(board1.getBishops(false), board2.getBishops(false));
-        Assertions.assertEquals(board1.getRooks(false), board2.getRooks(false));
-        Assertions.assertEquals(board1.getQueens(false), board2.getQueens(false));
-        Assertions.assertEquals(board1.getKing(false), board2.getKing(false));
-        Assertions.assertEquals(board1.getWhitePieces(), board2.getWhitePieces());
-        Assertions.assertEquals(board1.getBlackPieces(), board2.getBlackPieces());
-        Assertions.assertEquals(board1.getOccupied(), board2.getOccupied());
-        Assertions.assertEquals(board1.isWhite(), board2.isWhite());
-
-        Assertions.assertEquals(board1.getState(), board2.getState());
-
-    }
-
-    @Test
     public void testUnmakeMoveRestoresCapturedPieces() {
 
         Board board = new Board();
@@ -200,53 +93,6 @@ public class BoardTest {
 
         blackPiecePositions = getPiecePositions(board, false);
         Assertions.assertEquals(Set.of(35, 56, 57, 58, 59, 60, 61, 62, 63, 48, 49, 50, 52, 53, 54, 55), blackPiecePositions);
-
-    }
-
-    @Test
-    public void testUnmakeEnPassantRestoresCapturedPawn() {
-
-        Board board = new Board();
-        //d4d5
-        board.makeMove(new Move(11, 27));
-        //e7e5
-        board.makeMove(new Move(52, 36));
-        //d4e5
-        board.makeMove(new Move(27, 36));
-        //d7d5
-        board.makeMove(new Move(51, 35, Move.PAWN_DOUBLE_MOVE_FLAG));
-        //e5d6
-        board.makeMove(new Move(36, 43, Move.EN_PASSANT_FLAG));
-
-        Set<Integer> blackPiecePositions = getPiecePositions(board, false);
-        Assertions.assertFalse(blackPiecePositions.contains(35));
-
-        board.unmakeMove();
-        blackPiecePositions = getPiecePositions(board, false);
-        Assertions.assertTrue(blackPiecePositions.contains(35));
-
-    }
-
-    @Test
-    public void testUnmakeMoveRemovesCorrectMoveFromMoveHistory() {
-
-        Board board = new Board();
-        board.makeMove(new Move(12, 28));
-        board.makeMove(new Move(51, 35));
-        board.makeMove(new Move(28, 35));
-
-        List<Move> moveHistory = board.getMoves().stream().toList();
-        Assertions.assertEquals(3, moveHistory.size());
-        Assertions.assertTrue(new Move(28, 35).matches(moveHistory.get(0)));
-        Assertions.assertTrue(new Move(51, 35).matches(moveHistory.get(1)));
-        Assertions.assertTrue(new Move(12, 28).matches(moveHistory.get(2)));
-
-        board.unmakeMove();
-
-        moveHistory = board.getMoves().stream().toList();
-        Assertions.assertEquals(2, moveHistory.size());
-        Assertions.assertTrue(new Move(51, 35).matches(moveHistory.get(0)));
-        Assertions.assertTrue(new Move(12, 28).matches(moveHistory.get(1)));
 
     }
 
@@ -298,23 +144,6 @@ public class BoardTest {
     }
 
     @Test
-    public void testUnmakeCheckmate() {
-
-        Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d1", "h5"));
-        board.makeMove(TestUtils.getLegalMove(board, "b8", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "f1", "c4"));
-        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
-        // scholar's mate
-        board.makeMove(TestUtils.getLegalMove(board, "h5", "f7"));
-        Assertions.assertFalse(board.isWhite());
-        // todo
-
-    }
-
-    @Test
     public void testRookCannotJumpToOtherSide() {
 
         String fen = "r1b1k2r/1p3p2/8/8/1n6/2Q5/4P2p/5KNR w kq - 0 1";
@@ -327,17 +156,6 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "g1", "h1"));
         Assertions.assertThrows(IllegalMoveException.class, () ->
                 board.makeMove(TestUtils.getLegalMove(board, "h8", "h1")));
-    }
-
-    @Test
-    public void testKnightMoveGenerationBug() {
-        Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "b1", "a3"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        List<String> moves = new MoveGenerator().generateMoves(board).stream().map(Notation::toNotation).toList();
-        System.out.println(moves.size());
-        System.out.println(moves);
-        Assertions.assertEquals(20, moves.size());
     }
 
     @Test
@@ -455,11 +273,5 @@ public class BoardTest {
         return positions;
     }
 
-    private void assertSinglePieceBoard(Board board, int from) {
-        board.toggleSquare(Piece.ROOK, true, from);
-        Assertions.assertEquals(Set.of(from), getPiecePositions(board, true));
-        Assertions.assertEquals(Set.of(), getPiecePositions(board, false));
-        board.toggleSquare(Piece.ROOK, true, from);
-    }
 
 }

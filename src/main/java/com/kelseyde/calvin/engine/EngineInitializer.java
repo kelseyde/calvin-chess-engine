@@ -1,76 +1,26 @@
 package com.kelseyde.calvin.engine;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.endgame.LichessTablebase;
-import com.kelseyde.calvin.endgame.Tablebase;
 import com.kelseyde.calvin.evaluation.NNUE;
-import com.kelseyde.calvin.opening.OpeningBook;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EngineInitializer {
 
-    static final String DEFAULT_CONFIG_LOCATION = "/engine_config.json";
-    static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     public static Engine loadEngine() {
-        EngineConfig config = loadDefaultConfig();
-        config.postInitialise();
-        OpeningBook book = loadDefaultOpeningBook(config);
-        Tablebase tablebase = loadDefaultTablebase(config);
-        TranspositionTable transpositionTable = new TranspositionTable(config.getDefaultHashSizeMb());
+        EngineConfig config = new EngineConfig();
+        TranspositionTable transpositionTable = new TranspositionTable(config.defaultHashSizeMb);
         Search searcher = new ParallelSearcher(config, transpositionTable);
-        Engine engine = new Engine(config, book, tablebase, searcher);
+        Engine engine = new Engine(config, searcher);
         engine.setPosition(new Board());
         return engine;
-    }
-
-    public static EngineConfig loadDefaultConfig() {
-        return loadConfig(DEFAULT_CONFIG_LOCATION);
-    }
-
-    public static EngineConfig loadConfig(String configLocation) {
-        try (InputStream inputStream = EngineInitializer.class.getResourceAsStream(configLocation)) {
-            EngineConfig config = OBJECT_MAPPER.readValue(inputStream, EngineConfig.class);
-            config.postInitialise();
-            return config;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static OpeningBook loadDefaultOpeningBook(EngineConfig config) {
-        return loadOpeningBook(config.getOwnBookFile());
-    }
-
-    public static Tablebase loadDefaultTablebase(EngineConfig config) {
-        return new LichessTablebase(config);
-    }
-
-    public static OpeningBook loadOpeningBook(String bookLocation) {
-        try (InputStream inputStream = EngineInitializer.class.getResourceAsStream(bookLocation)) {
-            if (inputStream == null) {
-                return null;
-            }
-            String file = new BufferedReader(
-                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
-            return new OpeningBook(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public static NNUE.Network loadNetwork(String file, int inputSize, int hiddenSize) {

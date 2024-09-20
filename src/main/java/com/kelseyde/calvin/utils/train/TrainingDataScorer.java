@@ -3,10 +3,12 @@ package com.kelseyde.calvin.utils.train;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Score;
-import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.search.*;
+import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.search.Searcher;
+import com.kelseyde.calvin.search.ThreadData;
+import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
@@ -33,8 +35,6 @@ import java.util.stream.Stream;
 
 public class TrainingDataScorer {
 
-    // 2220 pos/s current avg
-
     private static final int THREAD_COUNT = 20;
     private static final int THREAD_TIMEOUT_SECONDS = 15;
     private static final int BATCH_SIZE = THREAD_COUNT * 1000;
@@ -53,7 +53,7 @@ public class TrainingDataScorer {
         Path outputPath = Paths.get(command.outputFile());
         UCI.outputEnabled = false;
         searchers = IntStream.range(0, THREAD_COUNT)
-                .mapToObj(i -> initSearcher())
+                .mapToObj(this::initSearcher)
                 .toList();
         Instant start = Instant.now();
 
@@ -102,14 +102,18 @@ public class TrainingDataScorer {
             Searcher searcher = searchers.get(i);
             List<String> partition = partitions.get(i);
             futures.add(CompletableFuture.supplyAsync(() -> {
-                List<String> scoredPartition = new ArrayList<>(partition.size());
-                for (String line : partition) {
-                    String scoredLine = scoreData(searcher, line, command);
-                    if (!scoredLine.isEmpty()) {
-                        scoredPartition.add(scoredLine);
+                try {
+                    List<String> scoredPartition = new ArrayList<>(partition.size());
+                    for (String line : partition) {
+                        String scoredLine = scoreData(searcher, line, command);
+                        if (!scoredLine.isEmpty()) {
+                            scoredPartition.add(scoredLine);
+                        }
                     }
+                    return scoredPartition;
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to score partition " + Arrays.toString(e.getStackTrace()) + e.getCause() + e.getMessage(), e);
                 }
-                return scoredPartition;
             }));
         }
         List<String> scoredBatch = new ArrayList<>(positions.size());
@@ -157,6 +161,10 @@ public class TrainingDataScorer {
             return "";
         }
         Move bestMove = searchResult.move();
+        if (bestMove == null) {
+            // Filter out positions where there is no best move
+            return "";
+        }
         boolean isCapture = board.pieceAt(bestMove.to()) != null;
         if (isCapture) {
             // Filter out positions where the best move is a capture
@@ -171,10 +179,10 @@ public class TrainingDataScorer {
         return String.format("%s | %s | %s", fen, score, result);
     }
 
-    private Searcher initSearcher() {
-        EngineConfig config = EngineInitializer.loadDefaultConfig();
+    private Searcher initSearcher(int i) {
+        EngineConfig config = new EngineConfig();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
-        return new Searcher(config, transpositionTable, new ThreadData(true));
+        return new Searcher(config, transpositionTable, new ThreadData(i == 0));
     }
 
     private void logProgress(Instant start, ScoreDataCommand command, AtomicInteger scored, AtomicInteger excluded) {

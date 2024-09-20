@@ -196,16 +196,22 @@ public class Searcher implements Search {
         //  a) we are not in a PV node,
         //  b) it was searched to a sufficient depth, and
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
-        HashEntry ttEntry = tt.get(board.key(), ply);
-        if (!pvNode
-                && ttEntry != null
-                && ttEntry.isSufficientDepth(depth)
-                && ttEntry.isWithinBounds(alpha, beta)) {
-            return ttEntry.getScore();
+        HashEntry ttEntry = null;
+        boolean ttHit = false;
+
+        if (!excluded) {
+            ttEntry = tt.get(board.key(), ply);
+            ttHit = ttEntry != null;
+            if (!pvNode
+                    && ttHit
+                    && ttEntry.isSufficientDepth(depth)
+                    && ttEntry.isWithinBounds(alpha, beta)) {
+                return ttEntry.getScore();
+            }
         }
 
         Move ttMove = null;
-        if (ttEntry != null && ttEntry.getMove() != null) {
+        if (ttHit && ttEntry.getMove() != null) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.getMove();
         }
@@ -225,6 +231,7 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
+                && !excluded
                 && !inCheck
                 && (ttEntry == null || ttEntry.getMove() == null)
                 && ply > 0
@@ -235,7 +242,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
         }
 
         ss.setStaticEval(ply, staticEval);
@@ -347,6 +354,33 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
+            int extension = 0;
+            if (!rootNode
+                && depth >= 8
+                && !excluded
+                && ttHit
+                && move.equals(ttMove)
+                && ttEntry.getDepth() >= depth - 4
+                && ttEntry.getFlag() != HashFlag.UPPER) {
+
+                int sBeta = Math.max(Score.MIN + 1, ttEntry.getScore() - depth * 14 / 16);
+				int sDepth = (depth - 1) / 2;
+
+                ss.setExcludedMove(ply, move);
+                int score = search(sDepth, ply, -sBeta - 1, -sBeta);
+                ss.setExcludedMove(ply, null);
+
+                if (score < sBeta) {
+                    extension = 1;
+                } else if (sBeta >= beta) {
+                    return sBeta;
+                } else if (ttEntry.getScore() >= beta) {
+                    extension = -1;
+                }
+
+            }
+
             int score;
             if (isDraw()) {
                 // No need to search if the position is a legal draw (3-fold, insufficient material, or 50-move rule).
@@ -356,7 +390,7 @@ public class Searcher implements Search {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                score = -search(depth - 1, ply + 1, -beta, -alpha);
+                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
             }
             else {
                 // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
@@ -370,19 +404,19 @@ public class Searcher implements Search {
                     if (pvNode) {
                         reduction--;
                     }
-                    if (ttEntry != null && ttEntry.getMove() != null && isCapture) {
+                    if (ttHit && ttEntry.getMove() != null && isCapture) {
                         reduction++;
                     }
                 }
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha);
+                score = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1, ply + 1, -beta, -alpha);
+                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
                 }
             }
 
@@ -435,7 +469,9 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        tt.put(board.key(), flag, depth, ply, bestMove, staticEval, bestScore);
+        if (!excluded) {
+            tt.put(board.key(), flag, depth, ply, bestMove, staticEval, bestScore);
+        }
 
         return bestScore;
 

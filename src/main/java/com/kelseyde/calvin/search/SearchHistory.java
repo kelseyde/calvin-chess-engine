@@ -21,9 +21,9 @@ public class SearchHistory {
     private int bestScoreStability = 0;
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures, boolean failHigh) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures) {
 
-        if (bestMove.isQuiet() && failHigh) {
+        if (bestMove.isQuiet()) {
 
             killerTable.add(ply, bestMove.move());
             for (PlayedMove quiet : quiets) {

@@ -4,6 +4,10 @@ import com.kelseyde.calvin.search.Search;
 
 public class EngineConfig {
 
+    public EngineConfig() {
+        postInitialise();
+    }
+
     public int minThreadCount = 1;
     public int maxThreadCount = 12;
     public int defaultThreadCount = 1;

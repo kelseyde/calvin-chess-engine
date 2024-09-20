@@ -148,10 +148,10 @@ public class MovePicker {
         int materialDelta = captured.getValue() - piece.getValue();
         captureScore += materialDelta >= 0 ? MoveBonus.WINNING_CAPTURE_BONUS : MoveBonus.LOSING_CAPTURE_BONUS;
 
-        // Add MVV score to the isCapture score
+        // Add MVV score to the capture score
         captureScore += MoveBonus.MVV_OFFSET * captured.getIndex();
 
-        // Tie-break with isCapture history
+        // Tie-break with capture history
         captureScore += history.getCaptureHistoryTable().get(piece, to, captured, board.isWhite());
 
         return captureScore;

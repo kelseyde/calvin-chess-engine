@@ -324,6 +324,33 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
+            int extension = 0;
+            if (!rootNode
+                    && depth >= 8
+                    && !excluded
+                    && ttHit
+                    && move.equals(ttMove)
+                    && ttEntry.getDepth() >= depth - 4
+                    && ttEntry.getFlag() != HashFlag.UPPER) {
+
+                int sBeta = Math.max(Score.MIN + 1, ttEntry.getScore() - depth * 14 / 16);
+                int sDepth = (depth - 1) / 2;
+
+                ss.setExcludedMove(ply, move);
+                int score = search(sDepth, ply, -sBeta - 1, -sBeta);
+                ss.setExcludedMove(ply, null);
+
+                if (score < sBeta) {
+                    extension = 1;
+                } else if (sBeta >= beta) {
+                    return sBeta;
+                } else if (ttEntry.getScore() >= beta) {
+                    extension = -1;
+                }
+
+            }
+
             eval.makeMove(board, move);
             if (!board.makeMove(move)) continue;
             int nodesBefore = td.nodes;
@@ -352,33 +379,6 @@ public class Searcher implements Search {
                 ss.unsetMove(ply);
                 movePicker.setSkipQuiets(true);
                 continue;
-            }
-
-            // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
-            int extension = 0;
-            if (!rootNode
-                && depth >= 8
-                && !excluded
-                && ttHit
-                && move.equals(ttMove)
-                && ttEntry.getDepth() >= depth - 4
-                && ttEntry.getFlag() != HashFlag.UPPER) {
-
-                int sBeta = Math.max(Score.MIN + 1, ttEntry.getScore() - depth * 14 / 16);
-				int sDepth = (depth - 1) / 2;
-
-                ss.setExcludedMove(ply, move);
-                int score = search(sDepth, ply, -sBeta - 1, -sBeta);
-                ss.setExcludedMove(ply, null);
-
-                if (score < sBeta) {
-                    extension = 1;
-                } else if (sBeta >= beta) {
-                    return sBeta;
-                } else if (ttEntry.getScore() >= beta) {
-                    extension = -1;
-                }
-
             }
 
             int score;

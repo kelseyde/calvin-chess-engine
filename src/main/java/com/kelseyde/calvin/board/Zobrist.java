@@ -1,8 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
-
 import java.util.Arrays;
 import java.util.Random;
 
@@ -13,15 +10,14 @@ import java.util.Random;
  *
  * @see <a href="https://www.chessprogramming.org/Zobrist_Hashing">Chess Programming Wiki</a>
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Zobrist {
 
-    static final long[][][] PIECE_SQUARE_HASH = new long[64][2][6];
-    static final long[] CASTLING_RIGHTS = new long[16];
-    static final long[] EN_PASSANT_FILE = new long[9];
-    static final long BLACK_TO_MOVE;
-    static final int WHITE = 0;
-    static final int BLACK = 1;
+    private static final long[][][] PIECE_SQUARE_HASH = new long[64][2][6];
+    private static final long[] CASTLING_RIGHTS = new long[16];
+    private static final long[] EN_PASSANT_FILE = new long[9];
+    private static final long BLACK_TO_MOVE;
+    private static final int WHITE = 0;
+    private static final int BLACK = 1;
 
     static {
 
@@ -85,14 +81,14 @@ public class Zobrist {
             }
         }
 
-        int enPassantFile = board.getGameState().getEnPassantFile() + 1;
+        int enPassantFile = board.getState().getEnPassantFile() + 1;
         key ^= EN_PASSANT_FILE[enPassantFile];
 
-        if (board.isWhiteToMove()) {
+        if (board.isWhite()) {
             key ^= BLACK_TO_MOVE;
         }
 
-        key ^= CASTLING_RIGHTS[board.getGameState().getCastlingRights()];
+        key ^= CASTLING_RIGHTS[board.getState().getRights()];
 
         return key;
     }
@@ -110,13 +106,13 @@ public class Zobrist {
         return key;
     }
 
-    public static long updatePiece(long key, int startSquare, int endSquare, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[startSquare][white ? 0 : 1][pieceType.getIndex()]
-                   ^ PIECE_SQUARE_HASH[endSquare][white ? 0 : 1][pieceType.getIndex()];
+    public static long updatePiece(long key, int from, int to, Piece pieceType, boolean white) {
+        return key ^ PIECE_SQUARE_HASH[from][Colour.index(white)][pieceType.getIndex()]
+                   ^ PIECE_SQUARE_HASH[to][Colour.index(white)][pieceType.getIndex()];
     }
 
     public static long updatePiece(long key, int square, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[square][white ? 0 : 1][pieceType.getIndex()];
+        return key ^ PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.getIndex()];
     }
 
     public static long updateCastlingRights(long key, int oldCastlingRights, int newCastlingRights) {

@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.tables.history;
 
-import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Piece;
 
 public class CaptureHistoryTable extends AbstractHistoryTable {
@@ -11,7 +11,7 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
     int[][][][] table = new int[2][6][64][6];
 
     public void update(Piece piece, int to, Piece captured, int depth, boolean white, boolean good) {
-        int colourIndex = Board.colourIndex(white);
+        int colourIndex = Colour.index(white);
         int pieceIndex = piece.getIndex();
         int capturedIndex = captured.getIndex();
         int current = table[colourIndex][pieceIndex][to][capturedIndex];
@@ -22,7 +22,7 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
     }
 
     public int get(Piece piece, int to, Piece captured, boolean white) {
-        int colourIndex = Board.colourIndex(white);
+        int colourIndex = Colour.index(white);
         int pieceIndex = piece.getIndex();
         int capturedIndex = captured.getIndex();
         return table[colourIndex][pieceIndex][to][capturedIndex];

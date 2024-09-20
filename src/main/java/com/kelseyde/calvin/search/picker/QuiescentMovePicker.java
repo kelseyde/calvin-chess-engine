@@ -2,19 +2,18 @@ package com.kelseyde.calvin.search.picker;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.movegen.MoveGeneration;
+import com.kelseyde.calvin.movegen.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
-import lombok.Setter;
 
-@Setter
 public class QuiescentMovePicker extends MovePicker {
 
     private MoveFilter filter;
 
-    public QuiescentMovePicker(MoveGeneration movegen, SearchStack ss, SearchHistory history, Board board, int ply) {
-        super(movegen, ss, history, board, ply);
+    public QuiescentMovePicker(
+            MoveGeneration movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+        super(movegen, ss, history, board, ply, ttMove, inCheck);
         this.skipQuiets = true;
     }
 
@@ -32,6 +31,10 @@ public class QuiescentMovePicker extends MovePicker {
         }
         return nextMove;
 
+    }
+
+    public void setFilter(MoveFilter filter) {
+        this.filter = filter;
     }
 
 }

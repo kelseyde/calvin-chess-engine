@@ -7,53 +7,44 @@ import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 import com.kelseyde.calvin.tables.history.HistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
-import lombok.Data;
 
 import java.util.List;
 
-@Data
 public class SearchHistory {
 
-    private KillerTable killerTable = new KillerTable();
-    private HistoryTable historyTable = new HistoryTable();
-    private ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
-    private CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
+    private final KillerTable killerTable = new KillerTable();
+    private final HistoryTable historyTable = new HistoryTable();
+    private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+    private final CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
 
-    public void updateQuietHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quietsSearched, List<PlayedMove> capturesSearched) {
+    public void updateHistory(
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures, boolean failHigh) {
 
-        killerTable.add(ply, bestMove.getMove());
+        if (bestMove.isQuiet() && failHigh) {
 
-        for (PlayedMove quietMove : quietsSearched) {
-            boolean good = bestMove.getMove().equals(quietMove.getMove());
-            historyTable.update(quietMove.getMove(), depth, white, good);
-//
-//            Move prevMove = ss.getMove(ply - 1);
-//            Piece prevPiece = ss.getMovedPiece(ply - 1);
-//            contHistTable.update(prevMove, prevPiece, quietMove.getMove(), quietMove.getPiece(), depth, white, good);
+            killerTable.add(ply, bestMove.move());
+            for (PlayedMove quiet : quiets) {
+                boolean good = bestMove.move().equals(quiet.move());
+                historyTable.update(quiet.move(), depth, white, good);
+
+                Move prevMove = ss.getMove(ply - 1);
+                Piece prevPiece = ss.getMovedPiece(ply - 1);
+                contHistTable.update(prevMove, prevPiece, quiet.move(), quiet.piece(), depth, white, good);
+            }
+
         }
 
-        for (PlayedMove captureMove : capturesSearched) {
-            boolean good = bestMove.equals(captureMove);
-            Piece piece = captureMove.getPiece();
-            int to = captureMove.getMove().getTo();
-            Piece captured = captureMove.getCaptured();
-            captureHistoryTable.update(piece, to, captured, depth, white, good);
-        }
-
-    }
-
-    public void updateCaptureHistory(PlayedMove bestMove, boolean white, int depth, List<PlayedMove> capturesSearched) {
-        for (PlayedMove capture : capturesSearched) {
+        for (PlayedMove capture : captures) {
             boolean good = bestMove.equals(capture);
-            Piece piece = capture.getPiece();
-            int to = capture.getMove().getTo();
-            Piece captured = capture.getCaptured();
+            Piece piece = capture.piece();
+            int to = capture.move().to();
+            Piece captured = capture.captured();
             captureHistoryTable.update(piece, to, captured, depth, white, good);
         }
+
     }
 
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {
@@ -67,6 +58,30 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
+    public int getBestMoveStability() {
+        return bestMoveStability;
+    }
+
+    public int getBestScoreStability() {
+        return bestScoreStability;
+    }
+
+    public KillerTable getKillerTable() {
+        return killerTable;
+    }
+
+    public HistoryTable getHistoryTable() {
+        return historyTable;
+    }
+
+    public ContinuationHistoryTable getContHistTable() {
+        return contHistTable;
+    }
+
+    public CaptureHistoryTable getCaptureHistoryTable() {
+        return captureHistoryTable;
+    }
+
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
@@ -77,6 +92,7 @@ public class SearchHistory {
     public void clear() {
         killerTable.clear();
         historyTable.clear();
+        contHistTable.clear();
         captureHistoryTable.clear();
     }
 

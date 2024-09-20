@@ -35,8 +35,6 @@ import java.util.stream.Stream;
 
 public class TrainingDataScorer {
 
-    // 2220 pos/s current avg
-
     private static final int THREAD_COUNT = 20;
     private static final int THREAD_TIMEOUT_SECONDS = 15;
     private static final int BATCH_SIZE = THREAD_COUNT * 1000;

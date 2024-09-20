@@ -10,10 +10,6 @@ import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.ThreadData;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,11 +65,5 @@ public class TestUtils {
         }
         return legalMove.get();
     }
-
-    public static List<String> loadFens(String filePath) throws IOException {
-        Path path = Paths.get(filePath);
-        return Files.readAllLines(path);
-    }
-
 
 }

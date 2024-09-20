@@ -8,8 +8,6 @@ import com.kelseyde.calvin.engine.EngineInitializer;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -27,7 +25,6 @@ import java.util.Deque;
  *
  * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {

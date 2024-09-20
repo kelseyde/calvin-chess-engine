@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
-import lombok.AllArgsConstructor;
 
 /**
  * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encodes the relevant
@@ -20,7 +19,6 @@ import lombok.AllArgsConstructor;
  * 16-31: the {@link Move} start square, end square, and special move flag.
  * 32-63: the eval of the position in centipawns.
  */
-@AllArgsConstructor
 public class HashEntry {
 
     public static final int SIZE_BYTES = 32;
@@ -35,6 +33,11 @@ public class HashEntry {
 
     private long key;
     private long value;
+
+    public HashEntry(long key, long value) {
+        this.key = key;
+        this.value = value;
+    }
 
     /**
      * Extracts the 48-bits representing the zobrist part of the given zobrist key.

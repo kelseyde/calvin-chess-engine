@@ -51,9 +51,12 @@
 - [ ] Standardise 'help' info
 - [ ] Add seldepth to info
 - [ ] Add hashfull to info
+- [ ] MultiPV
+- [ ] Coloured output
 
 ### Code maturity
 
 - [ ] Improve javadoc
 - [ ] Review all code comments
+- [ ] Reduce artifact size (remove plugins, dependencies, delete old nets)
 

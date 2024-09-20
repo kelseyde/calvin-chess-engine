@@ -2,7 +2,7 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
 import org.junit.jupiter.api.Assertions;

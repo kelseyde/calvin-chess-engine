@@ -5,18 +5,17 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.tables.history.*;
-import lombok.Data;
 
 import java.util.List;
 
-@Data
 public class SearchHistory {
 
-    private KillerTable killerTable = new KillerTable();
-    private HistoryTable historyTable = new HistoryTable();
-    private ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
-    private CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
-    private CorrectionHistoryTable pawnCorrHistTable = new CorrectionHistoryTable();
+    private final KillerTable killerTable = new KillerTable();
+    private final HistoryTable historyTable = new HistoryTable();
+    private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+    private final CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
+    private final CorrectionHistoryTable pawnCorrHistTable = new CorrectionHistoryTable();
+
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -74,6 +73,30 @@ public class SearchHistory {
 
     public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
+    }
+
+    public int getBestMoveStability() {
+        return bestMoveStability;
+    }
+
+    public int getBestScoreStability() {
+        return bestScoreStability;
+    }
+
+    public KillerTable getKillerTable() {
+        return killerTable;
+    }
+
+    public HistoryTable getHistoryTable() {
+        return historyTable;
+    }
+
+    public ContinuationHistoryTable getContHistTable() {
+        return contHistTable;
+    }
+
+    public CaptureHistoryTable getCaptureHistoryTable() {
+        return captureHistoryTable;
     }
 
     public void reset() {

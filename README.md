@@ -68,14 +68,9 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 - [Search Extensions](https://www.chessprogramming.org/Extensions) - Calvin uses the popular [Check Extension](https://www.chessprogramming.org/Check_Extensions) to extend the search when in check, as well as an extension when trading into a pawn endgame (to avoid potentially trading into a drawn/lost ending). 
 - [Search Reductions](https://www.chessprogramming.org/Reductions) - Calvin features [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions) for reducing search depth for moves ordered late in the list. 
 
-
 ### Move Ordering
 - Captures are ordered using the [MVV-LVA](https://www.chessprogramming.org/MVV-LVA) (Most-Valuable-Victim, Least-Valuable-Attacker) heuristic.
 - Non-captures are ordered using the [Killer move](https://www.chessprogramming.org/Killer_Move) and [History](https://www.chessprogramming.org/History_Heuristic) heuristics.
-
-### Opening Book / Endgame Tablebase
-- Simple opening book loaded from a .txt file on startup. Can be disabled using the 'OwnBook' UCI option.
-- Calvin can probe the [Lichess Tablebase API](https://github.com/lichess-org/lila-tablebase) for endgames of 7 men or fewer. Can be disabled using the 'OwnTablebase' UCI option.
 
 ### Communication
 - Calvin communicates using the Universal Chess Interface [(UCI) protocol](https://www.chessprogramming.org/UCI).

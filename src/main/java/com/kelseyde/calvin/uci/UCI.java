@@ -72,6 +72,7 @@ public class UCI {
 
     public static void handleNewGame(UCICommand command) {
         ENGINE.gameOver();
+        System.gc();
         ENGINE.newGame();
     }
 

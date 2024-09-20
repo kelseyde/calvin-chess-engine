@@ -3,12 +3,11 @@ package com.kelseyde.calvin.search.picker;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.movegen.MoveGeneration;
+import com.kelseyde.calvin.movegen.MoveGeneration.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
-import lombok.Data;
 
 import java.util.List;
 
@@ -17,7 +16,6 @@ import java.util.List;
  * transposition table is tried before any moves are generated. Then, all the 'noisy' moves are tried (captures,
  * checks and promotions). Finally, we generate the remaining quiet moves.
  */
-@Data
 public class MovePicker {
 
     public enum Stage {
@@ -206,6 +204,14 @@ public class MovePicker {
         ScoredMove temp = moves[i];
         moves[i] = moves[j];
         moves[j] = temp;
+    }
+
+    public void setSkipQuiets(boolean skipQuiets) {
+        this.skipQuiets = skipQuiets;
+    }
+
+    public void setInCheck(boolean inCheck) {
+        this.inCheck = inCheck;
     }
 
     public record ScoredMove(Move move, int score) {}

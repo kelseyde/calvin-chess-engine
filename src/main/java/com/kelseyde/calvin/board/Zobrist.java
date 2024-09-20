@@ -1,8 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
-
 import java.util.Arrays;
 import java.util.Random;
 
@@ -13,15 +10,14 @@ import java.util.Random;
  *
  * @see <a href="https://www.chessprogramming.org/Zobrist_Hashing">Chess Programming Wiki</a>
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Zobrist {
 
-    static final long[][][] PIECE_SQUARE_HASH = new long[64][2][6];
-    static final long[] CASTLING_RIGHTS = new long[16];
-    static final long[] EN_PASSANT_FILE = new long[9];
-    static final long BLACK_TO_MOVE;
-    static final int WHITE = 0;
-    static final int BLACK = 1;
+    private static final long[][][] PIECE_SQUARE_HASH = new long[64][2][6];
+    private static final long[] CASTLING_RIGHTS = new long[16];
+    private static final long[] EN_PASSANT_FILE = new long[9];
+    private static final long BLACK_TO_MOVE;
+    private static final int WHITE = 0;
+    private static final int BLACK = 1;
 
     static {
 

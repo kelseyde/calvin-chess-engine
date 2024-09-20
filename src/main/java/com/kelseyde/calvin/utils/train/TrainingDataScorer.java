@@ -3,9 +3,8 @@ package com.kelseyde.calvin.utils.train;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.Score;
-import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.ThreadData;
@@ -183,7 +182,7 @@ public class TrainingDataScorer {
     }
 
     private Searcher initSearcher(int i) {
-        EngineConfig config = EngineInitializer.loadDefaultConfig();
+        EngineConfig config = new EngineConfig();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
         return new Searcher(config, transpositionTable, new ThreadData(i == 0));
     }

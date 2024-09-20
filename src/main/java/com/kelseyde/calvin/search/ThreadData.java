@@ -1,11 +1,9 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Move;
-import lombok.Data;
 
 import java.time.Instant;
 
-@Data
 public class ThreadData {
 
     public boolean mainThread;
@@ -28,6 +26,10 @@ public class ThreadData {
     public int getNodes(Move move) {
         if (move == null) return 0;
         return nodesPerMove[move.from()][move.to()];
+    }
+
+    public boolean isMainThread() {
+        return mainThread;
     }
 
     public void reset() {

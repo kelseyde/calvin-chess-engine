@@ -7,17 +7,15 @@ import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 import com.kelseyde.calvin.tables.history.HistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
-import lombok.Data;
 
 import java.util.List;
 
-@Data
 public class SearchHistory {
 
-    private KillerTable killerTable = new KillerTable();
-    private HistoryTable historyTable = new HistoryTable();
-    private ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
-    private CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
+    private final KillerTable killerTable = new KillerTable();
+    private final HistoryTable historyTable = new HistoryTable();
+    private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+    private final CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -67,6 +65,30 @@ public class SearchHistory {
 
     public void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
+    }
+
+    public int getBestMoveStability() {
+        return bestMoveStability;
+    }
+
+    public int getBestScoreStability() {
+        return bestScoreStability;
+    }
+
+    public KillerTable getKillerTable() {
+        return killerTable;
+    }
+
+    public HistoryTable getHistoryTable() {
+        return historyTable;
+    }
+
+    public ContinuationHistoryTable getContHistTable() {
+        return contHistTable;
+    }
+
+    public CaptureHistoryTable getCaptureHistoryTable() {
+        return captureHistoryTable;
     }
 
     public void reset() {

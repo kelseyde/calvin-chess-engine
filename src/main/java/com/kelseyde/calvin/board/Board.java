@@ -1,9 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
-
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -16,8 +12,6 @@ import java.util.Deque;
  *
  * @see <a href="https://www.chessprogramming.org/Board_Representation">Chess Programming Wiki</a>
  */
-@Data
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Board {
 
     long pawns =        Bits.WHITE_PAWNS_START | Bits.BLACK_PAWNS_START;
@@ -363,6 +357,118 @@ public class Board {
 
     public long getPieces(boolean white) {
         return white ? whitePieces : blackPieces;
+    }
+
+    public void setPawns(long pawns) {
+        this.pawns = pawns;
+    }
+
+    public void setKnights(long knights) {
+        this.knights = knights;
+    }
+
+    public void setBishops(long bishops) {
+        this.bishops = bishops;
+    }
+
+    public void setRooks(long rooks) {
+        this.rooks = rooks;
+    }
+
+    public void setQueens(long queens) {
+        this.queens = queens;
+    }
+
+    public void setKings(long kings) {
+        this.kings = kings;
+    }
+
+    public void setWhitePieces(long whitePieces) {
+        this.whitePieces = whitePieces;
+    }
+
+    public void setBlackPieces(long blackPieces) {
+        this.blackPieces = blackPieces;
+    }
+
+    public void setOccupied(long occupied) {
+        this.occupied = occupied;
+    }
+
+    public void setPieces(Piece[] pieces) {
+        this.pieces = pieces;
+    }
+
+    public void setWhite(boolean white) {
+        this.white = white;
+    }
+
+    public void setState(GameState state) {
+        this.state = state;
+    }
+
+    public void setStateHistory(Deque<GameState> stateHistory) {
+        this.stateHistory = stateHistory;
+    }
+
+    public void setMoves(Deque<Move> moves) {
+        this.moves = moves;
+    }
+
+    public long getPawns() {
+        return pawns;
+    }
+
+    public long getKnights() {
+        return knights;
+    }
+
+    public long getBishops() {
+        return bishops;
+    }
+
+    public long getRooks() {
+        return rooks;
+    }
+
+    public long getQueens() {
+        return queens;
+    }
+
+    public long getKings() {
+        return kings;
+    }
+
+    public long getWhitePieces() {
+        return whitePieces;
+    }
+
+    public long getBlackPieces() {
+        return blackPieces;
+    }
+
+    public long getOccupied() {
+        return occupied;
+    }
+
+    public Piece[] getPieces() {
+        return pieces;
+    }
+
+    public boolean isWhite() {
+        return white;
+    }
+
+    public GameState getState() {
+        return state;
+    }
+
+    public Deque<GameState> getStateHistory() {
+        return stateHistory;
+    }
+
+    public Deque<Move> getMoves() {
+        return moves;
     }
 
     public long key() {

@@ -1,0 +1,53 @@
+package com.kelseyde.calvin.tables.history;
+
+import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.board.Colour;
+import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
+
+public class ContinuationHistoryTable extends AbstractHistoryTable {
+
+    private static final int MAX_BONUS = 1200;
+    private static final int MAX_SCORE = 8192;
+
+    int[][][][][] table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
+
+    public void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white, boolean good) {
+        int current = get(prevMove, prevPiece, currMove, currPiece, white);
+        int bonus = bonus(depth);
+        if (!good) bonus = -bonus;
+        int update = gravity(current, bonus);
+        set(prevMove, prevPiece, currMove, currPiece, update, white);
+    }
+
+    public int get(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {
+        if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
+            return 0;
+        }
+        int colourIndex = Colour.index(white);
+        return table[colourIndex][prevPiece.index()][prevMove.to()][currPiece.index()][currMove.to()];
+    }
+
+    public void set(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int update, boolean white) {
+        if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
+            return;
+        }
+        int colourIndex = Colour.index(white);
+        table[colourIndex][prevPiece.index()][prevMove.to()][currPiece.index()][currMove.to()] = update;
+    }
+
+    public void clear() {
+        table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
+    }
+
+    @Override
+    protected int getMaxScore() {
+        return MAX_SCORE;
+    }
+
+    @Override
+    protected int getMaxBonus() {
+        return MAX_BONUS;
+    }
+
+}

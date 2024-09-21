@@ -1,8 +1,7 @@
 package com.kelseyde.calvin.uci;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,13 +72,13 @@ public record UCICommand(UCICommandType type, String[] args) {
     public record GoCommand(int movetime, int wtime, int btime, int winc, int binc, int nodes, int depth) {
 
         public static GoCommand parse(UCICommand command) {
-            int movetime = command.getInt("movetime", -1, false);
-            int wtime = command.getInt("wtime", -1, false);
-            int btime = command.getInt("btime", -1, false);
-            int winc = command.getInt("winc", -1, false);
-            int binc = command.getInt("binc", -1, false);
-            int nodes = command.getInt("nodes", -1, false);
-            int depth = command.getInt("depth", -1, false);
+            int movetime =  command.getInt("movetime", Integer.MIN_VALUE, false);
+            int wtime =     command.getInt("wtime", Integer.MIN_VALUE, false);
+            int btime =     command.getInt("btime", Integer.MIN_VALUE, false);
+            int winc =      command.getInt("winc", Integer.MIN_VALUE, false);
+            int binc =      command.getInt("binc", Integer.MIN_VALUE, false);
+            int nodes =     command.getInt("nodes", Integer.MIN_VALUE, false);
+            int depth =     command.getInt("depth", Integer.MIN_VALUE, false);
             return new GoCommand(movetime, wtime, btime, winc, binc, nodes, depth);
         }
 
@@ -87,8 +86,8 @@ public record UCICommand(UCICommandType type, String[] args) {
             return movetime > 0;
         }
 
-        public boolean isTime() {
-            return wtime > 0 && btime > 0;
+        public boolean isTimeAndInc() {
+            return wtime > Integer.MIN_VALUE && btime > Integer.MIN_VALUE;
         }
 
     }
@@ -106,46 +105,33 @@ public record UCICommand(UCICommandType type, String[] args) {
                 fen = FEN.STARTPOS;
             }
             List<Move> moves = command.getStrings("moves", false).stream()
-                    .map(Notation::fromUCI)
+                    .map(Move::fromUCI)
                     .toList();
             return new PositionCommand(fen, moves);
         }
 
     }
 
-    public record ScoreDataCommand(String inputFile, String outputFile, int softNodeLimit, int resumeOffset) {
+    public record ScoreDataCommand(String inputFile, String outputFile, int softNodes, int hardNodes, int resumeOffset) {
+
+        private static final int DEFAULT_SOFT_NODES = 5000;
+        private static final int DEFAULT_HARD_NODES = 1000000;
+        private static final int DEFAULT_RESUME_OFFSET = 0;
 
         public static Optional<ScoreDataCommand> parse(UCICommand command) {
-            String[] parts = command.args();
-            if (parts.length < 3) {
-                UCI.write("info error invalid command; input and output file must be specified; e.g. 'scoredata input.txt output.txt'");
-                return Optional.empty();
-            }
-            String inputFile = parts[1];
-            String outputFile = parts[2];
+            String inputFile = command.getString("input", null, true);
+            String outputFile = command.getString("output", null, true);
+
             if (!Files.exists(Path.of(inputFile))) {
                 UCI.write("info error input file " + inputFile + " does not exist");
                 return Optional.empty();
             }
-            int softNodeLimit = 5000;
-            int resumeOffset = 0;
-            if (parts.length > 3) {
-                try {
-                    softNodeLimit = Integer.parseInt(parts[3]);
-                } catch (NumberFormatException e) {
-                    UCI.write("info error invalid depth; must be an integer; e.g. 'scoredata input.txt output.txt 6'");
-                    return Optional.empty();
-                }
-                if (parts.length > 4) {
-                    try {
-                        resumeOffset = Integer.parseInt(parts[4]);
-                    } catch (NumberFormatException e) {
-                        UCI.write("info error invalid resume offset; must be an integer; e.g. 'scoredata input.txt output.txt 6 1000'");
-                        return Optional.empty();
-                    }
-                }
-            }
-            return Optional.of(new ScoreDataCommand(inputFile, outputFile, softNodeLimit, resumeOffset));
+
+            int softNodes = command.getInt("soft", DEFAULT_SOFT_NODES, false);
+            int hardNodes = command.getInt("hard", DEFAULT_HARD_NODES, false);
+            int resume = command.getInt("resume", DEFAULT_RESUME_OFFSET, false);
+
+            return Optional.of(new ScoreDataCommand(inputFile, outputFile, softNodes, hardNodes, resume));
         }
 
     }

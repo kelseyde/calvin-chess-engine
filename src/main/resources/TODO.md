@@ -13,31 +13,34 @@
 - [ ] SEE pruning
 - [x] Faster SEE
 - [ ] Syzygy TB
-- [ ] Check root legal moves, if only one, play instantly
+- [x] Check root legal moves, if only one, play instantly
 
 ### Move generation / Move ordering
 
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [ ] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
-- [ ] Conthist
-- [ ] Capthist
+- [ ] 1-ply Conthist
+- [ ] 2-ply Conthist
+- [x] Capthist
 - [ ] Threats
 - [ ] Countermoves
 - [ ] Add Killers, History etc. stages to MovePicker.
 
 ### Evaluation
 
+- [ ] Find solution to CCRL/ChessGUI/Vector API issue
 - [ ] Lazy NNUE updates
-- [ ] New net, bigger HL size
+- [x] New net, bigger HL size
 - [ ] Screlu
+- [ ] Output buckets
 - [ ] Datagen
 - [ ] Pawn corrhist
 - [ ] Material corrhist
 
 ### Time management
 
-- [ ] Node TM
+- [x] Node TM
 
 ### UCI
 
@@ -48,9 +51,12 @@
 - [ ] Standardise 'help' info
 - [ ] Add seldepth to info
 - [ ] Add hashfull to info
+- [ ] MultiPV
+- [ ] Coloured output
 
 ### Code maturity
 
 - [ ] Improve javadoc
 - [ ] Review all code comments
+- [ ] Reduce artifact size (remove plugins, dependencies, delete old nets)
 

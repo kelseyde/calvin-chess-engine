@@ -1,6 +1,6 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
 import com.kelseyde.calvin.search.Search;
@@ -30,11 +30,11 @@ public class Score {
     public static boolean isThreefoldRepetition(Board board) {
 
         int repetitionCount = 0;
-        long zobrist = board.getGameState().getZobrist();
-        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
+        long zobrist = board.getState().getKey();
+        Iterator<GameState> iterator = board.getStates().descendingIterator();
         while (iterator.hasNext()) {
             GameState gameState = iterator.next();
-            if (gameState.getZobrist() == zobrist) {
+            if (gameState.getKey() == zobrist) {
                 repetitionCount += 1;
             }
         }
@@ -44,11 +44,11 @@ public class Score {
 
     public static boolean isDoubleRepetition(Board board) {
 
-        long zobrist = board.getGameState().getZobrist();
-        Iterator<GameState> iterator = board.getGameStateHistory().descendingIterator();
+        long zobrist = board.getState().getKey();
+        Iterator<GameState> iterator = board.getStates().descendingIterator();
         while (iterator.hasNext()) {
             GameState gameState = iterator.next();
-            if (gameState.getZobrist() == zobrist) {
+            if (gameState.getKey() == zobrist) {
                 return true;
             }
         }
@@ -63,11 +63,11 @@ public class Score {
         long whitePieces = board.getKnights(true) | board.getBishops(true);
         long blackPieces = board.getKnights(false) |  board.getBishops(false);
 
-        return (Bitwise.countBits(whitePieces) == 0 || Bitwise.countBits(whitePieces) == 1)
-                && (Bitwise.countBits(blackPieces) == 0 || Bitwise.countBits(blackPieces) == 1);
+        return (Bits.count(whitePieces) == 0 || Bits.count(whitePieces) == 1)
+                && (Bits.count(blackPieces) == 0 || Bits.count(blackPieces) == 1);
     }
 
     public static boolean isFiftyMoveRule(Board board) {
-        return board.getGameState().getHalfMoveClock() >= 100;
+        return board.getState().getHalfMoveClock() >= 100;
     }
 }

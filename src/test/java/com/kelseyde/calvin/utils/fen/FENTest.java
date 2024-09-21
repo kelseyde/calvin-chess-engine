@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.utils.fen;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ public class FENTest {
     public void testStartingPosition() {
 
         Board fenBoard = FEN.toBoard(FEN.STARTPOS);
-        Board newBoard = new Board();
+        Board newBoard = Board.from(FEN.STARTPOS);
         Assertions.assertEquals(newBoard.getPawns(true), fenBoard.getPawns(true));
         Assertions.assertEquals(newBoard.getKnights(true), fenBoard.getKnights(true));
         Assertions.assertEquals(newBoard.getBishops(true), fenBoard.getBishops(true));
@@ -38,10 +38,10 @@ public class FENTest {
         Assertions.assertEquals(newBoard.getBlackPieces(), fenBoard.getBlackPieces());
         Assertions.assertEquals(newBoard.getOccupied(), fenBoard.getOccupied());
 
-        Assertions.assertEquals(newBoard.isWhiteToMove(), fenBoard.isWhiteToMove());
-        Assertions.assertEquals(newBoard.getGameState(), fenBoard.getGameState());
-        Assertions.assertEquals(new ArrayList<>(newBoard.getGameStateHistory()), new ArrayList<>(fenBoard.getGameStateHistory()));
-        Assertions.assertEquals(new ArrayList<>(newBoard.getMoveHistory()), new ArrayList<>(fenBoard.getMoveHistory()));
+        Assertions.assertEquals(newBoard.isWhite(), fenBoard.isWhite());
+        Assertions.assertEquals(newBoard.getState(), fenBoard.getState());
+        Assertions.assertEquals(new ArrayList<>(newBoard.getStates()), new ArrayList<>(fenBoard.getStates()));
+        Assertions.assertEquals(new ArrayList<>(newBoard.getMoves()), new ArrayList<>(fenBoard.getMoves()));
 
     }
 

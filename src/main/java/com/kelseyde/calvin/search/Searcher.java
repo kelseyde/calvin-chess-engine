@@ -509,13 +509,17 @@ public class Searcher implements Search {
                     continue;
                 }
 
-                boolean canFutilityPrune = captured != null && futilityScore <= alpha;
-                boolean canSeePruneLosingCaptures = depth <= 3;
-                boolean canSeePruneEqualCaptures = depth > 3;
+                // Futility Pruning
+                // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
+                // win material when the static eval plus some margin is sufficiently below alpha.
+                if (((captured != null && futilityScore <= alpha) || depth > 3) && !SEE.see(board, move, 1)) {
+                    continue;
+                }
 
-                // Combining Futility Pruning and SEE Pruning
-                if ((canSeePruneLosingCaptures && SEE.see(board, move, 1))
-                    || ((canFutilityPrune || canSeePruneEqualCaptures) && SEE.see(board, move, 0))) {
+                // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
+                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
+                // chains, such as capturing with the queen a pawn defended by another pawn.
+                if ((depth <= 3 && !SEE.see(board, move, 0))) {
                     continue;
                 }
 

@@ -35,6 +35,7 @@ public class FEN {
             long blackQueens = 0L;
             long blackKing = 0L;
 
+
             List<List<String>> rankFileHash = Arrays.stream(files)
                     .map(file -> Arrays.stream(file.split(""))
                             .flatMap(FEN::parseSquare)
@@ -65,6 +66,16 @@ public class FEN {
                 }
             }
 
+            long pawns = whitePawns | blackPawns;
+            long knight = whiteKnights | blackKnights;
+            long bishops = whiteBishops | blackBishops;
+            long rooks = whiteRooks | blackRooks;
+            long queens = whiteQueens | blackQueens;
+            long king = whiteKing | blackKing;
+            long whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
+            long blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
+            long occupied = whitePieces | blackPieces;
+
             boolean whiteToMove = parseSideToMove(parts[1]);
             int castlingRights = parseCastlingRights(parts[2]);
             int enPassantFile = parseEnPassantFile(parts[3]);
@@ -72,19 +83,8 @@ public class FEN {
             // This implementation does not require the full move counter (parts[5]).
 
             Board board = new Board();
-            board.setBitboards(new long[]{
-                        whitePawns | blackPawns,
-                        whiteKnights | blackKnights,
-                        whiteBishops | blackBishops,
-                        whiteRooks | blackRooks,
-                        whiteQueens | blackQueens,
-                        whiteKing | blackKing,
-                        whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing,
-                        blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing,
-                        board.getWhitePieces() | board.getBlackPieces(),
-                    }
-            );
-
+            board.setBitboards(new long[]{pawns, knight, bishops, rooks, queens, king, whitePieces, blackPieces, occupied});
+            board.setPieces(calculatePieceList(board));
             board.setWhite(whiteToMove);
             board.getState().setRights(castlingRights);
             board.getState().setEnPassantFile(enPassantFile);

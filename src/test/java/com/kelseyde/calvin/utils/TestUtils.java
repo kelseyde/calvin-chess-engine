@@ -2,7 +2,6 @@ package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;

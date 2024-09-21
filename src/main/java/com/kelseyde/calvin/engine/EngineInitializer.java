@@ -5,6 +5,7 @@ import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
+import com.kelseyde.calvin.utils.FEN;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class EngineInitializer {
         TranspositionTable transpositionTable = new TranspositionTable(config.defaultHashSizeMb);
         Search searcher = new ParallelSearcher(config, transpositionTable);
         Engine engine = new Engine(config, searcher);
-        engine.setPosition(new Board());
+        engine.setPosition(Board.from(FEN.STARTPOS));
         return engine;
     }
 

@@ -15,8 +15,16 @@ import java.util.Set;
 public class BoardTest {
 
     @Test
+    public void testSimpleMakeMove() {
+        Board board = Board.from(FEN.STARTPOS);
+        board.makeMove(Notation.fromUCI("e2e4"));
+        Assertions.assertNull(board.pieceAt(Notation.fromNotation("e2")));
+        Assertions.assertEquals(Piece.PAWN, board.pieceAt(Notation.fromNotation("e4")));
+    }
+
+    @Test
     public void testBoardHistoryPreservedMultipleMoves() {
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -32,7 +40,7 @@ public class BoardTest {
     @Test
     public void testBoardHistoryPreservesCastlingRights() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(true));
         Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(true));
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
@@ -75,7 +83,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveRestoresCapturedPieces() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(new Move(12, 28));
         board.makeMove(new Move(51, 35));
         board.makeMove(new Move(28, 35));
@@ -99,7 +107,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveHandlesTurnSwitching() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         Assertions.assertTrue(board.isWhite());
 
         board.makeMove(new Move(12, 28));
@@ -119,7 +127,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveHandlesCastling() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(new Move(12, 28));
         board.makeMove(new Move(52, 44));
         board.makeMove(new Move(6, 21));
@@ -218,7 +226,7 @@ public class BoardTest {
     @Test
     public void testUnmakeCastling() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(Notation.fromUCI("e2e4"));
         board.makeMove(Notation.fromUCI("d7d5"));
         board.makeMove(Notation.fromUCI("g1f3"));
@@ -246,7 +254,7 @@ public class BoardTest {
         board.unmakeMove();
         board.unmakeMove();
 
-        Board board3 = new Board();
+        Board board3 = Board.from(FEN.STARTPOS);
         Assertions.assertEquals(board.getWhitePieces(), board3.getWhitePieces());
         Assertions.assertEquals(board.getBlackPieces(), board3.getBlackPieces());
         Assertions.assertEquals(board.getRooks(), board3.getRooks());

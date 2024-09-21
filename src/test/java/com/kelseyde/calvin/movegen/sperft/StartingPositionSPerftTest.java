@@ -10,6 +10,16 @@ public class StartingPositionSPerftTest extends SPerftTest {
 
     private final String subFolder = "starting_position";
 
+    @Override
+    protected String getFen() {
+        return fen;
+    }
+
+    @Override
+    protected String getSubFolder() {
+        return subFolder;
+    }
+
     @Test
     public void testDepthFive() {
         sPerft(5);
@@ -45,13 +55,4 @@ public class StartingPositionSPerftTest extends SPerftTest {
         sPerft(20);
     }
 
-    @Override
-    protected String getFen() {
-        return fen;
-    }
-
-    @Override
-    protected String getSubFolder() {
-        return subFolder;
-    }
 }

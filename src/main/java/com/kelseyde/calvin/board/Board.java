@@ -254,7 +254,6 @@ public class Board {
         bitboards[type.index()] ^= toggleMask;
         bitboards[white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES] ^= toggleMask;
         bitboards[Piece.OCCUPIED] ^= toggleMask;
-
     }
 
     public void removeKing(boolean white) {

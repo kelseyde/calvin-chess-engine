@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -20,54 +21,25 @@ public record Move(short value) {
     public static final short PROMOTE_TO_ROOK_FLAG = 0b0110;
     public static final short PROMOTE_TO_BISHOP_FLAG = 0b0111;
 
-    // Masks for extracting start and end squares from the value field
     public static final int FROM_MASK = 0b0000000000111111;
     public static final int TO_MASK = 0b0000111111000000;
 
-    /**
-     * Constructs a Move instance from the given start square and end square.
-     *
-     * @param from The starting square of the move (0 - 63).
-     * @param to   The ending square of the move (0 - 63).
-     */
     public Move(int from, int to) {
         this((short) (from | to << 6));
     }
 
-    /**
-     * Constructs a Move instance from the given start square, end square, and move flag.
-     *
-     * @param from The starting square of the move (0 - 63).
-     * @param to   The ending square of the move (0 - 63).
-     * @param flag        The special move flag representing additional move information.
-     */
     public Move(int from, int to, int flag) {
         this((short) (from | (to << 6) | (flag << 12)));
     }
 
-    /**
-     * Retrieves the starting square of the move.
-     *
-     * @return The starting square of the move (0 - 63).
-     */
     public int from() {
         return value & FROM_MASK;
     }
 
-    /**
-     * Retrieves the ending square of the move.
-     *
-     * @return The ending square of the move (0 - 63).
-     */
     public int to() {
         return (value & TO_MASK) >>> 6;
     }
 
-    /**
-     * Retrieves the piece type to which a pawn is promoted in this move, if applicable.
-     *
-     * @return The piece type to which a pawn is promoted, or null if no promotion occurs.
-     */
     public Piece promoPiece() {
         return switch (value >>> 12) {
             case PROMOTE_TO_QUEEN_FLAG -> Piece.QUEEN;
@@ -78,49 +50,25 @@ public record Move(short value) {
         };
     }
 
-    /**
-     * Checks if this move represents a pawn promotion.
-     *
-     * @return True if the move is a pawn promotion, false otherwise.
-     */
     public boolean isPromotion() {
         return (value >>> 12) >= PROMOTE_TO_QUEEN_FLAG;
     }
 
-    /**
-     * Checks if this move represents an en passant capture.
-     *
-     * @return True if the move is an en passant capture, false otherwise.
-     */
     public boolean isEnPassant() {
         return (value >>> 12) == EN_PASSANT_FLAG;
     }
 
-    /**
-     * Checks if this move represents castling.
-     *
-     * @return True if the move is a castling move, false otherwise.
-     */
     public boolean isCastling() {
         return (value >>> 12) == CASTLE_FLAG;
     }
 
-    /**
-     * Checks if this move represents a pawn double move.
-     *
-     * @return True if the move is a pawn double move, false otherwise.
-     */
     public boolean isPawnDoubleMove() {
         return (value >>> 12) == PAWN_DOUBLE_MOVE_FLAG;
     }
 
     /**
-     * Checks if this move matches another move.
-     *
-     * @param move The move to compare against.
-     * @return True if the moves match, false otherwise.
+     * Checks if this move matches another move, excluding the special move flag.
      */
-    // TODO Optional is slow, replace it
     public boolean matches(Move move) {
         if (move == null) return false;
         boolean squareMatch = from() == move.from() && to() == move.to();
@@ -128,6 +76,40 @@ public record Move(short value) {
                 .map(piece -> piece.equals(move.promoPiece()))
                 .orElse(true);
         return squareMatch && promotionMatch;
+    }
+
+    /**
+     * Generate a {@link Move} from combined algebraic notation (e.g. "e2e4"), as used in the UCI protocol.
+     * Special case promotion: "a2a1q" - values 'q' | 'b' | 'r' | 'n'
+     */
+    public static Move fromUCI(String uci) {
+        int from = Bits.Square.fromNotation(uci.substring(0, 2));
+        int to = Bits.Square.fromNotation(uci.substring(2, 4));
+
+        int flag = NO_FLAG;
+        if (uci.length() == 5) {
+            String pieceCode = uci.substring(4, 5);
+            Piece promotionPieceType = Arrays.stream(Piece.values())
+                    .filter(entry -> entry.code().equalsIgnoreCase(pieceCode))
+                    .findAny().orElseThrow();
+            flag = Piece.promoFlag(promotionPieceType);
+        }
+        return new Move(from, to, flag);
+    }
+
+    public static Move fromUCI(String uci, int flag) {
+        int from = Bits.Square.fromNotation(uci.substring(0, 2));
+        int to = Bits.Square.fromNotation(uci.substring(2, 4));
+        return new Move(from, to, flag);
+    }
+
+    public static String toUCI(Move move) {
+        if (move == null) return "-";
+        String notation = Bits.Square.toNotation(move.from()) + Bits.Square.toNotation(move.to());
+        if (move.promoPiece() != null) {
+            notation += move.promoPiece().code();
+        }
+        return notation;
     }
 
 }

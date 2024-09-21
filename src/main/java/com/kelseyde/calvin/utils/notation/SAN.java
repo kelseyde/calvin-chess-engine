@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.utils;
+package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Rank;
@@ -27,7 +27,7 @@ public class SAN {
         MoveGenerator moveGenerator = new MoveGenerator();
         String notation = "";
         if (piece != Piece.PAWN) {
-            notation += Notation.PIECE_CODE_INDEX.get(piece).toUpperCase();
+            notation += piece.code().toUpperCase();
         }
 
         // Check if any ambiguity exists in notation (e.g. if e2 can be reached via Nfe2 and Nbe2)
@@ -44,12 +44,12 @@ public class SAN {
                         int alternateFromRankIndex = Rank.of(legalMove.from());
 
                         if (fromFileIndex != alternateFromFileIndex) {
-                            notation += Notation.getFileChar(move.from());
+                            notation += File.toFileNotation(move.from());
                             break;
                         }
                         else if (fromRankIndex != alternateFromRankIndex)
                         {
-                            notation += Notation.getRankChar(move.from());
+                            notation += Rank.toRankNotation(move.from());
                             break;
                         }
                     }
@@ -60,24 +60,24 @@ public class SAN {
         if (captured != null) {
             // add 'x' to indicate capture
             if (piece == Piece.PAWN) {
-                notation += Notation.getFileChar(move.from());
+                notation += File.toFileNotation(move.from());
             }
             notation += "x";
         }
         else {
             // Check if capturing en passant
             if (move.isEnPassant()) {
-                notation += Notation.getFileChar(move.from()) + "x";
+                notation += File.toFileNotation(move.from()) + "x";
             }
         }
 
-        notation += Notation.getFileChar(move.to());
-        notation += Notation.getRankChar(move.to());
+        notation += File.toFileNotation(move.to());
+        notation += Rank.toRankNotation(move.to());
 
         // Add promotion piece type
         if (move.isPromotion()) {
             Piece promotionPieceType = move.promoPiece();
-            notation += "=" + Notation.PIECE_CODE_INDEX.get(promotionPieceType).toUpperCase();
+            notation += "=" + promotionPieceType.code().toUpperCase();
         }
 
         board.makeMove(move);

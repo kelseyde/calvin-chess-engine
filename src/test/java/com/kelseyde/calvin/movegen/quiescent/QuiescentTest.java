@@ -3,8 +3,7 @@ package com.kelseyde.calvin.movegen.quiescent;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -23,18 +22,18 @@ public class QuiescentTest {
 
         List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
-                Notation.fromNotation("a6", "b7"),
-                Notation.fromNotation("f8", "d7"),
-                Notation.fromNotation("f8", "h7")
+                Move.fromUCI("a6b7"),
+                Move.fromUCI("f8d7"),
+                Move.fromUCI("f8h7")
         );
         assertMoves(expected, moves);
 
         moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
-                Notation.fromNotation("a6", "b7"),
-                Notation.fromNotation("f8", "d7"),
-                Notation.fromNotation("f8", "h7"),
-                Notation.fromNotation("b4", "c6")
+                Move.fromUCI("a6b7"),
+                Move.fromUCI("f8d7"),
+                Move.fromUCI("f8h7"),
+                Move.fromUCI("b4c6")
         );
         assertMoves(expected, moves);
 
@@ -48,18 +47,18 @@ public class QuiescentTest {
 
         List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
-                Notation.fromNotation("g3", "h4"),
-                Notation.fromNotation("b3", "f7"),
-                Notation.fromNotation("b3", "a4")
+                Move.fromUCI("g3h4"),
+                Move.fromUCI("b3f7"),
+                Move.fromUCI("b3a4")
         );
         assertMoves(expected, moves);
 
         moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
-                Notation.fromNotation("g3", "h4"),
-                Notation.fromNotation("b3", "f7"),
-                Notation.fromNotation("b3", "a4"),
-                Notation.fromNotation("c2", "h7")
+                Move.fromUCI("g3h4"),
+                Move.fromUCI("b3f7"),
+                Move.fromUCI("b3a4"),
+                Move.fromUCI("c2h7")
         );
         assertMoves(expected, moves);
 
@@ -73,20 +72,20 @@ public class QuiescentTest {
 
         List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
-                Notation.fromNotation("h2", "g4"),
-                Notation.fromNotation("c6", "d6"),
-                Notation.fromNotation("c5", "d6")
+                Move.fromUCI("h2g4"),
+                Move.fromUCI("c6d6"),
+                Move.fromUCI("c5d6")
         );
         assertMoves(expected, moves);
 
         moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
-                Notation.fromNotation("h2", "g4"),
-                Notation.fromNotation("c6", "d6"),
-                Notation.fromNotation("c5", "d6"),
-                Notation.fromNotation("c2", "g2"),
-                Notation.fromNotation("c2", "h7"),
-                Notation.fromNotation("c5", "h5")
+                Move.fromUCI("h2g4"),
+                Move.fromUCI("c6d6"),
+                Move.fromUCI("c5d6"),
+                Move.fromUCI("c2g2"),
+                Move.fromUCI("c2h7"),
+                Move.fromUCI("c5h5")
         );
         assertMoves(expected, moves);
 
@@ -100,32 +99,32 @@ public class QuiescentTest {
 
         List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
-                Notation.fromNotation("g4", "h3"),
-                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_KNIGHT_FLAG),
-                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_ROOK_FLAG),
-                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_BISHOP_FLAG),
-                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_KNIGHT_FLAG),
-                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_ROOK_FLAG),
-                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_BISHOP_FLAG),
-                Notation.fromNotation("e3", "d2")
+                Move.fromUCI("g4h3"),
+                Move.fromUCI("f2g1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Move.fromUCI("f2g1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Move.fromUCI("f2g1", Move.PROMOTE_TO_ROOK_FLAG),
+                Move.fromUCI("f2g1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Move.fromUCI("f2f1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Move.fromUCI("f2f1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Move.fromUCI("f2f1", Move.PROMOTE_TO_ROOK_FLAG),
+                Move.fromUCI("f2f1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Move.fromUCI("e3d2")
         );
         assertMoves(expected, moves);
 
         moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
-                Notation.fromNotation("g4", "h3"),
-                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_KNIGHT_FLAG),
-                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_ROOK_FLAG),
-                Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_BISHOP_FLAG),
-                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_KNIGHT_FLAG),
-                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_ROOK_FLAG),
-                Notation.fromNotation("f2", "f1", Move.PROMOTE_TO_BISHOP_FLAG),
-                Notation.fromNotation("e3", "d2"),
-                Notation.fromNotation("b3", "b2")
+                Move.fromUCI("g4h3"),
+                Move.fromUCI("f2g1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Move.fromUCI("f2g1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Move.fromUCI("f2g1", Move.PROMOTE_TO_ROOK_FLAG),
+                Move.fromUCI("f2g1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Move.fromUCI("f2f1", Move.PROMOTE_TO_QUEEN_FLAG),
+                Move.fromUCI("f2f1", Move.PROMOTE_TO_KNIGHT_FLAG),
+                Move.fromUCI("f2f1", Move.PROMOTE_TO_ROOK_FLAG),
+                Move.fromUCI("f2f1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Move.fromUCI("e3d2"),
+                Move.fromUCI("b3b2")
         );
         assertMoves(expected, moves);
 
@@ -139,21 +138,21 @@ public class QuiescentTest {
 
         List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
-                Notation.fromNotation("h1", "h8"),
-                Notation.fromNotation("e1", "e7"),
-                Notation.fromNotation("a7", "e7"),
-                Notation.fromNotation("c8", "b8")
+                Move.fromUCI("h1h8"),
+                Move.fromUCI("e1e7"),
+                Move.fromUCI("a7e7"),
+                Move.fromUCI("c8b8")
         );
         assertMoves(expected, moves);
 
         moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
-                Notation.fromNotation("h1", "h8"),
-                Notation.fromNotation("e1", "e7"),
-                Notation.fromNotation("a7", "e7"),
-                Notation.fromNotation("c8", "b8"),
-                Notation.fromNotation("h1", "h7"),
-                Notation.fromNotation("g2", "g7")
+                Move.fromUCI("h1h8"),
+                Move.fromUCI("e1e7"),
+                Move.fromUCI("a7e7"),
+                Move.fromUCI("c8b8"),
+                Move.fromUCI("h1h7"),
+                Move.fromUCI("g2g7")
         );
         assertMoves(expected, moves);
 

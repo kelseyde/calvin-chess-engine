@@ -2,6 +2,9 @@ package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.movegen.Attacks;
 
+import java.util.List;
+import java.util.Map;
+
 public class Bits {
 
     public static int next(final long board) {
@@ -62,6 +65,16 @@ public class Bits {
             return sq >= 0 && sq < Square.COUNT;
         }
 
+        public static String toNotation(int sq) {
+            return File.toFileNotation(sq) + Rank.toRankNotation(sq);
+        }
+
+        public static int fromNotation(String algebraic) {
+            int xOffset = List.of('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h').indexOf(algebraic.charAt(0));
+            int yAxis = (Integer.parseInt(Character.valueOf(algebraic.charAt(1)).toString()) - 1) * 8;
+            return yAxis + xOffset;
+        }
+
     }
 
     public static class File {
@@ -75,6 +88,10 @@ public class Bits {
         public static final long G = 0b0100000001000000010000000100000001000000010000000100000001000000L;
         public static final long H = 0b1000000010000000100000001000000010000000100000001000000010000000L;
 
+        public static final Map<Integer, String> FILE_CHAR_MAP = Map.of(
+                0, "a", 1, "b", 2, "c", 3, "d", 4, "e", 5, "f", 6, "g", 7, "h"
+        );
+
         public static int of(int sq) {
             return sq & 7;
         }
@@ -83,6 +100,9 @@ public class Bits {
             return 0x0101010101010101L << file;
         }
 
+        public static String toFileNotation(int sq) {
+            return FILE_CHAR_MAP.get(of(sq));
+        }
     }
 
     public static class Rank {
@@ -96,10 +116,17 @@ public class Bits {
         public static final long SEVENTH = 0b0000000011111111000000000000000000000000000000000000000000000000L;
         public static final long EIGHTH  = 0b1111111100000000000000000000000000000000000000000000000000000000L;
 
+        public static final Map<Integer, String> RANK_CHAR_MAP = Map.of(
+                0, "1", 1, "2", 2, "3", 3, "4", 4, "5", 5, "6", 6, "7", 7, "8"
+        );
+
         public static int of(int sq) {
             return sq >>> 3;
         }
 
+        public static String toRankNotation(int sq) {
+            return RANK_CHAR_MAP.get(of(sq));
+        }
     }
 
     public static class Ray {

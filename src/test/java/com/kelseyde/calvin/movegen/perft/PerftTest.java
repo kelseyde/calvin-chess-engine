@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegen.perft;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.perft.PerftService;
 import org.junit.jupiter.api.Assertions;
 

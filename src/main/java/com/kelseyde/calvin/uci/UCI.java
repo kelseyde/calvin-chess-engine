@@ -11,8 +11,7 @@ import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.Bench;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
 import java.util.Arrays;
@@ -186,7 +185,7 @@ public class UCI {
         int nodes = searchResult.nodes();
         long nps = searchResult.nps();
         String pv = ENGINE.extractPrincipalVariation().stream()
-                .map(Notation::toNotation).collect(Collectors.joining(" "));
+                .map(Move::toUCI).collect(Collectors.joining(" "));
         write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
     }
 
@@ -205,9 +204,9 @@ public class UCI {
         boolean ponderEnabled = ENGINE.getConfig().ponderEnabled;
         if (ponderEnabled && move != null) {
             Move ponderMove = ENGINE.extractPonderMove(move);
-            write(String.format("bestmove %s ponder %s", Notation.toNotation(move), Notation.toNotation(ponderMove)));
+            write(String.format("bestmove %s ponder %s", Move.toUCI(move), Move.toUCI(ponderMove)));
         } else {
-            write(String.format("bestmove %s", Notation.toNotation(move)));
+            write(String.format("bestmove %s", Move.toUCI(move)));
         }
     }
 

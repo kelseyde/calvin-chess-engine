@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.utils;
+package com.kelseyde.calvin.utils.notation;
 
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
@@ -122,7 +122,7 @@ public class FEN {
                         }
                         long squareBB = 1L << square;
                         boolean white = (board.getWhitePieces() & squareBB) != 0;
-                        String pieceCode = Notation.PIECE_CODE_INDEX.get(piece);
+                        String pieceCode = piece.code();
                         if (white) pieceCode = pieceCode.toUpperCase();
                         sb.append(pieceCode);
                     } else {
@@ -213,7 +213,7 @@ public class FEN {
         if (enPassantSquare.equals("-")) {
             return -1;
         }
-        int square = Notation.fromNotation(enPassantSquare);
+        int square = Square.fromNotation(enPassantSquare);
         return File.of(square);
     }
 
@@ -222,7 +222,7 @@ public class FEN {
         if (enPassantFile == -1) {
             return "-";
         }
-        return Notation.toNotation(Square.of(rank, enPassantFile));
+        return Square.toNotation(Square.of(rank, enPassantFile));
     }
 
     private static int parseFiftyMoveCounter(String fiftyMoveCounter) {

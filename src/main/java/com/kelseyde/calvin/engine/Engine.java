@@ -10,8 +10,7 @@ import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -156,7 +155,7 @@ public class Engine {
         return moveGenerator.generateMoves(board).stream()
                 .filter(move::matches)
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Notation.toNotation(move)));
+                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Move.toUCI(move)));
     }
 
 }

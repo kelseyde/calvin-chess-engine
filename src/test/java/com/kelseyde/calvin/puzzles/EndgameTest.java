@@ -6,9 +6,8 @@ import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -39,7 +38,7 @@ public class EndgameTest {
         TimeControl tc = new TimeControl(Duration.ofMillis(300), Duration.ofMillis(300), -1, 0, -1);
         SearchResult result = searcher.search(tc);
 
-        Move bestMove = Notation.fromNotation("b2", "b7");
+        Move bestMove = Move.fromUCI("b2b7");
         assertMove(bestMove, result.move());
 
     }
@@ -52,7 +51,7 @@ public class EndgameTest {
         searcher.setPosition(board);
         TimeControl tc = new TimeControl(Duration.ofMillis(300), Duration.ofMillis(300), -1, 0, -1);
         Move move = searcher.search(tc).move();
-        System.out.println(Notation.toNotation(move));
+        System.out.println(Move.toUCI(move));
 
     }
 
@@ -62,8 +61,8 @@ public class EndgameTest {
         String fen = "8/8/p1p5/1p5p/1P5p/8/PPP2K1p/4R1rk w - - 0 1";
         ENGINE.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = ENGINE.think(3000).move();
-        System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromUCI("e1f1"), move);
+        System.out.println(Move.toUCI(move));
+        Assertions.assertEquals(Move.fromUCI("e1f1"), move);
 
     }
 
@@ -73,8 +72,8 @@ public class EndgameTest {
         String fen = "1q1k4/2Rr4/8/2Q3K1/8/8/8/8 w - - 0 1";
         ENGINE.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = ENGINE.think(3000).move();
-        System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromUCI("g5h6"), move);
+        System.out.println(Move.toUCI(move));
+        Assertions.assertEquals(Move.fromUCI("g5h6"), move);
 
     }
 
@@ -84,8 +83,8 @@ public class EndgameTest {
         String fen = "8/6B1/p5p1/Pp4kp/1P5r/5P1Q/4q1PK/8 w - - 0 32";
         ENGINE.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = ENGINE.think(3000).move();
-        System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromUCI("h3h4"), move);
+        System.out.println(Move.toUCI(move));
+        Assertions.assertEquals(Move.fromUCI("h3h4"), move);
 
     }
 
@@ -95,8 +94,8 @@ public class EndgameTest {
         String fen = "8/8/1p1r1k2/p1pPN1p1/P3KnP1/1P6/8/3R4 b - - 0 1";
         ENGINE.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = ENGINE.think(3000).move();
-        System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromUCI("f4d5"), move);
+        System.out.println(Move.toUCI(move));
+        Assertions.assertEquals(Move.fromUCI("f4d5"), move);
 
     }
 
@@ -106,8 +105,8 @@ public class EndgameTest {
         String fen = "3R4/p5pk/K5np/2p4Q/2P5/8/8/8 w - - 0 1";
         ENGINE.setPosition(new PositionCommand(fen, Collections.emptyList()));
         Move move = ENGINE.think(3000).move();
-        System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromUCI("h5f5"), move);
+        System.out.println(Move.toUCI(move));
+        Assertions.assertEquals(Move.fromUCI("h5f5"), move);
 
     }
 
@@ -118,8 +117,8 @@ public class EndgameTest {
         PositionCommand positionCommand = new PositionCommand(fen, Collections.emptyList());
         ENGINE.setPosition(positionCommand);
         Move move = ENGINE.think(500).move();
-        System.out.println(Notation.toNotation(move));
-        Assertions.assertEquals(Notation.fromUCI("e6d6"), move);
+        System.out.println(Move.toUCI(move));
+        Assertions.assertEquals(Move.fromUCI("e6d6"), move);
 
     }
 
@@ -127,7 +126,7 @@ public class EndgameTest {
         boolean matches = expected.matches(actual);
         if (!matches) {
             System.out.printf("Expected move %s, Actual move %s%n",
-                    Notation.toNotation(expected), Notation.toNotation(actual));
+                    Move.toUCI(expected), Move.toUCI(actual));
         }
         Assertions.assertTrue(matches);
     }

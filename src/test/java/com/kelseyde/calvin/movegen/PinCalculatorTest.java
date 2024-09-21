@@ -2,7 +2,7 @@ package com.kelseyde.calvin.movegen;
 
 import com.kelseyde.calvin.board.Bits.Pin;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

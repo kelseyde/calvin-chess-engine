@@ -21,7 +21,7 @@ public class TestUtils {
     public static final Searcher SEARCHER = new Searcher(CONFIG, TT, new ThreadData(true));
 
     public static Move getLegalMove(Board board, String from, String to) {
-        Move move = Notation.fromNotation(from, to);
+        Move move = Move.fromUCI(from + to);
         List<Move> legalMoves = MOVEGEN.generateMoves(board);
         Optional<Move> legalMove = legalMoves.stream()
                 .filter(m -> m.matches(move))

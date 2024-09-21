@@ -156,8 +156,7 @@ public class Bits {
         }
 
         private static final long[] pinRayMasks = new long[Square.COUNT];
-        private static long pinMask;
-        private static PinData pinData = new PinData();
+        private static final PinData pinData = new PinData();
 
         /**
          * Calculates the pin mask and pin ray masks for the given board position.
@@ -167,7 +166,7 @@ public class Bits {
          * @return The pin data containing the pin mask and pin ray masks.
          */
         public static PinData calculatePins(Board board, boolean white) {
-            pinMask = 0L;
+            long pinMask = 0L;
 
             int kingSquare = Bits.next(board.getKing(white));
             long friendlies = board.getPieces(white);

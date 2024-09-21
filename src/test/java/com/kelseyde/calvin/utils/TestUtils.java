@@ -2,7 +2,6 @@ package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
@@ -22,25 +21,6 @@ public class TestUtils {
 
     public static Engine getEngine() {
         return new Engine(PRD_CONFIG, new Searcher(PRD_CONFIG, new TranspositionTable(PRD_CONFIG.defaultHashSizeMb), new ThreadData(true)));
-    }
-
-    public static Board emptyBoard() {
-        Board board = new Board();
-        board.setPawns(0L);
-        board.setKnights(0L);
-        board.setBishops(0L);
-        board.setRooks(0L);
-        board.setQueens(0L);
-        board.setKings(0L);
-
-        board.setWhitePieces(0L);
-        board.setBlackPieces(0L);
-        board.setOccupied(0L);
-        board.setPieces(new Piece[64]);
-
-        board.getState().setRights(0b0000);
-
-        return board;
     }
 
     public static Move getLegalMove(Board board, String from, String to) {

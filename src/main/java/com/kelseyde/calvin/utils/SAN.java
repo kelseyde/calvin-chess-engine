@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.utils;
 
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Rank;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -36,10 +38,10 @@ public class SAN {
 
                 if (legalMove.from() != move.from() && legalMove.to() == move.to()) {
                     if (board.pieceAt(legalMove.from()) == piece) {
-                        int fromFileIndex = Board.file(move.from());
-                        int alternateFromFileIndex = Board.file(legalMove.to());
-                        int fromRankIndex = Board.rank(move.from());
-                        int alternateFromRankIndex = Board.rank(legalMove.from());
+                        int fromFileIndex = File.of(move.from());
+                        int alternateFromFileIndex = File.of(legalMove.to());
+                        int fromRankIndex = Rank.of(move.from());
+                        int alternateFromRankIndex = Rank.of(legalMove.from());
 
                         if (fromFileIndex != alternateFromFileIndex) {
                             notation += Notation.getFileChar(move.from());

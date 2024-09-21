@@ -21,7 +21,7 @@ public class TranspositionTableTest {
 
     @BeforeEach
     public void beforeEach() {
-        board = new Board();
+        board = Board.from(FEN.STARTPOS);
         table = new TranspositionTable(TestUtils.PRD_CONFIG.defaultHashSizeMb);
     }
 

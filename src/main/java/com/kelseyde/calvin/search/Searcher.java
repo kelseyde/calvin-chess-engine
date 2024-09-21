@@ -506,7 +506,7 @@ public class Searcher implements Search {
                 Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
                 if (captured != null
                         && !move.isPromotion()
-                        && (staticEval + captured.getValue() + config.dpMargin < alpha)) {
+                        && (staticEval + captured.value() + config.dpMargin < alpha)) {
                     continue;
                 }
 

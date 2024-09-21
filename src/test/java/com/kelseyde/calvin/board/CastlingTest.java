@@ -11,7 +11,7 @@ public class CastlingTest {
     @Test
     public void testSimpleKingsideCastling() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -30,7 +30,7 @@ public class CastlingTest {
     @Test
     public void testSimpleQueensideCastling() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
@@ -51,7 +51,7 @@ public class CastlingTest {
     @Test
     public void cannotCastleIfAllPiecesInTheWay() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
 
         // white tries to kingside castle
         Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
@@ -78,7 +78,7 @@ public class CastlingTest {
     @Test
     public void cannotKingsideCastleIfSomePiecesInTheWay() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
 
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
@@ -91,7 +91,7 @@ public class CastlingTest {
     @Test
     public void cannotQueensideCastleIfSomePiecesInTheWay() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
@@ -104,7 +104,7 @@ public class CastlingTest {
     @Test
     public void cannotKingsideCastleIfKingNotOnStartingSquare() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -130,7 +130,7 @@ public class CastlingTest {
     @Test
     public void cannotQueensideCastleIfKingNotOnStartingSquare() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
@@ -159,7 +159,7 @@ public class CastlingTest {
     @Test
     public void cannotKingsideCastleIfKingHasMoved() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -190,7 +190,7 @@ public class CastlingTest {
     @Test
     public void cannotQueensideCastleIfKingHasMoved() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
@@ -224,7 +224,7 @@ public class CastlingTest {
     @Test
     public void cannotKingsideCastleIfRookHasMoved() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -255,7 +255,7 @@ public class CastlingTest {
     @Test
     public void cannotQueensideCastleIfRookHasMoved() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));

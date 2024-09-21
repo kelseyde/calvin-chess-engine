@@ -29,11 +29,11 @@ public class MovePicker {
     final SearchHistory history;
     final SearchStack ss;
 
+    final Move ttMove;
     final Board board;
     final int ply;
 
     Stage stage;
-    Move ttMove;
     boolean skipQuiets;
     boolean inCheck;
 
@@ -145,11 +145,11 @@ public class MovePicker {
         int captureScore = 0;
 
         // Separate captures into winning and losing
-        int materialDelta = captured.getValue() - piece.getValue();
+        int materialDelta = captured.value() - piece.value();
         captureScore += materialDelta >= 0 ? MoveBonus.WINNING_CAPTURE_BONUS : MoveBonus.LOSING_CAPTURE_BONUS;
 
         // Add MVV score to the capture score
-        captureScore += MoveBonus.MVV_OFFSET * captured.getIndex();
+        captureScore += MoveBonus.MVV_OFFSET * captured.index();
 
         // Tie-break with capture history
         captureScore += history.getCaptureHistoryTable().get(piece, to, captured, board.isWhite());
@@ -212,10 +212,6 @@ public class MovePicker {
 
     public void setSkipQuiets(boolean skipQuiets) {
         this.skipQuiets = skipQuiets;
-    }
-
-    public void setInCheck(boolean inCheck) {
-        this.inCheck = inCheck;
     }
 
     public record ScoredMove(Move move, int score) {}

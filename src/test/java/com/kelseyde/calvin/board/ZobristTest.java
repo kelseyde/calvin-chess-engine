@@ -12,8 +12,8 @@ public class ZobristTest {
     @Test
     public void testSamePositionGeneratesSameKey() {
 
-        Board board1 = new Board();
-        Board board2 = new Board();
+        Board board1 = Board.from(FEN.STARTPOS);
+        Board board2 = Board.from(FEN.STARTPOS);
         Assertions.assertEquals(board1.getState().getKey(), board2.getState().getKey());
 
         Move e4 = new Move(12, 28, Move.PAWN_DOUBLE_MOVE_FLAG);
@@ -26,7 +26,7 @@ public class ZobristTest {
         board2.unmakeMove();
 
         Assertions.assertEquals(board1.getState().getKey(), board2.getState().getKey());
-        Assertions.assertEquals(board1.getState().getKey(), new Board().getState().getKey());
+        Assertions.assertEquals(board1.getState().getKey(), Board.from(FEN.STARTPOS).getState().getKey());
 
     }
 

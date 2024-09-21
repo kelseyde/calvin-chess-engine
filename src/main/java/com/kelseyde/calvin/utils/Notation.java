@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.utils;
 
-import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Rank;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 
@@ -83,11 +84,11 @@ public class Notation {
     }
 
     public static String getRankChar(int sq) {
-        return RANK_CHAR_MAP.get(Board.rank(sq));
+        return RANK_CHAR_MAP.get(Rank.of(sq));
     }
 
     public static String getFileChar(int sq) {
-        return FILE_CHAR_MAP.get(Board.file(sq));
+        return FILE_CHAR_MAP.get(File.of(sq));
     }
 
     /**

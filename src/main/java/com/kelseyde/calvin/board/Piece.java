@@ -12,6 +12,8 @@ public enum Piece {
     QUEEN(4, 900),
     KING(5, 0);
 
+    public static final int COUNT = 6;
+
     final int index;
 
     final int value;
@@ -21,11 +23,11 @@ public enum Piece {
         this.value = value;
     }
 
-    public int getIndex() {
+    public int index() {
         return index;
     }
 
-    public int getValue() {
+    public int value() {
         return value;
     }
 

@@ -8,14 +8,20 @@ package com.kelseyde.calvin.board;
  */
 public class GameState {
 
-    long key = 0L;
-    long pawnKey = 0L;
-    Piece captured;
-    int enPassantFile = -1;
-    int rights = Bits.INITIAL_CASTLING_RIGHTS;
-    int halfMoveClock = 0;
+    public long key;
+    public long pawnKey;
+    public int enPassantFile;
+    public int rights;
+    public int halfMoveClock;
+    public Piece captured;
 
     public GameState() {
+        key = 0L;
+        pawnKey = 0L;
+        captured = null;
+        enPassantFile = -1;
+        rights = Bits.Castling.INITIAL_CASTLING_RIGHTS;
+        halfMoveClock = 0;
     }
 
     public GameState(long key, long pawnKey, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
@@ -67,10 +73,6 @@ public class GameState {
 
     public void setPawnKey(long pawnKey) {
         this.pawnKey = pawnKey;
-    }
-
-    public void setCaptured(Piece captured) {
-        this.captured = captured;
     }
 
     public void setEnPassantFile(int enPassantFile) {

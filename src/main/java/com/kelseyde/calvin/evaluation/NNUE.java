@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -37,8 +39,8 @@ public class NNUE implements Evaluation {
 
     }
 
-    static final int COLOUR_OFFSET = 64 * 6;
-    static final int PIECE_OFFSET = 64;
+    static final int COLOUR_OFFSET = Square.COUNT * Piece.COUNT;
+    static final int PIECE_OFFSET = Square.COUNT;
     static final int SCALE = 400;
 
     static final int QA = 255;
@@ -118,12 +120,12 @@ public class NNUE implements Evaluation {
 
     private void activateSide(Board board, long pieces, boolean white) {
         while (pieces != 0) {
-            int square = Bitwise.getNextBit(pieces);
+            int square = Bits.next(pieces);
             Piece piece = board.pieceAt(square);
             int whiteIndex = featureIndex(piece, square, white, true);
             int blackIndex = featureIndex(piece, square, white, false);
             accumulator.add(whiteIndex, blackIndex);
-            pieces = Bitwise.popBit(pieces);
+            pieces = Bits.pop(pieces);
         }
     }
 
@@ -157,7 +159,7 @@ public class NNUE implements Evaluation {
     }
 
     private void handleCastleMove(boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        boolean isKingside = Board.file(to) == 6;
+        boolean isKingside = File.of(to) == 6;
         int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
         int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
         int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookStart, white, true);
@@ -194,10 +196,10 @@ public class NNUE implements Evaluation {
     }
 
     private int materialPhase(Board board) {
-        long knights = Bitwise.countBits(board.getKnights());
-        long bishops = Bitwise.countBits(board.getBishops());
-        long rooks = Bitwise.countBits(board.getRooks());
-        long queens = Bitwise.countBits(board.getQueens());
+        long knights = Bits.count(board.getKnights());
+        long bishops = Bits.count(board.getBishops());
+        long rooks = Bits.count(board.getRooks());
+        long queens = Bits.count(board.getQueens());
         return (int) (MATERIAL_BASE + 3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
     }
 
@@ -207,7 +209,7 @@ public class NNUE implements Evaluation {
      */
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
         int squareIndex = whitePerspective ? square : square ^ 56;
-        int pieceIndex = piece.getIndex();
+        int pieceIndex = piece.index();
         int pieceOffset = pieceIndex * PIECE_OFFSET;
         boolean ourPiece = whitePiece == whitePerspective;
         int colourOffset = ourPiece ? 0 : COLOUR_OFFSET;

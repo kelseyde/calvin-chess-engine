@@ -344,11 +344,6 @@ public class Searcher implements Search {
                 if (score < sBeta) {
                     extension = 1;
                 }
-//                else if (sBeta >= beta) {
-//                    return sBeta;
-//                } else if (ttEntry.getScore() >= beta) {
-//                    extension = -1;
-//                }
 
             }
 

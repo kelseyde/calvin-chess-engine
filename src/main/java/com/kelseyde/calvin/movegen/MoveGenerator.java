@@ -1,14 +1,10 @@
 package com.kelseyde.calvin.movegen;
 
 import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bits.Castling;
-import com.kelseyde.calvin.board.Bits.File;
-import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.board.Bits.*;
+import com.kelseyde.calvin.board.Bits.Pin.PinData;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.movegen.check.PinCalculator;
-import com.kelseyde.calvin.movegen.check.PinCalculator.PinData;
-import com.kelseyde.calvin.movegen.check.RayCalculator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +15,7 @@ import java.util.List;
  * pinned pieces. If there is a check, we filter out all moves that do not resolve the check. Finally, we filter out all
  * moves that leave the king in (a new) check.
  */
-public class MoveGenerator implements MoveGeneration {
-
-    private final PinCalculator pinCalculator = new PinCalculator();
-    private final RayCalculator rayCalculator = new RayCalculator();
+public class MoveGenerator {
 
     private int checkersCount;
     private long checkersMask;
@@ -42,25 +35,10 @@ public class MoveGenerator implements MoveGeneration {
 
     private List<Move> legalMoves;
 
-    /**
-     * Generates all legal moves for the current board position.
-     *
-     * @param board The current board state.
-     * @return A list of all legal moves.
-     */
-    @Override
     public List<Move> generateMoves(Board board) {
         return generateMoves(board, MoveFilter.ALL);
     }
 
-    /**
-     * Generates legal moves for the current board position based on the provided filter.
-     *
-     * @param board  The current board state.
-     * @param filter The filter to apply to move generation.
-     * @return A list of legal moves filtered according to the given criteria.
-     */
-    @Override
     public List<Move> generateMoves(Board board, MoveFilter filter) {
 
         white = board.isWhite();
@@ -76,9 +54,9 @@ public class MoveGenerator implements MoveGeneration {
         pushMask = Square.ALL;
 
         // Calculate pins and checks
-        final PinData pinData = pinCalculator.calculatePinMask(board, white);
-        pinMask = pinData.pinMask();
-        pinRayMasks = pinData.pinRayMasks();
+        final PinData pinData = Pin.calculatePins(board, white);
+        pinMask = pinData.pinMask;
+        pinRayMasks = pinData.pinRayMasks;
         checkersMask = calculateAttackerMask(board, 1L << kingSquare);
         checkersCount = Bits.count(checkersMask);
 
@@ -104,7 +82,7 @@ public class MoveGenerator implements MoveGeneration {
             final int checkerSquare = Bits.next(checkersMask);
             if (board.pieceAt(checkerSquare).isSlider()) {
                 // If the piece giving check is a slider, we can evade check by blocking it
-                pushMask = rayCalculator.rayBetween(checkerSquare, kingSquare);
+                pushMask = Ray.between(checkerSquare, kingSquare);
             } else {
                 // If the piece is not a slider, we can only evade check by capturing it
                 // Therefore all non-capture 'push' moves are illegal.
@@ -129,7 +107,6 @@ public class MoveGenerator implements MoveGeneration {
      * @param white Indicates whether the side in question is white.
      * @return True if the specified side is in check, otherwise false.
      */
-    @Override
     public boolean isCheck(Board board, boolean white) {
         final long king = board.getKing(white);
         return isAttacked(board, white, king);
@@ -631,4 +608,10 @@ public class MoveGenerator implements MoveGeneration {
         king = board.getKing(white);
     }
 
+    public enum MoveFilter {
+        ALL,
+        NOISY,
+        QUIET,
+        CAPTURES_ONLY,
+    }
 }

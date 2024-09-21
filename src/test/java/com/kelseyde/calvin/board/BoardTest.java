@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.movegen.MoveGeneration;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.IllegalMoveException;
@@ -218,8 +217,8 @@ public class BoardTest {
 
         MoveGenerator moveGenerator = new MoveGenerator();
 
-        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.QUIET).size());
-        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY).size());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.QUIET).size());
+        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY).size());
 
     }
 

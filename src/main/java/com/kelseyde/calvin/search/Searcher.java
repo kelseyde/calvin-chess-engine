@@ -8,8 +8,7 @@ import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.SEE;
 import com.kelseyde.calvin.evaluation.Score;
-import com.kelseyde.calvin.movegen.MoveGeneration;
-import com.kelseyde.calvin.movegen.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
@@ -41,7 +40,7 @@ public class Searcher implements Search {
 
     final EngineConfig config;
     final TranspositionTable tt;
-    final MoveGeneration movegen;
+    final MoveGenerator movegen;
     final Evaluation eval;
     final SearchHistory history;
     final SearchStack ss;
@@ -474,7 +473,7 @@ public class Searcher implements Search {
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.
-            movePicker.setFilter(MoveFilter.ALL);
+            movePicker.setFilter(MoveGenerator.MoveFilter.ALL);
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
@@ -484,7 +483,7 @@ public class Searcher implements Search {
             if (staticEval > alpha) {
                 alpha = staticEval;
             }
-            MoveFilter filter = depth == 1 ? MoveFilter.NOISY : MoveFilter.CAPTURES_ONLY;
+            MoveFilter filter = depth == 1 ? MoveGenerator.MoveFilter.NOISY : MoveGenerator.MoveFilter.CAPTURES_ONLY;
             movePicker.setFilter(filter);
         }
 

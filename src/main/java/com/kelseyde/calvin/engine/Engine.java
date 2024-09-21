@@ -2,8 +2,8 @@ package com.kelseyde.calvin.engine;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.movegen.MoveGeneration;
 import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
@@ -28,16 +28,17 @@ import java.util.stream.IntStream;
 public class Engine {
 
     final EngineConfig config;
-    final MoveGeneration moveGenerator;
+    final MoveGenerator moveGenerator;
     final Search searcher;
 
     CompletableFuture<SearchResult> think;
     Board board;
 
-    public Engine(EngineConfig config, Search searcher) {
-        this.config = config;
-        this.searcher = searcher;
+    public Engine() {
+        this.config = new EngineConfig();
+        this.board = Board.from(FEN.STARTPOS);
         this.moveGenerator = new MoveGenerator();
+        this.searcher = new ParallelSearcher(config, new TranspositionTable(config.defaultHashSizeMb));
     }
 
     public void newGame() {

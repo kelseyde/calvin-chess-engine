@@ -1,9 +1,7 @@
 package com.kelseyde.calvin.board;
 
-/**
- * Common bitboards stored here for general utility. Includes bitboards for ranks, files, diagonals, anti-diagonals,
- * castling masks, piece starting positions, etc.
- */
+import com.kelseyde.calvin.movegen.Attacks;
+
 public class Bits {
 
     public static int next(final long board) {
@@ -100,6 +98,119 @@ public class Bits {
 
         public static int of(int sq) {
             return sq >>> 3;
+        }
+
+    }
+
+    public static class Ray {
+
+        /**
+         * Calculates the ray (bitboard) between two squares on the chessboard.
+         */
+        public static long between(int from, int to) {
+            if (!Square.isValid(from) || !Square.isValid(to) || (from == to)) {
+                return 0L;
+            }
+            int offset = direction(from, to);
+            if (offset == 0) return 0L;
+            long ray = 0L;
+            int sq = from + offset;
+            while (Square.isValid(sq) && sq != to) {
+                ray |= 1L << sq;
+                sq += offset;
+            }
+            return ray;
+        }
+
+        /**
+         * Determines the direction offset between two squares on the chessboard.
+         */
+        private static int direction(int from, int to) {
+            int startRank = Rank.of(from);
+            int endRank = Rank.of(to);
+            int startFile = File.of(from);
+            int endFile = File.of(to);
+            if (startRank == endRank) {
+                return from > to ? -1 : 1;
+            }
+            else if (startFile == endFile) {
+                return from > to ? -8 : 8;
+            }
+            else if (Math.abs(startRank - endRank) == Math.abs(startFile - endFile)) {
+                return from > to ? (from - to) % 9 == 0 ? -9 : -7 : (to - from) % 9 == 0 ? 9 : 7;
+            }
+            else if (startRank + startFile == endRank + endFile) {
+                return from > to ? -9 : 9;
+            }
+            return 0;
+        }
+
+    }
+
+    public static class Pin {
+
+        public static class PinData {
+            public long pinMask;
+            public long[] pinRayMasks;
+            public PinData() {}
+        }
+
+        private static final long[] pinRayMasks = new long[Square.COUNT];
+        private static long pinMask;
+        private static PinData pinData = new PinData();
+
+        /**
+         * Calculates the pin mask and pin ray masks for the given board position.
+         *
+         * @param board The game board.
+         * @param white Whether the current player is white.
+         * @return The pin data containing the pin mask and pin ray masks.
+         */
+        public static PinData calculatePins(Board board, boolean white) {
+            pinMask = 0L;
+
+            int kingSquare = Bits.next(board.getKing(white));
+            long friendlies = board.getPieces(white);
+            long opponents = board.getPieces(!white);
+
+            long possiblePinners = 0L;
+
+            // Calculate possible orthogonal pins
+            long orthogonalSliders = board.getRooks(!white) | board.getQueens(!white);
+            if (orthogonalSliders != 0) {
+                possiblePinners |= Attacks.rookAttacks(kingSquare, 0) & orthogonalSliders;
+            }
+
+            // Calculate possible diagonal pins
+            long diagonalSliders = board.getBishops(!white) | board.getQueens(!white);
+            if (diagonalSliders != 0) {
+                possiblePinners |= Attacks.bishopAttacks(kingSquare, 0) & diagonalSliders;
+            }
+
+            while (possiblePinners != 0) {
+                int possiblePinner = Bits.next(possiblePinners);
+                long ray = Ray.between(kingSquare, possiblePinner);
+
+                // Skip if there are opponents between the king and the possible pinner
+                if ((ray & opponents) != 0) {
+                    possiblePinners = Bits.pop(possiblePinners);
+                    continue;
+                }
+
+                long friendliesBetween = ray & friendlies;
+                // If there is exactly one friendly piece between the king and the pinner, it's pinned
+                if (Bits.count(friendliesBetween) == 1) {
+                    int friendlySquare = Bits.next(friendliesBetween);
+                    pinMask |= friendliesBetween;
+                    pinRayMasks[friendlySquare] = ray | (1L << possiblePinner);
+                }
+
+                possiblePinners = Bits.pop(possiblePinners);
+            }
+
+            pinData.pinMask = pinMask;
+            pinData.pinRayMasks = pinRayMasks;
+            return pinData;
         }
 
     }

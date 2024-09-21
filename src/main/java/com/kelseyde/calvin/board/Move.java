@@ -3,19 +3,10 @@ package com.kelseyde.calvin.board;
 import java.util.Optional;
 
 /**
- * Represents a single chess move.
- * All the information required to represent a move is encoded in a 16-bit integer value field.
- * <p>
- * The encoding of the move information in the value field is as follows:
- * <ul>
- *     <li>Bits 0 - 5: Start square (0 - 63)</li>
- *     <li>Bits 6 - 11: End square (0 - 63)</li>
- *     <li>Bits 12 - 15: Special move flags (promotion, castling, pawn double moves, en passant)</li>
- * </ul>
- * For more information on move encoding, see <a href="https://www.chessprogramming.org/Encoding_Moves">Chess Programming Wiki</a>.
- * <p>
- * Largely inspired by Sebastian Lague's Chess Coding Adventure:
- * @see <a href="https://github.com/SebLague/Chess-Coding-Adventure">Chess Coding Adventure</a>
+ * Represents a single chess move. The move is encoded as a 16-bit integer. Bits 0 - 5 represent the start square,
+ * bits 6 - 11 represent the end square, and bits 12 - 15 represent special move flags.
+ *
+ * @see <a href="https://www.chessprogramming.org/Encoding_Moves">Chess Programming Wiki</a>.
  */
 public record Move(short value) {
 

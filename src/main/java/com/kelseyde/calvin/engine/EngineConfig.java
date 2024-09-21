@@ -47,7 +47,6 @@ public class EngineConfig {
     }
 
     private void calculateLmrReductions() {
-        // Credit to Lynx (https://github.com/lynx-chess/Lynx) for this formula for determining the optimal late move reduction depth
         lmrReductions = new int[Search.MAX_DEPTH][];
         for (int depth = 1; depth < Search.MAX_DEPTH; ++depth) {
             lmrReductions[depth] = new int[250];

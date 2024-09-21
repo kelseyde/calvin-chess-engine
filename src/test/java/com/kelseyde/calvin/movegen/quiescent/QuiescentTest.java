@@ -2,7 +2,6 @@ package com.kelseyde.calvin.movegen.quiescent;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.movegen.MoveGeneration;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.Notation;
@@ -22,7 +21,7 @@ public class QuiescentTest {
         String fen = "1k1r1N1n/pppb3p/P2b4/4N3/1N6/6K1/8/8 w - - 0 1";
         Board board = FEN.toBoard(fen);
 
-        List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
+        List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
                 Notation.fromNotation("a6", "b7"),
                 Notation.fromNotation("f8", "d7"),
@@ -30,7 +29,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
+        moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("a6", "b7"),
                 Notation.fromNotation("f8", "d7"),
@@ -47,7 +46,7 @@ public class QuiescentTest {
         String fen = "6k1/4bpp1/7p/8/p6b/1B4B1/2B2K2/8 w - - 0 1";
         Board board = FEN.toBoard(fen);
 
-        List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
+        List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
                 Notation.fromNotation("g3", "h4"),
                 Notation.fromNotation("b3", "f7"),
@@ -55,7 +54,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
+        moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("g3", "h4"),
                 Notation.fromNotation("b3", "f7"),
@@ -72,7 +71,7 @@ public class QuiescentTest {
         String fen = "8/8/1KQr4/2Q5/6p1/6pk/2Q4N/4r3 w - - 0 1";
         Board board = FEN.toBoard(fen);
 
-        List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
+        List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
                 Notation.fromNotation("h2", "g4"),
                 Notation.fromNotation("c6", "d6"),
@@ -80,7 +79,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
+        moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("h2", "g4"),
                 Notation.fromNotation("c6", "d6"),
@@ -99,7 +98,7 @@ public class QuiescentTest {
         String fen = "3k4/8/8/8/6pP/1p2p3/3B1p2/2K3R1 b - h3 0 1";
         Board board = FEN.toBoard(fen);
 
-        List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
+        List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
                 Notation.fromNotation("g4", "h3"),
                 Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
@@ -114,7 +113,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
+        moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("g4", "h3"),
                 Notation.fromNotation("f2", "g1", Move.PROMOTE_TO_QUEEN_FLAG),
@@ -138,7 +137,7 @@ public class QuiescentTest {
         String fen = "1bR2N1b/R3nk2/5p2/8/8/8/2K3R1/4R2R w - - 0 1";
         Board board = FEN.toBoard(fen);
 
-        List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
+        List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
                 Notation.fromNotation("h1", "h8"),
                 Notation.fromNotation("e1", "e7"),
@@ -147,7 +146,7 @@ public class QuiescentTest {
         );
         assertMoves(expected, moves);
 
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
+        moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
                 Notation.fromNotation("h1", "h8"),
                 Notation.fromNotation("e1", "e7"),

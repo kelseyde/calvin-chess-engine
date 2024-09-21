@@ -3,7 +3,6 @@ package com.kelseyde.calvin.uci;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
@@ -28,7 +27,7 @@ import java.util.stream.Collectors;
  */
 public class UCI {
 
-    public static final Engine ENGINE = EngineInitializer.loadEngine();
+    public static final Engine ENGINE = new Engine();
     static final Scanner READER = new Scanner(System.in);
     public static boolean outputEnabled = true;
 

@@ -6,11 +6,11 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
-import com.kelseyde.calvin.evaluation.SEE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
+import com.kelseyde.calvin.search.moveordering.SEE;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -509,34 +509,16 @@ public class Searcher implements Search {
                     continue;
                 }
 
-                int seeScore = SEE.see(board, move);
+                boolean canFutilityPrune = captured != null && futilityScore <= alpha;
+                boolean canSeePruneLosingCaptures = depth <= 3;
+                boolean canSeePruneEqualCaptures = depth > 3;
 
-                // Futility Pruning
-                // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
-                // win material when the static eval plus some margin is sufficiently below alpha.
-                if (captured != null
-                    && futilityScore <= alpha
-                    && seeScore <= 0) {
+                // Combining Futility Pruning and SEE Pruning
+                if ((canSeePruneLosingCaptures && SEE.see(board, move, 1))
+                    || ((canFutilityPrune || canSeePruneEqualCaptures) && SEE.see(board, move, 0))) {
                     continue;
                 }
 
-                // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
-                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
-                // chains, such as capturing with the queen a pawn defended by another pawn.
-                if ((depth <= 3 && seeScore < 0)
-                        || (depth > 3 && seeScore <= 0)) {
-                    continue;
-                }
-
-                /*
-                                // Static Exchange Evaluation - https://www.chessprogramming.org/Static_Exchange_Evaluation
-                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
-                // chains, such as capturing with the queen a pawn defended by another pawn.
-                int seeThreshold = depth <= 3 ? 0 : 1;
-                if (!SEE.see(board, move, seeThreshold)) {
-                    continue;
-                }
-                */
             }
 
             eval.makeMove(board, move);

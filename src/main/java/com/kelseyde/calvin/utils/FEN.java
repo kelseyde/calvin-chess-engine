@@ -72,16 +72,19 @@ public class FEN {
             // This implementation does not require the full move counter (parts[5]).
 
             Board board = new Board();
-            board.setPawns(whitePawns | blackPawns);
-            board.setKnights(whiteKnights | blackKnights);
-            board.setBishops(whiteBishops | blackBishops);
-            board.setRooks(whiteRooks | blackRooks);
-            board.setQueens(whiteQueens | blackQueens);
-            board.setKings(whiteKing | blackKing);
-            board.setWhitePieces(whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing);
-            board.setBlackPieces(blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing);
-            board.setOccupied(board.getWhitePieces() | board.getBlackPieces());
-            board.setPieces(calculatePieceList(board));
+            board.setBitboards(new long[]{
+                        whitePawns | blackPawns,
+                        whiteKnights | blackKnights,
+                        whiteBishops | blackBishops,
+                        whiteRooks | blackRooks,
+                        whiteQueens | blackQueens,
+                        whiteKing | blackKing,
+                        whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing,
+                        blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing,
+                        board.getWhitePieces() | board.getBlackPieces(),
+                    }
+            );
+
             board.setWhite(whiteToMove);
             board.getState().setRights(castlingRights);
             board.getState().setEnPassantFile(enPassantFile);

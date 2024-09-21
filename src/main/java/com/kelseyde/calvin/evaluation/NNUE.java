@@ -207,7 +207,7 @@ public class NNUE implements Evaluation {
      */
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
         int squareIndex = whitePerspective ? square : square ^ 56;
-        int pieceIndex = piece.getIndex();
+        int pieceIndex = piece.index();
         int pieceOffset = pieceIndex * PIECE_OFFSET;
         boolean ourPiece = whitePiece == whitePerspective;
         int colourOffset = ourPiece ? 0 : COLOUR_OFFSET;

@@ -26,7 +26,7 @@ public class SEE {
         int score = 0;
         int square = move.to();
         Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
-        score += captured != null ? captured.getValue() : 0;
+        score += captured != null ? captured.value() : 0;
 
         board.makeMove(move);
         Move leastValuableAttacker = getLeastValuableAttacker(board, square);

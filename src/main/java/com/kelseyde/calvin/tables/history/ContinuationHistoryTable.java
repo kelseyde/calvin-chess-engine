@@ -24,7 +24,7 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
             return 0;
         }
         int colourIndex = Colour.index(white);
-        return table[colourIndex][prevPiece.getIndex()][prevMove.to()][currPiece.getIndex()][currMove.to()];
+        return table[colourIndex][prevPiece.index()][prevMove.to()][currPiece.index()][currMove.to()];
     }
 
     public void set(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int update, boolean white) {
@@ -32,7 +32,7 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
             return;
         }
         int colourIndex = Colour.index(white);
-        table[colourIndex][prevPiece.getIndex()][prevMove.to()][currPiece.getIndex()][currMove.to()] = update;
+        table[colourIndex][prevPiece.index()][prevMove.to()][currPiece.index()][currMove.to()] = update;
     }
 
     public void clear() {

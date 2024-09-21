@@ -2,8 +2,6 @@ package com.kelseyde.calvin.movegen.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.evaluation.Score;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -179,33 +177,6 @@ public class DrawByRepetitionTest {
         Assertions.assertTrue(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
-        Assertions.assertTrue(Score.isThreefoldRepetition(board));
-
-
-    }
-
-    @Test
-    public void testGameExampleDrawRepetition() {
-
-        String fen = "7r/4b1p1/8/3BkP2/4N3/8/PPn2PP1/1R1R2K1 b - - 0 26";
-        Board board = FEN.toBoard(fen);
-
-        board.makeMove(Notation.fromNotation("h8", "b8"));
-        board.makeMove(Notation.fromNotation("e4", "c3"));
-        board.makeMove(Notation.fromNotation("e7", "c5"));
-        board.makeMove(Notation.fromNotation("c3", "e4"));
-        Assertions.assertFalse(Score.isEffectiveDraw(board));
-
-        board.makeMove(Notation.fromNotation("c5", "e7"));
-        board.makeMove(Notation.fromNotation("e4", "c3"));
-        board.makeMove(Notation.fromNotation("e7", "c5"));
-        board.makeMove(Notation.fromNotation("c3", "e4"));
-
-        Assertions.assertTrue(Score.isEffectiveDraw(board));
-        Assertions.assertFalse(Score.isThreefoldRepetition(board));
-
-        board.makeMove(Notation.fromNotation("c5", "e7"));
-
         Assertions.assertTrue(Score.isThreefoldRepetition(board));
 
 

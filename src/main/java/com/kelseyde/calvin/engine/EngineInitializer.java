@@ -16,7 +16,6 @@ public class EngineInitializer {
 
     public static Engine loadEngine() {
         EngineConfig config = new EngineConfig();
-        config.postInitialise();
         TranspositionTable transpositionTable = new TranspositionTable(config.defaultHashSizeMb);
         Search searcher = new ParallelSearcher(config, transpositionTable);
         Engine engine = new Engine(config, searcher);

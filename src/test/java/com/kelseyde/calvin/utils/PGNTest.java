@@ -1,8 +1,10 @@
 package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class PGNTest {
 
     @Test

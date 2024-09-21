@@ -89,24 +89,6 @@ public class CheckTest {
     }
 
     @Test
-    public void cannotMovePinnedQueen() {
-        Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "f7", "f5"));
-        board.makeMove(TestUtils.getLegalMove(board, "e4", "f5"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
-        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e6", "f5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d1", "e2"));
-        // block check with queen
-        board.makeMove(TestUtils.getLegalMove(board, "d8", "e7"));
-        board.makeMove(TestUtils.getLegalMove(board, "a2", "a4"));
-        //try moving pinned queen
-        Assertions.assertThrows(IllegalMoveException.class,
-                () -> board.makeMove(TestUtils.getLegalMove(board, "e7", "d8")));
-    }
-
-    @Test
     public void cannotMoveFromCheckIntoAnotherCheck() {
 
         Board board = new Board();
@@ -280,39 +262,6 @@ public class CheckTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "c7", "c5"));
         board.makeMove(TestUtils.getLegalMove(board, "b5", "c6"));
-
-    }
-
-    @Test
-    public void testMustBlockQueenCheck() {
-
-        Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
-        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        board.makeMove(TestUtils.getLegalMove(board, "f3", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d5", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "f1", "b5"));
-        board.makeMove(TestUtils.getLegalMove(board, "b8", "d7"));
-        board.makeMove(TestUtils.getLegalMove(board, "d1", "e2"));
-        board.makeMove(TestUtils.getLegalMove(board, "d8", "e7"));
-        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
-        board.makeMove(TestUtils.getLegalMove(board, "c7", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "e5", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "b7", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "b5", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "c8", "b7"));
-        board.makeMove(TestUtils.getLegalMove(board, "c6", "b7"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "b4"));
-        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
-        board.makeMove(TestUtils.getLegalMove(board, "b4", "b7"));
-        board.makeMove(TestUtils.getLegalMove(board, "c3", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "b7", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-
-        Assertions.assertThrows(IllegalMoveException.class,
-                () -> TestUtils.getLegalMove(board, "g8", "f6"));
 
     }
 

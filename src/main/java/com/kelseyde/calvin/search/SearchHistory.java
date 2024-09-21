@@ -12,6 +12,8 @@ import java.util.List;
 
 public class SearchHistory {
 
+    private static final int[] CONT_HIST_PLIES = { 1, 2 };
+
     private final KillerTable killerTable = new KillerTable();
     private final HistoryTable historyTable = new HistoryTable();
     private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
@@ -21,18 +23,20 @@ public class SearchHistory {
     private int bestScoreStability = 0;
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures, boolean failHigh) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures) {
 
-        if (bestMove.isQuiet() && failHigh) {
+        if (bestMove.isQuiet()) {
 
             killerTable.add(ply, bestMove.move());
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
                 historyTable.update(quiet.move(), depth, white, good);
 
-                Move prevMove = ss.getMove(ply - 1);
-                Piece prevPiece = ss.getMovedPiece(ply - 1);
-                contHistTable.update(prevMove, prevPiece, quiet.move(), quiet.piece(), depth, white, good);
+                for (int prevPly : CONT_HIST_PLIES) {
+                    Move prevMove = ss.getMove(ply - prevPly);
+                    Piece prevPiece = ss.getMovedPiece(ply - prevPly);
+                    contHistTable.update(prevMove, prevPiece, quiet.move(), quiet.piece(), depth, white, good);
+                }
             }
 
         }

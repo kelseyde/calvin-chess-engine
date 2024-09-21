@@ -462,10 +462,9 @@ public class Searcher implements Search {
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
-        if (bestMove != null) {
+        if (bestScore >= beta) {
             PlayedMove best = ss.getBestMove(ply);
-            boolean failHigh = bestScore >= beta;
-            history.updateHistory(best, board.isWhite(), depth, ply, ss, quietsSearched, capturesSearched, failHigh);
+            history.updateHistory(best, board.isWhite(), depth, ply, ss, quietsSearched, capturesSearched);
         }
 
         // Store the best move and score in the transposition table for future reference.

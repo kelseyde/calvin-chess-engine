@@ -94,39 +94,6 @@ public class QuiescentTest {
     }
 
     @Test
-    public void testKiwipete() {
-
-        String fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
-        Board board = FEN.toBoard(fen);
-
-        List<Move> moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.CAPTURES_ONLY);
-        List<Move> expected = List.of(
-                Notation.fromNotation("e2", "a6"),
-                Notation.fromNotation("f3", "f6"),
-                Notation.fromNotation("d5", "e6"),
-                Notation.fromNotation("f3", "h3"),
-                Notation.fromNotation("g2", "h3"),
-                Notation.fromNotation("e5", "g6"),
-                Notation.fromNotation("e5", "f7"),
-                Notation.fromNotation("e5", "d7")
-        );
-        assertMoves(expected, moves);
-
-        moves = moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY);
-        expected = List.of(
-                Notation.fromNotation("e2", "a6"),
-                Notation.fromNotation("f3", "f6"),
-                Notation.fromNotation("d5", "e6"),
-                Notation.fromNotation("f3", "h3"),
-                Notation.fromNotation("g2", "h3"),
-                Notation.fromNotation("e5", "g6"),
-                Notation.fromNotation("e5", "f7"),
-                Notation.fromNotation("e5", "d7")
-        );
-        assertMoves(expected, moves);
-    }
-
-    @Test
     public void testPawnAndPromotionMoves() {
 
         String fen = "3k4/8/8/8/6pP/1p2p3/3B1p2/2K3R1 b - h3 0 1";

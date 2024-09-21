@@ -75,12 +75,6 @@ public class ZobristTest {
         long z5 = board.getState().getKey();
         board.makeMove(Notation.fromNotation("a5", "c7"));
         long z6 = board.getState().getKey();
-        System.out.println(z1);
-        System.out.println(z2);
-        System.out.println(z3);
-        System.out.println(z4);
-        System.out.println(z5);
-        System.out.println(z6);
 
         long distinctZobristCount = Stream.of(z1, z2, z3, z4, z5, z6)
                 .distinct()

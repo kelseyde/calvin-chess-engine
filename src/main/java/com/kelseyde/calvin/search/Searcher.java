@@ -334,7 +334,7 @@ public class Searcher implements Search {
                     && ttEntry.getDepth() >= depth - 4
                     && ttEntry.getFlag() != HashFlag.UPPER) {
 
-                int sBeta = Math.max(Score.MIN + 1, ttEntry.getScore() - depth * 14 / 16);
+                int sBeta = Math.min(beta, ttEntry.getScore() - depth * 2);
                 int sDepth = (depth - 1) / 2;
 
                 ss.setExcludedMove(ply, move);
@@ -343,11 +343,12 @@ public class Searcher implements Search {
 
                 if (score < sBeta) {
                     extension = 1;
-                } else if (sBeta >= beta) {
-                    return sBeta;
-                } else if (ttEntry.getScore() >= beta) {
-                    extension = -1;
                 }
+//                else if (sBeta >= beta) {
+//                    return sBeta;
+//                } else if (ttEntry.getScore() >= beta) {
+//                    extension = -1;
+//                }
 
             }
 

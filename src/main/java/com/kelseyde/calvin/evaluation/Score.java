@@ -31,7 +31,7 @@ public class Score {
 
         int repetitionCount = 0;
         long zobrist = board.getState().getKey();
-        Iterator<GameState> iterator = board.getStateHistory().descendingIterator();
+        Iterator<GameState> iterator = board.getStates().descendingIterator();
         while (iterator.hasNext()) {
             GameState gameState = iterator.next();
             if (gameState.getKey() == zobrist) {
@@ -45,7 +45,7 @@ public class Score {
     public static boolean isDoubleRepetition(Board board) {
 
         long zobrist = board.getState().getKey();
-        Iterator<GameState> iterator = board.getStateHistory().descendingIterator();
+        Iterator<GameState> iterator = board.getStates().descendingIterator();
         while (iterator.hasNext()) {
             GameState gameState = iterator.next();
             if (gameState.getKey() == zobrist) {

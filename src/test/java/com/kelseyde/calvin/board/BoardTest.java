@@ -61,10 +61,10 @@ public class BoardTest {
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
         Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
-        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(false));
 
         board.makeMove(TestUtils.getLegalMove(board, "f7", "f6"));
 
@@ -73,10 +73,10 @@ public class BoardTest {
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
         Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
-        Assertions.assertFalse(board.getStateHistory().peek().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getStateHistory().peek().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getStates().peek().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getStates().peek().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(false));
 
     }
 

@@ -16,18 +16,35 @@ import java.util.Deque;
  */
 public class Board {
 
-    private long[] bitboards;
+    private long pawns;
+    private long knights;
+    private long bishops;
+    private long rooks;
+    private long queens;
+    private long kings;
+    private long whitePieces;
+    private long blackPieces;
+    private long occupied;
+
     private Piece[] pieces;
     private GameState state;
-    private Deque<GameState> stateHistory;
+    private Deque<GameState> states;
     private Deque<Move> moves;
     private boolean white;
 
     public Board() {
-        bitboards = new long[9];
+        pawns = 0L;
+        knights = 0L;
+        bishops = 0L;
+        rooks = 0L;
+        queens = 0L;
+        kings = 0L;
+        whitePieces = 0L;
+        blackPieces = 0L;
+        occupied = 0L;
         pieces = new Piece[64];
         state = new GameState();
-        stateHistory = new ArrayDeque<>();
+        states = new ArrayDeque<>();
         moves = new ArrayDeque<>();
         white = true;
         state.setKey(Zobrist.generateKey(this));
@@ -45,7 +62,7 @@ public class Board {
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
-        stateHistory.push(state.copy());
+        states.push(state.copy());
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
         else if (move.isCastling())   makeCastleMove(from, to);
@@ -77,7 +94,7 @@ public class Board {
         else if (move.isEnPassant())  unmakeEnPassantMove(from, to);
         else                          unmakeStandardMove(from, to, piece);
 
-        state = stateHistory.pop();
+        state = states.pop();
 
     }
 
@@ -228,7 +245,7 @@ public class Board {
         white = !white;
         final long key = Zobrist.updateKeyAfterNullMove(state.getKey(), state.getEnPassantFile());
         GameState newState = new GameState(key, state.getPawnKey(), null, -1, state.getRights(), 0);
-        stateHistory.push(state);
+        states.push(state);
         state = newState;
     }
 
@@ -237,7 +254,7 @@ public class Board {
      */
     public void unmakeNullMove() {
         white = !white;
-        state = stateHistory.pop();
+        state = states.pop();
     }
 
     public void toggleSquares(Piece type, boolean white, int from, int to) {
@@ -251,23 +268,42 @@ public class Board {
     }
 
     private void toggle(Piece type, boolean white, long toggleMask) {
-        bitboards[type.index()] ^= toggleMask;
-        bitboards[white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES] ^= toggleMask;
-        bitboards[Piece.OCCUPIED] ^= toggleMask;
+        switch (type) {
+            case PAWN ->    pawns ^= toggleMask;
+            case KNIGHT ->  knights ^= toggleMask;
+            case BISHOP ->  bishops ^= toggleMask;
+            case ROOK ->    rooks ^= toggleMask;
+            case QUEEN ->   queens ^= toggleMask;
+            case KING ->    kings ^= toggleMask;
+        }
+        if (white) {
+            whitePieces ^= toggleMask;
+        } else {
+            blackPieces ^= toggleMask;
+        }
+        occupied ^= toggleMask;
     }
 
     public void removeKing(boolean white) {
-        final long toggleMask = getKing(white);
-        bitboards[Piece.KING.index()] ^= toggleMask;
-        bitboards[white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES] ^= toggleMask;
-        bitboards[Piece.OCCUPIED] ^= toggleMask;
+        final long toggleMask = white ? (kings & whitePieces) : (kings & blackPieces);
+        kings ^= toggleMask;
+        if (white) {
+            whitePieces ^= toggleMask;
+        } else {
+            blackPieces ^= toggleMask;
+        }
+        occupied ^= toggleMask;
     }
 
     public void addKing(int kingSquare, boolean white) {
         final long toggleMask = 1L << kingSquare;
-        bitboards[Piece.KING.index()] |= toggleMask;
-        bitboards[white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES] |= toggleMask;
-        bitboards[Piece.OCCUPIED] |= toggleMask;
+        kings |= toggleMask;
+        if (white) {
+            whitePieces |= toggleMask;
+        } else {
+            blackPieces |= toggleMask;
+        }
+        occupied |= toggleMask;
     }
 
     private int updateCastleRights(int from, int to, Piece pieceType) {
@@ -303,35 +339,73 @@ public class Board {
     }
 
     public long getPawns(boolean white) {
-        return bitboards[Piece.PAWN.index()] & getPieces(white);
+        final long side = white ? whitePieces : blackPieces;
+        return pawns & side;
     }
 
     public long getKnights(boolean white) {
-        return bitboards[Piece.KNIGHT.index()] & getPieces(white);
+        final long side = white ? whitePieces : blackPieces;
+        return knights & side;
     }
 
     public long getBishops(boolean white) {
-        return bitboards[Piece.BISHOP.index()] & getPieces(white);
+        final long side = white ? whitePieces : blackPieces;
+        return bishops & side;
     }
 
     public long getRooks(boolean white) {
-        return bitboards[Piece.ROOK.index()] & getPieces(white);
+        final long side = white ? whitePieces : blackPieces;
+        return rooks & side;
     }
 
     public long getQueens(boolean white) {
-        return bitboards[Piece.QUEEN.index()] & getPieces(white);
+        final long side = white ? whitePieces : blackPieces;
+        return queens & side;
     }
 
     public long getKing(boolean white) {
-        return bitboards[Piece.KING.index()] & getPieces(white);
+        final long side = white ? whitePieces : blackPieces;
+        return kings & side;
     }
 
     public long getPieces(boolean white) {
-        return bitboards[white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES];
+        return white ? whitePieces : blackPieces;
     }
 
-    public void setBitboards(long[] bitboards) {
-        this.bitboards = bitboards;
+    public void setPawns(long pawns) {
+        this.pawns = pawns;
+    }
+
+    public void setKnights(long knights) {
+        this.knights = knights;
+    }
+
+    public void setBishops(long bishops) {
+        this.bishops = bishops;
+    }
+
+    public void setRooks(long rooks) {
+        this.rooks = rooks;
+    }
+
+    public void setQueens(long queens) {
+        this.queens = queens;
+    }
+
+    public void setKings(long kings) {
+        this.kings = kings;
+    }
+
+    public void setWhitePieces(long whitePieces) {
+        this.whitePieces = whitePieces;
+    }
+
+    public void setBlackPieces(long blackPieces) {
+        this.blackPieces = blackPieces;
+    }
+
+    public void setOccupied(long occupied) {
+        this.occupied = occupied;
     }
 
     public void setPieces(Piece[] pieces) {
@@ -346,8 +420,8 @@ public class Board {
         this.state = state;
     }
 
-    public void setStateHistory(Deque<GameState> stateHistory) {
-        this.stateHistory = stateHistory;
+    public void setStates(Deque<GameState> states) {
+        this.states = states;
     }
 
     public void setMoves(Deque<Move> moves) {
@@ -355,39 +429,39 @@ public class Board {
     }
 
     public long getPawns() {
-        return bitboards[Piece.PAWN.index()];
+        return pawns;
     }
 
     public long getKnights() {
-        return bitboards[Piece.KNIGHT.index()];
+        return knights;
     }
 
     public long getBishops() {
-        return bitboards[Piece.BISHOP.index()];
+        return bishops;
     }
 
     public long getRooks() {
-        return bitboards[Piece.ROOK.index()];
+        return rooks;
     }
 
     public long getQueens() {
-        return bitboards[Piece.QUEEN.index()];
+        return queens;
     }
 
     public long getKings() {
-        return bitboards[Piece.KING.index()];
+        return kings;
     }
 
     public long getWhitePieces() {
-        return bitboards[Piece.WHITE_PIECES];
+        return whitePieces;
     }
 
     public long getBlackPieces() {
-        return bitboards[Piece.BLACK_PIECES];
+        return blackPieces;
     }
 
     public long getOccupied() {
-        return bitboards[Piece.OCCUPIED];
+        return occupied;
     }
 
     public Piece[] getPieces() {
@@ -402,8 +476,8 @@ public class Board {
         return state;
     }
 
-    public Deque<GameState> getStateHistory() {
-        return stateHistory;
+    public Deque<GameState> getStates() {
+        return states;
     }
 
     public Deque<Move> getMoves() {
@@ -419,7 +493,7 @@ public class Board {
     }
 
     public int countPieces() {
-        return Bitwise.countBits(getOccupied());
+        return Bitwise.countBits(occupied);
     }
 
     public boolean hasPiecesRemaining(boolean white) {
@@ -450,12 +524,20 @@ public class Board {
 
     public Board copy() {
         final Board newBoard = new Board();
-        newBoard.setBitboards(Arrays.copyOf(bitboards, bitboards.length));
+        newBoard.setPawns(this.getPawns());
+        newBoard.setKnights(this.getKnights());
+        newBoard.setBishops(this.getBishops());
+        newBoard.setRooks(this.getRooks());
+        newBoard.setQueens(this.getQueens());
+        newBoard.setKings(this.getKings());
+        newBoard.setWhitePieces(this.getWhitePieces());
+        newBoard.setBlackPieces(this.getBlackPieces());
+        newBoard.setOccupied(this.getOccupied());
         newBoard.setWhite(this.isWhite());
         newBoard.setState(this.getState().copy());
         Deque<GameState> gameStateHistory = new ArrayDeque<>();
-        this.getStateHistory().forEach(gameState -> gameStateHistory.add(gameState.copy()));
-        newBoard.setStateHistory(gameStateHistory);
+        this.getStates().forEach(gameState -> gameStateHistory.add(gameState.copy()));
+        newBoard.setStates(gameStateHistory);
         Deque<Move> moveHistory = new ArrayDeque<>();
         this.getMoves().forEach(move -> moveHistory.add(new Move(move.value())));
         newBoard.setMoves(moveHistory);

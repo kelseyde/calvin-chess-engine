@@ -83,7 +83,15 @@ public class FEN {
             // This implementation does not require the full move counter (parts[5]).
 
             Board board = new Board();
-            board.setBitboards(new long[]{pawns, knight, bishops, rooks, queens, king, whitePieces, blackPieces, occupied});
+            board.setPawns(pawns);
+            board.setKnights(knight);
+            board.setBishops(bishops);
+            board.setRooks(rooks);
+            board.setQueens(queens);
+            board.setKings(king);
+            board.setWhitePieces(whitePieces);
+            board.setBlackPieces(blackPieces);
+            board.setOccupied(occupied);
             board.setPieces(calculatePieceList(board));
             board.setWhite(whiteToMove);
             board.getState().setRights(castlingRights);

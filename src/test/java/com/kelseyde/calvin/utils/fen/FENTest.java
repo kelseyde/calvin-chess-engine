@@ -40,7 +40,7 @@ public class FENTest {
 
         Assertions.assertEquals(newBoard.isWhite(), fenBoard.isWhite());
         Assertions.assertEquals(newBoard.getState(), fenBoard.getState());
-        Assertions.assertEquals(new ArrayList<>(newBoard.getStateHistory()), new ArrayList<>(fenBoard.getStateHistory()));
+        Assertions.assertEquals(new ArrayList<>(newBoard.getStates()), new ArrayList<>(fenBoard.getStates()));
         Assertions.assertEquals(new ArrayList<>(newBoard.getMoves()), new ArrayList<>(fenBoard.getMoves()));
 
     }

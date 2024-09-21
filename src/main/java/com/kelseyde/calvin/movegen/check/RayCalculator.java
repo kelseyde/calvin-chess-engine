@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.movegen.check;
 
-import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Rank;
+import com.kelseyde.calvin.board.Bits.Square;
 
 public class RayCalculator {
 
@@ -14,7 +16,7 @@ public class RayCalculator {
      */
     public long rayBetween(int from, int to) {
         // Check for valid square indices and that the squares are not the same
-        if (!Board.isValidIndex(from) || !Board.isValidIndex(to) || from == to) {
+        if (!Square.isValid(from) || !Square.isValid(to) || (from == to)) {
             return 0L;
         }
 
@@ -28,8 +30,8 @@ public class RayCalculator {
         long ray = 0L;
         int currentSquare = from + directionOffset;
 
-        // Build the ray by setting bits from from to to
-        while (Board.isValidIndex(currentSquare) && currentSquare != to) {
+        // Build the ray by setting bits for each square between from and to
+        while (Square.isValid(currentSquare) && currentSquare != to) {
             ray |= 1L << currentSquare;
             currentSquare += directionOffset;
         }
@@ -43,14 +45,14 @@ public class RayCalculator {
      *
      * @param from The starting square index (0-63).
      * @param to The ending square index (0-63).
-     * @return The direction offset to traverse from from to to,
+     * @return The direction offset to traverse from the start square to the end square,
      *         or 0 if there is no valid direction.
      */
     private int getDirectionOffset(int from, int to) {
-        int startRank = Board.rank(from);
-        int endRank = Board.rank(to);
-        int startFile = Board.file(from);
-        int endFile = Board.file(to);
+        int startRank = Rank.of(from);
+        int endRank = Rank.of(to);
+        int startFile = File.of(from);
+        int endFile = File.of(to);
 
         // Check if the two squares are on the same rank (row)
         if (startRank == endRank) {

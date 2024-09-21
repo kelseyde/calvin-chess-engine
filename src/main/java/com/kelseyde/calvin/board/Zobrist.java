@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.Bits.Square;
+
 import java.util.Arrays;
 import java.util.Random;
 
@@ -12,7 +14,7 @@ import java.util.Random;
  */
 public class Zobrist {
 
-    private static final long[][][] PIECE_SQUARE_HASH = new long[64][2][6];
+    private static final long[][][] PIECE_SQUARE_HASH = new long[Square.COUNT][2][Piece.COUNT];
     private static final long[] CASTLING_RIGHTS = new long[16];
     private static final long[] EN_PASSANT_FILE = new long[9];
     private static final long BLACK_TO_MOVE;
@@ -22,7 +24,7 @@ public class Zobrist {
     static {
 
         Random random = new Random();
-        for (int square = 0; square < 64; square++) {
+        for (int square = 0; square < Square.COUNT; square++) {
             for (int pieceIndex : Arrays.stream(Piece.values()).map(Piece::index).toList()) {
                 PIECE_SQUARE_HASH[square][WHITE][pieceIndex] = random.nextLong();
                 PIECE_SQUARE_HASH[square][BLACK][pieceIndex] = random.nextLong();
@@ -42,7 +44,7 @@ public class Zobrist {
 
         long key = 0L;
 
-        for (int square = 0; square < 64; square++) {
+        for (int square = 0; square < Square.COUNT; square++) {
             if (((board.getPawns(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.PAWN.index()];
             }
@@ -95,7 +97,7 @@ public class Zobrist {
 
     public static long generatePawnKey(Board board) {
         long key = 0L;
-        for (int square = 0; square < 64; square++) {
+        for (int square = 0; square < Square.COUNT; square++) {
             if (((board.getPawns(true) >>> square) & 1) == 1) {
                 key ^= PIECE_SQUARE_HASH[square][WHITE][Piece.PAWN.index()];
             }

@@ -12,9 +12,7 @@ public enum Piece {
     QUEEN(4, 900),
     KING(5, 0);
 
-    public static final int WHITE_PIECES = 6;
-    public static final int BLACK_PIECES = 7;
-    public static final int OCCUPIED = 8;
+    public static final int COUNT = 6;
 
     final int index;
 

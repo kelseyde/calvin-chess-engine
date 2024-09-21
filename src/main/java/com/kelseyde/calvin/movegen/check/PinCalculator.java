@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.movegen.check;
 
-import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.movegen.Attacks;
 
@@ -9,7 +10,7 @@ public class PinCalculator {
     private final RayCalculator rayCalculator = new RayCalculator();
 
     private long pinMask;
-    private long[] pinRayMasks = new long[64];
+    private final long[] pinRayMasks = new long[Square.COUNT];
 
     public record PinData(long pinMask, long[] pinRayMasks) {}
 
@@ -23,7 +24,7 @@ public class PinCalculator {
     public PinData calculatePinMask(Board board, boolean white) {
         pinMask = 0L;
 
-        int kingSquare = Bitwise.getNextBit(board.getKing(white));
+        int kingSquare = Bits.next(board.getKing(white));
         long friendlies = board.getPieces(white);
         long opponents = board.getPieces(!white);
 
@@ -54,24 +55,24 @@ public class PinCalculator {
      */
     private void calculatePins(int kingSquare, long friendlies, long opponents, long possiblePinners) {
         while (possiblePinners != 0) {
-            int possiblePinner = Bitwise.getNextBit(possiblePinners);
+            int possiblePinner = Bits.next(possiblePinners);
             long ray = rayCalculator.rayBetween(kingSquare, possiblePinner);
 
             // Skip if there are opponents between the king and the possible pinner
             if ((ray & opponents) != 0) {
-                possiblePinners = Bitwise.popBit(possiblePinners);
+                possiblePinners = Bits.pop(possiblePinners);
                 continue;
             }
 
             long friendliesBetween = ray & friendlies;
             // If there is exactly one friendly piece between the king and the pinner, it's pinned
-            if (Bitwise.countBits(friendliesBetween) == 1) {
-                int friendlySquare = Bitwise.getNextBit(friendliesBetween);
+            if (Bits.count(friendliesBetween) == 1) {
+                int friendlySquare = Bits.next(friendliesBetween);
                 pinMask |= friendliesBetween;
                 pinRayMasks[friendlySquare] = ray | (1L << possiblePinner);
             }
 
-            possiblePinners = Bitwise.popBit(possiblePinners);
+            possiblePinners = Bits.pop(possiblePinners);
         }
     }
 }

@@ -29,11 +29,11 @@ public class MovePicker {
     final SearchHistory history;
     final SearchStack ss;
 
+    final Move ttMove;
     final Board board;
     final int ply;
 
     Stage stage;
-    Move ttMove;
     boolean skipQuiets;
     boolean inCheck;
 
@@ -212,10 +212,6 @@ public class MovePicker {
 
     public void setSkipQuiets(boolean skipQuiets) {
         this.skipQuiets = skipQuiets;
-    }
-
-    public void setInCheck(boolean inCheck) {
-        this.inCheck = inCheck;
     }
 
     public record ScoredMove(Move move, int score) {}

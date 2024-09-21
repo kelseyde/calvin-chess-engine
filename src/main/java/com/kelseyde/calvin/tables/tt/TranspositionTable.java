@@ -132,7 +132,7 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            entries[replacedIndex] = HashEntry.of(zobristKey, score, staticEval, move, flag, depth, generation);;
+            entries[replacedIndex] = HashEntry.of(zobristKey, score, staticEval, move, flag, depth, generation);
         }
     }
 

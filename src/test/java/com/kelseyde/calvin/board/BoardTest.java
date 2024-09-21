@@ -266,16 +266,16 @@ public class BoardTest {
         if (whiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
-                int position = Bitwise.getNextBit(whitePieces);
+                int position = Bits.next(whitePieces);
                 positions.add(position);
-                whitePieces = Bitwise.popBit(whitePieces);
+                whitePieces = Bits.pop(whitePieces);
             }
         } else {
             long blackPieces = board.getBlackPieces();
             while (blackPieces != 0) {
-                int position = Bitwise.getNextBit(blackPieces);
+                int position = Bits.next(blackPieces);
                 positions.add(position);
-                blackPieces = Bitwise.popBit(blackPieces);
+                blackPieces = Bits.pop(blackPieces);
             }
         }
         return positions;

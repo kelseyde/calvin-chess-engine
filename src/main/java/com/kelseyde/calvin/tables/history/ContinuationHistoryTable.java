@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.tables.history;
 
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -9,7 +10,7 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;
 
-    int[][][][][] table = new int[2][6][64][6][64];
+    int[][][][][] table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
 
     public void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white, boolean good) {
         int current = get(prevMove, prevPiece, currMove, currPiece, white);
@@ -36,7 +37,7 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
     }
 
     public void clear() {
-        table = new int[2][6][64][6][64];
+        table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
     }
 
     @Override

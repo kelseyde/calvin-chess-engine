@@ -27,9 +27,10 @@ import java.util.stream.IntStream;
  */
 public class Engine {
 
-    EngineConfig config;
-    MoveGeneration moveGenerator;
-    Search searcher;
+    final EngineConfig config;
+    final MoveGeneration moveGenerator;
+    final Search searcher;
+
     CompletableFuture<SearchResult> think;
     Board board;
 
@@ -136,10 +137,6 @@ public class Engine {
 
     public EngineConfig getConfig() {
         return config;
-    }
-
-    public MoveGeneration getMoveGenerator() {
-        return moveGenerator;
     }
 
     public Search getSearcher() {

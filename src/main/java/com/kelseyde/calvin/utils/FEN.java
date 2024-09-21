@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.utils;
 
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -46,7 +48,7 @@ public class FEN {
             for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
                 List<String> rank = rankFileHash.get(rankIndex);
                 for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
-                    int square = Board.squareIndex(rankIndex, fileIndex);
+                    int square = Square.of(rankIndex, fileIndex);
                     String squareValue = rank.get(fileIndex);
                     long squareBB = 1L << square;
                     switch (squareValue) {
@@ -111,7 +113,7 @@ public class FEN {
             for (int rank = 7; rank >= 0; rank--) {
                 int emptySquares = 0;
                 for (int file = 0; file < 8; file++) {
-                    int square = Board.squareIndex(rank, file);
+                    int square = Square.of(rank, file);
                     Piece piece = board.pieceAt(square);
                     if (piece != null) {
                         if (emptySquares != 0) {
@@ -212,7 +214,7 @@ public class FEN {
             return -1;
         }
         int square = Notation.fromNotation(enPassantSquare);
-        return Board.file(square);
+        return File.of(square);
     }
 
     private static String toEnPassantSquare(int enPassantFile, boolean white) {
@@ -220,7 +222,7 @@ public class FEN {
         if (enPassantFile == -1) {
             return "-";
         }
-        return Notation.toNotation(Board.squareIndex(rank, enPassantFile));
+        return Notation.toNotation(Square.of(rank, enPassantFile));
     }
 
     private static int parseFiftyMoveCounter(String fiftyMoveCounter) {
@@ -246,8 +248,8 @@ public class FEN {
 
     public static Piece[] calculatePieceList(Board board) {
 
-        Piece[] pieceList = new Piece[64];
-        for (int square = 0; square < 64; square++) {
+        Piece[] pieceList = new Piece[Square.COUNT];
+        for (int square = 0; square < Square.COUNT; square++) {
             long squareMask = 1L << square;
             if ((squareMask & board.getPawns()) != 0)           pieceList[square] = Piece.PAWN;
             else if ((squareMask & board.getKnights()) != 0)    pieceList[square] = Piece.KNIGHT;

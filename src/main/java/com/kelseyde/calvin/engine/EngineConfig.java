@@ -8,38 +8,38 @@ public class EngineConfig {
         postInitialise();
     }
 
-    public int minThreadCount = 1;
-    public int maxThreadCount = 12;
-    public int defaultThreadCount = 1;
+    public final int minThreadCount = 1;
+    public final int maxThreadCount = 12;
+    public final int defaultThreadCount = 1;
 
-    public int minHashSizeMb = 16;
-    public int maxHashSizeMb = 1024;
-    public int defaultHashSizeMb = 256;
+    public final int minHashSizeMb = 16;
+    public final int maxHashSizeMb = 1024;
+    public final int defaultHashSizeMb = 256;
 
     public boolean ponderEnabled = false;
 
     public boolean pondering = false;
     public boolean searchCancelled = false;
 
-    public int aspMargin = 25;
-    public int aspFailMargin = 150;
-    public int aspMaxReduction = 3;
-    public int nmpDepth = 0;
-    public int fpDepth = 6;
-    public int rfpDepth = 5;
-    public int lmrDepth = 2;
-    public float lmrBase = 0.85f;
-    public float lmrDivisor = 3.12f;
-    public int lmrMinSearchedMoves = 3;
-    public int lmpDepth = 2;
-    public int lmpMultiplier = 10;
-    public int iirDepth = 4;
-    public int nmpMargin = 70;
-    public int dpMargin = 140;
-    public int qsFpMargin = 100;
-    public int fpMargin = 275;
-    public int fpScale = 65;
-    public int[] rfpMargin = { 74, 40 };
+    public final int aspMargin = 25;
+    public final int aspFailMargin = 150;
+    public final int aspMaxReduction = 3;
+    public final int nmpDepth = 0;
+    public final int fpDepth = 6;
+    public final int rfpDepth = 5;
+    public final int lmrDepth = 2;
+    public final float lmrBase = 0.85f;
+    public final float lmrDivisor = 3.12f;
+    public final int lmrMinSearchedMoves = 3;
+    public final int lmpDepth = 2;
+    public final int lmpMultiplier = 10;
+    public final int iirDepth = 4;
+    public final int nmpMargin = 70;
+    public final int dpMargin = 140;
+    public final int qsFpMargin = 100;
+    public final int fpMargin = 275;
+    public final int fpScale = 65;
+    public final int[] rfpMargin = { 74, 40 };
     public int[][] lmrReductions;
 
     public void postInitialise() {

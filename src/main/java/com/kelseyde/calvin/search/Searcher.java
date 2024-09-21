@@ -212,8 +212,8 @@ public class Searcher implements Search {
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
         // If we are in check then there if a forcing sequence, so we could benefit from searching one ply deeper to
-        // retrieve a more accurate evaluation. We can skip depth == 1 checks as they are already handled by quiescence.
-        if (inCheck && depth > 1) {
+        // retrieve a more accurate evaluation.
+        if (inCheck) {
             depth++;
         }
 

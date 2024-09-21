@@ -6,9 +6,8 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ public class TranspositionTableTest {
     @BeforeEach
     public void beforeEach() {
         board = Board.from(FEN.STARTPOS);
-        table = new TranspositionTable(TestUtils.PRD_CONFIG.defaultHashSizeMb);
+        table = new TranspositionTable(TestUtils.CONFIG.defaultHashSizeMb);
     }
 
     @Test
@@ -33,7 +32,7 @@ public class TranspositionTableTest {
         int depth = 17;
         int score = 548;
         HashFlag flag = HashFlag.EXACT;
-        Move move = Notation.fromNotation("e4", "e5");
+        Move move = Move.fromUCI("e2e4");
         assertEntry(zobristKey, score, move, flag, depth);
 
     }
@@ -56,7 +55,7 @@ public class TranspositionTableTest {
         int depth = 1;
         int score = 1000000;
         HashFlag flag = HashFlag.UPPER;
-        Move move = Notation.fromNotation("e4", "e5");
+        Move move = Move.fromUCI("e2e4");
         assertEntry(zobristKey, score, move, flag, depth);
     }
 
@@ -67,7 +66,7 @@ public class TranspositionTableTest {
         int depth = 1;
         int score = -1000000;
         HashFlag flag = HashFlag.UPPER;
-        Move move = Notation.fromNotation("e4", "e5");
+        Move move = Move.fromUCI("e2e4");
         assertEntry(zobristKey, score, move, flag, depth);
     }
 
@@ -89,7 +88,7 @@ public class TranspositionTableTest {
         int depth = 256;
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
-        Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
+        Move move = Move.fromUCI("e7e8q");
         assertEntry(zobristKey, score, move, flag, depth);
     }
 
@@ -100,7 +99,7 @@ public class TranspositionTableTest {
         int depth = 256;
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
-        Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
+        Move move = Move.fromUCI("e7e8n");
         HashEntry entry = HashEntry.of(zobristKey, score, 0, move, flag, depth, 0);
 
         Assertions.assertEquals(-789, entry.getScore());
@@ -116,13 +115,13 @@ public class TranspositionTableTest {
         int depth = 256;
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
-        Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
+        Move move = Move.fromUCI("e7e8n");
         HashEntry entry = HashEntry.of(zobristKey, score,  0, move, flag, depth, 0);
 
-        Assertions.assertEquals(Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG), entry.getMove());
+        Assertions.assertEquals(Move.fromUCI("e7e8n"), entry.getMove());
 
-        entry.setMove(Notation.fromNotation("d4", "a1", Move.EN_PASSANT_FLAG));
-        Assertions.assertEquals(Notation.fromNotation("d4", "a1", Move.EN_PASSANT_FLAG), entry.getMove());
+        entry.setMove(Move.fromUCI("e7e8", Move.EN_PASSANT_FLAG));
+        Assertions.assertEquals(Move.fromUCI("e7e8", Move.EN_PASSANT_FLAG), entry.getMove());
     }
 
     @Test
@@ -132,7 +131,7 @@ public class TranspositionTableTest {
         int depth = 256;
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
-        Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
+        Move move = Move.fromUCI("e7e8n");
         HashEntry entry = HashEntry.of(zobristKey, score, 0,  move, flag, depth, 0);
 
         Assertions.assertEquals(0, entry.getGeneration());
@@ -148,7 +147,7 @@ public class TranspositionTableTest {
         int depth = 256;
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
-        Move move = Notation.fromNotation("e4", "e5", Move.PROMOTE_TO_KNIGHT_FLAG);
+        Move move = Move.fromUCI("e7e8n");
         int staticEval = 10;
         HashEntry entry = HashEntry.of(zobristKey, score, staticEval,  move, flag, depth, 0);
 
@@ -166,7 +165,7 @@ public class TranspositionTableTest {
 
         // Do some evaluation on the node at this position.
         HashFlag flag = HashFlag.EXACT;
-        Move bestMove = Notation.fromNotation("g1", "f3");
+        Move bestMove = Move.fromUCI("e2e4");
         int eval = 60;
         int depth = 3;
         int ply = 2;
@@ -186,7 +185,7 @@ public class TranspositionTableTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         flag = HashFlag.UPPER;
-        bestMove = Notation.fromNotation("g8", "f6");
+        bestMove = Move.fromUCI("e2e4");
         eval = 28666;
         depth = 256;
         table.put(board.getState().getKey(), flag, depth, ply + 1, bestMove, 0,  eval);
@@ -223,7 +222,7 @@ public class TranspositionTableTest {
 
         // Do some evaluation on the node at this position.
         HashFlag flag = HashFlag.EXACT;
-        Move bestMove = Notation.fromNotation("g1", "f3");
+        Move bestMove = Move.fromUCI("e2e4");
         int eval = 60;
         int depth = 3;
         int ply = 25;
@@ -253,7 +252,7 @@ public class TranspositionTableTest {
 
         long zobrist = board.getState().getKey();
         HashFlag flag = HashFlag.EXACT;
-        Move bestMove = Notation.fromNotation("g1", "f3", Move.PROMOTE_TO_BISHOP_FLAG);
+        Move bestMove = Move.fromUCI("e7e8b");
         int eval = 60;
         int depth = 3;
         int ply = 255;
@@ -279,7 +278,7 @@ public class TranspositionTableTest {
     public void testStoreCheckmateAtRoot() {
 
         HashFlag flag = HashFlag.EXACT;
-        Move bestMove = Notation.fromNotation("g1", "f3", Move.PROMOTE_TO_QUEEN_FLAG);
+        Move bestMove = Move.fromUCI("e7e8b");
         int plyRemaining = 10;
         int plyFromRoot = 0;
 
@@ -297,7 +296,7 @@ public class TranspositionTableTest {
     public void testStoreCheckmateAtRootPlusOne() {
 
         HashFlag flag = HashFlag.EXACT;
-        Move bestMove = Notation.fromNotation("g1", "f3", Move.PROMOTE_TO_QUEEN_FLAG);
+        Move bestMove = Move.fromUCI("e7e8b");
         int plyRemaining = 10;
         int plyFromRoot = 1;
 
@@ -316,7 +315,7 @@ public class TranspositionTableTest {
 
         long zobrist = board.getState().getKey();
         HashFlag flag = HashFlag.EXACT;
-        Move bestMove = Notation.fromNotation("g1", "f3", Move.PROMOTE_TO_QUEEN_FLAG);
+        Move bestMove = Move.fromUCI("e7e8b");
         int eval = 1000000;
         int plyRemaining = 10;
         int plyFromRoot = 5;
@@ -336,7 +335,7 @@ public class TranspositionTableTest {
 
         long zobrist = board.getState().getKey();
         HashFlag flag = HashFlag.EXACT;
-        Move bestMove = Notation.fromNotation("e2", "e4");
+        Move bestMove = Move.fromUCI("e2e4");
         int eval = 60;
         int plyFromRoot = 0;
         int plyRemaining = 12;
@@ -346,10 +345,10 @@ public class TranspositionTableTest {
         flag = HashFlag.UPPER;
         eval = 70;
         plyRemaining = 11;
-        bestMove = Notation.fromNotation("d2", "d4");
+        bestMove = Move.fromUCI("e2e4");
         table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
 
-        assertEntry(zobrist, 60, Notation.fromNotation("e2", "e4"), HashFlag.EXACT, 12);
+        assertEntry(zobrist, 60, Move.fromUCI("e2e4"), HashFlag.EXACT, 12);
 
     }
 
@@ -358,7 +357,7 @@ public class TranspositionTableTest {
 
         long zobrist = board.getState().getKey();
         HashFlag flag = HashFlag.EXACT;
-        Move bestMove = Notation.fromNotation("e2", "e4");
+        Move bestMove = Move.fromUCI("e2e4");
         int eval = 60;
         int plyFromRoot = 0;
         int plyRemaining = 12;
@@ -368,7 +367,7 @@ public class TranspositionTableTest {
         flag = HashFlag.UPPER;
         eval = 70;
         plyRemaining = 13;
-        bestMove = Notation.fromNotation("d2", "d4");
+        bestMove = Move.fromUCI("e2e4");
         table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
 
         assertEntry(zobrist, 60, bestMove, flag, 13);

@@ -3,8 +3,8 @@ package com.kelseyde.calvin.search.picker;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.movegen.MoveGeneration;
-import com.kelseyde.calvin.movegen.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
@@ -25,7 +25,7 @@ public class MovePicker {
         END
     }
 
-    final MoveGeneration movegen;
+    final MoveGenerator movegen;
     final SearchHistory history;
     final SearchStack ss;
 
@@ -41,7 +41,7 @@ public class MovePicker {
     ScoredMove[] moves;
 
     public MovePicker(
-            MoveGeneration movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;
@@ -58,8 +58,8 @@ public class MovePicker {
         while (nextMove == null) {
             nextMove = switch (stage) {
                 case TT_MOVE -> pickTTMove();
-                case NOISY -> pickMove(MoveFilter.NOISY, Stage.QUIET);
-                case QUIET -> pickMove(MoveFilter.QUIET, Stage.END);
+                case NOISY -> pickMove(MoveGenerator.MoveFilter.NOISY, Stage.QUIET);
+                case QUIET -> pickMove(MoveGenerator.MoveFilter.QUIET, Stage.END);
                 case END -> null;
             };
             if (stage == Stage.END) break;

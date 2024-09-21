@@ -3,8 +3,7 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -39,7 +38,7 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        Move move = Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG);
+        Move move = Move.fromUCI("e1g1", Move.CASTLE_FLAG);
         nnue.makeMove(board, move);
         board.makeMove(move);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
@@ -56,7 +55,7 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        Move move = Notation.fromNotation("e1", "c1", Move.CASTLE_FLAG);
+        Move move = Move.fromUCI("e1c1", Move.CASTLE_FLAG);
         nnue.makeMove(board, move);
         board.makeMove(move);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
@@ -73,7 +72,7 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        Move move = Notation.fromNotation("e8", "g8", Move.CASTLE_FLAG);
+        Move move = Move.fromUCI("e8g8", Move.CASTLE_FLAG);
         nnue.makeMove(board, move);
         board.makeMove(move);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
@@ -90,7 +89,7 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        Move move = Notation.fromNotation("e8", "c8", Move.CASTLE_FLAG);
+        Move move = Move.fromUCI("e8c8", Move.CASTLE_FLAG);
         nnue.makeMove(board, move);
         board.makeMove(move);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
@@ -107,7 +106,7 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        Move move = Notation.fromNotation("e4", "d5");
+        Move move = Move.fromUCI("e4d5");
         nnue.makeMove(board, move);
         board.makeMove(move);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
@@ -124,7 +123,7 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        Move move = Notation.fromNotation("e5", "d6", Move.EN_PASSANT_FLAG);
+        Move move = Move.fromUCI("e5d6", Move.EN_PASSANT_FLAG);
         nnue.makeMove(board, move);
         board.makeMove(move);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
@@ -141,7 +140,7 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        Move move = Notation.fromNotation("b7", "a8", Move.PROMOTE_TO_QUEEN_FLAG);
+        Move move = Move.fromUCI("b7a8", Move.PROMOTE_TO_QUEEN_FLAG);
         nnue.makeMove(board, move);
         board.makeMove(move);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());

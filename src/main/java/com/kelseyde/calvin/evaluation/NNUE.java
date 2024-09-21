@@ -6,11 +6,15 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.engine.EngineInitializer;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -35,7 +39,7 @@ public class NNUE implements Evaluation {
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 384;
 
-        public static final Network NETWORK = EngineInitializer.loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
+        public static final Network NETWORK = loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
 
     }
 
@@ -220,6 +224,51 @@ public class NNUE implements Evaluation {
     public void clearHistory() {
         this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
         this.accumulatorHistory.clear();
+    }
+
+    public static NNUE.Network loadNetwork(String file, int inputSize, int hiddenSize) {
+        try {
+            InputStream inputStream = NNUE.Network.class.getClassLoader().getResourceAsStream(file);
+            if (inputStream == null) {
+                throw new FileNotFoundException("NNUE file not found in resources");
+            }
+
+            byte[] fileBytes = inputStream.readAllBytes();
+            inputStream.close();
+            ByteBuffer buffer = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN);
+
+            int inputWeightsOffset = inputSize * hiddenSize;
+            int inputBiasesOffset = hiddenSize;
+            int outputWeightsOffset = hiddenSize * 2;
+
+            short[] inputWeights = new short[inputWeightsOffset];
+            short[] inputBiases = new short[inputBiasesOffset];
+            short[] outputWeights = new short[outputWeightsOffset];
+
+            for (int i = 0; i < inputWeightsOffset; i++) {
+                inputWeights[i] = buffer.getShort();
+            }
+
+            for (int i = 0; i < inputBiasesOffset; i++) {
+                inputBiases[i] = buffer.getShort();
+            }
+
+            for (int i = 0; i < outputWeightsOffset; i++) {
+                outputWeights[i] = buffer.getShort();
+            }
+
+            short outputBias = buffer.getShort();
+
+            while (buffer.hasRemaining()) {
+                if (buffer.getShort() != 0) {
+                    throw new RuntimeException("Failed to load NNUE network: invalid file format");
+                }
+            }
+
+            return new NNUE.Network(inputWeights, inputBiases, outputWeights, outputBias);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load NNUE network", e);
+        }
     }
 
 }

@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.PGN;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

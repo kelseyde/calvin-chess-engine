@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

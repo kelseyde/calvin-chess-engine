@@ -3,7 +3,7 @@ package com.kelseyde.calvin.board;
 import com.kelseyde.calvin.board.Bits.Castling;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
-import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;

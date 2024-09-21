@@ -1,10 +1,11 @@
 package com.kelseyde.calvin.search.moveordering;
 
-import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.generation.MoveGenerator;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 
 /**
  * SEE, or 'Static Exchange Evaluation' function, calculates the change in material balance after a series of exchanges
@@ -22,10 +23,10 @@ public class SEE {
 
     public static boolean see(Board board, Move move, int threshold) {
 
-        boolean white = board.isWhiteToMove();
-        int from = move.getFrom();
-        int to = move.getTo();
-        Piece nextVictim = move.isPromotion() ? move.getPromotionPiece() : board.pieceAt(from);
+        boolean white = board.isWhite();
+        int from = move.from();
+        int to = move.to();
+        Piece nextVictim = move.isPromotion() ? move.promoPiece() : board.pieceAt(from);
         if (nextVictim == null)
             throw new IllegalArgumentException("SEE called with an illegal move");
         int score = moveScore(board, move) - threshold;
@@ -33,7 +34,7 @@ public class SEE {
         if (score < 0)
             return false;
 
-        score -= nextVictim.getValue();
+        score -= nextVictim.value();
 
         if (score >= 0)
             return true;
@@ -44,7 +45,7 @@ public class SEE {
         long occ = board.getOccupied();
         occ = (occ ^ (1L << from)) | (1L << to);
         if (move.isEnPassant()) {
-            int epFile = board.getGameState().getEnPassantFile();
+            int epFile = board.getState().getEnPassantFile();
             int epSquare = toEnPassantSquare(epFile, white);
             occ &= ~(1L << epSquare);
         }
@@ -60,10 +61,10 @@ public class SEE {
             }
             nextVictim = getLeastValuableAttacker(board, friendlyAttackers, white, bishops, rooks);
             long pieces = board.getPieces(nextVictim, white);
-            occ ^= 1L << Bitwise.getNextBit(friendlyAttackers & pieces);
+            occ ^= 1L << Bits.next(friendlyAttackers & pieces);
             attackers &= occ;
             white = !white;
-            score = -score - 1 - nextVictim.getValue();
+            score = -score - 1 - nextVictim.value();
             if (score >= 0) {
                 if (nextVictim == Piece.KING & (attackers & board.getPieces(white)) != 0) {
                     white = !white;
@@ -72,21 +73,21 @@ public class SEE {
             }
         }
 
-        return board.isWhiteToMove() != white;
+        return board.isWhite() != white;
 
     }
 
     public static int moveScore(Board board, Move move) {
 
         if (move.isPromotion()) {
-            return move.getPromotionPiece().getValue() - Piece.PAWN.getValue();
+            return move.promoPiece().value() - Piece.PAWN.value();
         }
         else if (move.isEnPassant()) {
-            return Piece.PAWN.getValue();
+            return Piece.PAWN.value();
         }
         else {
-            Piece targetPiece = board.pieceAt(move.getTo());
-            return targetPiece != null ? targetPiece.getValue() : 0;
+            Piece targetPiece = board.pieceAt(move.to());
+            return targetPiece != null ? targetPiece.value() : 0;
         }
 
     }
@@ -118,7 +119,7 @@ public class SEE {
         if (enPassantFile == -1) {
             return -1;
         }
-        return Board.squareIndex(rank, enPassantFile);
+        return Square.of(rank, enPassantFile);
     }
 
 }

@@ -103,6 +103,7 @@ public class Bits {
         public static String toFileNotation(int sq) {
             return FILE_CHAR_MAP.get(of(sq));
         }
+
     }
 
     public static class Rank {
@@ -127,6 +128,7 @@ public class Bits {
         public static String toRankNotation(int sq) {
             return RANK_CHAR_MAP.get(of(sq));
         }
+
     }
 
     public static class Ray {

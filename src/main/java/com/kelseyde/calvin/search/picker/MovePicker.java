@@ -3,12 +3,11 @@ package com.kelseyde.calvin.search.picker;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.generation.MoveGeneration.MoveFilter;
+import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
-import lombok.Data;
 
 import java.util.List;
 
@@ -17,7 +16,6 @@ import java.util.List;
  * transposition table is tried before any moves are generated. Then, all the 'noisy' moves are tried (captures,
  * checks and promotions). Finally, we generate the remaining quiet moves.
  */
-@Data
 public class MovePicker {
 
     public enum Stage {
@@ -27,15 +25,15 @@ public class MovePicker {
         END
     }
 
-    final MoveGeneration movegen;
+    final MoveGenerator movegen;
     final SearchHistory history;
     final SearchStack ss;
 
+    final Move ttMove;
     final Board board;
     final int ply;
 
     Stage stage;
-    Move ttMove;
     boolean skipQuiets;
     boolean inCheck;
 
@@ -43,7 +41,7 @@ public class MovePicker {
     ScoredMove[] moves;
 
     public MovePicker(
-            MoveGeneration movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;
@@ -60,8 +58,8 @@ public class MovePicker {
         while (nextMove == null) {
             nextMove = switch (stage) {
                 case TT_MOVE -> pickTTMove();
-                case NOISY -> pickMove(MoveFilter.NOISY, Stage.QUIET);
-                case QUIET -> pickMove(MoveFilter.QUIET, Stage.END);
+                case NOISY -> pickMove(MoveGenerator.MoveFilter.NOISY, Stage.QUIET);
+                case QUIET -> pickMove(MoveGenerator.MoveFilter.QUIET, Stage.END);
                 case END -> null;
             };
             if (stage == Stage.END) break;
@@ -122,8 +120,8 @@ public class MovePicker {
 
     protected int scoreMove(Board board, Move move, Move ttMove, int ply) {
 
-        int startSquare = move.getFrom();
-        int endSquare = move.getTo();
+        int from = move.from();
+        int to = move.to();
 
         if (move.equals(ttMove)) {
             return MoveBonus.TT_MOVE_BONUS;
@@ -132,9 +130,9 @@ public class MovePicker {
             return scorePromotion(move);
         }
 
-        Piece captured = board.pieceAt(endSquare);
+        Piece captured = board.pieceAt(to);
         if (captured != null) {
-            return scoreCapture(board, startSquare, endSquare, captured);
+            return scoreCapture(board, from, to, captured);
         }
         else {
             return scoreQuiet(board, move, ply);
@@ -147,42 +145,51 @@ public class MovePicker {
         int captureScore = 0;
 
         // Separate captures into winning and losing
-        int materialDelta = captured.getValue() - piece.getValue();
+        int materialDelta = captured.value() - piece.value();
         captureScore += materialDelta >= 0 ? MoveBonus.WINNING_CAPTURE_BONUS : MoveBonus.LOSING_CAPTURE_BONUS;
 
         // Add MVV score to the capture score
-        captureScore += MoveBonus.MVV_OFFSET * captured.getIndex();
+        captureScore += MoveBonus.MVV_OFFSET * captured.index();
 
         // Tie-break with capture history
-        captureScore += history.getCaptureHistoryTable().get(piece, to, captured, board.isWhiteToMove());
+        captureScore += history.getCaptureHistoryTable().get(piece, to, captured, board.isWhite());
 
         return captureScore;
     }
 
     protected int scoreQuiet(Board board, Move move, int ply) {
-        boolean white = board.isWhiteToMove();
-        Piece piece = board.pieceAt(move.getFrom());
+        boolean white = board.isWhite();
+        Piece piece = board.pieceAt(move.from());
+
+        // Check if the move is a killer move
         int killerIndex = history.getKillerTable().getIndex(move, ply);
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
+
+        // Get the history score for the move
         int historyScore = history.getHistoryTable().get(move, white);
+
+        // Get the continuation history score for the move
         Move prevMove = ss.getMove(ply - 1);
         Piece prevPiece = ss.getMovedPiece(ply - 1);
-        //int contHistScore = history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
+        int contHistScore = history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
 
+        Move prevMove2 = ss.getMove(ply - 2);
+        Piece prevPiece2 = ss.getMovedPiece(ply - 2);
+        contHistScore += history.getContHistTable().get(prevMove2, prevPiece2, move, piece, white);
+
+        // Killers are ordered higher than normal history moves
         int base = 0;
-        if (killerScore > 0) {
+        if (killerScore != 0) {
             base = MoveBonus.KILLER_MOVE_BONUS;
-        //} else if (historyScore > 0 || contHistScore > 0) {
-        } else if (historyScore > 0) {
+        } else if (historyScore != 0 || contHistScore != 0) {
             base = MoveBonus.QUIET_MOVE_BONUS;
         }
 
-        //return base + killerScore + historyScore + contHistScore;
-        return base + killerScore + historyScore;
+        return base + killerScore + historyScore + contHistScore;
     }
 
     protected int scorePromotion(Move move) {
-        return move.getPromotionPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
+        return move.promoPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
     }
 
     /**
@@ -201,6 +208,10 @@ public class MovePicker {
         ScoredMove temp = moves[i];
         moves[i] = moves[j];
         moves[j] = temp;
+    }
+
+    public void setSkipQuiets(boolean skipQuiets) {
+        this.skipQuiets = skipQuiets;
     }
 
     public record ScoredMove(Move move, int score) {}

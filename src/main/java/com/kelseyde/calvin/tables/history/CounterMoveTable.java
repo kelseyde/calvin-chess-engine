@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.tables.history;
 
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 
@@ -15,31 +16,28 @@ import com.kelseyde.calvin.board.Piece;
  */
 public class CounterMoveTable {
 
-    private static final int COLOUR_STRIDE = 6;
-
-    // Table indexed by [piece][to]
-    private Move[][] table = new Move[12][64];
+    private Move[][] table = new Move[Piece.COUNT * 2][Square.COUNT];
     
     public boolean isCounterMove(Piece prevPiece, Move prevMove, boolean white, Move move) {
         if (prevPiece == null || prevMove == null) return false;
-        int pieceIndex = prevPiece.getIndex() + (white ? 0 : COLOUR_STRIDE);
-        Move counterMove = table[pieceIndex][prevMove.getTo()];
+        int pieceIndex = prevPiece.index() + (white ? 0 : Piece.COUNT);
+        Move counterMove = table[pieceIndex][prevMove.to()];
         return counterMove != null && counterMove.equals(move);
     }
 
     public void add(Piece prevPiece, Move prevMove, boolean white, Move move) {
         if (prevPiece == null || prevMove == null) return;
-        int pieceIndex = prevPiece.getIndex() + (white ? 0 : COLOUR_STRIDE);
-        table[pieceIndex][prevMove.getTo()] = move;
+        int pieceIndex = prevPiece.index() + (white ? 0 : Piece.COUNT);
+        table[pieceIndex][prevMove.to()] = move;
     }
 
     public Move get(Piece piece, int to, boolean white) {
-        int pieceIndex = piece.getIndex() + (white ? 0 : COLOUR_STRIDE);
+        int pieceIndex = piece.index() + (white ? 0 : Piece.COUNT);
         return table[pieceIndex][to];
     }
 
     public void clear() {
-        table = new Move[12][64];
+        table = new Move[Piece.COUNT * 2][Square.COUNT];
     }
 
 }

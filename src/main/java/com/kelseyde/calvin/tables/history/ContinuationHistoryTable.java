@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.tables.history;
 
-import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 
@@ -9,7 +10,7 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;
 
-    int[][][][][] table = new int[2][6][64][6][64];
+    int[][][][][] table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
 
     public void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white, boolean good) {
         int current = get(prevMove, prevPiece, currMove, currPiece, white);
@@ -23,20 +24,20 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
         if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
             return 0;
         }
-        int colourIndex = Board.colourIndex(white);
-        return table[colourIndex][prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()];
+        int colourIndex = Colour.index(white);
+        return table[colourIndex][prevPiece.index()][prevMove.to()][currPiece.index()][currMove.to()];
     }
 
     public void set(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int update, boolean white) {
         if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
             return;
         }
-        int colourIndex = Board.colourIndex(white);
-        table[colourIndex][prevPiece.getIndex()][prevMove.getTo()][currPiece.getIndex()][currMove.getTo()] = update;
+        int colourIndex = Colour.index(white);
+        table[colourIndex][prevPiece.index()][prevMove.to()][currPiece.index()][currMove.to()] = update;
     }
 
     public void clear() {
-        table = new int[2][6][64][6][64];
+        table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
     }
 
     @Override

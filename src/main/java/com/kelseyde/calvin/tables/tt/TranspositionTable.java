@@ -2,8 +2,6 @@ package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.evaluation.Score;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 
 /**
  * The transposition table is a database that stores the results of previously searched positions, as well as relevant
@@ -16,15 +14,14 @@ import lombok.experimental.FieldDefaults;
  * </p>
  * @see <a href="https://www.chessprogramming.org/Transposition_Table">Chess Programming Wiki</a>
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TranspositionTable {
 
-    int tableSize;
-    HashEntry[] entries;
+    private int tableSize;
+    private HashEntry[] entries;
 
-    int tries;
-    int hits;
-    int generation;
+    private int tries;
+    private int hits;
+    private int generation;
 
     /**
      * Constructs a transposition table of the given size in megabytes.
@@ -135,7 +132,7 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            entries[replacedIndex] = HashEntry.of(zobristKey, score, staticEval, move, flag, depth, generation);;
+            entries[replacedIndex] = HashEntry.of(zobristKey, score, staticEval, move, flag, depth, generation);
         }
     }
 

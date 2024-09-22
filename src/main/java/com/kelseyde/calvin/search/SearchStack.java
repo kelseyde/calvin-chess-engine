@@ -2,8 +2,6 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
 public class SearchStack {
 
@@ -89,14 +87,8 @@ public class SearchStack {
         public boolean nullMoveAllowed = true;
     }
 
-    @Data
-    @AllArgsConstructor
-    public static class PlayedMove {
-        private Move move;
-        private Piece piece;
-        private Piece captured;
-        private boolean capture;
-        private boolean quiet;
+    public record PlayedMove(Move move, Piece piece, Piece captured, boolean isCapture, boolean isQuiet) {
+
     }
 
 }

@@ -1,8 +1,10 @@
 package com.kelseyde.calvin.movegen;
 
 import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bits.*;
-import com.kelseyde.calvin.board.Bits.Pin.PinData;
+import com.kelseyde.calvin.board.Bits.Castling;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Ray;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 
@@ -20,7 +22,7 @@ public class MoveGenerator {
     private int checkersCount;
     private long checkersMask;
     private long pinMask;
-    private long[] pinRayMasks;
+    private final long[] pinRayMasks = new long[64];
     private long captureMask;
     private long pushMask;
     private MoveFilter filter;
@@ -54,9 +56,7 @@ public class MoveGenerator {
         pushMask = Square.ALL;
 
         // Calculate pins and checks
-        final PinData pinData = Pin.calculatePins(board, white);
-        pinMask = pinData.pinMask;
-        pinRayMasks = pinData.pinRayMasks;
+        calculatePins(board, white);
         checkersMask = calculateAttackerMask(board, 1L << kingSquare);
         checkersCount = Bits.count(checkersMask);
 
@@ -544,6 +544,50 @@ public class MoveGenerator {
         return false;
     }
 
+    public void calculatePins(Board board, boolean white) {
+        this.pinMask = 0L;
+
+        int kingSquare = Bits.next(board.getKing(white));
+        long friendlies = board.getPieces(white);
+        long opponents = board.getPieces(!white);
+
+        long possiblePinners = 0L;
+
+        // Calculate possible orthogonal pins
+        long orthogonalSliders = board.getRooks(!white) | board.getQueens(!white);
+        if (orthogonalSliders != 0) {
+            possiblePinners |= Attacks.rookAttacks(kingSquare, 0) & orthogonalSliders;
+        }
+
+        // Calculate possible diagonal pins
+        long diagonalSliders = board.getBishops(!white) | board.getQueens(!white);
+        if (diagonalSliders != 0) {
+            possiblePinners |= Attacks.bishopAttacks(kingSquare, 0) & diagonalSliders;
+        }
+
+        while (possiblePinners != 0) {
+            int possiblePinner = Bits.next(possiblePinners);
+            long ray = Ray.between(kingSquare, possiblePinner);
+
+            // Skip if there are opponents between the king and the possible pinner
+            if ((ray & opponents) != 0) {
+                possiblePinners = Bits.pop(possiblePinners);
+                continue;
+            }
+
+            long friendliesBetween = ray & friendlies;
+            // If there is exactly one friendly piece between the king and the pinner, it's pinned
+            if (Bits.count(friendliesBetween) == 1) {
+                int friendlySquare = Bits.next(friendliesBetween);
+                this.pinMask |= friendliesBetween;
+                this.pinRayMasks[friendlySquare] = ray | (1L << possiblePinner);
+            }
+
+            possiblePinners = Bits.pop(possiblePinners);
+        }
+
+    }
+
     private List<Move> getPromotionMoves(int from, int to) {
         return List.of(new Move(from, to, Move.PROMOTE_TO_QUEEN_FLAG),
                         new Move(from, to, Move.PROMOTE_TO_ROOK_FLAG),
@@ -582,6 +626,14 @@ public class MoveGenerator {
     private int getCastleEndSquare(boolean white, boolean isKingside) {
         if (isKingside) return white ? 6 : 62;
         else return white ? 2 : 58;
+    }
+
+    public long[] getPinRayMasks() {
+        return pinRayMasks;
+    }
+
+    public long getPinMask() {
+        return pinMask;
     }
 
     /**

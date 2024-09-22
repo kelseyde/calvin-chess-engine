@@ -20,8 +20,8 @@
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [ ] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
-- [ ] 1-ply Conthist
-- [ ] 2-ply Conthist
+- [x] 1-ply Conthist
+- [x] 2-ply Conthist
 - [x] Capthist
 - [ ] Threats
 - [ ] Countermoves

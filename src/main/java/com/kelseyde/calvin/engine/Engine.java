@@ -2,22 +2,15 @@ package com.kelseyde.calvin.engine;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.endgame.Tablebase;
-import com.kelseyde.calvin.endgame.TablebaseException;
-import com.kelseyde.calvin.generation.MoveGeneration;
-import com.kelseyde.calvin.generation.MoveGenerator;
-import com.kelseyde.calvin.opening.OpeningBook;
+import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -31,24 +24,20 @@ import java.util.stream.IntStream;
  * (executes a search) to find the best move. It can also select how long to think for in the case of a time-controlled
  * game, or it can 'ponder' (think indefinitely when it is the opponent's turn).
  */
-@Data
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Engine {
 
-    EngineConfig config;
-    OpeningBook book;
-    Tablebase tablebase;
-    MoveGeneration moveGenerator;
-    Search searcher;
+    final EngineConfig config;
+    final MoveGenerator moveGenerator;
+    final Search searcher;
+
     CompletableFuture<SearchResult> think;
     Board board;
 
-    public Engine(EngineConfig config, OpeningBook book, Tablebase tablebase, Search searcher) {
-        this.config = config;
-        this.book = book;
-        this.tablebase = tablebase;
-        this.searcher = searcher;
+    public Engine() {
+        this.config = new EngineConfig();
+        this.board = Board.from(FEN.STARTPOS);
         this.moveGenerator = new MoveGenerator();
+        this.searcher = new ParallelSearcher(config, new TranspositionTable(config.defaultHashSizeMb));
     }
 
     public void newGame() {
@@ -77,49 +66,22 @@ public class Engine {
         this.searcher.setThreadCount(threadCount);
     }
 
-    public void setOwnBookEnabled(boolean ownBookEnabled) {
-        this.config.setOwnBookEnabled(ownBookEnabled);
-    }
-
-    public void setOwnTablebaseEnabled(boolean ownTablebaseEnabled) {
-        this.config.setOwnTablebaseEnabled(ownTablebaseEnabled);
-    }
-
     public void setPonderEnabled(boolean ponderEnabled) {
-        this.config.setPonderEnabled(ponderEnabled);
+        this.config.ponderEnabled = ponderEnabled;
     }
 
     public void setSearchCancelled(boolean cancelled) {
-        this.config.setSearchCancelled(cancelled);
+        this.config.searchCancelled = cancelled;
     }
 
     public void setPondering(boolean pondering) {
-        this.config.setPondering(pondering);
+        this.config.pondering = pondering;
     }
 
     public void findBestMove(TimeControl tc, Consumer<SearchResult> onThinkComplete) {
-
-        if (useOpeningBook()) {
-            // If we are in the opening and book is enabled, select a move from the opening book
-            Move bookMove = book.getBookMove(board);
-            onThinkComplete.accept(new SearchResult(0, move(bookMove), 0, 0, 0, 0));
-        }
-        else if (useEndgameTablebase(tc)) {
-            // If we are in the endgame and tablebase is enabled, select a move from the tablebase probe
-            try {
-                Move tablebaseMove = tablebase.getTablebaseMove(board);
-                onThinkComplete.accept(new SearchResult(0, move(tablebaseMove), 0, 0, 0, 0));
-            } catch (TablebaseException e) {
-                // In case tablebase probe fails, search manually
-                System.out.println("error probing tablebase: " + e.getMessage());
-                startThinking(tc, onThinkComplete);
-            }
-        }
-        else {
-            // Otherwise, search for the best move.
-            startThinking(tc, onThinkComplete);
-        }
-
+        stopThinking();
+        think = CompletableFuture.supplyAsync(() -> think(tc));
+        think.thenAccept(onThinkComplete);
     }
 
     public SearchResult think(int timeout) {
@@ -133,12 +95,6 @@ public class Engine {
 
     public boolean isThinking() {
         return think != null && !think.isDone();
-    }
-
-    public void startThinking(TimeControl tc, Consumer<SearchResult> onThinkComplete) {
-        stopThinking();
-        think = CompletableFuture.supplyAsync(() -> think(tc));
-        think.thenAccept(onThinkComplete);
     }
 
     public void stopThinking() {
@@ -179,17 +135,16 @@ public class Engine {
         return principalVariation;
     }
 
-    private boolean useOpeningBook() {
-        long key = board.getState().getKey();
-        int moveCount = board.getMoves().size();
-        return config.isOwnBookEnabled() && moveCount < config.getOwnBookMaxMoves() && book.hasBookMove(key);
+    public EngineConfig getConfig() {
+        return config;
     }
 
-    private boolean useEndgameTablebase(TimeControl tc) {
-        return !config.isPondering()
-                && config.isOwnTablebaseEnabled()
-                && board.countPieces() <= config.getMaxTablebaseSupportedPieces()
-                && tablebase.canProbeTablebase(tc.hardTime());
+    public Search getSearcher() {
+        return searcher;
+    }
+
+    public Board getBoard() {
+        return board;
     }
 
     /**
@@ -200,7 +155,7 @@ public class Engine {
         return moveGenerator.generateMoves(board).stream()
                 .filter(move::matches)
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Notation.toNotation(move)));
+                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Move.toUCI(move)));
     }
 
 }

@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.tables.history;
 
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 
@@ -8,7 +9,7 @@ public class HistoryTable extends AbstractHistoryTable {
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;
 
-    int[][][] table = new int[2][64][64];
+    int[][][] table = new int[2][Square.COUNT][Square.COUNT];
 
     public void update(Move move, int depth, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
@@ -35,31 +36,17 @@ public class HistoryTable extends AbstractHistoryTable {
         table[colourIndex][from][to] = update;
     }
 
-    public void add(int depth, Move historyMove, boolean white) {
-        int current = get(historyMove, white);
-        int bonus = bonus(depth);
-        int update = gravity(current, bonus);
-        set(historyMove, white, update);
-    }
-
-    public void sub(int depth, Move historyMove, boolean white) {
-        int current = get(historyMove, white);
-        int bonus = bonus(depth);
-        int update = gravity(current, -bonus);
-        set(historyMove, white, update);
-    }
-
     public void ageScores(boolean white) {
         int colourIndex = Colour.index(white);
-        for (int from = 0; from < 64; from++) {
-            for (int to = 0; to < 64; to++) {
+        for (int from = 0; from < Square.COUNT; from++) {
+            for (int to = 0; to < Square.COUNT; to++) {
                 table[colourIndex][from][to] /= 2;
             }
         }
     }
 
     public void clear() {
-        table = new int[2][64][64];
+        table = new int[2][Square.COUNT][Square.COUNT];
     }
 
     @Override

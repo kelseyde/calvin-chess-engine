@@ -3,7 +3,6 @@ package com.kelseyde.calvin.uci;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
@@ -12,8 +11,7 @@ import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.Bench;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
 import java.util.Arrays;
@@ -28,11 +26,13 @@ import java.util.stream.Collectors;
  */
 public class UCI {
 
-    public static final Engine ENGINE = EngineInitializer.loadEngine();
+    public static final Engine ENGINE = new Engine();
     static final Scanner READER = new Scanner(System.in);
     public static boolean outputEnabled = true;
 
     public static void run(String[] args) {
+
+        write("Calvin by Dan Kelsey");
 
         if (args.length == 1 && args[0].equals("bench")) {
             Bench.run();
@@ -57,12 +57,10 @@ public class UCI {
         write("id author Dan Kelsey");
         EngineConfig config = ENGINE.getConfig();
         write(String.format("option name Hash type spin default %s min %s max %s",
-                config.getDefaultHashSizeMb(), config.getMinHashSizeMb(), config.getMaxHashSizeMb()));
+                config.defaultHashSizeMb, config.minHashSizeMb, config.maxHashSizeMb));
         write(String.format("option name Threads type spin default %s min %s max %s",
-                config.getDefaultThreadCount(), config.getMinThreadCount(), config.getMaxThreadCount()));
-        write(String.format("option name OwnBook type check default %s", config.isOwnBookEnabled()));
-        write(String.format("option name OwnTablebase type check default %s", config.isOwnTablebaseEnabled()));
-        write(String.format("option name Ponder type check default %s", config.isPonderEnabled()));
+                config.defaultThreadCount, config.minThreadCount, config.maxThreadCount));
+        write(String.format("option name Ponder type check default %s", config.ponderEnabled));
         write("uciok");
     }
 
@@ -72,6 +70,7 @@ public class UCI {
 
     public static void handleNewGame(UCICommand command) {
         ENGINE.gameOver();
+        System.gc();
         ENGINE.newGame();
     }
 
@@ -102,8 +101,6 @@ public class UCI {
         switch (optionType) {
             case "Hash":          setHashSize(command); break;
             case "Threads":       setThreadCount(command); break;
-            case "OwnBook":       setOwnBook(command); break;
-            case "OwnTablebase":  setOwnTablebase(command); break;
             case "Ponder":        setPonder(command); break;
             default:              write("unrecognised option name " + optionType);
         }
@@ -188,7 +185,7 @@ public class UCI {
         int nodes = searchResult.nodes();
         long nps = searchResult.nps();
         String pv = ENGINE.extractPrincipalVariation().stream()
-                .map(Notation::toNotation).collect(Collectors.joining(" "));
+                .map(Move::toUCI).collect(Collectors.joining(" "));
         write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
     }
 
@@ -204,18 +201,19 @@ public class UCI {
 
     public static void writeMove(SearchResult searchResult) {
         Move move = searchResult.move();
-        Move ponderMove = ENGINE.extractPonderMove(move);
-        boolean ponder = ENGINE.getConfig().isPonderEnabled() && ponderMove != null;
-        String message = ponder ?
-                String.format("bestmove %s ponder %s", Notation.toNotation(move), Notation.toNotation(ponderMove)) :
-                String.format("bestmove %s", Notation.toNotation(move));
-        write(message);
+        boolean ponderEnabled = ENGINE.getConfig().ponderEnabled;
+        if (ponderEnabled && move != null) {
+            Move ponderMove = ENGINE.extractPonderMove(move);
+            write(String.format("bestmove %s ponder %s", Move.toUCI(move), Move.toUCI(ponderMove)));
+        } else {
+            write(String.format("bestmove %s", Move.toUCI(move)));
+        }
     }
 
     private static void setHashSize(UCICommand command) {
         int hashSizeMb = command.getInt("value", -1, true);
-        int minHashSizeMb = ENGINE.getConfig().getMinHashSizeMb();
-        int maxHashSizeMb = ENGINE.getConfig().getMaxHashSizeMb();
+        int minHashSizeMb = ENGINE.getConfig().minHashSizeMb;
+        int maxHashSizeMb = ENGINE.getConfig().maxHashSizeMb;
         if (hashSizeMb >= minHashSizeMb && hashSizeMb <= maxHashSizeMb) {
             ENGINE.setHashSize(hashSizeMb);
             write("info string Hash " + hashSizeMb);
@@ -226,26 +224,14 @@ public class UCI {
 
     private static void setThreadCount(UCICommand command) {
         int threadCount = command.getInt("value", -1, true);
-        int minThreadCount = ENGINE.getConfig().getMinThreadCount();
-        int maxThreadCount = ENGINE.getConfig().getMaxThreadCount();
+        int minThreadCount = ENGINE.getConfig().minThreadCount;
+        int maxThreadCount = ENGINE.getConfig().maxThreadCount;
         if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
             ENGINE.setThreadCount(threadCount);
             write("info string Threads " + threadCount);
         } else {
             write(String.format("thread count %s not in valid range %s - %s", threadCount, minThreadCount, maxThreadCount));
         }
-    }
-
-    private static void setOwnBook(UCICommand command) {
-        boolean ownBookEnabled = command.getBool("value", false, true);
-        ENGINE.setOwnBookEnabled(ownBookEnabled);
-        write("info string OwnBook " + ownBookEnabled);
-    }
-
-    private static void setOwnTablebase(UCICommand command) {
-        boolean ownTablebaseEnabled = command.getBool("value", false, true);
-        ENGINE.setOwnTablebaseEnabled(ownTablebaseEnabled);
-        write("info string OwnTablebase " + ownTablebaseEnabled);
     }
 
     private static void setPonder(UCICommand command) {

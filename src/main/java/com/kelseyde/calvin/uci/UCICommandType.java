@@ -48,7 +48,7 @@ enum UCICommandType {
             }
         }
 
-        void acceptThrows(UCICommand command) throws Exception;
+        void acceptThrows(UCICommand command);
 
     }
 

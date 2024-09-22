@@ -9,10 +9,6 @@ public class KillerTable {
 
     Move[][] table = new Move[Search.MAX_DEPTH][KILLERS_PER_PLY];
 
-    public Move get(int ply, int index) {
-        return table[ply][index];
-    }
-
     public void add(int ply, Move move) {
         if (ply >= Search.MAX_DEPTH) return;
 

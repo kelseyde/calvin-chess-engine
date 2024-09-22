@@ -1,74 +1,56 @@
 package com.kelseyde.calvin.engine;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import com.kelseyde.calvin.search.Search;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EngineConfig {
 
-    int minThreadCount;
-    int maxThreadCount;
-    int defaultThreadCount;
+    public EngineConfig() {
+        postInitialise();
+    }
 
-    int minHashSizeMb;
-    int maxHashSizeMb;
-    int defaultHashSizeMb;
+    public final int minThreadCount = 1;
+    public final int maxThreadCount = 12;
+    public final int defaultThreadCount = 1;
 
-    boolean ownBookEnabled;
-    String ownBookFile;
-    int ownBookMaxMoves;
+    public final int minHashSizeMb = 16;
+    public final int maxHashSizeMb = 1024;
+    public final int defaultHashSizeMb = 256;
 
-    boolean ownTablebaseEnabled;
-    int maxTablebaseSupportedPieces;
-    String lichessTablebaseBaseUrl;
-    boolean lichessTablebaseDebugEnabled;
-    long lichessTablebaseTimeoutMs;
+    public boolean ponderEnabled = false;
 
-    boolean ponderEnabled;
-    int principalVariationLength;
+    public boolean pondering = false;
+    public boolean searchCancelled = false;
 
-    boolean pondering = false;
-    boolean searchCancelled = false;
-
-    int maxDepth;
-    int maxPossibleMoves = 250;
-    int aspMargin;
-    int aspFailMargin;
-    int aspMaxReduction;
-    int nmpDepth;
-    int fpDepth;
-    int rfpDepth;
-    int lmrDepth;
-    float lmrBase;
-    float lmrDivisor;
-    int lmrMinSearchedMoves;
-    int lmpDepth;
-    int lmpMultiplier;
-    int iirDepth;
-    int nmpMargin;
-    int dpMargin;
-    int qsFpMargin;
-    int fpMargin;
-    int fpScale;
-    int[] rfpMargin;
-    int[][] lmrReductions;
+    public final int aspMargin = 25;
+    public final int aspFailMargin = 150;
+    public final int aspMaxReduction = 3;
+    public final int nmpDepth = 0;
+    public final int fpDepth = 6;
+    public final int rfpDepth = 5;
+    public final int lmrDepth = 2;
+    public final float lmrBase = 0.85f;
+    public final float lmrDivisor = 3.12f;
+    public final int lmrMinSearchedMoves = 3;
+    public final int lmpDepth = 2;
+    public final int lmpMultiplier = 10;
+    public final int iirDepth = 4;
+    public final int nmpMargin = 70;
+    public final int dpMargin = 140;
+    public final int qsFpMargin = 100;
+    public final int fpMargin = 275;
+    public final int fpScale = 65;
+    public final int[] rfpMargin = { 74, 40 };
+    public int[][] lmrReductions;
 
     public void postInitialise() {
         calculateLmrReductions();
     }
 
     private void calculateLmrReductions() {
-        // Credit to Lynx (https://github.com/lynx-chess/Lynx) for this formula for determining the optimal late move reduction depth
-        lmrReductions = new int[maxDepth][];
-        for (int depth = 1; depth < maxDepth; ++depth) {
-            lmrReductions[depth] = new int[maxPossibleMoves];
-            for (int movesSearched = 1; movesSearched < maxPossibleMoves; ++movesSearched) {
+        lmrReductions = new int[Search.MAX_DEPTH][];
+        for (int depth = 1; depth < Search.MAX_DEPTH; ++depth) {
+            lmrReductions[depth] = new int[250];
+            for (int movesSearched = 1; movesSearched < 250; ++movesSearched) {
                 lmrReductions[depth][movesSearched] = (int) Math.round(lmrBase + (Math.log(movesSearched) * Math.log(depth) / lmrDivisor));
             }
         }

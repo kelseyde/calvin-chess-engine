@@ -41,6 +41,9 @@
 ### Time management
 
 - [x] Node TM
+- [ ] Legal move based TM?
+- [ ] Futility TM?
+- [ ] Game phase TM?
 
 ### UCI
 

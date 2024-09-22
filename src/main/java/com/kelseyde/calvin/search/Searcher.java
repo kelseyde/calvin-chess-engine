@@ -251,7 +251,7 @@ public class Searcher implements Search {
             if (depth <= config.rfpDepth
                 && staticEval - depth * config.rfpMargin[improving ? 1 : 0] >= beta
                 && !Score.isMateScore(alpha)) {
-                return staticEval;
+                return (staticEval + beta) / 2;
             }
 
             // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning

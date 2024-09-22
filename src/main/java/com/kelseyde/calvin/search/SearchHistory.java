@@ -88,6 +88,10 @@ public class SearchHistory {
         return captureHistoryTable;
     }
 
+    public CounterMoveTable getCounterMoveTable() {
+        return counterMoveTable;
+    }
+
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;

@@ -241,20 +241,6 @@ public class UCI {
         write("info string Ponder " + ponderEnabled);
     }
 
-    private static void setTunable(UCICommand command) {
-        String name = command.getString("name", "", true);
-        int value = command.getInt("value", -1, true);
-        ENGINE.getConfig().getTunables().stream()
-                .filter(t -> t.name.equalsIgnoreCase(name))
-                .findFirst()
-                .ifPresentOrElse(
-                        (t) -> {
-                            t.value = value;
-                            write("info string " + t.name + " " + value);
-                        },
-                        () -> write("info error unknown option " + name));
-    }
-
     public static void write(String output) {
         if (outputEnabled) System.out.println(output);
     }

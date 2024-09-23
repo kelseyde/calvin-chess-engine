@@ -38,6 +38,7 @@ public class Engine {
         this.board = Board.from(FEN.STARTPOS);
         this.moveGenerator = new MoveGenerator();
         this.searcher = new ParallelSearcher(config, new TranspositionTable(config.defaultHashSizeMb));
+        this.searcher.setPosition(board);
     }
 
     public void newGame() {

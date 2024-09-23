@@ -44,7 +44,7 @@ public class ParallelSearcher implements Search {
     public ParallelSearcher(EngineConfig config, TranspositionTable tt) {
         this.config = config;
         this.hashSize = config.defaultHashSizeMb;
-        this.threadCount = config.defaultThreadCount;
+        this.threadCount = config.defaultThreads;
         this.tt = tt;
         this.searchers = initSearchers();
     }

@@ -88,9 +88,9 @@ public class Searcher implements Search {
 
         int retries = 0;
         int reduction = 0;
-        int maxReduction = config.aspMaxReduction;
-        int margin = config.aspMargin;
-        int failMargin = config.aspFailMargin;
+        int maxReduction = config.aspMaxReduction.value;
+        int margin = config.aspMargin.value;
+        int failMargin = config.aspFailMargin.value;
 
         while (!shouldStopSoft() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
@@ -224,7 +224,7 @@ public class Searcher implements Search {
                 && !inCheck
                 && (ttEntry == null || ttEntry.getMove() == null)
                 && ply > 0
-                && depth >= config.iirDepth) {
+                && depth >= config.iirDepth.value) {
             --depth;
         }
 
@@ -248,8 +248,8 @@ public class Searcher implements Search {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
-            if (depth <= config.rfpDepth
-                && staticEval - depth * config.rfpMargin[improving ? 1 : 0] >= beta
+            if (depth <= config.rfpDepth.value
+                && staticEval - depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value) >= beta
                 && !Score.isMateScore(alpha)) {
                 return (staticEval + beta) / 2;
             }
@@ -259,8 +259,8 @@ public class Searcher implements Search {
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
             if (ss.isNullMoveAllowed(ply)
-                && depth >= config.nmpDepth
-                && staticEval >= beta - (config.nmpMargin * (improving ? 1 : 0))
+                && depth >= config.nmpDepth.value
+                && staticEval >= beta - (config.nmpMargin.value * (improving ? 1 : 0))
                 && board.hasPiecesRemaining(board.isWhite())) {
 
                 ss.setNullMoveAllowed(ply + 1, false);
@@ -304,8 +304,8 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
-                && depth <= config.fpDepth
-                && staticEval + config.fpMargin + depth * config.fpScale <= alpha
+                && depth <= config.fpDepth.value
+                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha
                 && !inCheck
                 && !isCapture
                 && !isPromotion) {
@@ -330,11 +330,11 @@ public class Searcher implements Search {
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
             // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
             // promotion, let's assume it's less likely to be good, and fully skip searching that move.
-            int lmpCutoff = (depth * config.lmpMultiplier) / (1 + (improving ? 0 : 1));
+            int lmpCutoff = (depth * config.lmpMultiplier.value) / (1 + (improving ? 0 : 1));
             if (!pvNode
                 && !inCheck
                 && isQuiet
-                && depth <= config.lmpDepth
+                && depth <= config.lmpDepth.value
                 && movesSearched >= lmpCutoff) {
                 eval.unmakeMove();
                 board.unmakeMove();
@@ -359,8 +359,8 @@ public class Searcher implements Search {
                 // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
                 // let's save time by assuming it's less likely to be good, and reduce the search depth.
                 int reduction = 0;
-                if (depth >= config.lmrDepth
-                    && movesSearched >= (pvNode ? config.lmrMinSearchedMoves + 1 : config.lmrMinSearchedMoves - 1)
+                if (depth >= config.lmrDepth.value
+                    && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)
                     && isQuiet) {
                     reduction = config.lmrReductions[depth][movesSearched];
                     if (pvNode) {
@@ -490,7 +490,7 @@ public class Searcher implements Search {
         int movesSearched = 0;
 
         int bestScore = alpha;
-        int futilityScore = bestScore + config.qsFpMargin;
+        int futilityScore = bestScore + config.qsFpMargin.value;
 
         while (true) {
 
@@ -505,7 +505,7 @@ public class Searcher implements Search {
                 Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
                 if (captured != null
                         && !move.isPromotion()
-                        && (staticEval + captured.value() + config.dpMargin < alpha)) {
+                        && (staticEval + captured.value() + config.dpMargin.value < alpha)) {
                     continue;
                 }
 

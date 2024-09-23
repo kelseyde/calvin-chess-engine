@@ -32,10 +32,10 @@ public class EngineConfig {
     public final Tunable fpDepth =          new Tunable("FpDepth", 6, 0, 8, 1);
     public final Tunable rfpDepth =         new Tunable("RfpDepth", 5, 0, 8, 1);
     public final Tunable lmrDepth =         new Tunable("LmrDepth", 2, 0, 8, 1);
-    public final Tunable lmrBase =          new Tunable("LmrBase", 850, 100, 1000, 50);
-    public final Tunable lmrDivisor =       new Tunable("LmrDivisor", 310, 200, 400, 12);
+    public final Tunable lmrBase =          new Tunable("LmrBase", 85, 50, 100, 5);
+    public final Tunable lmrDivisor =       new Tunable("LmrDivisor", 310, 200, 400, 10);
     public final Tunable lmrMinMoves =      new Tunable("LmrMinSearchedMoves", 3, 2, 5, 1);
-    public final Tunable lmpDepth =         new Tunable("LmrDepth", 2, 0, 8, 1);
+    public final Tunable lmpDepth =         new Tunable("LmpDepth", 2, 0, 8, 1);
     public final Tunable lmpMultiplier =    new Tunable("LmpMultiplier", 10, 1, 20, 1);
     public final Tunable iirDepth =         new Tunable("IirDepth", 4, 0, 8, 1);
     public final Tunable nmpMargin =        new Tunable("NmpMargin", 70, 0, 250, 10);
@@ -74,6 +74,10 @@ public class EngineConfig {
             UCI.write("info error value " + value + " is out of range for option " + name);
         }
         option.value = value;
+        if (name.equals("LmrBase") || name.equals("LmrDivisor")) {
+            calculateLmrReductions();
+        }
+
         UCI.write("info string " + name + " " + value);
     }
 
@@ -82,11 +86,13 @@ public class EngineConfig {
     }
 
     private void calculateLmrReductions() {
+        float lmrBaseFloat = (float) lmrBase.value / 100;
+        float lmrDivisorFloat = (float) lmrDivisor.value / 100;
         lmrReductions = new int[Search.MAX_DEPTH][];
         for (int depth = 1; depth < Search.MAX_DEPTH; ++depth) {
             lmrReductions[depth] = new int[250];
             for (int movesSearched = 1; movesSearched < 250; ++movesSearched) {
-                lmrReductions[depth][movesSearched] = (int) Math.round((double) (lmrBase.value) / 100 + (Math.log(movesSearched) * Math.log(depth) / ((double) lmrDivisor.value / 100)));
+                lmrReductions[depth][movesSearched] = (int) Math.round(lmrBaseFloat + (Math.log(movesSearched) * Math.log(depth) / lmrDivisorFloat));
             }
         }
     }
@@ -110,6 +116,11 @@ public class EngineConfig {
             return String.format("option name %s type spin default %d min %d max %d", name, value, min, max);
         }
 
+    }
+
+    public static void main(String[] args) {
+        EngineConfig engineConfig = new EngineConfig();
+        engineConfig.postInitialise();
     }
 
 }

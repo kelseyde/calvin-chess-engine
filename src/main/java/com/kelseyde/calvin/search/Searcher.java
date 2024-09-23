@@ -249,7 +249,7 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth.value
-                && staticEval - depth * (improving ? config.rfpMargin.value : config.rfpImpMargin.value) >= beta
+                && staticEval - depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value) >= beta
                 && !Score.isMateScore(alpha)) {
                 return (staticEval + beta) / 2;
             }

@@ -59,8 +59,9 @@ public class UCI {
         write(String.format("option name Hash type spin default %s min %s max %s",
                 config.defaultHashSizeMb, config.minHashSizeMb, config.maxHashSizeMb));
         write(String.format("option name Threads type spin default %s min %s max %s",
-                config.defaultThreadCount, config.minThreadCount, config.maxThreadCount));
+                config.defaultThreads, config.minThreads, config.maxThreads));
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
+        ENGINE.getConfig().getTunables().forEach(t -> write(t.toUCI()));
         write("uciok");
     }
 
@@ -97,12 +98,12 @@ public class UCI {
     }
 
     public static void handleSetOption(UCICommand command) {
-        String optionType = command.getString("name", "", true);
-        switch (optionType) {
+        String name = command.getString("name", "", true);
+        switch (name) {
             case "Hash":          setHashSize(command); break;
-            case "Threads":       setThreadCount(command); break;
+            case "Threads":       setThreads(command); break;
             case "Ponder":        setPonder(command); break;
-            default:              write("unrecognised option name " + optionType);
+            default:              ENGINE.getConfig().setTunable(command); break;
         }
     }
 
@@ -222,10 +223,10 @@ public class UCI {
         }
     }
 
-    private static void setThreadCount(UCICommand command) {
+    private static void setThreads(UCICommand command) {
         int threadCount = command.getInt("value", -1, true);
-        int minThreadCount = ENGINE.getConfig().minThreadCount;
-        int maxThreadCount = ENGINE.getConfig().maxThreadCount;
+        int minThreadCount = ENGINE.getConfig().minThreads;
+        int maxThreadCount = ENGINE.getConfig().maxThreads;
         if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
             ENGINE.setThreadCount(threadCount);
             write("info string Threads " + threadCount);
@@ -238,6 +239,20 @@ public class UCI {
         boolean ponderEnabled = command.getBool("value", false, true);
         ENGINE.setPonderEnabled(ponderEnabled);
         write("info string Ponder " + ponderEnabled);
+    }
+
+    private static void setTunable(UCICommand command) {
+        String name = command.getString("name", "", true);
+        int value = command.getInt("value", -1, true);
+        ENGINE.getConfig().getTunables().stream()
+                .filter(t -> t.name.equalsIgnoreCase(name))
+                .findFirst()
+                .ifPresentOrElse(
+                        (t) -> {
+                            t.value = value;
+                            write("info string " + t.name + " " + value);
+                        },
+                        () -> write("info error unknown option " + name));
     }
 
     public static void write(String output) {

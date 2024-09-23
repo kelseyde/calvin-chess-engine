@@ -41,7 +41,7 @@ public class EngineConfig {
     public final Tunable nmpMargin =        new Tunable("NmpMargin", 70, 0, 250, 10);
     public final Tunable dpMargin =         new Tunable("DpMargin", 140, 0, 250, 10);
     public final Tunable qsFpMargin =       new Tunable("QsFpMargin", 100, 0, 250, 10);
-    public final Tunable fpMargin =         new Tunable("FpMargin", 275, 0, 250, 10);
+    public final Tunable fpMargin =         new Tunable("FpMargin", 275, 0, 500, 10);
     public final Tunable fpScale =          new Tunable("FpScale", 65, 0, 100, 5);
     public final Tunable rfpMargin =        new Tunable("RfpMargin", 75, 0, 250, 10);
     public final Tunable rfpImpMargin =     new Tunable("RfpImpMargin", 40, 0, 250, 10);
@@ -107,7 +107,7 @@ public class EngineConfig {
         }
 
         public String toUCI() {
-            return String.format("option name %s type spin default %d min %d max %d step %d", name, value, min, max, step);
+            return String.format("option name %s type spin default %d min %d max %d", name, value, min, max);
         }
 
     }

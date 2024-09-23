@@ -179,14 +179,14 @@ public class Searcher implements Search {
         boolean rootNode = ply == 0;
         boolean pvNode = beta - alpha > 1;
 
-        Move excludedMove = ss.getExcludedMove(ply);
-        boolean excluded = excludedMove != null;
-
         // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
         alpha = Math.max(alpha, -Score.MATE + ply);
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
+
+        Move excludedMove = ss.getExcludedMove(ply);
+        boolean excluded = excludedMove != null;
 
         history.getKillerTable().clear(ply + 1);
 
@@ -337,7 +337,7 @@ public class Searcher implements Search {
                 int sDepth = (depth - 1) / 2;
 
                 ss.setExcludedMove(ply, move);
-                int score = search(sDepth, ply, -sBeta - 1, -sBeta);
+                int score = search(sDepth, ply, sBeta - 1, sBeta);
                 ss.setExcludedMove(ply, null);
 
                 if (score < sBeta) {

@@ -118,9 +118,4 @@ public class EngineConfig {
 
     }
 
-    public static void main(String[] args) {
-        EngineConfig engineConfig = new EngineConfig();
-        engineConfig.postInitialise();
-    }
-
 }

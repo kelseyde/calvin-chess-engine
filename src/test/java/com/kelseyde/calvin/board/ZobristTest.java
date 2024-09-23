@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -12,8 +11,8 @@ public class ZobristTest {
     @Test
     public void testSamePositionGeneratesSameKey() {
 
-        Board board1 = new Board();
-        Board board2 = new Board();
+        Board board1 = Board.from(FEN.STARTPOS);
+        Board board2 = Board.from(FEN.STARTPOS);
         Assertions.assertEquals(board1.getState().getKey(), board2.getState().getKey());
 
         Move e4 = new Move(12, 28, Move.PAWN_DOUBLE_MOVE_FLAG);
@@ -26,7 +25,7 @@ public class ZobristTest {
         board2.unmakeMove();
 
         Assertions.assertEquals(board1.getState().getKey(), board2.getState().getKey());
-        Assertions.assertEquals(board1.getState().getKey(), new Board().getState().getKey());
+        Assertions.assertEquals(board1.getState().getKey(), Board.from(FEN.STARTPOS).getState().getKey());
 
     }
 
@@ -38,15 +37,15 @@ public class ZobristTest {
         Board board = FEN.toBoard(fen);
         long firstZobrist1 = board.getState().getKey();
 
-        board.makeMove(Notation.fromNotation("h8", "g8"));
+        board.makeMove(Move.fromUCI("h8g8"));
         long secondZobrist1 = board.getState().getKey();
 
-        board.makeMove(Notation.fromNotation("f2", "g2"));
-        board.makeMove(Notation.fromNotation("g8", "h8"));
-        board.makeMove(Notation.fromNotation("g2", "f2"));
+        board.makeMove(Move.fromUCI("f2g2"));
+        board.makeMove(Move.fromUCI("g8h8"));
+        board.makeMove(Move.fromUCI("g2f2"));
         long firstZobrist2 = board.getState().getKey();
 
-        board.makeMove(Notation.fromNotation("h8", "g8"));
+        board.makeMove(Move.fromUCI("h8g8"));
         long secondZobrist2 = board.getState().getKey();
 
         Assertions.assertEquals(firstZobrist1, firstZobrist2);
@@ -65,15 +64,15 @@ public class ZobristTest {
 
         Board board = FEN.toBoard(fen);
         long z1 = board.getState().getKey();
-        board.makeMove(Notation.fromNotation("b8", "b3"));
+        board.makeMove(Move.fromUCI("b8b3"));
         long z2 = board.getState().getKey();
-        board.makeMove(Notation.fromNotation("c3", "b3"));
+        board.makeMove(Move.fromUCI("c3b3"));
         long z3 = board.getState().getKey();
-        board.makeMove(Notation.fromNotation("c7", "a5"));
+        board.makeMove(Move.fromUCI("c7a5"));
         long z4 = board.getState().getKey();
-        board.makeMove(Notation.fromNotation("b3", "c3"));
+        board.makeMove(Move.fromUCI("b3c3"));
         long z5 = board.getState().getKey();
-        board.makeMove(Notation.fromNotation("a5", "c7"));
+        board.makeMove(Move.fromUCI("a5c7"));
         long z6 = board.getState().getKey();
 
         long distinctZobristCount = Stream.of(z1, z2, z3, z4, z5, z6)
@@ -90,7 +89,7 @@ public class ZobristTest {
         String fenAfterMove = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
 
         Board board1 = FEN.toBoard(fenBeforeMove);
-        board1.makeMove(Notation.fromNotation("e2", "e4"));
+        board1.makeMove(Move.fromUCI("e2e4"));
         long zobrist1 = board1.getState().getKey();
 
         Board board2 = FEN.toBoard(fenAfterMove);
@@ -107,7 +106,7 @@ public class ZobristTest {
         String fenAfterMove = "rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2";
 
         Board board1 = FEN.toBoard(fenBeforeMove);
-        board1.makeMove(Notation.fromNotation("e4", "d5"));
+        board1.makeMove(Move.fromUCI("e4d5"));
         long zobrist1 = board1.getState().getKey();
 
         Board board2 = FEN.toBoard(fenAfterMove);
@@ -124,7 +123,7 @@ public class ZobristTest {
         String fenAfterMove = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 2";
 
         Board board1 = FEN.toBoard(fenBeforeMove);
-        board1.makeMove(Notation.fromNotation("e1", "e2"));
+        board1.makeMove(Move.fromUCI("e1e2"));
         long zobrist1 = board1.getState().getKey();
 
         Board board2 = FEN.toBoard(fenAfterMove);
@@ -141,7 +140,7 @@ public class ZobristTest {
         String fenAfterCapture = "rnbqkb1r/ppp1pppp/3P1n2/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 3";
 
         Board board1 = FEN.toBoard(fenBeforeCapture);
-        board1.makeMove(Notation.fromNotation("e5", "d6", Move.EN_PASSANT_FLAG));
+        board1.makeMove(Move.fromUCI("e5d6", Move.EN_PASSANT_FLAG));
         long zobrist1 = board1.getState().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCapture);
@@ -157,7 +156,7 @@ public class ZobristTest {
         String fenAfterCastle = "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4";
 
         Board board1 = FEN.toBoard(fenBeforeCastle);
-        board1.makeMove(Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG));
+        board1.makeMove(Move.fromUCI("e1g1", Move.CASTLE_FLAG));
         long zobrist1 = board1.getState().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCastle);
@@ -174,7 +173,7 @@ public class ZobristTest {
         String fenAfterCastle = "Qnbqkb1r/p4ppp/5n2/4p3/8/8/PPPP1PPP/RNBQKBNR b - - 0 7";
 
         Board board1 = FEN.toBoard(fenBeforeCastle);
-        board1.makeMove(Notation.fromNotation("b7", "a8", Move.PROMOTE_TO_QUEEN_FLAG));
+        board1.makeMove(Move.fromUCI("b7a8", Move.PROMOTE_TO_QUEEN_FLAG));
         long zobrist1 = board1.getState().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCastle);
@@ -191,7 +190,7 @@ public class ZobristTest {
         String fenAfterPromotion = "Qnb1kb1r/p3pppp/5n2/8/8/3q4/PPPP1PPP/RNBQKBNR b KQk - 0 5";
 
         Board board1 = FEN.toBoard(fenBeforePromotion);
-        board1.makeMove(Notation.fromNotation("b7", "a8", Move.PROMOTE_TO_QUEEN_FLAG));
+        board1.makeMove(Move.fromUCI("b7a8q", Move.PROMOTE_TO_QUEEN_FLAG));
         long zobrist1 = board1.getState().getPawnKey();
 
         Board board2 = FEN.toBoard(fenAfterPromotion);

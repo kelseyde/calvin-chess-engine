@@ -1,5 +1,10 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.Bits.Castling;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.utils.notation.FEN;
+
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -14,26 +19,37 @@ import java.util.Deque;
  */
 public class Board {
 
-    long pawns =        Bits.WHITE_PAWNS_START | Bits.BLACK_PAWNS_START;
-    long knights =      Bits.WHITE_KNIGHTS_START | Bits.BLACK_KNIGHTS_START;
-    long bishops =      Bits.WHITE_BISHOPS_START | Bits.BLACK_BISHOPS_START;
-    long rooks =        Bits.WHITE_ROOKS_START | Bits.BLACK_ROOKS_START;
-    long queens =       Bits.WHITE_QUEENS_START | Bits.BLACK_QUEENS_START;
-    long kings =        Bits.WHITE_KING_START | Bits.BLACK_KING_START;
+    private long pawns;
+    private long knights;
+    private long bishops;
+    private long rooks;
+    private long queens;
+    private long kings;
+    private long whitePieces;
+    private long blackPieces;
+    private long occupied;
 
-    long whitePieces =  Bits.WHITE_PIECES_START;
-    long blackPieces =  Bits.BLACK_PIECES_START;
-    long occupied =     Bits.PIECES_START;
-
-    Piece[] pieces = Bits.getStartingPieceList();
-
-    boolean white = true;
-
-    GameState state = new GameState();
-    Deque<GameState> stateHistory = new ArrayDeque<>();
-    Deque<Move> moves = new ArrayDeque<>();
+    private Piece[] pieces;
+    private GameState state;
+    private Deque<GameState> states;
+    private Deque<Move> moves;
+    private boolean white;
 
     public Board() {
+        pawns = 0L;
+        knights = 0L;
+        bishops = 0L;
+        rooks = 0L;
+        queens = 0L;
+        kings = 0L;
+        whitePieces = 0L;
+        blackPieces = 0L;
+        occupied = 0L;
+        pieces = new Piece[Square.COUNT];
+        state = new GameState();
+        states = new ArrayDeque<>();
+        moves = new ArrayDeque<>();
+        white = true;
         state.setKey(Zobrist.generateKey(this));
         state.setPawnKey(Zobrist.generatePawnKey(this));
     }
@@ -49,7 +65,7 @@ public class Board {
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
-        stateHistory.push(state.copy());
+        states.push(state.copy());
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
         else if (move.isCastling())   makeCastleMove(from, to);
@@ -81,7 +97,7 @@ public class Board {
         else if (move.isEnPassant())  unmakeEnPassantMove(from, to);
         else                          unmakeStandardMove(from, to, piece);
 
-        state = stateHistory.pop();
+        state = states.pop();
 
     }
 
@@ -98,7 +114,7 @@ public class Board {
         pieces[from] = null;
         pieces[to] = Piece.KING;
         state.key = Zobrist.updatePiece(state.key, from, to, Piece.KING, white);
-        final boolean kingside = Board.file(to) == 6;
+        final boolean kingside = File.of(to) == 6;
         final int rookFrom, rookTo;
         if (kingside) {
             rookFrom = white ? 7 : 63;
@@ -171,7 +187,7 @@ public class Board {
         state.key = Zobrist.updateCastlingRights(state.key, state.rights, castleRights);
         state.rights = castleRights;
 
-        final int enPassantFile = move.isPawnDoubleMove() ? Board.file(to) : -1;
+        final int enPassantFile = move.isPawnDoubleMove() ? File.of(to) : -1;
         state.key = Zobrist.updateEnPassantFile(state.key, state.enPassantFile, enPassantFile);
         state.enPassantFile = enPassantFile;
 
@@ -180,7 +196,7 @@ public class Board {
 
     private void unmakeCastlingMove(int from, int to) {
         toggleSquares(Piece.KING, white, to, from);
-        final boolean kingside = Board.file(to) == 6;
+        final boolean kingside = File.of(to) == 6;
         final int rookFrom, rookTo;
         if (kingside) {
             rookFrom = white ? 5 : 61;
@@ -232,7 +248,7 @@ public class Board {
         white = !white;
         final long key = Zobrist.updateKeyAfterNullMove(state.getKey(), state.getEnPassantFile());
         GameState newState = new GameState(key, state.getPawnKey(), null, -1, state.getRights(), 0);
-        stateHistory.push(state);
+        states.push(state);
         state = newState;
     }
 
@@ -241,7 +257,7 @@ public class Board {
      */
     public void unmakeNullMove() {
         white = !white;
-        state = stateHistory.pop();
+        state = states.pop();
     }
 
     public void toggleSquares(Piece type, boolean white, int from, int to) {
@@ -301,22 +317,22 @@ public class Board {
         }
         // Any move by the king removes castling rights.
         if (Piece.KING.equals(pieceType)) {
-            newRights &= white ? Bits.CLEAR_WHITE_CASTLING_MASK : Bits.CLEAR_BLACK_CASTLING_MASK;
+            newRights &= white ? Castling.CLEAR_WHITE_CASTLING_MASK : Castling.CLEAR_BLACK_CASTLING_MASK;
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.
         // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
         // another rook in starting position; in that case, both sides lose castling rights!
         if (from == 7 || to == 7) {
-            newRights &= Bits.CLEAR_WHITE_KINGSIDE_MASK;
+            newRights &= Castling.CLEAR_WHITE_KINGSIDE_MASK;
         }
         if (from == 63 || to == 63) {
-            newRights &= Bits.CLEAR_BLACK_KINGSIDE_MASK;
+            newRights &= Castling.CLEAR_BLACK_KINGSIDE_MASK;
         }
         if (from == 0 || to == 0) {
-            newRights &= Bits.CLEAR_WHITE_QUEENSIDE_MASK;
+            newRights &= Castling.CLEAR_WHITE_QUEENSIDE_MASK;
         }
         if (from == 56 || to == 56) {
-            newRights &= Bits.CLEAR_BLACK_QUEENSIDE_MASK;
+            newRights &= Castling.CLEAR_BLACK_QUEENSIDE_MASK;
         }
         return newRights;
     }
@@ -407,8 +423,8 @@ public class Board {
         this.state = state;
     }
 
-    public void setStateHistory(Deque<GameState> stateHistory) {
-        this.stateHistory = stateHistory;
+    public void setStates(Deque<GameState> states) {
+        this.states = states;
     }
 
     public void setMoves(Deque<Move> moves) {
@@ -463,8 +479,8 @@ public class Board {
         return state;
     }
 
-    public Deque<GameState> getStateHistory() {
-        return stateHistory;
+    public Deque<GameState> getStates() {
+        return states;
     }
 
     public Deque<Move> getMoves() {
@@ -480,7 +496,7 @@ public class Board {
     }
 
     public int countPieces() {
-        return Bitwise.countBits(occupied);
+        return Bits.count(occupied);
     }
 
     public boolean hasPiecesRemaining(boolean white) {
@@ -489,20 +505,8 @@ public class Board {
                 (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
     }
 
-    public static int file(int sq) {
-        return sq & 0b000111;
-    }
-
-    public static int rank(int sq) {
-        return sq >>> 3;
-    }
-
-    public static int squareIndex(int rank, int file) {
-        return 8 * rank + file;
-    }
-
-    public static boolean isValidIndex(int square) {
-        return square >= 0 && square < 64;
+    public static Board from(String fen) {
+        return FEN.toBoard(fen);
     }
 
     public Board copy() {
@@ -519,8 +523,8 @@ public class Board {
         newBoard.setWhite(this.isWhite());
         newBoard.setState(this.getState().copy());
         Deque<GameState> gameStateHistory = new ArrayDeque<>();
-        this.getStateHistory().forEach(gameState -> gameStateHistory.add(gameState.copy()));
-        newBoard.setStateHistory(gameStateHistory);
+        this.getStates().forEach(gameState -> gameStateHistory.add(gameState.copy()));
+        newBoard.setStates(gameStateHistory);
         Deque<Move> moveHistory = new ArrayDeque<>();
         this.getMoves().forEach(move -> moveHistory.add(new Move(move.value())));
         newBoard.setMoves(moveHistory);

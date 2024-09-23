@@ -3,7 +3,6 @@ package com.kelseyde.calvin.uci;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.engine.EngineInitializer;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
@@ -12,8 +11,7 @@ import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.Bench;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
 import java.util.Arrays;
@@ -28,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public class UCI {
 
-    public static final Engine ENGINE = EngineInitializer.loadEngine();
+    public static final Engine ENGINE = new Engine();
     static final Scanner READER = new Scanner(System.in);
     public static boolean outputEnabled = true;
 
@@ -61,8 +59,9 @@ public class UCI {
         write(String.format("option name Hash type spin default %s min %s max %s",
                 config.defaultHashSizeMb, config.minHashSizeMb, config.maxHashSizeMb));
         write(String.format("option name Threads type spin default %s min %s max %s",
-                config.defaultThreadCount, config.minThreadCount, config.maxThreadCount));
+                config.defaultThreads, config.minThreads, config.maxThreads));
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
+        ENGINE.getConfig().getTunables().forEach(t -> write(t.toUCI()));
         write("uciok");
     }
 
@@ -99,12 +98,12 @@ public class UCI {
     }
 
     public static void handleSetOption(UCICommand command) {
-        String optionType = command.getString("name", "", true);
-        switch (optionType) {
+        String name = command.getString("name", "", true);
+        switch (name) {
             case "Hash":          setHashSize(command); break;
-            case "Threads":       setThreadCount(command); break;
+            case "Threads":       setThreads(command); break;
             case "Ponder":        setPonder(command); break;
-            default:              write("unrecognised option name " + optionType);
+            default:              ENGINE.getConfig().setTunable(command); break;
         }
     }
 
@@ -187,7 +186,7 @@ public class UCI {
         int nodes = searchResult.nodes();
         long nps = searchResult.nps();
         String pv = ENGINE.extractPrincipalVariation().stream()
-                .map(Notation::toNotation).collect(Collectors.joining(" "));
+                .map(Move::toUCI).collect(Collectors.joining(" "));
         write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
     }
 
@@ -206,9 +205,9 @@ public class UCI {
         boolean ponderEnabled = ENGINE.getConfig().ponderEnabled;
         if (ponderEnabled && move != null) {
             Move ponderMove = ENGINE.extractPonderMove(move);
-            write(String.format("bestmove %s ponder %s", Notation.toNotation(move), Notation.toNotation(ponderMove)));
+            write(String.format("bestmove %s ponder %s", Move.toUCI(move), Move.toUCI(ponderMove)));
         } else {
-            write(String.format("bestmove %s", Notation.toNotation(move)));
+            write(String.format("bestmove %s", Move.toUCI(move)));
         }
     }
 
@@ -224,10 +223,10 @@ public class UCI {
         }
     }
 
-    private static void setThreadCount(UCICommand command) {
+    private static void setThreads(UCICommand command) {
         int threadCount = command.getInt("value", -1, true);
-        int minThreadCount = ENGINE.getConfig().minThreadCount;
-        int maxThreadCount = ENGINE.getConfig().maxThreadCount;
+        int minThreadCount = ENGINE.getConfig().minThreads;
+        int maxThreadCount = ENGINE.getConfig().maxThreads;
         if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
             ENGINE.setThreadCount(threadCount);
             write("info string Threads " + threadCount);

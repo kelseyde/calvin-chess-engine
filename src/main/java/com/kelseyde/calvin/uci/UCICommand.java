@@ -1,8 +1,7 @@
 package com.kelseyde.calvin.uci;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -106,7 +105,7 @@ public record UCICommand(UCICommandType type, String[] args) {
                 fen = FEN.STARTPOS;
             }
             List<Move> moves = command.getStrings("moves", false).stream()
-                    .map(Notation::fromUCI)
+                    .map(Move::fromUCI)
                     .toList();
             return new PositionCommand(fen, moves);
         }

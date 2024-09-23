@@ -2,16 +2,15 @@ package com.kelseyde.calvin.engine;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.movegen.MoveGeneration;
 import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,16 +26,19 @@ import java.util.stream.IntStream;
  */
 public class Engine {
 
-    EngineConfig config;
-    MoveGeneration moveGenerator;
-    Search searcher;
+    final EngineConfig config;
+    final MoveGenerator moveGenerator;
+    final Search searcher;
+
     CompletableFuture<SearchResult> think;
     Board board;
 
-    public Engine(EngineConfig config, Search searcher) {
-        this.config = config;
-        this.searcher = searcher;
+    public Engine() {
+        this.config = new EngineConfig();
+        this.board = Board.from(FEN.STARTPOS);
         this.moveGenerator = new MoveGenerator();
+        this.searcher = new ParallelSearcher(config, new TranspositionTable(config.defaultHashSizeMb));
+        this.searcher.setPosition(board);
     }
 
     public void newGame() {
@@ -138,10 +140,6 @@ public class Engine {
         return config;
     }
 
-    public MoveGeneration getMoveGenerator() {
-        return moveGenerator;
-    }
-
     public Search getSearcher() {
         return searcher;
     }
@@ -158,7 +156,7 @@ public class Engine {
         return moveGenerator.generateMoves(board).stream()
                 .filter(move::matches)
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Notation.toNotation(move)));
+                .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Move.toUCI(move)));
     }
 
 }

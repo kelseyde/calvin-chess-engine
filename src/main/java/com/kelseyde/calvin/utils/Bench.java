@@ -6,6 +6,7 @@ import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 
@@ -65,7 +66,7 @@ public class Bench {
     );
 
     private static final int BENCH_DEPTH = 10;
-    private static final TimeControl BENCH_TC = TimeControl.init(new Board(), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH));
+    private static final TimeControl BENCH_TC = TimeControl.init(Board.from(FEN.STARTPOS), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH));
 
     public static void run() {
 

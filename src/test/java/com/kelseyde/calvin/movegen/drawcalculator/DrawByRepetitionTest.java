@@ -3,6 +3,7 @@ package com.kelseyde.calvin.movegen.drawcalculator;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +12,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testSimpleDrawByRepetition() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
 
@@ -39,7 +40,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testNotRepetitionIfCastlingRightsAreDifferent() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
@@ -75,7 +76,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testRepetitionDependingOnCastlingRights() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
@@ -119,7 +120,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testNotRepetitionIfEnPassantRightsAreDifferent() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
 
@@ -151,7 +152,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testRepetitionDependingOnEnPassantRights() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
 

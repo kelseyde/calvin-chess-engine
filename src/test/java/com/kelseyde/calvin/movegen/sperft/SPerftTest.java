@@ -2,8 +2,8 @@ package com.kelseyde.calvin.movegen.sperft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.io.IOException;
 import java.nio.file.Files;

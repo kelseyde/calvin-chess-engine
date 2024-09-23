@@ -110,6 +110,7 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
         scaled = Math.min(scaled, hardTime.toMillis() - UCI_OVERHEAD);
 
         return Duration.ofMillis(scaled);
+
     }
 
 }

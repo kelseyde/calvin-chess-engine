@@ -1,11 +1,9 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.movegen.MoveGeneration;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.IllegalMoveException;
-import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +13,16 @@ import java.util.Set;
 public class BoardTest {
 
     @Test
+    public void testSimpleMakeMove() {
+        Board board = Board.from(FEN.STARTPOS);
+        board.makeMove(Move.fromUCI("e2e4"));
+        Assertions.assertNull(board.pieceAt(Bits.Square.fromNotation("e2")));
+        Assertions.assertEquals(Piece.PAWN, board.pieceAt(Bits.Square.fromNotation("e4")));
+    }
+
+    @Test
     public void testBoardHistoryPreservedMultipleMoves() {
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -32,7 +38,7 @@ public class BoardTest {
     @Test
     public void testBoardHistoryPreservesCastlingRights() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(true));
         Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(true));
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
@@ -53,10 +59,10 @@ public class BoardTest {
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
         Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
-        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(false));
 
         board.makeMove(TestUtils.getLegalMove(board, "f7", "f6"));
 
@@ -65,17 +71,17 @@ public class BoardTest {
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
         Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
-        Assertions.assertFalse(board.getStateHistory().peek().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getStateHistory().peek().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStateHistory().peek().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getStateHistory().peek().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getStates().peek().isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getStates().peek().isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(false));
 
     }
 
     @Test
     public void testUnmakeMoveRestoresCapturedPieces() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(new Move(12, 28));
         board.makeMove(new Move(51, 35));
         board.makeMove(new Move(28, 35));
@@ -99,7 +105,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveHandlesTurnSwitching() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         Assertions.assertTrue(board.isWhite());
 
         board.makeMove(new Move(12, 28));
@@ -119,7 +125,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveHandlesCastling() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(new Move(12, 28));
         board.makeMove(new Move(52, 44));
         board.makeMove(new Move(6, 21));
@@ -149,7 +155,7 @@ public class BoardTest {
         String fen = "r1b1k2r/1p3p2/8/8/1n6/2Q5/4P2p/5KNR w kq - 0 1";
         Board board = FEN.toBoard(fen);
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b4"));
-        Move queenPromotion = Notation.fromNotation("h2", "g1", Move.PROMOTE_TO_QUEEN_FLAG);
+        Move queenPromotion = Move.fromUCI("h2g1q");
         board.makeMove(TestUtils.getLegalMove(board, queenPromotion));
         board.makeMove(TestUtils.getLegalMove(board, "f1", "g1"));
         board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));
@@ -210,25 +216,25 @@ public class BoardTest {
 
         MoveGenerator moveGenerator = new MoveGenerator();
 
-        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.QUIET).size());
-        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGeneration.MoveFilter.NOISY).size());
+        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.QUIET).size());
+        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY).size());
 
     }
 
     @Test
     public void testUnmakeCastling() {
 
-        Board board = new Board();
-        board.makeMove(Notation.fromUCI("e2e4"));
-        board.makeMove(Notation.fromUCI("d7d5"));
-        board.makeMove(Notation.fromUCI("g1f3"));
-        board.makeMove(Notation.fromUCI("b8c6"));
-        board.makeMove(Notation.fromUCI("f1b5"));
-        board.makeMove(Notation.fromUCI("c8g4"));
-        board.makeMove(Notation.fromNotation("e1", "g1", Move.CASTLE_FLAG));
-        board.makeMove(Notation.fromUCI("d8d7"));
-        board.makeMove(Notation.fromNotation("f1", "e1"));
-        board.makeMove(Notation.fromNotation("e8","c8",Move.CASTLE_FLAG));
+        Board board = Board.from(FEN.STARTPOS);
+        board.makeMove(Move.fromUCI("e2e4"));
+        board.makeMove(Move.fromUCI("d7d5"));
+        board.makeMove(Move.fromUCI("g1f3"));
+        board.makeMove(Move.fromUCI("b8c6"));
+        board.makeMove(Move.fromUCI("f1b5"));
+        board.makeMove(Move.fromUCI("c8g4"));
+        board.makeMove(Move.fromUCI("e1g1", Move.CASTLE_FLAG));
+        board.makeMove(Move.fromUCI("d8d7"));
+        board.makeMove(Move.fromUCI("f1e1"));
+        board.makeMove(Move.fromUCI("e8c8", Move.CASTLE_FLAG));
 
         Board board2 = FEN.toBoard("2kr1bnr/pppqpppp/2n5/1B1p4/4P1b1/5N2/PPPP1PPP/RNBQR1K1 w - - 8 6");
         Assertions.assertEquals(board.getWhitePieces(), board2.getWhitePieces());
@@ -246,7 +252,7 @@ public class BoardTest {
         board.unmakeMove();
         board.unmakeMove();
 
-        Board board3 = new Board();
+        Board board3 = Board.from(FEN.STARTPOS);
         Assertions.assertEquals(board.getWhitePieces(), board3.getWhitePieces());
         Assertions.assertEquals(board.getBlackPieces(), board3.getBlackPieces());
         Assertions.assertEquals(board.getRooks(), board3.getRooks());
@@ -258,16 +264,16 @@ public class BoardTest {
         if (whiteToMove) {
             long whitePieces = board.getWhitePieces();
             while (whitePieces != 0) {
-                int position = Bitwise.getNextBit(whitePieces);
+                int position = Bits.next(whitePieces);
                 positions.add(position);
-                whitePieces = Bitwise.popBit(whitePieces);
+                whitePieces = Bits.pop(whitePieces);
             }
         } else {
             long blackPieces = board.getBlackPieces();
             while (blackPieces != 0) {
-                int position = Bitwise.getNextBit(blackPieces);
+                int position = Bits.next(blackPieces);
                 positions.add(position);
-                blackPieces = Bitwise.popBit(blackPieces);
+                blackPieces = Bits.pop(blackPieces);
             }
         }
         return positions;

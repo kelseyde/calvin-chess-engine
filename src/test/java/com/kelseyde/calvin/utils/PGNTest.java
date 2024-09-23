@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.PGN;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +12,7 @@ public class PGNTest {
     @Test
     public void testPGN() {
         // Lasker vs Thomas, 1912
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));

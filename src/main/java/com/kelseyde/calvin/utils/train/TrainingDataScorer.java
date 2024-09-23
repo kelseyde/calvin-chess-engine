@@ -12,7 +12,7 @@ import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
-import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.io.IOException;
 import java.nio.file.Files;

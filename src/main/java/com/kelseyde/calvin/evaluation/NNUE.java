@@ -1,14 +1,20 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.engine.EngineInitializer;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -33,12 +39,12 @@ public class NNUE implements Evaluation {
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 384;
 
-        public static final Network NETWORK = EngineInitializer.loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
+        public static final Network NETWORK = loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
 
     }
 
-    static final int COLOUR_OFFSET = 64 * 6;
-    static final int PIECE_OFFSET = 64;
+    static final int COLOUR_OFFSET = Square.COUNT * Piece.COUNT;
+    static final int PIECE_OFFSET = Square.COUNT;
     static final int SCALE = 400;
 
     static final int QA = 255;
@@ -118,12 +124,12 @@ public class NNUE implements Evaluation {
 
     private void activateSide(Board board, long pieces, boolean white) {
         while (pieces != 0) {
-            int square = Bitwise.getNextBit(pieces);
+            int square = Bits.next(pieces);
             Piece piece = board.pieceAt(square);
             int whiteIndex = featureIndex(piece, square, white, true);
             int blackIndex = featureIndex(piece, square, white, false);
             accumulator.add(whiteIndex, blackIndex);
-            pieces = Bitwise.popBit(pieces);
+            pieces = Bits.pop(pieces);
         }
     }
 
@@ -157,7 +163,7 @@ public class NNUE implements Evaluation {
     }
 
     private void handleCastleMove(boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        boolean isKingside = Board.file(to) == 6;
+        boolean isKingside = File.of(to) == 6;
         int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
         int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
         int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookStart, white, true);
@@ -194,10 +200,10 @@ public class NNUE implements Evaluation {
     }
 
     private int materialPhase(Board board) {
-        long knights = Bitwise.countBits(board.getKnights());
-        long bishops = Bitwise.countBits(board.getBishops());
-        long rooks = Bitwise.countBits(board.getRooks());
-        long queens = Bitwise.countBits(board.getQueens());
+        long knights = Bits.count(board.getKnights());
+        long bishops = Bits.count(board.getBishops());
+        long rooks = Bits.count(board.getRooks());
+        long queens = Bits.count(board.getQueens());
         return (int) (MATERIAL_BASE + 3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
     }
 
@@ -207,7 +213,7 @@ public class NNUE implements Evaluation {
      */
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
         int squareIndex = whitePerspective ? square : square ^ 56;
-        int pieceIndex = piece.getIndex();
+        int pieceIndex = piece.index();
         int pieceOffset = pieceIndex * PIECE_OFFSET;
         boolean ourPiece = whitePiece == whitePerspective;
         int colourOffset = ourPiece ? 0 : COLOUR_OFFSET;
@@ -218,6 +224,51 @@ public class NNUE implements Evaluation {
     public void clearHistory() {
         this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
         this.accumulatorHistory.clear();
+    }
+
+    public static NNUE.Network loadNetwork(String file, int inputSize, int hiddenSize) {
+        try {
+            InputStream inputStream = NNUE.Network.class.getClassLoader().getResourceAsStream(file);
+            if (inputStream == null) {
+                throw new FileNotFoundException("NNUE file not found in resources");
+            }
+
+            byte[] fileBytes = inputStream.readAllBytes();
+            inputStream.close();
+            ByteBuffer buffer = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN);
+
+            int inputWeightsOffset = inputSize * hiddenSize;
+            int inputBiasesOffset = hiddenSize;
+            int outputWeightsOffset = hiddenSize * 2;
+
+            short[] inputWeights = new short[inputWeightsOffset];
+            short[] inputBiases = new short[inputBiasesOffset];
+            short[] outputWeights = new short[outputWeightsOffset];
+
+            for (int i = 0; i < inputWeightsOffset; i++) {
+                inputWeights[i] = buffer.getShort();
+            }
+
+            for (int i = 0; i < inputBiasesOffset; i++) {
+                inputBiases[i] = buffer.getShort();
+            }
+
+            for (int i = 0; i < outputWeightsOffset; i++) {
+                outputWeights[i] = buffer.getShort();
+            }
+
+            short outputBias = buffer.getShort();
+
+            while (buffer.hasRemaining()) {
+                if (buffer.getShort() != 0) {
+                    throw new RuntimeException("Failed to load NNUE network: invalid file format");
+                }
+            }
+
+            return new NNUE.Network(inputWeights, inputBiases, outputWeights, outputBias);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load NNUE network", e);
+        }
     }
 
 }

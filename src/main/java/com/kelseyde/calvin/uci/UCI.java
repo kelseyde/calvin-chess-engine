@@ -6,7 +6,6 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
@@ -85,12 +84,8 @@ public class UCI {
     }
 
     public static void handleGo(UCICommand command) {
-        boolean ponder = command.contains("ponder");
-        ENGINE.setPondering(ponder);
-        ENGINE.setSearchCancelled(false);
-        GoCommand go = GoCommand.parse(command);
-        TimeControl tc = TimeControl.init(ENGINE.getBoard(), go);
-        ENGINE.findBestMove(tc, UCI::writeMove);
+        GoCommand goCommand = GoCommand.parse(command);
+        ENGINE.go(goCommand);
     }
 
     public static void handlePonderHit(UCICommand command) {

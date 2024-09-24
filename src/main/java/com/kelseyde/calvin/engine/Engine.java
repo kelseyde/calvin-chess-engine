@@ -9,8 +9,11 @@ import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
+import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.perft.PerftService;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -28,6 +31,7 @@ public class Engine {
 
     final EngineConfig config;
     final MoveGenerator moveGenerator;
+    final PerftService perft;
     final Search searcher;
 
     CompletableFuture<SearchResult> think;
@@ -37,6 +41,7 @@ public class Engine {
         this.config = new EngineConfig();
         this.board = Board.from(FEN.STARTPOS);
         this.moveGenerator = new MoveGenerator();
+        this.perft = new PerftService();
         this.searcher = new ParallelSearcher(config, new TranspositionTable(config.defaultHashSizeMb));
         this.searcher.setPosition(board);
     }
@@ -77,6 +82,20 @@ public class Engine {
 
     public void setPondering(boolean pondering) {
         this.config.pondering = pondering;
+    }
+
+    public void go(GoCommand command) {
+
+        if (command.isPerft()) {
+            int depth = command.perft();
+            perft.perft(board, depth);
+        } else {
+            this.config.pondering = command.ponder();
+            setSearchCancelled(false);
+            TimeControl tc = TimeControl.init(board, command);
+            findBestMove(tc, UCI::writeMove);
+        }
+
     }
 
     public void findBestMove(TimeControl tc, Consumer<SearchResult> onThinkComplete) {

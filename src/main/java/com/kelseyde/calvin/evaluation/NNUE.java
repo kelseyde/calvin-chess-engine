@@ -6,7 +6,10 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import jdk.incubator.vector.*;
+import jdk.incubator.vector.ShortVector;
+import jdk.incubator.vector.Vector;
+import jdk.incubator.vector.VectorOperators;
+import jdk.incubator.vector.VectorSpecies;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -56,6 +59,7 @@ public class NNUE implements Evaluation {
 
     static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
     static final int UPPER_BOUND = SPECIES.loopBound(Network.HIDDEN_SIZE);
+    static final int LOOP_LENGTH = SPECIES.length();
 
     static final ShortVector FLOOR = ShortVector.broadcast(SPECIES, 0);
     static final ShortVector CEIL = ShortVector.broadcast(SPECIES, QA);
@@ -79,79 +83,64 @@ public class NNUE implements Evaluation {
     public int evaluate() {
 
         boolean white = board.isWhite();
+        short[] weights = Network.NETWORK.outputWeights;
+
+        // Get the 'us-perspective' and 'them-perspective' feature sets, based on the side to move.
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
-        short[] weights = Network.NETWORK.outputWeights;
 
         int eval = 0;
 
-        for (int i = 0; i < SPECIES.loopBound(Network.HIDDEN_SIZE); i += SPECIES.length())
-        {
+        // Forward-pass through the network, using the squared clipped ReLU activation function.
+        // Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
+        for (int i = 0; i < UPPER_BOUND; i += LOOP_LENGTH) {
+
             ShortVector usInputs = ShortVector.fromArray(SPECIES, us, i);
             ShortVector themInputs = ShortVector.fromArray(SPECIES, them, i);
             ShortVector usWeights = ShortVector.fromArray(SPECIES, weights, i);
             ShortVector themWeights = ShortVector.fromArray(SPECIES, weights, i + Network.HIDDEN_SIZE);
 
-            usInputs = usInputs.max(ShortVector.zero(SPECIES)).min(ShortVector.broadcast(SPECIES, NNUE.QA));
-            themInputs = themInputs.max(ShortVector.zero(SPECIES)).min(ShortVector.broadcast(SPECIES, NNUE.QA));
+            // Clip the inputs to the range [0, 255].
+            usInputs = usInputs.max(FLOOR).min(CEIL);
+            themInputs = themInputs.max(FLOOR).min(CEIL);
 
-            ShortVector usWeightedTerms = usInputs.mul(usWeights);
-            ShortVector themWeightedTerms = themInputs.mul(themWeights);
+            // Multiply the inputs by the weights.
+            ShortVector usTerms = usInputs.mul(usWeights);
+            ShortVector themTerms = themInputs.mul(themWeights);
 
+            // Split the inputs and weighted terms into low and high parts, to enable 32-bit multiplication.
             Vector<Integer> usInputsLo = usInputs.convert(S2I, 0);
             Vector<Integer> usInputsHi = usInputs.convert(S2I, 1);
             Vector<Integer> themInputsLo = themInputs.convert(S2I, 0);
             Vector<Integer> themInputsHi = themInputs.convert(S2I, 1);
 
-            Vector<Integer> usWeightedTermsLo = usWeightedTerms.convert(S2I, 0);
-            Vector<Integer> usWeightedTermsHi = usWeightedTerms.convert(S2I, 1);
-            Vector<Integer> themWeightedTermsLo = themWeightedTerms.convert(S2I, 0);
-            Vector<Integer> themWeightedTermsHi = themWeightedTerms.convert(S2I, 1);
+            Vector<Integer> usTermsLo = usTerms.convert(S2I, 0);
+            Vector<Integer> usTermsHi = usTerms.convert(S2I, 1);
+            Vector<Integer> themTermsLo = themTerms.convert(S2I, 0);
+            Vector<Integer> themTermsHi = themTerms.convert(S2I, 1);
 
-            eval += (int) usInputsLo.mul(usWeightedTermsLo).add(usInputsHi.mul(usWeightedTermsHi))
-                    .add(themInputsLo.mul(themWeightedTermsLo)).add(themInputsHi.mul(themWeightedTermsHi)).reduceLanesToLong(VectorOperators.ADD);
+            // Multiply the inputs by the weighted terms, and add the results to the running sum.
+            eval += (int) usInputsLo.mul(usTermsLo)
+                    .add(usInputsHi.mul(usTermsHi))
+                    .add(themInputsLo.mul(themTermsLo))
+                    .add(themInputsHi.mul(themTermsHi))
+                    .reduceLanesToLong(VectorOperators.ADD);
+
         }
 
-        //int eval = sum.reduceLanes(VectorOperators.ADD);
-
+        // Since squaring the inputs also squares quantisation, we need to divide that out.
         eval /= QA;
+
+        // Add the output bias, scale the result, and divide by the quantisation factor.
         eval += Network.NETWORK.outputBias;
         eval *= SCALE;
         eval /= QAB;
+
+        // Scale the evaluation based on the material and proximity to 50-move rule draw.
         eval = scaleEval(board, eval);
+
         return eval;
 
-    }
-
-    /**
-     * Forward pass through the network, using the squared clipped ReLU activation function.
-     * Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
-     */
-    private int forward(short[] features, int weightOffset) {
-        short[] weights = Network.NETWORK.outputWeights;
-
-        IntVector sum = IntVector.zero(SPECIES.vectorShape().withLanes(int.class));
-
-        for (int i = 0; i < UPPER_BOUND; i += SPECIES.length()) {
-
-            ShortVector inputsVector = ShortVector.fromArray(SPECIES, features, i);
-            ShortVector weightsVector = ShortVector.fromArray(SPECIES, weights, i + weightOffset);
-
-            inputsVector = inputsVector.min(CEIL).max(FLOOR);
-
-            ShortVector weightedTermsVector = inputsVector.mul(weightsVector);
-
-            Vector<Integer> inputsLo = inputsVector.convert(S2I, 0);
-            Vector<Integer> inputsHi = inputsVector.convert(S2I, 1);
-
-            Vector<Integer> weightedTermsLo = weightedTermsVector.convert(S2I, 0);
-            Vector<Integer> weightedTermsHi = weightedTermsVector.convert(S2I, 1);
-
-            sum = sum.add(inputsLo.mul(weightedTermsLo)).add(inputsHi.mul(weightedTermsHi));
-
-        }
-
-        return sum.reduceLanes(VectorOperators.ADD);
     }
 
     private void activateAll(Board board) {

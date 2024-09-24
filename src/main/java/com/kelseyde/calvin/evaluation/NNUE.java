@@ -6,9 +6,7 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorOperators;
-import jdk.incubator.vector.VectorSpecies;
+import jdk.incubator.vector.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,7 +33,7 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "dawn.nnue";
+        public static final String FILE = "sol.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 384;
 
@@ -81,9 +79,11 @@ public class NNUE implements Evaluation {
         boolean white = board.isWhite();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
-        int eval = Network.NETWORK.outputBias();
+        int eval = 0;
         eval += forward(us, 0);
         eval += forward(them, Network.HIDDEN_SIZE);
+        eval /= QA;
+        eval += Network.NETWORK.outputBias;
         eval *= SCALE;
         eval /= QAB;
         eval = scaleEval(board, eval);
@@ -92,22 +92,34 @@ public class NNUE implements Evaluation {
     }
 
     /**
-     * Forward pass through the network, using the clipped ReLU activation function.
+     * Forward pass through the network, using the squared clipped ReLU activation function.
      * Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
      */
     private int forward(short[] features, int weightOffset) {
         short[] weights = Network.NETWORK.outputWeights;
-        int sum = 0;
+
+        IntVector sum = IntVector.zero(SPECIES.vectorShape().withLanes(int.class));
 
         for (int i = 0; i < UPPER_BOUND; i += SPECIES.length()) {
-            sum += ShortVector.fromArray(SPECIES, features, i)
-                    .min(CEIL)
-                    .max(FLOOR)
-                    .mul(ShortVector.fromArray(SPECIES, weights, i + weightOffset))
-                    .reduceLanes(VectorOperators.ADD);
+
+            ShortVector inputsVector = ShortVector.fromArray(SPECIES, features, i);
+            ShortVector weightsVector = ShortVector.fromArray(SPECIES, weights, i + weightOffset);
+
+            inputsVector = inputsVector.min(CEIL).max(FLOOR);
+
+            ShortVector weightedTermsVector = inputsVector.mul(weightsVector);
+
+            Vector<Integer> inputsLo = inputsVector.convert(VectorOperators.S2I, 0);
+            Vector<Integer> inputsHi = inputsVector.convert(VectorOperators.S2I, 1);
+
+            Vector<Integer> weightedTermsLo = weightedTermsVector.convert(VectorOperators.S2I, 0);
+            Vector<Integer> weightedTermsHi = weightedTermsVector.convert(VectorOperators.S2I, 1);
+
+            sum = sum.add(inputsLo.mul(weightedTermsLo)).add(inputsHi.mul(weightedTermsHi));
+
         }
 
-        return sum;
+        return sum.reduceLanes(VectorOperators.ADD);
     }
 
     private void activateAll(Board board) {

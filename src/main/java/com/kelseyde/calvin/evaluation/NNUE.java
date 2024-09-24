@@ -16,6 +16,8 @@ import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import static jdk.incubator.vector.VectorOperators.S2I;
+
 /**
  * Implementation of {@link Evaluation} using an NNUE (Efficiently Updatable Neural Network) evaluation function.
  * <p>
@@ -79,9 +81,39 @@ public class NNUE implements Evaluation {
         boolean white = board.isWhite();
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
+        short[] weights = Network.NETWORK.outputWeights;
+
         int eval = 0;
-        eval += forward(us, 0);
-        eval += forward(them, Network.HIDDEN_SIZE);
+
+        for (int i = 0; i < SPECIES.loopBound(Network.HIDDEN_SIZE); i += SPECIES.length())
+        {
+            ShortVector usInputs = ShortVector.fromArray(SPECIES, us, i);
+            ShortVector themInputs = ShortVector.fromArray(SPECIES, them, i);
+            ShortVector usWeights = ShortVector.fromArray(SPECIES, weights, i);
+            ShortVector themWeights = ShortVector.fromArray(SPECIES, weights, i + Network.HIDDEN_SIZE);
+
+            usInputs = usInputs.max(ShortVector.zero(SPECIES)).min(ShortVector.broadcast(SPECIES, NNUE.QA));
+            themInputs = themInputs.max(ShortVector.zero(SPECIES)).min(ShortVector.broadcast(SPECIES, NNUE.QA));
+
+            ShortVector usWeightedTerms = usInputs.mul(usWeights);
+            ShortVector themWeightedTerms = themInputs.mul(themWeights);
+
+            Vector<Integer> usInputsLo = usInputs.convert(S2I, 0);
+            Vector<Integer> usInputsHi = usInputs.convert(S2I, 1);
+            Vector<Integer> themInputsLo = themInputs.convert(S2I, 0);
+            Vector<Integer> themInputsHi = themInputs.convert(S2I, 1);
+
+            Vector<Integer> usWeightedTermsLo = usWeightedTerms.convert(S2I, 0);
+            Vector<Integer> usWeightedTermsHi = usWeightedTerms.convert(S2I, 1);
+            Vector<Integer> themWeightedTermsLo = themWeightedTerms.convert(S2I, 0);
+            Vector<Integer> themWeightedTermsHi = themWeightedTerms.convert(S2I, 1);
+
+            eval += (int) usInputsLo.mul(usWeightedTermsLo).add(usInputsHi.mul(usWeightedTermsHi))
+                    .add(themInputsLo.mul(themWeightedTermsLo)).add(themInputsHi.mul(themWeightedTermsHi)).reduceLanesToLong(VectorOperators.ADD);
+        }
+
+        //int eval = sum.reduceLanes(VectorOperators.ADD);
+
         eval /= QA;
         eval += Network.NETWORK.outputBias;
         eval *= SCALE;
@@ -109,11 +141,11 @@ public class NNUE implements Evaluation {
 
             ShortVector weightedTermsVector = inputsVector.mul(weightsVector);
 
-            Vector<Integer> inputsLo = inputsVector.convert(VectorOperators.S2I, 0);
-            Vector<Integer> inputsHi = inputsVector.convert(VectorOperators.S2I, 1);
+            Vector<Integer> inputsLo = inputsVector.convert(S2I, 0);
+            Vector<Integer> inputsHi = inputsVector.convert(S2I, 1);
 
-            Vector<Integer> weightedTermsLo = weightedTermsVector.convert(VectorOperators.S2I, 0);
-            Vector<Integer> weightedTermsHi = weightedTermsVector.convert(VectorOperators.S2I, 1);
+            Vector<Integer> weightedTermsLo = weightedTermsVector.convert(S2I, 0);
+            Vector<Integer> weightedTermsHi = weightedTermsVector.convert(S2I, 1);
 
             sum = sum.add(inputsLo.mul(weightedTermsLo)).add(inputsHi.mul(weightedTermsHi));
 

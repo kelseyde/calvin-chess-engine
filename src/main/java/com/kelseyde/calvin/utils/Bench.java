@@ -66,7 +66,7 @@ public class Bench {
     );
 
     private static final int BENCH_DEPTH = 10;
-    private static final TimeControl BENCH_TC = TimeControl.init(Board.from(FEN.STARTPOS), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH));
+    private static final TimeControl BENCH_TC = TimeControl.init(Board.from(FEN.STARTPOS), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH, -1, false));
 
     public static void run() {
 

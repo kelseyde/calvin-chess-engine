@@ -46,26 +46,54 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 
 ## Features
 
-### Board representation / Move Generation
+Calvin features a pretty traditional chess engine architecture. The engine can broadly be split into three parts: Move Generation, Search, and Evaluation.
 
-- Calvin uses [Bitboards](https://www.chessprogramming.org/Bitboards) for internal board representation. Bitboards are considered the state-of-the-art for tracking board state, and consistently outperform the more intuitive [Mailbox](https://www.chessprogramming.org/Mailbox) approach. 
-- [Move generation](https://www.chessprogramming.org/Move_Generation) algorithms are divided into two camps: legal and pseudo-legal. Calvin features legal movegen.
-- For sliding pieces (bishops, rooks & queens), Calvin uses  [Magic Bitboards](https://www.chessprogramming.org/Magic_Bitboards).
+### Move Generation
 
+Every chess engine requires an internal [board representation](https://www.chessprogramming.org/Board_Representation), in order to track the position of the pieces, the move history, and so on. From there, for any given chess position the engine needs to be able to [generate legal moves](https://www.chessprogramming.org/Move_Generation) for that position, to be used during exploration of the game tree during search. As with everything chess-engine-related, the faster the movegen the better!
+
+- [Legal move generation](https://www.chessprogramming.org/Move_Generation)
+- [Bitboards](https://www.chessprogramming.org/Bitboards)
+- [Magic Bitboards](https://www.chessprogramming.org/Magic_Bitboards)
 
 ### Search
 
-- Calvin features a classical [Alpha-Beta](https://www.chessprogramming.org/Alpha-Beta) minimax search algorithm to explore the game tree. This is further enhanced by techniques such as [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search), [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening), and [Quiescence Search](https://www.chessprogramming.org/Quiescence_Search).
-- [Transposition table](https://www.chessprogramming.org/Transposition_Table) - A transposition table is an in-memory hashtable recording information of all the previously visited positions in the search, which helps drastically cut down on the search space, since the searcher will encounter the same positions from multiple different move orders. [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing) is used to create the hash index.
-- [Parallel Search](https://www.chessprogramming.org/Parallel_Search) - [Lazy SMP](https://www.chessprogramming.org/Lazy_SMP) is implemented for multi-threaded parallel search.
-- [Pruning](https://www.chessprogramming.org/Pruning) - Calvin employs multiple heuristics to cut down on the search space, including [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning), [Futility Pruning](https://www.chessprogramming.org/Futility_Pruning), [Reverse Futility Pruning](https://www.chessprogramming.org/Reverse_Futility_Pruning), [Late Move Pruning](https://www.chessprogramming.org/Late_Move_Reductions) and [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
-- Like many engines Calvin also uses [Search Extensions](https://www.chessprogramming.org/Extensions) and [Search Reductions](https://www.chessprogramming.org/Reductions) to dynamically alter the depth a position is searched. These include the [Check Extension](https://www.chessprogramming.org/Check_Extensions) and [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions).
+The search algorithm is all about exploring the possible positions in the game tree, in the most efficient manner possible. To achieve this Calvin uses a classical [alpha/beta](https://www.chessprogramming.org/Alpha-Beta) [negamax](https://www.chessprogramming.org/Negamax) algorithm. 
 
-### Move Ordering
-- Captures are ordered using the [MVV-LVA](https://www.chessprogramming.org/MVV-LVA) (Most-Valuable-Victim, Least-Valuable-Attacker) heuristic.
-- Non-captures are ordered using the [Killer move](https://www.chessprogramming.org/Killer_Move) and [History](https://www.chessprogramming.org/History_Heuristic) heuristics.
+#### Search enhancements
 
-### Communication
+- [Transposition table](https://www.chessprogramming.org/Transposition_Table)
+- [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search)
+- [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
+- [Quiescence Search](https://www.chessprogramming.org/Quiescence_Search)
+- [Zobrist Hashing](https://www.chessprogramming.org/Zobrist_Hashing)
+- [Aspiration windows](https://www.chessprogramming.org/Aspiration_Windows)
+- [Lazy SMP](https://www.chessprogramming.org/Lazy_SMP)
+
+#### Pruning, reductions, extensions
+
+- [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
+- [Futility Pruning](https://www.chessprogramming.org/Futility_Pruning)
+- [Reverse Futility Pruning](https://www.chessprogramming.org/Reverse_Futility_Pruning)
+- [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
+- [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions)
+- [Check Extension](https://www.chessprogramming.org/Check_Extensions)
+
+#### Move ordering
+
+- [MVV](https://www.chessprogramming.org/MVV-LVA) with [Capture History](https://www.chessprogramming.org/History_Heuristic#Capture_History)
+- [Killer Heuristic](https://www.chessprogramming.org/Killer_Move)
+- [History Heuristic](https://www.chessprogramming.org/History_Heuristic)
+- [Continuation History](https://www.chessprogramming.org/History_Heuristic#Continuation_History) (1-ply and 2-ply)
+
+#### Time Management
+
+- Hard/soft time bounds
+- Best move stability scaling
+- Score stability scaling
+- Node TM scaling
+
+#### Communication
 - Calvin communicates using the Universal Chess Interface [(UCI) protocol](https://www.chessprogramming.org/UCI).
 - [Pondering](https://www.chessprogramming.org/Pondering), where the engine thinks on the opponent's move. Can be disabled using the 'Ponder' UCI option.
 - Hash size and number of search threads are also configurable via UCI.

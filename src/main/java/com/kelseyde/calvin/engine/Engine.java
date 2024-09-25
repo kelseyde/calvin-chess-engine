@@ -115,7 +115,7 @@ public class Engine {
     public Move extractPonderMove(Move bestMove) {
         TranspositionTable tt = searcher.getTranspositionTable();
         board.makeMove(bestMove);
-        long key = board.getState().getKey();
+        long key = board.key();
         HashEntry entry = tt.get(key, 0);
         board.unmakeMove();
         return entry != null ? entry.getMove() : null;
@@ -126,7 +126,7 @@ public class Engine {
         TranspositionTable tt = searcher.getTranspositionTable();
         int moves = 0;
         while (moves <= 12) {
-            long key = board.getState().getKey();
+            long key = board.key();
             HashEntry entry = tt.get(key, 0);
             if (entry == null || entry.getMove() == null) {
                 break;

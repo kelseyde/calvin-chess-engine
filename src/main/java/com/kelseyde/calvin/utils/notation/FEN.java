@@ -158,8 +158,6 @@ public class FEN {
         }
     }
 
-
-
     private static boolean parseSideToMove(String sideToMove) {
         return switch (sideToMove) {
             case "w" -> true;

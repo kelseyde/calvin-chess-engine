@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class PerftService {
 
-    private final MoveGenerator moveGenerator = new MoveGenerator();
+    private final MoveGenerator movegen = new MoveGenerator();
 
     public long nodesSearched = 0;
     private Map<Move, Long> nodesPerMove;
@@ -32,7 +32,7 @@ public class PerftService {
 
     public long perft(Board board, int depth, int originalDepth) {
         nodesSearched++;
-        List<Move> moves = moveGenerator.generateMoves(board);
+        List<Move> moves = movegen.generateMoves(board);
         if (depth == 1) {
             return moves.size();
         }

@@ -1,6 +1,4 @@
-<p align="center"><img src="src/main/resources/calvin.png" width="160"></p>
-
-# <div align="center"> Calvin </div>
+<p align="center"><img src="src/main/resources/logo.png" width="350"></p>
 
 <div align="center">
 

@@ -11,7 +11,7 @@ Calvin is a chess engine written in Java.
 
 It features a a traditional alpha-beta search algorithm paired with an NNUE evaluation function. 
 
-The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 470 million positions taken from the [Leela Chess Zero dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and HCE. The network architecture is (768->384)x2->1. 
+The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 670 million positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->384)x2->1. 
 
 Calvin is rated roughly 3170 elo (~120th place) on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/4040/) leaderboards, and is currently playing on [Lichess](https://lichess.org/@/Calvin_Bot).
 

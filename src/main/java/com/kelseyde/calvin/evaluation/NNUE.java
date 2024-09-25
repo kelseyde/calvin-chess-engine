@@ -40,7 +40,7 @@ public class NNUE implements Evaluation {
 
         public static final String FILE = "sol.nnue";
         public static final int INPUT_SIZE = 768;
-        public static final int HIDDEN_SIZE = 384;
+        public static final int HIDDEN_SIZE = 512;
 
         public static final Network NETWORK = loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
 

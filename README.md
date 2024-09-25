@@ -26,8 +26,6 @@ To run Calvin locally, you will need Java (minimum Java 17) installed on your ma
 ```
 java --add-modules jdk.incubator.vector -jar calvin-chess-engine-4.0.1.jar
 ```
-Please note the '--add-modules jdk.incubator.vector' - Calvin uses the incubator Vector API for SIMD operations during NNUE inference, and this module needs to enabled explicitly.
-
 From there, use the "help" option or refer to UCI documentation for further information on available commands.
 
 ## Strength

@@ -15,22 +15,20 @@ import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.perft.PerftService;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 /**
- * The engine is responsible for actually playing a game of chess. It manages the game state, updates the board, and 'thinks'
- * (executes a search) to find the best move. It can also select how long to think for in the case of a time-controlled
- * game, or it can 'ponder' (think indefinitely when it is the opponent's turn).
+ * The engine is responsible for actually playing a game of chess. It manages the game state, updates the board, and
+ * 'thinks' (executes a search) to find the best move. It can also select how long to think for in the case of a
+ * time-controlled game, or it can 'ponder' (think indefinitely when it is the opponent's turn).
  */
 public class Engine {
 
     final EngineConfig config;
-    final MoveGenerator moveGenerator;
+    final MoveGenerator movegen;
     final PerftService perft;
     final Search searcher;
 
@@ -40,7 +38,7 @@ public class Engine {
     public Engine() {
         this.config = new EngineConfig();
         this.board = Board.from(FEN.STARTPOS);
-        this.moveGenerator = new MoveGenerator();
+        this.movegen = new MoveGenerator();
         this.perft = new PerftService();
         this.searcher = new ParallelSearcher(config, new TranspositionTable(config.defaultHashSizeMb));
         this.searcher.setPosition(board);
@@ -59,9 +57,39 @@ public class Engine {
         searcher.setPosition(board);
     }
 
-    public void setPosition(Board board) {
-        this.board = board;
-        searcher.setPosition(board);
+    public void go(GoCommand command) {
+
+        if (command.isPerft()) {
+            int depth = command.perft();
+            perft.perft(board, depth);
+        } else {
+            this.config.pondering = command.ponder();
+            setSearchCancelled(false);
+            TimeControl tc = TimeControl.init(board, command);
+            stopThinking();
+            think = CompletableFuture.supplyAsync(() -> think(tc));
+            think.thenAccept(UCI::writeMove);
+        }
+
+    }
+
+    public SearchResult think(TimeControl tc) {
+        return searcher.search(tc);
+    }
+
+    public boolean isThinking() {
+        return think != null && !think.isDone();
+    }
+
+    public void stopThinking() {
+        if (isThinking()) {
+            think.cancel(true);
+        }
+    }
+
+    public void gameOver() {
+        stopThinking();
+        board = null;
     }
 
     public void setHashSize(int hashSizeMb) {
@@ -84,75 +112,31 @@ public class Engine {
         this.config.pondering = pondering;
     }
 
-    public void go(GoCommand command) {
-
-        if (command.isPerft()) {
-            int depth = command.perft();
-            perft.perft(board, depth);
-        } else {
-            this.config.pondering = command.ponder();
-            setSearchCancelled(false);
-            TimeControl tc = TimeControl.init(board, command);
-            findBestMove(tc, UCI::writeMove);
-        }
-
-    }
-
-    public void findBestMove(TimeControl tc, Consumer<SearchResult> onThinkComplete) {
-        stopThinking();
-        think = CompletableFuture.supplyAsync(() -> think(tc));
-        think.thenAccept(onThinkComplete);
-    }
-
-    public SearchResult think(int timeout) {
-        TimeControl tc = new TimeControl(Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1, -1);
-        return searcher.search(tc);
-    }
-
-    public SearchResult think(TimeControl tc) {
-        return searcher.search(tc);
-    }
-
-    public boolean isThinking() {
-        return think != null && !think.isDone();
-    }
-
-    public void stopThinking() {
-        if (isThinking()) {
-            think.cancel(true);
-        }
-    }
-
-    public void gameOver() {
-        stopThinking();
-        board = null;
-    }
-
     public Move extractPonderMove(Move bestMove) {
-        TranspositionTable transpositionTable = searcher.getTranspositionTable();
+        TranspositionTable tt = searcher.getTranspositionTable();
         board.makeMove(bestMove);
-        long zobristKey = board.getState().getKey();
-        HashEntry entry = transpositionTable.get(zobristKey, 0);
+        long key = board.getState().getKey();
+        HashEntry entry = tt.get(key, 0);
         board.unmakeMove();
         return entry != null ? entry.getMove() : null;
     }
 
     public List<Move> extractPrincipalVariation() {
-        List<Move> principalVariation = new ArrayList<>();
-        TranspositionTable transpositionTable = searcher.getTranspositionTable();
-        int moveCount = 0;
-        while (moveCount <= 12) {
-            long zobristKey = board.getState().getKey();
-            HashEntry entry = transpositionTable.get(zobristKey, 0);
+        List<Move> pv = new ArrayList<>();
+        TranspositionTable tt = searcher.getTranspositionTable();
+        int moves = 0;
+        while (moves <= 12) {
+            long key = board.getState().getKey();
+            HashEntry entry = tt.get(key, 0);
             if (entry == null || entry.getMove() == null) {
                 break;
             }
-            principalVariation.add(entry.getMove());
+            pv.add(entry.getMove());
             board.makeMove(entry.getMove());
-            moveCount++;
+            moves++;
         }
-        IntStream.range(0, moveCount).forEach(i -> board.unmakeMove());
-        return principalVariation;
+        IntStream.range(0, moves).forEach(i -> board.unmakeMove());
+        return pv;
     }
 
     public EngineConfig getConfig() {
@@ -172,7 +156,7 @@ public class Engine {
      * corresponding 'legal' move which includes any special move flag (promotion, en passant, castling etc.)
      */
     private Move move(Move move) {
-        return moveGenerator.generateMoves(board).stream()
+        return movegen.generateMoves(board).stream()
                 .filter(move::matches)
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Move.toUCI(move)));

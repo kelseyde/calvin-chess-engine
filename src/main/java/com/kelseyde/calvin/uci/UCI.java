@@ -18,30 +18,32 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 /**
- * Entrypoint for the Calvin chess engine. Calvin communicates using the Universal Chess Interface protocol (UCI).
- * This adapter acts as a UCI interface which translates the incoming commands to instructions for the {@link Engine},
- * which is responsible for actually playing the game of chess.
+ * Entrypoint for the Calvin chess engine.
+ * <p>
+ * Calvin communicates using the Universal Chess Interface protocol (UCI). This adapter acts as a UCI interface which
+ * allows the user to interact with the {@link Engine}, and provides a way to configure the engine and play games.
  * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
  */
 public class UCI {
 
-    public static final Engine ENGINE = new Engine();
-    static final Scanner READER = new Scanner(System.in);
-    public static boolean outputEnabled = true;
+    private static final Engine ENGINE = new Engine();
+    private static boolean outputEnabled = true;
 
     public static void run(String[] args) {
 
         write("Calvin by Dan Kelsey");
 
+        // Allow the engine to be benched from the command line at startup.
         if (args.length == 1 && args[0].equals("bench")) {
-            Bench.run();
+            Bench.run(ENGINE);
         }
 
-        try {
+        try (Scanner in = new Scanner(System.in)) {
             String input = "";
             while (!input.equals("quit")) {
-                input = READER.nextLine();
+                input = in.nextLine();
                 if (!input.isEmpty()) {
+                    // Parse the input and execute the command.
                     UCICommand command = UCICommand.parse(input);
                     command.execute();
                 }
@@ -49,6 +51,8 @@ public class UCI {
         } catch (Exception e) {
             writeError("error processing command", e);
         }
+
+
     }
 
     public static void handleUCI(UCICommand command) {
@@ -65,7 +69,7 @@ public class UCI {
     }
 
     public static void handleBench(UCICommand command) {
-        Bench.run();
+        Bench.run(ENGINE);
     }
 
     public static void handleNewGame(UCICommand command) {
@@ -134,6 +138,8 @@ public class UCI {
         write("                    -- binc: black increment in milliseconds");
         write("                    -- nodes: max nodes to search");
         write("                    -- depth: max depth to search");
+        write("                       OR ");
+        write("                    -- perft <depth>: run a perft test to the specified depth");
         write("stop        -- stop searching and return the best move");
         write("fen         -- print the FEN string for the current position");
         write("eval        -- evaluate the current position");
@@ -204,6 +210,10 @@ public class UCI {
         } else {
             write(String.format("bestmove %s", Move.toUCI(move)));
         }
+    }
+
+    public static void setOutputEnabled(boolean outputEnabled) {
+        UCI.outputEnabled = outputEnabled;
     }
 
     private static void setHashSize(UCICommand command) {

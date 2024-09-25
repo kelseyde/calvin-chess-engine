@@ -7,7 +7,7 @@
 
 </div>
 
-Calvin is a chess engine written in Java. 
+Calvin is a superhuman chess engine written in Java. 
 
 It features a a traditional alpha-beta search algorithm paired with an NNUE evaluation function. 
 

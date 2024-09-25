@@ -230,7 +230,7 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
-                && !excluded
+//                && !excluded
                 && !inCheck
                 && (ttEntry == null || ttEntry.getMove() == null)
                 && ply > 0
@@ -253,7 +253,8 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
         // can employ to prune the node and its entire subtree, without searching any moves.
-        if (!pvNode && !inCheck && !excluded) {
+//        if (!pvNode && !inCheck && !excluded) {
+        if (!pvNode && !inCheck) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position

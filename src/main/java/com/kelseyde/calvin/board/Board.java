@@ -261,12 +261,12 @@ public class Board {
     }
 
     public void toggleSquares(Piece type, boolean white, int from, int to) {
-        final long toggleMask = (1L << from | 1L << to);
+        final long toggleMask = (Bits.of(from) | Bits.of(to));
         toggle(type, white, toggleMask);
     }
 
     public void toggleSquare(Piece type, boolean white, int square) {
-        final long toggleMask = 1L << square;
+        final long toggleMask = Bits.of(square);
         toggle(type, white, toggleMask);
     }
 
@@ -299,7 +299,7 @@ public class Board {
     }
 
     public void addKing(int kingSquare, boolean white) {
-        final long toggleMask = 1L << kingSquare;
+        final long toggleMask = Bits.of(kingSquare);
         kings |= toggleMask;
         if (white) {
             whitePieces |= toggleMask;
@@ -530,6 +530,32 @@ public class Board {
         newBoard.setMoves(moveHistory);
         newBoard.setPieces(Arrays.copyOf(this.getPieces(), this.getPieces().length));
         return newBoard;
+    }
+
+    public void print() {
+
+        for (int rank = 7; rank >= 0; --rank) {
+            System.out.print(" +---+---+---+---+---+---+---+---+\n");
+
+            for (int file = 0; file < 8; ++file) {
+                int sq = Square.of(rank, file);
+                Piece piece = pieceAt(sq);
+                if (piece == null) {
+                    System.out.print(" |  ");
+                    continue;
+                }
+                boolean white = (whitePieces & Bits.of(sq)) != 0;
+                System.out.print(" | " + (white ? piece.code().toUpperCase() : piece.code()));
+            }
+
+            System.out.print(" | " + (rank + 1) + "\n");
+        }
+
+        System.out.print(" +---+---+---+---+---+---+---+---+\n");
+        System.out.print("   a   b   c   d   e   f   g   h\n\n");
+
+        System.out.print((white ? "White" : "Black") + " to move\n");
+
     }
 
 }

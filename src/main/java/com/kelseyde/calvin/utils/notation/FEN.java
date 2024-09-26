@@ -1,11 +1,8 @@
 package com.kelseyde.calvin.utils.notation;
 
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.Zobrist;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +47,7 @@ public class FEN {
                 for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
                     int square = Square.of(rankIndex, fileIndex);
                     String squareValue = rank.get(fileIndex);
-                    long squareBB = 1L << square;
+                    long squareBB = Bits.of(square);
                     switch (squareValue) {
                         case "P" -> whitePawns |= squareBB;
                         case "N" -> whiteKnights |= squareBB;
@@ -120,7 +117,7 @@ public class FEN {
                             sb.append(emptySquares);
                             emptySquares = 0;
                         }
-                        long squareBB = 1L << square;
+                        long squareBB = Bits.of(square);
                         boolean white = (board.getWhitePieces() & squareBB) != 0;
                         String pieceCode = piece.code();
                         if (white) pieceCode = pieceCode.toUpperCase();
@@ -248,7 +245,7 @@ public class FEN {
 
         Piece[] pieceList = new Piece[Square.COUNT];
         for (int square = 0; square < Square.COUNT; square++) {
-            long squareMask = 1L << square;
+            long squareMask = Bits.of(square);
             if ((squareMask & board.getPawns()) != 0)           pieceList[square] = Piece.PAWN;
             else if ((squareMask & board.getKnights()) != 0)    pieceList[square] = Piece.KNIGHT;
             else if ((squareMask & board.getBishops()) != 0)    pieceList[square] = Piece.BISHOP;

@@ -55,7 +55,9 @@ public class SearchStack {
         if (ply < 0 || ply >= Search.MAX_DEPTH) {
             return;
         }
-        stack[ply].currentMove = null;
+        SearchStackEntry entry = get(ply);
+        entry.currentMove = null;
+        entry.threats = -1;
     }
 
     public void setBestMove(int ply, Move move, Piece piece, Piece captured, boolean capture, boolean quiet) {

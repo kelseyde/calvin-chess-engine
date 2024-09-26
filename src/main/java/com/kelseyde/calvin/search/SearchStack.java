@@ -18,7 +18,6 @@ public class SearchStack {
         public PlayedMove currentMove;
         public PlayedMove bestMove;
         public boolean nullMoveAllowed = true;
-        public long threats;
     }
 
     public SearchStackEntry get(int ply) {
@@ -57,7 +56,6 @@ public class SearchStack {
         }
         SearchStackEntry entry = get(ply);
         entry.currentMove = null;
-        entry.threats = -1;
     }
 
     public void setBestMove(int ply, Move move, Piece piece, Piece captured, boolean capture, boolean quiet) {
@@ -82,18 +80,6 @@ public class SearchStack {
     public boolean isNullMoveAllowed(int ply) {
         SearchStackEntry entry = get(ply);
         return entry != null && entry.nullMoveAllowed;
-    }
-
-    public void setThreats(int ply, long threats) {
-        if (ply < 0 || ply >= Search.MAX_DEPTH) {
-            return;
-        }
-        stack[ply].threats = threats;
-    }
-
-    public long getThreats(int ply) {
-        SearchStackEntry entry = get(ply);
-        return entry != null ? entry.threats : -1;
     }
 
     public void clear() {

@@ -23,17 +23,12 @@ public class SearchHistory {
     private int bestScoreStability = 0;
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures, long threats) {
 
         if (bestMove.isQuiet()) {
 
             killerTable.add(ply, bestMove.move());
             for (PlayedMove quiet : quiets) {
-
-                long threats = ss.getThreats(ply);
-                if (threats < 0) {
-                    throw new IllegalArgumentException("noooooooo");
-                }
                 boolean good = bestMove.move().equals(quiet.move());
                 quietHistoryTable.update(quiet.move(), depth, threats, white, good);
 

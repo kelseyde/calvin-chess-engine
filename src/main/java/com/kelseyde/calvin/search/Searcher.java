@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -206,9 +207,8 @@ public class Searcher implements Search {
             ttMove = ttEntry.getMove();
         }
 
-        boolean inCheck = movegen.isCheck(board, board.isWhite());
-
-        MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        long threats = movegen.calculateThreats(board, !board.isWhite());
+        boolean inCheck = Bits.contains(threats, Bits.next(board.getKing(board.isWhite())));
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
         // If we are in check then there if a forcing sequence, so we could benefit from searching one ply deeper to
@@ -287,6 +287,8 @@ public class Searcher implements Search {
         int movesSearched = 0;
         List<PlayedMove> quietsSearched = new ArrayList<>();
         List<PlayedMove> capturesSearched = new ArrayList<>();
+
+        MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck, threats);
 
         while (true) {
 
@@ -426,7 +428,7 @@ public class Searcher implements Search {
 
         if (bestScore >= beta) {
             PlayedMove best = ss.getBestMove(ply);
-            history.updateHistory(best, board.isWhite(), depth, ply, ss, quietsSearched, capturesSearched);
+            history.updateHistory(best, board.isWhite(), depth, ply, ss, quietsSearched, capturesSearched, threats);
         }
 
         // Store the best move and score in the transposition table for future reference.
@@ -460,9 +462,10 @@ public class Searcher implements Search {
             ttMove = ttEntry.getMove();
         }
 
-        boolean inCheck = movegen.isCheck(board, board.isWhite());
+        long threats = movegen.calculateThreats(board, !board.isWhite());
+        boolean inCheck = Bits.contains(threats, Bits.next(board.getKing(board.isWhite())));
 
-        QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck, threats);
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;

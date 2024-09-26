@@ -36,12 +36,13 @@ public class MovePicker {
     Stage stage;
     boolean skipQuiets;
     boolean inCheck;
+    long threats;
 
     int moveIndex;
     ScoredMove[] moves;
 
     public MovePicker(
-            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck, long threats) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;
@@ -49,6 +50,7 @@ public class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
+        this.threats = threats;
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.NOISY;
     }
 
@@ -111,20 +113,14 @@ public class MovePicker {
 
     protected void scoreMoves(List<Move> stagedMoves) {
         moves = new ScoredMove[stagedMoves.size()];
-        long threats = ss.getThreats(ply);
-        if (threats < 0) {
-            threats = movegen.calculateThreats(board, !board.isWhite());
-            ss.setThreats(ply, threats);
-        }
-
         for (int i = 0; i < stagedMoves.size(); i++) {
             Move move = stagedMoves.get(i);
-            int score = scoreMove(board, move, ttMove, threats, ply);
+            int score = scoreMove(board, move, ttMove, ply);
             moves[i] = new ScoredMove(move, score);
         }
     }
 
-    protected int scoreMove(Board board, Move move, Move ttMove, long threats, int ply) {
+    protected int scoreMove(Board board, Move move, Move ttMove, int ply) {
 
         int from = move.from();
         int to = move.to();

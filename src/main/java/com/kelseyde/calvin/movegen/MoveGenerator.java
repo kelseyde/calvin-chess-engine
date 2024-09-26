@@ -57,7 +57,7 @@ public class MoveGenerator {
 
         // Calculate pins and checks
         calculatePins(board, white);
-        checkersMask = calculateAttackerMask(board, 1L << kingSquare);
+        checkersMask = calculateAttackerMask(board, Bits.of(kingSquare));
         checkersCount = Bits.count(checkersMask);
 
         final int estimatedLegalMoves = estimateLegalMoves();
@@ -123,8 +123,8 @@ public class MoveGenerator {
         switch (filter) {
             case ALL -> Square.ALL;
             case CAPTURES_ONLY -> opponents;
-            case NOISY -> opponents | Attacks.pawnAttacks(1L << opponentKing, !white);
-            case QUIET -> ~opponents & ~Attacks.pawnAttacks(1L << opponentKing, !white);
+            case NOISY -> opponents | Attacks.pawnAttacks(Bits.of(opponentKing), !white);
+            case QUIET -> ~opponents & ~Attacks.pawnAttacks(Bits.of(opponentKing), !white);
         };
         if (filterMask == Square.NONE) {
             return;
@@ -290,7 +290,7 @@ public class MoveGenerator {
         while (kingMoves != 0) {
             final int to = Bits.next(kingMoves);
             // Check if the end square is not attacked by the opponent
-            if (!isAttacked(board, white, 1L << to)) {
+            if (!isAttacked(board, white, Bits.of(to))) {
                 legalMoves.add(new Move(from, to));
             }
             kingMoves = Bits.pop(kingMoves);
@@ -395,7 +395,7 @@ public class MoveGenerator {
 
     public long getPawnAttacks(Board board, int square, boolean white) {
         long attackMask = 0L;
-        final long squareBB = 1L << square;
+        final long squareBB = Bits.of(square);
         final long friendlies = board.getPieces(white);
 
         long leftCapture = white ?
@@ -580,7 +580,7 @@ public class MoveGenerator {
             if (Bits.count(friendliesBetween) == 1) {
                 int friendlySquare = Bits.next(friendliesBetween);
                 this.pinMask |= friendliesBetween;
-                this.pinRayMasks[friendlySquare] = ray | (1L << possiblePinner);
+                this.pinRayMasks[friendlySquare] = ray | (Bits.of(possiblePinner));
             }
 
             possiblePinners = Bits.pop(possiblePinners);
@@ -599,18 +599,18 @@ public class MoveGenerator {
     private boolean leavesKingInCheck(Board board, Move move, boolean white) {
         board.makeMove(move);
         final int kingSquare = white ? Bits.next(board.getKing(true)) : Bits.next(board.getKing(false));
-        final boolean isAttacked = isAttacked(board, white, 1L << kingSquare);
+        final boolean isAttacked = isAttacked(board, white, Bits.of(kingSquare));
         board.unmakeMove();
         return isAttacked;
     }
 
     private boolean isPinned(int from) {
-        return (1L << from & pinMask) != 0;
+        return (Bits.of(from) & pinMask) != 0;
     }
 
     private boolean isMovingAlongPinRay(int from, int to) {
         final long pinRay = pinRayMasks[from];
-        return (1L << to & pinRay) != 0;
+        return (Bits.of(to) & pinRay) != 0;
     }
 
     private long getCastleTravelSquares(boolean white, boolean isKingside) {

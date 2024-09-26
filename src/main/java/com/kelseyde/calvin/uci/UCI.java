@@ -161,6 +161,14 @@ public class UCI {
         }
     }
 
+    public static void handleDisplay(UCICommand command) {
+        ENGINE.getBoard().print();
+    }
+
+    public static void handleThreats(UCICommand command) {
+        //TODO
+    }
+
     public static void handleEval(UCICommand command) {
         NNUE nnue = new NNUE(ENGINE.getBoard());
         write(String.valueOf(nnue.evaluate()));

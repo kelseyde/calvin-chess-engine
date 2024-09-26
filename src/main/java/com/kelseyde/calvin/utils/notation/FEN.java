@@ -47,7 +47,7 @@ public class FEN {
                 for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
                     int square = Square.of(rankIndex, fileIndex);
                     String squareValue = rank.get(fileIndex);
-                    long squareBB = Bits.of(square);
+                    long squareBB = Bits.fromSquare(square);
                     switch (squareValue) {
                         case "P" -> whitePawns |= squareBB;
                         case "N" -> whiteKnights |= squareBB;
@@ -117,7 +117,7 @@ public class FEN {
                             sb.append(emptySquares);
                             emptySquares = 0;
                         }
-                        long squareBB = Bits.of(square);
+                        long squareBB = Bits.fromSquare(square);
                         boolean white = (board.getWhitePieces() & squareBB) != 0;
                         String pieceCode = piece.code();
                         if (white) pieceCode = pieceCode.toUpperCase();
@@ -245,7 +245,7 @@ public class FEN {
 
         Piece[] pieceList = new Piece[Square.COUNT];
         for (int square = 0; square < Square.COUNT; square++) {
-            long squareMask = Bits.of(square);
+            long squareMask = Bits.fromSquare(square);
             if ((squareMask & board.getPawns()) != 0)           pieceList[square] = Piece.PAWN;
             else if ((squareMask & board.getKnights()) != 0)    pieceList[square] = Piece.KNIGHT;
             else if ((squareMask & board.getBishops()) != 0)    pieceList[square] = Piece.BISHOP;

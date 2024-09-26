@@ -147,6 +147,10 @@ public class Engine {
         return searcher;
     }
 
+    public MoveGenerator getMovegen() {
+        return movegen;
+    }
+
     public Board getBoard() {
         return board;
     }

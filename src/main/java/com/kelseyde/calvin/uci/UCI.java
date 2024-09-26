@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.uci;
 
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
@@ -166,7 +168,9 @@ public class UCI {
     }
 
     public static void handleThreats(UCICommand command) {
-        //TODO
+        Board board = ENGINE.getBoard();
+        long threats = ENGINE.getMovegen().calculateThreats(board, !board.isWhite());
+        Bits.print(threats);
     }
 
     public static void handleEval(UCICommand command) {

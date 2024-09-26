@@ -261,12 +261,12 @@ public class Board {
     }
 
     public void toggleSquares(Piece type, boolean white, int from, int to) {
-        final long toggleMask = (Bits.of(from) | Bits.of(to));
+        final long toggleMask = (Bits.fromSquare(from) | Bits.fromSquare(to));
         toggle(type, white, toggleMask);
     }
 
     public void toggleSquare(Piece type, boolean white, int square) {
-        final long toggleMask = Bits.of(square);
+        final long toggleMask = Bits.fromSquare(square);
         toggle(type, white, toggleMask);
     }
 
@@ -299,7 +299,7 @@ public class Board {
     }
 
     public void addKing(int kingSquare, boolean white) {
-        final long toggleMask = Bits.of(kingSquare);
+        final long toggleMask = Bits.fromSquare(kingSquare);
         kings |= toggleMask;
         if (white) {
             whitePieces |= toggleMask;
@@ -544,7 +544,7 @@ public class Board {
                     System.out.print(" |  ");
                     continue;
                 }
-                boolean white = (whitePieces & Bits.of(sq)) != 0;
+                boolean white = (whitePieces & Bits.fromSquare(sq)) != 0;
                 System.out.print(" | " + (white ? piece.code().toUpperCase() : piece.code()));
             }
 

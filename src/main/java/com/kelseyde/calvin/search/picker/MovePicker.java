@@ -111,14 +111,20 @@ public class MovePicker {
 
     protected void scoreMoves(List<Move> stagedMoves) {
         moves = new ScoredMove[stagedMoves.size()];
+        long threats = ss.getThreats(ply);
+        if (threats < 0) {
+            threats = movegen.calculateThreats(board, !board.isWhite());
+            ss.setThreats(ply, threats);
+        }
+
         for (int i = 0; i < stagedMoves.size(); i++) {
             Move move = stagedMoves.get(i);
-            int score = scoreMove(board, move, ttMove, ply);
+            int score = scoreMove(board, move, ttMove, threats, ply);
             moves[i] = new ScoredMove(move, score);
         }
     }
 
-    protected int scoreMove(Board board, Move move, Move ttMove, int ply) {
+    protected int scoreMove(Board board, Move move, Move ttMove, long threats, int ply) {
 
         int from = move.from();
         int to = move.to();
@@ -135,7 +141,7 @@ public class MovePicker {
             return scoreCapture(board, from, to, captured);
         }
         else {
-            return scoreQuiet(board, move, ply);
+            return scoreQuiet(board, move, threats, ply);
         }
 
     }
@@ -157,7 +163,7 @@ public class MovePicker {
         return captureScore;
     }
 
-    protected int scoreQuiet(Board board, Move move, int ply) {
+    protected int scoreQuiet(Board board, Move move, long threats, int ply) {
         boolean white = board.isWhite();
         Piece piece = board.pieceAt(move.from());
 
@@ -166,7 +172,7 @@ public class MovePicker {
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
         // Get the history score for the move
-        int historyScore = history.getHistoryTable().get(move, white);
+        int historyScore = history.getHistoryTable().get(move, threats, white);
 
         // Get the continuation history score for the move
         Move prevMove = ss.getMove(ply - 1);

@@ -10,44 +10,40 @@ public class QuietHistoryTable extends HistoryTable {
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;
 
-    int[][][][][] table = new int[2][Square.COUNT][Square.COUNT][2][2];
+    int[][][][] table = new int[2][Square.COUNT][Square.COUNT][2];
 
     public void update(Move move, int depth, long threats, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
         int from = move.from();
         int to = move.to();
-        int fromThreatened = Bits.contains(threats, from) ? 1 : 0;
         int toThreatened= Bits.contains(threats, to) ? 1 : 0;
-        int current = table[colourIndex][from][to][fromThreatened][toThreatened];
+        int current = table[colourIndex][from][to][toThreatened];
         int bonus = bonus(depth);
         if (!good) bonus = -bonus;
         int update = gravity(current, bonus);
-        table[colourIndex][from][to][fromThreatened][toThreatened] = update;
+        table[colourIndex][from][to][toThreatened] = update;
     }
 
     public int get(Move historyMove, long threats, boolean white) {
         int colourIndex = Colour.index(white);
         int from = historyMove.from();
         int to = historyMove.to();
-        int fromThreatened = Bits.contains(threats, from) ? 1 : 0;
         int toThreatened = Bits.contains(threats, to) ? 1 : 0;
-        return table[colourIndex][from][to][fromThreatened][toThreatened];
+        return table[colourIndex][from][to][toThreatened];
     }
 
     public void ageScores(boolean white) {
         int colourIndex = Colour.index(white);
         for (int from = 0; from < Square.COUNT; from++) {
             for (int to = 0; to < Square.COUNT; to++) {
-                table[colourIndex][from][to][0][0] /= 2;
-                table[colourIndex][from][to][0][1] /= 2;
-                table[colourIndex][from][to][1][0] /= 2;
-                table[colourIndex][from][to][1][1] /= 2;
+                table[colourIndex][from][to][0] /= 2;
+                table[colourIndex][from][to][1] /= 2;
             }
         }
     }
 
     public void clear() {
-        table = new int[2][Square.COUNT][Square.COUNT][2][2];
+        table = new int[2][Square.COUNT][Square.COUNT][2];
     }
 
     @Override

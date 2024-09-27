@@ -300,6 +300,17 @@ public class Searcher implements Search {
             boolean isCapture = captured != null;
             boolean isPromotion = move.promoPiece() != null;
 
+            int history = isCapture ?
+                    this.history.getCaptureHistoryTable().get(piece, move.to(), captured, !board.isWhite()) :
+                    this.history.getHistoryTable().get(move, !board.isWhite());
+
+            if (!pvNode
+                    && depth <= 5
+                    && history < -2254 * depth + -1056) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
+
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
@@ -370,6 +381,7 @@ public class Searcher implements Search {
                         reduction++;
                     }
                 }
+
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.

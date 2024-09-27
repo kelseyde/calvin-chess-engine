@@ -5,7 +5,7 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.HistoryTable;
+import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public class SearchHistory {
     private static final int[] CONT_HIST_PLIES = { 1, 2 };
 
     private final KillerTable killerTable = new KillerTable();
-    private final HistoryTable historyTable = new HistoryTable();
+    private final QuietHistoryTable quietHistoryTable = new QuietHistoryTable();
     private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
     private final CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
 
@@ -30,7 +30,7 @@ public class SearchHistory {
             killerTable.add(ply, bestMove.move());
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
-                historyTable.update(quiet.move(), depth, white, good);
+                quietHistoryTable.update(quiet.move(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
                     Move prevMove = ss.getMove(ply - prevPly);
@@ -74,8 +74,8 @@ public class SearchHistory {
         return killerTable;
     }
 
-    public HistoryTable getHistoryTable() {
-        return historyTable;
+    public QuietHistoryTable getHistoryTable() {
+        return quietHistoryTable;
     }
 
     public ContinuationHistoryTable getContHistTable() {
@@ -89,13 +89,13 @@ public class SearchHistory {
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
-        historyTable.ageScores(true);
-        historyTable.ageScores(false);
+        quietHistoryTable.ageScores(true);
+        quietHistoryTable.ageScores(false);
     }
 
     public void clear() {
         killerTable.clear();
-        historyTable.clear();
+        quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();
     }

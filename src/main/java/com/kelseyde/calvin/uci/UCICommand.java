@@ -1,8 +1,7 @@
 package com.kelseyde.calvin.uci;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.utils.FEN;
-import com.kelseyde.calvin.utils.Notation;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,17 +69,23 @@ public record UCICommand(UCICommandType type, String[] args) {
         return Arrays.asList(args).contains(label);
     }
 
-    public record GoCommand(int movetime, int wtime, int btime, int winc, int binc, int nodes, int depth) {
+    public record GoCommand(int movetime, int wtime, int btime, int winc, int binc, int nodes, int depth, int perft, boolean ponder) {
 
         public static GoCommand parse(UCICommand command) {
-            int movetime =  command.getInt("movetime", Integer.MIN_VALUE, false);
-            int wtime =     command.getInt("wtime", Integer.MIN_VALUE, false);
-            int btime =     command.getInt("btime", Integer.MIN_VALUE, false);
-            int winc =      command.getInt("winc", Integer.MIN_VALUE, false);
-            int binc =      command.getInt("binc", Integer.MIN_VALUE, false);
-            int nodes =     command.getInt("nodes", Integer.MIN_VALUE, false);
-            int depth =     command.getInt("depth", Integer.MIN_VALUE, false);
-            return new GoCommand(movetime, wtime, btime, winc, binc, nodes, depth);
+            int movetime =      command.getInt("movetime", Integer.MIN_VALUE, false);
+            int wtime =         command.getInt("wtime", Integer.MIN_VALUE, false);
+            int btime =         command.getInt("btime", Integer.MIN_VALUE, false);
+            int winc =          command.getInt("winc", Integer.MIN_VALUE, false);
+            int binc =          command.getInt("binc", Integer.MIN_VALUE, false);
+            int nodes =         command.getInt("nodes", Integer.MIN_VALUE, false);
+            int depth =         command.getInt("depth", Integer.MIN_VALUE, false);
+            int perft =         command.getInt("perft", Integer.MIN_VALUE, false);
+            boolean ponder =    command.contains("ponder");
+            return new GoCommand(movetime, wtime, btime, winc, binc, nodes, depth, perft, ponder);
+        }
+
+        public boolean isPerft() {
+            return perft > 0;
         }
 
         public boolean isMovetime() {
@@ -106,7 +111,7 @@ public record UCICommand(UCICommandType type, String[] args) {
                 fen = FEN.STARTPOS;
             }
             List<Move> moves = command.getStrings("moves", false).stream()
-                    .map(Notation::fromUCI)
+                    .map(Move::fromUCI)
                     .toList();
             return new PositionCommand(fen, moves);
         }

@@ -20,8 +20,8 @@
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [ ] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
-- [ ] 1-ply Conthist
-- [ ] 2-ply Conthist
+- [x] 1-ply Conthist
+- [x] 2-ply Conthist
 - [x] Capthist
 - [ ] Threats
 - [ ] Countermoves
@@ -32,20 +32,26 @@
 - [ ] Find solution to CCRL/ChessGUI/Vector API issue
 - [ ] Lazy NNUE updates
 - [x] New net, bigger HL size
-- [ ] Screlu
+- [x] Screlu
 - [ ] Output buckets
+- [ ] Horizontal mirroring
 - [ ] Datagen
 - [ ] Pawn corrhist
 - [ ] Material corrhist
+- [ ] Output buckets
+- [ ] Finny tables
 
 ### Time management
 
 - [x] Node TM
+- [ ] Legal move based TM?
+- [ ] Futility TM?
+- [ ] Game phase TM?
 
 ### UCI
 
-- [ ] Add engine author/version
-- [ ] Add perft to UCI options
+- [x] Add engine author/version
+- [x] Add perft to UCI options
 - [ ] Implement display command
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info

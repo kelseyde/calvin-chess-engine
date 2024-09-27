@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.movegen;
 
 import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bitwise;
-import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Square;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,8 +129,8 @@ public class Attacks {
 
     public static long pawnAttacks(long pawns, boolean white) {
         return white ?
-                (Bitwise.shiftNorthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftNorthEast(pawns) &~ Bits.FILE_A) :
-                (Bitwise.shiftSouthWest(pawns) &~ Bits.FILE_H) | (Bitwise.shiftSouthEast(pawns) &~ Bits.FILE_A);
+                (Bits.northWest(pawns) &~ File.H) | (Bits.northEast(pawns) &~ File.A) :
+                (Bits.southWest(pawns) &~ File.H) | (Bits.southEast(pawns) &~ File.A);
     }
 
     public static long kingAttacks(int square) {
@@ -149,6 +149,87 @@ public class Attacks {
         return sliderAttacks(square, blockers, BISHOP_MAGIC_LOOKUP);
     }
 
+    /**
+     * Calculate single pawn moves.
+     */
+    public static long pawnSingleMoves(long pawns, long occupied, boolean white) {
+        return white ?
+                Bits.north(pawns) & ~occupied & ~Bits.Rank.EIGHTH :
+                Bits.south(pawns) & ~occupied & ~Bits.Rank.FIRST;
+    }
+
+    /**
+     * Calculate double pawn moves.
+     */
+    public static long pawnDoubleMoves(long pawns, long occupied, boolean white) {
+        return white ?
+                Bits.north(pawnSingleMoves(pawns, occupied, true)) & ~occupied & Bits.Rank.FOURTH :
+                Bits.south(pawnSingleMoves(pawns, occupied, false)) & ~occupied & Bits.Rank.FIFTH;
+    }
+
+    /**
+     * Calculate pawn push promotions.
+     */
+    public static long pawnPushPromotions(long pawns, long occupied, boolean white) {
+        return white ?
+                Bits.north(pawns) & ~occupied & Bits.Rank.EIGHTH :
+                Bits.south(pawns) & ~occupied & Bits.Rank.FIRST;
+    }
+
+    /**
+     * Calculate left captures by pawns.
+     */
+    public static long pawnLeftCaptures(long pawns, long opponents, boolean white) {
+        return white ?
+                Bits.northWest(pawns) & opponents & ~File.H & ~Bits.Rank.EIGHTH :
+                Bits.southWest(pawns) & opponents & ~File.H & ~Bits.Rank.FIRST;
+    }
+
+    /**
+     * Calculate right captures by pawns.
+     */
+    public static long pawnRightCaptures(long pawns, long opponents, boolean white) {
+        return white ?
+                Bits.northEast(pawns) & opponents & ~File.A & ~Bits.Rank.EIGHTH :
+                Bits.southEast(pawns) & opponents & ~File.A & ~Bits.Rank.FIRST;
+    }
+
+    /**
+     * Calculate left en passant captures by pawns.
+     */
+    public static long pawnLeftEnPassants(long pawns, long enPassantFile, boolean white) {
+        return white ?
+                Bits.northWest(pawns) & enPassantFile & Bits.Rank.SIXTH & ~File.H :
+                Bits.southWest(pawns) & enPassantFile & Bits.Rank.THIRD & ~File.H;
+    }
+
+    /**
+     * Calculate right en passant captures by pawns.
+     */
+    public static long pawnRightEnPassants(long pawns, long enPassantFile, boolean white) {
+        return white ?
+                Bits.northEast(pawns) & enPassantFile & Bits.Rank.SIXTH & ~File.A :
+                Bits.southEast(pawns) & enPassantFile & Bits.Rank.THIRD & ~File.A;
+    }
+
+    /**
+     * Calculate left capture promotions by pawns.
+     */
+    public static long pawnLeftCapturePromotions(long pawns, long opponents, boolean white) {
+        return white ?
+                Bits.northWest(pawns) & opponents & ~File.H & Bits.Rank.EIGHTH :
+                Bits.southWest(pawns) & opponents & ~File.H & Bits.Rank.FIRST;
+    }
+
+    /**
+     * Calculate right capture promotions by pawns.
+     */
+    public static long pawnRightCapturePromotions(long pawns, long opponents, boolean white) {
+        return white ?
+                Bits.northEast(pawns) & opponents & ~File.A & Bits.Rank.EIGHTH :
+                Bits.southEast(pawns) & opponents & ~File.A & Bits.Rank.FIRST;
+    }
+
     public static long sliderAttacks(int sq, long occ, MagicLookup[] lookups) {
         MagicLookup lookup = lookups[sq];
         occ      &= lookup.mask;
@@ -158,17 +239,17 @@ public class Attacks {
     }
 
     public static long[] initMagicMask(boolean isOrthogonal) {
-        long[] magicMasks = new long[64];
-        for (int square = 0; square < 64; square++) {
+        long[] magicMasks = new long[Square.COUNT];
+        for (int square = 0; square < Square.COUNT; square++) {
             magicMasks[square] = initMovementMask(square, isOrthogonal);
         }
         return magicMasks;
     }
 
     public static long[][] initMagicAttacks(boolean isOrthogonal, long[] magics, int[] shifts) {
-        long[][] magicAttacks = new long[64][];
+        long[][] magicAttacks = new long[Square.COUNT][];
 
-        for (int square = 0; square < 64; square++) {
+        for (int square = 0; square < Square.COUNT; square++) {
             magicAttacks[square] = initMagicTable(square, isOrthogonal, magics[square], shifts[square]);
         }
 
@@ -176,7 +257,7 @@ public class Attacks {
     }
 
     public static long[] initMagicTable(int square, boolean isOrthogonal, long magic, int shift) {
-        int numBits = 64 - shift;
+        int numBits = Square.COUNT - shift;
         int tableSize = 1 << numBits;
         long[] table = new long[tableSize];
 
@@ -193,8 +274,8 @@ public class Attacks {
 
     public static long[] initBlockerMasks(long movementMask) {
         List<Integer> moveSquares = new ArrayList<>();
-        for (int i = 0; i < 64; i++) {
-            if ((movementMask & 1L << i) != 0) {
+        for (int i = 0; i < Square.COUNT; i++) {
+            if ((movementMask & Bits.of(i)) != 0) {
                 moveSquares.add(i);
             }
         }
@@ -222,7 +303,7 @@ public class Attacks {
             }
             for (int distance = 1; distance < 8; distance++) {
                 currentSquare = currentSquare + vector;
-                if (Board.isValidIndex(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
+                if (Square.isValid(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
                     movementMask |= 1L << currentSquare;
                 } else {
                     break;
@@ -240,7 +321,7 @@ public class Attacks {
         for (int vector : vectors) {
             int currentSquare = from;
             for (int distance = 1; distance < 8; distance++) {
-                if (Board.isValidIndex(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
+                if (Square.isValid(currentSquare + vector) && isValidVectorOffset(currentSquare, vector)) {
                     currentSquare = currentSquare + vector;
                     attackMask |= 1L << currentSquare;
                     if ((blockers & 1L << currentSquare) != 0) {
@@ -258,8 +339,8 @@ public class Attacks {
     public record MagicLookup(long[] attacks, long mask, long magic, int shift) {}
 
     public static MagicLookup[] initMagicLookups(long[][] allAttacks, long[] masks, long[] magics, int[] shifts) {
-        MagicLookup[] magicLookups = new MagicLookup[64];
-        for (int i = 0; i < 64; i++) {
+        MagicLookup[] magicLookups = new MagicLookup[Square.COUNT];
+        for (int i = 0; i < Square.COUNT; i++) {
             long[] attacks = allAttacks[i];
             long mask = masks[i];
             long magic = magics[i];
@@ -270,8 +351,8 @@ public class Attacks {
     }
 
     private static boolean isValidVectorOffset(int square, int vectorOffset) {
-        boolean isAFile = (Bits.FILE_A & 1L << square) != 0;
-        boolean isHFile = (Bits.FILE_H & 1L << square) != 0;
+        boolean isAFile = (File.A & Bits.of(square)) != 0;
+        boolean isHFile = (File.H & Bits.of(square)) != 0;
         boolean isVectorAFileException = A_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
         boolean isVectorHFileException = H_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
         return (!isAFile || !isVectorAFileException) && (!isHFile || !isVectorHFileException);

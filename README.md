@@ -1,6 +1,4 @@
-<p align="center"><img src="src/main/resources/calvin.png" width="160"></p>
-
-# <div align="center"> Calvin </div>
+<p align="center"><img src="src/main/resources/logo.png" width="350"></p>
 
 <div align="center">
 
@@ -9,11 +7,11 @@
 
 </div>
 
-Calvin is a chess engine written in Java. 
+Calvin is a superhuman chess engine written in Java. 
 
 It features a a traditional alpha-beta search algorithm paired with an NNUE evaluation function. 
 
-The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 250 million positions taken from the [Leela Chess Zero dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and HCE. The network architecture is (768->256)x2->1. 
+The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 670 million positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->384)x2->1. 
 
 Calvin is rated roughly 3170 elo (~120th place) on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/4040/) leaderboards, and is currently playing on [Lichess](https://lichess.org/@/Calvin_Bot).
 
@@ -28,8 +26,6 @@ To run Calvin locally, you will need Java (minimum Java 17) installed on your ma
 ```
 java --add-modules jdk.incubator.vector -jar calvin-chess-engine-4.0.1.jar
 ```
-Please note the '--add-modules jdk.incubator.vector' - Calvin uses the incubator Vector API for SIMD operations during NNUE inference, and this module needs to enabled explicitly.
-
 From there, use the "help" option or refer to UCI documentation for further information on available commands.
 
 ## Strength
@@ -50,38 +46,64 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 
 ## Features
 
-### Board representation
-
-- [Bitboards](https://www.chessprogramming.org/Bitboards) - Calvin uses bitboards to keep track of the state of the board. Bitboards are up-to-64 bit integers which represent different features of the board, such as the positions of the pieces for each colour, legal moves, attacked/defended squares, and so on. 
+Calvin features a pretty traditional chess engine architecture. The engine can broadly be split into three parts: Move Generation, Search, and Evaluation.
 
 ### Move Generation
 
-- [Move generation](https://www.chessprogramming.org/Move_Generation) - Move generation algorithms can be divided into roughly two camps: legal and pseudo-legal. Pseudo-legal move generators generate all moves regardless of whether they leave the king in check, and then only later check for legality. Legal move generators take into account the position of the king - and pieces pinned to the king - and don't generate any illegal moves. Calvin uses the latter approach.
-- [Sliding pieces](https://www.chessprogramming.org/Sliding_Pieces) - Generating moves for the sliding pieces (bishops, rooks & queens) is notoriously the most computationally-expensive part of any move generation algorithm. Calvin uses [Magic Bitboards](https://www.chessprogramming.org/Magic_Bitboards) for sliding piece move generation. 
+Every chess engine requires an internal [board representation](https://www.chessprogramming.org/Board_Representation), in order to track the position of the pieces, the move history, and so on. From there, for any given chess position the engine needs to be able to [generate legal moves](https://www.chessprogramming.org/Move_Generation) for that position, to be used during exploration of the game tree during search. As with everything chess-engine-related, the faster the movegen the better!
+
+- [Legal move generation](https://www.chessprogramming.org/Move_Generation)
+- [Bitboards](https://www.chessprogramming.org/Bitboards)
+- [Magic Bitboards](https://www.chessprogramming.org/Magic_Bitboards)
 
 ### Search
 
-- [Alpha-Beta](https://www.chessprogramming.org/Alpha-Beta) - Calvin uses a classical alpha-beta minimax search algorithm to traverse the game tree. This is enhanced by [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search), combined with an [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening) depth-first approach to managing time, and finally a [Quiescence Search](https://www.chessprogramming.org/Quiescence_Search) at the tips of the tree to filter out noisy/tactical positions. 
-- [Transposition table](https://www.chessprogramming.org/Transposition_Table) - A transposition table is an in-memory hashtable recording information of all the previously visited positions in the search, which helps drastically cut down on the search space, since the searcher will encounter the same positions from multiple different move orders. [Zobrist hashing](https://www.chessprogramming.org/Zobrist_Hashing) is used to create the hash index.
-- [Parallel Search](https://www.chessprogramming.org/Parallel_Search) - [Lazy SMP](https://www.chessprogramming.org/Lazy_SMP) is implemented for multi-threaded parallel search.
-- [Pruning](https://www.chessprogramming.org/Pruning) - Calvin uses multiple pruning techniques to cut down on the search space, including [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning), [Futility Pruning](https://www.chessprogramming.org/Futility_Pruning), [Reverse Futility Pruning](https://www.chessprogramming.org/Reverse_Futility_Pruning), [Late Move Pruning](https://www.chessprogramming.org/Late_Move_Reductions) and [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
-- [Search Extensions](https://www.chessprogramming.org/Extensions) - Calvin uses the popular [Check Extension](https://www.chessprogramming.org/Check_Extensions) to extend the search when in check, as well as an extension when trading into a pawn endgame (to avoid potentially trading into a drawn/lost ending). 
-- [Search Reductions](https://www.chessprogramming.org/Reductions) - Calvin features [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions) for reducing search depth for moves ordered late in the list. 
+The search algorithm is all about exploring the possible positions in the game tree, in the most efficient manner possible. To achieve this Calvin uses a classical [alpha/beta](https://www.chessprogramming.org/Alpha-Beta) [negamax](https://www.chessprogramming.org/Negamax) algorithm. 
 
+#### Search enhancements
 
-### Move Ordering
-- Captures are ordered using the [MVV-LVA](https://www.chessprogramming.org/MVV-LVA) (Most-Valuable-Victim, Least-Valuable-Attacker) heuristic.
-- Non-captures are ordered using the [Killer move](https://www.chessprogramming.org/Killer_Move) and [History](https://www.chessprogramming.org/History_Heuristic) heuristics.
+- [Transposition table](https://www.chessprogramming.org/Transposition_Table)
+- [Principal Variation Search](https://www.chessprogramming.org/Principal_Variation_Search)
+- [Iterative Deepening](https://www.chessprogramming.org/Iterative_Deepening)
+- [Quiescence Search](https://www.chessprogramming.org/Quiescence_Search)
+- [Zobrist Hashing](https://www.chessprogramming.org/Zobrist_Hashing)
+- [Aspiration windows](https://www.chessprogramming.org/Aspiration_Windows)
+- [Lazy SMP](https://www.chessprogramming.org/Lazy_SMP)
 
-### Opening Book / Endgame Tablebase
-- Simple opening book loaded from a .txt file on startup. Can be disabled using the 'OwnBook' UCI option.
-- Calvin can probe the [Lichess Tablebase API](https://github.com/lichess-org/lila-tablebase) for endgames of 7 men or fewer. Can be disabled using the 'OwnTablebase' UCI option.
+#### Pruning, reductions, extensions
 
-### Communication
+- [Null-Move Pruning](https://www.chessprogramming.org/Null_Move_Pruning)
+- [Futility Pruning](https://www.chessprogramming.org/Futility_Pruning)
+- [Reverse Futility Pruning](https://www.chessprogramming.org/Reverse_Futility_Pruning)
+- [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
+- [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions)
+- [Check Extension](https://www.chessprogramming.org/Check_Extensions)
+
+#### Move ordering
+
+- [MVV](https://www.chessprogramming.org/MVV-LVA) with [Capture History](https://www.chessprogramming.org/History_Heuristic#Capture_History)
+- [Killer Heuristic](https://www.chessprogramming.org/Killer_Move)
+- [History Heuristic](https://www.chessprogramming.org/History_Heuristic)
+- [Continuation History](https://www.chessprogramming.org/History_Heuristic#Continuation_History) (1-ply and 2-ply)
+
+#### Time Management
+
+- Hard/soft time bounds
+- Best move stability scaling
+- Score stability scaling
+- Node TM scaling
+
+#### Communication
 - Calvin communicates using the Universal Chess Interface [(UCI) protocol](https://www.chessprogramming.org/UCI).
 - [Pondering](https://www.chessprogramming.org/Pondering), where the engine thinks on the opponent's move. Can be disabled using the 'Ponder' UCI option.
-- Hash size and number of Lazy SMP threads are also configurable via the UCI.
+- Hash size and number of search threads are also configurable via UCI.
 - Calvin is connected to Lichess where he plays regularly in the engine pool: https://lichess.org/@/Calvin_Bot
+
+### Evaluation 
+
+For any given chess position, the engine needs a method of obtaining an estimate of how good the position is for the side to move. Chess engine evaluation mechanisms can be split into two camps: traditional [Hand-Crafted Evaluation](https://www.chessprogramming.org/Evaluation) (HCE), and [Efficiently Updatable Neural Networks](https://www.chessprogramming.org/NNUE) (NNUE). Since version [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0), Calvin has switched to a neural-net based eval. 
+
+The neural network was trained using the excellent [bullet](https://github.com/jw1912/bullet) trainer on a dataset of 670 million positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->384)x2->1. 
 
 ## Special Thanks To...
 

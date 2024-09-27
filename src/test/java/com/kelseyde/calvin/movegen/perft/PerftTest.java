@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.movegen.perft;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.perft.PerftService;
 import org.junit.jupiter.api.Assertions;
 
@@ -25,7 +25,7 @@ public abstract class PerftTest {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
         long totalMoveCount = perftService.perft(board, depth);
-        long totalNodeCount = perftService.totalNodeCount;
+        long totalNodeCount = perftService.nodesSearched;
         System.out.println("totalMoveCount: " + totalNodeCount);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);

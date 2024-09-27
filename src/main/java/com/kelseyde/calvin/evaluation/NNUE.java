@@ -1,16 +1,25 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Bitwise;
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.engine.EngineInitializer;
 import jdk.incubator.vector.ShortVector;
+import jdk.incubator.vector.Vector;
 import jdk.incubator.vector.VectorOperators;
 import jdk.incubator.vector.VectorSpecies;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import static jdk.incubator.vector.VectorOperators.S2I;
 
 /**
  * Implementation of {@link Evaluation} using an NNUE (Efficiently Updatable Neural Network) evaluation function.
@@ -29,16 +38,16 @@ public class NNUE implements Evaluation {
 
     public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
 
-        public static final String FILE = "dawn.nnue";
+        public static final String FILE = "sol.nnue";
         public static final int INPUT_SIZE = 768;
         public static final int HIDDEN_SIZE = 384;
 
-        public static final Network NETWORK = EngineInitializer.loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
+        public static final Network NETWORK = loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
 
     }
 
-    static final int COLOUR_OFFSET = 64 * 6;
-    static final int PIECE_OFFSET = 64;
+    static final int COLOUR_OFFSET = Square.COUNT * Piece.COUNT;
+    static final int PIECE_OFFSET = Square.COUNT;
     static final int SCALE = 400;
 
     static final int QA = 255;
@@ -50,6 +59,7 @@ public class NNUE implements Evaluation {
 
     static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
     static final int UPPER_BOUND = SPECIES.loopBound(Network.HIDDEN_SIZE);
+    static final int LOOP_LENGTH = SPECIES.length();
 
     static final ShortVector FLOOR = ShortVector.broadcast(SPECIES, 0);
     static final ShortVector CEIL = ShortVector.broadcast(SPECIES, QA);
@@ -73,35 +83,64 @@ public class NNUE implements Evaluation {
     public int evaluate() {
 
         boolean white = board.isWhite();
+        short[] weights = Network.NETWORK.outputWeights;
+
+        // Get the 'us-perspective' and 'them-perspective' feature sets, based on the side to move.
         short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
         short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
-        int eval = Network.NETWORK.outputBias();
-        eval += forward(us, 0);
-        eval += forward(them, Network.HIDDEN_SIZE);
-        eval *= SCALE;
-        eval /= QAB;
-        eval = scaleEval(board, eval);
-        return eval;
 
-    }
+        int eval = 0;
 
-    /**
-     * Forward pass through the network, using the clipped ReLU activation function.
-     * Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
-     */
-    private int forward(short[] features, int weightOffset) {
-        short[] weights = Network.NETWORK.outputWeights;
-        int sum = 0;
+        // Forward-pass through the network, using the squared clipped ReLU activation function.
+        // Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
+        for (int i = 0; i < UPPER_BOUND; i += LOOP_LENGTH) {
 
-        for (int i = 0; i < UPPER_BOUND; i += SPECIES.length()) {
-            sum += ShortVector.fromArray(SPECIES, features, i)
-                    .min(CEIL)
-                    .max(FLOOR)
-                    .mul(ShortVector.fromArray(SPECIES, weights, i + weightOffset))
-                    .reduceLanes(VectorOperators.ADD);
+            ShortVector usInputs = ShortVector.fromArray(SPECIES, us, i);
+            ShortVector themInputs = ShortVector.fromArray(SPECIES, them, i);
+            ShortVector usWeights = ShortVector.fromArray(SPECIES, weights, i);
+            ShortVector themWeights = ShortVector.fromArray(SPECIES, weights, i + Network.HIDDEN_SIZE);
+
+            // Clip the inputs to the range [0, 255].
+            usInputs = usInputs.max(FLOOR).min(CEIL);
+            themInputs = themInputs.max(FLOOR).min(CEIL);
+
+            // Multiply the inputs by the weights.
+            ShortVector usTerms = usInputs.mul(usWeights);
+            ShortVector themTerms = themInputs.mul(themWeights);
+
+            // Split the inputs and weighted terms into low and high parts, to enable 32-bit multiplication.
+            Vector<Integer> usInputsLo = usInputs.convert(S2I, 0);
+            Vector<Integer> usInputsHi = usInputs.convert(S2I, 1);
+            Vector<Integer> themInputsLo = themInputs.convert(S2I, 0);
+            Vector<Integer> themInputsHi = themInputs.convert(S2I, 1);
+
+            Vector<Integer> usTermsLo = usTerms.convert(S2I, 0);
+            Vector<Integer> usTermsHi = usTerms.convert(S2I, 1);
+            Vector<Integer> themTermsLo = themTerms.convert(S2I, 0);
+            Vector<Integer> themTermsHi = themTerms.convert(S2I, 1);
+
+            // Multiply the inputs by the weighted terms, and add the results to the running sum.
+            eval += (int) usInputsLo.mul(usTermsLo)
+                    .add(usInputsHi.mul(usTermsHi))
+                    .add(themInputsLo.mul(themTermsLo))
+                    .add(themInputsHi.mul(themTermsHi))
+                    .reduceLanesToLong(VectorOperators.ADD);
+
         }
 
-        return sum;
+        // Since squaring the inputs also squares quantisation, we need to divide that out.
+        eval /= QA;
+
+        // Add the output bias, scale the result, and divide by the quantisation factor.
+        eval += Network.NETWORK.outputBias;
+        eval *= SCALE;
+        eval /= QAB;
+
+        // Scale the evaluation based on the material and proximity to 50-move rule draw.
+        eval = scaleEval(board, eval);
+
+        return eval;
+
     }
 
     private void activateAll(Board board) {
@@ -118,12 +157,12 @@ public class NNUE implements Evaluation {
 
     private void activateSide(Board board, long pieces, boolean white) {
         while (pieces != 0) {
-            int square = Bitwise.getNextBit(pieces);
+            int square = Bits.next(pieces);
             Piece piece = board.pieceAt(square);
             int whiteIndex = featureIndex(piece, square, white, true);
             int blackIndex = featureIndex(piece, square, white, false);
             accumulator.add(whiteIndex, blackIndex);
-            pieces = Bitwise.popBit(pieces);
+            pieces = Bits.pop(pieces);
         }
     }
 
@@ -157,7 +196,7 @@ public class NNUE implements Evaluation {
     }
 
     private void handleCastleMove(boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        boolean isKingside = Board.file(to) == 6;
+        boolean isKingside = File.of(to) == 6;
         int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
         int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
         int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookStart, white, true);
@@ -194,10 +233,10 @@ public class NNUE implements Evaluation {
     }
 
     private int materialPhase(Board board) {
-        long knights = Bitwise.countBits(board.getKnights());
-        long bishops = Bitwise.countBits(board.getBishops());
-        long rooks = Bitwise.countBits(board.getRooks());
-        long queens = Bitwise.countBits(board.getQueens());
+        long knights = Bits.count(board.getKnights());
+        long bishops = Bits.count(board.getBishops());
+        long rooks = Bits.count(board.getRooks());
+        long queens = Bits.count(board.getQueens());
         return (int) (MATERIAL_BASE + 3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
     }
 
@@ -207,7 +246,7 @@ public class NNUE implements Evaluation {
      */
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
         int squareIndex = whitePerspective ? square : square ^ 56;
-        int pieceIndex = piece.getIndex();
+        int pieceIndex = piece.index();
         int pieceOffset = pieceIndex * PIECE_OFFSET;
         boolean ourPiece = whitePiece == whitePerspective;
         int colourOffset = ourPiece ? 0 : COLOUR_OFFSET;
@@ -218,6 +257,51 @@ public class NNUE implements Evaluation {
     public void clearHistory() {
         this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
         this.accumulatorHistory.clear();
+    }
+
+    public static NNUE.Network loadNetwork(String file, int inputSize, int hiddenSize) {
+        try {
+            InputStream inputStream = NNUE.Network.class.getClassLoader().getResourceAsStream(file);
+            if (inputStream == null) {
+                throw new FileNotFoundException("NNUE file not found in resources");
+            }
+
+            byte[] fileBytes = inputStream.readAllBytes();
+            inputStream.close();
+            ByteBuffer buffer = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN);
+
+            int inputWeightsOffset = inputSize * hiddenSize;
+            int inputBiasesOffset = hiddenSize;
+            int outputWeightsOffset = hiddenSize * 2;
+
+            short[] inputWeights = new short[inputWeightsOffset];
+            short[] inputBiases = new short[inputBiasesOffset];
+            short[] outputWeights = new short[outputWeightsOffset];
+
+            for (int i = 0; i < inputWeightsOffset; i++) {
+                inputWeights[i] = buffer.getShort();
+            }
+
+            for (int i = 0; i < inputBiasesOffset; i++) {
+                inputBiases[i] = buffer.getShort();
+            }
+
+            for (int i = 0; i < outputWeightsOffset; i++) {
+                outputWeights[i] = buffer.getShort();
+            }
+
+            short outputBias = buffer.getShort();
+
+            while (buffer.hasRemaining()) {
+                if (buffer.getShort() != 0) {
+                    throw new RuntimeException("Failed to load NNUE network: invalid file format");
+                }
+            }
+
+            return new NNUE.Network(inputWeights, inputBiases, outputWeights, outputBias);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load NNUE network", e);
+        }
     }
 
 }

@@ -12,7 +12,7 @@ import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
-import com.kelseyde.calvin.utils.FEN;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,8 +35,6 @@ import java.util.stream.Stream;
 
 public class TrainingDataScorer {
 
-    // 2220 pos/s current avg
-
     private static final int THREAD_COUNT = 20;
     private static final int THREAD_TIMEOUT_SECONDS = 15;
     private static final int BATCH_SIZE = THREAD_COUNT * 1000;
@@ -53,7 +51,7 @@ public class TrainingDataScorer {
                 command.inputFile(), command.outputFile(), command.softNodes(), command.hardNodes(), command.resumeOffset());
         Path inputPath = Paths.get(command.inputFile());
         Path outputPath = Paths.get(command.outputFile());
-        UCI.outputEnabled = false;
+        UCI.setOutputEnabled(false);
         searchers = IntStream.range(0, THREAD_COUNT)
                 .mapToObj(this::initSearcher)
                 .toList();
@@ -94,7 +92,7 @@ public class TrainingDataScorer {
             throw new RuntimeException("Failed to read input file", e);
         }
 
-        UCI.outputEnabled = true;
+        UCI.setOutputEnabled(true);
     }
 
     private List<String> processBatch(List<String> positions, ScoreDataCommand command) {

@@ -10,6 +10,16 @@ public class StartingPositionPerftTest extends PerftTest {
 
     private final String subFolder = "starting_position";
 
+    @Override
+    protected String getFen() {
+        return fen;
+    }
+
+    @Override
+    protected String getSubFolder() {
+        return subFolder;
+    }
+
     @Test
     public void testDepthOne() {
         perft(1, 20);
@@ -45,13 +55,4 @@ public class StartingPositionPerftTest extends PerftTest {
         perft(7, 3195901860L);
     }
 
-    @Override
-    protected String getFen() {
-        return fen;
-    }
-
-    @Override
-    protected String getSubFolder() {
-        return subFolder;
-    }
 }

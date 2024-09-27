@@ -10,6 +10,8 @@ import java.util.List;
 
 public class SearchHistory {
 
+    private static final int[] CONT_HIST_PLIES = { 1, 2 };
+
     private final KillerTable killerTable = new KillerTable();
     private final HistoryTable historyTable = new HistoryTable();
     private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
@@ -20,40 +22,33 @@ public class SearchHistory {
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
 
-    public void updateQuietHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quietsSearched, List<PlayedMove> capturesSearched, boolean failHigh) {
+    public void updateHistory(
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures) {
 
-        if (failHigh) {
-            killerTable.add(ply, bestMove.getMove());
+        if (bestMove.isQuiet()) {
+
+            killerTable.add(ply, bestMove.move());
+            for (PlayedMove quiet : quiets) {
+                boolean good = bestMove.move().equals(quiet.move());
+                historyTable.update(quiet.move(), depth, white, good);
+
+                for (int prevPly : CONT_HIST_PLIES) {
+                    Move prevMove = ss.getMove(ply - prevPly);
+                    Piece prevPiece = ss.getMovedPiece(ply - prevPly);
+                    contHistTable.update(prevMove, prevPiece, quiet.move(), quiet.piece(), depth, white, good);
+                }
+            }
+
         }
 
-        for (PlayedMove quiet : quietsSearched) {
-            boolean good = bestMove.getMove().equals(quiet.getMove());
-            historyTable.update(quiet.getMove(), depth, white, good);
-
-            Move prevMove = ss.getMove(ply - 1);
-            Piece prevPiece = ss.getMovedPiece(ply - 1);
-            contHistTable.update(prevMove, prevPiece, quiet.getMove(), quiet.getPiece(), depth, white, good);
-        }
-
-        for (PlayedMove capture : capturesSearched) {
+        for (PlayedMove capture : captures) {
             boolean good = bestMove.equals(capture);
-            Piece piece = capture.getPiece();
-            int to = capture.getMove().to();
-            Piece captured = capture.getCaptured();
+            Piece piece = capture.piece();
+            int to = capture.move().to();
+            Piece captured = capture.captured();
             captureHistoryTable.update(piece, to, captured, depth, white, good);
         }
 
-    }
-
-    public void updateCaptureHistory(PlayedMove bestMove, boolean white, int depth, List<PlayedMove> capturesSearched) {
-        for (PlayedMove capture : capturesSearched) {
-            boolean good = bestMove.equals(capture);
-            Piece piece = capture.getPiece();
-            int to = capture.getMove().to();
-            Piece captured = capture.getCaptured();
-            captureHistoryTable.update(piece, to, captured, depth, white, good);
-        }
     }
 
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {

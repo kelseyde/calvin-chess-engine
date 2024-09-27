@@ -21,7 +21,7 @@ public class Accumulator {
     private final int loopLength;
 
     public AccumulatorUpdate update;
-    public boolean dirty = false;
+    public boolean correct = true;
 
     public Accumulator(int featureCount) {
         this.whiteFeatures = new short[featureCount];

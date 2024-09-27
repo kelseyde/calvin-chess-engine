@@ -189,7 +189,7 @@ public class NNUE implements Evaluation {
         } else {
             handleStandardMove(acc, move, piece, newPiece, white);
         }
-        acc.dirty = true;
+        acc.correct = false;
         this.accumulators[++current] = acc;
     }
 
@@ -222,9 +222,9 @@ public class NNUE implements Evaluation {
     private void applyLazyUpdates() {
 
         // Scan back to the last non-dirty accumulator.
-        if (!accumulators[current].dirty) return;
+        if (accumulators[current].correct) return;
         int i = current - 1;
-        while (i >= 0 && accumulators[i].dirty) i--;
+        while (i >= 0 && !accumulators[i].correct) i--;
 
         while (i < current) {
             if (i + 1 >= accumulators.length) break;
@@ -238,7 +238,7 @@ public class NNUE implements Evaluation {
             } else if (update.addCount == 2 && update.subCount == 2) {
                 lazyUpdateAddAddSubSub(prev, curr);
             }
-            curr.dirty = false;
+            curr.correct = true;
             i++;
         }
 

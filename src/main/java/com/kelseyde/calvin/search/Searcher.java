@@ -429,11 +429,10 @@ public class Searcher implements Search {
             history.updateHistory(best, board.isWhite(), depth, ply, ss, quietsSearched, capturesSearched);
         }
 
-        // todo exclude best move checks?
-        if (!inCheck &&
-            (bestMove == null || board.isQuiet(bestMove)) &&
-            !(flag == HashFlag.LOWER && staticEval >= bestScore) &&
-            !(flag == HashFlag.UPPER && staticEval <= bestScore)) {
+        if (!inCheck
+            && (bestMove == null || board.isQuiet(bestMove))
+            && !(flag == HashFlag.LOWER && staticEval >= bestScore)
+            && !(flag == HashFlag.UPPER && staticEval <= bestScore)) {
             history.updateCorrectionHistory(board, depth, bestScore, staticEval);
         }
 

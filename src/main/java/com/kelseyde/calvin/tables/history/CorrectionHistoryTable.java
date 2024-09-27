@@ -22,10 +22,11 @@ public class CorrectionHistoryTable {
         int hashIndex = hashIndex(key);
         int entry = entries[colourIndex][hashIndex];
 
-        int scaled = (score - staticEval) * GRAIN;
+        int diff = score - staticEval;
+        int scaled = diff * GRAIN;
         int weight = Math.min(depth + 1, 16);
-        int update = ((MAX - weight) * entry + weight * scaled) / MAX;
-        entry = clamp(update / SCALE, -6144, 6144);
+        int update = entry * (SCALE - weight) + scaled * weight;
+        entry = clamp(update / SCALE, -MAX, MAX);
         entries[colourIndex][hashIndex] = entry;
     }
 

@@ -21,6 +21,10 @@ public class KillerTable {
         }
     }
 
+    public Move[] getKillers(int ply) {
+        return table[ply];
+    }
+
     public int getIndex(Move move, int ply) {
         for (int i = 0; i < KILLERS_PER_PLY; i++) {
             if (move.equals(table[ply][i])) {

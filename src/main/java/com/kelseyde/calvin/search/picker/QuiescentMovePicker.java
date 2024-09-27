@@ -15,6 +15,7 @@ public class QuiescentMovePicker extends MovePicker {
             MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
         super(movegen, ss, history, board, ply, ttMove, inCheck);
         this.skipQuiets = true;
+        this.tryKillers = false;
     }
 
     @Override
@@ -24,8 +25,9 @@ public class QuiescentMovePicker extends MovePicker {
         while (nextMove == null) {
             nextMove = switch (stage) {
                 case TT_MOVE -> pickTTMove();
-                case NOISY -> pickMove(filter, Stage.END);
-                case QUIET, END -> null;
+                case GEN_NOISY -> generateMoves(filter, Stage.GOOD_NOISY);
+                case GOOD_NOISY -> pickMove(Stage.END);
+                case KILLER, BAD_NOISY, GEN_QUIET, QUIET, END -> null;
             };
             if (stage == Stage.END) break;
         }

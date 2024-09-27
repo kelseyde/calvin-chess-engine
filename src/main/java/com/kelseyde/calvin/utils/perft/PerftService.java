@@ -3,6 +3,9 @@ package com.kelseyde.calvin.utils.perft;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.search.SearchHistory;
+import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.uci.UCI;
 
 import java.util.HashMap;
@@ -16,6 +19,8 @@ public class PerftService {
 
     public long nodesSearched = 0;
     private Map<Move, Long> nodesPerMove;
+    SearchStack ss = new SearchStack();
+    SearchHistory history = new SearchHistory();
 
     public long perft(Board board, int depth) {
         nodesSearched = 0;
@@ -32,19 +37,30 @@ public class PerftService {
 
     public long perft(Board board, int depth, int originalDepth) {
         nodesSearched++;
-        List<Move> moves = movegen.generateMoves(board);
+
         if (depth == 1) {
-            return moves.size();
+            return  movegen.generateMoves(board).size();
         }
+
+        MovePicker movePicker = new MovePicker(movegen, ss, history, board, originalDepth - depth, null, false);
         long totalMoveCount = 0;
-        for (Move move : moves) {
+        while (true) {
+            Move move = movePicker.pickNextMove();
+            if (move == null) {
+                break;
+            }
             board.makeMove(move);
             totalMoveCount += perft(board, depth - 1, originalDepth);
-            if (depth == originalDepth) {
-                nodesPerMove.put(move, totalMoveCount);
-            }
             board.unmakeMove();
         }
+//        for (Move move : moves) {
+//            board.makeMove(move);
+//            totalMoveCount += perft(board, depth - 1, originalDepth);
+//            if (depth == originalDepth) {
+//                nodesPerMove.put(move, totalMoveCount);
+//            }
+//            board.unmakeMove();
+//        }
         return totalMoveCount;
     }
 

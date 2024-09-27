@@ -9,6 +9,7 @@ import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -18,9 +19,22 @@ import java.util.List;
  */
 public class MovePicker {
 
+    /**
+     * Plan:
+     * 1 - gen all noisy moves
+     * 2 - score all noisy moves
+     * 3 - start picking noisy moves
+     * 4 - when we reach the end of the 'good' noisy moves, start trying killers
+     * 5 - when we reach the end of the killers, switch back to the remaining bad noises/quiets
+     */
+
     public enum Stage {
         TT_MOVE,
-        NOISY,
+        GEN_NOISY,
+        GOOD_NOISY,
+        KILLER,
+        BAD_NOISY,
+        GEN_QUIET,
         QUIET,
         END
     }
@@ -37,6 +51,10 @@ public class MovePicker {
     boolean skipQuiets;
     boolean inCheck;
 
+    boolean tryKillers;
+    int killerIndex;
+    Move[] killers;
+
     int moveIndex;
     ScoredMove[] moves;
 
@@ -49,7 +67,8 @@ public class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
-        this.stage = ttMove != null ? Stage.TT_MOVE : Stage.NOISY;
+        this.tryKillers = true;
+        this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
     public Move pickNextMove() {
@@ -57,56 +76,96 @@ public class MovePicker {
         Move nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case TT_MOVE -> pickTTMove();
-                case NOISY -> pickMove(MoveGenerator.MoveFilter.NOISY, Stage.QUIET);
-                case QUIET -> pickMove(MoveGenerator.MoveFilter.QUIET, Stage.END);
-                case END -> null;
+                case TT_MOVE ->      pickTTMove();
+                case GEN_NOISY ->    generateMoves(MoveFilter.NOISY, Stage.GOOD_NOISY);
+                case GOOD_NOISY ->   pickMove(Stage.KILLER);
+                case KILLER ->       pickKiller();
+                case BAD_NOISY ->    pickMove(Stage.GEN_QUIET);
+                case GEN_QUIET ->    generateMoves(MoveFilter.QUIET, Stage.QUIET);
+                case QUIET ->        pickMove(Stage.END);
+                case END ->          null;
             };
             if (stage == Stage.END) break;
         }
+        //System.out.println("Move: " + Move.toUCI(nextMove));
         return nextMove;
 
     }
 
     /**
      * Select the next move from the move list.
-     * @param filter the move generation filter to use, if the moves are not yet generated
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
-    protected Move pickMove(MoveFilter filter, Stage nextStage) {
+    protected Move pickMove(Stage nextStage) {
 
-        if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
+        if (moves == null || (stage == Stage.QUIET && (skipQuiets || inCheck))) {
             stage = nextStage;
-            moves = null;
+            //System.out.println("stage: " + stage);
             return null;
         }
 
-        if (moves == null) {
-            List<Move> stagedMoves = movegen.generateMoves(board, filter);
-            scoreMoves(stagedMoves);
-            moveIndex = 0;
-        }
         if (moveIndex >= moves.length) {
-            moves = null;
             stage = nextStage;
+            //System.out.println("stage: " + stage);
             return null;
         }
-        Move move = pick();
-        moveIndex++;
-        if (move.equals(ttMove)) {
-            // Skip to the next move
-            return pickMove(filter, nextStage);
-        }
-        return move;
 
+
+        ScoredMove move = pick();
+        if (tryKillers && stage == Stage.GOOD_NOISY && move.getStage() == Stage.BAD_NOISY) {
+            stage = Stage.KILLER;
+            //System.out.println("stage: " + stage);
+            return null;
+        }
+
+        moveIndex++;
+        if (move.move.equals(ttMove) || (stage == Stage.QUIET && isKiller(move.move()))) {
+            return pickMove(nextStage);
+        }
+        return move.move();
+
+    }
+
+    protected Move pickKiller() {
+        if (killers == null) {
+            killers = history.getKillerTable().getKillers(ply);
+            killerIndex = 0;
+        }
+        //System.out.println("killers: " + Arrays.stream(killers).map(Move::toUCI).toList());
+        if (killerIndex >= killers.length) {
+            stage = Stage.BAD_NOISY;
+            //System.out.println("stage: " + stage);
+            return null;
+        }
+        while (killerIndex < killers.length) {
+            Move killer = killers[killerIndex++];
+            if (killer != null && isKillerLegal(killer)) {
+                return killer;
+            }
+        }
+        stage = Stage.BAD_NOISY;
+        //System.out.println("stage: " + stage);
+        return null;
     }
 
     /**
      * Select the best move from the transposition table and advance to the next stage.
      */
     protected Move pickTTMove() {
-        stage = Stage.NOISY;
+        stage = Stage.GOOD_NOISY;
         return ttMove;
+    }
+
+    protected Move generateMoves(MoveFilter filter, Stage nextStage) {
+        if (skipQuiets && filter == MoveFilter.QUIET) {
+            return null;
+        }
+        moveIndex = 0;
+        List<Move> stagedMoves = movegen.generateMoves(board, filter);
+        scoreMoves(stagedMoves);
+        stage = nextStage;
+        //System.out.println("stage: " + stage);
+        return null;
     }
 
     protected void scoreMoves(List<Move> stagedMoves) {
@@ -195,13 +254,13 @@ public class MovePicker {
     /**
      * Select the move with the highest score and move it to the head of the move list.
      */
-    protected Move pick() {
+    protected ScoredMove pick() {
         for (int j = moveIndex + 1; j < moves.length; j++) {
             if (moves[j].score() > moves[moveIndex].score()) {
                 swap(moveIndex, j);
             }
         }
-        return moves[moveIndex].move();
+        return moves[moveIndex];
     }
 
     protected void swap(int i, int j) {
@@ -214,6 +273,46 @@ public class MovePicker {
         this.skipQuiets = skipQuiets;
     }
 
-    public record ScoredMove(Move move, int score) {}
+    private boolean isKillerLegal(Move move) {
+        board.makeMove(move);
+        boolean legal = !movegen.isCheck(board, !board.isWhite());
+        board.unmakeMove();
+        //System.out.println("killer legal: " + legal);
+        return legal;
+    }
+
+    private boolean isKiller(Move move) {
+        //System.out.println("checking if move is killer: " + Move.toUCI(move));
+        if (killers == null) {
+            return false;
+        }
+        for (Move killer : killers) {
+            if (move.equals(killer)) {
+                //Syt.out.println("FOUND KILLER: " + Move.toUCI(move));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public record ScoredMove(Move move, int score) {
+
+        public Stage getStage() {
+            if (score < MoveBonus.TT_MOVE_BONUS && score >= MoveBonus.WINNING_CAPTURE_BONUS) {
+                return Stage.GOOD_NOISY;
+            }
+            else if (score < MoveBonus.WINNING_CAPTURE_BONUS && score >= MoveBonus.KILLER_MOVE_BONUS) {
+                return Stage.KILLER;
+            }
+            else if (score < MoveBonus.KILLER_MOVE_BONUS && score >= MoveBonus.LOSING_CAPTURE_BONUS) {
+                return Stage.BAD_NOISY;
+            }
+            else {
+                return Stage.QUIET;
+            }
+
+        }
+
+    }
 
 }

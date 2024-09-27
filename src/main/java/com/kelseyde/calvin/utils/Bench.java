@@ -1,11 +1,13 @@
 package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 
@@ -65,12 +67,12 @@ public class Bench {
     );
 
     private static final int BENCH_DEPTH = 10;
-    private static final TimeControl BENCH_TC = TimeControl.init(new Board(), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH));
+    private static final TimeControl BENCH_TC = TimeControl.init(Board.from(FEN.STARTPOS), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH, -1, false));
 
-    public static void run() {
+    public static void run(Engine engine) {
 
-        UCI.outputEnabled = false;
-        Search search = UCI.ENGINE.getSearcher();
+        UCI.setOutputEnabled(false);
+        Search search = engine.getSearcher();
         search.setThreadCount(1);
         long nodes = 0;
         long time = 0;
@@ -84,7 +86,7 @@ public class Bench {
         }
 
         long nps = (nodes / time) * 1000;
-        UCI.outputEnabled = true;
+        UCI.setOutputEnabled(true);
         UCI.write(String.format("%s nodes %s nps", nodes, nps));
 
     }

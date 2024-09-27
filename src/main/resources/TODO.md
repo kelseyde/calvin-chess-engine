@@ -20,37 +20,49 @@
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [ ] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
-- [ ] Conthist
-- [ ] Capthist
+- [x] 1-ply Conthist
+- [x] 2-ply Conthist
+- [x] Capthist
 - [ ] Threats
 - [ ] Countermoves
 - [ ] Add Killers, History etc. stages to MovePicker.
 
 ### Evaluation
 
+- [ ] Find solution to CCRL/ChessGUI/Vector API issue
 - [ ] Lazy NNUE updates
-- [ ] New net, bigger HL size
-- [ ] Screlu
+- [x] New net, bigger HL size
+- [x] Screlu
+- [ ] Output buckets
+- [ ] Horizontal mirroring
 - [ ] Datagen
 - [ ] Pawn corrhist
 - [ ] Material corrhist
+- [ ] Output buckets
+- [ ] Finny tables
 
 ### Time management
 
-- [ ] Node TM
+- [x] Node TM
+- [ ] Legal move based TM?
+- [ ] Futility TM?
+- [ ] Game phase TM?
 
 ### UCI
 
-- [ ] Add engine author/version
-- [ ] Add perft to UCI options
+- [x] Add engine author/version
+- [x] Add perft to UCI options
 - [ ] Implement display command
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
 - [ ] Add seldepth to info
 - [ ] Add hashfull to info
+- [ ] MultiPV
+- [ ] Coloured output
 
 ### Code maturity
 
 - [ ] Improve javadoc
 - [ ] Review all code comments
+- [ ] Reduce artifact size (remove plugins, dependencies, delete old nets)
 

@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.uci.UCI;
-
 import java.util.List;
 import java.util.Map;
 

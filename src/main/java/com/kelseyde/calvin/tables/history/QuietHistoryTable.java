@@ -22,6 +22,13 @@ public class QuietHistoryTable extends HistoryTable {
         if (!good) bonus = -bonus;
         int update = gravity(current, bonus);
         table[colourIndex][from][to][threatIndex] = update;
+        for (int i = 0; i < 4; i++) {
+            if (i != threatIndex) {
+                current = table[colourIndex][from][to][i];
+                update = gravity(current, bonus / 2);
+                table[colourIndex][from][to][i] = update;
+            }
+        }
     }
 
     public int get(Move historyMove, long threats, boolean white) {

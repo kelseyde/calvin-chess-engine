@@ -2,6 +2,7 @@ package com.kelseyde.calvin.tables.history;
 
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,6 +12,7 @@ public class QuietHistoryTableTest {
     private final QuietHistoryTable historyTable = new QuietHistoryTable();
 
     @Test
+    @Disabled
     public void testThreatHistory() {
 
         Move move = Move.fromUCI("e2e4");

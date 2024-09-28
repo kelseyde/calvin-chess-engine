@@ -25,19 +25,17 @@ public class SearchHistory {
 
         if (bestMove.isQuiet()) {
 
-            Move prevMove = ss.getMove(ply - 1);
-            Piece prevPiece = ss.getMovedPiece(ply - 1);
+            PlayedMove prevMove = ss.getMove(ply - 1);
 
             killerTable.add(ply, bestMove.move());
-            counterMoveTable.add(prevPiece, prevMove, white, bestMove.move());
+            counterMoveTable.add(prevMove.piece(), prevMove.move(), white, bestMove.move());
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
                 historyTable.update(quiet.move(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
                     prevMove = ss.getMove(ply - prevPly);
-                    prevPiece = ss.getMovedPiece(ply - prevPly);
-                    contHistTable.update(prevMove, prevPiece, quiet.move(), quiet.piece(), depth, white, good);
+                    contHistTable.update(prevMove.move(), prevMove.piece(), quiet.move(), quiet.piece(), depth, white, good);
                 }
             }
 

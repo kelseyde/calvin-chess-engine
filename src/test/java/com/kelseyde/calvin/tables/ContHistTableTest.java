@@ -56,8 +56,8 @@ public class ContHistTableTest {
         int depth = 8;
         Move currMove = Move.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
-        contHistTable.update(ss.getMove(0), ss.getMovedPiece(0), currMove, currPiece, depth, true, true);
-        assertEquals(1200, contHistTable.get(ss.getMove(0), ss.getMovedPiece(0), currMove, currPiece, true));
+        contHistTable.update(ss.getMove(0).move(), ss.getMove(0).piece(), currMove, currPiece, depth, true, true);
+        assertEquals(1200, contHistTable.get(ss.getMove(0).move(), ss.getMove(0).piece(), currMove, currPiece, true));
     }
 
     @Test

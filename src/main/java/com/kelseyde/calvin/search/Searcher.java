@@ -327,14 +327,14 @@ public class Searcher implements Search {
             // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
             int extension = 0;
             if (!rootNode
-                    && depth >= 8
+                    && depth >= 6
                     && !excluded
                     && ttHit
                     && move.equals(ttMove)
                     && ttEntry.getDepth() >= depth - 4
                     && ttEntry.getFlag() != HashFlag.UPPER) {
 
-                int sBeta = Math.min(beta, ttEntry.getScore() - depth * 2);
+                int sBeta = Math.max(Score.MIN, ttEntry.getScore() - depth * 14 / 16);
                 int sDepth = (depth - 1) / 2;
 
                 ss.setExcludedMove(ply, move);

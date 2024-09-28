@@ -11,6 +11,7 @@ import com.kelseyde.calvin.search.ThreadData;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.uci.UCICommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 
@@ -42,6 +43,7 @@ public class TrainingDataScorer {
     private static final int TOTAL_POSITIONS_PER_FILE = 100000000;
     private static final Duration MAX_SEARCH_TIME = Duration.ofSeconds(30);
     private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
+    private static final EngineConfig ENGINE_CONFIG = new EngineConfig();
 
     private List<Searcher> searchers;
 
@@ -51,7 +53,7 @@ public class TrainingDataScorer {
                 command.inputFile(), command.outputFile(), command.softNodes(), command.hardNodes(), command.resumeOffset());
         Path inputPath = Paths.get(command.inputFile());
         Path outputPath = Paths.get(command.outputFile());
-        UCI.outputEnabled = false;
+        UCI.setOutputEnabled(false);
         searchers = IntStream.range(0, THREAD_COUNT)
                 .mapToObj(this::initSearcher)
                 .toList();
@@ -92,7 +94,7 @@ public class TrainingDataScorer {
             throw new RuntimeException("Failed to read input file", e);
         }
 
-        UCI.outputEnabled = true;
+        UCI.setOutputEnabled(true);
     }
 
     private List<String> processBatch(List<String> positions, ScoreDataCommand command) {
@@ -152,7 +154,7 @@ public class TrainingDataScorer {
             return "";
         }
         searcher.setPosition(board);
-        TimeControl tc = new TimeControl(MAX_SEARCH_TIME, MAX_SEARCH_TIME, command.softNodes(), command.hardNodes(), -1);
+        TimeControl tc = new TimeControl(ENGINE_CONFIG, MAX_SEARCH_TIME, MAX_SEARCH_TIME, command.softNodes(), command.hardNodes(), -1);
         SearchResult searchResult;
         try {
              searchResult = searcher.search(tc);

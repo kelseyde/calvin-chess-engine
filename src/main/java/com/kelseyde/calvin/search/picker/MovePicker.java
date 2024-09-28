@@ -163,21 +163,21 @@ public class MovePicker {
         Piece piece = board.pieceAt(move.from());
         PlayedMove prevMove = ss.getMove(ply - 1);
 
+        // Get the history score for the move
+        int historyScore = history.getHistoryTable().get(move, white);
+
         // Check if the move is a killer move
         int killerIndex = history.getKillerTable().getIndex(move, ply);
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
         // Check if the move is a counter move
-        boolean isCounterMove = history.getCounterMoveTable().isCounterMove(prevMove.piece(), prevMove.move(), white, move);
-
-        // Get the history score for the move
-        int historyScore = history.getHistoryTable().get(move, white);
+        boolean isCounterMove = prevMove != null && history.getCounterMoveTable().isCounterMove(prevMove.piece(), prevMove.move(), white, move);
 
         // Get the continuation history score for the move
-        int contHistScore = history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
+        int contHistScore = prevMove != null ? history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white) : 0;
 
         PlayedMove prevMove2 = ss.getMove(ply - 2);
-        contHistScore += history.getContHistTable().get(prevMove2.move(), prevMove2.piece(), move, piece, white);
+        contHistScore += prevMove2 != null ? history.getContHistTable().get(prevMove2.move(), prevMove2.piece(), move, piece, white) : 0;
 
         // Killers are ordered higher than normal history moves
         int base = 0;

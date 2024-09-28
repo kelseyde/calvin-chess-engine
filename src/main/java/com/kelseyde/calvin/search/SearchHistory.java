@@ -28,14 +28,18 @@ public class SearchHistory {
             PlayedMove prevMove = ss.getMove(ply - 1);
 
             killerTable.add(ply, bestMove.move());
-            counterMoveTable.add(prevMove.piece(), prevMove.move(), white, bestMove.move());
+            if (prevMove != null) {
+                counterMoveTable.add(prevMove.piece(), prevMove.move(), white, bestMove.move());
+            }
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
                 historyTable.update(quiet.move(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
                     prevMove = ss.getMove(ply - prevPly);
-                    contHistTable.update(prevMove.move(), prevMove.piece(), quiet.move(), quiet.piece(), depth, white, good);
+                    if (prevMove != null) {
+                        contHistTable.update(prevMove.move(), prevMove.piece(), quiet.move(), quiet.piece(), depth, white, good);
+                    }
                 }
             }
 

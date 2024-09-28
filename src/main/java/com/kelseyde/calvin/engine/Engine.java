@@ -65,7 +65,7 @@ public class Engine {
         } else {
             this.config.pondering = command.ponder();
             setSearchCancelled(false);
-            TimeControl tc = TimeControl.init(board, command);
+            TimeControl tc = TimeControl.init(config, board, command);
             stopThinking();
             think = CompletableFuture.supplyAsync(() -> think(tc));
             think.thenAccept(UCI::writeMove);

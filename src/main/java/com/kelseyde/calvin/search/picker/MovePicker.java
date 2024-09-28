@@ -8,6 +8,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 
@@ -20,7 +21,9 @@ public class MovePicker {
 
     public enum Stage {
         TT_MOVE,
+        GEN_NOISY,
         NOISY,
+        GEN_QUIET,
         QUIET,
         END
     }
@@ -51,7 +54,7 @@ public class MovePicker {
         this.ttMove = ttMove;
         this.inCheck = inCheck;
         this.threats = threats;
-        this.stage = ttMove != null ? Stage.TT_MOVE : Stage.NOISY;
+        this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
     public Move pickNextMove() {
@@ -59,10 +62,12 @@ public class MovePicker {
         Move nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case TT_MOVE -> pickTTMove();
-                case NOISY -> pickMove(MoveGenerator.MoveFilter.NOISY, Stage.QUIET);
-                case QUIET -> pickMove(MoveGenerator.MoveFilter.QUIET, Stage.END);
-                case END -> null;
+                case TT_MOVE ->         pickTTMove();
+                case GEN_NOISY ->       generate(MoveFilter.NOISY, Stage.NOISY);
+                case NOISY ->           pickMove(Stage.GEN_QUIET);
+                case GEN_QUIET ->       generate(MoveFilter.QUIET, Stage.QUIET);
+                case QUIET ->           pickMove(Stage.END);
+                case END ->             null;
             };
             if (stage == Stage.END) break;
         }
@@ -72,43 +77,35 @@ public class MovePicker {
 
     /**
      * Select the next move from the move list.
-     * @param filter the move generation filter to use, if the moves are not yet generated
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
-    protected Move pickMove(MoveFilter filter, Stage nextStage) {
+    protected Move pickMove(Stage nextStage) {
 
         if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
             stage = nextStage;
-            moves = null;
             return null;
         }
-
-        if (moves == null) {
-            List<Move> stagedMoves = movegen.generateMoves(board, filter);
-            scoreMoves(stagedMoves);
-            moveIndex = 0;
-        }
         if (moveIndex >= moves.length) {
-            moves = null;
             stage = nextStage;
             return null;
         }
         Move move = pick();
         moveIndex++;
-        if (move.equals(ttMove)) {
-            // Skip to the next move
-            return pickMove(filter, nextStage);
-        }
         return move;
 
     }
 
-    /**
-     * Select the best move from the transposition table and advance to the next stage.
-     */
     protected Move pickTTMove() {
-        stage = Stage.NOISY;
+        stage = Stage.GEN_NOISY;
         return ttMove;
+    }
+
+    protected Move generate(MoveFilter filter, Stage nextStage) {
+        List<Move> stagedMoves = movegen.generateMoves(board, filter);
+        scoreMoves(stagedMoves);
+        moveIndex = 0;
+        stage = nextStage;
+        return null;
     }
 
     protected void scoreMoves(List<Move> stagedMoves) {
@@ -126,7 +123,8 @@ public class MovePicker {
         int to = move.to();
 
         if (move.equals(ttMove)) {
-            return MoveBonus.TT_MOVE_BONUS;
+            // Always put the TT move to the end - it will be tried first lazily
+            return -MoveBonus.TT_MOVE_BONUS;
         }
         if (move.isPromotion()) {
             return scorePromotion(move);
@@ -198,12 +196,22 @@ public class MovePicker {
      * Select the move with the highest score and move it to the head of the move list.
      */
     protected Move pick() {
+        if (moveIndex >= moves.length) {
+            return null;
+        }
+        int bestScore = moves[moveIndex].score();
+        int bestIndex = moveIndex;
         for (int j = moveIndex + 1; j < moves.length; j++) {
-            if (moves[j].score() > moves[moveIndex].score()) {
-                swap(moveIndex, j);
+            if (moves[j].score() > bestScore) {
+                bestScore = moves[j].score();
+                bestIndex = j;
             }
         }
-        return moves[moveIndex].move();
+        if (bestIndex != moveIndex) {
+            swap(moveIndex, bestIndex);
+        }
+        Move move = moves[moveIndex].move();
+        return wasTriedLazily(move) ? null : move;
     }
 
     protected void swap(int i, int j) {
@@ -214,6 +222,10 @@ public class MovePicker {
 
     public void setSkipQuiets(boolean skipQuiets) {
         this.skipQuiets = skipQuiets;
+    }
+
+    private boolean wasTriedLazily(Move move) {
+        return move.equals(ttMove);
     }
 
     public record ScoredMove(Move move, int score) {}

@@ -498,6 +498,11 @@ public class Searcher implements Search {
             if (move == null) break;
 
             if (!inCheck) {
+
+                if (bestScore >= -20000 && movesSearched >= 3) {
+                    break;
+                }
+
                 // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
                 // is bad for us no matter what we do, and not bother searching any further
@@ -517,10 +522,6 @@ public class Searcher implements Search {
                     && futilityScore <= alpha
                     && seeScore <= 0) {
                     continue;
-                }
-
-                if (bestScore >= -20000 && movesSearched >= 2) {
-                    break;
                 }
 
                 // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation

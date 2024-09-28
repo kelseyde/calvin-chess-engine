@@ -341,6 +341,14 @@ public class Board {
         return pieces[square];
     }
 
+    public boolean isCapture(Move move) {
+        return pieceAt(move.to()) != null;
+    }
+
+    public boolean isQuiet(Move move) {
+        return !isCapture(move) && !move.isPromotion();
+    }
+
     public long getPawns(boolean white) {
         final long side = white ? whitePieces : blackPieces;
         return pawns & side;

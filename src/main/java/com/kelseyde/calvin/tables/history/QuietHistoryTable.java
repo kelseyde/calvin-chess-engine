@@ -56,7 +56,7 @@ public class QuietHistoryTable extends HistoryTable {
     }
 
     public void clear() {
-        table = new int[2][Square.COUNT][Square.COUNT][2];
+        table = new int[2][Square.COUNT][Square.COUNT][4];
     }
 
     @Override

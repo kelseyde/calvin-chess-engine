@@ -16,7 +16,7 @@ public class QuietHistoryTable extends HistoryTable {
         int colourIndex = Colour.index(white);
         int from = move.from();
         int to = move.to();
-        int toThreatened= Bits.contains(threats, to) ? 1 : 0;
+        int toThreatened = Bits.contains(threats, to) ? 1 : 0;
         int current = table[colourIndex][from][to][toThreatened];
         int bonus = bonus(depth);
         if (!good) bonus = -bonus;

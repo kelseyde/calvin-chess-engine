@@ -8,7 +8,6 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 
@@ -73,33 +72,20 @@ public class MovePicker {
 
     }
 
-    /**
-     * Select the next move from the move list.
-     * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
-     */
     protected Move pickMove(Stage nextStage) {
 
-        if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
+        if (moveIndex >= moves.length
+                || (stage == Stage.QUIET && (skipQuiets || inCheck))) {
             stage = nextStage;
             return null;
         }
-        if (moveIndex >= moves.length) {
-            stage = nextStage;
-            return null;
-        }
+
         Move move = pick();
         moveIndex++;
-//        if (move.equals(ttMove)) {
-//            // Skip to the next move
-//            return pickMove(nextStage);
-//        }
         return move;
 
     }
 
-    /**
-     * Select the best move from the transposition table and advance to the next stage.
-     */
     protected Move pickTTMove() {
         stage = Stage.GEN_NOISY;
         return ttMove;
@@ -124,42 +110,36 @@ public class MovePicker {
 
     protected int scoreMove(Board board, Move move, Move ttMove, int ply) {
 
-        int from = move.from();
-        int to = move.to();
+        // Always put the TT move to the end - it will be tried first lazily
+        if (move.equals(ttMove)) return -MoveBonus.TT_MOVE_BONUS;
 
-        if (move.equals(ttMove)) {
-            // Always put the TT move to the end - it will be tried first lazily
-            return -MoveBonus.TT_MOVE_BONUS;
-        }
-        if (move.isPromotion()) {
-            return scorePromotion(move);
-        }
-
-        Piece captured = board.pieceAt(to);
-        if (captured != null) {
-            return scoreCapture(board, from, to, captured);
-        }
-        else {
-            return scoreQuiet(board, move, ply);
-        }
+        Piece captured = board.pieceAt(move.to());
+        boolean noisy = captured != null || move.isPromotion();
+        return noisy ?
+                scoreNoisy(board, move, captured) :
+                scoreQuiet(board, move, ply);
 
     }
 
-    protected int scoreCapture(Board board, int from, int to, Piece captured) {
-        Piece piece = board.pieceAt(from);
-        int captureScore = 0;
+    protected int scoreNoisy(Board board, Move move, Piece captured) {
+        if (move.isPromotion()) {
+            return MoveBonus.GOOD_NOISY;
+        }
+
+        Piece piece = board.pieceAt(move.from());
+        int noisyScore = 0;
 
         // Separate captures into winning and losing
         int materialDelta = captured.value() - piece.value();
-        captureScore += materialDelta >= 0 ? MoveBonus.WINNING_CAPTURE_BONUS : MoveBonus.LOSING_CAPTURE_BONUS;
+        noisyScore += materialDelta >= 0 ? MoveBonus.GOOD_NOISY : MoveBonus.BAD_NOISY;
 
         // Add MVV score to the capture score
-        captureScore += MoveBonus.MVV_OFFSET * captured.index();
+        noisyScore += MoveBonus.MVV_OFFSET * captured.index();
 
         // Tie-break with capture history
-        captureScore += history.getCaptureHistoryTable().get(piece, to, captured, board.isWhite());
+        noisyScore += history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
 
-        return captureScore;
+        return noisyScore;
     }
 
     protected int scoreQuiet(Board board, Move move, int ply) {
@@ -185,16 +165,12 @@ public class MovePicker {
         // Killers are ordered higher than normal history moves
         int base = 0;
         if (killerScore != 0) {
-            base = MoveBonus.KILLER_MOVE_BONUS;
+            base = MoveBonus.KILLER;
         } else if (historyScore != 0 || contHistScore != 0) {
-            base = MoveBonus.QUIET_MOVE_BONUS;
+            base = MoveBonus.QUIET;
         }
 
         return base + killerScore + historyScore + contHistScore;
-    }
-
-    protected int scorePromotion(Move move) {
-        return move.promoPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
     }
 
     /**

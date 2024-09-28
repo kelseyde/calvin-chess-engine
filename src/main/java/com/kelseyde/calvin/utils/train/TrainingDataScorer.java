@@ -51,7 +51,7 @@ public class TrainingDataScorer {
                 command.inputFile(), command.outputFile(), command.softNodes(), command.hardNodes(), command.resumeOffset());
         Path inputPath = Paths.get(command.inputFile());
         Path outputPath = Paths.get(command.outputFile());
-        UCI.outputEnabled = false;
+        UCI.setOutputEnabled(false);
         searchers = IntStream.range(0, THREAD_COUNT)
                 .mapToObj(this::initSearcher)
                 .toList();
@@ -92,7 +92,7 @@ public class TrainingDataScorer {
             throw new RuntimeException("Failed to read input file", e);
         }
 
-        UCI.outputEnabled = true;
+        UCI.setOutputEnabled(true);
     }
 
     private List<String> processBatch(List<String> positions, ScoreDataCommand command) {

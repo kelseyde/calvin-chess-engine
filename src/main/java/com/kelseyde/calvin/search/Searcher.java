@@ -291,14 +291,12 @@ public class Searcher implements Search {
                 && (!ttHit || ttEntry.getDepth() + 3 < depth || ttEntry.getScore() >= probcutBeta)) {
 
                 int seeThreshold = probcutBeta - staticEval;
-                int movesSearched = 0;
 
                 QuiescentMovePicker probcutPicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
                 probcutPicker.setFilter(MoveFilter.NOISY);
                 while (true) {
                     Move probcutMove = probcutPicker.pickNextMove();
                     if (probcutMove == null) break;
-                    movesSearched++;
 
                     if (SEE.see(board, probcutMove) < seeThreshold) {
                         continue;
@@ -315,6 +313,10 @@ public class Searcher implements Search {
                     if (score >= probcutBeta) {
                         score = -search(probcutDepth - 1, ply + 1, -probcutBeta, -probcutBeta + 1);
                     }
+
+                    eval.unmakeMove();
+                    board.unmakeMove();
+                    ss.unsetMove(ply);
 
                     if (score >= probcutBeta) {
                         tt.put(board.key(), HashFlag.LOWER, probcutDepth, ply, probcutMove, staticEval, score);

@@ -15,6 +15,9 @@ enum UCICommandType {
     PONDERHIT    ("ponderhit",   UCI::handlePonderHit),
     FEN          ("fen",         UCI::handleFen),
     EVAL         ("eval",        UCI::handleEval),
+    DISPLAY      ("display",     UCI::handleDisplay),
+    D            ("d",           UCI::handleDisplay),
+    THREATS      ("threats",     UCI::handleThreats),
     BENCH        ("bench",       UCI::handleBench),
     SCORE_DATA   ("scoredata",   UCI::handleScoreData),
     STOP         ("stop",        UCI::handleStop),
@@ -48,7 +51,7 @@ enum UCICommandType {
             }
         }
 
-        void acceptThrows(UCICommand command) throws Exception;
+        void acceptThrows(UCICommand command);
 
     }
 

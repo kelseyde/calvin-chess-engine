@@ -4,8 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +25,6 @@ import java.util.stream.IntStream;
  *
  * @see <a href="https://www.chessprogramming.org/Lazy_SMP">Chess Programming Wiki</a>
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ParallelSearcher implements Search {
 
     final EngineConfig config;
@@ -46,8 +43,8 @@ public class ParallelSearcher implements Search {
      */
     public ParallelSearcher(EngineConfig config, TranspositionTable tt) {
         this.config = config;
-        this.hashSize = config.getDefaultHashSizeMb();
-        this.threadCount = config.getDefaultThreadCount();
+        this.hashSize = config.defaultHashSizeMb;
+        this.threadCount = config.defaultThreads;
         this.tt = tt;
         this.searchers = initSearchers();
     }

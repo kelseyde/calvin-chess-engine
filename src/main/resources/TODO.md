@@ -32,11 +32,14 @@
 - [ ] Find solution to CCRL/ChessGUI/Vector API issue
 - [ ] Lazy NNUE updates
 - [x] New net, bigger HL size
-- [ ] Screlu
+- [x] Screlu
 - [ ] Output buckets
+- [ ] Horizontal mirroring
 - [ ] Datagen
 - [ ] Pawn corrhist
 - [ ] Material corrhist
+- [ ] Output buckets
+- [ ] Finny tables
 
 ### Time management
 
@@ -47,8 +50,8 @@
 
 ### UCI
 
-- [ ] Add engine author/version
-- [ ] Add perft to UCI options
+- [x] Add engine author/version
+- [x] Add perft to UCI options
 - [ ] Implement display command
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info

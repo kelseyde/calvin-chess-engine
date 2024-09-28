@@ -25,7 +25,7 @@ public abstract class PerftTest {
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
         long totalMoveCount = perftService.perft(board, depth);
-        long totalNodeCount = perftService.totalNodeCount;
+        long totalNodeCount = perftService.nodesSearched;
         System.out.println("totalMoveCount: " + totalNodeCount);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);

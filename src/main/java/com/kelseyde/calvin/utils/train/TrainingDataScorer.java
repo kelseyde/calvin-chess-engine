@@ -11,6 +11,7 @@ import com.kelseyde.calvin.search.ThreadData;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.uci.UCICommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 
@@ -42,6 +43,7 @@ public class TrainingDataScorer {
     private static final int TOTAL_POSITIONS_PER_FILE = 100000000;
     private static final Duration MAX_SEARCH_TIME = Duration.ofSeconds(30);
     private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
+    private static final EngineConfig ENGINE_CONFIG = new EngineConfig();
 
     private List<Searcher> searchers;
 
@@ -152,7 +154,7 @@ public class TrainingDataScorer {
             return "";
         }
         searcher.setPosition(board);
-        TimeControl tc = new TimeControl(MAX_SEARCH_TIME, MAX_SEARCH_TIME, command.softNodes(), command.hardNodes(), -1);
+        TimeControl tc = new TimeControl(ENGINE_CONFIG, MAX_SEARCH_TIME, MAX_SEARCH_TIME, command.softNodes(), command.hardNodes(), -1);
         SearchResult searchResult;
         try {
              searchResult = searcher.search(tc);

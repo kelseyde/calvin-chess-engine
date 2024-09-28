@@ -2,6 +2,7 @@ package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
@@ -35,7 +36,7 @@ public class EndgameTest {
         Board board = FEN.toBoard(fen);
         searcher.setPosition(board);
 
-        TimeControl tc = new TimeControl(Duration.ofMillis(300), Duration.ofMillis(300), -1, 0, -1);
+        TimeControl tc = new TimeControl(new EngineConfig(), Duration.ofMillis(300), Duration.ofMillis(300), -1, 0, -1);
         SearchResult result = searcher.search(tc);
 
         Move bestMove = Move.fromUCI("b2b7");
@@ -49,7 +50,7 @@ public class EndgameTest {
         String fen = "8/8/2k5/6KP/6P1/8/3r4/8 b - - 1 46";
         Board board = FEN.toBoard(fen);
         searcher.setPosition(board);
-        TimeControl tc = new TimeControl(Duration.ofMillis(300), Duration.ofMillis(300), -1, 0, -1);
+        TimeControl tc = new TimeControl(new EngineConfig(), Duration.ofMillis(300), Duration.ofMillis(300), -1, 0, -1);
         Move move = searcher.search(tc).move();
         System.out.println(Move.toUCI(move));
 
@@ -133,7 +134,7 @@ public class EndgameTest {
 
 
     private SearchResult think(int timeout) {
-        TimeControl tc = new TimeControl(Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1, -1);
+        TimeControl tc = new TimeControl(new EngineConfig(), Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1, -1);
         return ENGINE.think(tc);
     }
 

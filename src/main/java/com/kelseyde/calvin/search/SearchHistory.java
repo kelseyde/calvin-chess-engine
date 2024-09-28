@@ -5,8 +5,8 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
+import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 
 import java.util.List;
 

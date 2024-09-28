@@ -8,7 +8,6 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 

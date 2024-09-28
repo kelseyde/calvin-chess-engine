@@ -10,26 +10,26 @@ public class QuietHistoryTable extends HistoryTable {
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;
 
-    int[][][][] table = new int[2][Square.COUNT][Square.COUNT][2];
+    int[][][][] table = new int[2][Square.COUNT][Square.COUNT][4];
 
     public void update(Move move, int depth, long threats, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
         int from = move.from();
         int to = move.to();
-        int toThreatened = Bits.contains(threats, to) ? 1 : 0;
-        int current = table[colourIndex][from][to][toThreatened];
+        int threatIndex = threatIndex(from, to, threats);
+        int current = table[colourIndex][from][to][threatIndex];
         int bonus = bonus(depth);
         if (!good) bonus = -bonus;
         int update = gravity(current, bonus);
-        table[colourIndex][from][to][toThreatened] = update;
+        table[colourIndex][from][to][threatIndex] = update;
     }
 
     public int get(Move historyMove, long threats, boolean white) {
         int colourIndex = Colour.index(white);
         int from = historyMove.from();
         int to = historyMove.to();
-        int toThreatened = Bits.contains(threats, to) ? 1 : 0;
-        return table[colourIndex][from][to][toThreatened];
+        int threatIndex = threatIndex(from, to, threats);
+        return table[colourIndex][from][to][threatIndex];
     }
 
     public void ageScores(boolean white) {
@@ -40,6 +40,12 @@ public class QuietHistoryTable extends HistoryTable {
                 table[colourIndex][from][to][1] /= 2;
             }
         }
+    }
+
+    private int threatIndex(int from, int to, long threats) {
+        int fromThreatened = Bits.contains(threats, from) ? 1 : 0;
+        int toThreatened = Bits.contains(threats, to) ? 1 : 0;
+        return fromThreatened << 1 | toThreatened;
     }
 
     public void clear() {

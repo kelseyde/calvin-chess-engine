@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class QuietHistoryTableTest {
 

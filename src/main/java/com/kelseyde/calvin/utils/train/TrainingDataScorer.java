@@ -11,7 +11,6 @@ import com.kelseyde.calvin.search.ThreadData;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.uci.UCICommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 

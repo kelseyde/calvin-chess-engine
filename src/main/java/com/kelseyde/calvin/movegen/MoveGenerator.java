@@ -7,6 +7,7 @@ import com.kelseyde.calvin.board.Bits.Ray;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -298,6 +299,90 @@ public class MoveGenerator {
 
         // Restore the king to its original position on the board
         board.addKing(from, white);
+    }
+
+    public boolean isLegal(Board board, Move move) {
+
+        if (move == null) {
+            return false;
+        }
+
+        long occupied = board.getOccupied();
+        long friendlies = board.getPieces(board.isWhite());
+        long opponents = board.getPieces(!board.isWhite());
+
+        if ((Bits.of(move.from()) & friendlies) == 0) {
+            // There is no friendly piece on the start square
+            return false;
+        }
+        if ((Bits.of(move.to()) & friendlies) != 0) {
+            // There is a friendly piece on the end square
+            return false;
+        }
+
+        Piece piece = board.pieceAt(move.from());
+        if (piece == Piece.PAWN ) {
+            if ((Bits.of(move.to()) & opponents) != 0) {
+                // Pawn cannot capture forward
+                return false;
+            }
+            if (move.isEnPassant()) {
+                int epFile = board.getState().getEnPassantFile();
+                if (epFile != File.of(move.to())) {
+                    // The en passant move is not valid
+                    return false;
+                }
+                int epSquare = Square.of(white ? 5 : 2, epFile);
+                if ((Bits.of(epSquare) & opponents) == 0) {
+                    // There is no pawn to capture
+                    return false;
+                }
+            }
+            if (move.isPawnDoubleMove()) {
+                int middleSquare = white ? move.to() - 8 : move.to() + 8;
+                if ((Bits.of(middleSquare) & occupied) != 0) {
+                    // The double pawn move is blocked
+                    return false;
+                }
+            }
+        }
+
+        if (piece.isSlider()) {
+            long ray = Ray.between(move.from(), move.to());
+            if ((ray & occupied) != 0) {
+                // The sliding piece is blocked
+                return false;
+            }
+        }
+
+        else if (move.isCastling() && !isCastlingMoveLegal(board, move)) {
+            // The castling move is not valid
+            return false;
+        }
+
+        // Make the move and check if the king is in check
+        board.makeMove(move);
+        boolean legal = !isCheck(board, !board.isWhite());
+        board.unmakeMove();
+        return legal;
+
+    }
+
+    public boolean isCastlingMoveLegal(Board board, Move move) {
+        if (!move.isCastling()) {
+            return false;
+        }
+        boolean kingside = File.of(move.to()) == 6;
+        if (kingside && !board.getState().isKingsideCastlingAllowed(board.isWhite())) {
+            return false;
+        }
+        if (!kingside && !board.getState().isQueensideCastlingAllowed(board.isWhite())) {
+            return false;
+        }
+        final long travelSquares = getCastleTravelSquares(board.isWhite(), kingside);
+        final long blockedSquares = travelSquares & board.getOccupied();
+        final long safeSquares = getCastleSafeSquares(board.isWhite(), kingside);
+        return blockedSquares == 0 && !isAttacked(board, board.isWhite(), safeSquares);
     }
 
     private void generateCastlingMoves(Board board) {

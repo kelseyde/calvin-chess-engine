@@ -135,7 +135,7 @@ public class Engine {
             board.makeMove(entry.getMove());
             moves++;
         }
-        IntStream.range(0, moves).forEach(i -> board.unmakeMove());
+        IntStream.range(0, moves).forEach(i ->  board.unmakeMove());
         return pv;
     }
 

@@ -17,6 +17,7 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -303,7 +304,10 @@ public class Searcher implements Search {
 
             Move move = movePicker.pickNextMove();
             if (move == null) break;
-            if (move.equals(excludedMove)) continue;
+            if (move.equals(excludedMove)) {
+                System.out.println("fen " + FEN.toFEN(board) + " skipping tt move " + Move.toUCI(excludedMove));
+                continue;
+            }
             movesSearched++;
 
             Piece piece = board.pieceAt(move.from());
@@ -408,12 +412,12 @@ public class Searcher implements Search {
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 + extension - reduction, ply + 1, -alpha - 1, -alpha);
+                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
+                    score = -search(depth - 1, ply + 1, -beta, -alpha);
                 }
             }
 

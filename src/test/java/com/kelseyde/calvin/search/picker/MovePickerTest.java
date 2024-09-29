@@ -59,4 +59,31 @@ public class MovePickerTest {
 
     }
 
+    @Test
+    public void testDontTryAlreadyTriedKiller() {
+
+        String fen = "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d6 0 1";
+        Board board = FEN.toBoard(fen);
+
+        SearchStack ss = new SearchStack();
+        SearchHistory history = new SearchHistory();
+        Move ttMove = null;
+
+        history.getKillerTable().add(0, Move.fromUCI("d7d5", Move.PAWN_DOUBLE_MOVE_FLAG));
+        history.getKillerTable().add(0, Move.fromUCI("a7a6"));
+        history.getKillerTable().add(0, Move.fromUCI("a7a6"));
+
+        MovePicker picker = new MovePicker(moveGenerator, ss, history, board, 0, ttMove, false);
+        List<Move> pickerMoves = new ArrayList<>();
+        while (true) {
+            Move move = picker.pickNextMove();
+            if (move == null) break;
+            pickerMoves.add(move);
+        }
+
+        Assertions.assertEquals(20, pickerMoves.size());
+
+
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.search.picker;
 
+import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -58,7 +60,7 @@ public class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
-        this.tryKillers = true;
+        this.tryKillers = !inCheck;
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
@@ -78,6 +80,7 @@ public class MovePicker {
             };
             if (stage == Stage.END) break;
         }
+        System.out.println("Move: " + (nextMove != null ? Move.toUCI(nextMove) : null));
         return nextMove;
 
     }
@@ -100,36 +103,49 @@ public class MovePicker {
 
 
         ScoredMove move = pick();
-        if (tryKillers && stage == Stage.GOOD_NOISY && move.getStage() == Stage.BAD_NOISY) {
+        if (tryKillers && stage == Stage.GOOD_NOISY && move != null && move.getStage() == Stage.BAD_NOISY) {
             stage = Stage.KILLER;
             //System.out.println("stage: " + stage);
             return null;
         }
 
         moveIndex++;
-        if (move.move.equals(ttMove) || (stage == Stage.QUIET && isKiller(move.move()))) {
-            return pickMove(nextStage);
-        }
-        return move.move();
+        System.out.println("    Pick move: " + (move != null ? Move.toUCI(move.move()): null));
+        return move != null ? move.move() : null;
 
     }
 
     protected Move pickKiller() {
+        if (!tryKillers || skipQuiets) {
+            stage = Stage.BAD_NOISY;
+            return null;
+        }
         if (killers == null) {
             killers = history.getKillerTable().getKillers(ply);
             killerIndex = 0;
         }
-        //System.out.println("killers: " + Arrays.stream(killers).map(Move::toUCI).toList());
         if (killerIndex >= killers.length) {
             stage = Stage.BAD_NOISY;
-            //System.out.println("stage: " + stage);
             return null;
         }
         while (killerIndex < killers.length) {
             Move killer = killers[killerIndex++];
-            if (killer != null && isKillerLegal(killer)) {
-                return killer;
+            if (killer == null) {
+                continue;
             }
+            if (killer.equals(ttMove)) {
+                continue;
+            }
+            if (!movegen.isLegal(board, killer)) {
+                continue;
+            }
+            if (board.pieceAt(killer.to()) != null) {
+                // special case where the killer move was quiet, but in the
+                // current position it is a capture, and so has already been tried
+                continue;
+            }
+            System.out.println("    Pick killer: " + Move.toUCI(killer));
+            return killer;
         }
         stage = Stage.BAD_NOISY;
         //System.out.println("stage: " + stage);
@@ -205,6 +221,9 @@ public class MovePicker {
         // Check if the move is a killer move
         int killerIndex = history.getKillerTable().getIndex(move, ply);
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
+        if (killerScore != 0) {
+            return -MoveBonus.TT_MOVE_BONUS;
+        }
 
         // Get the history score for the move
         int historyScore = history.getHistoryTable().get(move, white);
@@ -251,8 +270,8 @@ public class MovePicker {
         if (bestIndex != moveIndex) {
             swap(moveIndex, bestIndex);
         }
-        PlayedMove move = moves[moveIndex];
-        return wasTriedLazily(move) ? null : move;
+        ScoredMove move = moves[moveIndex];
+        return wasTriedLazily(move.move) ? null : move;
     }
 
     protected void swap(int i, int j) {
@@ -266,28 +285,21 @@ public class MovePicker {
     }
 
     private boolean wasTriedLazily(Move move) {
-        return move.equals(ttMove);
-    }
-
-    private boolean isKillerLegal(Move move) {
-        board.makeMove(move);
-        boolean legal = !movegen.isCheck(board, !board.isWhite());
-        board.unmakeMove();
-        //System.out.println("killer legal: " + legal);
-        return legal;
-    }
-
-    private boolean isKiller(Move move) {
-        //System.out.println("checking if move is killer: " + Move.toUCI(move));
-        if (killers == null) {
-            return false;
+        System.out.println("        Checking if move was tried lazily: " + Move.toUCI(move));
+        if (move.equals(ttMove)) {
+            System.out.println("        TT move was tried lazily: " + Move.toUCI(move));
+            return true;
         }
-        for (Move killer : killers) {
-            if (move.equals(killer)) {
-                //Syt.out.println("FOUND KILLER: " + Move.toUCI(move));
-                return true;
+        if (killers != null) {
+            System.out.println("        Checking killers: " + Arrays.stream(killers).map(Move::toUCI).toList());
+            for (Move killer : killers) {
+                if (move.equals(killer)) {
+                    System.out.println("        Killer move was tried lazily: " + Move.toUCI(move));
+                    return true;
+                }
             }
         }
+        System.out.println("        Move was not tried lazily: " + Move.toUCI(move));
         return false;
     }
 

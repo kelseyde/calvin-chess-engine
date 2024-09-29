@@ -19,15 +19,6 @@ import java.util.List;
  */
 public class MovePicker {
 
-    /**
-     * Plan:
-     * 1 - gen all noisy moves
-     * 2 - score all noisy moves
-     * 3 - start picking noisy moves
-     * 4 - when we reach the end of the 'good' noisy moves, start trying killers
-     * 5 - when we reach the end of the killers, switch back to the remaining bad noises/quiets
-     */
-
     public enum Stage {
         TT_MOVE,
         GEN_NOISY,
@@ -77,17 +68,16 @@ public class MovePicker {
         while (nextMove == null) {
             nextMove = switch (stage) {
                 case TT_MOVE ->      pickTTMove();
-                case GEN_NOISY ->    generateMoves(MoveFilter.NOISY, Stage.GOOD_NOISY);
+                case GEN_NOISY ->    generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
                 case GOOD_NOISY ->   pickMove(Stage.KILLER);
                 case KILLER ->       pickKiller();
                 case BAD_NOISY ->    pickMove(Stage.GEN_QUIET);
-                case GEN_QUIET ->    generateMoves(MoveFilter.QUIET, Stage.QUIET);
+                case GEN_QUIET ->    generate(MoveFilter.QUIET, Stage.QUIET);
                 case QUIET ->        pickMove(Stage.END);
                 case END ->          null;
             };
             if (stage == Stage.END) break;
         }
-        //System.out.println("Move: " + Move.toUCI(nextMove));
         return nextMove;
 
     }
@@ -98,15 +88,13 @@ public class MovePicker {
      */
     protected Move pickMove(Stage nextStage) {
 
-        if (moves == null || (stage == Stage.QUIET && (skipQuiets || inCheck))) {
+        if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
             stage = nextStage;
-            //System.out.println("stage: " + stage);
             return null;
         }
 
         if (moveIndex >= moves.length) {
             stage = nextStage;
-            //System.out.println("stage: " + stage);
             return null;
         }
 
@@ -148,23 +136,16 @@ public class MovePicker {
         return null;
     }
 
-    /**
-     * Select the best move from the transposition table and advance to the next stage.
-     */
     protected Move pickTTMove() {
-        stage = Stage.GOOD_NOISY;
+        stage = Stage.GEN_NOISY;
         return ttMove;
     }
 
-    protected Move generateMoves(MoveFilter filter, Stage nextStage) {
-        if (skipQuiets && filter == MoveFilter.QUIET) {
-            return null;
-        }
-        moveIndex = 0;
+    protected Move generate(MoveFilter filter, Stage nextStage) {
         List<Move> stagedMoves = movegen.generateMoves(board, filter);
         scoreMoves(stagedMoves);
+        moveIndex = 0;
         stage = nextStage;
-        //System.out.println("stage: " + stage);
         return null;
     }
 
@@ -183,7 +164,8 @@ public class MovePicker {
         int to = move.to();
 
         if (move.equals(ttMove)) {
-            return MoveBonus.TT_MOVE_BONUS;
+            // Always put the TT move to the end - it will be tried first lazily
+            return -MoveBonus.TT_MOVE_BONUS;
         }
         if (move.isPromotion()) {
             return scorePromotion(move);
@@ -255,12 +237,22 @@ public class MovePicker {
      * Select the move with the highest score and move it to the head of the move list.
      */
     protected ScoredMove pick() {
+        if (moveIndex >= moves.length) {
+            return null;
+        }
+        int bestScore = moves[moveIndex].score();
+        int bestIndex = moveIndex;
         for (int j = moveIndex + 1; j < moves.length; j++) {
-            if (moves[j].score() > moves[moveIndex].score()) {
-                swap(moveIndex, j);
+            if (moves[j].score() > bestScore) {
+                bestScore = moves[j].score();
+                bestIndex = j;
             }
         }
-        return moves[moveIndex];
+        if (bestIndex != moveIndex) {
+            swap(moveIndex, bestIndex);
+        }
+        PlayedMove move = moves[moveIndex];
+        return wasTriedLazily(move) ? null : move;
     }
 
     protected void swap(int i, int j) {
@@ -271,6 +263,10 @@ public class MovePicker {
 
     public void setSkipQuiets(boolean skipQuiets) {
         this.skipQuiets = skipQuiets;
+    }
+
+    private boolean wasTriedLazily(Move move) {
+        return move.equals(ttMove);
     }
 
     private boolean isKillerLegal(Move move) {

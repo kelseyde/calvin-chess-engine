@@ -347,10 +347,11 @@ public class Searcher implements Search {
                     && depth >= 8
                     && ttHit
                     && move.equals(ttMove)
-                    && ttEntry.getDepth() >= depth - 4
-                    && ttEntry.getFlag() != HashFlag.UPPER) {
+                    && ttEntry.getDepth() >= depth - 3
+                    && ttEntry.getFlag() != HashFlag.UPPER
+                    && !Score.isMateScore(ttEntry.getScore())) {
 
-                int sBeta = Math.max(Score.MIN + 1, ttEntry.getScore() - depth * 14 / 16);
+                int sBeta = Math.max(-Score.MATE, ttEntry.getScore() - depth * 2);
                 int sDepth = (depth - 1) / 2;
 
                 ss.setExcludedMove(ply, move);
@@ -423,12 +424,12 @@ public class Searcher implements Search {
 
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha);
+                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1, ply + 1, -beta, -alpha);
+                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
                 }
             }
 

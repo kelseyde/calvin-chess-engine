@@ -254,6 +254,18 @@ public class Searcher implements Search {
                 return (staticEval + beta) / 2;
             }
 
+            // Razoring - https://www.chessprogramming.org/Razoring
+            // At low depths, if the static evaluation + some significant margin is still below alpha, then let's perform
+            // a quick quiescence search to see if the position is really that bad. If it is, we can prune the node.
+            if (depth <= config.razorDepth.value
+                && staticEval + config.razorMargin.value * depth < alpha) {
+
+                int score = quiescenceSearch(alpha, alpha + 1, 1, ply);
+                if (score < alpha) {
+                    return score;
+                }
+            }
+
             // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning
             // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and

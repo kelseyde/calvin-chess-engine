@@ -147,11 +147,11 @@ public class MovePicker {
             }
 //            System.out.println("    Pick killer: " + Move.toUCI(killer));
 
-            List<Move> legalMoves = movegen.generateMoves(board);
-            if (!legalMoves.contains(killer)) {
-                System.out.println("fen: " + FEN.toFEN(board));
-                System.out.println("move: " + Move.toUCI(killer));
-            }
+//            List<Move> legalMoves = movegen.generateMoves(board);
+//            if (!legalMoves.contains(killer)) {
+//                System.out.println("fen: " + FEN.toFEN(board));
+//                System.out.println("move: " + Move.toUCI(killer));
+//            }
 
             return killer;
         }

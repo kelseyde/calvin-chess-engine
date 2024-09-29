@@ -217,7 +217,7 @@ public class FEN {
         if (enPassantFile == -1) {
             return "-";
         }
-        return Square.toNotation(Square.of(rank, enPassantFile));
+        return Square.toNotation(File.toEnPassantSquare(enPassantFile, white));
     }
 
     private static int parseFiftyMoveCounter(String fiftyMoveCounter) {

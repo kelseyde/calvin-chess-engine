@@ -122,6 +122,11 @@ public class Bits {
             return 0x0101010101010101L << file;
         }
 
+        public static int toEnPassantSquare(int file, boolean white) {
+            int rank = white ? 2 : 5;
+            return Square.of(rank, file);
+        }
+
         public static String toFileNotation(int sq) {
             return FILE_CHAR_MAP.get(of(sq));
         }

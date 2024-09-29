@@ -259,6 +259,17 @@ public class BoardTest {
 
     }
 
+    @Test
+    public void testIsLegal() {
+
+        String fen = "2kr4/p2p4/2pRq1p1/5pb1/B3p2r/2P2P2/PQ3N1P/1K5R b - - 3 7";
+        Board board = FEN.toBoard(fen);
+
+        Move move = Move.fromUCI("d7d5", Move.PAWN_DOUBLE_MOVE_FLAG);
+        Assertions.assertFalse(new MoveGenerator().isLegal(board, move));
+
+    }
+
     private Set<Integer> getPiecePositions(Board board, boolean whiteToMove) {
         Set<Integer> positions = new HashSet<>();
         if (whiteToMove) {

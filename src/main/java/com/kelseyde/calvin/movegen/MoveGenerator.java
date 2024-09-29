@@ -307,6 +307,7 @@ public class MoveGenerator {
             return false;
         }
 
+        long occupied = board.getOccupied();
         long friendlies = board.getPieces(board.isWhite());
         long opponents = board.getPieces(!board.isWhite());
 
@@ -320,15 +321,40 @@ public class MoveGenerator {
         }
 
         Piece piece = board.pieceAt(move.from());
-        if (piece == Piece.PAWN && (Bits.of(move.to()) & opponents) != 0) {
-            // Pawn cannot capture forward
-            return false;
+        if (piece == Piece.PAWN ) {
+            if ((Bits.of(move.to()) & opponents) != 0) {
+                // Pawn cannot capture forward
+                return false;
+            }
+            if (move.isEnPassant()) {
+                int epFile = board.getState().getEnPassantFile();
+                if (epFile != File.of(move.to())) {
+                    // The en passant move is not valid
+                    return false;
+                }
+                int epSquare = Square.of(white ? 5 : 2, epFile);
+                if ((Bits.of(epSquare) & opponents) == 0) {
+                    // There is no pawn to capture
+                    return false;
+                }
+            }
+            if (move.isPawnDoubleMove()) {
+                int middleSquare = white ? move.to() - 8 : move.to() + 8;
+                if ((Bits.of(middleSquare) & occupied) != 0) {
+                    // The double pawn move is blocked
+                    return false;
+                }
+            }
         }
 
-        if (move.isEnPassant() && board.getState().getEnPassantFile() != File.of(move.to())) {
-            // The en passant move is not valid
-            return false;
+        if (piece.isSlider()) {
+            long ray = Ray.between(move.from(), move.to());
+            if ((ray & occupied) != 0) {
+                // The sliding piece is blocked
+                return false;
+            }
         }
+
         else if (move.isCastling() && !isCastlingMoveLegal(board, move)) {
             // The castling move is not valid
             return false;
@@ -353,9 +379,9 @@ public class MoveGenerator {
         if (!kingside && !board.getState().isQueensideCastlingAllowed(board.isWhite())) {
             return false;
         }
-        final long travelSquares = getCastleTravelSquares(board.isWhite(), true);
+        final long travelSquares = getCastleTravelSquares(board.isWhite(), kingside);
         final long blockedSquares = travelSquares & board.getOccupied();
-        final long safeSquares = getCastleSafeSquares(board.isWhite(), true);
+        final long safeSquares = getCastleSafeSquares(board.isWhite(), kingside);
         return blockedSquares == 0 && !isAttacked(board, board.isWhite(), safeSquares);
     }
 

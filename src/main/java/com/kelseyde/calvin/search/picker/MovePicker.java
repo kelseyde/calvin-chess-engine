@@ -10,6 +10,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.Arrays;
 import java.util.List;
@@ -80,7 +81,7 @@ public class MovePicker {
             };
             if (stage == Stage.END) break;
         }
-        System.out.println("Move: " + (nextMove != null ? Move.toUCI(nextMove) : null));
+//        System.out.println("Move: " + (nextMove != null ? Move.toUCI(nextMove) : null));
         return nextMove;
 
     }
@@ -110,7 +111,7 @@ public class MovePicker {
         }
 
         moveIndex++;
-        System.out.println("    Pick move: " + (move != null ? Move.toUCI(move.move()): null));
+//        System.out.println("    Pick move: " + (move != null ? Move.toUCI(move.move()): null));
         return move != null ? move.move() : null;
 
     }
@@ -144,7 +145,14 @@ public class MovePicker {
                 // current position it is a capture, and so has already been tried
                 continue;
             }
-            System.out.println("    Pick killer: " + Move.toUCI(killer));
+//            System.out.println("    Pick killer: " + Move.toUCI(killer));
+
+            List<Move> legalMoves = movegen.generateMoves(board);
+            if (!legalMoves.contains(killer)) {
+                System.out.println("fen: " + FEN.toFEN(board));
+                System.out.println("move: " + Move.toUCI(killer));
+            }
+
             return killer;
         }
         stage = Stage.BAD_NOISY;
@@ -285,21 +293,21 @@ public class MovePicker {
     }
 
     private boolean wasTriedLazily(Move move) {
-        System.out.println("        Checking if move was tried lazily: " + Move.toUCI(move));
+//        System.out.println("        Checking if move was tried lazily: " + Move.toUCI(move));
         if (move.equals(ttMove)) {
-            System.out.println("        TT move was tried lazily: " + Move.toUCI(move));
+//            System.out.println("        TT move was tried lazily: " + Move.toUCI(move));
             return true;
         }
         if (killers != null) {
-            System.out.println("        Checking killers: " + Arrays.stream(killers).map(Move::toUCI).toList());
+//            System.out.println("        Checking killers: " + Arrays.stream(killers).map(Move::toUCI).toList());
             for (Move killer : killers) {
                 if (move.equals(killer)) {
-                    System.out.println("        Killer move was tried lazily: " + Move.toUCI(move));
+//                    System.out.println("        Killer move was tried lazily: " + Move.toUCI(move));
                     return true;
                 }
             }
         }
-        System.out.println("        Move was not tried lazily: " + Move.toUCI(move));
+//        System.out.println("        Move was not tried lazily: " + Move.toUCI(move));
         return false;
     }
 

@@ -125,22 +125,17 @@ public class Engine {
         List<Move> pv = new ArrayList<>();
         TranspositionTable tt = searcher.getTranspositionTable();
         int moves = 0;
-        System.out.println("fen: " + FEN.toFEN(board));
         while (moves <= 12) {
             long key = board.key();
             HashEntry entry = tt.get(key, 0);
             if (entry == null || entry.getMove() == null) {
                 break;
             }
-            System.out.println("move: " + Move.toUCI(entry.getMove()));
             pv.add(entry.getMove());
             board.makeMove(entry.getMove());
             moves++;
         }
-        IntStream.range(0, moves).forEach(i -> {
-            System.out.println("unmaking move: " + Move.toUCI(pv.get(i)));
-            board.unmakeMove();
-        });
+        IntStream.range(0, moves).forEach(i ->  board.unmakeMove());
         return pv;
     }
 

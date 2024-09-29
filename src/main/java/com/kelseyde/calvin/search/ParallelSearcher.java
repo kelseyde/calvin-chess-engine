@@ -65,7 +65,7 @@ public class ParallelSearcher implements Search {
                     .toList();
 
             SearchResult result = selectResult(threads).get();
-            tt.incrementGeneration();
+            tt.incrementAge();
             return result;
         } catch (Exception e) {
             System.out.println("info error " + e);

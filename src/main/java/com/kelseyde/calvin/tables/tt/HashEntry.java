@@ -3,40 +3,44 @@ package com.kelseyde.calvin.tables.tt;
 import com.kelseyde.calvin.board.Move;
 
 /**
- * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encodes the relevant
- * information about the position.
+ * Entry in the {@link TranspositionTable}.
+ * Contains a 64-bit key and a 32-bit value which encode the relevant information about the position.
  * </p>
  *
  * Key encoding:
- * 0-31: 32 bits representing half of the zobrist hash. Used to verify that the position truly matches.
- * 32-47: 16 bits representing the generation of the entry, i.e. how old it is. Used to gradually replace old entries.
- * 48-63: 16 bits representing the static eval of the position. Re-used to save calling the evaluation function again.
+ * 0-31: 32 bits of the zobrist key.
+ * 32-37: 6 bits representing the age of the entry.
+ * 38-39: 2 bits representing the {@link HashFlag} of the entry.
+ * 40-47: 8 bits representing the depth that was searched.
+ *
  * </p>
  *
  * Value encoding:
- * 0-11: the depth to which this position was last searched.
- * 12-15: the {@link HashFlag} indicating what type of node this is.
- * 16-31: the {@link Move} start square, end square, and special move flag.
- * 32-63: the eval of the position in centipawns.
+ * 0-31: 32 bits representing the score of the position.
+ * 32-47: 16 bits representing the move that was played.
+ *
+ * @see <a href="https://www.chessprogramming.org/Transposition_Table">Chess Programming Wiki</a>
  */
 public class HashEntry {
 
     public static final int SIZE_BYTES = 32;
 
+    // Masks for the key
     private static final long ZOBRIST_PART_MASK = 0x00000000ffffffffL;
     private static final long GENERATION_MASK = 0x0000ffff00000000L;
     private static final long STATIC_EVAL_MASK = 0xffff000000000000L;
-    private static final long SCORE_MASK = 0xffffffff00000000L;
-    private static final long MOVE_MASK = 0x00000000ffff0000L;
     private static final long FLAG_MASK = 0x000000000000f000L;
     private static final long DEPTH_MASK = 0x0000000000000fffL;
 
-    private long key;
-    private long value;
 
-    public HashEntry(long key, long value) {
+    private long key;
+    private short move;
+    private int score;
+
+    public HashEntry(long key, short move, int score) {
         this.key = key;
-        this.value = value;
+        this.move = move;
+        this.score = score;
     }
 
     /**
@@ -56,14 +60,14 @@ public class HashEntry {
     /**
      * Gets the generation part of this entry's key.
      */
-    public int getGeneration() {
+    public int getAge() {
         return (int) ((key & GENERATION_MASK) >>> 32);
     }
 
     /**
      * Sets the generation part of this entry's key.
      */
-    public void setGeneration(int generation) {
+    public void setAge(int generation) {
         key = (key & ~GENERATION_MASK) | ((long) generation << 32);
     }
 
@@ -78,37 +82,35 @@ public class HashEntry {
      * Sets the static eval part of this entry's key.
      */
     public void setStaticEval(int staticEval) {
-        key = (key & ~STATIC_EVAL_MASK) | ((long) (staticEval & 0xFFFF) << 48);
+        this.key = (key & ~STATIC_EVAL_MASK) | ((long) (staticEval & 0xFFFF) << 48);
     }
 
     /**
      * Gets the score from this entry's value.
      */
     public int getScore() {
-        long score = (value & SCORE_MASK) >>> 32;
-        return (int) score;
+        return score;
     }
 
     /**
      * Sets the score in this entry's value.
      */
     public void setScore(int score) {
-        value = (value &~ SCORE_MASK) | (long) score << 32;
+        this.score = score;
     }
 
     /**
      * Creates a new {@link HashEntry} with the adjusted score.
      */
-    public HashEntry withAdjustedScore(int score) {
-        long newValue = (value &~ SCORE_MASK) | (long) score << 32;
-        return new HashEntry(key, newValue);
+    public HashEntry withAdjustedScore(int newScore) {
+        return new HashEntry(key, move, newScore);
     }
 
     /**
      * Sets the move in this entry's value.
      */
     public void setMove(Move move) {
-        value = (value &~ MOVE_MASK) | (long) move.value() << 16;
+        this.move = move != null ? move.value() : 0;
     }
 
     /**

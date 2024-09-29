@@ -134,10 +134,10 @@ public class TranspositionTableTest {
         Move move = Move.fromUCI("e7e8n");
         HashEntry entry = HashEntry.of(zobristKey, score, 0,  move, flag, depth, 0);
 
-        Assertions.assertEquals(0, entry.getGeneration());
+        Assertions.assertEquals(0, entry.getAge());
 
-        entry.setGeneration(127);
-        Assertions.assertEquals(127, entry.getGeneration());
+        entry.setAge(127);
+        Assertions.assertEquals(127, entry.getAge());
     }
 
     @Test

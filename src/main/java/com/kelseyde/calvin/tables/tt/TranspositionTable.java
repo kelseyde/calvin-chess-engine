@@ -21,7 +21,7 @@ public class TranspositionTable {
 
     private int tries;
     private int hits;
-    private int generation;
+    private int age;
 
     /**
      * Constructs a transposition table of the given size in megabytes.
@@ -31,7 +31,7 @@ public class TranspositionTable {
         entries = new HashEntry[tableSize];
         tries = 0;
         hits = 0;
-        generation = 0;
+        age = 0;
     }
 
     /**
@@ -48,7 +48,7 @@ public class TranspositionTable {
             HashEntry entry = entries[index + i];
             if (entry != null && entry.getZobristPart() == zobristPart) {
                 hits++;
-                entry.setGeneration(generation);
+                entry.setAge(age);
                 if (Score.isMateScore(entry.getScore())) {
                     int score = retrieveMateScore(entry.getScore(), ply);
                     return entry.withAdjustedScore(score);
@@ -117,7 +117,7 @@ public class TranspositionTable {
             }
 
             // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (generation > storedEntry.getGeneration()) {
+            if (age > storedEntry.getAge()) {
                 replacedByAge = true;
                 replacedIndex = i;
             }
@@ -132,15 +132,15 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            entries[replacedIndex] = HashEntry.of(key, score, staticEval, move, flag, depth, generation);
+            entries[replacedIndex] = HashEntry.of(key, score, staticEval, move, flag, depth, age);
         }
     }
 
     /**
-     * Increments the generation counter for the transposition table.
+     * Increments the age counter for the transposition table.
      */
-    public void incrementGeneration() {
-        generation++;
+    public void incrementAge() {
+        age++;
     }
 
     public void resize(int tableSizeMb) {
@@ -148,7 +148,7 @@ public class TranspositionTable {
         entries = new HashEntry[tableSize];
         tries = 0;
         hits = 0;
-        generation = 0;
+        age = 0;
     }
 
     /**
@@ -157,7 +157,7 @@ public class TranspositionTable {
     public void clear() {
         tries = 0;
         hits = 0;
-        generation = 0;
+        age = 0;
         entries = new HashEntry[tableSize];
     }
 

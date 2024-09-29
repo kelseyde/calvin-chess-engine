@@ -152,6 +152,7 @@ public class Searcher implements Search {
 
         // Clear move ordering cache and return the search result
         history.getKillerTable().clear();
+        history.getCounterMoveTable().clear();
 
         return SearchResult.of(bestMoveRoot, bestScoreRoot, td);
 

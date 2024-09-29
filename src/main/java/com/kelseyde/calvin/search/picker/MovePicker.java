@@ -7,6 +7,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.tables.history.KillerTable;
 import com.kelseyde.calvin.utils.notation.FEN;
 
@@ -158,27 +159,30 @@ public class MovePicker {
     protected int scoreQuiet(Board board, Move move, int ply) {
         boolean white = board.isWhite();
         Piece piece = board.pieceAt(move.from());
+        PlayedMove prevMove = ss.getMove(ply - 1);
+
+        // Get the history score for the move
+        int historyScore = history.getHistoryTable().get(move, white);
 
         // Check if the move is a killer move
         int killerIndex = history.getKillerTable().getIndex(move, ply);
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
-        // Get the history score for the move
-        int historyScore = history.getHistoryTable().get(move, white);
+        // Check if the move is a counter move
+        boolean isCounterMove = prevMove != null && history.getCounterMoveTable().isCounterMove(prevMove.piece(), prevMove.move(), white, move);
 
         // Get the continuation history score for the move
-        Move prevMove = ss.getMove(ply - 1);
-        Piece prevPiece = ss.getMovedPiece(ply - 1);
-        int contHistScore = history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
+        int contHistScore = prevMove != null ? history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white) : 0;
 
-        Move prevMove2 = ss.getMove(ply - 2);
-        Piece prevPiece2 = ss.getMovedPiece(ply - 2);
-        contHistScore += history.getContHistTable().get(prevMove2, prevPiece2, move, piece, white);
+        PlayedMove prevMove2 = ss.getMove(ply - 2);
+        contHistScore += prevMove2 != null ? history.getContHistTable().get(prevMove2.move(), prevMove2.piece(), move, piece, white) : 0;
 
         // Killers are ordered higher than normal history moves
         int base = 0;
         if (killerScore != 0) {
             base = MoveBonus.KILLER_MOVE_BONUS;
+        } else if (isCounterMove) {
+            base = MoveBonus.COUNTER_MOVE_BONUS;
         } else if (historyScore != 0 || contHistScore != 0) {
             base = MoveBonus.QUIET_MOVE_BONUS;
         }

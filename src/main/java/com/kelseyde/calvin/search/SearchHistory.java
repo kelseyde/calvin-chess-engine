@@ -3,10 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.HistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
+import com.kelseyde.calvin.tables.history.*;
 
 import java.util.List;
 
@@ -17,6 +14,7 @@ public class SearchHistory {
     private final KillerTable killerTable = new KillerTable();
     private final HistoryTable historyTable = new HistoryTable();
     private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+    private final CounterMoveTable counterMoveTable = new CounterMoveTable();
     private final CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
 
     private int bestMoveStability = 0;
@@ -27,15 +25,21 @@ public class SearchHistory {
 
         if (bestMove.isQuiet()) {
 
+            PlayedMove prevMove = ss.getMove(ply - 1);
+
             killerTable.add(ply, bestMove.move());
+            if (prevMove != null) {
+                counterMoveTable.add(prevMove.piece(), prevMove.move(), white, bestMove.move());
+            }
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
                 historyTable.update(quiet.move(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
-                    Move prevMove = ss.getMove(ply - prevPly);
-                    Piece prevPiece = ss.getMovedPiece(ply - prevPly);
-                    contHistTable.update(prevMove, prevPiece, quiet.move(), quiet.piece(), depth, white, good);
+                    prevMove = ss.getMove(ply - prevPly);
+                    if (prevMove != null) {
+                        contHistTable.update(prevMove.move(), prevMove.piece(), quiet.move(), quiet.piece(), depth, white, good);
+                    }
                 }
             }
 
@@ -86,6 +90,10 @@ public class SearchHistory {
         return captureHistoryTable;
     }
 
+    public CounterMoveTable getCounterMoveTable() {
+        return counterMoveTable;
+    }
+
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
@@ -97,6 +105,7 @@ public class SearchHistory {
         killerTable.clear();
         historyTable.clear();
         contHistTable.clear();
+        counterMoveTable.clear();
         captureHistoryTable.clear();
     }
 

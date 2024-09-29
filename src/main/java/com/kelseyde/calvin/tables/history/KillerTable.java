@@ -5,7 +5,7 @@ import com.kelseyde.calvin.search.Search;
 
 public class KillerTable {
 
-    public static final int KILLERS_PER_PLY = 3;
+    public static final int KILLERS_PER_PLY = 2;
 
     Move[][] table = new Move[Search.MAX_DEPTH][KILLERS_PER_PLY];
 

@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Move;
 
 /**
  * Entry in the {@link TranspositionTable}.
- * Contains a 64-bit key and a 32-bit value which encode the relevant information about the position.
+ * Contains a 64-bit key containing part of the zobrist hash plus metadata, a 32-bit score, and a 16-bit move.
  * </p>
  *
  * Key encoding:
@@ -12,26 +12,22 @@ import com.kelseyde.calvin.board.Move;
  * 32-37: 6 bits representing the age of the entry.
  * 38-39: 2 bits representing the {@link HashFlag} of the entry.
  * 40-47: 8 bits representing the depth that was searched.
- *
+ * 48-63: 16 bits representing the static evaluation of the position.
  * </p>
  *
- * Value encoding:
- * 0-31: 32 bits representing the score of the position.
- * 32-47: 16 bits representing the move that was played.
  *
  * @see <a href="https://www.chessprogramming.org/Transposition_Table">Chess Programming Wiki</a>
  */
 public class HashEntry {
 
-    public static final int SIZE_BYTES = 32;
+    public static final int SIZE_BYTES = 26;
 
     // Masks for the key
-    private static final long ZOBRIST_PART_MASK = 0x00000000ffffffffL;
-    private static final long GENERATION_MASK = 0x0000ffff00000000L;
-    private static final long STATIC_EVAL_MASK = 0xffff000000000000L;
-    private static final long FLAG_MASK = 0x000000000000f000L;
-    private static final long DEPTH_MASK = 0x0000000000000fffL;
-
+    private static final long ZOBRIST_PART_MASK = 0x00000000FFFFFFFFL; // 32 bits for Zobrist key
+    private static final long AGE_MASK = 0x0000003F00000000L;          // 6 bits for age (bits 32-37)
+    private static final long FLAG_MASK = 0x000000C000000000L;         // 2 bits for HashFlag (bits 38-39)
+    private static final long DEPTH_MASK = 0x0000FF0000000000L;        // 8 bits for depth (bits 40-47)
+    private static final long STATIC_EVAL_MASK = 0xFFFF000000000000L;  // 16 bits for static evaluation (bits 48-63)
 
     private long key;
     private short move;
@@ -58,17 +54,21 @@ public class HashEntry {
     }
 
     /**
-     * Gets the generation part of this entry's key.
+     * Gets the age part of this entry's key.
      */
     public int getAge() {
-        return (int) ((key & GENERATION_MASK) >>> 32);
+        // Extract the 6-bit age part from bits 32-37
+        return (int) ((key & AGE_MASK) >>> 32);
     }
 
     /**
-     * Sets the generation part of this entry's key.
+     * Sets the age part of this entry's key.
      */
-    public void setAge(int generation) {
-        key = (key & ~GENERATION_MASK) | ((long) generation << 32);
+    public void setAge(int age) {
+        // Clamp the age to the maximum value representable by 6 bits
+        age = Math.min(age, 63);
+        // Clear the age bits and set the new generation value
+        key = (key & ~AGE_MASK) | ((long) age << 32);
     }
 
     /**
@@ -82,7 +82,7 @@ public class HashEntry {
      * Sets the static eval part of this entry's key.
      */
     public void setStaticEval(int staticEval) {
-        this.key = (key & ~STATIC_EVAL_MASK) | ((long) (staticEval & 0xFFFF) << 48);
+        key = (key & ~STATIC_EVAL_MASK) | ((long) (staticEval & 0xFFFF) << 48);
     }
 
     /**
@@ -117,23 +117,24 @@ public class HashEntry {
      * Gets the move from this entry's value.
      */
     public Move getMove() {
-        long move = (value & MOVE_MASK) >>> 16;
-        return move > 0 ? new Move((short) move) : null;
+        return move > 0 ? new Move(move) : null;
     }
 
     /**
-     * Gets the flag from this entry's value.
+     * Gets the flag from this entry's key.
      */
     public HashFlag getFlag() {
-        long flag = (value & FLAG_MASK) >>> 12;
+        // Extract the 2-bit flag from bits 38-39
+        long flag = (key & FLAG_MASK) >>> 38;
         return HashFlag.valueOf((int) flag);
     }
 
     /**
-     * Gets the depth from this entry's value.
+     * Gets the depth from this entry's key.
      */
     public int getDepth() {
-        return (int) (value & DEPTH_MASK);
+        // Extract the 8-bit depth from bits 40-47
+        return (int) ((key & DEPTH_MASK) >>> 40);
     }
 
     public boolean isSufficientDepth(int depth) {
@@ -159,19 +160,27 @@ public class HashEntry {
      * @param move the move
      * @param flag the flag
      * @param depth the depth
-     * @param generation the generation
+     * @param age the generation
      * @return a new {@link HashEntry}
      */
-    public static HashEntry of(long zobristKey, int score, int staticEval, Move move, HashFlag flag, int depth, int generation) {
-        // Build the key using 32 bits for the zobrist part, 16 bits for the generation part, and 16 bits for the static evaluation part.
-        long key = (zobristKey & ZOBRIST_PART_MASK) | ((long) generation << 32) | ((long) (staticEval & 0xFFFF) << 48);
-        // Get the 16-bit encoded move
-        long moveValue = move != null ? move.value() : 0;
-        // Get the 3-bit encoded flag
-        long flagValue = HashFlag.value(flag);
-        // Combine the score, move, flag and depth to create the hash entry value
-        long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
-        return new HashEntry(key, value);
+    public static HashEntry of(long zobristKey, int score, int staticEval, Move move, HashFlag flag, int depth, int age) {
+
+        // clamp values to their respective bit sizes
+        age = Math.min(age, 63);
+        depth = Math.min(depth, 255);
+        staticEval = staticEval & 0xFFFF;
+
+        // encode the move and flag
+        short moveValue = move != null ? move.value() : 0;
+        byte flagValue = (byte) HashFlag.value(flag);
+
+        long key = zobristKey & ZOBRIST_PART_MASK;
+        key |= (long) age << 32;
+        key |= (long) flagValue << 38;
+        key |= (long) depth << 40;
+        key |= (long) staticEval << 48;
+
+        return new HashEntry(key, moveValue, score);
     }
 
 }

@@ -74,7 +74,7 @@ public class TranspositionTableTest {
     public void testMaxDepth() {
         Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
         long zobristKey = board.getState().getKey();
-        int depth = 256;
+        int depth = 255;
         int score = -789;
         HashFlag flag = HashFlag.UPPER;
         Move move = null;
@@ -85,11 +85,23 @@ public class TranspositionTableTest {
     public void testPromotionFlag() {
         Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
         long zobristKey = board.getState().getKey();
-        int depth = 256;
+        int depth = 255;
         int score = -789;
         HashFlag flag = HashFlag.LOWER;
         Move move = Move.fromUCI("e7e8q");
         assertEntry(zobristKey, score, move, flag, depth);
+    }
+
+    @Test
+    public void testDepthClampedTo255() {
+        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        long zobristKey = board.getState().getKey();
+        int depth = 256;
+        int score = -789;
+        HashFlag flag = HashFlag.LOWER;
+        Move move = Move.fromUCI("e7e8n");
+        HashEntry entry = HashEntry.of(zobristKey, score, 0,  move, flag, depth, 0);
+        Assertions.assertEquals(255, entry.getDepth());
     }
 
     @Test
@@ -125,7 +137,7 @@ public class TranspositionTableTest {
     }
 
     @Test
-    public void testSetGeneration() {
+    public void testSetAge() {
         Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
         long zobristKey = board.getState().getKey();
         int depth = 256;
@@ -136,8 +148,24 @@ public class TranspositionTableTest {
 
         Assertions.assertEquals(0, entry.getAge());
 
-        entry.setAge(127);
-        Assertions.assertEquals(127, entry.getAge());
+        entry.setAge(38);
+        Assertions.assertEquals(38, entry.getAge());
+    }
+
+    @Test
+    public void testAgeClampedTo63() {
+        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        long zobristKey = board.getState().getKey();
+        int depth = 256;
+        int score = -789;
+        HashFlag flag = HashFlag.LOWER;
+        Move move = Move.fromUCI("e7e8n");
+        HashEntry entry = HashEntry.of(zobristKey, score, 0,  move, flag, depth, 0);
+
+        Assertions.assertEquals(0, entry.getAge());
+
+        entry.setAge(64);
+        Assertions.assertEquals(63, entry.getAge());
     }
 
     @Test
@@ -153,8 +181,8 @@ public class TranspositionTableTest {
 
         Assertions.assertEquals(10, entry.getStaticEval());
 
-        entry.setStaticEval(-4234);
-        Assertions.assertEquals(-4234, entry.getStaticEval());
+        entry.setStaticEval(-1);
+        Assertions.assertEquals(-1, entry.getStaticEval());
     }
 
     @Test
@@ -187,7 +215,7 @@ public class TranspositionTableTest {
         flag = HashFlag.UPPER;
         bestMove = Move.fromUCI("e2e4");
         eval = 28666;
-        depth = 256;
+        depth = 255;
         table.put(board.getState().getKey(), flag, depth, ply + 1, bestMove, 0,  eval);
 
         entry = table.get(board.getState().getKey(), ply);

@@ -241,7 +241,7 @@ public class Searcher implements Search {
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int staticEval = Integer.MIN_VALUE;
-        if (!inCheck) {
+        if (!excluded && !inCheck) {
             staticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
         }
 
@@ -317,7 +317,6 @@ public class Searcher implements Search {
             Move move = movePicker.pickNextMove();
             if (move == null) break;
             if (move.equals(excludedMove)) {
-                System.out.println("fen " + FEN.toFEN(board) + " skipping tt move " + Move.toUCI(excludedMove));
                 continue;
             }
             movesSearched++;
@@ -344,14 +343,14 @@ public class Searcher implements Search {
             // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
             int extension = 0;
             if (!rootNode
-                    && depth >= 6
                     && !excluded
+                    && depth >= 8
                     && ttHit
                     && move.equals(ttMove)
                     && ttEntry.getDepth() >= depth - 4
                     && ttEntry.getFlag() != HashFlag.UPPER) {
 
-                int sBeta = Math.max(Score.MIN, ttEntry.getScore() - depth * 14 / 16);
+                int sBeta = Math.max(Score.MIN + 1, ttEntry.getScore() - depth * 14 / 16);
                 int sDepth = (depth - 1) / 2;
 
                 ss.setExcludedMove(ply, move);

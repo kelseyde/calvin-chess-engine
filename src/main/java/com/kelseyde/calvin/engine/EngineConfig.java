@@ -45,6 +45,8 @@ public class EngineConfig {
     public final Tunable fpScale =          new Tunable("FpScale", 65, 0, 100, 5);
     public final Tunable rfpMargin =        new Tunable("RfpMargin", 75, 0, 250, 10);
     public final Tunable rfpImpMargin =     new Tunable("RfpImpMargin", 40, 0, 250, 10);
+    public final Tunable razorDepth =       new Tunable("RazorDepth", 4, 0, 8, 1);
+    public final Tunable razorMargin =      new Tunable("RazorMargin", 450, 0, 600, 10);
     public final Tunable nodeTmMinDepth =   new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
     public final Tunable nodeTmBase =       new Tunable("NodeTmBase", 150, 100, 200, 10);
     public final Tunable nodeTmScale =      new Tunable("NodeTmScale", 135, 100, 200, 10);
@@ -55,7 +57,7 @@ public class EngineConfig {
         return Set.of(aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, fpDepth, rfpDepth,
                 lmrDepth, lmrBase, lmrDivisor, lmrMinMoves, lmpDepth, lmpMultiplier, iirDepth,
                 nmpMargin, dpMargin, qsFpMargin, fpMargin, fpScale, rfpMargin, rfpImpMargin,
-                nodeTmMinDepth, nodeTmBase, nodeTmScale);
+                razorDepth, razorMargin, nodeTmMinDepth, nodeTmBase, nodeTmScale);
     }
 
     public void setTunable(UCICommand command) {

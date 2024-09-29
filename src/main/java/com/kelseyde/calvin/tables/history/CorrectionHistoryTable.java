@@ -7,7 +7,7 @@ public class CorrectionHistoryTable {
 
     public static final int GRAIN = 256;
     public static final int SCALE = 256;
-    public static final int MAX = GRAIN * 32;
+    public static final int MAX = GRAIN * 64;
 
     static final int TABLE_SIZE = 16384;
 
@@ -21,12 +21,11 @@ public class CorrectionHistoryTable {
         int colourIndex = Colour.index(white);
         int hashIndex = hashIndex(key);
         int entry = entries[colourIndex][hashIndex];
-
         int diff = score - staticEval;
         int scaled = diff * GRAIN;
         int weight = Math.min(depth + 1, 16);
-        int update = entry * (SCALE - weight) + scaled * weight;
-        entry = clamp(update / SCALE, -MAX, MAX);
+        int update = entry * (SCALE - weight) + scaled * weight / SCALE;
+        entry = clamp(update, -MAX, MAX);
         entries[colourIndex][hashIndex] = entry;
     }
 

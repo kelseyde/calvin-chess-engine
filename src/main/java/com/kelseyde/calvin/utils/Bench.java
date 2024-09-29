@@ -67,11 +67,11 @@ public class Bench {
     );
 
     private static final int BENCH_DEPTH = 10;
-    private static final TimeControl BENCH_TC = TimeControl.init(Board.from(FEN.STARTPOS), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH, -1, false));
 
     public static void run(Engine engine) {
 
         UCI.setOutputEnabled(false);
+        TimeControl tc = TimeControl.init(engine.getConfig(), Board.from(FEN.STARTPOS), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH, -1, false));
         Search search = engine.getSearcher();
         search.setThreadCount(1);
         long nodes = 0;
@@ -80,7 +80,7 @@ public class Bench {
         for (String fen : FENS) {
             search.clearHistory();
             search.setPosition(FEN.toBoard(fen));
-            SearchResult result = search.search(BENCH_TC);
+            SearchResult result = search.search(tc);
             nodes += result.nodes();
             time += result.time();
         }

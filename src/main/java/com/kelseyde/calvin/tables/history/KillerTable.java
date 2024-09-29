@@ -11,7 +11,6 @@ public class KillerTable {
 
     public void add(int ply, Move move) {
         if (ply >= Search.MAX_DEPTH) return;
-        System.out.println("Adding killer move " + Move.toUCI(move) + " at ply " + ply);
 
         // Check if the move already exists in the killer list
         for (int i = 0; i < KILLERS_PER_PLY; i++) {

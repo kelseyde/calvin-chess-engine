@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Piece;
 
-public class CaptureHistoryTable extends AbstractHistoryTable {
+public class CaptureHistoryTable extends HistoryTable {
 
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;

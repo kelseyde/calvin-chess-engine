@@ -13,6 +13,13 @@ public class SearchStack {
         }
     }
 
+    public static class SearchStackEntry {
+        public int staticEval;
+        public PlayedMove currentMove;
+        public PlayedMove bestMove;
+        public boolean nullMoveAllowed = true;
+    }
+
     public SearchStackEntry get(int ply) {
         return ply >= 0 && ply < Search.MAX_DEPTH ? stack[ply] : null;
     }
@@ -47,7 +54,8 @@ public class SearchStack {
         if (ply < 0 || ply >= Search.MAX_DEPTH) {
             return;
         }
-        stack[ply].currentMove = null;
+        SearchStackEntry entry = get(ply);
+        entry.currentMove = null;
     }
 
     public void setBestMove(int ply, Move move, Piece piece, Piece captured, boolean capture, boolean quiet) {
@@ -78,13 +86,6 @@ public class SearchStack {
         for (int i = 0; i < Search.MAX_DEPTH; i++) {
             stack[i] = new SearchStackEntry();
         }
-    }
-
-    public static class SearchStackEntry {
-        public int staticEval;
-        public PlayedMove currentMove;
-        public PlayedMove bestMove;
-        public boolean nullMoveAllowed = true;
     }
 
     public record PlayedMove(Move move, Piece piece, Piece captured, boolean isCapture, boolean isQuiet) {

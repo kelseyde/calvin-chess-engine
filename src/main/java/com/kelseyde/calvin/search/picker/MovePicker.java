@@ -8,7 +8,6 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 
@@ -39,12 +38,13 @@ public class MovePicker {
     Stage stage;
     boolean skipQuiets;
     boolean inCheck;
+    long threats;
 
     int moveIndex;
     ScoredMove[] moves;
 
     public MovePicker(
-            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck, long threats) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;
@@ -52,6 +52,7 @@ public class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
+        this.threats = threats;
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
@@ -133,7 +134,7 @@ public class MovePicker {
             return scoreCapture(board, from, to, captured);
         }
         else {
-            return scoreQuiet(board, move, ply);
+            return scoreQuiet(board, move, threats, ply);
         }
 
     }
@@ -155,7 +156,7 @@ public class MovePicker {
         return captureScore;
     }
 
-    protected int scoreQuiet(Board board, Move move, int ply) {
+    protected int scoreQuiet(Board board, Move move, long threats, int ply) {
         boolean white = board.isWhite();
         Piece piece = board.pieceAt(move.from());
 
@@ -164,7 +165,7 @@ public class MovePicker {
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
         // Get the history score for the move
-        int historyScore = history.getHistoryTable().get(move, white);
+        int historyScore = history.getHistoryTable().get(move, threats, white);
 
         // Get the continuation history score for the move
         Move prevMove = ss.getMove(ply - 1);

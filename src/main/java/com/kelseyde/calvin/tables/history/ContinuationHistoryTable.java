@@ -5,7 +5,7 @@ import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 
-public class ContinuationHistoryTable extends AbstractHistoryTable {
+public class ContinuationHistoryTable extends HistoryTable {
 
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;

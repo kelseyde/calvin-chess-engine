@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.uci.UCI;
-
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +17,12 @@ public class Bits {
         return Long.bitCount(board);
     }
 
-    public static long of(int sq) {
+    public static long fromSquare(int sq) {
         return 1L << sq;
+    }
+
+    public static boolean contains(long bb, int sq) {
+        return (bb & fromSquare(sq)) != 0;
     }
 
     public static long north(long board) {
@@ -61,7 +63,7 @@ public class Bits {
             System.out.print(" +---+---+---+---+---+---+---+---+\n");
 
             for (int file = 0; file < 8; ++file) {
-                boolean piece = (bb & (Bits.of(Square.of(rank, file)))) != 0;
+                boolean piece = (bb & (Bits.fromSquare(Square.of(rank, file)))) != 0;
                 System.out.print(" | " + (piece ? '1' : ' '));
             }
 
@@ -167,7 +169,7 @@ public class Bits {
             long ray = 0L;
             int sq = from + offset;
             while (Square.isValid(sq) && sq != to) {
-                ray |= Bits.of(sq);
+                ray |= Bits.fromSquare(sq);
                 sq += offset;
             }
             return ray;

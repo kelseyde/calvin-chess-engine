@@ -312,17 +312,6 @@ public class Searcher implements Search {
             boolean isCapture = captured != null;
             boolean isPromotion = move.promoPiece() != null;
 
-            int history = isCapture ?
-                    this.history.getCaptureHistoryTable().get(piece, move.to(), captured, !board.isWhite()) :
-                    this.history.getHistoryTable().get(move, !board.isWhite());
-
-            if (!pvNode
-                    && depth <= 5
-                    && history < -2254 * depth + -1056) {
-                movePicker.setSkipQuiets(true);
-                continue;
-            }
-
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
@@ -391,6 +380,22 @@ public class Searcher implements Search {
                     }
                     if (ttEntry != null && ttEntry.getMove() != null && isCapture) {
                         reduction++;
+                    }
+                }
+
+                // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
+                // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
+                // that assumes that moves which have historically been bad are likely to be bad in the current position.
+                if (!pvNode
+                        && isQuiet
+                        && depth - reduction <= config.hpMaxDepth.value) {
+                    int historyScore = this.history.getHistoryTable().get(move, !board.isWhite());
+                    if (historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
+                        eval.unmakeMove();
+                        board.unmakeMove();
+                        ss.unsetMove(ply);
+                        movePicker.setSkipQuiets(true);
+                        continue;
                     }
                 }
 

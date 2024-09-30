@@ -374,8 +374,8 @@ public class Searcher implements Search {
                 int score = search(sDepth, ply, sBeta - 1, sBeta);
                 ss.setExcludedMove(ply, null);
 
-                if (score < sBeta) {
-                    extension = 1;
+                if (score >= sBeta && sBeta >= beta) {
+                    return sBeta;
                 }
 
             }

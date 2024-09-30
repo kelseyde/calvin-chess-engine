@@ -34,8 +34,8 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 
 | 	Version	 | 	Release date | Estimated | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | [CCRL Rapid](https://www.computerchess.org.uk/ccrl/4040/)
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | :-----:	|  :-----:	 | :-----:	 |  
-| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-19 | 3230 | - | - | 3161 |
-| [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-04 | 3150 | ~2850 | 3171 | - |
+| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-19 | 3230 | - | - | - |
+| [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-04 | 3150 | ~2850 | 3171 | 3161 |
 | [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) | 2024-07-30 | 3000 | ~2700 | 3011 | 3029 |
 | [3.4.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) | 2024-05-19 | 2500 | ~2580 | - | 2492 |
 | [3.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.3.0) | 2024-05-10 | 2450 | ~2550 | 2453 | - |

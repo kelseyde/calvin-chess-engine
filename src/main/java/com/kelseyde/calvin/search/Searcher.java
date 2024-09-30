@@ -230,7 +230,6 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
-                && !excluded
                 && !inCheck
                 && (ttEntry == null || ttEntry.getMove() == null)
                 && ply > 0
@@ -328,7 +327,6 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
-                && !excluded
                 && depth <= config.fpDepth.value
                 && !inCheck && !isCapture && !isPromotion
                 && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {
@@ -362,14 +360,14 @@ public class Searcher implements Search {
             int extension = 0;
             if (!rootNode
                     && !excluded
-                    && depth >= 8
+                    && depth >= 7
                     && ttHit
                     && move.equals(ttMove)
                     && ttEntry.getDepth() >= depth - 3
                     && ttEntry.getFlag() != HashFlag.UPPER
                     && !Score.isMateScore(ttEntry.getScore())) {
 
-                int sBeta = Math.max(-Score.MATE, ttEntry.getScore() - depth * 2);
+                int sBeta = ttEntry.getScore() - depth;
                 int sDepth = (depth - 1) / 2;
 
                 ss.setExcludedMove(ply, move);

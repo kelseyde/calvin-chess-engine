@@ -17,7 +17,6 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -254,7 +253,6 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
         // can employ to prune the node and its entire subtree, without searching any moves.
-//        if (!pvNode && !inCheck && !excluded) {
         if (!pvNode && !inCheck && !excluded) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
@@ -332,12 +330,32 @@ public class Searcher implements Search {
             if (!pvNode
                 && !excluded
                 && depth <= config.fpDepth.value
-                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha
-                && !inCheck
-                && !isCapture
-                && !isPromotion) {
+                && !inCheck && !isCapture && !isPromotion
+                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {
                 movePicker.setSkipQuiets(true);
                 continue;
+            }
+
+            // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
+            // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
+            // let's save time by assuming it's less likely to be good, and reduce the search depth.
+            int reduction = 0;
+            if (depth >= config.lmrDepth.value
+                    && !isCapture && !isPromotion
+                    && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)) {
+                reduction = config.lmrReductions[depth][movesSearched] - (pvNode ? 1 : 0);
+            }
+
+            // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
+            // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
+            // that assumes that moves which have historically been bad are likely to be bad in the current position.
+            if (!pvNode && !isCapture && !isPromotion
+                    && depth - reduction <= config.hpMaxDepth.value) {
+                int historyScore = this.history.getHistoryTable().get(move, board.isWhite());
+                if (historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
+                    movePicker.setSkipQuiets(true);
+                    continue;
+                }
             }
 
             // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
@@ -372,6 +390,8 @@ public class Searcher implements Search {
             boolean isCheck = movegen.isCheck(board, board.isWhite());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
             ss.setMove(ply, move, piece, captured, isCapture, isQuiet);
+
+            // Keep track of the quiet/noisy moves searched, used later to update search history.
             if (isQuiet) {
                 quietsSearched.add(new PlayedMove(move, piece, captured, false, true));
             } else if (isCapture) {
@@ -406,22 +426,6 @@ public class Searcher implements Search {
                 score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
             }
             else {
-                // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
-                // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
-                // let's save time by assuming it's less likely to be good, and reduce the search depth.
-                int reduction = 0;
-                if (depth >= config.lmrDepth.value
-                    && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)
-                    && isQuiet) {
-                    reduction = config.lmrReductions[depth][movesSearched];
-                    if (pvNode) {
-                        reduction--;
-                    }
-                    if (ttHit && ttEntry.getMove() != null && isCapture) {
-                        reduction++;
-                    }
-                }
-
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
                 score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha);

@@ -4,14 +4,14 @@
 
 - [ ] SPSA tune
 - [ ] PV table
-- [ ] Singular extensions
-- [ ] MultiCut
+- [ ] Singular extensions ( won't gain )
+- [ ] MultiCut ( won't gain )
 - [ ] ProbCut
-- [ ] TT score eval correction
-- [ ] Razoring
-- [ ] History leaf pruning
-- [ ] SEE pruning
-- [ ] Faster SEE
+- [ ] TT score eval correction ( won't gain )
+- [x] Razoring
+- [ ] History leaf pruning ( won't gain )
+- [ ] SEE pruning ( won't gain )
+- [ ] Faster SEE ( won't gain )
 - [ ] Syzygy TB
 - [x] Check root legal moves, if only one, play instantly
 
@@ -23,22 +23,22 @@
 - [x] 1-ply Conthist
 - [x] 2-ply Conthist
 - [x] Capthist
-- [ ] Threats
-- [ ] Countermoves
-- [ ] Add Killers, History etc. stages to MovePicker.
+- [ ] Threats ( won't gain )
+- [ ] Countermoves ( won't gain )
+- [ ] Add Killers, History etc. stages to MovePicker. ( won't gain )
 
 ### Evaluation
 
 - [ ] Find solution to CCRL/ChessGUI/Vector API issue
-- [ ] Lazy NNUE updates
+- [ ] Lazy NNUE updates ( won't gain )
 - [x] New net, bigger HL size
 - [x] Screlu
-- [ ] Output buckets
+- [ ] Output buckets ( won't gain )
 - [ ] Horizontal mirroring
 - [ ] Datagen
-- [ ] Pawn corrhist
+- [ ] Pawn corrhist ( won't gain )
 - [ ] Material corrhist
-- [ ] Output buckets
+- [ ] Output buckets ( won't gain )
 - [ ] Finny tables
 
 ### Time management
@@ -52,7 +52,7 @@
 
 - [x] Add engine author/version
 - [x] Add perft to UCI options
-- [ ] Implement display command
+- [x] Implement display command
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
 - [ ] Add seldepth to info

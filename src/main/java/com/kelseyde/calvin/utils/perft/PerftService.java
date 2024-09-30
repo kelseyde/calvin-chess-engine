@@ -5,10 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.uci.UCI;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class PerftService {
 
@@ -23,8 +20,9 @@ public class PerftService {
 
         long totalNodes = perft(board, depth, depth);
 
-        nodesPerMove.forEach((move, nodes) ->
-                UCI.write(String.format("%s: %s", Move.toUCI(move), nodes)));
+        nodesPerMove.entrySet().stream()
+                .sorted(Comparator.comparing(entry -> Move.toUCI(entry.getKey())))
+                .forEach(entry -> UCI.write(String.format("%s: %s", Move.toUCI(entry.getKey()), entry.getValue())));
         UCI.write(String.format("Nodes searched: %s", totalNodes));
 
         return totalNodes;

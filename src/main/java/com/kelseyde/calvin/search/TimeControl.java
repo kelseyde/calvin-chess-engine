@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 
 import java.time.Duration;
@@ -15,7 +16,7 @@ import java.time.Instant;
  * point starting the iteration, since the time spent doing so is mostly wasted. That time can therefore be saved for
  * subsequent moves.
  */
-public record TimeControl(Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth) {
+public record TimeControl(EngineConfig config, Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth) {
 
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
@@ -26,20 +27,16 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
     static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
     static final double[] SCORE_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
 
-    static final int NODE_TM_MIN_DEPTH = 5;
-    static final double NODE_TM_BASE = 1.5;
-    static final double NODE_TM_SCALE = 1.35;
-
     static final int UCI_OVERHEAD = 50;
 
-    public static TimeControl init(Board board, GoCommand command) {
+    public static TimeControl init(EngineConfig config, Board board, GoCommand command) {
 
         double time;
         double inc;
         if (command.isMovetime()) {
             time = command.movetime();
             Duration movetime = Duration.ofMillis((long) time);
-            return new TimeControl(movetime, movetime, -1, -1, -1);
+            return new TimeControl(config, movetime, movetime, -1, -1, -1);
         } else if (command.isTimeAndInc()) {
             boolean white = board.isWhite();
             time = white ? command.wtime() : command.btime();
@@ -57,7 +54,7 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
         Duration soft = Duration.ofMillis((int) (base * SOFT_TIME_FACTOR));
         Duration hard = Duration.ofMillis((int) (base * HARD_TIME_FACTOR));
 
-        return new TimeControl(soft, hard, command.nodes(), -1, command.depth());
+        return new TimeControl(config, soft, hard, command.nodes(), -1, command.depth());
 
     }
 
@@ -96,9 +93,11 @@ public record TimeControl(Duration softTime, Duration hardTime, int softNodes, i
         // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
         // of the search has been spent on the best move, we can assume that the best move is more likely to be correct,
         // and therefore we can spend less time searching further.
-        if (depth > NODE_TM_MIN_DEPTH && bestMoveNodes > 0) {
+        if (depth > config.nodeTmMinDepth.value && bestMoveNodes > 0) {
             double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
-            scale *= (NODE_TM_BASE - bestMoveNodeFraction) * NODE_TM_SCALE;
+            double nodeTmBase = (double) config.nodeTmBase.value / 100;
+            double nodeTmScale = (double) config.nodeTmScale.value / 100;
+            scale *= (nodeTmBase - bestMoveNodeFraction) * nodeTmScale;
         }
 
         // Clamp the scale factor to a reasonable range.

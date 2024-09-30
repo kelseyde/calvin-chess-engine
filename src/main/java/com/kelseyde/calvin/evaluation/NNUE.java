@@ -32,7 +32,7 @@ import static jdk.incubator.vector.VectorOperators.S2I;
  * The network was trained on positions taken from a dataset of Leela Chess Zero, which were then re-scored with
  * Calvin's own search and hand-crafted evaluation.
  *
- * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
+ * @see <a href="https://www.chessprogramming.org/NNUE">Chess Programming Wiki</a>
  */
 public class NNUE implements Evaluation {
 

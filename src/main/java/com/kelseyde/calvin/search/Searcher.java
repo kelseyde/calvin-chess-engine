@@ -383,6 +383,23 @@ public class Searcher implements Search {
                     }
                 }
 
+                // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
+                // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
+                // that assumes that moves which have historically been bad are likely to be bad in the current position.
+                if (!pvNode
+                        && isQuiet
+                        && depth - reduction <= config.hpMaxDepth.value) {
+                    int historyScore = this.history.getHistoryTable().get(move, !board.isWhite());
+                    if (historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
+                        eval.unmakeMove();
+                        board.unmakeMove();
+                        ss.unsetMove(ply);
+                        movePicker.setSkipQuiets(true);
+                        continue;
+                    }
+                }
+
+
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
                 score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha);

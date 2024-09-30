@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 
-public class HistoryTable extends AbstractHistoryTable {
+public class QuietHistoryTable extends AbstractHistoryTable {
 
     private static final int MAX_BONUS = 1200;
     private static final int MAX_SCORE = 8192;

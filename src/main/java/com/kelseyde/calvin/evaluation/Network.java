@@ -8,6 +8,11 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Represents the neural network used by the engine in its evaluation function.
+ * The network is loaded from the configured file on startup. The network file location, architecture, and activation
+ * function are all configurable in the code via the {@link Network.Builder} builder.
+ */
 public record Network(int inputSize,
                       int hiddenSize,
                       Activation activation,

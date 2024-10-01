@@ -2,8 +2,8 @@ package com.kelseyde.calvin.evaluation.activation;
 
 public enum Activation {
 
-    SCRELU(Screlu::forward),
-    CRELU(Crelu::forward);
+    SCReLU(Screlu::forward),
+    CReLU(Crelu::forward);
 
     private final ActivationFunction function;
 

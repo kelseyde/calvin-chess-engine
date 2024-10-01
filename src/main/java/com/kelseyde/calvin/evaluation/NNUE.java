@@ -30,7 +30,7 @@ public class NNUE implements Evaluation {
             .file("sol.nnue")
             .inputSize(768)
             .hiddenSize(384)
-            .activation(Activation.SCRELU)
+            .activation(Activation.SCReLU)
             .quantisations(new int[]{255, 64})
             .scale(400)
             .build();

@@ -67,7 +67,7 @@ public class Screlu {
         // Since squaring the inputs also squares quantisation, we need to divide that out.
         eval /= qa;
 
-        // Add the output bias, scale the result, and divide by the quantisation factor.
+        // Add the output bias, scale the result to centipawn space, and divide by the quantisation factor.
         eval += NETWORK.outputBias();
         eval *= scale;
         eval /= qab;

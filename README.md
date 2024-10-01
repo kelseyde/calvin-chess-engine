@@ -78,6 +78,8 @@ The search algorithm is all about exploring the possible positions in the game t
 - [Delta Pruning](https://www.chessprogramming.org/Delta_Pruning)
 - [Late Move Reductions](https://www.chessprogramming.org/Late_Move_Reductions)
 - [Check Extension](https://www.chessprogramming.org/Check_Extensions)
+- [History Pruning](https://www.chessprogramming.org/History_Leaf_Pruning)
+- [Razoring](https://www.chessprogramming.org/Razoring)
 
 #### Move ordering
 

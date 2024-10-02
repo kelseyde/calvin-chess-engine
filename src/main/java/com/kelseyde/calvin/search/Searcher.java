@@ -330,7 +330,13 @@ public class Searcher implements Search {
             if (depth >= config.lmrDepth.value
                     && !isCapture && !isPromotion
                     && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)) {
-                reduction = config.lmrReductions[depth][movesSearched] - (pvNode ? 1 : 0);
+
+                // Reductions are based on the depth and the number of moves searched so far.
+                reduction = config.lmrReductions[depth][movesSearched];
+
+                // Reduce less in PV nodes.
+                reduction -= pvNode ? 1 : 0;
+
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
                 reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
             }

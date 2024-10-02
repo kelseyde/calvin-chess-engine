@@ -10,6 +10,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -320,6 +321,8 @@ public class Searcher implements Search {
                 continue;
             }
 
+            int historyScore = this.history.getHistoryTable().get(move, board.isWhite());
+
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
@@ -328,6 +331,8 @@ public class Searcher implements Search {
                     && !isCapture && !isPromotion
                     && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)) {
                 reduction = config.lmrReductions[depth][movesSearched] - (pvNode ? 1 : 0);
+                // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
+                reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
             }
 
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
@@ -335,7 +340,6 @@ public class Searcher implements Search {
             // that assumes that moves which have historically been bad are likely to be bad in the current position.
             if (!pvNode && !isCapture && !isPromotion
                     && depth - reduction <= config.hpMaxDepth.value) {
-                int historyScore = this.history.getHistoryTable().get(move, board.isWhite());
                 if (historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
                     movePicker.setSkipQuiets(true);
                     continue;

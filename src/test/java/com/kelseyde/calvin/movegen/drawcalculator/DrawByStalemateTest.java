@@ -1,8 +1,8 @@
 package com.kelseyde.calvin.movegen.drawcalculator;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;

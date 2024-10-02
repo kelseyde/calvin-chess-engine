@@ -339,11 +339,10 @@ public class Searcher implements Search {
             // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
             // that assumes that moves which have historically been bad are likely to be bad in the current position.
             if (!pvNode && !isCapture && !isPromotion
-                    && depth - reduction <= config.hpMaxDepth.value) {
-                if (historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
+                    && depth - reduction <= config.hpMaxDepth.value
+                    && historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
+                movePicker.setSkipQuiets(true);
+                continue;
             }
 
             eval.makeMove(board, move);

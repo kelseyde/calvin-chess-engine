@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
-import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;

@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.evaluation;
+package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;

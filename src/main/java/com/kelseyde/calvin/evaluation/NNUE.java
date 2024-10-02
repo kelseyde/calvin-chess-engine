@@ -10,7 +10,7 @@ import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
 
 /**
- * Implementation of {@link Evaluation} using an NNUE (Efficiently Updatable Neural Network) evaluation function.
+ * Calvin's evaluation function is an Efficiently Updatable Neural Network (NNUE).
  * <p>
  * The network has an input layer of 768 neurons, each representing the presence of a piece of each colour on a square
  * (64 squares * 6 pieces * 2 colours). Two versions of the hidden layer are accumulated: one from white's perspective
@@ -22,7 +22,7 @@ import com.kelseyde.calvin.search.Search;
  *
  * @see <a href="https://www.chessprogramming.org/NNUE">Chess Programming Wiki</a>
  */
-public class NNUE implements Evaluation {
+public class NNUE {
 
     public static final Network NETWORK = Network.Builder.builder()
             .file("sunbeam.nnue")
@@ -51,7 +51,6 @@ public class NNUE implements Evaluation {
         activateAll(board);
     }
 
-    @Override
     public int evaluate() {
 
         final boolean white = board.isWhite();
@@ -98,7 +97,6 @@ public class NNUE implements Evaluation {
     /**
      * Efficiently update only the relevant features of the network after a move has been made.
      */
-    @Override
     public void makeMove(Board board, Move move) {
 
         final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
@@ -144,12 +142,10 @@ public class NNUE implements Evaluation {
         acc.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
     }
 
-    @Override
     public void unmakeMove() {
         current--;
     }
 
-    @Override
     public void setPosition(Board board) {
         clearHistory();
         this.board = board;
@@ -192,7 +188,6 @@ public class NNUE implements Evaluation {
         return colourOffset + pieceOffset + squareIndex;
     }
 
-    @Override
     public void clearHistory() {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];

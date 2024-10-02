@@ -3,7 +3,7 @@ package com.kelseyde.calvin.utils.train;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.Searcher;

@@ -25,9 +25,9 @@ import com.kelseyde.calvin.search.Search;
 public class NNUE implements Evaluation {
 
     public static final Network NETWORK = Network.Builder.builder()
-            .file("sol.nnue")
+            .file("sunbeam.nnue")
             .inputSize(768)
-            .hiddenSize(384)
+            .hiddenSize(512)
             .activation(Activation.SCReLU)
             .quantisations(new int[]{255, 64})
             .scale(400)

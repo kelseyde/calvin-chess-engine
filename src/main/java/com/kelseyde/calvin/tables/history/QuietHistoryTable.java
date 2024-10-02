@@ -6,8 +6,8 @@ import com.kelseyde.calvin.board.Move;
 
 public class QuietHistoryTable extends AbstractHistoryTable {
 
+    public static final int MAX_SCORE = 8192;
     private static final int MAX_BONUS = 1200;
-    private static final int MAX_SCORE = 8192;
 
     int[][][] table = new int[2][Square.COUNT][Square.COUNT];
 

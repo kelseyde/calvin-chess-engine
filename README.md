@@ -11,7 +11,7 @@ Calvin is a superhuman chess engine written in Java.
 
 It features a a traditional alpha-beta search algorithm paired with an NNUE evaluation function. 
 
-The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 670 million positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->384)x2->1. 
+The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 950 million positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->512)x2->1. 
 
 Calvin is rated roughly 3170 elo (~120th place) on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/4040/) leaderboards, and is currently playing on [Lichess](https://lichess.org/@/Calvin_Bot).
 
@@ -105,7 +105,7 @@ The search algorithm is all about exploring the possible positions in the game t
 
 For any given chess position, the engine needs a method of obtaining an estimate of how good the position is for the side to move. Chess engine evaluation mechanisms can be split into two camps: traditional [Hand-Crafted Evaluation](https://www.chessprogramming.org/Evaluation) (HCE), and [Efficiently Updatable Neural Networks](https://www.chessprogramming.org/NNUE) (NNUE). Since version [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0), Calvin has switched to a neural-net based eval. 
 
-The neural network was trained using the excellent [bullet](https://github.com/jw1912/bullet) trainer on a dataset of 670 million positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->384)x2->1. 
+The neural network was trained using the excellent [bullet](https://github.com/jw1912/bullet) trainer on a dataset of 950 million positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->512)x2->1. 
 
 ## Special Thanks To...
 

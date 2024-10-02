@@ -54,9 +54,9 @@ public class MovePicker {
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
-    public Move pickNextMove() {
+    public ScoredMove pickNextMove() {
 
-        Move nextMove = null;
+        ScoredMove nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
                 case TT_MOVE ->         pickTTMove();
@@ -76,7 +76,7 @@ public class MovePicker {
      * Select the next move from the move list.
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
-    protected Move pickMove(Stage nextStage) {
+    protected ScoredMove pickMove(Stage nextStage) {
 
         if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
             stage = nextStage;
@@ -86,18 +86,18 @@ public class MovePicker {
             stage = nextStage;
             return null;
         }
-        Move move = pick();
+        ScoredMove move = pick();
         moveIndex++;
         return move;
 
     }
 
-    protected Move pickTTMove() {
+    protected ScoredMove pickTTMove() {
         stage = Stage.GEN_NOISY;
-        return ttMove;
+        return new ScoredMove(ttMove, MoveBonus.TT_MOVE);
     }
 
-    protected Move generate(MoveFilter filter, Stage nextStage) {
+    protected ScoredMove generate(MoveFilter filter, Stage nextStage) {
         List<Move> stagedMoves = movegen.generateMoves(board, filter);
         scoreMoves(stagedMoves);
         moveIndex = 0;
@@ -121,7 +121,7 @@ public class MovePicker {
 
         if (move.equals(ttMove)) {
             // Always put the TT move to the end - it will be tried first lazily
-            return -MoveBonus.TT_MOVE_BONUS;
+            return -MoveBonus.TT_MOVE;
         }
         if (move.isPromotion()) {
             return scorePromotion(move);
@@ -143,7 +143,7 @@ public class MovePicker {
 
         // Separate captures into winning and losing
         int materialDelta = captured.value() - piece.value();
-        captureScore += materialDelta >= 0 ? MoveBonus.WINNING_CAPTURE_BONUS : MoveBonus.LOSING_CAPTURE_BONUS;
+        captureScore += materialDelta >= 0 ? MoveBonus.GOOD_CAPTURE : MoveBonus.BAD_CAPTURE;
 
         // Add MVV score to the capture score
         captureScore += MoveBonus.MVV_OFFSET * captured.index();
@@ -177,22 +177,22 @@ public class MovePicker {
         // Killers are ordered higher than normal history moves
         int base = 0;
         if (killerScore != 0) {
-            base = MoveBonus.KILLER_MOVE_BONUS;
+            base = MoveBonus.KILLER_MOVE;
         } else if (historyScore != 0 || contHistScore != 0) {
-            base = MoveBonus.QUIET_MOVE_BONUS;
+            base = MoveBonus.QUIET_MOVE;
         }
 
         return base + killerScore + historyScore + contHistScore;
     }
 
     protected int scorePromotion(Move move) {
-        return move.promoPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO_BONUS : MoveBonus.UNDER_PROMO_BONUS;
+        return move.promoPiece() == Piece.QUEEN ? MoveBonus.QUEEN_PROMO : MoveBonus.UNDER_PROMO;
     }
 
     /**
      * Select the move with the highest score and move it to the head of the move list.
      */
-    protected Move pick() {
+    protected ScoredMove pick() {
         if (moveIndex >= moves.length) {
             return null;
         }
@@ -207,8 +207,8 @@ public class MovePicker {
         if (bestIndex != moveIndex) {
             swap(moveIndex, bestIndex);
         }
-        Move move = moves[moveIndex].move();
-        return wasTriedLazily(move) ? null : move;
+        ScoredMove move = moves[moveIndex];
+        return wasTriedLazily(move.move()) ? null : move;
     }
 
     protected void swap(int i, int j) {
@@ -224,7 +224,5 @@ public class MovePicker {
     private boolean wasTriedLazily(Move move) {
         return move.equals(ttMove);
     }
-
-    public record ScoredMove(Move move, int score) {}
 
 }

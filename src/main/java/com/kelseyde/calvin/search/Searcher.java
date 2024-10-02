@@ -9,6 +9,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.ScoredMove;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -300,9 +301,9 @@ public class Searcher implements Search {
 
         while (true) {
 
-            Move move = movePicker.pickNextMove();
-            if (move == null) break;
-            //if (bestMove == null) bestMove = move;
+            ScoredMove scoredMove = movePicker.pickNextMove();
+            if (scoredMove == null) break;
+            Move move = scoredMove.move();
             movesSearched++;
 
             Piece piece = board.pieceAt(move.from());
@@ -339,6 +340,12 @@ public class Searcher implements Search {
 
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
                 reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
+            }
+
+            // Static Exchange Evaluation (SEE) reductions
+            // If a capture is likely to be bad, perform a SEE check to verify this, and reduce the search depth if so.
+            if (isCapture && SEE.see(board, move) < 0) {
+                reduction += config.seeReduction.value;
             }
 
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
@@ -518,8 +525,9 @@ public class Searcher implements Search {
 
         while (true) {
 
-            Move move = movePicker.pickNextMove();
-            if (move == null) break;
+            ScoredMove scoredMove = movePicker.pickNextMove();
+            if (scoredMove == null) break;
+            Move move = scoredMove.move();
             movesSearched++;
 
             if (!inCheck) {

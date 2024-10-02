@@ -10,6 +10,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
 import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
@@ -339,6 +340,13 @@ public class Searcher implements Search {
 
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
                 reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
+            }
+
+            if (depth >= 3
+                && isCapture
+                && movesSearched >= 3 + (pvNode ? 1 : 0)) {
+                int captHistScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
+                reduction += 2 * captHistScore / CaptureHistoryTable.MAX_SCORE;
             }
 
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning

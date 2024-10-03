@@ -283,7 +283,6 @@ public class Searcher implements Search {
                 ss.setNullMoveAllowed(ply + 1, true);
 
                 if (score >= beta) {
-                    tt.put(board.key(), HashFlag.LOWER, depth, ply, ttMove, staticEval, beta);
                     return Score.isMateScore(score) ? beta : score;
                 }
             }

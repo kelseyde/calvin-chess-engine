@@ -33,7 +33,7 @@ public class TrainingDataScorer {
 
     private static final int THREAD_COUNT = 20;
     private static final int THREAD_TIMEOUT_SECONDS = 15;
-    private static final int BATCH_SIZE = THREAD_COUNT * 500;
+    private static final int BATCH_SIZE = THREAD_COUNT * 1000;
     private static final int TT_SIZE = 64;
     private static final int TOTAL_POSITIONS_PER_FILE = 100000000;
     private static final Duration MAX_SEARCH_TIME = Duration.ofSeconds(30);

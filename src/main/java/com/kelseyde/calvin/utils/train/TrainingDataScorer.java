@@ -3,15 +3,10 @@ package com.kelseyde.calvin.utils.train;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.ThreadData;
-import com.kelseyde.calvin.search.TimeControl;
+import com.kelseyde.calvin.search.*;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.uci.UCICommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 

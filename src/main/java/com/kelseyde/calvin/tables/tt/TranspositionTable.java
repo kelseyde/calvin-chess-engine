@@ -1,7 +1,7 @@
 package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.search.Score;
 
 /**
  * The transposition table is a database that stores the results of previously searched positions, as well as relevant

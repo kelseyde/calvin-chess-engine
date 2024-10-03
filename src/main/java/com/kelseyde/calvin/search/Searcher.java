@@ -4,15 +4,13 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
-import com.kelseyde.calvin.evaluation.SEE;
-import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -41,7 +39,7 @@ public class Searcher implements Search {
     final EngineConfig config;
     final TranspositionTable tt;
     final MoveGenerator movegen;
-    final Evaluation eval;
+    final NNUE eval;
     final SearchHistory history;
     final SearchStack ss;
     final ThreadData td;
@@ -317,10 +315,37 @@ public class Searcher implements Search {
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
                 && depth <= config.fpDepth.value
-                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha
-                && !inCheck
-                && !isCapture
-                && !isPromotion) {
+                && !inCheck && !isCapture && !isPromotion
+                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
+
+            int historyScore = this.history.getHistoryTable().get(move, board.isWhite());
+
+            // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
+            // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
+            // let's save time by assuming it's less likely to be good, and reduce the search depth.
+            int reduction = 0;
+            if (depth >= config.lmrDepth.value
+                    && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)) {
+
+                // Reductions are based on the depth and the number of moves searched so far.
+                reduction = config.lmrReductions[depth][movesSearched];
+
+                // Reduce less in PV nodes.
+                reduction -= pvNode ? 1 : 0;
+
+                // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
+                reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
+            }
+
+            // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
+            // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
+            // that assumes that moves which have historically been bad are likely to be bad in the current position.
+            if (!pvNode && !isCapture && !isPromotion
+                    && depth - reduction <= config.hpMaxDepth.value
+                    && historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
                 movePicker.setSkipQuiets(true);
                 continue;
             }
@@ -333,6 +358,8 @@ public class Searcher implements Search {
             boolean isCheck = movegen.isCheck(board, board.isWhite());
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
             ss.setMove(ply, move, piece, captured, isCapture, isQuiet);
+
+            // Keep track of the quiet/noisy moves searched, used later to update search history.
             if (isQuiet) {
                 quietsSearched.add(new PlayedMove(move, piece, captured, false, true));
             } else if (isCapture) {
@@ -367,22 +394,6 @@ public class Searcher implements Search {
                 score = -search(depth - 1, ply + 1, -beta, -alpha);
             }
             else {
-                // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
-                // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
-                // let's save time by assuming it's less likely to be good, and reduce the search depth.
-                int reduction = 0;
-                if (depth >= config.lmrDepth.value
-                    && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)
-                    && isQuiet) {
-                    reduction = config.lmrReductions[depth][movesSearched];
-                    if (pvNode) {
-                        reduction--;
-                    }
-                    if (ttEntry != null && ttEntry.getMove() != null && isCapture) {
-                        reduction++;
-                    }
-                }
-
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
                 score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha);

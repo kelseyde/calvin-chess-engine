@@ -270,13 +270,15 @@ public class Searcher implements Search {
             // not search any further.
             if (ss.isNullMoveAllowed(ply)
                 && depth >= config.nmpDepth.value
-                && staticEval >= beta - (config.nmpMargin.value * (improving ? 1 : 0))
+                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
                 ss.setNullMoveAllowed(ply + 1, false);
                 board.makeNullMove();
 
-                int r = 3 + depth / 3;
+                int base = config.nmpBase.value;
+                int divisor = config.nmpDivisor.value;
+                int r = base + depth / divisor;
                 int score = -search(depth - r, ply + 1, -beta, -beta + 1);
 
                 board.unmakeNullMove();
@@ -327,7 +329,7 @@ public class Searcher implements Search {
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
             int reduction = 0;
             if (depth >= config.lmrDepth.value
-                    && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)) {
+                    && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)) {
 
                 // Reductions are based on the depth and the number of moves searched so far.
                 reduction = config.lmrReductions[depth][movesSearched];
@@ -370,10 +372,10 @@ public class Searcher implements Search {
             // promotion, let's assume it's less likely to be good, and fully skip searching that move.
             int lmpCutoff = (depth * config.lmpMultiplier.value) / (1 + (improving ? 0 : 1));
             if (!pvNode
-                && !inCheck
-                && isQuiet
-                && depth <= config.lmpDepth.value
-                && movesSearched >= lmpCutoff) {
+                    && !inCheck
+                    && isQuiet
+                    && depth <= config.lmpDepth.value
+                    && movesSearched >= lmpCutoff) {
                 eval.unmakeMove();
                 board.unmakeMove();
                 ss.unsetMove(ply);
@@ -545,8 +547,8 @@ public class Searcher implements Search {
                 // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
-                if ((depth <= 3 && seeScore < 0)
-                        || (depth > 3 && seeScore <= 0)) {
+                int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
+                if (seeScore < seeThreshold) {
                     continue;
                 }
             }

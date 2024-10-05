@@ -5,9 +5,9 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>4.4.0-SNAPSHOT</version>
+    <version>4.3.0</version>
     <packaging>jar</packaging>
-    <name>calvin-chess-engine</name>
+    <name>calvin-chess-engine-no-simd</name>
 
     <description>A chess engine written in Java.</description>
 

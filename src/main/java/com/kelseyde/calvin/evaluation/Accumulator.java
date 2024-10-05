@@ -37,16 +37,9 @@ public class Accumulator {
         int wOffset = wx1 * HIDDEN_SIZE;
         int bOffset = bx1 * HIDDEN_SIZE;
 
-        for (int i = 0; i < loopLength; i += SPECIES.length()) {
-
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset))
-                    .intoArray(whiteFeatures, i);
-
-            ShortVector.fromArray(SPECIES, blackFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset))
-                    .intoArray(blackFeatures, i);
-
+        for (int i = 0; i < featureCount; i++) {
+            whiteFeatures[i] += WEIGHTS[i + wOffset];
+            blackFeatures[i] += WEIGHTS[i + bOffset];
         }
     }
 
@@ -56,18 +49,9 @@ public class Accumulator {
         int wOffset2 = wx2 * HIDDEN_SIZE;
         int bOffset2 = bx2 * HIDDEN_SIZE;
 
-        for (int i = 0; i < loopLength; i += SPECIES.length()) {
-
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset1))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset2))
-                    .intoArray(whiteFeatures, i);
-
-            ShortVector.fromArray(SPECIES, blackFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset1))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset2))
-                    .intoArray(blackFeatures, i);
-
+        for (int i = 0; i < featureCount; i++) {
+            whiteFeatures[i] += (short) (WEIGHTS[i + wOffset1] - WEIGHTS[i + wOffset2]);
+            blackFeatures[i] += (short) (WEIGHTS[i + bOffset1] - WEIGHTS[i + bOffset2]);
         }
     }
 
@@ -79,20 +63,9 @@ public class Accumulator {
         int wOffset3 = wx3 * HIDDEN_SIZE;
         int bOffset3 = bx3 * HIDDEN_SIZE;
 
-        for (int i = 0; i < loopLength; i += SPECIES.length()) {
-
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset1))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset2))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset3))
-                    .intoArray(whiteFeatures, i);
-
-            ShortVector.fromArray(SPECIES, blackFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset1))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset2))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset3))
-                    .intoArray(blackFeatures, i);
-
+        for (int i = 0; i < featureCount; i++) {
+            whiteFeatures[i] += (short) (WEIGHTS[i + wOffset1] - WEIGHTS[i + wOffset2] - WEIGHTS[i + wOffset3]);
+            blackFeatures[i] += (short) (WEIGHTS[i + bOffset1] - WEIGHTS[i + bOffset2] - WEIGHTS[i + bOffset3]);
         }
     }
 
@@ -106,22 +79,9 @@ public class Accumulator {
         int wOffset4 = wx4 * HIDDEN_SIZE;
         int bOffset4 = bx4 * HIDDEN_SIZE;
 
-        for (int i = 0; i < loopLength; i += SPECIES.length()) {
-
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset1))
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset2))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset3))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + wOffset4))
-                    .intoArray(whiteFeatures, i);
-
-            ShortVector.fromArray(SPECIES, blackFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset1))
-                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset2))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset3))
-                    .sub(ShortVector.fromArray(SPECIES, WEIGHTS, i + bOffset4))
-                    .intoArray(blackFeatures, i);
-
+        for (int i = 0; i < featureCount; i++) {
+            whiteFeatures[i] += (short) (WEIGHTS[i + wOffset1] + WEIGHTS[i + wOffset2] - WEIGHTS[i + wOffset3] - WEIGHTS[i + wOffset4]);
+            blackFeatures[i] += (short) (WEIGHTS[i + bOffset1] + WEIGHTS[i + bOffset2] - WEIGHTS[i + bOffset3] - WEIGHTS[i + bOffset4]);
         }
     }
 

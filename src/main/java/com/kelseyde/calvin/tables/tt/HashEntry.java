@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.search.Score;
 
 /**
  * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encodes the relevant
@@ -138,6 +139,10 @@ public class HashEntry {
         return getDepth() >= depth;
     }
 
+    public boolean hasScore() {
+        return !Score.isUndefinedScore(getScore());
+    }
+
     /**
      * Check if the hit from the transposition table is 'useful' in the current search. A TT-hit is useful either if it
      * 1) contains an exact evaluation, so we don't need to search any further, 2) contains a fail-high greater than our
@@ -145,8 +150,9 @@ public class HashEntry {
      */
     public boolean isWithinBounds(int alpha, int beta) {
         return getFlag().equals(HashFlag.EXACT) ||
-                (getFlag().equals(HashFlag.UPPER) && getScore() <= alpha) ||
-                (getFlag().equals(HashFlag.LOWER) && getScore() >= beta);
+                (hasScore() &&
+                (getFlag().equals(HashFlag.UPPER) && getScore() <= alpha ||
+                getFlag().equals(HashFlag.LOWER) && getScore() >= beta));
     }
 
     /**

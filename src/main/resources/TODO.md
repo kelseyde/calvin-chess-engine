@@ -2,12 +2,12 @@
 
 ### Search
 
-- [ ] SPSA tune
+- [x] SPSA tune
 - [ ] PV table
 - [ ] Singular extensions ( won't gain )
 - [ ] MultiCut ( won't gain )
 - [ ] ProbCut
-- [ ] TT score eval correction ( won't gain )
+- [x] TT score eval correction 
 - [x] Razoring
 - [ ] History leaf pruning ( won't gain )
 - [ ] SEE pruning ( won't gain )

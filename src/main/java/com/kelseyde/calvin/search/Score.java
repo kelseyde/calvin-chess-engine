@@ -13,8 +13,12 @@ public class Score {
     public static final int MATE = 32766;
     public static final int DRAW = 0;
 
-    public static boolean isMateScore(int eval) {
-        return Math.abs(eval) >= Score.MATE - Search.MAX_DEPTH;
+    public static boolean isMateScore(int score) {
+        return !isUndefinedScore(score) && Math.abs(score) >= Score.MATE - Search.MAX_DEPTH;
+    }
+
+    public static boolean isUndefinedScore(int score) {
+        return Math.abs(score) == Score.MAX;
     }
 
     /**

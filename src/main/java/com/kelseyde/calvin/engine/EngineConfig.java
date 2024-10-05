@@ -25,14 +25,14 @@ public class EngineConfig {
     public boolean pondering = false;
     public boolean searchCancelled = false;
 
-    public final Tunable aspMargin =        new Tunable("AspMargin", 6, 0, 250, 25);
-    public final Tunable aspFailMargin =    new Tunable("AspFailMargin", 99, 0, 300, 25);
+    public final Tunable aspMargin =        new Tunable("AspMargin", 6, 0, 250, 10);
+    public final Tunable aspFailMargin =    new Tunable("AspFailMargin", 99, 0, 300, 10);
     public final Tunable aspMaxReduction =  new Tunable("AspMaxReduction", 1, 0, 5, 1);
     public final Tunable nmpDepth =         new Tunable("NmpDepth", 1, 0, 6, 1);
     public final Tunable nmpMargin =        new Tunable("NmpMargin", 0, 0, 250, 10);
     public final Tunable nmpImpMargin =     new Tunable("NmpImpMargin", 62, 0, 250, 10);
     public final Tunable nmpBase =          new Tunable("NmpBase", 3, 0, 6, 1);
-    public final Tunable nmpDivisor =       new Tunable("NmpBase", 3, 1, 4, 1);
+    public final Tunable nmpDivisor =       new Tunable("NmpDivisor", 3, 1, 4, 1);
     public final Tunable fpDepth =          new Tunable("FpDepth", 6, 0, 8, 1);
     public final Tunable fpMargin =         new Tunable("FpMargin", 264, 0, 500, 10);
     public final Tunable fpScale =          new Tunable("FpScale", 65, 0, 100, 5);

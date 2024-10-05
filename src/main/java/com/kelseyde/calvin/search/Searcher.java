@@ -465,6 +465,7 @@ public class Searcher implements Search {
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && staticEval >= bestScore)
             && !(flag == HashFlag.UPPER && staticEval <= bestScore)) {
+            // TODO try without flag checks
             history.updateCorrectionHistory(board, depth, bestScore, staticEval);
         }
 

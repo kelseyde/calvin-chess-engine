@@ -94,11 +94,16 @@ public class SearchHistory {
         return captureHistoryTable;
     }
 
+    public CorrectionHistoryTable getPawnCorrHistTable() {
+        return pawnCorrHistTable;
+    }
+
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
         quietHistoryTable.ageScores(true);
         quietHistoryTable.ageScores(false);
+        pawnCorrHistTable.ageEntries();
     }
 
     public void clear() {

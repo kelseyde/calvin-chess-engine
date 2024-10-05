@@ -6,7 +6,7 @@ import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.uci.UCICommand.GoCommand;
+import com.kelseyde.calvin.uci.command.GoCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;

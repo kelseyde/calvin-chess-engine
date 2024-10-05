@@ -5,7 +5,7 @@ import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
-import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
+import com.kelseyde.calvin.uci.command.PositionCommand;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

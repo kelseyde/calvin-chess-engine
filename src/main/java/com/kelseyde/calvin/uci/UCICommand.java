@@ -1,14 +1,8 @@
 package com.kelseyde.calvin.uci;
 
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.utils.notation.FEN;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public record UCICommand(UCICommandType type, String[] args) {
 
@@ -67,79 +61,6 @@ public record UCICommand(UCICommandType type, String[] args) {
 
     public boolean contains(String label) {
         return Arrays.asList(args).contains(label);
-    }
-
-    public record GoCommand(int movetime, int wtime, int btime, int winc, int binc, int nodes, int depth, int perft, boolean ponder) {
-
-        public static GoCommand parse(UCICommand command) {
-            int movetime =      command.getInt("movetime", Integer.MIN_VALUE, false);
-            int wtime =         command.getInt("wtime", Integer.MIN_VALUE, false);
-            int btime =         command.getInt("btime", Integer.MIN_VALUE, false);
-            int winc =          command.getInt("winc", Integer.MIN_VALUE, false);
-            int binc =          command.getInt("binc", Integer.MIN_VALUE, false);
-            int nodes =         command.getInt("nodes", Integer.MIN_VALUE, false);
-            int depth =         command.getInt("depth", Integer.MIN_VALUE, false);
-            int perft =         command.getInt("perft", Integer.MIN_VALUE, false);
-            boolean ponder =    command.contains("ponder");
-            return new GoCommand(movetime, wtime, btime, winc, binc, nodes, depth, perft, ponder);
-        }
-
-        public boolean isPerft() {
-            return perft > 0;
-        }
-
-        public boolean isMovetime() {
-            return movetime > 0;
-        }
-
-        public boolean isTimeAndInc() {
-            return wtime > Integer.MIN_VALUE && btime > Integer.MIN_VALUE;
-        }
-
-    }
-
-    public record PositionCommand(String fen, List<Move> moves) {
-
-        public static PositionCommand parse(UCICommand command) {
-            String fen;
-            if (command.contains("startpos")) {
-                fen = FEN.STARTPOS;
-            } else if (command.contains("fen")) {
-                fen = String.join(" ", command.getStrings("fen", true));
-            } else {
-                UCI.write("info error invalid position command; expecting 'startpos' or 'fen'.");
-                fen = FEN.STARTPOS;
-            }
-            List<Move> moves = command.getStrings("moves", false).stream()
-                    .map(Move::fromUCI)
-                    .toList();
-            return new PositionCommand(fen, moves);
-        }
-
-    }
-
-    public record ScoreDataCommand(String inputFile, String outputFile, int softNodes, int hardNodes, int resumeOffset) {
-
-        private static final int DEFAULT_SOFT_NODES = 5000;
-        private static final int DEFAULT_HARD_NODES = 1000000;
-        private static final int DEFAULT_RESUME_OFFSET = 0;
-
-        public static Optional<ScoreDataCommand> parse(UCICommand command) {
-            String inputFile = command.getString("input", null, true);
-            String outputFile = command.getString("output", null, true);
-
-            if (!Files.exists(Path.of(inputFile))) {
-                UCI.write("info error input file " + inputFile + " does not exist");
-                return Optional.empty();
-            }
-
-            int softNodes = command.getInt("soft", DEFAULT_SOFT_NODES, false);
-            int hardNodes = command.getInt("hard", DEFAULT_HARD_NODES, false);
-            int resume = command.getInt("resume", DEFAULT_RESUME_OFFSET, false);
-
-            return Optional.of(new ScoreDataCommand(inputFile, outputFile, softNodes, hardNodes, resume));
-        }
-
     }
 
 }

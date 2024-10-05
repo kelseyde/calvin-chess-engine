@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.uci.UCICommand.GoCommand;
+import com.kelseyde.calvin.uci.command.GoCommand;
 
 import java.time.Duration;
 import java.time.Instant;

@@ -6,12 +6,12 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.uci.UCICommand.GoCommand;
-import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
-import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
+import com.kelseyde.calvin.uci.command.GoCommand;
+import com.kelseyde.calvin.uci.command.PositionCommand;
+import com.kelseyde.calvin.uci.command.ScoreDataCommand;
 import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.train.TrainingDataScorer;
+import com.kelseyde.calvin.datagen.DataScorer;
 
 import java.util.Arrays;
 import java.util.Scanner;
@@ -107,7 +107,7 @@ public class UCI {
     }
 
     public static void handleScoreData(UCICommand command) {
-        TrainingDataScorer scorer = new TrainingDataScorer();
+        DataScorer scorer = new DataScorer();
         ScoreDataCommand.parse(command).ifPresent(scorer::score);
         write("info string score data complete");
     }

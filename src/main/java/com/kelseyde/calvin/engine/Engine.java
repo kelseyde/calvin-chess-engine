@@ -10,8 +10,8 @@ import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.uci.UCICommand.GoCommand;
-import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
+import com.kelseyde.calvin.uci.command.GoCommand;
+import com.kelseyde.calvin.uci.command.PositionCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.perft.PerftService;
 

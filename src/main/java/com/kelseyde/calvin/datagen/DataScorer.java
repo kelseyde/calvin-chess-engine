@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.utils.train;
+package com.kelseyde.calvin.datagen;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
@@ -7,7 +7,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.*;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
+import com.kelseyde.calvin.uci.command.ScoreDataCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class TrainingDataScorer {
+public class DataScorer {
 
     private static final int THREAD_COUNT = 20;
     private static final int THREAD_TIMEOUT_SECONDS = 15;

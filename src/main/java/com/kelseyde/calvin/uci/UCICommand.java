@@ -121,7 +121,7 @@ public record UCICommand(UCICommandType type, String[] args) {
     public record ScoreDataCommand(String inputFile, String outputFile, int softNodes, int hardNodes, int resumeOffset) {
 
         private static final int DEFAULT_SOFT_NODES = 5000;
-        private static final int DEFAULT_HARD_NODES = 1000000;
+        private static final int DEFAULT_HARD_NODES = 100000;
         private static final int DEFAULT_RESUME_OFFSET = 0;
 
         public static Optional<ScoreDataCommand> parse(UCICommand command) {

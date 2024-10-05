@@ -15,6 +15,7 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -191,15 +192,16 @@ public class Searcher implements Search {
         //  b) it was searched to a sufficient depth, and
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
         HashEntry ttEntry = tt.get(board.key(), ply);
+        boolean ttHit = ttEntry != null;
         if (!pvNode
-                && ttEntry != null
+                && ttHit
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
             return ttEntry.getScore();
         }
 
         Move ttMove = null;
-        if (ttEntry != null && ttEntry.getMove() != null) {
+        if (ttHit && ttEntry.getMove() != null) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.getMove();
         }
@@ -220,19 +222,27 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && !inCheck
-                && (ttEntry == null || ttEntry.getMove() == null)
+                && (!ttHit || ttEntry.getMove() == null)
                 && ply > 0
                 && depth >= config.iirDepth.value) {
             --depth;
         }
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
+        int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            if (ttEntry != null) {
-                staticEval = ttEntry.isWithinBounds(staticEval, staticEval) ? ttEntry.getScore() : ttEntry.getStaticEval();
-            } else {
-                staticEval = eval.evaluate();
+            rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = rawStaticEval;
+            if (ttHit &&
+                    (ttEntry.getFlag() == HashFlag.EXACT ||
+                    (ttEntry.getFlag() == HashFlag.LOWER && ttEntry.getScore() >= rawStaticEval) ||
+                    (ttEntry.getFlag() == HashFlag.UPPER && ttEntry.getScore() <= rawStaticEval))) {
+                System.out.printf("Adjusting static eval from %d to %d\n", staticEval, ttEntry.getScore());
+                if (ttEntry.getScore() == 32767 || ttEntry.getScore() == -32767) {
+                    //System.out.println("Found mate score in TT: " + FEN.toFEN(board));
+                }
+                staticEval = ttEntry.getScore();
             }
         }
 
@@ -458,7 +468,10 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        tt.put(board.key(), flag, depth, ply, bestMove, staticEval, bestScore);
+        if (bestScore == 32767 || bestScore == -32767) {
+            System.out.println("Found mate score: " + FEN.toFEN(board));
+        }
+        tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
 
         return bestScore;
 
@@ -478,13 +491,14 @@ public class Searcher implements Search {
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry ttEntry = tt.get(board.key(), ply);
-        if (ttEntry != null
+        boolean ttHit = ttEntry != null;
+        if (ttHit
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
             return ttEntry.getScore();
         }
         Move ttMove = null;
-        if (ttEntry != null && ttEntry.getMove() != null) {
+        if (ttHit && ttEntry.getMove() != null) {
             ttMove = ttEntry.getMove();
         }
 
@@ -493,12 +507,16 @@ public class Searcher implements Search {
         QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
+        int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            if (ttEntry != null) {
-                staticEval = ttEntry.isWithinBounds(staticEval, staticEval) ? ttEntry.getScore() : ttEntry.getStaticEval();
-            } else {
-                staticEval = eval.evaluate();
+            rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = rawStaticEval;
+            if (ttHit &&
+                    (ttEntry.getFlag() == HashFlag.EXACT ||
+                    (ttEntry.getFlag() == HashFlag.LOWER && ttEntry.getScore() >= rawStaticEval) ||
+                    (ttEntry.getFlag() == HashFlag.UPPER && ttEntry.getScore() <= rawStaticEval))) {
+                staticEval = ttEntry.getScore();
             }
         }
 

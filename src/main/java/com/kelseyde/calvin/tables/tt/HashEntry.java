@@ -168,6 +168,7 @@ public class HashEntry {
         // Get the 3-bit encoded flag
         long flagValue = HashFlag.value(flag);
         // Combine the score, move, flag and depth to create the hash entry value
+        long longScore = (long) score << 32;
         long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
         return new HashEntry(key, value);
     }

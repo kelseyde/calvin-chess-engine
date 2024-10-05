@@ -500,7 +500,7 @@ public class Board {
     }
 
     public boolean isCapture(Move move) {
-        return move.isEnPassant() || pieceList[move.getTo()] != null;
+        return move.isEnPassant() || pieces[move.to()] != null;
     }
 
     public boolean hasPiecesRemaining(boolean white) {

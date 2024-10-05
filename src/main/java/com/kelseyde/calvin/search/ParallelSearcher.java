@@ -4,8 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,11 +25,9 @@ import java.util.stream.IntStream;
  *
  * @see <a href="https://www.chessprogramming.org/Lazy_SMP">Chess Programming Wiki</a>
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ParallelSearcher implements Search {
 
     final EngineConfig config;
-    final ThreadManager threadManager;
     TranspositionTable tt;
     int threadCount;
     int hashSize;
@@ -47,9 +43,8 @@ public class ParallelSearcher implements Search {
      */
     public ParallelSearcher(EngineConfig config, TranspositionTable tt) {
         this.config = config;
-        this.hashSize = config.getDefaultHashSizeMb();
-        this.threadCount = config.getDefaultThreadCount();
-        this.threadManager = new ThreadManager();
+        this.hashSize = config.defaultHashSizeMb;
+        this.threadCount = config.defaultThreads;
         this.tt = tt;
         this.searchers = initSearchers();
     }
@@ -65,7 +60,6 @@ public class ParallelSearcher implements Search {
     public SearchResult search(TimeControl timeControl) {
         try {
             setPosition(board);
-            threadManager.reset();
             List<CompletableFuture<SearchResult>> threads = searchers.stream()
                     .map(searcher -> initThread(searcher, timeControl))
                     .toList();
@@ -152,7 +146,9 @@ public class ParallelSearcher implements Search {
      * @return the list of initialized searchers
      */
     private List<Searcher> initSearchers() {
-        return IntStream.range(0, threadCount).mapToObj(i -> initSearcher()).toList();
+        return IntStream.range(0, threadCount)
+                .mapToObj(i -> initSearcher(i == 0))
+                .toList();
     }
 
     /**
@@ -160,8 +156,9 @@ public class ParallelSearcher implements Search {
      *
      * @return the initialized searcher
      */
-    private Searcher initSearcher() {
-        return new Searcher(config, threadManager, tt);
+    private Searcher initSearcher(boolean mainThread) {
+        ThreadData td = new ThreadData(mainThread);
+        return new Searcher(config, tt, td);
     }
 
     /**

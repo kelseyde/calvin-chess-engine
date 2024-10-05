@@ -4,14 +4,14 @@
 
 - [ ] SPSA tune
 - [ ] PV table
-- [ ] Singular extensions
-- [ ] MultiCut
+- [ ] Singular extensions ( won't gain )
+- [ ] MultiCut ( won't gain )
 - [ ] ProbCut
-- [ ] TT score eval correction
-- [ ] Razoring
-- [ ] History leaf pruning
-- [ ] SEE pruning
-- [ ] Faster SEE
+- [ ] TT score eval correction ( won't gain )
+- [x] Razoring
+- [ ] History leaf pruning ( won't gain )
+- [ ] SEE pruning ( won't gain )
+- [ ] Faster SEE ( won't gain )
 - [ ] Syzygy TB
 - [x] Check root legal moves, if only one, play instantly
 
@@ -20,37 +20,49 @@
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [ ] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
-- [ ] Conthist
-- [ ] Capthist
-- [ ] Threats
-- [ ] Countermoves
-- [ ] Add Killers, History etc. stages to MovePicker.
+- [x] 1-ply Conthist
+- [x] 2-ply Conthist
+- [x] Capthist
+- [ ] Threats ( won't gain )
+- [ ] Countermoves ( won't gain )
+- [ ] Add Killers, History etc. stages to MovePicker. ( won't gain )
 
 ### Evaluation
 
-- [ ] Lazy NNUE updates
-- [ ] New net, bigger HL size
-- [ ] Screlu
+- [ ] Find solution to CCRL/ChessGUI/Vector API issue
+- [ ] Lazy NNUE updates ( won't gain )
+- [x] New net, bigger HL size
+- [x] Screlu
+- [ ] Output buckets ( won't gain )
+- [ ] Horizontal mirroring
 - [ ] Datagen
-- [ ] Pawn corrhist
+- [ ] Pawn corrhist ( won't gain )
 - [ ] Material corrhist
+- [ ] Output buckets ( won't gain )
+- [ ] Finny tables
 
 ### Time management
 
-- [ ] Node TM
+- [x] Node TM
+- [ ] Legal move based TM?
+- [ ] Futility TM?
+- [ ] Game phase TM?
 
 ### UCI
 
-- [ ] Add engine author/version
-- [ ] Add perft to UCI options
-- [ ] Implement display command
+- [x] Add engine author/version
+- [x] Add perft to UCI options
+- [x] Implement display command
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
 - [ ] Add seldepth to info
 - [ ] Add hashfull to info
+- [ ] MultiPV
+- [ ] Coloured output
 
 ### Code maturity
 
 - [ ] Improve javadoc
 - [ ] Review all code comments
+- [ ] Reduce artifact size (remove plugins, dependencies, delete old nets)
 

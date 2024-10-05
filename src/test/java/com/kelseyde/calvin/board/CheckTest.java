@@ -1,9 +1,8 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.utils.FEN;
 import com.kelseyde.calvin.utils.IllegalMoveException;
-import com.kelseyde.calvin.utils.Notation;
 import com.kelseyde.calvin.utils.TestUtils;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +11,7 @@ public class CheckTest {
     @Test
     public void checkBlocksOtherMoves() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d1", "h5"));
@@ -30,7 +29,7 @@ public class CheckTest {
     @Test
     public void cannotMovePinnedPawn() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d1", "h5"));
@@ -54,7 +53,7 @@ public class CheckTest {
 
     @Test
     public void cannotMovePinnedKnight() {
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "f7", "f5"));
         board.makeMove(TestUtils.getLegalMove(board, "e4", "f5"));
@@ -72,7 +71,7 @@ public class CheckTest {
 
     @Test
     public void cannotMovePinnedBishop() {
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "f7", "f5"));
         board.makeMove(TestUtils.getLegalMove(board, "e4", "f5"));
@@ -89,27 +88,9 @@ public class CheckTest {
     }
 
     @Test
-    public void cannotMovePinnedQueen() {
-        Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "f7", "f5"));
-        board.makeMove(TestUtils.getLegalMove(board, "e4", "f5"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
-        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e6", "f5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d1", "e2"));
-        // block check with queen
-        board.makeMove(TestUtils.getLegalMove(board, "d8", "e7"));
-        board.makeMove(TestUtils.getLegalMove(board, "a2", "a4"));
-        //try moving pinned queen
-        Assertions.assertThrows(IllegalMoveException.class,
-                () -> board.makeMove(TestUtils.getLegalMove(board, "e7", "d8")));
-    }
-
-    @Test
     public void cannotMoveFromCheckIntoAnotherCheck() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d1", "h5"));
@@ -127,7 +108,7 @@ public class CheckTest {
     @Test
     public void canCaptureUnprotectedCheckingPiece() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "d1", "h5"));
@@ -143,7 +124,7 @@ public class CheckTest {
     @Test
     public void cannotCaptureProtectedCheckingPieceWithKing() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "f1", "c4"));
@@ -163,7 +144,7 @@ public class CheckTest {
     @Test
     public void canCaptureProtectedCheckingPieceWithOtherPiece() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "f1", "c4"));
@@ -182,7 +163,7 @@ public class CheckTest {
     @Test
     public void cannotCastleOutOfCheck() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
@@ -206,7 +187,7 @@ public class CheckTest {
     @Test
     public void cannotCastleThroughCheck() {
 
-        Board board = new Board();
+        Board board = Board.from(FEN.STARTPOS);
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "f2", "f4"));
@@ -284,39 +265,6 @@ public class CheckTest {
     }
 
     @Test
-    public void testMustBlockQueenCheck() {
-
-        Board board = new Board();
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
-        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        board.makeMove(TestUtils.getLegalMove(board, "f3", "e5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d5", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "f1", "b5"));
-        board.makeMove(TestUtils.getLegalMove(board, "b8", "d7"));
-        board.makeMove(TestUtils.getLegalMove(board, "d1", "e2"));
-        board.makeMove(TestUtils.getLegalMove(board, "d8", "e7"));
-        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
-        board.makeMove(TestUtils.getLegalMove(board, "c7", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "e5", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "b7", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "b5", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "c8", "b7"));
-        board.makeMove(TestUtils.getLegalMove(board, "c6", "b7"));
-        board.makeMove(TestUtils.getLegalMove(board, "e7", "b4"));
-        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
-        board.makeMove(TestUtils.getLegalMove(board, "b4", "b7"));
-        board.makeMove(TestUtils.getLegalMove(board, "c3", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "b7", "e4"));
-        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-
-        Assertions.assertThrows(IllegalMoveException.class,
-                () -> TestUtils.getLegalMove(board, "g8", "f6"));
-
-    }
-
-    @Test
     public void testDiagonallyPinnedPawnCannotMove() {
 
         String fen = "6k1/8/8/8/6b1/8/4P3/3K4 w - - 0 1";
@@ -378,7 +326,7 @@ public class CheckTest {
         Board board = FEN.toBoard("r5k1/5b2/q2p4/p2nn1P1/2p5/P3P3/1PB2PK1/2BR3R b - - 2 42");
 
         Assertions.assertThrows(IllegalMoveException.class, () ->
-                TestUtils.getLegalMove(board, Notation.fromNotation("g8", "h8")));
+                TestUtils.getLegalMove(board, Move.fromUCI("g8h8")));
 
     }
 

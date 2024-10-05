@@ -5,7 +5,7 @@
 
     <groupId>com.kelseyde</groupId>
     <artifactId>calvin-chess-engine</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>calvin-chess-engine</name>
 
@@ -19,19 +19,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.16.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.1</version>
+            <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -41,9 +31,8 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>**/*</include>
+                    <include>**/*.nnue</include>
                 </includes>
-                <filtering>true</filtering>
             </resource>
         </resources>
         <plugins>
@@ -68,7 +57,6 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <addClasspath>true</addClasspath>
                             <mainClass>com.kelseyde.calvin.Application</mainClass>
                         </manifest>
                     </archive>
@@ -79,50 +67,14 @@
                 <version>3.3.1</version>
                 <configuration>
                     <nonFilteredFileExtensions>
-                        <nonFilteredFileExtension>p12</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>jks</nonFilteredFileExtension>
                         <nonFilteredFileExtension>nnue</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>bin</nonFilteredFileExtension>
                     </nonFilteredFileExtensions>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
-                <version>2.17.1</version>
-                <configuration>
-                    <generateBackupPoms>false</generateBackupPoms>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>com.kelseyde.calvin.Application</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <finalName>${project.build.finalName}</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-toolchains-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -148,16 +100,6 @@
                         <include>**/*Test.java</include>
                     </includes>
                     <argLine>--add-modules jdk.incubator.vector</argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.3.1</version>
-                <configuration>
-                    <argLine>
-                        --add-modules jdk.incubator.vector
-                    </argLine>
                 </configuration>
             </plugin>
         </plugins>

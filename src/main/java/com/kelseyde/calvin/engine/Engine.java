@@ -46,6 +46,8 @@ public class Engine {
 
     public void newGame() {
         searcher.clearHistory();
+        this.board = Board.from(FEN.STARTPOS);
+        searcher.setPosition(board);
     }
 
     public void setPosition(PositionCommand command) {

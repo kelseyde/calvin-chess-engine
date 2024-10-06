@@ -1,5 +1,12 @@
 # TODO
 
+### General
+
+- [ ] FRC/DFRC support
+- [ ] Improve javadoc
+- [ ] Review all code comments
+- [x] Reduce artifact size (remove plugins, dependencies, delete old nets)
+
 ### Search
 
 - [x] SPSA tune
@@ -59,10 +66,4 @@
 - [ ] Add hashfull to info
 - [ ] MultiPV
 - [ ] Coloured output
-
-### Code maturity
-
-- [ ] Improve javadoc
-- [ ] Review all code comments
-- [ ] Reduce artifact size (remove plugins, dependencies, delete old nets)
 

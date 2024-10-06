@@ -227,10 +227,10 @@ public class Searcher implements Search {
             --depth;
         }
 
-        // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
+            // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
             staticEval = rawStaticEval;
             if (ttHit &&

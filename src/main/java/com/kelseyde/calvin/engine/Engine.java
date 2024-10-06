@@ -125,7 +125,7 @@ public class Engine {
         List<Move> pv = new ArrayList<>();
         TranspositionTable tt = searcher.getTranspositionTable();
         int moves = 0;
-        while (moves <= 12) {
+        while (moves < 24) {
             long key = board.key();
             HashEntry entry = tt.get(key, 0);
             if (entry == null || entry.getMove() == null) {

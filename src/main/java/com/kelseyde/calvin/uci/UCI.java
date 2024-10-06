@@ -33,7 +33,9 @@ public class UCI {
 
     public static void run(String[] args) {
 
+        // Enable pretty printing if the engine is running in a terminal.
         prettyEnabled = System.console() != null;
+
         writeEngineInfo();
 
         // Allow the engine to be benched from the command line at startup.

@@ -21,7 +21,9 @@ public class Pretty {
     public static final String RESET =        "\u001B[0m";
 
     // Pretty print code is horrible - there is no other way
-    public static final String BANNER = String.format("""
+    public static final String BANNER =
+            String.format(
+                    """
                     
                             %s...............................................
                            ...............................................

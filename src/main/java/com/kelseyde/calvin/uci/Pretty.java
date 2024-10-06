@@ -10,13 +10,15 @@ import java.util.stream.Collectors;
 
 public class Pretty {
 
-    public static final String RED =     "\u001B[31m";
-    public static final String GREEN =   "\u001B[32m";
-    public static final String YELLOW =  "\u001B[33m";
-    public static final String BLUE =    "\u001B[34m";
-    public static final String CYAN =    "\u001B[36m";
-    public static final String GRAY =    "\u001B[90m";
-    public static final String RESET =   "\u001B[0m";
+    public static final String RED =          "\u001B[31m";
+    public static final String GREEN =        "\u001B[32m";
+    public static final String YELLOW =       "\u001B[33m";
+    public static final String BLUE =         "\u001B[34m";
+    public static final String CYAN =         "\u001B[36m";
+    public static final String GRAY =         "\u001B[90m";
+    public static final String ITALIC_ON =    "\033[3m";
+    public static final String ITALIC_OFF =   "\033[23m";
+    public static final String RESET =        "\u001B[0m";
 
     // Pretty print code is horrible - there is no other way
     public static final String BANNER = String.format("""
@@ -110,7 +112,7 @@ public class Pretty {
     }
 
     private static String formatPv(List<Move> pv) {
-        return pv.stream().map(Move::toUCI).collect(Collectors.joining("  "));
+        return ITALIC_ON + pv.stream().map(Move::toUCI).collect(Collectors.joining("  ")) + ITALIC_OFF;
     }
 
 }

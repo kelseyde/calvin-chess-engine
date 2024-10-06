@@ -1,13 +1,20 @@
 # TODO
 
+### General
+
+- [ ] FRC/DFRC support
+- [ ] Improve javadoc
+- [ ] Review all code comments
+- [x] Reduce artifact size (remove plugins, dependencies, delete old nets)
+
 ### Search
 
-- [ ] SPSA tune
+- [x] SPSA tune
 - [ ] PV table
 - [ ] Singular extensions ( won't gain )
 - [ ] MultiCut ( won't gain )
 - [ ] ProbCut
-- [ ] TT score eval correction ( won't gain )
+- [x] TT score eval correction 
 - [x] Razoring
 - [ ] History leaf pruning ( won't gain )
 - [ ] SEE pruning ( won't gain )
@@ -59,10 +66,4 @@
 - [ ] Add hashfull to info
 - [ ] MultiPV
 - [ ] Coloured output
-
-### Code maturity
-
-- [ ] Improve javadoc
-- [ ] Review all code comments
-- [ ] Reduce artifact size (remove plugins, dependencies, delete old nets)
 

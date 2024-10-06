@@ -25,31 +25,36 @@ public class EngineConfig {
     public boolean pondering = false;
     public boolean searchCancelled = false;
 
-    public final Tunable aspMargin =        new Tunable("AspMargin", 25, 0, 250, 25);
-    public final Tunable aspFailMargin =    new Tunable("AspFailMargin", 150, 0, 300, 25);
-    public final Tunable aspMaxReduction =  new Tunable("AspMaxReduction", 3, 0, 5, 1);
+    public final Tunable aspMargin =        new Tunable("AspMargin", 12, 0, 250, 10);
+    public final Tunable aspFailMargin =    new Tunable("AspFailMargin", 98, 0, 300, 10);
+    public final Tunable aspMaxReduction =  new Tunable("AspMaxReduction", 0, 0, 5, 1);
     public final Tunable nmpDepth =         new Tunable("NmpDepth", 0, 0, 6, 1);
-    public final Tunable nmpMargin =        new Tunable("NmpMargin", 70, 0, 250, 10);
+    public final Tunable nmpMargin =        new Tunable("NmpMargin", 16, 0, 250, 10);
+    public final Tunable nmpImpMargin =     new Tunable("NmpImpMargin", 64, 0, 250, 10);
+    public final Tunable nmpBase =          new Tunable("NmpBase", 3, 0, 6, 1);
+    public final Tunable nmpDivisor =       new Tunable("NmpDivisor", 2, 1, 4, 1);
     public final Tunable fpDepth =          new Tunable("FpDepth", 6, 0, 8, 1);
-    public final Tunable fpMargin =         new Tunable("FpMargin", 275, 0, 500, 10);
-    public final Tunable fpScale =          new Tunable("FpScale", 65, 0, 100, 5);
-    public final Tunable qsFpMargin =       new Tunable("QsFpMargin", 100, 0, 250, 10);
-    public final Tunable rfpDepth =         new Tunable("RfpDepth", 5, 0, 8, 1);
-    public final Tunable rfpMargin =        new Tunable("RfpMargin", 75, 0, 250, 10);
-    public final Tunable rfpImpMargin =     new Tunable("RfpImpMargin", 40, 0, 250, 10);
-    public final Tunable lmrDepth =         new Tunable("LmrDepth", 2, 0, 8, 1);
-    public final Tunable lmrBase =          new Tunable("LmrBase", 85, 50, 100, 5);
+    public final Tunable fpMargin =         new Tunable("FpMargin", 262, 0, 500, 10);
+    public final Tunable fpScale =          new Tunable("FpScale", 69, 0, 100, 5);
+    public final Tunable qsFpMargin =       new Tunable("QsFpMargin", 101, 0, 250, 10);
+    public final Tunable qsSeeEqualDepth =  new Tunable("QsSeeEqualDepth", 3, 0, 6, 1);
+    public final Tunable rfpDepth =         new Tunable("RfpDepth", 7, 0, 8, 1);
+    public final Tunable rfpMargin =        new Tunable("RfpMargin", 83, 0, 250, 10);
+    public final Tunable rfpImpMargin =     new Tunable("RfpImpMargin", 46, 0, 250, 10);
+    public final Tunable lmrDepth =         new Tunable("LmrDepth", 1, 0, 8, 1);
+    public final Tunable lmrBase =          new Tunable("LmrBase", 90, 50, 100, 5);
     public final Tunable lmrDivisor =       new Tunable("LmrDivisor", 310, 200, 400, 10);
-    public final Tunable lmrMinMoves =      new Tunable("LmrMinSearchedMoves", 3, 2, 5, 1);
-    public final Tunable lmpDepth =         new Tunable("LmpDepth", 2, 0, 8, 1);
-    public final Tunable lmpMultiplier =    new Tunable("LmpMultiplier", 10, 1, 20, 1);
-    public final Tunable iirDepth =         new Tunable("IirDepth", 4, 0, 8, 1);
-    public final Tunable dpMargin =         new Tunable("DpMargin", 140, 0, 250, 10);
-    public final Tunable razorDepth =       new Tunable("RazorDepth", 4, 0, 8, 1);
-    public final Tunable razorMargin =      new Tunable("RazorMargin", 450, 0, 600, 10);
-    public final Tunable hpMaxDepth =       new Tunable("HpMaxDepth", 5, 0, 10, 1);
-    public final Tunable hpMargin =         new Tunable("HpMargin", -2250, -4000, -100, 50);
-    public final Tunable hpOffset =         new Tunable("HpOffset", -1050, -3000, 0, 50);
+    public final Tunable lmrMinMoves =      new Tunable("LmrMinMoves", 3, 2, 5, 1);
+    public final Tunable lmrMinPvMoves =    new Tunable("LmrMinPvMoves", 5, 2, 5, 1);
+    public final Tunable lmpDepth =         new Tunable("LmpDepth", 4, 0, 8, 1);
+    public final Tunable lmpMultiplier =    new Tunable("LmpMultiplier", 8, 1, 20, 1);
+    public final Tunable iirDepth =         new Tunable("IirDepth", 3, 0, 8, 1);
+    public final Tunable dpMargin =         new Tunable("DpMargin", 108, 0, 250, 10);
+    public final Tunable razorDepth =       new Tunable("RazorDepth", 5, 0, 8, 1);
+    public final Tunable razorMargin =      new Tunable("RazorMargin", 492, 0, 600, 10);
+    public final Tunable hpMaxDepth =       new Tunable("HpMaxDepth", 3, 0, 10, 1);
+    public final Tunable hpMargin =         new Tunable("HpMargin", -2193, -4000, -100, 50);
+    public final Tunable hpOffset =         new Tunable("HpOffset", -1088, -3000, 0, 50);
     public final Tunable nodeTmMinDepth =   new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
     public final Tunable nodeTmBase =       new Tunable("NodeTmBase", 150, 100, 200, 10);
     public final Tunable nodeTmScale =      new Tunable("NodeTmScale", 135, 100, 200, 10);
@@ -59,9 +64,9 @@ public class EngineConfig {
     public Set<Tunable> getTunables() {
         return Set.of(
                 aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, fpDepth, rfpDepth, lmrDepth, lmrBase,
-                lmrDivisor, lmrMinMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, dpMargin, qsFpMargin,
-                fpMargin, fpScale, rfpMargin, rfpImpMargin, razorDepth, razorMargin, hpMaxDepth, hpMargin,
-                hpOffset, nodeTmMinDepth, nodeTmBase, nodeTmScale
+                lmrDivisor, lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase, nmpDivisor,
+                dpMargin, qsFpMargin, qsSeeEqualDepth, fpMargin, fpScale, rfpMargin, rfpImpMargin, razorDepth, razorMargin,
+                hpMaxDepth, hpMargin, hpOffset, nodeTmMinDepth, nodeTmBase, nodeTmScale
         );
     }
 

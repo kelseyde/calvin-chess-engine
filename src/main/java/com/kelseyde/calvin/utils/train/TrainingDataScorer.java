@@ -3,13 +3,10 @@ package com.kelseyde.calvin.utils.train;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.Searcher;
-import com.kelseyde.calvin.search.ThreadData;
-import com.kelseyde.calvin.search.TimeControl;
+import com.kelseyde.calvin.search.*;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
+import com.kelseyde.calvin.uci.Pretty;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -37,7 +34,7 @@ public class TrainingDataScorer {
 
     private static final int THREAD_COUNT = 20;
     private static final int THREAD_TIMEOUT_SECONDS = 15;
-    private static final int BATCH_SIZE = THREAD_COUNT * 1000;
+    private static final int BATCH_SIZE = THREAD_COUNT * 500;
     private static final int TT_SIZE = 64;
     private static final int TOTAL_POSITIONS_PER_FILE = 100000000;
     private static final Duration MAX_SEARCH_TIME = Duration.ofSeconds(30);
@@ -48,8 +45,8 @@ public class TrainingDataScorer {
 
     public void score(ScoreDataCommand command) {
 
-        System.out.printf("Scoring training data from %s to %s, soft limit %d, hard limit %d, resume offset %d\n",
-                command.inputFile(), command.outputFile(), command.softNodes(), command.hardNodes(), command.resumeOffset());
+        logDatascoreInfo(command);
+
         Path inputPath = Paths.get(command.inputFile());
         Path outputPath = Paths.get(command.outputFile());
         UCI.setOutputEnabled(false);
@@ -186,6 +183,26 @@ public class TrainingDataScorer {
         return new Searcher(config, transpositionTable, new ThreadData(i == 0));
     }
 
+    private void logDatascoreInfo(ScoreDataCommand command) {
+        if (UCI.prettyEnabled) {
+            UCI.write("");
+            UCI.write(String.format("""
+                    %sBeginning Data Scoring%s
+                    Input File    : %s%s%s
+                    Output File   : %s%s%s
+                    Soft Limit    : %s%d%s
+                    Hard Limit    : %s%d%s
+                    Resume Offset : %s%d%s
+                    """,
+                    Pretty.BLUE, Pretty.RESET, Pretty.GREEN, command.inputFile(), Pretty.RESET, Pretty.GREEN, command.outputFile(), Pretty.RESET,
+                    Pretty.RED, command.softNodes(), Pretty.RESET, Pretty.RED, command.hardNodes(), Pretty.RESET, Pretty.RED, command.resumeOffset(), Pretty.RESET)
+                    );
+        } else {
+            UCI.write(String.format("Scoring training data from %s to %s, soft limit %d, hard limit %d, resume offset %d\n",
+                    command.inputFile(), command.outputFile(), command.softNodes(), command.hardNodes(), command.resumeOffset()));
+        }
+    }
+
     private void logProgress(Instant start, ScoreDataCommand command, AtomicInteger scored, AtomicInteger excluded) {
         Duration duration = Duration.between(start, Instant.now()).truncatedTo(ChronoUnit.SECONDS);
         int total = scored.get() + excluded.get() + command.resumeOffset();
@@ -194,8 +211,21 @@ public class TrainingDataScorer {
         double rate = (double) totalSinceResume / duration.getSeconds();
         String rateFormatted = String.format("%.0f", rate);
         Duration estimate = Duration.ofSeconds((long) (remaining / rate)).truncatedTo(ChronoUnit.SECONDS);
-        System.out.printf("processed %d, since resume %d, scored %d, excluded %d, time %s, pos/s %s, remaining pos %s remaining time %s\n",
-                total, totalSinceResume, scored.get(), excluded.get(), duration, rateFormatted, remaining, estimate);
+
+        if (UCI.prettyEnabled) {
+            System.out.printf("total %s%d%s, since resume %s%d%s, scored %s%d%s, excluded %s%d%s, time %s%s%s, pos/s %s%s%s, remaining pos %s%s%s remaining time %s%s%s\n",
+                    Pretty.CYAN, total, Pretty.RESET,
+                    Pretty.CYAN, totalSinceResume, Pretty.RESET,
+                    Pretty.CYAN, scored.get(), Pretty.RESET,
+                    Pretty.CYAN, excluded.get(), Pretty.RESET,
+                    Pretty.CYAN, duration, Pretty.RESET,
+                    Pretty.CYAN, rateFormatted, Pretty.RESET,
+                    Pretty.CYAN, remaining, Pretty.RESET,
+                    Pretty.CYAN, estimate, Pretty.RESET);
+        } else {
+            System.out.printf("total %d, since resume %d, scored %d, excluded %d, time %s, pos/s %s, remaining pos %s remaining time %s\n",
+                    total, totalSinceResume, scored.get(), excluded.get(), duration, rateFormatted, remaining, estimate);
+        }
     }
 
 }

@@ -4,7 +4,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
-import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
@@ -14,6 +14,7 @@ import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -27,11 +28,15 @@ import java.util.stream.Collectors;
 public class UCI {
 
     private static final Engine ENGINE = new Engine();
-    private static boolean outputEnabled = true;
+    public static boolean outputEnabled = true;
+    public static boolean prettyEnabled = false;
 
     public static void run(String[] args) {
 
-        write("Calvin by Dan Kelsey");
+        // Enable pretty printing if the engine is running in a terminal.
+        prettyEnabled = System.console() != null;
+
+        writeEngineInfo();
 
         // Allow the engine to be benched from the command line at startup.
         if (args.length == 1 && args[0].equals("bench")) {
@@ -64,6 +69,7 @@ public class UCI {
         write(String.format("option name Threads type spin default %s min %s max %s",
                 config.defaultThreads, config.minThreads, config.maxThreads));
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
+        write("option name Pretty type check default false");
         ENGINE.getConfig().getTunables().forEach(t -> write(t.toUCI()));
         write("uciok");
     }
@@ -102,6 +108,7 @@ public class UCI {
             case "Hash":          setHashSize(command); break;
             case "Threads":       setThreads(command); break;
             case "Ponder":        setPonder(command); break;
+            case "Pretty":        setPretty(command); break;
             default:              ENGINE.getConfig().setTunable(command); break;
         }
     }
@@ -115,41 +122,43 @@ public class UCI {
     public static void handleHelp(UCICommand command) {
         write("");
         write("the following commands are available:");
-        write("uci         -- print engine info");
-        write("isready     -- check if engine is ready");
-        write("setoption   -- set engine options (type 'uci' to see the available options'");
-        write("                args:");
-        write("                    -- name: the name of the option to change");
-        write("                    -- value: the new value for the option");
-        write("ucinewgame  -- clear the board and set up a new game");
-        write("position    -- set up the board position");
-        write("                args:");
-        write("                    -- startpos: set up the starting position");
-        write("                       OR");
-        write("                    -- fen: supply the position in FEN string format");
-        write("                    -- moves: the moves played from the supplied position");
-        write("go          -- start searching for the best move");
-        write("                args:");
-        write("                    -- movetime: the time to spend searching in milliseconds");
-        write("                       OR");
-        write("                    -- wtime: white time remaining in milliseconds");
-        write("                    -- btime: black time remaining in milliseconds");
-        write("                    -- winc: white increment in milliseconds");
-        write("                    -- binc: black increment in milliseconds");
-        write("                    -- nodes: max nodes to search");
-        write("                    -- depth: max depth to search");
-        write("                       OR ");
-        write("                    -- perft <depth>: run a perft test to the specified depth");
-        write("stop        -- stop searching and return the best move");
-        write("fen         -- print the FEN string for the current position");
-        write("eval        -- evaluate the current position");
-        write("scoredata   -- score a data file with the engine, to train a neural network");
-        write("                args:");
-        write("                    -- input: the input file to score");
-        write("                    -- output: the output file to write the scores to");
-        write("                    -- depth: the depth to search to (default 5000)");
-        write("                    -- resume: the line number to resume from (default 0)");
-        write("quit        -- exit the application");
+        write("uci            -- print engine info");
+        write("isready        -- check if engine is ready");
+        write("setoption      -- set engine options (type 'uci' to see the available options'");
+        write("                   args:");
+        write("                       -- name: the name of the option to change");
+        write("                       -- value: the new value for the option");
+        write("ucinewgame     -- clear the board and set up a new game");
+        write("position       -- set up the board position");
+        write("                   args:");
+        write("                       -- startpos: set up the starting position");
+        write("                          OR");
+        write("                       -- fen: supply the position in FEN string format");
+        write("                       -- moves: the moves played from the supplied position");
+        write("go             -- start searching for the best move");
+        write("                   args:");
+        write("                       -- movetime: the time to spend searching in milliseconds");
+        write("                          OR");
+        write("                       -- wtime: white time remaining in milliseconds");
+        write("                       -- btime: black time remaining in milliseconds");
+        write("                       -- winc: white increment in milliseconds");
+        write("                       -- binc: black increment in milliseconds");
+        write("                       -- nodes: max nodes to search");
+        write("                       -- depth: max depth to search");
+        write("                          OR ");
+        write("                       -- perft <depth>: run a perft test to the specified depth");
+        write("stop           -- stop searching and return the best move");
+        write("display / d    -- display the current board state");
+        write("fen            -- print the FEN string for the current position");
+        write("eval           -- evaluate the current position");
+        write("pretty         -- toggle pretty console output");
+        write("scoredata      -- score a data file with the engine, to train a neural network");
+        write("                   args:");
+        write("                       -- input: the input file to score");
+        write("                       -- output: the output file to write the scores to");
+        write("                       -- depth: the depth to search to (default 5000)");
+        write("                       -- resume: the line number to resume from (default 0)");
+        write("quit           -- exit the application");
         write("");
     }
 
@@ -188,38 +197,6 @@ public class UCI {
         write("info error unknown command " + command.args()[0]);
     }
 
-    public static void writeSearchInfo(SearchResult searchResult) {
-        int depth = searchResult.depth();
-        String score = formatScore(searchResult.eval());
-        long time = searchResult.time();
-        int nodes = searchResult.nodes();
-        long nps = searchResult.nps();
-        String pv = ENGINE.extractPrincipalVariation().stream()
-                .map(Move::toUCI).collect(Collectors.joining(" "));
-        write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
-    }
-
-    private static String formatScore(int eval) {
-        if (Score.isMateScore(eval)) {
-            int moves = Math.max((Score.MATE - Math.abs(eval)) / 2, 1);
-            if (eval < 0) moves = -moves;
-            return "mate " + moves;
-        } else {
-            return "cp " + eval;
-        }
-    }
-
-    public static void writeMove(SearchResult searchResult) {
-        Move move = searchResult.move();
-        boolean ponderEnabled = ENGINE.getConfig().ponderEnabled;
-        if (ponderEnabled && move != null) {
-            Move ponderMove = ENGINE.extractPonderMove(move);
-            write(String.format("bestmove %s ponder %s", Move.toUCI(move), Move.toUCI(ponderMove)));
-        } else {
-            write(String.format("bestmove %s", Move.toUCI(move)));
-        }
-    }
-
     public static void setOutputEnabled(boolean outputEnabled) {
         UCI.outputEnabled = outputEnabled;
     }
@@ -252,6 +229,64 @@ public class UCI {
         boolean ponderEnabled = command.getBool("value", false, true);
         ENGINE.setPonderEnabled(ponderEnabled);
         write("info string Ponder " + ponderEnabled);
+    }
+
+    private static void setPretty(UCICommand command) {
+        boolean prettyEnabled = command.getBool("value", false, true);
+        UCI.prettyEnabled = prettyEnabled;
+        write("info string Pretty " + prettyEnabled);
+    }
+
+    public static void handlePretty(UCICommand command) {
+        UCI.prettyEnabled = !UCI.prettyEnabled;
+        write("info string Pretty " + UCI.prettyEnabled);
+    }
+
+    public static void writeEngineInfo() {
+
+        if (prettyEnabled) {
+            Pretty.printEngineInfo();
+        } else {
+            write("Calvin by Dan Kelsey");
+        }
+
+    }
+
+    public static void writeSearchInfo(SearchResult searchResult) {
+        int depth = searchResult.depth();
+        int score = searchResult.eval();
+        long time = searchResult.time();
+        int nodes = searchResult.nodes();
+        long nps = searchResult.nps();
+        List<Move> pv = ENGINE.extractPrincipalVariation();
+        if (prettyEnabled) {
+            Pretty.writeSearchInfo(depth, score, time, nodes, nps, pv);
+        } else {
+            String pvString = pv.stream().map(Move::toUCI).collect(Collectors.joining(" "));
+            write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s",
+                    depth, formatScore(score), nodes, time, nps, pvString));
+        }
+    }
+
+    private static String formatScore(int eval) {
+        if (Score.isMateScore(eval)) {
+            int moves = Math.max((Score.MATE - Math.abs(eval)) / 2, 1);
+            if (eval < 0) moves = -moves;
+            return "mate " + moves;
+        } else {
+            return "cp " + eval;
+        }
+    }
+
+    public static void writeMove(SearchResult searchResult) {
+        Move move = searchResult.move();
+        boolean ponderEnabled = ENGINE.getConfig().ponderEnabled;
+        if (ponderEnabled && move != null) {
+            Move ponderMove = ENGINE.extractPonderMove(move);
+            write(String.format("bestmove %s ponder %s", Move.toUCI(move), Move.toUCI(ponderMove)));
+        } else {
+            write(String.format("bestmove %s", Move.toUCI(move)));
+        }
     }
 
     public static void write(String output) {

@@ -4,15 +4,13 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.evaluation.Evaluation;
 import com.kelseyde.calvin.evaluation.NNUE;
-import com.kelseyde.calvin.evaluation.SEE;
-import com.kelseyde.calvin.evaluation.Score;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -41,7 +39,7 @@ public class Searcher implements Search {
     final EngineConfig config;
     final TranspositionTable tt;
     final MoveGenerator movegen;
-    final Evaluation eval;
+    final NNUE eval;
     final SearchHistory history;
     final SearchStack ss;
     final ThreadData td;
@@ -231,16 +229,24 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && !inCheck
-                && (ttEntry == null || ttEntry.getMove() == null)
+                && (!ttHit || ttEntry.getMove() == null)
                 && ply > 0
                 && depth >= config.iirDepth.value) {
             --depth;
         }
 
-        // Re-use cached static eval if available. Don't compute static eval while in check.
+        int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!excluded && !inCheck) {
-            staticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            // Re-use cached static eval if available. Don't compute static eval while in check.
+            rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = rawStaticEval;
+            if (ttHit &&
+                    (ttEntry.getFlag() == HashFlag.EXACT ||
+                    (ttEntry.getFlag() == HashFlag.LOWER && ttEntry.getScore() >= rawStaticEval) ||
+                    (ttEntry.getFlag() == HashFlag.UPPER && ttEntry.getScore() <= rawStaticEval))) {
+                staticEval = ttEntry.getScore();
+            }
         }
 
         ss.setStaticEval(ply, staticEval);
@@ -281,20 +287,21 @@ public class Searcher implements Search {
             // not search any further.
             if (ss.isNullMoveAllowed(ply)
                 && depth >= config.nmpDepth.value
-                && staticEval >= beta - (config.nmpMargin.value * (improving ? 1 : 0))
+                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
                 ss.setNullMoveAllowed(ply + 1, false);
                 board.makeNullMove();
 
-                int r = 3 + depth / 3;
+                int base = config.nmpBase.value;
+                int divisor = config.nmpDivisor.value;
+                int r = base + depth / divisor;
                 int score = -search(depth - r, ply + 1, -beta, -beta + 1);
 
                 board.unmakeNullMove();
                 ss.setNullMoveAllowed(ply + 1, true);
 
                 if (score >= beta) {
-                    tt.put(board.key(), HashFlag.LOWER, depth, ply, ttMove, staticEval, beta);
                     return Score.isMateScore(score) ? beta : score;
                 }
             }
@@ -334,26 +341,33 @@ public class Searcher implements Search {
                 continue;
             }
 
+            int historyScore = this.history.getHistoryTable().get(move, board.isWhite());
+
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
             int reduction = 0;
             if (depth >= config.lmrDepth.value
-                    && !isCapture && !isPromotion
-                    && movesSearched >= (pvNode ? config.lmrMinMoves.value + 1 : config.lmrMinMoves.value - 1)) {
-                reduction = config.lmrReductions[depth][movesSearched] - (pvNode ? 1 : 0);
+                    && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)) {
+
+                // Reductions are based on the depth and the number of moves searched so far.
+                reduction = config.lmrReductions[depth][movesSearched];
+
+                // Reduce less in PV nodes.
+                reduction -= pvNode ? 1 : 0;
+
+                // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
+                reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
             }
 
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
             // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
             // that assumes that moves which have historically been bad are likely to be bad in the current position.
             if (!pvNode && !isCapture && !isPromotion
-                    && depth - reduction <= config.hpMaxDepth.value) {
-                int historyScore = this.history.getHistoryTable().get(move, board.isWhite());
-                if (historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
+                    && depth - reduction <= config.hpMaxDepth.value
+                    && historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
+                movePicker.setSkipQuiets(true);
+                continue;
             }
 
             // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
@@ -401,10 +415,10 @@ public class Searcher implements Search {
             // promotion, let's assume it's less likely to be good, and fully skip searching that move.
             int lmpCutoff = (depth * config.lmpMultiplier.value) / (1 + (improving ? 0 : 1));
             if (!pvNode
-                && !inCheck
-                && isQuiet
-                && depth <= config.lmpDepth.value
-                && movesSearched >= lmpCutoff) {
+                    && !inCheck
+                    && isQuiet
+                    && depth <= config.lmpDepth.value
+                    && movesSearched >= lmpCutoff) {
                 eval.unmakeMove();
                 board.unmakeMove();
                 ss.unsetMove(ply);
@@ -484,7 +498,7 @@ public class Searcher implements Search {
 
         // Store the best move and score in the transposition table for future reference.
         if (!excluded) {
-            tt.put(board.key(), flag, depth, ply, bestMove, staticEval, bestScore);
+            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
         }
 
         return bestScore;
@@ -505,13 +519,14 @@ public class Searcher implements Search {
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         HashEntry ttEntry = tt.get(board.key(), ply);
-        if (ttEntry != null
+        boolean ttHit = ttEntry != null;
+        if (ttHit
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
             return ttEntry.getScore();
         }
         Move ttMove = null;
-        if (ttEntry != null && ttEntry.getMove() != null) {
+        if (ttHit && ttEntry.getMove() != null) {
             ttMove = ttEntry.getMove();
         }
 
@@ -520,9 +535,17 @@ public class Searcher implements Search {
         QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
+        int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            staticEval = ttEntry != null ? ttEntry.getStaticEval() : eval.evaluate();
+            rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            staticEval = rawStaticEval;
+            if (ttHit &&
+                    (ttEntry.getFlag() == HashFlag.EXACT ||
+                    (ttEntry.getFlag() == HashFlag.LOWER && ttEntry.getScore() >= rawStaticEval) ||
+                    (ttEntry.getFlag() == HashFlag.UPPER && ttEntry.getScore() <= rawStaticEval))) {
+                staticEval = ttEntry.getScore();
+            }
         }
 
         if (inCheck) {
@@ -578,8 +601,8 @@ public class Searcher implements Search {
                 // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
-                if ((depth <= 3 && seeScore < 0)
-                        || (depth > 3 && seeScore <= 0)) {
+                int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
+                if (seeScore < seeThreshold) {
                     continue;
                 }
             }

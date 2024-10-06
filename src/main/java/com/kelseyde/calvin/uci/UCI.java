@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 public class UCI {
 
     private static final Engine ENGINE = new Engine();
-    private static boolean outputEnabled = true;
-    private static boolean prettyEnabled = false;
+    public static boolean outputEnabled = true;
+    public static boolean prettyEnabled = false;
 
     public static void run(String[] args) {
 

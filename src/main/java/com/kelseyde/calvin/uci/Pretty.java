@@ -24,7 +24,6 @@ public class Pretty {
     public static final String BANNER =
             String.format(
                     """
-                    
                             %s...............................................
                            ...............................................
                           ...............................................
@@ -38,6 +37,7 @@ public class Pretty {
             Pretty.CYAN, Pretty.RESET, Pretty.RED, Pretty.CYAN, Pretty.YELLOW, Pretty.RESET, Pretty.CYAN, Pretty.RESET);
 
     public static void printEngineInfo() {
+        UCI.write("");
         UCI.write(Pretty.BANNER);
         UCI.write(Pretty.RED + "Engine" + Pretty.RESET + ": Calvin 4.3.0");
         UCI.write(Pretty.RED + "Author" + Pretty.RESET + ": Dan Kelsey");

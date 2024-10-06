@@ -81,12 +81,14 @@ public class Pretty {
             int moves = Math.max((Score.MATE - Math.abs(score)) / 2, 1);
             if (score < 0) moves = -moves;
             String mateString =  "M" + moves;
-            paddedScore = " ".repeat(scoreLength - mateString.length()) + mateString;
+            int buffer = Math.max(0, scoreLength - mateString.length());
+            paddedScore = " ".repeat(buffer) + mateString;
         } else {
             float scoreFloat = (float) score / 100;
             String sign = scoreFloat >= 0 ? "+" : "";
             String scoreString = String.format(Locale.ROOT, "%.2f", scoreFloat);
-            paddedScore = " ".repeat(scoreLength - scoreString.length()) + sign + scoreString;
+            int buffer = Math.max(0, scoreLength - scoreString.length());
+            paddedScore = " ".repeat(buffer) + sign + scoreString;
         }
 
         return colour + paddedScore + RESET;
@@ -94,23 +96,25 @@ public class Pretty {
     }
 
     private static String formatTime(long time) {
-        final int timeLength = 8;
-        String formattedTime = String.format(Locale.ROOT, "%sms", time);
-        return GRAY + " ".repeat(timeLength - formattedTime.length()) + formattedTime + RESET;
+        final int timeLength = 10;
+        String formatted = String.format(Locale.ROOT, "%sms", time);
+        int buffer = Math.max(0, timeLength - formatted.length());
+        return GRAY + " ".repeat(buffer) + formatted + RESET;
     }
 
     private static String formatNodes(int nodes) {
         final int nodesLength = 12;
         int knodes = nodes / 1000;
-        String formattedNodes = String.format(Locale.ROOT, "%dkn", knodes);
-        return GRAY + " ".repeat(nodesLength - formattedNodes.length()) + formattedNodes + RESET;
+        String formatted = String.format(Locale.ROOT, "%dkn", knodes);
+        int buffer = Math.max(0, nodesLength - formatted.length());
+        return GRAY + " ".repeat(buffer) + formatted + RESET;
     }
 
     private static String formatNps(long nps) {
-        final int npsLength = 12;
-        double knps = (double) nps / 1000;
-        String formattedKnps = String.format(Locale.ROOT, "%.1f", knps);
-        return GRAY + " ".repeat(npsLength - formattedKnps.length()) + formattedKnps + "knps" + RESET;
+        final int npsLength = 8;
+        long knps = nps / 1000;
+        int buffer = Math.max(0, npsLength - String.valueOf(knps).length());
+        return GRAY + " ".repeat(buffer) + knps + "kn/s" + RESET;
     }
 
     private static String formatPv(List<Move> pv) {

@@ -31,7 +31,14 @@ public class BoardTest {
         board.makeMove(TestUtils.getLegalMove(board, "a7", "a6"));
         board.makeMove(TestUtils.getLegalMove(board, "b5", "a4"));
 
-        Assertions.assertEquals(7, board.getMoves().size());
+        int moves = 0;
+        for (int i = 0; i < board.getPly(); i++) {
+            if (board.getMoves()[i] != null) {
+                moves++;
+            }
+        }
+        Assertions.assertEquals(7, moves);
+        Assertions.assertEquals(7, board.getPly());
 
     }
 
@@ -59,10 +66,10 @@ public class BoardTest {
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
         Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
-        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates()[board.getPly() - 1].isKingsideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates()[board.getPly() - 1].isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates()[board.getPly() - 1].isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates()[board.getPly() - 1].isQueensideCastlingAllowed(false));
 
         board.makeMove(TestUtils.getLegalMove(board, "f7", "f6"));
 
@@ -71,10 +78,10 @@ public class BoardTest {
         Assertions.assertTrue(board.getState().isKingsideCastlingAllowed(false));
         Assertions.assertTrue(board.getState().isQueensideCastlingAllowed(false));
 
-        Assertions.assertFalse(board.getStates().peek().isKingsideCastlingAllowed(true));
-        Assertions.assertFalse(board.getStates().peek().isQueensideCastlingAllowed(true));
-        Assertions.assertTrue(board.getStates().peek().isKingsideCastlingAllowed(false));
-        Assertions.assertTrue(board.getStates().peek().isQueensideCastlingAllowed(false));
+        Assertions.assertFalse(board.getStates()[board.getPly() - 1].isKingsideCastlingAllowed(true));
+        Assertions.assertFalse(board.getStates()[board.getPly() - 1].isQueensideCastlingAllowed(true));
+        Assertions.assertTrue(board.getStates()[board.getPly() - 1].isKingsideCastlingAllowed(false));
+        Assertions.assertTrue(board.getStates()[board.getPly() - 1].isQueensideCastlingAllowed(false));
 
     }
 

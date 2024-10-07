@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
+import com.kelseyde.calvin.board.Move;
 
 import java.util.Iterator;
 
@@ -34,24 +35,26 @@ public class Score {
 
         int repetitionCount = 0;
         long zobrist = board.getState().getKey();
-        Iterator<GameState> iterator = board.getStates().descendingIterator();
-        while (iterator.hasNext()) {
-            GameState gameState = iterator.next();
-            if (gameState.getKey() == zobrist) {
+        GameState[] states = board.getStates();
+        for (int i = board.getPly() - 1; i >= 0; i--) {
+            if (states[i].getKey() == zobrist) {
                 repetitionCount += 1;
             }
+            if (repetitionCount >= 2) {
+                return true;
+            }
         }
-        return repetitionCount >= 2;
+
+        return false;
 
     }
 
     public static boolean isDoubleRepetition(Board board) {
 
         long zobrist = board.getState().getKey();
-        Iterator<GameState> iterator = board.getStates().descendingIterator();
-        while (iterator.hasNext()) {
-            GameState gameState = iterator.next();
-            if (gameState.getKey() == zobrist) {
+        GameState[] states = board.getStates();
+        for (int i = board.getPly() - 1; i >= 0; i--) {
+            if (states[i].getKey() == zobrist) {
                 return true;
             }
         }

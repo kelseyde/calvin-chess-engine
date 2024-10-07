@@ -459,7 +459,8 @@ public class Searcher implements Search {
 
         if (bestScore >= beta) {
             PlayedMove best = ss.getBestMove(ply);
-            history.updateHistory(best, board.isWhite(), depth, ply, ss, quietsSearched, capturesSearched);
+            int historyDepth = depth + (staticEval > alpha ? 1 : 0);
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, quietsSearched, capturesSearched);
         }
 
         // Store the best move and score in the transposition table for future reference.

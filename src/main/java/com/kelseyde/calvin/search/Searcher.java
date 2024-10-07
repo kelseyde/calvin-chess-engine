@@ -183,6 +183,9 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
+        Move excludedMove = ss.getExcludedMove(ply);
+        boolean excluded = excludedMove != null;
+
         history.getKillerTable().clear(ply + 1);
 
         // Probe the transposition table in case this node has been searched before. If so, we can potentially re-use the
@@ -190,13 +193,18 @@ public class Searcher implements Search {
         //  a) we are not in a PV node,
         //  b) it was searched to a sufficient depth, and
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
-        HashEntry ttEntry = tt.get(board.key(), ply);
-        boolean ttHit = ttEntry != null;
-        if (!pvNode
-                && ttHit
-                && ttEntry.isSufficientDepth(depth)
-                && ttEntry.isWithinBounds(alpha, beta)) {
-            return ttEntry.getScore();
+        HashEntry ttEntry = null;
+        boolean ttHit = false;
+
+        if (!excluded) {
+            ttEntry = tt.get(board.key(), ply);
+            ttHit = ttEntry != null;
+            if (!pvNode
+                    && ttHit
+                    && ttEntry.isSufficientDepth(depth)
+                    && ttEntry.isWithinBounds(alpha, beta)) {
+                return ttEntry.getScore();
+            }
         }
 
         Move ttMove = null;
@@ -229,7 +237,7 @@ public class Searcher implements Search {
 
         int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
-        if (!inCheck) {
+        if (!excluded && !inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
             staticEval = rawStaticEval;
@@ -250,7 +258,7 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
         // can employ to prune the node and its entire subtree, without searching any moves.
-        if (!pvNode && !inCheck) {
+        if (!pvNode && !inCheck && !excluded) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
@@ -312,7 +320,9 @@ public class Searcher implements Search {
 
             Move move = movePicker.pickNextMove();
             if (move == null) break;
-            //if (bestMove == null) bestMove = move;
+            if (move.equals(excludedMove)) {
+                continue;
+            }
             movesSearched++;
 
             Piece piece = board.pieceAt(move.from());
@@ -360,6 +370,30 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
+            int extension = 0;
+            if (!rootNode
+                    && !excluded
+                    && depth >= 7
+                    && ttHit
+                    && move.equals(ttMove)
+                    && ttEntry.getDepth() >= depth - 3
+                    && ttEntry.getFlag() != HashFlag.UPPER
+                    && !Score.isMateScore(ttEntry.getScore())) {
+
+                int sBeta = ttEntry.getScore() - depth;
+                int sDepth = (depth - 1) / 2;
+
+                ss.setExcludedMove(ply, move);
+                int score = search(sDepth, ply, sBeta - 1, sBeta);
+                ss.setExcludedMove(ply, null);
+
+                if (score >= sBeta && sBeta >= beta) {
+                    return sBeta;
+                }
+
+            }
+
             eval.makeMove(board, move);
             if (!board.makeMove(move)) continue;
             int nodesBefore = td.nodes;
@@ -401,17 +435,17 @@ public class Searcher implements Search {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                score = -search(depth - 1, ply + 1, -beta, -alpha);
+                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
             }
             else {
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha);
+                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1, ply + 1, -beta, -alpha);
+                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha);
                 }
             }
 
@@ -464,7 +498,9 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+        if (!excluded) {
+            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+        }
 
         return bestScore;
 

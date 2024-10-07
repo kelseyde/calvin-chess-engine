@@ -163,7 +163,7 @@ public class MovePicker {
         int killerScore = killerIndex >= 0 ? MoveBonus.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
         // Get the history score for the move
-        int historyScore = history.getHistoryTable().get(move, white);
+        int historyScore = history.getHistoryTable().get(move, piece, white);
 
         // Get the continuation history score for the move
         Move prevMove = ss.getMove(ply - 1);

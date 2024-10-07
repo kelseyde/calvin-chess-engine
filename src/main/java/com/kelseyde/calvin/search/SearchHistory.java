@@ -30,7 +30,7 @@ public class SearchHistory {
             killerTable.add(ply, bestMove.move());
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
-                quietHistoryTable.update(quiet.move(), depth, white, good);
+                quietHistoryTable.update(quiet.move(), quiet.piece(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
                     Move prevMove = ss.getMove(ply - prevPly);

@@ -331,7 +331,7 @@ public class Searcher implements Search {
                 continue;
             }
 
-            int historyScore = this.history.getHistoryTable().get(move, board.isWhite());
+            int historyScore = this.history.getHistoryTable().get(move, piece, board.isWhite());
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,

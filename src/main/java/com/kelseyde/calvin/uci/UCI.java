@@ -15,6 +15,7 @@ import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
@@ -242,6 +243,10 @@ public class UCI {
         write("info string Pretty " + UCI.prettyEnabled);
     }
 
+    public static void handleHashfull(UCICommand command) {
+        write(String.format(Locale.ROOT, "%.1f", (float) ENGINE.hashfull() / 1000 * 100));
+    }
+
     public static void writeEngineInfo() {
 
         if (prettyEnabled) {
@@ -258,13 +263,14 @@ public class UCI {
         long time = searchResult.time();
         int nodes = searchResult.nodes();
         long nps = searchResult.nps();
+        int hashfull = ENGINE.hashfull();
         List<Move> pv = ENGINE.extractPrincipalVariation();
         if (prettyEnabled) {
-            Pretty.writeSearchInfo(depth, score, time, nodes, nps, pv);
+            Pretty.writeSearchInfo(depth, score, time, nodes, nps, hashfull, pv);
         } else {
             String pvString = pv.stream().map(Move::toUCI).collect(Collectors.joining(" "));
-            write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s",
-                    depth, formatScore(score), nodes, time, nps, pvString));
+            write(String.format("info depth %s score %s nodes %s time %s nps %s hashfull %s pv %s",
+                    depth, formatScore(score), nodes, time, nps, hashfull, pvString));
         }
     }
 

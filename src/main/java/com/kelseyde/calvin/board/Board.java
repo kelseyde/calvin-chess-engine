@@ -46,9 +46,9 @@ public class Board {
         this.blackPieces = 0L;
         this.occupied    = 0L;
         this.pieces      = new Piece[Square.COUNT];
-        this.state       = new GameState();
-        this.states      = new GameState[Search.MAX_DEPTH];
         this.moves       = new Move[Search.MAX_DEPTH];
+        this.states      = new GameState[Search.MAX_DEPTH];
+        this.state       = new GameState();
         this.white       = true;
         this.ply         = 0;
     }

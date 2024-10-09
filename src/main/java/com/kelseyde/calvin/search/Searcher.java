@@ -347,6 +347,9 @@ public class Searcher implements Search {
                 // Reduce less in PV nodes.
                 reduction -= pvNode ? 1 : 0;
 
+                // Reduce less when in check
+                reduction -= inCheck ? 1 : 0;
+
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
                 reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
             }

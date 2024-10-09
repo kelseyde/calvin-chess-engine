@@ -3,6 +3,8 @@ package com.kelseyde.calvin.tables.tt;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.Score;
 
+import java.util.stream.IntStream;
+
 /**
  * The transposition table is a database that stores the results of previously searched positions, as well as relevant
  * information about that position, such as the depth to which it was searched, and the best move found during the previous
@@ -18,22 +20,21 @@ public class TranspositionTable {
 
     private static final int BUCKET_SIZE = 4;
 
-    private int tableSize;
     private HashEntry[] entries;
-
+    private int size;
+    private int age;
     private int tries;
     private int hits;
-    private int generation;
 
     /**
      * Constructs a transposition table of the given size in megabytes.
      */
     public TranspositionTable(int tableSizeMb) {
-        this.tableSize = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
-        this.entries = new HashEntry[tableSize];
+        this.size = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
+        this.entries = new HashEntry[size];
         this.tries = 0;
         this.hits = 0;
-        this.generation = 0;
+        this.age = 0;
     }
 
     /**
@@ -49,7 +50,7 @@ public class TranspositionTable {
             HashEntry entry = entries[index + i];
             if (entry != null && entry.getZobristPart() == HashEntry.zobristPart(key)) {
                 hits++;
-                entry.setGeneration(generation);
+                entry.setAge(age);
                 if (Score.isMateScore(entry.getScore())) {
                     int score = retrieveMateScore(entry.getScore(), ply);
                     return entry.withAdjustedScore(score);
@@ -83,7 +84,7 @@ public class TranspositionTable {
     public void put(long key, HashFlag flag, int depth, int ply, Move move, int staticEval, int score) {
 
         // Get the start index of the 4-item bucket.
-        int startIndex = index(key);
+        final int startIndex = index(key);
 
         // If the eval is checkmate, adjust the score to reflect the number of ply from the root position
         if (Score.isMateScore(score)) score = calculateMateScore(score, ply);
@@ -118,7 +119,7 @@ public class TranspositionTable {
             }
 
             // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (generation > storedEntry.getGeneration()) {
+            if (age > storedEntry.getAge()) {
                 replacedByAge = true;
                 replacedIndex = i;
             }
@@ -133,7 +134,7 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            entries[replacedIndex] = HashEntry.of(key, score, staticEval, move, flag, depth, generation);
+            entries[replacedIndex] = HashEntry.of(key, score, staticEval, move, flag, depth, age);
         }
     }
 
@@ -142,28 +143,24 @@ public class TranspositionTable {
      * @return the number of entries out of 1000 that are currently not-null.
      */
     public int fill() {
-        int fill = 0;
-        for (int i = 0; i < 1000; i++) {
-            if (entries[i] != null) {
-                fill++;
-            }
-        }
-        return fill;
+        return (int) IntStream.range(0, 1000)
+                .filter(i -> entries[i] != null)
+                .count();
     }
 
     /**
-     * Increments the generation counter for the transposition table.
+     * Increments the age counter for the transposition table.
      */
-    public void incrementGeneration() {
-        this.generation++;
+    public void incrementAge() {
+        this.age++;
     }
 
     public void resize(int tableSizeMb) {
-        this.tableSize = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
-        this.entries = new HashEntry[tableSize];
+        this.size = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
+        this.entries = new HashEntry[size];
         this.tries = 0;
         this.hits = 0;
-        this.generation = 0;
+        this.age = 0;
     }
 
     /**
@@ -172,15 +169,12 @@ public class TranspositionTable {
     public void clear() {
         this.tries = 0;
         this.hits = 0;
-        this.generation = 0;
-        this.entries = new HashEntry[tableSize];
+        this.age = 0;
+        this.entries = new HashEntry[size];
     }
 
     /**
      * Compresses the 64-bit zobrist key into a 32-bit key, to be used as an index in the hash table.
-     *
-     * @param key the zobrist key of the position.
-     * @return a compressed 32-bit index.
      */
     private int index(long key) {
         // XOR the upper and lower halves of the zobrist key together, producing a pseudo-random 32-bit result.
@@ -188,7 +182,7 @@ public class TranspositionTable {
         long index = (key ^ (key >>> 32)) & 0x7FFFFFFF;
         // Modulo the result with the number of entries in the table, and align it with a multiple of 4,
         // ensuring the entries are always divided into 4-sized buckets.
-        return (int) (index % (tableSize - (BUCKET_SIZE - 1))) & -BUCKET_SIZE;
+        return (int) (index % (size - (BUCKET_SIZE - 1))) & -BUCKET_SIZE;
     }
 
     // On insertion, adjust the mate score to reflect the number of ply from the root position

@@ -3,7 +3,10 @@ package com.kelseyde.calvin.engine;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.search.*;
+import com.kelseyde.calvin.search.ParallelSearcher;
+import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.SearchResult;
+import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
@@ -24,6 +27,16 @@ import java.util.stream.IntStream;
  */
 public class Engine {
 
+    // Singleton pattern: only one instance of the engine can exist.
+    private static Engine INSTANCE;
+
+    public static Engine getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Engine();
+        }
+        return INSTANCE;
+    }
+
     final EngineConfig config;
     final MoveGenerator movegen;
     final PerftService perft;
@@ -32,7 +45,7 @@ public class Engine {
     CompletableFuture<SearchResult> think;
     Board board;
 
-    public Engine() {
+    private Engine() {
         this.config = new EngineConfig();
         this.board = Board.from(FEN.STARTPOS);
         this.movegen = new MoveGenerator();

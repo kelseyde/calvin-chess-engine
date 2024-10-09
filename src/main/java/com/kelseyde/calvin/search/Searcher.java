@@ -327,7 +327,7 @@ public class Searcher implements Search {
             if (!pvNode
                 && depth <= config.fpDepth.value
                 && !inCheck && !isCapture && !isPromotion
-                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {
+                && staticEval + config.fpMargin.value + (depth + (improving ? 1 : 0)) * config.fpScale.value <= alpha) {
                 movePicker.setSkipQuiets(true);
                 continue;
             }

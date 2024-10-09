@@ -3,10 +3,7 @@ package com.kelseyde.calvin.engine;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.search.ParallelSearcher;
-import com.kelseyde.calvin.search.Search;
-import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.TimeControl;
+import com.kelseyde.calvin.search.*;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
@@ -46,7 +43,7 @@ public class Engine {
 
     public void newGame() {
         searcher.clearHistory();
-        this.board = Board.from(FEN.STARTPOS);
+        board = Board.from(FEN.STARTPOS);
         searcher.setPosition(board);
     }
 
@@ -139,6 +136,10 @@ public class Engine {
         }
         IntStream.range(0, moves).forEach(i -> board.unmakeMove());
         return pv;
+    }
+
+    public int hashfull() {
+        return searcher.getTranspositionTable().fill();
     }
 
     public EngineConfig getConfig() {

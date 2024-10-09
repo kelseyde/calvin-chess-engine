@@ -6,6 +6,7 @@
 - [ ] Improve javadoc
 - [ ] Review all code comments
 - [x] Reduce artifact size (remove plugins, dependencies, delete old nets)
+- [ ] Refactor/improve TranspositionTable code
 
 ### Search
 
@@ -21,6 +22,7 @@
 - [ ] Faster SEE ( won't gain )
 - [ ] Syzygy TB
 - [x] Check root legal moves, if only one, play instantly
+- [ ] Merge Searcher and ParallelSearcher
 
 ### Move generation / Move ordering
 

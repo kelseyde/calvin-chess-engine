@@ -16,6 +16,8 @@ import com.kelseyde.calvin.search.Score;
  */
 public class TranspositionTable {
 
+    private static final int BUCKET_SIZE = 4;
+
     private int tableSize;
     private HashEntry[] entries;
 
@@ -28,10 +30,10 @@ public class TranspositionTable {
      */
     public TranspositionTable(int tableSizeMb) {
         this.tableSize = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
-        entries = new HashEntry[tableSize];
-        tries = 0;
-        hits = 0;
-        generation = 0;
+        this.entries = new HashEntry[tableSize];
+        this.tries = 0;
+        this.hits = 0;
+        this.generation = 0;
     }
 
     /**
@@ -41,12 +43,11 @@ public class TranspositionTable {
      * @param ply the current ply in the search (used to adjust mate scores).
      */
     public HashEntry get(long key, int ply) {
-        int index = getIndex(key);
-        long zobristPart = HashEntry.zobristPart(key);
+        int index = index(key);
         tries++;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < BUCKET_SIZE; i++) {
             HashEntry entry = entries[index + i];
-            if (entry != null && entry.getZobristPart() == zobristPart) {
+            if (entry != null && entry.getZobristPart() == HashEntry.zobristPart(key)) {
                 hits++;
                 entry.setGeneration(generation);
                 if (Score.isMateScore(entry.getScore())) {
@@ -82,7 +83,7 @@ public class TranspositionTable {
     public void put(long key, HashFlag flag, int depth, int ply, Move move, int staticEval, int score) {
 
         // Get the start index of the 4-item bucket.
-        int startIndex = getIndex(key);
+        int startIndex = index(key);
 
         // If the eval is checkmate, adjust the score to reflect the number of ply from the root position
         if (Score.isMateScore(score)) score = calculateMateScore(score, ply);
@@ -137,28 +138,42 @@ public class TranspositionTable {
     }
 
     /**
+     * Calculate how full the transposition table currently is.
+     * @return the number of entries out of 1000 that are currently not-null.
+     */
+    public int fill() {
+        int fill = 0;
+        for (int i = 0; i < 1000; i++) {
+            if (entries[i] != null) {
+                fill++;
+            }
+        }
+        return fill;
+    }
+
+    /**
      * Increments the generation counter for the transposition table.
      */
     public void incrementGeneration() {
-        generation++;
+        this.generation++;
     }
 
     public void resize(int tableSizeMb) {
         this.tableSize = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
-        entries = new HashEntry[tableSize];
-        tries = 0;
-        hits = 0;
-        generation = 0;
+        this.entries = new HashEntry[tableSize];
+        this.tries = 0;
+        this.hits = 0;
+        this.generation = 0;
     }
 
     /**
      * Clears the transposition table, resetting all entries and statistics.
      */
     public void clear() {
-        tries = 0;
-        hits = 0;
-        generation = 0;
-        entries = new HashEntry[tableSize];
+        this.tries = 0;
+        this.hits = 0;
+        this.generation = 0;
+        this.entries = new HashEntry[tableSize];
     }
 
     /**
@@ -167,34 +182,22 @@ public class TranspositionTable {
      * @param key the zobrist key of the position.
      * @return a compressed 32-bit index.
      */
-    private int getIndex(long key) {
+    private int index(long key) {
         // XOR the upper and lower halves of the zobrist key together, producing a pseudo-random 32-bit result.
         // Then apply a mask ensuring the number is always positive, since it is to be used as an array index.
         long index = (key ^ (key >>> 32)) & 0x7FFFFFFF;
         // Modulo the result with the number of entries in the table, and align it with a multiple of 4,
         // ensuring the entries are always divided into 4-sized buckets.
-        return (int) (index % (tableSize - 3)) & ~3;
+        return (int) (index % (tableSize - (BUCKET_SIZE - 1))) & -BUCKET_SIZE;
     }
 
-    /**
-     * Calculates the mate score, adjusting it based on the ply from the root.
-     *
-     * @param score the score to adjust.
-     * @param plyFromRoot the ply from the root.
-     * @return the adjusted mate score.
-     */
+    // On insertion, adjust the mate score to reflect the number of ply from the root position
     private int calculateMateScore(int score, int plyFromRoot) {
         return score > 0 ? score - plyFromRoot : score + plyFromRoot;
     }
 
-    /**
-     * Retrieves the mate score, adjusting it based on the ply from the root.
-     *
-     * @param score the score to adjust.
-     * @param plyFromRoot the ply from the root.
-     * @return the adjusted mate score.
-     */
     private int retrieveMateScore(int score, int plyFromRoot) {
+        // On retrieval, adjust the mate score to reflect the number of ply from the root position
         return score > 0 ? score + plyFromRoot : score - plyFromRoot;
     }
 

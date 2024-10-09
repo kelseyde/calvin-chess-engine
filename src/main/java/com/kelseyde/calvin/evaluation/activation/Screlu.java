@@ -31,10 +31,10 @@ public class Screlu {
         // Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
         for (int i = 0; i < UPPER_BOUND; i += LOOP_LENGTH) {
 
-            ShortVector usInputs = ShortVector.fromArray(SPECIES, us, i);
-            ShortVector themInputs = ShortVector.fromArray(SPECIES, them, i);
-            ShortVector usWeights = ShortVector.fromArray(SPECIES, weights, i);
-            ShortVector themWeights = ShortVector.fromArray(SPECIES, weights, i + NETWORK.hiddenSize());
+            ShortVector usInputs     = ShortVector.fromArray(SPECIES, us, i);
+            ShortVector themInputs   = ShortVector.fromArray(SPECIES, them, i);
+            ShortVector usWeights    = ShortVector.fromArray(SPECIES, weights, i);
+            ShortVector themWeights  = ShortVector.fromArray(SPECIES, weights, i + NETWORK.hiddenSize());
 
             // Clip the inputs to the range [0, 255].
             usInputs = usInputs.max(FLOOR).min(CEIL);
@@ -45,15 +45,15 @@ public class Screlu {
             final ShortVector themTerms = themInputs.mul(themWeights);
 
             // Split the inputs and weighted terms into low and high parts, to enable 32-bit multiplication.
-            final Vector<Integer> usInputsLo = usInputs.convert(S2I, 0);
-            final Vector<Integer> usInputsHi = usInputs.convert(S2I, 1);
-            final Vector<Integer> themInputsLo = themInputs.convert(S2I, 0);
-            final Vector<Integer> themInputsHi = themInputs.convert(S2I, 1);
+            final Vector<Integer> usInputsLo     = usInputs.convert(S2I, 0);
+            final Vector<Integer> usInputsHi     = usInputs.convert(S2I, 1);
+            final Vector<Integer> themInputsLo   = themInputs.convert(S2I, 0);
+            final Vector<Integer> themInputsHi   = themInputs.convert(S2I, 1);
 
-            final Vector<Integer> usTermsLo = usTerms.convert(S2I, 0);
-            final Vector<Integer> usTermsHi = usTerms.convert(S2I, 1);
-            final Vector<Integer> themTermsLo = themTerms.convert(S2I, 0);
-            final Vector<Integer> themTermsHi = themTerms.convert(S2I, 1);
+            final Vector<Integer> usTermsLo      = usTerms.convert(S2I, 0);
+            final Vector<Integer> usTermsHi      = usTerms.convert(S2I, 1);
+            final Vector<Integer> themTermsLo    = themTerms.convert(S2I, 0);
+            final Vector<Integer> themTermsHi    = themTerms.convert(S2I, 1);
 
             // Multiply the inputs by the weighted terms, and add the results to the running sum.
             eval += (int) usInputsLo.mul(usTermsLo)

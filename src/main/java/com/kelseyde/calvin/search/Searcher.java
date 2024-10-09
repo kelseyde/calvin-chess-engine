@@ -321,17 +321,6 @@ public class Searcher implements Search {
             final boolean isCapture = captured != null;
             final boolean isPromotion = move.promoPiece() != null;
 
-            // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
-            // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
-            // captures, promotions), then let's assume it will fail low and prune this node.
-            if (!pvNode
-                && depth <= config.fpDepth.value
-                && !inCheck && !isCapture && !isPromotion
-                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {
-                movePicker.setSkipQuiets(true);
-                continue;
-            }
-
             final int historyScore = this.history.getHistoryTable().get(move, piece, board.isWhite());
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
@@ -349,6 +338,17 @@ public class Searcher implements Search {
 
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
                 reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
+            }
+
+            // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
+            // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
+            // captures, promotions), then let's assume it will fail low and prune this node.
+            if (!pvNode
+                && depth <= config.fpDepth.value
+                && !inCheck && !isCapture && !isPromotion
+                && staticEval + config.fpMargin.value + (depth - reduction) * config.fpScale.value <= alpha) {
+                movePicker.setSkipQuiets(true);
+                continue;
             }
 
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning

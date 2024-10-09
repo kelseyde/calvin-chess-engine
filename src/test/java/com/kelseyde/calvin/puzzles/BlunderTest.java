@@ -21,7 +21,7 @@ import java.util.List;
 @Disabled
 public class BlunderTest {
 
-    private final Engine engine = new Engine();
+    private final Engine engine = Engine.getInstance();
 
     @Test
     public void testDontSacKnightForCenterPawn() {

@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  */
 public class UCI {
 
-    private static final Engine ENGINE = new Engine();
+    private static final Engine ENGINE = Engine.getInstance();
     public static boolean outputEnabled = true;
     public static boolean prettyEnabled = false;
 

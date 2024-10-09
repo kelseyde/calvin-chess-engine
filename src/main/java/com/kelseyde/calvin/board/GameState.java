@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.board;
 
 
+import com.kelseyde.calvin.board.Bits.Castling;
+
 /**
  * Stores the metadata for a given chess position - that is, the castling rights, en passant rights, the fifty-move counter
  * (the number of half-moves since the last capture or pawn move), and the last captured piece.
@@ -16,12 +18,12 @@ public class GameState {
     public Piece captured;
 
     public GameState() {
-        key = 0L;
-        pawnKey = 0L;
-        captured = null;
-        enPassantFile = -1;
-        rights = Bits.Castling.INITIAL_CASTLING_RIGHTS;
-        halfMoveClock = 0;
+        this.key = 0L;
+        this.pawnKey = 0L;
+        this.captured = null;
+        this.enPassantFile = -1;
+        this.rights = Castling.INITIAL_CASTLING_RIGHTS;
+        this.halfMoveClock = 0;
     }
 
     public GameState(long key, long pawnKey, Piece captured, int enPassantFile, int rights, int halfMoveClock) {

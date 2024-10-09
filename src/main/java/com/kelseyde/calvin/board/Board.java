@@ -36,23 +36,21 @@ public class Board {
     private int ply;
 
     public Board() {
-        pawns = 0L;
-        knights = 0L;
-        bishops = 0L;
-        rooks = 0L;
-        queens = 0L;
-        kings = 0L;
-        whitePieces = 0L;
-        blackPieces = 0L;
-        occupied = 0L;
-        pieces = new Piece[Square.COUNT];
-        state = new GameState();
-        states = new GameState[Search.MAX_DEPTH];
-        moves = new Move[Search.MAX_DEPTH];
-        white = true;
-        ply = 0;
-        state.setKey(Zobrist.generateKey(this));
-        state.setPawnKey(Zobrist.generatePawnKey(this));
+        this.pawns       = 0L;
+        this.knights     = 0L;
+        this.bishops     = 0L;
+        this.rooks       = 0L;
+        this.queens      = 0L;
+        this.kings       = 0L;
+        this.whitePieces = 0L;
+        this.blackPieces = 0L;
+        this.occupied    = 0L;
+        this.pieces      = new Piece[Square.COUNT];
+        this.state       = new GameState();
+        this.states      = new GameState[Search.MAX_DEPTH];
+        this.moves       = new Move[Search.MAX_DEPTH];
+        this.white       = true;
+        this.ply         = 0;
     }
 
     /**
@@ -262,7 +260,7 @@ public class Board {
     }
 
     public void toggleSquares(Piece type, boolean white, int from, int to) {
-        final long toggleMask = (Bits.of(from) | Bits.of(to));
+        final long toggleMask = Bits.of(from) | Bits.of(to);
         toggle(type, white, toggleMask);
     }
 

@@ -174,6 +174,10 @@ public class MovePicker {
         Piece prevPiece2 = ss.getMovedPiece(ply - 2);
         contHistScore += history.getContHistTable().get(prevMove2, prevPiece2, move, piece, white);
 
+        Move prevMove4 = ss.getMove(ply - 4);
+        Piece prevPiece4 = ss.getMovedPiece(ply - 4);
+        contHistScore += history.getContHistTable().get(prevMove4, prevPiece4, move, piece, white);
+
         // Killers are ordered higher than normal history moves
         int base = 0;
         if (killerScore != 0) {

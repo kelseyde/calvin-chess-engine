@@ -12,7 +12,7 @@ import java.util.List;
 
 public class SearchHistory {
 
-    private static final int[] CONT_HIST_PLIES = { 1, 2 };
+    private static final int[] CONT_HIST_PLIES = { 1, 2, 4 };
 
     private final KillerTable killerTable = new KillerTable();
     private final QuietHistoryTable quietHistoryTable = new QuietHistoryTable();

@@ -1,12 +1,14 @@
 package com.kelseyde.calvin.utils.notation;
 
-import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.Zobrist;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;

@@ -3,9 +3,6 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.GameState;
-import com.kelseyde.calvin.board.Move;
-
-import java.util.Iterator;
 
 public class Score {
 

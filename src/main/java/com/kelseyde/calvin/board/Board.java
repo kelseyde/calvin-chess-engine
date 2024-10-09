@@ -6,9 +6,7 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.utils.notation.FEN;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Deque;
 
 /**
  * Represents the current state of the chess board, including the positions of the pieces, the side to move, en passant

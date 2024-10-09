@@ -2,7 +2,6 @@ package com.kelseyde.calvin.uci;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.Score;
-import com.kelseyde.calvin.search.SearchResult;
 
 import java.util.List;
 import java.util.Locale;

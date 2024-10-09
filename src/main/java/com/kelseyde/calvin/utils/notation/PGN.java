@@ -3,7 +3,6 @@ package com.kelseyde.calvin.utils.notation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

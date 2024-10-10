@@ -130,7 +130,7 @@ public class Engine {
         long key = board.key();
         HashEntry entry = tt.get(key, 0);
         board.unmakeMove();
-        return entry != null ? entry.getMove() : null;
+        return entry != null ? entry.move() : null;
     }
 
     public List<Move> extractPrincipalVariation() {
@@ -140,11 +140,11 @@ public class Engine {
         while (moves < 24) {
             long key = board.key();
             HashEntry entry = tt.get(key, 0);
-            if (entry == null || entry.getMove() == null) {
+            if (entry == null || entry.move() == null) {
                 break;
             }
-            pv.add(entry.getMove());
-            board.makeMove(entry.getMove());
+            pv.add(entry.move());
+            board.makeMove(entry.move());
             moves++;
         }
         IntStream.range(0, moves).forEach(i -> board.unmakeMove());

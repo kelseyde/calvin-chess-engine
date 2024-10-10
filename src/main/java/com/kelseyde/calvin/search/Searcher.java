@@ -10,7 +10,6 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -194,15 +193,15 @@ public class Searcher implements Search {
         final boolean ttHit = ttEntry != null;
         if (!pvNode
                 && ttHit
-                && ttEntry.isSufficientDepth(depth)
-                && ttEntry.isWithinBounds(alpha, beta)) {
-            return ttEntry.getScore();
+                && isSufficientDepth(ttEntry, depth)
+                && isWithinBounds(ttEntry, alpha, beta)) {
+            return ttEntry.score();
         }
 
         Move ttMove = null;
-        if (ttHit && ttEntry.getMove() != null) {
+        if (ttHit && ttEntry.move() != null) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
-            ttMove = ttEntry.getMove();
+            ttMove = ttEntry.move();
         }
 
         final boolean inCheck = movegen.isCheck(board, board.isWhite());
@@ -221,7 +220,7 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && !inCheck
-                && (!ttHit || ttEntry.getMove() == null)
+                && (!ttHit || ttEntry.move() == null)
                 && ply > 0
                 && depth >= config.iirDepth.value) {
             --depth;
@@ -231,13 +230,13 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
-            rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             staticEval = rawStaticEval;
             if (ttHit &&
-                    (ttEntry.getFlag() == HashFlag.EXACT ||
-                    (ttEntry.getFlag() == HashFlag.LOWER && ttEntry.getScore() >= rawStaticEval) ||
-                    (ttEntry.getFlag() == HashFlag.UPPER && ttEntry.getScore() <= rawStaticEval))) {
-                staticEval = ttEntry.getScore();
+                    (ttEntry.flag() == HashFlag.EXACT ||
+                    (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
+                    (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
+                staticEval = ttEntry.score();
             }
         }
 
@@ -490,13 +489,13 @@ public class Searcher implements Search {
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
         if (ttHit
-                && ttEntry.isSufficientDepth(depth)
-                && ttEntry.isWithinBounds(alpha, beta)) {
-            return ttEntry.getScore();
+                && isSufficientDepth(ttEntry, depth)
+                && isWithinBounds(ttEntry, alpha, beta)) {
+            return ttEntry.score();
         }
         Move ttMove = null;
-        if (ttHit && ttEntry.getMove() != null) {
-            ttMove = ttEntry.getMove();
+        if (ttHit && ttEntry.move() != null) {
+            ttMove = ttEntry.move();
         }
 
         final boolean inCheck = movegen.isCheck(board, board.isWhite());
@@ -507,13 +506,13 @@ public class Searcher implements Search {
         int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             staticEval = rawStaticEval;
             if (ttHit &&
-                    (ttEntry.getFlag() == HashFlag.EXACT ||
-                    (ttEntry.getFlag() == HashFlag.LOWER && ttEntry.getScore() >= rawStaticEval) ||
-                    (ttEntry.getFlag() == HashFlag.UPPER && ttEntry.getScore() <= rawStaticEval))) {
-                staticEval = ttEntry.getScore();
+                    (ttEntry.flag() == HashFlag.EXACT ||
+                    (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
+                    (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
+                staticEval = ttEntry.score();
             }
         }
 
@@ -663,6 +662,17 @@ public class Searcher implements Search {
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;
+    }
+
+    public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
+        return entry.flag().equals(HashFlag.EXACT) ||
+                (!Score.isUndefinedScore(entry.score()) &&
+                        (entry.flag().equals(HashFlag.UPPER) && entry.score() <= alpha ||
+                                entry.flag().equals(HashFlag.LOWER) && entry.score() >= beta));
+    }
+
+    public boolean isSufficientDepth(HashEntry entry, int depth) {
+        return entry.depth() >= depth;
     }
 
     @Override

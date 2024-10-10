@@ -2,8 +2,10 @@ package com.kelseyde.calvin.tables;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
+import com.kelseyde.calvin.utils.TestUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +16,7 @@ public class ContHistTableTest {
 
     @Test
     public void testNoMatch() {
-        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable(TestUtils.CONFIG);
         Move prevMove = Move.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
         Move currMove = Move.fromUCI("d5e4");
@@ -24,7 +26,7 @@ public class ContHistTableTest {
 
     @Test
     public void testAdd() {
-        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable(TestUtils.CONFIG);
         Move prevMove = Move.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
         int depth = 8;
@@ -36,7 +38,7 @@ public class ContHistTableTest {
 
     @Test
     public void testSub() {
-        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable(TestUtils.CONFIG);
         Move prevMove = Move.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
         int depth = 8;
@@ -48,7 +50,7 @@ public class ContHistTableTest {
 
     @Test
     public void testAddWithSearchStack() {
-        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable(TestUtils.CONFIG);
         SearchStack ss = new SearchStack();
         Move prevMove = Move.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
@@ -62,7 +64,7 @@ public class ContHistTableTest {
 
     @Test
     public void testAddTwice() {
-        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
+        ContinuationHistoryTable contHistTable = new ContinuationHistoryTable(TestUtils.CONFIG);
         Move prevMove = Move.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
         int depth = 8;

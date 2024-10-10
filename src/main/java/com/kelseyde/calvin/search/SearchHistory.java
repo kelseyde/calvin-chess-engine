@@ -111,7 +111,7 @@ public class SearchHistory {
         bestScoreStability = 0;
         quietHistoryTable.ageScores(true);
         quietHistoryTable.ageScores(false);
-        pawnCorrHistTable.ageEntries();
+        //pawnCorrHistTable.ageEntries();
     }
 
     public void clear() {
@@ -119,7 +119,7 @@ public class SearchHistory {
         quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();
-        //pawnCorrHistTable.clear();
+        pawnCorrHistTable.clear();
     }
 
 }

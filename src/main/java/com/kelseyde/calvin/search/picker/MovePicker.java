@@ -5,11 +5,10 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
+import com.kelseyde.calvin.movegen.MoveList;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.KillerTable;
-
-import java.util.List;
 
 /**
  * Selects the next move to try in a given position. Moves are selected in stages. First, the 'best' move from the
@@ -98,14 +97,14 @@ public class MovePicker {
     }
 
     protected Move generate(MoveFilter filter, Stage nextStage) {
-        List<Move> stagedMoves = movegen.generateMoves(board, filter);
+        MoveList stagedMoves = movegen.generateMoves(board, filter);
         scoreMoves(stagedMoves);
         moveIndex = 0;
         stage = nextStage;
         return null;
     }
 
-    protected void scoreMoves(List<Move> stagedMoves) {
+    protected void scoreMoves(MoveList stagedMoves) {
         moves = new ScoredMove[stagedMoves.size()];
         for (int i = 0; i < stagedMoves.size(); i++) {
             Move move = stagedMoves.get(i);

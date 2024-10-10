@@ -55,6 +55,15 @@ public class EngineConfig {
     public final Tunable hpMaxDepth =       new Tunable("HpMaxDepth", 3, 0, 10, 1);
     public final Tunable hpMargin =         new Tunable("HpMargin", -2197, -4000, -100, 50);
     public final Tunable hpOffset =         new Tunable("HpOffset", -1039, -3000, 0, 50);
+    public final Tunable quietHistBonus =   new Tunable("QuietHistBonus", 1200, 100, 2000, 100);
+    public final Tunable quietHistMalus =   new Tunable("QuietHistMalus", 1200, 100, 2000, 100);
+    public final Tunable quietHistMax =     new Tunable("QuietHistMax", 8192, 1000, 12000, 100);
+    public final Tunable captHistBonus =    new Tunable("CaptHistBonus", 1200, 100, 2000, 100);
+    public final Tunable captHistMalus =    new Tunable("CaptHistMalus", 1200, 100, 2000, 100);
+    public final Tunable captHistMax =      new Tunable("CaptHistMax", 8192, 1000, 12000, 100);
+    public final Tunable contHistBonus =    new Tunable("ContHistBonus", 1200, 100, 2000, 100);
+    public final Tunable contHistMalus =    new Tunable("ContHistMalus", 1200, 100, 2000, 100);
+    public final Tunable contHistMax =      new Tunable("ContHistMax", 8192, 1000, 12000, 100);
     public final Tunable nodeTmMinDepth =   new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
     public final Tunable nodeTmBase =       new Tunable("NodeTmBase", 150, 100, 200, 10);
     public final Tunable nodeTmScale =      new Tunable("NodeTmScale", 135, 100, 200, 10);

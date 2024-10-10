@@ -54,7 +54,7 @@ public class Searcher implements Search {
         this.config = config;
         this.tt = tt;
         this.td = td;
-        this.history = new SearchHistory();
+        this.history = new SearchHistory(config);
         this.movegen = new MoveGenerator();
         this.ss = new SearchStack();
         this.eval = new NNUE();
@@ -348,7 +348,7 @@ public class Searcher implements Search {
                 reduction -= pvNode ? 1 : 0;
 
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
-                reduction -= 2 * historyScore / QuietHistoryTable.MAX_SCORE;
+                reduction -= 2 * historyScore / config.quietHistMax.value;
             }
 
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning

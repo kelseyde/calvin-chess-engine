@@ -10,7 +10,6 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -194,8 +193,8 @@ public class Searcher implements Search {
         final boolean ttHit = ttEntry != null;
         if (!pvNode
                 && ttHit
-                && ttEntry.isSufficientDepth(depth)
-                && ttEntry.isWithinBounds(alpha, beta)) {
+                && isSufficientDepth(ttEntry, depth)
+                && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();
         }
 
@@ -490,8 +489,8 @@ public class Searcher implements Search {
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
         if (ttHit
-                && ttEntry.isSufficientDepth(depth)
-                && ttEntry.isWithinBounds(alpha, beta)) {
+                && isSufficientDepth(ttEntry, depth)
+                && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();
         }
         Move ttMove = null;
@@ -663,6 +662,17 @@ public class Searcher implements Search {
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;
+    }
+
+    public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
+        return entry.flag().equals(HashFlag.EXACT) ||
+                (!Score.isUndefinedScore(entry.score()) &&
+                        (entry.flag().equals(HashFlag.UPPER) && entry.score() <= alpha ||
+                                entry.flag().equals(HashFlag.LOWER) && entry.score() >= beta));
+    }
+
+    public boolean isSufficientDepth(HashEntry entry, int depth) {
+        return entry.depth() >= depth;
     }
 
     @Override

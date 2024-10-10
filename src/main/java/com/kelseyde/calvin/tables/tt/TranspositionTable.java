@@ -19,6 +19,7 @@ import java.util.stream.IntStream;
 public class TranspositionTable {
 
     private static final int BUCKET_SIZE = 4;
+    private static final int ENTRY_SIZE_BYTES = 16;
 
     private long[] keys;
     private long[] values;
@@ -31,7 +32,7 @@ public class TranspositionTable {
      * Constructs a transposition table of the given size in megabytes.
      */
     public TranspositionTable(int tableSizeMb) {
-        this.size = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
+        this.size = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         this.keys = new long[size];
         this.values = new long[size];
         this.tries = 0;
@@ -165,7 +166,7 @@ public class TranspositionTable {
     }
 
     public void resize(int tableSizeMb) {
-        this.size = (tableSizeMb * 1024 * 1024) / HashEntry.SIZE_BYTES;
+        this.size = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         this.keys = new long[size];
         this.values = new long[size];
         this.tries = 0;

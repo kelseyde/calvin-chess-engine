@@ -1,57 +1,24 @@
 package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.search.Score;
 
 /**
- * Entry in the {@link TranspositionTable}. Contains a 64-bit key and a 64-bit value which encodes the relevant
- * information about the position.
+ * Entry in the {@link TranspositionTable}.
  * </p>
- *
- * Key encoding:
- * 0-31: 32 bits representing half of the zobrist hash. Used to verify that the position truly matches.
- * 32-47: 16 bits representing the age. Used to gradually replace old entries.
- * 48-63: 16 bits representing the static eval of the position. Re-used to save calling the evaluation function again.
- * </p>
- *
- * Value encoding:
- * 0-11: the depth to which this position was last searched.
- * 12-15: the {@link HashFlag} indicating what type of node this is.
- * 16-31: the {@link Move} start square, end square, and special move flag.
- * 32-63: the eval of the position in centipawns.
+ * Records the move, score, static evaluation, flag, and depth of a position that has been searched. When stored in the
+ * table, this information is packed into two 64-bit longs: a key and a value. The encoding scheme is as follows:
+ * - Key: 0-31 (zobrist key), 32-47 (age), 48-63 (static eval)
+ * - Value: 0-11 (depth), 12-15 (flag), 16-31 (move), 32-63 (score)
  */
 public record HashEntry(Move move, int score, int staticEval, HashFlag flag, int depth) {
 
-    // The hash entry is packed into two 64-bit longs - therefore the byte size is 16.
-    public static final int SIZE_BYTES = 16;
-
-    /**
-     * Check if the hash entry can be re-used in the current search. A TT-hit is useful either if it 1) contains an
-     * exact score, 2) contains a fail-high >= current beta, or 3) contains a fail-low <= current alpha.
-     */
-    public boolean isWithinBounds(int alpha, int beta) {
-        return flag.equals(HashFlag.EXACT) ||
-                (hasScore() &&
-                (flag.equals(HashFlag.UPPER) && score <= alpha ||
-                flag.equals(HashFlag.LOWER) && score >= beta));
-    }
-
-    public boolean isSufficientDepth(int otherDepth) {
-        return depth >= otherDepth;
-    }
-
-    public boolean hasScore() {
-        return !Score.isUndefinedScore(score);
-    }
-
     public static HashEntry of(long key, long value) {
-        return new HashEntry(
-                Value.getMove(value),
-                Value.getScore(value),
-                Key.getStaticEval(key),
-                Value.getFlag(value),
-                Value.getDepth(value)
-        );
+        final Move move       = Value.getMove(value);
+        final HashFlag flag   = Value.getFlag(value);
+        final int depth       = Value.getDepth(value);
+        final int score       = Value.getScore(value);
+        final int staticEval  = Key.getStaticEval(key);
+        return new HashEntry(move, score, staticEval, flag, depth);
     }
 
     public static class Key {

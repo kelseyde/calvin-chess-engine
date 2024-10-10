@@ -196,13 +196,13 @@ public class Searcher implements Search {
                 && ttHit
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
-            return ttEntry.getScore();
+            return ttEntry.score();
         }
 
         Move ttMove = null;
-        if (ttHit && ttEntry.getMove() != null) {
+        if (ttHit && ttEntry.move() != null) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
-            ttMove = ttEntry.getMove();
+            ttMove = ttEntry.move();
         }
 
         final boolean inCheck = movegen.isCheck(board, board.isWhite());
@@ -221,7 +221,7 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && !inCheck
-                && (!ttHit || ttEntry.getMove() == null)
+                && (!ttHit || ttEntry.move() == null)
                 && ply > 0
                 && depth >= config.iirDepth.value) {
             --depth;
@@ -231,13 +231,13 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
-            rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             staticEval = rawStaticEval;
             if (ttHit &&
-                    (ttEntry.getFlag() == HashFlag.EXACT ||
-                    (ttEntry.getFlag() == HashFlag.LOWER && ttEntry.getScore() >= rawStaticEval) ||
-                    (ttEntry.getFlag() == HashFlag.UPPER && ttEntry.getScore() <= rawStaticEval))) {
-                staticEval = ttEntry.getScore();
+                    (ttEntry.flag() == HashFlag.EXACT ||
+                    (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
+                    (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
+                staticEval = ttEntry.score();
             }
         }
 
@@ -492,11 +492,11 @@ public class Searcher implements Search {
         if (ttHit
                 && ttEntry.isSufficientDepth(depth)
                 && ttEntry.isWithinBounds(alpha, beta)) {
-            return ttEntry.getScore();
+            return ttEntry.score();
         }
         Move ttMove = null;
-        if (ttHit && ttEntry.getMove() != null) {
-            ttMove = ttEntry.getMove();
+        if (ttHit && ttEntry.move() != null) {
+            ttMove = ttEntry.move();
         }
 
         final boolean inCheck = movegen.isCheck(board, board.isWhite());
@@ -507,13 +507,13 @@ public class Searcher implements Search {
         int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            rawStaticEval = ttHit ? ttEntry.getStaticEval() : eval.evaluate();
+            rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             staticEval = rawStaticEval;
             if (ttHit &&
-                    (ttEntry.getFlag() == HashFlag.EXACT ||
-                    (ttEntry.getFlag() == HashFlag.LOWER && ttEntry.getScore() >= rawStaticEval) ||
-                    (ttEntry.getFlag() == HashFlag.UPPER && ttEntry.getScore() <= rawStaticEval))) {
-                staticEval = ttEntry.getScore();
+                    (ttEntry.flag() == HashFlag.EXACT ||
+                    (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
+                    (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
+                staticEval = ttEntry.score();
             }
         }
 

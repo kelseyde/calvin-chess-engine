@@ -20,183 +20,107 @@ import com.kelseyde.calvin.search.Score;
  * 16-31: the {@link Move} start square, end square, and special move flag.
  * 32-63: the eval of the position in centipawns.
  */
-public class HashEntry {
+public record HashEntry(Move move, int score, int staticEval, HashFlag flag, int depth) {
 
+    // The hash entry is packed into two 64-bit longs - therefore the byte size is 16.
     public static final int SIZE_BYTES = 16;
 
-    private static final long ZOBRIST_PART_MASK = 0x00000000ffffffffL;
-    private static final long AGE_MASK = 0x0000ffff00000000L;
-    private static final long STATIC_EVAL_MASK = 0xffff000000000000L;
-    private static final long SCORE_MASK = 0xffffffff00000000L;
-    private static final long MOVE_MASK = 0x00000000ffff0000L;
-    private static final long FLAG_MASK = 0x000000000000f000L;
-    private static final long DEPTH_MASK = 0x0000000000000fffL;
-
-    private long key;
-    private long value;
-
-    public HashEntry(long key, long value) {
-        this.key = key;
-        this.value = value;
-    }
-
     /**
-     * Extracts the 48-bits representing the zobrist part of the given zobrist key.
+     * Check if the hash entry can be re-used in the current search. A TT-hit is useful either if it 1) contains an
+     * exact score, 2) contains a fail-high >= current beta, or 3) contains a fail-low <= current alpha.
      */
-    public static long zobristPart(long zobrist) {
-        return zobrist & ZOBRIST_PART_MASK;
+    public boolean isWithinBounds(int alpha, int beta) {
+        return flag.equals(HashFlag.EXACT) ||
+                (hasScore() &&
+                (flag.equals(HashFlag.UPPER) && score <= alpha ||
+                flag.equals(HashFlag.LOWER) && score >= beta));
     }
 
-
-    /**
-     * Returns the 48-bits representing zobrist part of the hash entry key.
-     */
-    public long getZobristPart() {
-        return key & ZOBRIST_PART_MASK;
-    }
-
-    /**
-     * Gets the age part of this entry's key.
-     */
-    public int getAge() {
-        return age(key);
-    }
-
-    /**
-     * Sets the age part of this entry's key.
-     */
-    public void setAge(int age) {
-        key = (key & ~AGE_MASK) | ((long) age << 32);
-    }
-
-    public static int age(long key) {
-        return (int) ((key & AGE_MASK) >>> 32);
-    }
-
-    public static long withAge(long key, int age) {
-        return (key & ~AGE_MASK) | ((long) age << 32);
-    }
-
-    /**
-     * Gets the static eval part of this entry's key.
-     */
-    public int getStaticEval() {
-        return (short) ((key & STATIC_EVAL_MASK) >>> 48);
-    }
-
-    /**
-     * Sets the static eval part of this entry's key.
-     */
-    public void setStaticEval(int staticEval) {
-        key = (key & ~STATIC_EVAL_MASK) | ((long) (staticEval & 0xFFFF) << 48);
-    }
-
-    /**
-     * Gets the score from this entry's value.
-     */
-    public int getScore() {
-        return score(value);
-    }
-
-    public static int score(long value) {
-        long score = (value & SCORE_MASK) >>> 32;
-        return (int) score;
-    }
-
-    public static long withScore(long value, int score) {
-        return (value & ~SCORE_MASK) | (long) score << 32;
-    }
-
-    /**
-     * Sets the score in this entry's value.
-     */
-    public void setScore(int score) {
-        value = (value &~ SCORE_MASK) | (long) score << 32;
-    }
-
-    /**
-     * Creates a new {@link HashEntry} with the adjusted score.
-     */
-    public HashEntry withAdjustedScore(int score) {
-        long newValue = (value &~ SCORE_MASK) | (long) score << 32;
-        return new HashEntry(key, newValue);
-    }
-
-    /**
-     * Sets the move in this entry's value.
-     */
-    public void setMove(Move move) {
-        value = (value &~ MOVE_MASK) | (long) move.value() << 16;
-    }
-
-    /**
-     * Gets the move from this entry's value.
-     */
-    public Move getMove() {
-        return move(value);
-    }
-
-    public static Move move(long value) {
-        long move = (value & MOVE_MASK) >>> 16;
-        return move > 0 ? new Move((short) move) : null;
-    }
-
-    /**
-     * Gets the flag from this entry's value.
-     */
-    public HashFlag getFlag() {
-        long flag = (value & FLAG_MASK) >>> 12;
-        return HashFlag.valueOf((int) flag);
-    }
-
-    /**
-     * Gets the depth from this entry's value.
-     */
-    public int getDepth() {
-        return depth(value);
-    }
-
-    public static int depth(long value) {
-        return (int) (value & DEPTH_MASK);
-    }
-
-    public boolean isSufficientDepth(int depth) {
-        return getDepth() >= depth;
+    public boolean isSufficientDepth(int otherDepth) {
+        return depth >= otherDepth;
     }
 
     public boolean hasScore() {
-        return !Score.isUndefinedScore(getScore());
+        return !Score.isUndefinedScore(score);
     }
 
-    /**
-     * Check if the hit from the transposition table is 'useful' in the current search. A TT-hit is useful either if it
-     * 1) contains an exact evaluation, so we don't need to search any further, 2) contains a fail-high greater than our
-     * current beta value, or 3) contains a fail-low lesser than our current alpha value.
-     */
-    public boolean isWithinBounds(int alpha, int beta) {
-        return getFlag().equals(HashFlag.EXACT) ||
-                (hasScore() &&
-                (getFlag().equals(HashFlag.UPPER) && getScore() <= alpha ||
-                getFlag().equals(HashFlag.LOWER) && getScore() >= beta));
+    public static HashEntry of(long key, long value) {
+        return new HashEntry(
+                Value.getMove(value),
+                Value.getScore(value),
+                Key.getStaticEval(key),
+                Value.getFlag(value),
+                Value.getDepth(value)
+        );
     }
 
-    /**
-     * Creates a new {@link HashEntry} with the specified parameters.
-     */
-    public static HashEntry of(long zobristKey, int score, int staticEval, Move move, HashFlag flag, int depth, int age) {
-        long key = key(zobristKey, staticEval, age);
-        long value = value(score, move, flag, depth);
-        return new HashEntry(key, value);
+    public static class Key {
+
+        private static final long STATIC_EVAL_MASK    = 0xffff000000000000L;
+        private static final long AGE_MASK            = 0x0000ffff00000000L;
+        private static final long ZOBRIST_PART_MASK   = 0x00000000ffffffffL;
+
+        public static long getZobristPart(long key) {
+            return key & ZOBRIST_PART_MASK;
+        }
+
+        public static int getAge(long key) {
+            return (int) ((key & AGE_MASK) >>> 32);
+        }
+
+        public static long setAge(long key, int age) {
+            return (key & ~AGE_MASK) | ((long) age << 32);
+        }
+
+        public static int getStaticEval(long key) {
+            return (short) ((key & STATIC_EVAL_MASK) >>> 48);
+        }
+
+        public static long of(long zobristKey, int staticEval, int age) {
+            return (zobristKey & ZOBRIST_PART_MASK) | ((long) age << 32) | ((long) (staticEval & 0xFFFF) << 48);
+        }
+
     }
 
-    public static long key(long zobristKey, int staticEval, int age) {
-        return (zobristKey & ZOBRIST_PART_MASK) | ((long) age << 32) | ((long) (staticEval & 0xFFFF) << 48);
-    }
+    public static class Value {
 
-    public static long value(int score, Move move, HashFlag flag, int depth) {
-        long moveValue = move != null ? move.value() : 0;
-        long flagValue = HashFlag.value(flag);
-        return (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
+        private static final long SCORE_MASK    = 0xffffffff00000000L;
+        private static final long MOVE_MASK     = 0x00000000ffff0000L;
+        private static final long FLAG_MASK     = 0x000000000000f000L;
+        private static final long DEPTH_MASK    = 0x0000000000000fffL;
+
+        public static int getScore(long value) {
+            return (int) ((value & SCORE_MASK) >>> 32);
+        }
+
+        public static long setScore(long value, int score) {
+            return (value & ~SCORE_MASK) | (long) score << 32;
+        }
+
+        public static Move getMove(long value) {
+            long move = (value & MOVE_MASK) >>> 16;
+            return move > 0 ? new Move((short) move) : null;
+        }
+
+        public static long setMove(long value, Move move) {
+            return (value &~ MOVE_MASK) | (long) move.value() << 16;
+        }
+
+        public static HashFlag getFlag(long value) {
+            long flag = (value & FLAG_MASK) >>> 12;
+            return HashFlag.valueOf((int) flag);
+        }
+
+        public static int getDepth(long value) {
+            return (int) (value & DEPTH_MASK);
+        }
+
+        public static long of(int score, Move move, HashFlag flag, int depth) {
+            long moveValue = move != null ? move.value() : 0;
+            long flagValue = HashFlag.value(flag);
+            return (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
+        }
+
     }
 
 }

@@ -227,16 +227,19 @@ public class Searcher implements Search {
         }
 
         int rawStaticEval = Integer.MIN_VALUE;
+        int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
+            uncorrectedStaticEval = rawStaticEval;
             staticEval = history.correctEvaluation(board, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                     (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
                 staticEval = ttEntry.score();
+                uncorrectedStaticEval = staticEval;
             }
         }
 
@@ -464,11 +467,11 @@ public class Searcher implements Search {
         }
 
         if (!inCheck
+            && !Score.isUndefinedScore(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
-            && !(flag == HashFlag.LOWER && staticEval >= bestScore)
-            && !(flag == HashFlag.UPPER && staticEval <= bestScore)) {
-            // TODO try without flag checks
-            history.updateCorrectionHistory(board, depth, bestScore, staticEval);
+            && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
+            && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
+            history.updateCorrectionHistory(board, depth, bestScore, uncorrectedStaticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.

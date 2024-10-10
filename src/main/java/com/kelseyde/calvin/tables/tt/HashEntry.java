@@ -22,7 +22,7 @@ import com.kelseyde.calvin.search.Score;
  */
 public class HashEntry {
 
-    public static final int SIZE_BYTES = 32;
+    public static final int SIZE_BYTES = 16;
 
     private static final long ZOBRIST_PART_MASK = 0x00000000ffffffffL;
     private static final long AGE_MASK = 0x0000ffff00000000L;
@@ -47,6 +47,7 @@ public class HashEntry {
         return zobrist & ZOBRIST_PART_MASK;
     }
 
+
     /**
      * Returns the 48-bits representing zobrist part of the hash entry key.
      */
@@ -58,7 +59,7 @@ public class HashEntry {
      * Gets the age part of this entry's key.
      */
     public int getAge() {
-        return (int) ((key & AGE_MASK) >>> 32);
+        return age(key);
     }
 
     /**
@@ -66,6 +67,14 @@ public class HashEntry {
      */
     public void setAge(int age) {
         key = (key & ~AGE_MASK) | ((long) age << 32);
+    }
+
+    public static int age(long key) {
+        return (int) ((key & AGE_MASK) >>> 32);
+    }
+
+    public static long withAge(long key, int age) {
+        return (key & ~AGE_MASK) | ((long) age << 32);
     }
 
     /**
@@ -86,8 +95,16 @@ public class HashEntry {
      * Gets the score from this entry's value.
      */
     public int getScore() {
+        return score(value);
+    }
+
+    public static int score(long value) {
         long score = (value & SCORE_MASK) >>> 32;
         return (int) score;
+    }
+
+    public static long withScore(long value, int score) {
+        return (value & ~SCORE_MASK) | (long) score << 32;
     }
 
     /**
@@ -116,6 +133,10 @@ public class HashEntry {
      * Gets the move from this entry's value.
      */
     public Move getMove() {
+        return move(value);
+    }
+
+    public static Move move(long value) {
         long move = (value & MOVE_MASK) >>> 16;
         return move > 0 ? new Move((short) move) : null;
     }
@@ -132,6 +153,10 @@ public class HashEntry {
      * Gets the depth from this entry's value.
      */
     public int getDepth() {
+        return depth(value);
+    }
+
+    public static int depth(long value) {
         return (int) (value & DEPTH_MASK);
     }
 
@@ -159,15 +184,19 @@ public class HashEntry {
      * Creates a new {@link HashEntry} with the specified parameters.
      */
     public static HashEntry of(long zobristKey, int score, int staticEval, Move move, HashFlag flag, int depth, int age) {
-        // Build the key using 32 bits for the zobrist part, 16 bits for the age part, and 16 bits for the static evaluation part.
-        long key = (zobristKey & ZOBRIST_PART_MASK) | ((long) age << 32) | ((long) (staticEval & 0xFFFF) << 48);
-        // Get the 16-bit encoded move
-        long moveValue = move != null ? move.value() : 0;
-        // Get the 3-bit encoded flag
-        long flagValue = HashFlag.value(flag);
-        // Combine the score, move, flag and depth to create the hash entry value
-        long value = (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
+        long key = key(zobristKey, staticEval, age);
+        long value = value(score, move, flag, depth);
         return new HashEntry(key, value);
+    }
+
+    public static long key(long zobristKey, int staticEval, int age) {
+        return (zobristKey & ZOBRIST_PART_MASK) | ((long) age << 32) | ((long) (staticEval & 0xFFFF) << 48);
+    }
+
+    public static long value(int score, Move move, HashFlag flag, int depth) {
+        long moveValue = move != null ? move.value() : 0;
+        long flagValue = HashFlag.value(flag);
+        return (long) score << 32 | moveValue << 16 | flagValue << 12 | depth;
     }
 
 }

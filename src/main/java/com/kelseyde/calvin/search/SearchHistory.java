@@ -119,7 +119,7 @@ public class SearchHistory {
         quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();
-        pawnCorrHistTable.clear();
+        //pawnCorrHistTable.clear();
     }
 
 }

@@ -4,9 +4,8 @@ import com.kelseyde.calvin.board.Colour;
 
 public class CorrectionHistoryTable {
 
-    public static final int GRAIN = 256;
     public static final int SCALE = 256;
-    public static final int MAX = GRAIN * 32;
+    public static final int MAX = SCALE * 32;
 
     static final int TABLE_SIZE = 16384;
 
@@ -21,10 +20,10 @@ public class CorrectionHistoryTable {
         int hashIndex = hashIndex(key);
         int entry = entries[colourIndex][hashIndex];
         int diff = score - staticEval;
-        int scaled = diff * GRAIN;
+        int scaled = diff * SCALE;
         int weight = Math.min(depth + 1, 16);
-        int update = entry * (SCALE - weight) + scaled * weight;
-        entry = clamp(update / SCALE, -MAX, MAX);
+        int update = (entry * (SCALE - weight) + scaled * weight) / SCALE;
+        entry = clamp(update, -MAX, MAX);
         entries[colourIndex][hashIndex] = entry;
     }
 
@@ -32,7 +31,7 @@ public class CorrectionHistoryTable {
         int colourIndex = Colour.index(white);
         int pawnIndex = hashIndex(pawnHash);
         int entry = entries[colourIndex][pawnIndex];
-        return staticEval + entry / GRAIN;
+        return staticEval + entry / SCALE;
     }
 
     public void ageEntries() {
@@ -47,11 +46,7 @@ public class CorrectionHistoryTable {
     }
 
     private int hashIndex(long key) {
-        // XOR the upper and lower halves of the zobrist key together, producing a pseudo-random 32-bit result.
-        // Then apply a mask ensuring the number is always positive, since it is to be used as an array index.
-        long index = (key ^ (key >>> 32)) & 0x7FFFFFFF;
-        // Modulo the result with the number of entries in the table to get the index within bounds.
-        return (int) (index % TABLE_SIZE);
+        return (int) (key & 0x7FFFFFFF % TABLE_SIZE);
     }
 
     private int clamp(int value, int min, int max) {

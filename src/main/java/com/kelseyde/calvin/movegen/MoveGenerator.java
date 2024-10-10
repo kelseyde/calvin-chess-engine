@@ -8,9 +8,6 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Generates all the legal moves in a given position.
  * Using a hybrid of pseudo-legal and legal move generation: first we calculate the bitboards for checking pieces and
@@ -35,13 +32,13 @@ public class MoveGenerator {
     private long queens;
     private long king;
 
-    private List<Move> legalMoves;
+    private MoveList legalMoves;
 
-    public List<Move> generateMoves(Board board) {
+    public MoveList generateMoves(Board board) {
         return generateMoves(board, MoveFilter.ALL);
     }
 
-    public List<Move> generateMoves(Board board, MoveFilter filter) {
+    public MoveList generateMoves(Board board, MoveFilter filter) {
 
         white = board.isWhite();
 
@@ -60,8 +57,7 @@ public class MoveGenerator {
         checkersMask = calculateCheckers(board, kingSquare);
         checkersCount = Bits.count(checkersMask);
 
-        final int estimatedLegalMoves = estimateLegalMoves();
-        legalMoves = new ArrayList<>(estimatedLegalMoves);
+        legalMoves = new MoveList();
 
         if (checkersCount > 0 && filter == MoveFilter.QUIET) {
             return legalMoves;
@@ -208,7 +204,7 @@ public class MoveGenerator {
                 final int to = Bits.next(pushPromotions);
                 final int from = white ? to - 8 : to + 8;
                 if (!isPinned(from)) {
-                    legalMoves.addAll(getPromotionMoves(from, to));
+                    addPromotionMoves(from, to);
                 }
                 pushPromotions = Bits.pop(pushPromotions);
             }
@@ -216,7 +212,7 @@ public class MoveGenerator {
                 final int to = Bits.next(leftCapturePromotions);
                 final int from = white ? to - 7 : to + 9;
                 if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                    legalMoves.addAll(getPromotionMoves(from, to));
+                    addPromotionMoves(from, to);
                 }
                 leftCapturePromotions = Bits.pop(leftCapturePromotions);
             }
@@ -224,7 +220,7 @@ public class MoveGenerator {
                 final int to = Bits.next(rightCapturePromotions);
                 final int from = white ? to - 9 : to + 7;
                 if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                    legalMoves.addAll(getPromotionMoves(from, to));
+                    addPromotionMoves(from, to);
                 }
                 rightCapturePromotions = Bits.pop(rightCapturePromotions);
             }
@@ -574,11 +570,11 @@ public class MoveGenerator {
 
     }
 
-    private List<Move> getPromotionMoves(int from, int to) {
-        return List.of(new Move(from, to, Move.PROMOTE_TO_QUEEN_FLAG),
-                        new Move(from, to, Move.PROMOTE_TO_ROOK_FLAG),
-                        new Move(from, to, Move.PROMOTE_TO_BISHOP_FLAG),
-                        new Move(from, to, Move.PROMOTE_TO_KNIGHT_FLAG));
+    private void addPromotionMoves(int from, int to) {
+        legalMoves.add(new Move(from, to, Move.PROMOTE_TO_QUEEN_FLAG));
+        legalMoves.add(new Move(from, to, Move.PROMOTE_TO_ROOK_FLAG));
+        legalMoves.add(new Move(from, to, Move.PROMOTE_TO_BISHOP_FLAG));
+        legalMoves.add(new Move(from, to, Move.PROMOTE_TO_KNIGHT_FLAG));
     }
 
 
@@ -620,21 +616,6 @@ public class MoveGenerator {
 
     public long getPinMask() {
         return pinMask;
-    }
-
-    /**
-     * Estimate the number of legal moves in the current position, based on the piece count and
-     * the average number of legal moves per piece. Used to initialise the legal moves ArrayList
-     * with a 'best guess', to reduce the number of times the ArrayList has to grow during move
-     * generation, yielding a small increase in performance.
-     */
-    private int estimateLegalMoves() {
-        return (Bits.count(pawns) * 2) +
-                (Bits.count(knights) * 3) +
-                (Bits.count(bishops) * 3) +
-                (Bits.count(rooks) * 6) +
-                (Bits.count(queens) * 9) +
-                (Bits.count(king) * 3);
     }
 
     private void initPieces(Board board, boolean white) {

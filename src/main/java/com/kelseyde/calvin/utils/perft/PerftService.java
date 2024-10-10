@@ -5,7 +5,10 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.uci.UCI;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PerftService {
 
@@ -44,17 +47,6 @@ public class PerftService {
             board.unmakeMove();
         }
         return totalMoveCount;
-    }
-
-    private void log(Board board, int depth, Set<Move> moves) {
-        List<String> moveHistory = board.getMoves().stream().map(Move::toUCI).toList();
-        List<String> legalMoves = moves.stream().map(Move::toUCI).toList();
-        System.out.printf("perft(%s) -- %s: %s -- %s%n", depth, moveHistory, legalMoves.size(), legalMoves);
-    }
-
-    private void log(Board board, int depth, int count) {
-        List<String> moveHistory = board.getMoves().stream().map(Move::toUCI).toList();
-        System.out.printf("perft(%s) -- %s: %s %n", depth, moveHistory, count);
     }
 
 }

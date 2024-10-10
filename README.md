@@ -13,7 +13,7 @@ It features a a traditional alpha-beta search algorithm paired with an NNUE eval
 
 The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 950 million positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->512)x2->1. 
 
-Calvin is rated roughly 3170 elo (~120th place) on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/4040/) leaderboards, and is currently playing on [Lichess](https://lichess.org/@/Calvin_Bot).
+Calvin is rated roughly 3224 elo (~106th place) on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/4040/) leaderboards, and is currently playing on [Lichess](https://lichess.org/@/Calvin_Bot).
 
 My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented so that first-time readers can learn too. If you find some information is missing or poorly explained, don't hesitate to let me know!
 
@@ -34,7 +34,8 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 
 | 	Version	 | 	Release date | Estimated | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | [CCRL Rapid](https://www.computerchess.org.uk/ccrl/4040/)
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | :-----:	|  :-----:	 | :-----:	 |  
-| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-19 | 3230 | - | - | - |
+| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 | 3300 | - | - | - |
+| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.2.0) | 2024-09-19 | 3230 | - | - | 3224 |
 | [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-04 | 3150 | ~2850 | 3171 | 3161 |
 | [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) | 2024-07-30 | 3000 | ~2700 | 3011 | 3029 |
 | [3.4.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) | 2024-05-19 | 2500 | ~2580 | - | 2492 |
@@ -121,5 +122,5 @@ If you would like to contribute, or just talk about chess/chess programming, get
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=ed5858
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
 
-[lichess-badge]: https://img.shields.io/badge/Play-v4.2.0-ffd25c?logo=lichess&style=for-the-badge
+[lichess-badge]: https://img.shields.io/badge/Play-v4.3.0-ffd25c?logo=lichess&style=for-the-badge
 [lichess-link]: https://lichess.org/@/Calvin_Bot

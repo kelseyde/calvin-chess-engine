@@ -54,8 +54,8 @@ public class NNUE {
     public int evaluate() {
 
         final boolean white = board.isWhite();
-
         final Accumulator acc = accumulatorStack[current];
+
         // Get the 'us-perspective' and 'them-perspective' feature sets, based on the side to move.
         final short[] us = white ? acc.whiteFeatures : acc.blackFeatures;
         final short[] them = white ? acc.blackFeatures : acc.whiteFeatures;
@@ -121,6 +121,7 @@ public class NNUE {
         } else {
             acc.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         }
+
     }
 
     private void handleCastleMove(Accumulator acc, boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {

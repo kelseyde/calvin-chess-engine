@@ -3,11 +3,10 @@ package com.kelseyde.calvin.board;
 import com.kelseyde.calvin.board.Bits.Castling;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.utils.notation.FEN;
 
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Deque;
 
 /**
  * Represents the current state of the chess board, including the positions of the pieces, the side to move, en passant
@@ -31,27 +30,27 @@ public class Board {
 
     private Piece[] pieces;
     private GameState state;
-    private Deque<GameState> states;
-    private Deque<Move> moves;
+    private GameState[] states;
+    private Move[] moves;
     private boolean white;
+    private int ply;
 
     public Board() {
-        pawns = 0L;
-        knights = 0L;
-        bishops = 0L;
-        rooks = 0L;
-        queens = 0L;
-        kings = 0L;
-        whitePieces = 0L;
-        blackPieces = 0L;
-        occupied = 0L;
-        pieces = new Piece[Square.COUNT];
-        state = new GameState();
-        states = new ArrayDeque<>();
-        moves = new ArrayDeque<>();
-        white = true;
-        state.setKey(Zobrist.generateKey(this));
-        state.setPawnKey(Zobrist.generatePawnKey(this));
+        this.pawns       = 0L;
+        this.knights     = 0L;
+        this.bishops     = 0L;
+        this.rooks       = 0L;
+        this.queens      = 0L;
+        this.kings       = 0L;
+        this.whitePieces = 0L;
+        this.blackPieces = 0L;
+        this.occupied    = 0L;
+        this.pieces      = new Piece[Square.COUNT];
+        this.moves       = new Move[Search.MAX_DEPTH];
+        this.states      = new GameState[Search.MAX_DEPTH];
+        this.state       = new GameState();
+        this.white       = true;
+        this.ply         = 0;
     }
 
     /**
@@ -65,7 +64,7 @@ public class Board {
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
-        states.push(state.copy());
+        states[ply] = state.copy();
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
         else if (move.isCastling())   makeCastleMove(from, to);
@@ -73,8 +72,8 @@ public class Board {
         else if (move.isEnPassant())  makeEnPassantMove(from, to);
         else                          makeStandardMove(from, to, piece, captured);
 
-        updateGameState(from, to, piece, captured, move);
-        moves.push(move);
+        updateStateState(from, to, piece, captured, move);
+        moves[ply++] = move;
         white = !white;
         return true;
 
@@ -87,7 +86,7 @@ public class Board {
     public void unmakeMove() {
 
         white = !white;
-        final Move move = moves.pop();
+        final Move move = moves[--ply];
         final int from = move.from();
         final int to = move.to();
         final Piece piece = pieceAt(to);
@@ -97,7 +96,7 @@ public class Board {
         else if (move.isEnPassant())  unmakeEnPassantMove(from, to);
         else                          unmakeStandardMove(from, to, piece);
 
-        state = states.pop();
+        state = states[ply];
 
     }
 
@@ -178,7 +177,7 @@ public class Board {
         }
     }
 
-    private void updateGameState(int from, int to, Piece piece, Piece captured, Move move) {
+    private void updateStateState(int from, int to, Piece piece, Piece captured, Move move) {
         state.captured = captured;
         final boolean resetClock = captured != null || Piece.PAWN.equals(piece);
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
@@ -248,7 +247,7 @@ public class Board {
         white = !white;
         final long key = Zobrist.updateKeyAfterNullMove(state.getKey(), state.getEnPassantFile());
         GameState newState = new GameState(key, state.getPawnKey(), null, -1, state.getRights(), 0);
-        states.push(state);
+        states[ply++] = state;
         state = newState;
     }
 
@@ -257,11 +256,11 @@ public class Board {
      */
     public void unmakeNullMove() {
         white = !white;
-        state = states.pop();
+        state = states[--ply];
     }
 
     public void toggleSquares(Piece type, boolean white, int from, int to) {
-        final long toggleMask = (Bits.of(from) | Bits.of(to));
+        final long toggleMask = Bits.of(from) | Bits.of(to);
         toggle(type, white, toggleMask);
     }
 
@@ -431,11 +430,11 @@ public class Board {
         this.state = state;
     }
 
-    public void setStates(Deque<GameState> states) {
+    public void setStates(GameState[] states) {
         this.states = states;
     }
 
-    public void setMoves(Deque<Move> moves) {
+    public void setMoves(Move[] moves) {
         this.moves = moves;
     }
 
@@ -487,12 +486,16 @@ public class Board {
         return state;
     }
 
-    public Deque<GameState> getStates() {
+    public GameState[] getStates() {
         return states;
     }
 
-    public Deque<Move> getMoves() {
+    public Move[] getMoves() {
         return moves;
+    }
+
+    public int getPly() {
+        return ply;
     }
 
     public long key() {
@@ -530,12 +533,22 @@ public class Board {
         newBoard.setOccupied(this.getOccupied());
         newBoard.setWhite(this.isWhite());
         newBoard.setState(this.getState().copy());
-        Deque<GameState> gameStateHistory = new ArrayDeque<>();
-        this.getStates().forEach(gameState -> gameStateHistory.add(gameState.copy()));
-        newBoard.setStates(gameStateHistory);
-        Deque<Move> moveHistory = new ArrayDeque<>();
-        this.getMoves().forEach(move -> moveHistory.add(new Move(move.value())));
-        newBoard.setMoves(moveHistory);
+        GameState[] newStates = new GameState[this.getStates().length];
+        for (int i = 0; i < this.getStates().length; i++) {
+            if (this.getStates()[i] == null) {
+                break;
+            }
+            newStates[i] = this.getStates()[i].copy();
+        }
+        newBoard.setStates(newStates);
+        Move[] newMoves = new Move[this.getMoves().length];
+        for (int i = 0; i < this.getMoves().length; i++) {
+            if (this.getMoves()[i] == null) {
+                break;
+            }
+            newMoves[i] = new Move(this.getMoves()[i].value());
+        }
+        newBoard.setMoves(newMoves);
         newBoard.setPieces(Arrays.copyOf(this.getPieces(), this.getPieces().length));
         return newBoard;
     }

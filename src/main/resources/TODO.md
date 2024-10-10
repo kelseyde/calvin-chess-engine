@@ -1,5 +1,13 @@
 # TODO
 
+### General
+
+- [ ] FRC/DFRC support
+- [ ] Improve javadoc
+- [ ] Review all code comments
+- [x] Reduce artifact size (remove plugins, dependencies, delete old nets)
+- [ ] Refactor/improve TranspositionTable code
+
 ### Search
 
 - [x] SPSA tune
@@ -9,11 +17,12 @@
 - [ ] ProbCut
 - [x] TT score eval correction 
 - [x] Razoring
-- [ ] History leaf pruning ( won't gain )
+- [x] History pruning
 - [ ] SEE pruning ( won't gain )
 - [ ] Faster SEE ( won't gain )
 - [ ] Syzygy TB
 - [x] Check root legal moves, if only one, play instantly
+- [ ] Merge Searcher and ParallelSearcher
 
 ### Move generation / Move ordering
 
@@ -22,6 +31,7 @@
 - [ ] Try copy/make rather than make/unmake
 - [x] 1-ply Conthist
 - [x] 2-ply Conthist
+- [ ] 4-ply Conthist
 - [x] Capthist
 - [ ] Threats ( won't gain )
 - [ ] Countermoves ( won't gain )
@@ -56,13 +66,7 @@
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
 - [ ] Add seldepth to info
-- [ ] Add hashfull to info
+- [x] Add hashfull to info
 - [ ] MultiPV
-- [ ] Coloured output
-
-### Code maturity
-
-- [ ] Improve javadoc
-- [ ] Review all code comments
-- [ ] Reduce artifact size (remove plugins, dependencies, delete old nets)
+- [x] Coloured output
 

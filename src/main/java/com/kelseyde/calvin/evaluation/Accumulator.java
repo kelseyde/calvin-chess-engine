@@ -34,8 +34,8 @@ public class Accumulator {
     }
 
     public void add(int wx1, int bx1) {
-        int wOffset = wx1 * HIDDEN_SIZE;
-        int bOffset = bx1 * HIDDEN_SIZE;
+        final int wOffset = wx1 * HIDDEN_SIZE;
+        final int bOffset = bx1 * HIDDEN_SIZE;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
@@ -51,10 +51,10 @@ public class Accumulator {
     }
 
     public void addSub(int wx1, int bx1, int wx2, int bx2) {
-        int wOffset1 = wx1 * HIDDEN_SIZE;
-        int bOffset1 = bx1 * HIDDEN_SIZE;
-        int wOffset2 = wx2 * HIDDEN_SIZE;
-        int bOffset2 = bx2 * HIDDEN_SIZE;
+        final int wOffset1 = wx1 * HIDDEN_SIZE;
+        final int bOffset1 = bx1 * HIDDEN_SIZE;
+        final int wOffset2 = wx2 * HIDDEN_SIZE;
+        final int bOffset2 = bx2 * HIDDEN_SIZE;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
@@ -72,12 +72,12 @@ public class Accumulator {
     }
 
     public void addSubSub(int wx1, int bx1, int wx2, int bx2, int wx3, int bx3) {
-        int wOffset1 = wx1 * HIDDEN_SIZE;
-        int bOffset1 = bx1 * HIDDEN_SIZE;
-        int wOffset2 = wx2 * HIDDEN_SIZE;
-        int bOffset2 = bx2 * HIDDEN_SIZE;
-        int wOffset3 = wx3 * HIDDEN_SIZE;
-        int bOffset3 = bx3 * HIDDEN_SIZE;
+        final int wOffset1 = wx1 * HIDDEN_SIZE;
+        final int bOffset1 = bx1 * HIDDEN_SIZE;
+        final int wOffset2 = wx2 * HIDDEN_SIZE;
+        final int bOffset2 = bx2 * HIDDEN_SIZE;
+        final int wOffset3 = wx3 * HIDDEN_SIZE;
+        final int bOffset3 = bx3 * HIDDEN_SIZE;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
@@ -97,14 +97,14 @@ public class Accumulator {
     }
 
     public void addAddSubSub(int wx1, int bx1, int wx2, int bx2, int wx3, int bx3, int wx4, int bx4) {
-        int wOffset1 = wx1 * HIDDEN_SIZE;
-        int bOffset1 = bx1 * HIDDEN_SIZE;
-        int wOffset2 = wx2 * HIDDEN_SIZE;
-        int bOffset2 = bx2 * HIDDEN_SIZE;
-        int wOffset3 = wx3 * HIDDEN_SIZE;
-        int bOffset3 = bx3 * HIDDEN_SIZE;
-        int wOffset4 = wx4 * HIDDEN_SIZE;
-        int bOffset4 = bx4 * HIDDEN_SIZE;
+        final int wOffset1 = wx1 * HIDDEN_SIZE;
+        final int bOffset1 = bx1 * HIDDEN_SIZE;
+        final int wOffset2 = wx2 * HIDDEN_SIZE;
+        final int bOffset2 = bx2 * HIDDEN_SIZE;
+        final int wOffset3 = wx3 * HIDDEN_SIZE;
+        final int bOffset3 = bx3 * HIDDEN_SIZE;
+        final int wOffset4 = wx4 * HIDDEN_SIZE;
+        final int bOffset4 = bx4 * HIDDEN_SIZE;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 

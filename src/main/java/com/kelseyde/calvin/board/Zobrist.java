@@ -21,7 +21,7 @@ public class Zobrist {
     private static final long[][][] PIECE_SQUARE_HASH = new long[Square.COUNT][2][Piece.COUNT];
     private static final long[] CASTLING_RIGHTS = new long[CASTLING_RIGHTS_COUNT];
     private static final long[] EN_PASSANT_FILE = new long[EN_PASSANT_FILES_COUNT];
-    private static final long BLACK_TO_MOVE;
+    private static final long SIDE_TO_MOVE;
     private static final int WHITE = 0;
     private static final int BLACK = 1;
 
@@ -46,7 +46,7 @@ public class Zobrist {
         }
 
         // Generate random key for side to move
-        BLACK_TO_MOVE = random.nextLong();
+        SIDE_TO_MOVE = random.nextLong();
     }
 
     public static long generateKey(Board board) {
@@ -73,7 +73,7 @@ public class Zobrist {
         key ^= EN_PASSANT_FILE[board.getState().getEnPassantFile() + 1];
         key ^= CASTLING_RIGHTS[board.getState().getRights()];
         if (board.isWhite()) {
-            key ^= BLACK_TO_MOVE;
+            key ^= SIDE_TO_MOVE;
         }
 
         return key;
@@ -123,11 +123,11 @@ public class Zobrist {
     }
 
     public static long updateSideToMove(long key) {
-        return key ^ BLACK_TO_MOVE;
+        return key ^ SIDE_TO_MOVE;
     }
 
     public static long updateKeyAfterNullMove(long key, int oldEnPassantFile) {
-        return key ^ EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[0] ^ BLACK_TO_MOVE;
+        return key ^ EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[0] ^ SIDE_TO_MOVE;
     }
 
 }

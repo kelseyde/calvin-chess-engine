@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.tables.history.*;
 
@@ -12,15 +13,22 @@ public class SearchHistory {
 
     private static final int[] CONT_HIST_PLIES = { 1, 2 };
 
-    private final KillerTable killerTable = new KillerTable();
-    private final QuietHistoryTable quietHistoryTable = new QuietHistoryTable();
-    private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
-    private final CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
-    private final CorrectionHistoryTable pawnCorrHistTable = new CorrectionHistoryTable();
-
+    private final KillerTable killerTable;
+    private final QuietHistoryTable quietHistoryTable;
+    private final ContinuationHistoryTable contHistTable;
+    private final CaptureHistoryTable captureHistoryTable;
+    private final CorrectionHistoryTable pawnCorrHistTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
+
+    public SearchHistory(EngineConfig config) {
+        this.killerTable = new KillerTable();
+        this.quietHistoryTable = new QuietHistoryTable(config);
+        this.contHistTable = new ContinuationHistoryTable(config);
+        this.captureHistoryTable = new CaptureHistoryTable(config);
+        this.pawnCorrHistTable = new CorrectionHistoryTable();
+    }
 
     public void updateHistory(
             PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures) {
@@ -30,7 +38,7 @@ public class SearchHistory {
             killerTable.add(ply, bestMove.move());
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
-                quietHistoryTable.update(quiet.move(), depth, white, good);
+                quietHistoryTable.update(quiet.move(), quiet.piece(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
                     Move prevMove = ss.getMove(ply - prevPly);

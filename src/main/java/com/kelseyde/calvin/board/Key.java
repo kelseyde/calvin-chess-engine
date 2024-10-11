@@ -13,6 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @see <a href="https://www.chessprogramming.org/Zobrist_Hashing">Chess Programming Wiki</a>
  */
+// TODO: try only generating key once for each update
 public class Key {
 
     private static final int CASTLING_RIGHTS_COUNT = 16;

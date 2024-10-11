@@ -512,6 +512,10 @@ public class Board {
         return state.getPawnKey();
     }
 
+    public long[] nonPawnKeys() {
+        return state.nonPawnKeys;
+    }
+
     public int countPieces() {
         return Bits.count(occupied);
     }

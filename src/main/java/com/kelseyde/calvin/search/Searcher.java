@@ -233,7 +233,7 @@ public class Searcher implements Search {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedStaticEval = rawStaticEval;
-            staticEval = history.correctEvaluation(board, rawStaticEval);
+            staticEval = history.correctEvaluation(board, rawStaticEval, board.isWhite());
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -518,7 +518,7 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = history.correctEvaluation(board, rawStaticEval);
+            staticEval = history.correctEvaluation(board, rawStaticEval, board.isWhite());
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||

@@ -18,6 +18,8 @@ public class SearchHistory {
     private final ContinuationHistoryTable contHistTable;
     private final CaptureHistoryTable captureHistoryTable;
     private final CorrectionHistoryTable pawnCorrHistTable;
+    private final CorrectionHistoryTable whiteNonPawnCorrHistTable;
+    private final CorrectionHistoryTable blackNonPawnCorrHistTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -28,6 +30,8 @@ public class SearchHistory {
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
         this.pawnCorrHistTable = new CorrectionHistoryTable();
+        this.whiteNonPawnCorrHistTable = new CorrectionHistoryTable();
+        this.blackNonPawnCorrHistTable = new CorrectionHistoryTable();
     }
 
     public void updateHistory(
@@ -70,12 +74,18 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int correctEvaluation(Board board, int staticEval) {
-        return pawnCorrHistTable.correctEvaluation(board.pawnKey(), board.isWhite(), staticEval);
+    public int correctEvaluation(Board board, int staticEval, boolean white) {
+        int pawn = pawnCorrHistTable.get(board.pawnKey(), white);
+        int whiteNonPawn = whiteNonPawnCorrHistTable.get(board.nonPawnKeys()[0], white);
+        int blackNonPawn = blackNonPawnCorrHistTable.get(board.nonPawnKeys()[1],white);
+        int correction = pawn + whiteNonPawn + blackNonPawn;
+        return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 
     public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
+        whiteNonPawnCorrHistTable.update(board.nonPawnKeys()[0], board.isWhite(), depth, score, staticEval);
+        blackNonPawnCorrHistTable.update(board.nonPawnKeys()[1], board.isWhite(), depth, score, staticEval);
     }
 
     public int getBestMoveStability() {

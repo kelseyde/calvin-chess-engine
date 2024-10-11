@@ -20,7 +20,7 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
  */
 public class CorrectionHistoryTable {
 
-    private static final int SCALE = 256;
+    public static final int SCALE = 256;
     private static final int MAX = SCALE * 32;
     private static final int TABLE_SIZE = 16384;
 
@@ -63,7 +63,7 @@ public class CorrectionHistoryTable {
     /**
      * Retrieve the correction history entry for the given side to move and hash index.
      */
-    private int get(long key, boolean white) {
+    public int get(long key, boolean white) {
         int colourIndex = Colour.index(white);
         int hashIndex = hashIndex(key);
         return entries[colourIndex][hashIndex];

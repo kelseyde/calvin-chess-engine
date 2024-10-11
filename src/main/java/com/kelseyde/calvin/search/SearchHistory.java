@@ -75,11 +75,11 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int correctEvaluation(Board board, int staticEval, boolean white) {
-        int pawn = pawnCorrHistTable.get(board.pawnKey(), white);
-        int whiteNonPawn = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], white);
-        int blackNonPawn = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK],white);
-        int correction = pawn + whiteNonPawn + blackNonPawn;
+    public int correctEvaluation(Board board, int staticEval) {
+        int pawn = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
+        int white = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
+        int black = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
+        int correction = pawn + white + black;
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 

@@ -123,6 +123,7 @@ public class Board {
         int colourIndex = Colour.index(white);
         state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, Piece.KING, white);
         state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], rookFrom, rookTo, Piece.ROOK, white);
+        state.majorKey = Key.updatePiece(state.majorKey, rookFrom, rookTo, Piece.ROOK, white);
     }
 
     private void makeEnPassantMove(int from, int to) {
@@ -150,16 +151,28 @@ public class Board {
         if (captured != null) {
             toggleSquare(captured, !white, to);
             state.key = Key.updatePiece(state.key, to, captured, !white);
-            if (captured == Piece.PAWN) {
+            if (captured.isPawn()) {
                 state.pawnKey = Key.updatePiece(state.pawnKey, to, captured, !white);
             } else {
                 int colourIndex = Colour.index(!white);
                 state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
+                if (captured.isMajor()) {
+                    state.majorKey = Key.updatePiece(state.majorKey, to, captured, !white);
+                }
+                else if (captured.isMinor()) {
+                    state.minorKey = Key.updatePiece(state.minorKey, to, captured, !white);
+                }
             }
         }
         state.key = Key.updatePiece(state.key, to, promoted, white);
         int colourIndex = Colour.index(white);
         state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, promoted, white);
+        if (promoted.isMajor()) {
+            state.majorKey = Key.updatePiece(state.majorKey, to, promoted, white);
+        }
+        else if (promoted.isMinor()) {
+            state.minorKey = Key.updatePiece(state.minorKey, to, promoted, white);
+        }
     }
 
     private void makeStandardMove(int from, int to, Piece piece, Piece captured) {
@@ -167,21 +180,33 @@ public class Board {
         if (captured != null) {
             toggleSquare(captured, !white, to);
             state.key = Key.updatePiece(state.key, to, captured, !white);
-            if (captured == Piece.PAWN) {
+            if (captured.isPawn()) {
                 state.pawnKey = Key.updatePiece(state.pawnKey, to, captured, !white);
             } else {
                 int colourIndex = Colour.index(!white);
                 state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
+                if (captured.isMajor()) {
+                    state.majorKey = Key.updatePiece(state.majorKey, to, captured, !white);
+                }
+                else if (captured.isMinor()) {
+                    state.minorKey = Key.updatePiece(state.minorKey, to, captured, !white);
+                }
             }
         }
         pieces[from] = null;
         pieces[to] = piece;
         state.key = Key.updatePiece(state.key, from, to, piece, white);
-        if (piece == Piece.PAWN) {
+        if (piece.isPawn()) {
             state.pawnKey = Key.updatePiece(state.pawnKey, from, to, piece, white);
         } else {
             int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, piece, white);
+            if (piece.isMajor()) {
+                state.majorKey = Key.updatePiece(state.majorKey, from, to, piece, white);
+            }
+            else if (piece.isMinor()) {
+                state.minorKey = Key.updatePiece(state.minorKey, from, to, piece, white);
+            }
         }
     }
 
@@ -249,7 +274,7 @@ public class Board {
         white = !white;
         final long key = Key.updateKeyAfterNullMove(state.key, state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final GameState newState = new GameState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
+        final GameState newState = new GameState(key, state.pawnKey, nonPawnKeys, state.majorKey, state.minorKey, null, -1, state.rights, 0);
         states[ply++] = state;
         state = newState;
     }
@@ -513,8 +538,12 @@ public class Board {
         return state.nonPawnKeys;
     }
 
-    public int countPieces() {
-        return Bits.count(occupied);
+    public long majorKey() {
+        return state.majorKey;
+    }
+
+    public long minorKey() {
+        return state.minorKey;
     }
 
     public boolean hasPiecesRemaining(boolean white) {

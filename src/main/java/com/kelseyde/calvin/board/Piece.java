@@ -40,6 +40,18 @@ public enum Piece {
         return code;
     }
 
+    public boolean isPawn() {
+        return this == PAWN;
+    }
+
+    public boolean isMajor() {
+        return this == ROOK || this == QUEEN;
+    }
+
+    public boolean isMinor() {
+        return this == BISHOP || this == KNIGHT;
+    }
+
     public boolean isSlider() {
         return this == BISHOP || this == ROOK || this == QUEEN;
     }

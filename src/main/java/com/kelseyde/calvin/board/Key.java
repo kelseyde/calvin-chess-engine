@@ -129,6 +129,42 @@ public class Key {
         return keys;
     }
 
+    public static long generateMajorKey(Board board) {
+        long key = 0L;
+
+        // Get the bitboards for white and black major pieces (Rooks and Queens)
+        long whiteRooks = board.getRooks(true);
+        long blackRooks = board.getRooks(false);
+        long whiteQueens = board.getQueens(true);
+        long blackQueens = board.getQueens(false);
+
+        // Loop through each square
+        for (int square = 0; square < Square.COUNT; square++) {
+            key = updateKeyForPiece(key, whiteRooks, blackRooks, square, Piece.ROOK.index());
+            key = updateKeyForPiece(key, whiteQueens, blackQueens, square, Piece.QUEEN.index());
+        }
+
+        return key;
+    }
+
+    public static long generateMinorKey(Board board) {
+        long key = 0L;
+
+        // Get the bitboards for white and black minor pieces (Knights and Bishops)
+        long whiteKnights = board.getKnights(true);
+        long blackKnights = board.getKnights(false);
+        long whiteBishops = board.getBishops(true);
+        long blackBishops = board.getBishops(false);
+
+        // Loop through each square
+        for (int square = 0; square < Square.COUNT; square++) {
+            key = updateKeyForPiece(key, whiteKnights, blackKnights, square, Piece.KNIGHT.index());
+            key = updateKeyForPiece(key, whiteBishops, blackBishops, square, Piece.BISHOP.index());
+        }
+
+        return key;
+    }
+
     private static long updateKeyForPiece(long key, long whiteBitboard, long blackBitboard, int square, int pieceIndex) {
         if (((whiteBitboard >>> square) & 1) == 1) {
             key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndex];

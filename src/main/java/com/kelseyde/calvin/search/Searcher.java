@@ -350,7 +350,7 @@ public class Searcher implements Search {
                 reduction -= pvNode ? 1 : 0;
 
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
-                reduction -= 2 * historyScore / config.quietHistMax.value;
+                reduction -= 2 * historyScore / config.quietHistMaxScore.value;
             }
 
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning

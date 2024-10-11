@@ -2,26 +2,30 @@ package com.kelseyde.calvin.tables.history;
 
 public abstract class AbstractHistoryTable {
 
-    private final int bonus;
-    private final int malus;
-    private final int max;
+    private final int bonusMax;
+    private final int bonusScale;
+    private final int malusMax;
+    private final int malusScale;
+    private final int scoreMax;
 
-    public AbstractHistoryTable(int bonus, int malus, int max) {
-        this.bonus = bonus;
-        this.malus = malus;
-        this.max = max;
+    public AbstractHistoryTable(int bonusMax, int bonusScale, int malusMax, int malusScale, int scoreMax) {
+        this.bonusMax = bonusMax;
+        this.bonusScale = bonusScale;
+        this.malusMax = malusMax;
+        this.malusScale = malusScale;
+        this.scoreMax = scoreMax;
     }
 
     protected int bonus(int depth) {
-        return Math.min(16 * depth * depth + 32 * depth + 16, bonus);
+        return Math.min(bonusScale * depth, bonusMax);
     }
 
     protected int malus(int depth) {
-        return -Math.min(16 * depth * depth + 32 * depth + 16, malus);
+        return -Math.min(malusScale * depth, malusMax);
     }
 
     protected int gravity(int current, int update) {
-        return current + update - current * Math.abs(update) / max;
+        return current + update - current * Math.abs(update) / scoreMax;
     }
 
 }

@@ -4,9 +4,10 @@ import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
-public class ZobristTest {
+public class KeyTest {
 
     @Test
     public void testSamePositionGeneratesSameKey() {
@@ -197,6 +198,129 @@ public class ZobristTest {
         long zobrist2 = board2.getState().getPawnKey();
 
         Assertions.assertEquals(zobrist1, zobrist2);
+
+    }
+
+    @Test
+    public void testNonPawnNotUpdatedOnPawnMove() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        long[] keys = board.nonPawnKeys();
+
+        board.makeMove(Move.fromUCI("e2e4"));
+        long[] newKeys = board.nonPawnKeys();
+        Assertions.assertArrayEquals(keys, newKeys);
+
+        board.makeMove(Move.fromUCI("e7e5", Move.PAWN_DOUBLE_MOVE_FLAG));
+        newKeys = board.nonPawnKeys();
+        Assertions.assertArrayEquals(keys, newKeys);
+        Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
+
+    }
+
+    @Test
+    public void testNonPawnCorrectSideUpdatedWhite() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
+
+        board.makeMove(Move.fromUCI("g1f3"));
+        long[] newKeys = board.nonPawnKeys();
+
+        Assertions.assertEquals(keys[1], newKeys[1]);
+        Assertions.assertNotEquals(keys[0], newKeys[0]);
+        Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
+
+    }
+
+    @Test
+    public void testNonPawnCorrectSideUpdatedBlack() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
+
+        board.makeMove(Move.fromUCI("e2e4", Move.PAWN_DOUBLE_MOVE_FLAG));
+        board.makeMove(Move.fromUCI("g8f6"));
+        long[] newKeys = board.nonPawnKeys();
+
+        Assertions.assertEquals(keys[0], newKeys[0]);
+        Assertions.assertNotEquals(keys[1], newKeys[1]);
+        Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
+
+    }
+
+    @Test
+    public void testNonPawnCastling() {
+
+        Board board = Board.from("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+        long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
+
+        board.makeMove(Move.fromUCI("e1g1", Move.CASTLE_FLAG));
+        long[] newKeys = board.nonPawnKeys();
+
+        Assertions.assertNotEquals(keys[0], newKeys[0]);
+        Assertions.assertEquals(keys[1], newKeys[1]);
+        Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
+
+    }
+
+    @Test
+    public void testNonPawnCapturePawn() {
+
+        Board board = Board.from("rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3");
+        long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
+
+        board.makeMove(Move.fromUCI("f3e5"));
+        long[] newKeys = board.nonPawnKeys();
+
+        Assertions.assertNotEquals(keys[0], newKeys[0]);
+        Assertions.assertEquals(keys[1], newKeys[1]);
+        Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
+
+    }
+
+    @Test
+    public void testNonPawnCaptureNonPawn() {
+
+        Board board = Board.from("r1bqkbnr/pppppppp/2n5/4N3/8/8/PPPPPPPP/RNBQKB1R b KQkq - 3 2");
+        long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
+
+        board.makeMove(Move.fromUCI("c6e5"));
+        long[] newKeys = board.nonPawnKeys();
+
+        Assertions.assertNotEquals(keys[1], newKeys[1]);
+        Assertions.assertNotEquals(keys[0], newKeys[0]);
+        Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
+
+    }
+
+    @Test
+    public void testNormalPromotion() {
+
+        Board board = Board.from("r2qkbnr/pP1npppp/8/5b2/8/8/PPPP1PPP/RNBQKBNR w KQkq - 1 5");
+        long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
+
+        board.makeMove(Move.fromUCI("b7b8q", Move.PROMOTE_TO_QUEEN_FLAG));
+        long[] newKeys = board.nonPawnKeys();
+
+        Assertions.assertNotEquals(keys[0], newKeys[0]);
+        Assertions.assertEquals(keys[1], newKeys[1]);
+        Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
+
+    }
+
+    @Test
+    public void testCapturePromotion() {
+
+        Board board = Board.from("r2qkbnr/pP1npppp/8/5b2/8/8/PPPP1PPP/RNBQKBNR w KQkq - 1 5");
+        long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
+
+        board.makeMove(Move.fromUCI("b7a8q", Move.PROMOTE_TO_QUEEN_FLAG));
+        long[] newKeys = board.nonPawnKeys();
+
+        Assertions.assertNotEquals(keys[0], newKeys[0]);
+        Assertions.assertNotEquals(keys[1], newKeys[1]);
+        Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
 
     }
 

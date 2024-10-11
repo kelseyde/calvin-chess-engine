@@ -5,7 +5,7 @@ import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.Zobrist;
+import com.kelseyde.calvin.board.Key;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +35,6 @@ public class FEN {
             long blackRooks = 0L;
             long blackQueens = 0L;
             long blackKing = 0L;
-
 
             List<List<String>> rankFileHash = Arrays.stream(files)
                     .map(file -> Arrays.stream(file.split(""))
@@ -98,8 +97,9 @@ public class FEN {
             board.getState().setRights(castlingRights);
             board.getState().setEnPassantFile(enPassantFile);
             board.getState().setHalfMoveClock(fiftyMoveCounter);
-            board.getState().setKey(Zobrist.generateKey(board));
-            board.getState().setPawnKey(Zobrist.generatePawnKey(board));
+            board.getState().setKey(Key.generateKey(board));
+            board.getState().setPawnKey(Key.generatePawnKey(board));
+            board.getState().setNonPawnKeys(Key.generateNonPawnKeys(board));
 
             return board;
 

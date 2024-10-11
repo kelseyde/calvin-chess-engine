@@ -20,9 +20,9 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
  */
 public class CorrectionHistoryTable {
 
-    public static final int SCALE = 256;
-    public static final int MAX = SCALE * 32;
-    static final int TABLE_SIZE = 16384;
+    private static final int SCALE = 256;
+    private static final int MAX = SCALE * 32;
+    private static final int TABLE_SIZE = 16384;
 
     int[][] entries;
 

@@ -85,7 +85,7 @@ public class SearchHistory {
         int black  = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int major  = majorCorrHistTable.get(board.majorKey(), board.isWhite());
         int minor  = minorCorrHistTable.get(board.minorKey(), board.isWhite());
-        int correction = pawn + white + black + major + minor;
+        int correction = pawn + white + black + ((major + minor) / 2);
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 

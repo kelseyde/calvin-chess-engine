@@ -123,6 +123,10 @@ public class GameState {
         GameState gameState = (GameState) o;
         return key == gameState.key
                 && pawnKey == gameState.pawnKey
+                && nonPawnKeys[0] == gameState.nonPawnKeys[0]
+                && nonPawnKeys[1] == gameState.nonPawnKeys[1]
+                && majorKey == gameState.majorKey
+                && minorKey == gameState.minorKey
                 && enPassantFile == gameState.enPassantFile
                 && rights == gameState.rights
                 && halfMoveClock == gameState.halfMoveClock

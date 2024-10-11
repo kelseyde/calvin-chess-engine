@@ -44,6 +44,10 @@ public enum Piece {
         return this == PAWN;
     }
 
+    public boolean isKing() {
+        return this == KING;
+    }
+
     public boolean isMajor() {
         return this == ROOK || this == QUEEN;
     }

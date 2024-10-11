@@ -137,11 +137,14 @@ public class Key {
         long blackRooks = board.getRooks(false);
         long whiteQueens = board.getQueens(true);
         long blackQueens = board.getQueens(false);
+        long whiteKing = board.getKing(true);
+        long blackKing = board.getKing(false);
 
         // Loop through each square
         for (int square = 0; square < Square.COUNT; square++) {
             key = updateKeyForPiece(key, whiteRooks, blackRooks, square, Piece.ROOK.index());
             key = updateKeyForPiece(key, whiteQueens, blackQueens, square, Piece.QUEEN.index());
+            key = updateKeyForPiece(key, whiteKing, blackKing, square, Piece.KING.index());
         }
 
         return key;
@@ -155,11 +158,14 @@ public class Key {
         long blackKnights = board.getKnights(false);
         long whiteBishops = board.getBishops(true);
         long blackBishops = board.getBishops(false);
+        long whiteKing = board.getKing(true);
+        long blackKing = board.getKing(false);
 
         // Loop through each square
         for (int square = 0; square < Square.COUNT; square++) {
             key = updateKeyForPiece(key, whiteKnights, blackKnights, square, Piece.KNIGHT.index());
             key = updateKeyForPiece(key, whiteBishops, blackBishops, square, Piece.BISHOP.index());
+            key = updateKeyForPiece(key, whiteKing, blackKing, square, Piece.KING.index());
         }
 
         return key;

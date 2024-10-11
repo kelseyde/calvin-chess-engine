@@ -123,7 +123,9 @@ public class Board {
         int colourIndex = Colour.index(white);
         state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, Piece.KING, white);
         state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], rookFrom, rookTo, Piece.ROOK, white);
+        state.majorKey = Key.updatePiece(state.majorKey, from, to, Piece.KING, white);
         state.majorKey = Key.updatePiece(state.majorKey, rookFrom, rookTo, Piece.ROOK, white);
+        state.minorKey = Key.updatePiece(state.minorKey, from, to, Piece.KING, white);
     }
 
     private void makeEnPassantMove(int from, int to) {
@@ -156,10 +158,10 @@ public class Board {
             } else {
                 int colourIndex = Colour.index(!white);
                 state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
-                if (captured.isMajor()) {
+                if (captured.isMajor() || captured.isKing()) {
                     state.majorKey = Key.updatePiece(state.majorKey, to, captured, !white);
                 }
-                else if (captured.isMinor()) {
+                if (captured.isMinor() || captured.isKing()) {
                     state.minorKey = Key.updatePiece(state.minorKey, to, captured, !white);
                 }
             }
@@ -167,10 +169,10 @@ public class Board {
         state.key = Key.updatePiece(state.key, to, promoted, white);
         int colourIndex = Colour.index(white);
         state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, promoted, white);
-        if (promoted.isMajor()) {
+        if (promoted.isMajor() || promoted.isKing()) {
             state.majorKey = Key.updatePiece(state.majorKey, to, promoted, white);
         }
-        else if (promoted.isMinor()) {
+        if (promoted.isMinor() || promoted.isKing()) {
             state.minorKey = Key.updatePiece(state.minorKey, to, promoted, white);
         }
     }
@@ -185,10 +187,10 @@ public class Board {
             } else {
                 int colourIndex = Colour.index(!white);
                 state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
-                if (captured.isMajor()) {
+                if (captured.isMajor() || captured.isKing()) {
                     state.majorKey = Key.updatePiece(state.majorKey, to, captured, !white);
                 }
-                else if (captured.isMinor()) {
+                if (captured.isMinor() || captured.isKing()) {
                     state.minorKey = Key.updatePiece(state.minorKey, to, captured, !white);
                 }
             }
@@ -201,10 +203,10 @@ public class Board {
         } else {
             int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, piece, white);
-            if (piece.isMajor()) {
+            if (piece.isMajor() || piece.isKing()) {
                 state.majorKey = Key.updatePiece(state.majorKey, from, to, piece, white);
             }
-            else if (piece.isMinor()) {
+            if (piece.isMinor() || piece.isKing()) {
                 state.minorKey = Key.updatePiece(state.minorKey, from, to, piece, white);
             }
         }

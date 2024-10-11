@@ -4,6 +4,7 @@ import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -295,7 +296,7 @@ public class KeyTest {
     }
 
     @Test
-    public void testNormalPromotion() {
+    public void testNonPawnNormalPromotion() {
 
         Board board = Board.from("r2qkbnr/pP1npppp/8/5b2/8/8/PPPP1PPP/RNBQKBNR w KQkq - 1 5");
         long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
@@ -310,7 +311,7 @@ public class KeyTest {
     }
 
     @Test
-    public void testCapturePromotion() {
+    public void testNonPawnCapturePromotion() {
 
         Board board = Board.from("r2qkbnr/pP1npppp/8/5b2/8/8/PPPP1PPP/RNBQKBNR w KQkq - 1 5");
         long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
@@ -321,6 +322,86 @@ public class KeyTest {
         Assertions.assertNotEquals(keys[0], newKeys[0]);
         Assertions.assertNotEquals(keys[1], newKeys[1]);
         Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
+
+    }
+
+    @Test
+    public void testMajorMinorOnPawnMove() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        long majorKey = board.majorKey();
+        long minorKey = board.minorKey();
+
+        board.makeMove(Move.fromUCI("e2e4"));
+
+        Assertions.assertEquals(majorKey, board.majorKey());
+        Assertions.assertEquals(minorKey, board.minorKey());
+        Assertions.assertEquals(Key.generateMajorKey(board), board.majorKey());
+        Assertions.assertEquals(Key.generateMinorKey(board), board.minorKey());
+
+    }
+
+    @Test
+    public void testMajorMinorOnMinorMove() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        long majorKey = board.majorKey();
+        long minorKey = board.minorKey();
+
+        board.makeMove(Move.fromUCI("g1f3"));
+
+        Assertions.assertEquals(majorKey, board.majorKey());
+        Assertions.assertNotEquals(minorKey, board.minorKey());
+        Assertions.assertEquals(Key.generateMajorKey(board), board.majorKey());
+        Assertions.assertEquals(Key.generateMinorKey(board), board.minorKey());
+
+    }
+
+    @Test
+    public void testMajorMinorOnMajorMove() {
+
+        Board board = Board.from("rnbqkb1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 2 2");
+        long majorKey = board.majorKey();
+        long minorKey = board.minorKey();
+
+        board.makeMove(Move.fromUCI("h1g1"));
+
+        Assertions.assertNotEquals(majorKey, board.majorKey());
+        Assertions.assertEquals(minorKey, board.minorKey());
+        Assertions.assertEquals(Key.generateMajorKey(board), board.majorKey());
+        Assertions.assertEquals(Key.generateMinorKey(board), board.minorKey());
+
+    }
+
+    @Test
+    public void testMajorMinorMajorCaptureMinor() {
+
+        Board board = Board.from("rnbqkbnr/pppp1ppp/4p3/6N1/8/8/PPPPPPPP/RNBQKB1R b KQkq - 1 2");
+        long majorKey = board.majorKey();
+        long minorKey = board.minorKey();
+
+        board.makeMove(Move.fromUCI("d8g5"));
+
+        Assertions.assertNotEquals(majorKey, board.majorKey());
+        Assertions.assertNotEquals(minorKey, board.minorKey());
+        Assertions.assertEquals(Key.generateMajorKey(board), board.majorKey());
+        Assertions.assertEquals(Key.generateMinorKey(board), board.minorKey());
+
+    }
+
+    @Test
+    public void testMajorMinorMinorCaptureMajor() {
+
+        Board board = Board.from("rnbqkbnr/pppp1ppp/4p3/6N1/8/8/PPPPPPPP/RNBQKB1R b KQkq - 1 2");
+        long majorKey = board.majorKey();
+        long minorKey = board.minorKey();
+
+        board.makeMove(Move.fromUCI("d8g5"));
+
+        Assertions.assertNotEquals(majorKey, board.majorKey());
+        Assertions.assertNotEquals(minorKey, board.minorKey());
+        Assertions.assertEquals(Key.generateMajorKey(board), board.majorKey());
+        Assertions.assertEquals(Key.generateMinorKey(board), board.minorKey());
 
     }
 

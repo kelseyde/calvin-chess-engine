@@ -75,9 +75,6 @@ public class Board {
         updateState(from, to, piece, captured, move);
         moves[ply++] = move;
         white = !white;
-//        if (!Arrays.equals(state.nonPawnKeys, Key.generateNonPawnKeys(this))) {
-//            throw new IllegalStateException("Non-pawn keys do not match");
-//        }
         return true;
 
     }

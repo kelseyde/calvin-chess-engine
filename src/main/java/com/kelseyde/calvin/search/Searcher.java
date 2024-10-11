@@ -227,16 +227,19 @@ public class Searcher implements Search {
         }
 
         int rawStaticEval = Integer.MIN_VALUE;
+        int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = rawStaticEval;
+            uncorrectedStaticEval = rawStaticEval;
+            staticEval = history.correctEvaluation(board, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                     (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
                 staticEval = ttEntry.score();
+                uncorrectedStaticEval = staticEval;
             }
         }
 
@@ -463,6 +466,14 @@ public class Searcher implements Search {
             history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, quietsSearched, capturesSearched);
         }
 
+        if (!inCheck
+            && !Score.isUndefinedScore(bestScore)
+            && (bestMove == null || board.isQuiet(bestMove))
+            && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
+            && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
+            history.updateCorrectionHistory(board, depth, bestScore, uncorrectedStaticEval);
+        }
+
         // Store the best move and score in the transposition table for future reference.
         if (!shouldStop()) {
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
@@ -507,7 +518,7 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = rawStaticEval;
+            staticEval = history.correctEvaluation(board, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -519,7 +530,7 @@ public class Searcher implements Search {
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.
-            movePicker.setFilter(MoveGenerator.MoveFilter.ALL);
+            movePicker.setFilter(MoveFilter.ALL);
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.

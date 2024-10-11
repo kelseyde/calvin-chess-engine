@@ -1,13 +1,11 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.history.*;
 
 import java.util.List;
 
@@ -19,6 +17,7 @@ public class SearchHistory {
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
     private final CaptureHistoryTable captureHistoryTable;
+    private final CorrectionHistoryTable pawnCorrHistTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -28,6 +27,7 @@ public class SearchHistory {
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
+        this.pawnCorrHistTable = new CorrectionHistoryTable();
     }
 
     public void updateHistory(
@@ -70,6 +70,14 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
+    public int correctEvaluation(Board board, int staticEval) {
+        return pawnCorrHistTable.correctEvaluation(board.pawnKey(), board.isWhite(), staticEval);
+    }
+
+    public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
+        pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
+    }
+
     public int getBestMoveStability() {
         return bestMoveStability;
     }
@@ -106,6 +114,7 @@ public class SearchHistory {
         quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();
+        pawnCorrHistTable.clear();
     }
 
 }

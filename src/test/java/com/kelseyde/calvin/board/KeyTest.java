@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.stream.Stream;
 
-public class ZobristTest {
+public class KeyTest {
 
     @Test
     public void testSamePositionGeneratesSameKey() {

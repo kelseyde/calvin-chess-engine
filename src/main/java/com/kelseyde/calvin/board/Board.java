@@ -72,9 +72,12 @@ public class Board {
         else if (move.isEnPassant())  makeEnPassantMove(from, to);
         else                          makeStandardMove(from, to, piece, captured);
 
-        updateStateState(from, to, piece, captured, move);
+        updateState(from, to, piece, captured, move);
         moves[ply++] = move;
         white = !white;
+//        if (!Arrays.equals(state.nonPawnKeys, Key.generateNonPawnKeys(this))) {
+//            throw new IllegalStateException("Non-pawn keys do not match");
+//        }
         return true;
 
     }
@@ -104,28 +107,25 @@ public class Board {
         toggleSquares(Piece.PAWN, white, from, to);
         pieces[from] = null;
         pieces[to] = Piece.PAWN;
-        state.key = Zobrist.updatePiece(state.key, from, to, Piece.PAWN, white);
-        state.pawnKey = Zobrist.updatePiece(state.pawnKey, from, to, Piece.PAWN, white);
+        state.key = Key.updatePiece(state.key, from, to, Piece.PAWN, white);
+        state.pawnKey = Key.updatePiece(state.pawnKey, from, to, Piece.PAWN, white);
     }
 
     private void makeCastleMove(int from, int to) {
         toggleSquares(Piece.KING, white, from, to);
         pieces[from] = null;
         pieces[to] = Piece.KING;
-        state.key = Zobrist.updatePiece(state.key, from, to, Piece.KING, white);
+        state.key = Key.updatePiece(state.key, from, to, Piece.KING, white);
         final boolean kingside = File.of(to) == 6;
-        final int rookFrom, rookTo;
-        if (kingside) {
-            rookFrom = white ? 7 : 63;
-            rookTo = white ? 5 : 61;
-        } else {
-            rookFrom = white ? 0 : 56;
-            rookTo = white ? 3 : 59;
-        }
+        final int rookFrom = Castling.rookFrom(kingside, white);
+        final int rookTo = Castling.rookTo(kingside, white);
         toggleSquares(Piece.ROOK, white, rookFrom, rookTo);
         pieces[rookFrom] = null;
         pieces[rookTo] = Piece.ROOK;
-        state.key = Zobrist.updatePiece(state.key, rookFrom, rookTo, Piece.ROOK, white);
+        state.key = Key.updatePiece(state.key, rookFrom, rookTo, Piece.ROOK, white);
+        int colourIndex = Colour.index(white);
+        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, Piece.KING, white);
+        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], rookFrom, rookTo, Piece.ROOK, white);
     }
 
     private void makeEnPassantMove(int from, int to) {
@@ -135,12 +135,12 @@ public class Board {
         pieces[from] = null;
         pieces[pawnSquare] = null;
         pieces[to] = Piece.PAWN;
-        state.key = Zobrist.updatePiece(state.key, from, Piece.PAWN, white);
-        state.key = Zobrist.updatePiece(state.key, pawnSquare, Piece.PAWN, !white);
-        state.key = Zobrist.updatePiece(state.key, to, Piece.PAWN, white);
-        state.pawnKey = Zobrist.updatePiece(state.pawnKey, from, Piece.PAWN, white);
-        state.pawnKey = Zobrist.updatePiece(state.pawnKey, pawnSquare, Piece.PAWN, !white);
-        state.pawnKey = Zobrist.updatePiece(state.pawnKey, to, Piece.PAWN, white);
+        state.key = Key.updatePiece(state.key, from, Piece.PAWN, white);
+        state.key = Key.updatePiece(state.key, pawnSquare, Piece.PAWN, !white);
+        state.key = Key.updatePiece(state.key, to, Piece.PAWN, white);
+        state.pawnKey = Key.updatePiece(state.pawnKey, from, Piece.PAWN, white);
+        state.pawnKey = Key.updatePiece(state.pawnKey, pawnSquare, Piece.PAWN, !white);
+        state.pawnKey = Key.updatePiece(state.pawnKey, to, Piece.PAWN, white);
     }
 
     private void makePromotionMove(int from, int to, Piece promoted, Piece captured) {
@@ -148,62 +148,67 @@ public class Board {
         toggleSquare(promoted, white, to);
         pieces[from] = null;
         pieces[to] = promoted;
-        state.key = Zobrist.updatePiece(state.key, from, Piece.PAWN, white);
-        state.pawnKey = Zobrist.updatePiece(state.pawnKey, from, Piece.PAWN, white);
+        state.key = Key.updatePiece(state.key, from, Piece.PAWN, white);
+        state.pawnKey = Key.updatePiece(state.pawnKey, from, Piece.PAWN, white);
         if (captured != null) {
             toggleSquare(captured, !white, to);
-            state.key = Zobrist.updatePiece(state.key, to, captured, !white);
+            state.key = Key.updatePiece(state.key, to, captured, !white);
             if (captured == Piece.PAWN) {
-                state.pawnKey = Zobrist.updatePiece(state.pawnKey, to, captured, !white);
+                state.pawnKey = Key.updatePiece(state.pawnKey, to, captured, !white);
+            } else {
+                int colourIndex = Colour.index(!white);
+                state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
             }
         }
-        state.key = Zobrist.updatePiece(state.key, to, promoted, white);
+        state.key = Key.updatePiece(state.key, to, promoted, white);
+        int colourIndex = Colour.index(white);
+        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, promoted, white);
     }
 
     private void makeStandardMove(int from, int to, Piece piece, Piece captured) {
         toggleSquares(piece, white, from, to);
         if (captured != null) {
             toggleSquare(captured, !white, to);
-            state.key = Zobrist.updatePiece(state.key, to, captured, !white);
+            state.key = Key.updatePiece(state.key, to, captured, !white);
             if (captured == Piece.PAWN) {
-                state.pawnKey = Zobrist.updatePiece(state.pawnKey, to, captured, !white);
+                state.pawnKey = Key.updatePiece(state.pawnKey, to, captured, !white);
+            } else {
+                int colourIndex = Colour.index(!white);
+                state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
             }
         }
         pieces[from] = null;
         pieces[to] = piece;
-        state.key = Zobrist.updatePiece(state.key, from, to, piece, white);
+        state.key = Key.updatePiece(state.key, from, to, piece, white);
         if (piece == Piece.PAWN) {
-            state.pawnKey = Zobrist.updatePiece(state.pawnKey, from, to, piece, white);
+            state.pawnKey = Key.updatePiece(state.pawnKey, from, to, piece, white);
+        } else {
+            int colourIndex = Colour.index(white);
+            state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, piece, white);
         }
     }
 
-    private void updateStateState(int from, int to, Piece piece, Piece captured, Move move) {
+    private void updateState(int from, int to, Piece piece, Piece captured, Move move) {
         state.captured = captured;
         final boolean resetClock = captured != null || Piece.PAWN.equals(piece);
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
 
         final int castleRights = updateCastleRights(from, to, piece);
-        state.key = Zobrist.updateCastlingRights(state.key, state.rights, castleRights);
+        state.key = Key.updateCastlingRights(state.key, state.rights, castleRights);
         state.rights = castleRights;
 
         final int enPassantFile = move.isPawnDoubleMove() ? File.of(to) : -1;
-        state.key = Zobrist.updateEnPassantFile(state.key, state.enPassantFile, enPassantFile);
+        state.key = Key.updateEnPassantFile(state.key, state.enPassantFile, enPassantFile);
         state.enPassantFile = enPassantFile;
 
-        state.key = Zobrist.updateSideToMove(state.key);
+        state.key = Key.updateSideToMove(state.key);
     }
 
     private void unmakeCastlingMove(int from, int to) {
         toggleSquares(Piece.KING, white, to, from);
         final boolean kingside = File.of(to) == 6;
-        final int rookFrom, rookTo;
-        if (kingside) {
-            rookFrom = white ? 5 : 61;
-            rookTo = white ? 7 : 63;
-        } else {
-            rookFrom = white ? 3 : 59;
-            rookTo = white ? 0 : 56;
-        }
+        final int rookFrom = Castling.rookTo(kingside, white);
+        final int rookTo = Castling.rookFrom(kingside, white);
         toggleSquares(Piece.ROOK, white, rookFrom, rookTo);
         pieces[from] = Piece.KING;
         pieces[to] = null;
@@ -245,8 +250,9 @@ public class Board {
      */
     public void makeNullMove() {
         white = !white;
-        final long key = Zobrist.updateKeyAfterNullMove(state.getKey(), state.getEnPassantFile());
-        GameState newState = new GameState(key, state.getPawnKey(), null, -1, state.getRights(), 0);
+        final long key = Key.updateKeyAfterNullMove(state.key, state.enPassantFile);
+        final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
+        final GameState newState = new GameState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
         states[ply++] = state;
         state = newState;
     }

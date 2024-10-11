@@ -180,12 +180,12 @@ public class Key {
         return key;
     }
 
-    public static long updatePiece(long key, int from, int to, Piece pieceType, boolean white) {
+    public static long hashPiece(long key, int from, int to, Piece pieceType, boolean white) {
         return key ^ PIECE_SQUARE_HASH[from][Colour.index(white)][pieceType.index()]
                 ^ PIECE_SQUARE_HASH[to][Colour.index(white)][pieceType.index()];
     }
 
-    public static long updatePiece(long key, int square, Piece pieceType, boolean white) {
+    public static long hashPiece(long key, int square, Piece pieceType, boolean white) {
         return key ^ PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.index()];
     }
 

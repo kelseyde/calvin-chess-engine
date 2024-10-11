@@ -104,28 +104,28 @@ public class Board {
         toggleSquares(Piece.PAWN, white, from, to);
         pieces[from] = null;
         pieces[to] = Piece.PAWN;
-        state.key = Key.updatePiece(state.key, from, to, Piece.PAWN, white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, from, to, Piece.PAWN, white);
+        state.key = Key.hashPiece(state.key, from, to, Piece.PAWN, white);
+        state.pawnKey = Key.hashPiece(state.pawnKey, from, to, Piece.PAWN, white);
     }
 
     private void makeCastleMove(int from, int to) {
         toggleSquares(Piece.KING, white, from, to);
         pieces[from] = null;
         pieces[to] = Piece.KING;
-        state.key = Key.updatePiece(state.key, from, to, Piece.KING, white);
+        state.key = Key.hashPiece(state.key, from, to, Piece.KING, white);
         final boolean kingside = File.of(to) == 6;
         final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
         toggleSquares(Piece.ROOK, white, rookFrom, rookTo);
         pieces[rookFrom] = null;
         pieces[rookTo] = Piece.ROOK;
-        state.key = Key.updatePiece(state.key, rookFrom, rookTo, Piece.ROOK, white);
+        state.key = Key.hashPiece(state.key, rookFrom, rookTo, Piece.ROOK, white);
         int colourIndex = Colour.index(white);
-        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, Piece.KING, white);
-        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], rookFrom, rookTo, Piece.ROOK, white);
-        state.majorKey = Key.updatePiece(state.majorKey, from, to, Piece.KING, white);
-        state.majorKey = Key.updatePiece(state.majorKey, rookFrom, rookTo, Piece.ROOK, white);
-        state.minorKey = Key.updatePiece(state.minorKey, from, to, Piece.KING, white);
+        state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], from, to, Piece.KING, white);
+        state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], rookFrom, rookTo, Piece.ROOK, white);
+        state.majorKey = Key.hashPiece(state.majorKey, from, to, Piece.KING, white);
+        state.majorKey = Key.hashPiece(state.majorKey, rookFrom, rookTo, Piece.ROOK, white);
+        state.minorKey = Key.hashPiece(state.minorKey, from, to, Piece.KING, white);
     }
 
     private void makeEnPassantMove(int from, int to) {
@@ -135,12 +135,12 @@ public class Board {
         pieces[from] = null;
         pieces[pawnSquare] = null;
         pieces[to] = Piece.PAWN;
-        state.key = Key.updatePiece(state.key, from, Piece.PAWN, white);
-        state.key = Key.updatePiece(state.key, pawnSquare, Piece.PAWN, !white);
-        state.key = Key.updatePiece(state.key, to, Piece.PAWN, white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, from, Piece.PAWN, white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, pawnSquare, Piece.PAWN, !white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, to, Piece.PAWN, white);
+        state.key = Key.hashPiece(state.key, from, Piece.PAWN, white);
+        state.key = Key.hashPiece(state.key, pawnSquare, Piece.PAWN, !white);
+        state.key = Key.hashPiece(state.key, to, Piece.PAWN, white);
+        state.pawnKey = Key.hashPiece(state.pawnKey, from, Piece.PAWN, white);
+        state.pawnKey = Key.hashPiece(state.pawnKey, pawnSquare, Piece.PAWN, !white);
+        state.pawnKey = Key.hashPiece(state.pawnKey, to, Piece.PAWN, white);
     }
 
     private void makePromotionMove(int from, int to, Piece promoted, Piece captured) {
@@ -148,32 +148,32 @@ public class Board {
         toggleSquare(promoted, white, to);
         pieces[from] = null;
         pieces[to] = promoted;
-        state.key = Key.updatePiece(state.key, from, Piece.PAWN, white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, from, Piece.PAWN, white);
+        state.key = Key.hashPiece(state.key, from, Piece.PAWN, white);
+        state.pawnKey = Key.hashPiece(state.pawnKey, from, Piece.PAWN, white);
         if (captured != null) {
             toggleSquare(captured, !white, to);
-            state.key = Key.updatePiece(state.key, to, captured, !white);
+            state.key = Key.hashPiece(state.key, to, captured, !white);
             if (captured.isPawn()) {
-                state.pawnKey = Key.updatePiece(state.pawnKey, to, captured, !white);
+                state.pawnKey = Key.hashPiece(state.pawnKey, to, captured, !white);
             } else {
                 int colourIndex = Colour.index(!white);
-                state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
+                state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], to, captured, !white);
                 if (captured.isMajor() || captured.isKing()) {
-                    state.majorKey = Key.updatePiece(state.majorKey, to, captured, !white);
+                    state.majorKey = Key.hashPiece(state.majorKey, to, captured, !white);
                 }
                 if (captured.isMinor() || captured.isKing()) {
-                    state.minorKey = Key.updatePiece(state.minorKey, to, captured, !white);
+                    state.minorKey = Key.hashPiece(state.minorKey, to, captured, !white);
                 }
             }
         }
-        state.key = Key.updatePiece(state.key, to, promoted, white);
+        state.key = Key.hashPiece(state.key, to, promoted, white);
         int colourIndex = Colour.index(white);
-        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, promoted, white);
+        state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], to, promoted, white);
         if (promoted.isMajor() || promoted.isKing()) {
-            state.majorKey = Key.updatePiece(state.majorKey, to, promoted, white);
+            state.majorKey = Key.hashPiece(state.majorKey, to, promoted, white);
         }
         if (promoted.isMinor() || promoted.isKing()) {
-            state.minorKey = Key.updatePiece(state.minorKey, to, promoted, white);
+            state.minorKey = Key.hashPiece(state.minorKey, to, promoted, white);
         }
     }
 
@@ -181,33 +181,33 @@ public class Board {
         toggleSquares(piece, white, from, to);
         if (captured != null) {
             toggleSquare(captured, !white, to);
-            state.key = Key.updatePiece(state.key, to, captured, !white);
+            state.key = Key.hashPiece(state.key, to, captured, !white);
             if (captured.isPawn()) {
-                state.pawnKey = Key.updatePiece(state.pawnKey, to, captured, !white);
+                state.pawnKey = Key.hashPiece(state.pawnKey, to, captured, !white);
             } else {
                 int colourIndex = Colour.index(!white);
-                state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
+                state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], to, captured, !white);
                 if (captured.isMajor() || captured.isKing()) {
-                    state.majorKey = Key.updatePiece(state.majorKey, to, captured, !white);
+                    state.majorKey = Key.hashPiece(state.majorKey, to, captured, !white);
                 }
                 if (captured.isMinor() || captured.isKing()) {
-                    state.minorKey = Key.updatePiece(state.minorKey, to, captured, !white);
+                    state.minorKey = Key.hashPiece(state.minorKey, to, captured, !white);
                 }
             }
         }
         pieces[from] = null;
         pieces[to] = piece;
-        state.key = Key.updatePiece(state.key, from, to, piece, white);
+        state.key = Key.hashPiece(state.key, from, to, piece, white);
         if (piece.isPawn()) {
-            state.pawnKey = Key.updatePiece(state.pawnKey, from, to, piece, white);
+            state.pawnKey = Key.hashPiece(state.pawnKey, from, to, piece, white);
         } else {
             int colourIndex = Colour.index(white);
-            state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, piece, white);
+            state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], from, to, piece, white);
             if (piece.isMajor() || piece.isKing()) {
-                state.majorKey = Key.updatePiece(state.majorKey, from, to, piece, white);
+                state.majorKey = Key.hashPiece(state.majorKey, from, to, piece, white);
             }
             if (piece.isMinor() || piece.isKing()) {
-                state.minorKey = Key.updatePiece(state.minorKey, from, to, piece, white);
+                state.minorKey = Key.hashPiece(state.minorKey, from, to, piece, white);
             }
         }
     }

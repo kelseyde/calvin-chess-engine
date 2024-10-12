@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -204,9 +205,10 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final boolean inCheck = movegen.isCheck(board, board.isWhite());
+        final long threats = movegen.calculateThreats(board, board.isWhite());
+        final boolean inCheck = (threats & Bits.next(board.getKing(board.isWhite()))) != 0;
 
-        final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck, threats);
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
         // If we are in check then there if a forcing sequence, so we could benefit from searching one ply deeper to
@@ -334,7 +336,7 @@ public class Searcher implements Search {
                 continue;
             }
 
-            final int historyScore = this.history.getHistoryTable().get(move, piece, board.isWhite());
+            final int historyScore = this.history.getHistoryTable().get(move, piece, threats, board.isWhite());
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
@@ -463,7 +465,7 @@ public class Searcher implements Search {
         if (bestScore >= beta) {
             final PlayedMove best = ss.getBestMove(ply);
             final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, quietsSearched, capturesSearched);
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, quietsSearched, capturesSearched, threats);
         }
 
         if (!inCheck
@@ -509,9 +511,10 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final boolean inCheck = movegen.isCheck(board, board.isWhite());
+        final long threats = movegen.calculateThreats(board, board.isWhite());
+        final boolean inCheck = (threats & Bits.next(board.getKing(board.isWhite()))) != 0;
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck, threats);
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Integer.MIN_VALUE;

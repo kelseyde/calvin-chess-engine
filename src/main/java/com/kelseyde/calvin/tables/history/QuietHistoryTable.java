@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.tables.history;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
@@ -8,7 +9,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 
 public class QuietHistoryTable extends AbstractHistoryTable {
 
-    int[][][] table = new int[2][Piece.COUNT][Square.COUNT];
+    int[][][][] table = new int[2][Piece.COUNT][Square.COUNT][4];
 
     public QuietHistoryTable(EngineConfig config) {
         super(config.quietHistBonusMax.value,
@@ -18,30 +19,46 @@ public class QuietHistoryTable extends AbstractHistoryTable {
                 config.quietHistMaxScore.value);
     }
 
-    public void update(Move move, Piece piece, int depth, boolean white, boolean good) {
+    public void update(Move move, Piece piece, long threats, int depth, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
-        int current = table[colourIndex][piece.index()][move.to()];
-        int bonus = good ? bonus(depth) : malus(depth);
+        int pieceIndex = piece.index();
+        int from = move.from();
+        int to = move.to();
+        int threatIndex = threatIndex(from, to, threats);
+        int current = table[colourIndex][from][to][threatIndex];
+        int bonus = bonus(depth);
+        if (!good) bonus = -bonus;
         int update = gravity(current, bonus);
-        table[colourIndex][piece.index()][move.to()] = update;
+        table[colourIndex][pieceIndex][to][threatIndex] = update;
     }
 
-    public int get(Move move, Piece piece, boolean white) {
+    public int get(Move historyMove, Piece piece, long threats, boolean white) {
         int colourIndex = Colour.index(white);
-        return table[colourIndex][piece.index()][move.to()];
+        int pieceIndex = piece.index();
+        int from = historyMove.from();
+        int to = historyMove.to();
+        int threatIndex = threatIndex(from, to, threats);
+        return table[colourIndex][pieceIndex][to][threatIndex];
     }
 
     public void ageScores(boolean white) {
         int colourIndex = Colour.index(white);
-        for (int from = 0; from < Piece.COUNT; from++) {
+        for (int piece = 0; piece < Piece.COUNT; piece++) {
             for (int to = 0; to < Square.COUNT; to++) {
-                table[colourIndex][from][to] /= 2;
+                table[colourIndex][piece][to][0] /= 2;
+                table[colourIndex][piece][to][1] /= 2;
             }
         }
     }
 
+    private int threatIndex(int from, int to, long threats) {
+        int fromThreatened = Bits.contains(threats, from) ? 1 : 0;
+        int toThreatened = Bits.contains(threats, to) ? 1 : 0;
+        return fromThreatened << 1 | toThreatened;
+    }
+
     public void clear() {
-        table = new int[2][Piece.COUNT][Square.COUNT];
+        table = new int[2][Piece.COUNT][Square.COUNT][4];
     }
 
 }

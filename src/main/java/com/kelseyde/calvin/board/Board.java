@@ -29,8 +29,8 @@ public class Board {
     private long occupied;
 
     private Piece[] pieces;
-    private GameState state;
-    private GameState[] states;
+    private BoardState state;
+    private BoardState[] states;
     private Move[] moves;
     private boolean white;
     private int ply;
@@ -47,8 +47,8 @@ public class Board {
         this.occupied    = 0L;
         this.pieces      = new Piece[Square.COUNT];
         this.moves       = new Move[Search.MAX_DEPTH];
-        this.states      = new GameState[Search.MAX_DEPTH];
-        this.state       = new GameState();
+        this.states      = new BoardState[Search.MAX_DEPTH];
+        this.state       = new BoardState();
         this.white       = true;
         this.ply         = 0;
     }
@@ -104,25 +104,29 @@ public class Board {
         toggleSquares(Piece.PAWN, white, from, to);
         pieces[from] = null;
         pieces[to] = Piece.PAWN;
-        state.key = Key.updatePiece(state.key, from, to, Piece.PAWN, white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, from, to, Piece.PAWN, white);
+        final long hash = Key.piece(from, to, Piece.PAWN, white);
+        state.key ^= hash;
+        state.pawnKey ^= hash;
     }
 
     private void makeCastleMove(int from, int to) {
         toggleSquares(Piece.KING, white, from, to);
         pieces[from] = null;
         pieces[to] = Piece.KING;
-        state.key = Key.updatePiece(state.key, from, to, Piece.KING, white);
         final boolean kingside = File.of(to) == 6;
         final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
         toggleSquares(Piece.ROOK, white, rookFrom, rookTo);
         pieces[rookFrom] = null;
         pieces[rookTo] = Piece.ROOK;
-        state.key = Key.updatePiece(state.key, rookFrom, rookTo, Piece.ROOK, white);
-        int colourIndex = Colour.index(white);
-        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, Piece.KING, white);
-        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], rookFrom, rookTo, Piece.ROOK, white);
+
+        final int colourIndex = Colour.index(white);
+        final long kingHash = Key.piece(from, to, Piece.KING, white);
+        final long rookHash = Key.piece(rookFrom, rookTo, Piece.ROOK, white);
+        state.key ^= kingHash;
+        state.key ^= rookHash;
+        state.nonPawnKeys[colourIndex] ^= kingHash;
+        state.nonPawnKeys[colourIndex] ^= rookHash;
     }
 
     private void makeEnPassantMove(int from, int to) {
@@ -132,12 +136,16 @@ public class Board {
         pieces[from] = null;
         pieces[pawnSquare] = null;
         pieces[to] = Piece.PAWN;
-        state.key = Key.updatePiece(state.key, from, Piece.PAWN, white);
-        state.key = Key.updatePiece(state.key, pawnSquare, Piece.PAWN, !white);
-        state.key = Key.updatePiece(state.key, to, Piece.PAWN, white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, from, Piece.PAWN, white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, pawnSquare, Piece.PAWN, !white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, to, Piece.PAWN, white);
+
+        final long fromHash = Key.piece(from, Piece.PAWN, white);
+        final long epHash = Key.piece(pawnSquare, Piece.PAWN, !white);
+        final long toHash = Key.piece(to, Piece.PAWN, white);
+        state.key ^= fromHash;
+        state.key ^= epHash;
+        state.key ^= toHash;
+        state.pawnKey ^= fromHash;
+        state.pawnKey ^= epHash;
+        state.pawnKey ^= toHash;
     }
 
     private void makePromotionMove(int from, int to, Piece promoted, Piece captured) {
@@ -145,43 +153,50 @@ public class Board {
         toggleSquare(promoted, white, to);
         pieces[from] = null;
         pieces[to] = promoted;
-        state.key = Key.updatePiece(state.key, from, Piece.PAWN, white);
-        state.pawnKey = Key.updatePiece(state.pawnKey, from, Piece.PAWN, white);
+
+        final long fromHash = Key.piece(from, Piece.PAWN, white);
+        final long toHash = Key.piece(to, promoted, white);
+
+        state.key ^= fromHash;
+        state.pawnKey ^= fromHash;
         if (captured != null) {
             toggleSquare(captured, !white, to);
-            state.key = Key.updatePiece(state.key, to, captured, !white);
+            final long captureHash = Key.piece(to, captured, !white);
+            state.key ^= Key.piece(to, captured, !white);
             if (captured == Piece.PAWN) {
-                state.pawnKey = Key.updatePiece(state.pawnKey, to, captured, !white);
+                state.pawnKey ^= captureHash;
             } else {
-                int colourIndex = Colour.index(!white);
-                state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
+                final int colourIndex = Colour.index(!white);
+                state.nonPawnKeys[colourIndex] ^= captureHash;
             }
         }
-        state.key = Key.updatePiece(state.key, to, promoted, white);
-        int colourIndex = Colour.index(white);
-        state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, promoted, white);
+        state.key ^= toHash;
+        final int colourIndex = Colour.index(white);
+        state.nonPawnKeys[colourIndex] ^= toHash;
     }
 
     private void makeStandardMove(int from, int to, Piece piece, Piece captured) {
         toggleSquares(piece, white, from, to);
         if (captured != null) {
             toggleSquare(captured, !white, to);
-            state.key = Key.updatePiece(state.key, to, captured, !white);
+            final long captureHash = Key.piece(to, captured, !white);
+            state.key ^= captureHash;
             if (captured == Piece.PAWN) {
-                state.pawnKey = Key.updatePiece(state.pawnKey, to, captured, !white);
+                state.pawnKey ^= captureHash;
             } else {
-                int colourIndex = Colour.index(!white);
-                state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], to, captured, !white);
+                final int colourIndex = Colour.index(!white);
+                state.nonPawnKeys[colourIndex] ^= captureHash;
             }
         }
         pieces[from] = null;
         pieces[to] = piece;
-        state.key = Key.updatePiece(state.key, from, to, piece, white);
+        final long hash = Key.piece(from, to, piece, white);
+        state.key ^= hash;
         if (piece == Piece.PAWN) {
-            state.pawnKey = Key.updatePiece(state.pawnKey, from, to, piece, white);
+            state.pawnKey ^= hash;
         } else {
-            int colourIndex = Colour.index(white);
-            state.nonPawnKeys[colourIndex] = Key.updatePiece(state.nonPawnKeys[colourIndex], from, to, piece, white);
+            final int colourIndex = Colour.index(white);
+            state.nonPawnKeys[colourIndex] ^= hash;
         }
     }
 
@@ -191,14 +206,14 @@ public class Board {
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
 
         final int castleRights = updateCastleRights(from, to, piece);
-        state.key = Key.updateCastlingRights(state.key, state.rights, castleRights);
+        state.key ^= Key.rights(state.rights, castleRights);
         state.rights = castleRights;
 
         final int enPassantFile = move.isPawnDoubleMove() ? File.of(to) : -1;
-        state.key = Key.updateEnPassantFile(state.key, state.enPassantFile, enPassantFile);
+        state.key ^= Key.enPassant(state.enPassantFile, enPassantFile);
         state.enPassantFile = enPassantFile;
 
-        state.key = Key.updateSideToMove(state.key);
+        state.key ^= Key.sideToMove();
     }
 
     private void unmakeCastlingMove(int from, int to) {
@@ -247,9 +262,9 @@ public class Board {
      */
     public void makeNullMove() {
         white = !white;
-        final long key = Key.updateKeyAfterNullMove(state.key, state.enPassantFile);
+        final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final GameState newState = new GameState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
+        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
         states[ply++] = state;
         state = newState;
     }
@@ -429,11 +444,11 @@ public class Board {
         this.white = white;
     }
 
-    public void setState(GameState state) {
+    public void setState(BoardState state) {
         this.state = state;
     }
 
-    public void setStates(GameState[] states) {
+    public void setStates(BoardState[] states) {
         this.states = states;
     }
 
@@ -485,11 +500,11 @@ public class Board {
         return white;
     }
 
-    public GameState getState() {
+    public BoardState getState() {
         return state;
     }
 
-    public GameState[] getStates() {
+    public BoardState[] getStates() {
         return states;
     }
 
@@ -540,7 +555,7 @@ public class Board {
         newBoard.setOccupied(this.getOccupied());
         newBoard.setWhite(this.isWhite());
         newBoard.setState(this.getState().copy());
-        GameState[] newStates = new GameState[this.getStates().length];
+        BoardState[] newStates = new BoardState[this.getStates().length];
         for (int i = 0; i < this.getStates().length; i++) {
             if (this.getStates()[i] == null) {
                 break;

@@ -205,7 +205,7 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final long threats = movegen.calculateThreats(board, board.isWhite());
+        final long threats = movegen.calculateThreats(board, !board.isWhite());
         boolean inCheck = Bits.contains(threats, Bits.next(board.getKing(board.isWhite())));
 
         final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck, threats);
@@ -511,8 +511,8 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final long threats = movegen.calculateThreats(board, board.isWhite());
-        boolean inCheck = Bits.contains(threats, Bits.next(board.getKing(board.isWhite())));
+        final long threats = movegen.calculateThreats(board, !board.isWhite());
+        final boolean inCheck = movegen.isCheck(board, board.isWhite());
 
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck, threats);
 

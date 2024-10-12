@@ -29,8 +29,8 @@ public class Board {
     private long occupied;
 
     private Piece[] pieces;
-    private GameState state;
-    private GameState[] states;
+    private BoardState state;
+    private BoardState[] states;
     private Move[] moves;
     private boolean white;
     private int ply;
@@ -47,8 +47,8 @@ public class Board {
         this.occupied    = 0L;
         this.pieces      = new Piece[Square.COUNT];
         this.moves       = new Move[Search.MAX_DEPTH];
-        this.states      = new GameState[Search.MAX_DEPTH];
-        this.state       = new GameState();
+        this.states      = new BoardState[Search.MAX_DEPTH];
+        this.state       = new BoardState();
         this.white       = true;
         this.ply         = 0;
     }
@@ -101,114 +101,62 @@ public class Board {
     }
 
     private void makePawnDoubleMove(int from, int to) {
-        toggleSquares(Piece.PAWN, white, from, to);
-        pieces[from] = null;
-        pieces[to] = Piece.PAWN;
-        state.key = Key.hashPiece(state.key, from, to, Piece.PAWN, white);
-        state.pawnKey = Key.hashPiece(state.pawnKey, from, to, Piece.PAWN, white);
+        // Handle moving pawn
+        toggleSquares(from, to, Piece.PAWN, white);
+        updateMailbox(from, to, Piece.PAWN);
+        updateKeys(from, to, Piece.PAWN, white);
     }
 
     private void makeCastleMove(int from, int to) {
-        toggleSquares(Piece.KING, white, from, to);
-        pieces[from] = null;
-        pieces[to] = Piece.KING;
-        state.key = Key.hashPiece(state.key, from, to, Piece.KING, white);
+        // Handle castling king
+        toggleSquares(from, to, Piece.KING, white);
+        updateMailbox(from, to, Piece.KING);
+        updateKeys(from, to, Piece.KING, white);
+        // Handle castling rook
         final boolean kingside = File.of(to) == 6;
         final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
-        toggleSquares(Piece.ROOK, white, rookFrom, rookTo);
-        pieces[rookFrom] = null;
-        pieces[rookTo] = Piece.ROOK;
-        state.key = Key.hashPiece(state.key, rookFrom, rookTo, Piece.ROOK, white);
-        int colourIndex = Colour.index(white);
-        state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], from, to, Piece.KING, white);
-        state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], rookFrom, rookTo, Piece.ROOK, white);
-        state.majorKey = Key.hashPiece(state.majorKey, from, to, Piece.KING, white);
-        state.majorKey = Key.hashPiece(state.majorKey, rookFrom, rookTo, Piece.ROOK, white);
-        state.minorKey = Key.hashPiece(state.minorKey, from, to, Piece.KING, white);
+        toggleSquares(rookFrom, rookTo, Piece.ROOK, white);
+        updateMailbox(rookFrom, rookTo, Piece.ROOK);
+        updateKeys(rookFrom, rookTo, Piece.ROOK, white);
     }
 
     private void makeEnPassantMove(int from, int to) {
-        toggleSquares(Piece.PAWN, white, from, to);
+        // Handle capturing pawn
+        toggleSquares(from, to, Piece.PAWN, white);
+        updateMailbox(from, to, Piece.PAWN);
+        updateKeys(from, to, Piece.PAWN, white);
+        // Handle captured pawn
         final int pawnSquare = white ? to - 8 : to + 8;
-        toggleSquare(Piece.PAWN, !white, pawnSquare);
-        pieces[from] = null;
-        pieces[pawnSquare] = null;
-        pieces[to] = Piece.PAWN;
-        state.key = Key.hashPiece(state.key, from, Piece.PAWN, white);
-        state.key = Key.hashPiece(state.key, pawnSquare, Piece.PAWN, !white);
-        state.key = Key.hashPiece(state.key, to, Piece.PAWN, white);
-        state.pawnKey = Key.hashPiece(state.pawnKey, from, Piece.PAWN, white);
-        state.pawnKey = Key.hashPiece(state.pawnKey, pawnSquare, Piece.PAWN, !white);
-        state.pawnKey = Key.hashPiece(state.pawnKey, to, Piece.PAWN, white);
+        toggleSquare(pawnSquare, Piece.PAWN, !white);
+        updateMailbox(pawnSquare, null);
+        updateKeys(pawnSquare, Piece.PAWN, !white);
     }
 
     private void makePromotionMove(int from, int to, Piece promoted, Piece captured) {
-        toggleSquare(Piece.PAWN, white, from);
-        toggleSquare(promoted, white, to);
-        pieces[from] = null;
-        pieces[to] = promoted;
-        state.key = Key.hashPiece(state.key, from, Piece.PAWN, white);
-        state.pawnKey = Key.hashPiece(state.pawnKey, from, Piece.PAWN, white);
+        // Remove promoting pawn
+        toggleSquare(from, Piece.PAWN, white);
+        updateKeys(from, Piece.PAWN, white);
+        // Add promoted piece
+        toggleSquare(to, promoted, white);
+        updateMailbox(from, to, promoted);
+        updateKeys(to, promoted, white);
         if (captured != null) {
-            toggleSquare(captured, !white, to);
-            state.key = Key.hashPiece(state.key, to, captured, !white);
-            if (captured.isPawn()) {
-                state.pawnKey = Key.hashPiece(state.pawnKey, to, captured, !white);
-            } else {
-                int colourIndex = Colour.index(!white);
-                state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], to, captured, !white);
-                if (captured.isMajor() || captured.isKing()) {
-                    state.majorKey = Key.hashPiece(state.majorKey, to, captured, !white);
-                }
-                if (captured.isMinor() || captured.isKing()) {
-                    state.minorKey = Key.hashPiece(state.minorKey, to, captured, !white);
-                }
-            }
-        }
-        state.key = Key.hashPiece(state.key, to, promoted, white);
-        int colourIndex = Colour.index(white);
-        state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], to, promoted, white);
-        if (promoted.isMajor() || promoted.isKing()) {
-            state.majorKey = Key.hashPiece(state.majorKey, to, promoted, white);
-        }
-        if (promoted.isMinor() || promoted.isKing()) {
-            state.minorKey = Key.hashPiece(state.minorKey, to, promoted, white);
+            // Handle captured piece
+            toggleSquare(to, captured, !white);
+            updateKeys(to, captured, !white);
         }
     }
 
     private void makeStandardMove(int from, int to, Piece piece, Piece captured) {
-        toggleSquares(piece, white, from, to);
+        // Handle moving piece
+        toggleSquares(from, to, piece, white);
+        updateKeys(from, to, piece, white);
+        updateMailbox(from, to, piece);
         if (captured != null) {
-            toggleSquare(captured, !white, to);
-            state.key = Key.hashPiece(state.key, to, captured, !white);
-            if (captured.isPawn()) {
-                state.pawnKey = Key.hashPiece(state.pawnKey, to, captured, !white);
-            } else {
-                int colourIndex = Colour.index(!white);
-                state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], to, captured, !white);
-                if (captured.isMajor() || captured.isKing()) {
-                    state.majorKey = Key.hashPiece(state.majorKey, to, captured, !white);
-                }
-                if (captured.isMinor() || captured.isKing()) {
-                    state.minorKey = Key.hashPiece(state.minorKey, to, captured, !white);
-                }
-            }
-        }
-        pieces[from] = null;
-        pieces[to] = piece;
-        state.key = Key.hashPiece(state.key, from, to, piece, white);
-        if (piece.isPawn()) {
-            state.pawnKey = Key.hashPiece(state.pawnKey, from, to, piece, white);
-        } else {
-            int colourIndex = Colour.index(white);
-            state.nonPawnKeys[colourIndex] = Key.hashPiece(state.nonPawnKeys[colourIndex], from, to, piece, white);
-            if (piece.isMajor() || piece.isKing()) {
-                state.majorKey = Key.hashPiece(state.majorKey, from, to, piece, white);
-            }
-            if (piece.isMinor() || piece.isKing()) {
-                state.minorKey = Key.hashPiece(state.minorKey, from, to, piece, white);
-            }
+            // Remove captured piece
+            toggleSquare(to, captured, !white);
+            updateKeys(to, captured, !white);
         }
     }
 
@@ -218,54 +166,61 @@ public class Board {
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
 
         final int castleRights = updateCastleRights(from, to, piece);
-        state.key = Key.updateCastlingRights(state.key, state.rights, castleRights);
+        state.key ^= Key.rights(state.rights, castleRights);
         state.rights = castleRights;
 
         final int enPassantFile = move.isPawnDoubleMove() ? File.of(to) : -1;
-        state.key = Key.updateEnPassantFile(state.key, state.enPassantFile, enPassantFile);
+        state.key ^= Key.enPassant(state.enPassantFile, enPassantFile);
         state.enPassantFile = enPassantFile;
 
-        state.key = Key.updateSideToMove(state.key);
+        state.key ^= Key.sideToMove();
     }
 
     private void unmakeCastlingMove(int from, int to) {
-        toggleSquares(Piece.KING, white, to, from);
+        // Put back king
+        toggleSquares(to, from, Piece.KING, white);
+        updateMailbox(to, from, Piece.KING);
+        // Put back rook
         final boolean kingside = File.of(to) == 6;
-        final int rookFrom = Castling.rookTo(kingside, white);
-        final int rookTo = Castling.rookFrom(kingside, white);
-        toggleSquares(Piece.ROOK, white, rookFrom, rookTo);
-        pieces[from] = Piece.KING;
-        pieces[to] = null;
-        pieces[rookTo] = Piece.ROOK;
-        pieces[rookFrom] = null;
+        final int rookTo = Castling.rookTo(kingside, white);
+        final int rookFrom = Castling.rookFrom(kingside, white);
+        toggleSquares(rookTo, rookFrom, Piece.ROOK, white);
+        updateMailbox(rookTo, rookFrom, Piece.ROOK);
     }
 
     private void unmakePromotionMove(int from, int to, Piece promotionPiece) {
-        toggleSquare(promotionPiece, white, to);
-        toggleSquare(Piece.PAWN, white, from);
+        // Remove promoted piece
+        toggleSquare(to, promotionPiece, white);
+        // Put back promoting pawn
+        updateMailbox(from, Piece.PAWN);
+        toggleSquare(from, Piece.PAWN, white);
+        // Put back captured piece
         if (state.getCaptured() != null) {
-            toggleSquare(state.getCaptured(), !white, to);
+            toggleSquare(to, state.getCaptured(), !white);
         }
-        pieces[from] = Piece.PAWN;
-        pieces[to] = state.getCaptured() != null ? state.getCaptured() : null;
+        // If no piece was captured, this correctly nullifies the promo square
+        updateMailbox(to, state.getCaptured());
     }
 
     private void unmakeEnPassantMove(int from, int to) {
-        toggleSquares(Piece.PAWN, white, to, from);
+        // Put back capturing pawn
+        toggleSquares(to, from, Piece.PAWN, white);
+        updateMailbox(to, from, Piece.PAWN);
+        // Add back captured pawn
         final int captureSquare = white ? to - 8 : to + 8;
-        toggleSquare(Piece.PAWN, !white, captureSquare);
-        pieces[from] = Piece.PAWN;
-        pieces[to] = null;
-        pieces[captureSquare] = Piece.PAWN;
+        toggleSquare(captureSquare, Piece.PAWN, !white);
+        updateMailbox(captureSquare, Piece.PAWN);
     }
 
     private void unmakeStandardMove(int from, int to, Piece piece) {
-        toggleSquares(piece, white, to, from);
+        // Put back moving piece
+        toggleSquares(to, from, piece, white);
+        updateMailbox(to, from, piece);
         if (state.getCaptured() != null) {
-            toggleSquare(state.getCaptured(), !white, to);
+            // Add back captured piece
+            toggleSquare(to, state.getCaptured(), !white);
+            updateMailbox(to, state.getCaptured());
         }
-        pieces[from] = piece;
-        pieces[to] = state.getCaptured() != null ? state.getCaptured() : null;
     }
 
     /**
@@ -274,9 +229,9 @@ public class Board {
      */
     public void makeNullMove() {
         white = !white;
-        final long key = Key.updateKeyAfterNullMove(state.key, state.enPassantFile);
+        final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final GameState newState = new GameState(key, state.pawnKey, nonPawnKeys, state.majorKey, state.minorKey, null, -1, state.rights, 0);
+        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, state.majorKey, state.minorKey, null, -1, state.getRights(), 0);
         states[ply++] = state;
         state = newState;
     }
@@ -289,31 +244,68 @@ public class Board {
         state = states[--ply];
     }
 
-    public void toggleSquares(Piece type, boolean white, int from, int to) {
+    public void toggleSquares(int from, int to, Piece piece, boolean white) {
         final long toggleMask = Bits.of(from) | Bits.of(to);
-        toggle(type, white, toggleMask);
+        toggle(toggleMask, piece, white);
     }
 
-    public void toggleSquare(Piece type, boolean white, int square) {
+    public void toggleSquare(int square, Piece piece, boolean white) {
         final long toggleMask = Bits.of(square);
-        toggle(type, white, toggleMask);
+        toggle(toggleMask, piece, white);
     }
 
-    private void toggle(Piece type, boolean white, long toggleMask) {
+    private void toggle(long mask, Piece type, boolean white) {
         switch (type) {
-            case PAWN ->    pawns ^= toggleMask;
-            case KNIGHT ->  knights ^= toggleMask;
-            case BISHOP ->  bishops ^= toggleMask;
-            case ROOK ->    rooks ^= toggleMask;
-            case QUEEN ->   queens ^= toggleMask;
-            case KING ->    kings ^= toggleMask;
+            case PAWN ->    pawns ^= mask;
+            case KNIGHT ->  knights ^= mask;
+            case BISHOP ->  bishops ^= mask;
+            case ROOK ->    rooks ^= mask;
+            case QUEEN ->   queens ^= mask;
+            case KING ->    kings ^= mask;
         }
         if (white) {
-            whitePieces ^= toggleMask;
+            whitePieces ^= mask;
         } else {
-            blackPieces ^= toggleMask;
+            blackPieces ^= mask;
         }
-        occupied ^= toggleMask;
+        occupied ^= mask;
+    }
+
+    private void updateKeys(int from, int to, Piece piece, boolean white) {
+        final long hash = Key.piece(from, to, piece, white);
+        state.key ^= hash;
+        if (piece == Piece.PAWN) {
+            state.pawnKey ^= hash;
+        } else {
+            final int colourIndex = Colour.index(white);
+            state.nonPawnKeys[colourIndex] ^= hash;
+            if (piece.isMajor() || piece.isKing()) {
+                state.majorKey = Key.hashPiece(state.majorKey, from, to, piece, white);
+            }
+            if (piece.isMinor() || piece.isKing()) {
+                state.minorKey = Key.hashPiece(state.minorKey, from, to, piece, white);
+            }
+        }
+    }
+
+    private void updateKeys(int square, Piece piece, boolean white) {
+        final long hash = Key.piece(square, piece, white);
+        state.key ^= hash;
+        if (piece == Piece.PAWN) {
+            state.pawnKey ^= hash;
+        } else {
+            final int colourIndex = Colour.index(white);
+            state.nonPawnKeys[colourIndex] ^= hash;
+        }
+    }
+
+    private void updateMailbox(int from, int to, Piece piece) {
+        pieces[from] = null;
+        pieces[to] = piece;
+    }
+
+    private void updateMailbox(int square, Piece piece) {
+        pieces[square] = piece;
     }
 
     public void removeKing(boolean white) {
@@ -456,11 +448,11 @@ public class Board {
         this.white = white;
     }
 
-    public void setState(GameState state) {
+    public void setState(BoardState state) {
         this.state = state;
     }
 
-    public void setStates(GameState[] states) {
+    public void setStates(BoardState[] states) {
         this.states = states;
     }
 
@@ -512,11 +504,11 @@ public class Board {
         return white;
     }
 
-    public GameState getState() {
+    public BoardState getState() {
         return state;
     }
 
-    public GameState[] getStates() {
+    public BoardState[] getStates() {
         return states;
     }
 
@@ -571,7 +563,7 @@ public class Board {
         newBoard.setOccupied(this.getOccupied());
         newBoard.setWhite(this.isWhite());
         newBoard.setState(this.getState().copy());
-        GameState[] newStates = new GameState[this.getStates().length];
+        BoardState[] newStates = new BoardState[this.getStates().length];
         for (int i = 0; i < this.getStates().length; i++) {
             if (this.getStates()[i] == null) {
                 break;

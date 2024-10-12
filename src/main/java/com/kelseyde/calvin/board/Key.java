@@ -180,29 +180,29 @@ public class Key {
         return key;
     }
 
-    public static long hashPiece(long key, int from, int to, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[from][Colour.index(white)][pieceType.index()]
+    public static long piece(int from, int to, Piece pieceType, boolean white) {
+        return PIECE_SQUARE_HASH[from][Colour.index(white)][pieceType.index()]
                 ^ PIECE_SQUARE_HASH[to][Colour.index(white)][pieceType.index()];
     }
 
-    public static long hashPiece(long key, int square, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.index()];
+    public static long piece(int square, Piece pieceType, boolean white) {
+        return PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.index()];
     }
 
-    public static long updateCastlingRights(long key, int oldCastlingRights, int newCastlingRights) {
-        return key ^ CASTLING_RIGHTS[oldCastlingRights] ^ CASTLING_RIGHTS[newCastlingRights];
+    public static long rights(int oldCastlingRights, int newCastlingRights) {
+        return CASTLING_RIGHTS[oldCastlingRights] ^ CASTLING_RIGHTS[newCastlingRights];
     }
 
-    public static long updateEnPassantFile(long key, int oldEnPassantFile, int newEnPassantFile) {
-        return key ^ EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[newEnPassantFile + 1];
+    public static long enPassant(int oldEnPassantFile, int newEnPassantFile) {
+        return EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[newEnPassantFile + 1];
     }
 
-    public static long updateSideToMove(long key) {
-        return key ^ SIDE_TO_MOVE;
+    public static long sideToMove() {
+        return SIDE_TO_MOVE;
     }
 
-    public static long updateKeyAfterNullMove(long key, int oldEnPassantFile) {
-        return key ^ EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[0] ^ SIDE_TO_MOVE;
+    public static long nullMove(int oldEnPassantFile) {
+        return EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[0] ^ SIDE_TO_MOVE;
     }
 
 }

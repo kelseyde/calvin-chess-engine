@@ -2,7 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.GameState;
+import com.kelseyde.calvin.board.BoardState;
 
 public class Score {
 
@@ -32,7 +32,7 @@ public class Score {
 
         int repetitionCount = 0;
         long zobrist = board.getState().getKey();
-        GameState[] states = board.getStates();
+        BoardState[] states = board.getStates();
         for (int i = board.getPly() - 1; i >= 0; i--) {
             if (states[i].getKey() == zobrist) {
                 repetitionCount += 1;
@@ -49,7 +49,7 @@ public class Score {
     public static boolean isDoubleRepetition(Board board) {
 
         long zobrist = board.getState().getKey();
-        GameState[] states = board.getStates();
+        BoardState[] states = board.getStates();
         for (int i = board.getPly() - 1; i >= 0; i--) {
             if (states[i].getKey() == zobrist) {
                 return true;

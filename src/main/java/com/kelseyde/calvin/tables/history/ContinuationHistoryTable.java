@@ -11,7 +11,11 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
     int[][][][][] table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
 
     public ContinuationHistoryTable(EngineConfig config) {
-        super(config.contHistBonus.value, config.contHistMalus.value, config.contHistMax.value);
+        super(config.contHistBonusMax.value,
+                config.contHistBonusScale.value,
+                config.contHistMalusMax.value,
+                config.contHistMalusScale.value,
+                config.contHistMaxScore.value);
     }
 
     public void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white, boolean good) {

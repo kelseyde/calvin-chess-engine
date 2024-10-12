@@ -27,6 +27,16 @@ import java.util.stream.IntStream;
  */
 public class Engine {
 
+    // Singleton pattern: only one instance of the engine can exist.
+    private static Engine INSTANCE;
+
+    public static Engine getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Engine();
+        }
+        return INSTANCE;
+    }
+
     final EngineConfig config;
     final MoveGenerator movegen;
     final PerftService perft;
@@ -35,7 +45,7 @@ public class Engine {
     CompletableFuture<SearchResult> think;
     Board board;
 
-    public Engine() {
+    private Engine() {
         this.config = new EngineConfig();
         this.board = Board.from(FEN.STARTPOS);
         this.movegen = new MoveGenerator();
@@ -46,7 +56,7 @@ public class Engine {
 
     public void newGame() {
         searcher.clearHistory();
-        this.board = Board.from(FEN.STARTPOS);
+        board = Board.from(FEN.STARTPOS);
         searcher.setPosition(board);
     }
 
@@ -120,7 +130,7 @@ public class Engine {
         long key = board.key();
         HashEntry entry = tt.get(key, 0);
         board.unmakeMove();
-        return entry != null ? entry.getMove() : null;
+        return entry != null ? entry.move() : null;
     }
 
     public List<Move> extractPrincipalVariation() {
@@ -130,15 +140,19 @@ public class Engine {
         while (moves < 24) {
             long key = board.key();
             HashEntry entry = tt.get(key, 0);
-            if (entry == null || entry.getMove() == null) {
+            if (entry == null || entry.move() == null) {
                 break;
             }
-            pv.add(entry.getMove());
-            board.makeMove(entry.getMove());
+            pv.add(entry.move());
+            board.makeMove(entry.move());
             moves++;
         }
         IntStream.range(0, moves).forEach(i -> board.unmakeMove());
         return pv;
+    }
+
+    public int hashfull() {
+        return searcher.getTranspositionTable().fill();
     }
 
     public EngineConfig getConfig() {

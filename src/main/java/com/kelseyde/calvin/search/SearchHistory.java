@@ -1,12 +1,12 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.history.*;
 
 import java.util.List;
 
@@ -14,13 +14,26 @@ public class SearchHistory {
 
     private static final int[] CONT_HIST_PLIES = { 1, 2 };
 
-    private final KillerTable killerTable = new KillerTable();
-    private final QuietHistoryTable quietHistoryTable = new QuietHistoryTable();
-    private final ContinuationHistoryTable contHistTable = new ContinuationHistoryTable();
-    private final CaptureHistoryTable captureHistoryTable = new CaptureHistoryTable();
+    private final KillerTable killerTable;
+    private final QuietHistoryTable quietHistoryTable;
+    private final ContinuationHistoryTable contHistTable;
+    private final CaptureHistoryTable captureHistoryTable;
+    private final CorrectionHistoryTable pawnCorrHistTable;
+    private final CorrectionHistoryTable[] nonPawnCorrHistTables;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
+
+    public SearchHistory(EngineConfig config) {
+        this.killerTable = new KillerTable();
+        this.quietHistoryTable = new QuietHistoryTable(config);
+        this.contHistTable = new ContinuationHistoryTable(config);
+        this.captureHistoryTable = new CaptureHistoryTable(config);
+        this.pawnCorrHistTable = new CorrectionHistoryTable();
+        this.nonPawnCorrHistTables = new CorrectionHistoryTable[] {
+                new CorrectionHistoryTable(), new CorrectionHistoryTable()
+        };
+    }
 
     public void updateHistory(
             PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures) {
@@ -30,7 +43,7 @@ public class SearchHistory {
             killerTable.add(ply, bestMove.move());
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
-                quietHistoryTable.update(quiet.move(), depth, white, good);
+                quietHistoryTable.update(quiet.move(), quiet.piece(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
                     Move prevMove = ss.getMove(ply - prevPly);
@@ -60,6 +73,20 @@ public class SearchHistory {
 
     public void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
+    }
+
+    public int correctEvaluation(Board board, int staticEval) {
+        int pawn = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
+        int white = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
+        int black = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
+        int correction = pawn + white + black;
+        return staticEval + correction / CorrectionHistoryTable.SCALE;
+    }
+
+    public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
+        pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
+        nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
+        nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
     }
 
     public int getBestMoveStability() {
@@ -98,6 +125,9 @@ public class SearchHistory {
         quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();
+        pawnCorrHistTable.clear();
+        nonPawnCorrHistTables[Colour.WHITE].clear();
+        nonPawnCorrHistTables[Colour.BLACK].clear();
     }
 
 }

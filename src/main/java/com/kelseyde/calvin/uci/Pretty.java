@@ -2,7 +2,6 @@ package com.kelseyde.calvin.uci;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.Score;
-import com.kelseyde.calvin.search.SearchResult;
 
 import java.util.List;
 import java.util.Locale;
@@ -47,16 +46,17 @@ public class Pretty {
         UCI.write("");
     }
 
-    public static void writeSearchInfo(int depth, int score, long time, int nodes, long nps, List<Move> pv) {
+    public static void writeSearchInfo(int depth, int score, long time, int nodes, long nps, float hashfull, List<Move> pv) {
 
         String formattedDepth = formatDepth(depth);
         String formattedScore = formatScore(score);
         String formattedTime = formatTime(time);
         String formattedNodes = formatNodes(nodes);
         String formattedNps = formatNps(nps);
+        String formattedHashfull = formatHashfull(hashfull);
         String formattedPv = formatPv(pv);
-        UCI.write(String.format(" %s  %s  %s  %s  %s  %s",
-                formattedDepth, formattedScore, formattedTime, formattedNodes, formattedNps, formattedPv));
+        UCI.write(String.format(" %s  %s  %s  %s  %s   %s   %s",
+                formattedDepth, formattedScore, formattedTime, formattedNodes, formattedNps, formattedHashfull, formattedPv));
 
     }
 
@@ -115,6 +115,13 @@ public class Pretty {
         long knps = nps / 1000;
         int buffer = Math.max(0, npsLength - String.valueOf(knps).length());
         return GRAY + " ".repeat(buffer) + knps + "kn/s" + RESET;
+    }
+
+    private static String formatHashfull(float hashfull) {
+        final int hashfullLength = 5;
+        String formatted = String.format(Locale.ROOT, "%.1f", (float) hashfull / 10);
+        int buffer = Math.max(0, hashfullLength - formatted.length());
+        return GRAY + " ".repeat(buffer) + formatted + "%" + RESET;
     }
 
     private static String formatPv(List<Move> pv) {

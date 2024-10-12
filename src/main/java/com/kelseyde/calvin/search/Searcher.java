@@ -300,6 +300,54 @@ public class Searcher implements Search {
                 }
             }
 
+            // Probcut - https://www.chessprogramming.org/ProbCut
+
+            int probcutBeta = beta + 220;
+
+            if (depth >= 3
+                && !Score.isMateScore(beta)
+                && (ttMove == null || !board.isQuiet(ttMove))
+                && (!ttHit || ttEntry.depth() + 3 < depth || ttEntry.score() >= probcutBeta)) {
+
+                int probcutDepth = Math.max(1, depth - 3);
+                int seeThreshold = probcutBeta - staticEval;
+
+                QuiescentMovePicker probcutPicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+                probcutPicker.setFilter(MoveFilter.NOISY);
+                while (true) {
+                    Move probcutMove = probcutPicker.pickNextMove();
+                    if (probcutMove == null) break;
+
+                    if (SEE.see(board, probcutMove) < seeThreshold) {
+                        continue;
+                    }
+                    Piece piece = board.pieceAt(probcutMove.from());
+                    Piece captured = board.pieceAt(probcutMove.to());
+
+                    eval.makeMove(board, probcutMove);
+                    board.makeMove(probcutMove);
+                    ss.setMove(ply, probcutMove, piece, captured, true, false);
+
+                    int score = -quiescenceSearch(-probcutBeta, -probcutBeta + 1, 0, ply + 1);
+
+                    if (score >= probcutBeta) {
+                        score = -search(probcutDepth - 1, ply + 1, -probcutBeta, -probcutBeta + 1);
+                    }
+
+                    eval.unmakeMove();
+                    board.unmakeMove();
+                    ss.unsetMove(ply);
+
+                    if (score >= probcutBeta) {
+                        tt.put(board.key(), HashFlag.LOWER, probcutDepth, ply, probcutMove, staticEval, score);
+                        return score;
+                    }
+
+                }
+
+            }
+
+
         }
 
         Move bestMove = null;

@@ -7,22 +7,40 @@
 - [ ] Review all code comments
 - [x] Reduce artifact size (remove plugins, dependencies, delete old nets)
 - [ ] Refactor/improve TranspositionTable code
+- [ ] Move all stacks (board state, accumulator, history etc.) to single thread stack
+- [ ] Check LazySMP still works
+- [ ] Put Calvin back on Lichess
+- [ ] Stop using int everywhere (use byte/short where possible)
 
 ### Search
 
 - [x] SPSA tune
 - [ ] PV table
-- [ ] Singular extensions ( won't gain )
-- [ ] MultiCut ( won't gain )
-- [ ] ProbCut
+- [ ] Singular extensions ( tried )
+- [ ] MultiCut ( tried )
+- [ ] ProbCut ( tried )
+- [x] Pawn corrhist
+- [x] Non-pawn corrhist
+- [ ] Material corrhist
+- [ ] Major/minor corrhist ( tried, try them separately? )
+- [ ] Contcorrhist
+- [ ] Threat corrhist
 - [x] TT score eval correction 
 - [x] Razoring
 - [x] History pruning
-- [ ] SEE pruning ( won't gain )
-- [ ] Faster SEE ( won't gain )
+- [ ] SEE pruning ( tried )
+- [ ] Faster SEE ( tried )
 - [ ] Syzygy TB
+- [ ] Cuckoo hashing repetition detection
 - [x] Check root legal moves, if only one, play instantly
 - [ ] Merge Searcher and ParallelSearcher
+
+### Transposition Table
+
+- [ ] PV node flag in TT
+- [ ] 16-bit key in TT
+- [ ] Remove bucketing?
+- [ ] Other replacement schemes?
 
 ### Move generation / Move ordering
 
@@ -33,22 +51,21 @@
 - [x] 2-ply Conthist
 - [ ] 4-ply Conthist
 - [x] Capthist
-- [ ] Threats ( won't gain )
-- [ ] Countermoves ( won't gain )
-- [ ] Add Killers, History etc. stages to MovePicker. ( won't gain )
+- [ ] Threats ( tried )
+- [ ] Countermoves ( tried )
+- [ ] Add Killers, History etc. stages to MovePicker. ( tried )
+- [ ] Other magic bitboard impls? PEXT/Black Magic/Kindergarten/whatever?
 
 ### Evaluation
 
 - [ ] Find solution to CCRL/ChessGUI/Vector API issue
-- [ ] Lazy NNUE updates ( won't gain )
+- [ ] Lazy NNUE updates ( tried )
 - [x] New net, bigger HL size
 - [x] Screlu
-- [ ] Output buckets ( won't gain )
+- [ ] Output buckets ( tried, material scaling seems stronger )
 - [ ] Horizontal mirroring
 - [ ] Datagen
-- [ ] Pawn corrhist ( won't gain )
-- [ ] Material corrhist
-- [ ] Output buckets ( won't gain )
+- [ ] Input (king) buckets
 - [ ] Finny tables
 
 ### Time management
@@ -57,6 +74,7 @@
 - [ ] Legal move based TM?
 - [ ] Futility TM?
 - [ ] Game phase TM?
+- [ ] Single reply/forced move TM?
 
 ### UCI
 

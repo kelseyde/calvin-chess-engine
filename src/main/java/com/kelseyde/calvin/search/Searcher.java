@@ -176,9 +176,6 @@ public class Searcher implements Search {
         final boolean rootNode = ply == 0;
         final boolean pvNode = beta - alpha > 1;
 
-        Move excludedMove = ss.getExcludedMove(ply);
-        boolean excluded = excludedMove != null;
-
         // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
         alpha = Math.max(alpha, -Score.MATE + ply);
@@ -255,7 +252,7 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
         // can employ to prune the node and its entire subtree, without searching any moves.
-        if (!pvNode && !inCheck && !excluded) {
+        if (!pvNode && !inCheck) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
@@ -303,14 +300,16 @@ public class Searcher implements Search {
                 }
             }
 
-            int probcutBeta = beta + 250;
-            int probcutDepth = Math.max(1, depth - 3);
+            // Probcut - https://www.chessprogramming.org/ProbCut
 
-            if (depth >= 5
+            int probcutBeta = beta + 220;
+
+            if (depth >= 3
                 && !Score.isMateScore(beta)
                 && (ttMove == null || !board.isQuiet(ttMove))
                 && (!ttHit || ttEntry.depth() + 3 < depth || ttEntry.score() >= probcutBeta)) {
 
+                int probcutDepth = Math.max(1, depth - 3);
                 int seeThreshold = probcutBeta - staticEval;
 
                 QuiescentMovePicker probcutPicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
@@ -329,7 +328,7 @@ public class Searcher implements Search {
                     board.makeMove(probcutMove);
                     ss.setMove(ply, probcutMove, piece, captured, true, false);
 
-                    int score = -quiescenceSearch(probcutBeta - 1, probcutBeta, 0, ply + 1);
+                    int score = -quiescenceSearch(-probcutBeta, -probcutBeta + 1, 0, ply + 1);
 
                     if (score >= probcutBeta) {
                         score = -search(probcutDepth - 1, ply + 1, -probcutBeta, -probcutBeta + 1);

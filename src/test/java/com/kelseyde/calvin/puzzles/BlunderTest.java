@@ -2,6 +2,7 @@ package com.kelseyde.calvin.puzzles;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
@@ -20,7 +21,7 @@ import java.util.List;
 @Disabled
 public class BlunderTest {
 
-    private final Engine engine = new Engine();
+    private final Engine engine = Engine.getInstance();
 
     @Test
     public void testDontSacKnightForCenterPawn() {
@@ -615,7 +616,7 @@ public class BlunderTest {
     }
     
     private SearchResult think(int timeout) {
-        TimeControl tc = new TimeControl(Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1, -1);
+        TimeControl tc = new TimeControl(new EngineConfig(), Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1, -1);
         return engine.think(tc);
     }
 

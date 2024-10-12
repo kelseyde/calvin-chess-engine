@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.board;
 
 
+import com.kelseyde.calvin.board.Bits.Castling;
+
 /**
  * Stores the metadata for a given chess position - that is, the castling rights, en passant rights, the fifty-move counter
  * (the number of half-moves since the last capture or pawn move), and the last captured piece.
@@ -10,23 +12,26 @@ public class GameState {
 
     public long key;
     public long pawnKey;
+    public long[] nonPawnKeys;
     public int enPassantFile;
     public int rights;
     public int halfMoveClock;
     public Piece captured;
 
     public GameState() {
-        key = 0L;
-        pawnKey = 0L;
-        captured = null;
-        enPassantFile = -1;
-        rights = Bits.Castling.INITIAL_CASTLING_RIGHTS;
-        halfMoveClock = 0;
+        this.key = 0L;
+        this.pawnKey = 0L;
+        this.nonPawnKeys = new long[2];
+        this.captured = null;
+        this.enPassantFile = -1;
+        this.rights = Castling.INITIAL_CASTLING_RIGHTS;
+        this.halfMoveClock = 0;
     }
 
-    public GameState(long key, long pawnKey, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
+    public GameState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
         this.key = key;
         this.pawnKey = pawnKey;
+        this.nonPawnKeys = nonPawnKeys;
         this.captured = captured;
         this.enPassantFile = enPassantFile;
         this.rights = rights;
@@ -75,6 +80,10 @@ public class GameState {
         this.pawnKey = pawnKey;
     }
 
+    public void setNonPawnKeys(long[] nonPawnKeys) {
+        this.nonPawnKeys = nonPawnKeys;
+    }
+
     public void setEnPassantFile(int enPassantFile) {
         this.enPassantFile = enPassantFile;
     }
@@ -88,7 +97,8 @@ public class GameState {
     }
 
     public GameState copy() {
-        return new GameState(key, pawnKey, captured, enPassantFile, rights, halfMoveClock);
+        long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
+        return new GameState(key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock);
     }
 
     @Override

@@ -1,12 +1,14 @@
 package com.kelseyde.calvin.utils.notation;
 
-import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.Key;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -33,7 +35,6 @@ public class FEN {
             long blackRooks = 0L;
             long blackQueens = 0L;
             long blackKing = 0L;
-
 
             List<List<String>> rankFileHash = Arrays.stream(files)
                     .map(file -> Arrays.stream(file.split(""))
@@ -96,8 +97,9 @@ public class FEN {
             board.getState().setRights(castlingRights);
             board.getState().setEnPassantFile(enPassantFile);
             board.getState().setHalfMoveClock(fiftyMoveCounter);
-            board.getState().setKey(Zobrist.generateKey(board));
-            board.getState().setPawnKey(Zobrist.generatePawnKey(board));
+            board.getState().setKey(Key.generateKey(board));
+            board.getState().setPawnKey(Key.generatePawnKey(board));
+            board.getState().setNonPawnKeys(Key.generateNonPawnKeys(board));
 
             return board;
 
@@ -146,7 +148,7 @@ public class FEN {
             String fiftyMoveCounter = toFiftyMoveCounter(board.getState().getHalfMoveClock());
             sb.append(" ").append(fiftyMoveCounter);
 
-            String fullMoveNumber = toFullMoveCounter(board.getMoves());
+            String fullMoveNumber = toFullMoveCounter(board.getPly());
             sb.append(" ").append(fullMoveNumber);
 
             return sb.toString();
@@ -228,9 +230,8 @@ public class FEN {
         return Integer.toString(fiftyMoveCounter);
     }
 
-    private static String toFullMoveCounter(Deque<Move> moveHistory) {
-        int halfMoves = moveHistory.size();
-        return Integer.toString(1 + (halfMoves / 2));
+    private static String toFullMoveCounter(int ply) {
+        return Integer.toString(1 + (ply / 2));
     }
 
     private static Stream<String> parseSquare(String square) {

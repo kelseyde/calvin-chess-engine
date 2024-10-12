@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class TestUtils {
 
-    public static final Engine ENGINE = new Engine();
+    public static final Engine ENGINE = Engine.getInstance();
     public static final EngineConfig CONFIG = new EngineConfig();
     public static final MoveGenerator MOVEGEN = new MoveGenerator();
     public static final TranspositionTable TT = new TranspositionTable(CONFIG.defaultHashSizeMb);

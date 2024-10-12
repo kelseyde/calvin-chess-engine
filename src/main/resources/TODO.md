@@ -1,19 +1,28 @@
 # TODO
 
+### General
+
+- [ ] FRC/DFRC support
+- [ ] Improve javadoc
+- [ ] Review all code comments
+- [x] Reduce artifact size (remove plugins, dependencies, delete old nets)
+- [ ] Refactor/improve TranspositionTable code
+
 ### Search
 
-- [ ] SPSA tune
+- [x] SPSA tune
 - [ ] PV table
-- [ ] Singular extensions
-- [ ] MultiCut
+- [ ] Singular extensions ( won't gain )
+- [ ] MultiCut ( won't gain )
 - [ ] ProbCut
-- [ ] TT score eval correction
-- [ ] Razoring
-- [ ] History leaf pruning
-- [ ] SEE pruning
-- [ ] Faster SEE
+- [x] TT score eval correction 
+- [x] Razoring
+- [x] History pruning
+- [ ] SEE pruning ( won't gain )
+- [ ] Faster SEE ( won't gain )
 - [ ] Syzygy TB
 - [x] Check root legal moves, if only one, play instantly
+- [ ] Merge Searcher and ParallelSearcher
 
 ### Move generation / Move ordering
 
@@ -22,23 +31,24 @@
 - [ ] Try copy/make rather than make/unmake
 - [x] 1-ply Conthist
 - [x] 2-ply Conthist
+- [ ] 4-ply Conthist
 - [x] Capthist
-- [ ] Threats
-- [ ] Countermoves
-- [ ] Add Killers, History etc. stages to MovePicker.
+- [ ] Threats ( won't gain )
+- [ ] Countermoves ( won't gain )
+- [ ] Add Killers, History etc. stages to MovePicker. ( won't gain )
 
 ### Evaluation
 
 - [ ] Find solution to CCRL/ChessGUI/Vector API issue
-- [ ] Lazy NNUE updates
+- [ ] Lazy NNUE updates ( won't gain )
 - [x] New net, bigger HL size
 - [x] Screlu
-- [ ] Output buckets
+- [ ] Output buckets ( won't gain )
 - [ ] Horizontal mirroring
 - [ ] Datagen
-- [ ] Pawn corrhist
+- [ ] Pawn corrhist ( won't gain )
 - [ ] Material corrhist
-- [ ] Output buckets
+- [ ] Output buckets ( won't gain )
 - [ ] Finny tables
 
 ### Time management
@@ -52,17 +62,11 @@
 
 - [x] Add engine author/version
 - [x] Add perft to UCI options
-- [ ] Implement display command
+- [x] Implement display command
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
 - [ ] Add seldepth to info
-- [ ] Add hashfull to info
+- [x] Add hashfull to info
 - [ ] MultiPV
-- [ ] Coloured output
-
-### Code maturity
-
-- [ ] Improve javadoc
-- [ ] Review all code comments
-- [ ] Reduce artifact size (remove plugins, dependencies, delete old nets)
+- [x] Coloured output
 

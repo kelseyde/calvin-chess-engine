@@ -27,6 +27,16 @@ import java.util.stream.IntStream;
  */
 public class Engine {
 
+    // Singleton pattern: only one instance of the engine can exist.
+    private static Engine INSTANCE;
+
+    public static Engine getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Engine();
+        }
+        return INSTANCE;
+    }
+
     final EngineConfig config;
     final MoveGenerator movegen;
     final PerftService perft;
@@ -35,7 +45,7 @@ public class Engine {
     CompletableFuture<SearchResult> think;
     Board board;
 
-    public Engine() {
+    private Engine() {
         this.config = new EngineConfig();
         this.board = Board.from(FEN.STARTPOS);
         this.movegen = new MoveGenerator();
@@ -46,6 +56,8 @@ public class Engine {
 
     public void newGame() {
         searcher.clearHistory();
+        board = Board.from(FEN.STARTPOS);
+        searcher.setPosition(board);
     }
 
     public void setPosition(PositionCommand command) {
@@ -65,7 +77,7 @@ public class Engine {
         } else {
             this.config.pondering = command.ponder();
             setSearchCancelled(false);
-            TimeControl tc = TimeControl.init(board, command);
+            TimeControl tc = TimeControl.init(config, board, command);
             stopThinking();
             think = CompletableFuture.supplyAsync(() -> think(tc));
             think.thenAccept(UCI::writeMove);
@@ -118,25 +130,29 @@ public class Engine {
         long key = board.key();
         HashEntry entry = tt.get(key, 0);
         board.unmakeMove();
-        return entry != null ? entry.getMove() : null;
+        return entry != null ? entry.move() : null;
     }
 
     public List<Move> extractPrincipalVariation() {
         List<Move> pv = new ArrayList<>();
         TranspositionTable tt = searcher.getTranspositionTable();
         int moves = 0;
-        while (moves <= 12) {
+        while (moves < 24) {
             long key = board.key();
             HashEntry entry = tt.get(key, 0);
-            if (entry == null || entry.getMove() == null) {
+            if (entry == null || entry.move() == null) {
                 break;
             }
-            pv.add(entry.getMove());
-            board.makeMove(entry.getMove());
+            pv.add(entry.move());
+            board.makeMove(entry.move());
             moves++;
         }
         IntStream.range(0, moves).forEach(i -> board.unmakeMove());
         return pv;
+    }
+
+    public int hashfull() {
+        return searcher.getTranspositionTable().fill();
     }
 
     public EngineConfig getConfig() {

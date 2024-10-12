@@ -17,6 +17,8 @@ enum UCICommandType {
     EVAL         ("eval",        UCI::handleEval),
     DISPLAY      ("display",     UCI::handleDisplay),
     D            ("d",           UCI::handleDisplay),
+    PRETTY       ("pretty",      UCI::handlePretty),
+    HASHFULL     ("hashfull",    UCI::handleHashfull),
     THREATS      ("threats",     UCI::handleThreats),
     BENCH        ("bench",       UCI::handleBench),
     SCORE_DATA   ("scoredata",   UCI::handleScoreData),

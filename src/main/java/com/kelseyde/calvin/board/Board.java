@@ -280,10 +280,10 @@ public class Board {
             final int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] ^= hash;
             if (piece.isMajor() || piece.isKing()) {
-                state.majorKey = Key.hashPiece(state.majorKey, from, to, piece, white);
+                state.majorKey ^= Key.piece(from, to, piece, white);
             }
             if (piece.isMinor() || piece.isKing()) {
-                state.minorKey = Key.hashPiece(state.minorKey, from, to, piece, white);
+                state.minorKey ^= Key.piece(from, to, piece, white);
             }
         }
     }

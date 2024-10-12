@@ -4,8 +4,8 @@ import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.board.Key;
+import com.kelseyde.calvin.board.Piece;
 
 import java.util.Arrays;
 import java.util.Collections;

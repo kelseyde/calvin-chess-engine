@@ -25,7 +25,7 @@ public class QuietHistoryTable extends AbstractHistoryTable {
         int from = move.from();
         int to = move.to();
         int threatIndex = threatIndex(from, to, threats);
-        int current = table[colourIndex][from][to][threatIndex];
+        int current = table[colourIndex][pieceIndex][to][threatIndex];
         int bonus = bonus(depth);
         if (!good) bonus = -bonus;
         int update = gravity(current, bonus);
@@ -43,10 +43,10 @@ public class QuietHistoryTable extends AbstractHistoryTable {
 
     public void ageScores(boolean white) {
         int colourIndex = Colour.index(white);
-        for (int piece = 0; piece < Piece.COUNT; piece++) {
+        for (int pieceIndex = 0; pieceIndex < Piece.COUNT; pieceIndex++) {
             for (int to = 0; to < Square.COUNT; to++) {
-                table[colourIndex][piece][to][0] /= 2;
-                table[colourIndex][piece][to][1] /= 2;
+                table[colourIndex][pieceIndex][to][0] /= 2;
+                table[colourIndex][pieceIndex][to][1] /= 2;
             }
         }
     }

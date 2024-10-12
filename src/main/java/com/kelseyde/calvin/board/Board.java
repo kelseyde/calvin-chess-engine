@@ -296,6 +296,12 @@ public class Board {
         } else {
             final int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] ^= hash;
+            if (piece.isMajor() || piece.isKing()) {
+                state.majorKey ^= Key.piece(square, piece, white);
+            }
+            if (piece.isMinor() || piece.isKing()) {
+                state.minorKey ^= Key.piece(square, piece, white);
+            }
         }
     }
 

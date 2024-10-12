@@ -20,7 +20,7 @@ public class SearchHistory {
     private final CaptureHistoryTable captureHistoryTable;
     private final CorrectionHistoryTable pawnCorrHistTable;
     private final CorrectionHistoryTable[] nonPawnCorrHistTables;
-    private final CorrectionHistoryTable majorCorrHistTable;
+//    private final CorrectionHistoryTable majorCorrHistTable;
     private final CorrectionHistoryTable minorCorrHistTable;
 
     private int bestMoveStability = 0;
@@ -35,7 +35,7 @@ public class SearchHistory {
         this.nonPawnCorrHistTables = new CorrectionHistoryTable[] {
                 new CorrectionHistoryTable(), new CorrectionHistoryTable()
         };
-        this.majorCorrHistTable = new CorrectionHistoryTable();
+//        this.majorCorrHistTable = new CorrectionHistoryTable();
         this.minorCorrHistTable = new CorrectionHistoryTable();
     }
 
@@ -83,9 +83,9 @@ public class SearchHistory {
         int pawn   = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white  = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black  = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
-        int major  = majorCorrHistTable.get(board.majorKey(), board.isWhite());
+//        int major  = majorCorrHistTable.get(board.majorKey(), board.isWhite());
         int minor  = minorCorrHistTable.get(board.minorKey(), board.isWhite());
-        int correction = pawn + white + black + ((major + minor) / 2);
+        int correction = pawn + white + black + minor;
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 
@@ -93,7 +93,7 @@ public class SearchHistory {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
-        majorCorrHistTable.update(board.majorKey(), board.isWhite(), depth, score, staticEval);
+//        majorCorrHistTable.update(board.majorKey(), board.isWhite(), depth, score, staticEval);
         minorCorrHistTable.update(board.minorKey(), board.isWhite(), depth, score, staticEval);
     }
 
@@ -136,7 +136,7 @@ public class SearchHistory {
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
-        majorCorrHistTable.clear();
+//        majorCorrHistTable.clear();
         minorCorrHistTable.clear();
     }
 

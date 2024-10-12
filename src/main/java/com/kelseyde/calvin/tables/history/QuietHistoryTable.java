@@ -47,8 +47,8 @@ public class QuietHistoryTable extends AbstractHistoryTable {
             for (int to = 0; to < Square.COUNT; to++) {
                 table[colourIndex][pieceIndex][to][0] /= 2;
                 table[colourIndex][pieceIndex][to][1] /= 2;
+                table[colourIndex][pieceIndex][to][2] /= 2;
                 table[colourIndex][pieceIndex][to][3] /= 2;
-                table[colourIndex][pieceIndex][to][4] /= 2;
             }
         }
     }

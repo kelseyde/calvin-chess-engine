@@ -1,9 +1,6 @@
 package com.kelseyde.calvin.search;
 
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Colour;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.tables.history.*;
@@ -20,6 +17,7 @@ public class SearchHistory {
     private final CaptureHistoryTable captureHistoryTable;
     private final CorrectionHistoryTable pawnCorrHistTable;
     private final CorrectionHistoryTable[] nonPawnCorrHistTables;
+    private final CorrectionHistoryTable threatCorrHistTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -29,10 +27,11 @@ public class SearchHistory {
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
-        this.pawnCorrHistTable = new CorrectionHistoryTable();
+        this.pawnCorrHistTable = new CorrectionHistoryTable(16384);
         this.nonPawnCorrHistTables = new CorrectionHistoryTable[] {
-                new CorrectionHistoryTable(), new CorrectionHistoryTable()
+                new CorrectionHistoryTable(16384), new CorrectionHistoryTable(16384)
         };
+        this.threatCorrHistTable = new CorrectionHistoryTable(8192);
     }
 
     public void updateHistory(
@@ -75,18 +74,20 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int correctEvaluation(Board board, int staticEval) {
+    public int correctEvaluation(Board board, long threats, int staticEval) {
         int pawn = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
-        int correction = pawn + white + black;
+        int threat = threatCorrHistTable.get(Bits.murmurHash3(threats & board.getPieces(board.isWhite())), board.isWhite());
+        int correction = pawn + white + black + threat;
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 
-    public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
+    public void updateCorrectionHistory(Board board, long threats, int depth, int score, int staticEval) {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
+        threatCorrHistTable.update(Bits.murmurHash3(threats & board.getPieces(board.isWhite())), board.isWhite(), depth, score, staticEval);
     }
 
     public int getBestMoveStability() {
@@ -128,6 +129,7 @@ public class SearchHistory {
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
+        threatCorrHistTable.clear();
     }
 
 }

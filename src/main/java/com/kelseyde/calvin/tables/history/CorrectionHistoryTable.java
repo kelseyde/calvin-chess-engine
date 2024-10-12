@@ -22,12 +22,13 @@ public class CorrectionHistoryTable {
 
     public static final int SCALE = 256;
     private static final int MAX = SCALE * 32;
-    private static final int TABLE_SIZE = 16384;
 
+    private final int tableSize;
     int[][] entries;
 
-    public CorrectionHistoryTable() {
-        this.entries = new int[2][TABLE_SIZE];
+    public CorrectionHistoryTable(int tableSize) {
+        this.tableSize = tableSize;
+        this.entries = new int[2][tableSize];
     }
 
     /**
@@ -79,7 +80,7 @@ public class CorrectionHistoryTable {
     }
 
     public void clear() {
-        this.entries = new int[2][TABLE_SIZE];
+        this.entries = new int[2][tableSize];
     }
 
     /**
@@ -89,7 +90,7 @@ public class CorrectionHistoryTable {
         // Ensure the key is positive
         key = key & 0x7FFFFFFF;
         // Return a modulo of the key based on the table size
-        return (int) key % TABLE_SIZE;
+        return (int) key % tableSize;
     }
 
     private int clamp(int value) {

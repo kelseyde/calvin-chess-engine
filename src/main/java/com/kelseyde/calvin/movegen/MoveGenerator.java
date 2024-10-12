@@ -574,6 +574,46 @@ public class MoveGenerator {
 
     }
 
+    /**
+     * Calculate which squares are attacked by the specified side.
+     */
+    public long calculateThreats(Board board, boolean white) {
+
+        long threats = 0L;
+        long occ = board.getOccupied();
+
+        long knights = board.getKnights(white);
+        while (knights != 0) {
+            final int square = Bits.next(knights);
+            threats |= Attacks.knightAttacks(square);
+            knights = Bits.pop(knights);
+        }
+
+        long bishops = board.getBishops(white) | board.getQueens(white);
+        while (bishops != 0) {
+            final int square = Bits.next(bishops);
+            threats |= Attacks.bishopAttacks(square, occ);
+            bishops = Bits.pop(bishops);
+        }
+
+        long rooks = board.getRooks(white) | board.getQueens(white);
+        while (rooks != 0) {
+            final int square = Bits.next(rooks);
+            threats |= Attacks.rookAttacks(square, occ);
+            rooks = Bits.pop(rooks);
+        }
+
+        long pawns = board.getPawns(white);
+        threats |= Attacks.pawnAttacks(pawns, white);
+
+        long king = board.getKing(white);
+        final int square = Bits.next(king);
+        threats |= Attacks.kingAttacks(square);
+
+        return threats;
+
+    }
+
     private List<Move> getPromotionMoves(int from, int to) {
         return List.of(new Move(from, to, Move.PROMOTE_TO_QUEEN_FLAG),
                         new Move(from, to, Move.PROMOTE_TO_ROOK_FLAG),

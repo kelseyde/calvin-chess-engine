@@ -523,6 +523,10 @@ public class Board {
         return occupied;
     }
 
+    public Piece[] getPieces() {
+        return pieces;
+    }
+
     public boolean isWhite() {
         return white;
     }
@@ -602,7 +606,7 @@ public class Board {
             newMoves[i] = new Move(this.getMoves()[i].value());
         }
         newBoard.setMoves(newMoves);
-        newBoard.setPieces(Arrays.copyOf(pieces, pieces.length));
+        newBoard.setPieces(Arrays.copyOf(this.getPieces(), this.getPieces().length));
         return newBoard;
     }
 

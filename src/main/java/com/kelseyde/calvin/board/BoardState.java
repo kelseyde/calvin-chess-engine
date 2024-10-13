@@ -108,4 +108,20 @@ public class BoardState {
         return new BoardState(key, pawnKey, nonPawnKeysCopy, materialKey, captured, enPassantFile, rights, halfMoveClock);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BoardState boardState = (BoardState) o;
+        return key == boardState.key
+                && pawnKey == boardState.pawnKey
+                && nonPawnKeys[0] == boardState.nonPawnKeys[0]
+                && nonPawnKeys[1] == boardState.nonPawnKeys[1]
+                && materialKey == boardState.materialKey
+                && enPassantFile == boardState.enPassantFile
+                && rights == boardState.rights
+                && halfMoveClock == boardState.halfMoveClock
+                && captured == boardState.captured;
+    }
+
 }

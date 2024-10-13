@@ -82,7 +82,7 @@ public class SearchHistory {
         int white = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int material = materialCorrHistTable.get(board.materialKey(), board.isWhite());
-        int correction = pawn + white + black + material;
+        int correction = pawn + white + black + (material / 2);
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 

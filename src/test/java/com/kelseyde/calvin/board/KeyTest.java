@@ -324,4 +324,19 @@ public class KeyTest {
 
     }
 
+    @Test
+    public void testMaterialKeyCapturePromotion() {
+
+        Board board = Board.from("rnbq2nr/pp2kPpp/8/8/1b6/2p2N2/PP2PPPP/R1BQKB1R w KQ - 0 8");
+        Move move = Move.fromUCI("f7g8n", Move.PROMOTE_TO_KNIGHT_FLAG);
+
+        long materialKeyBefore = board.materialKey();
+        board.makeMove(move);
+        long materialKeyAfter = board.materialKey();
+
+        Assertions.assertNotEquals(materialKeyBefore, materialKeyAfter);
+        Assertions.assertEquals(materialKeyAfter, Key.generateMaterialKey(board));
+
+    }
+
 }

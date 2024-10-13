@@ -13,6 +13,7 @@ public class BoardState {
     public long key;
     public long pawnKey;
     public long[] nonPawnKeys;
+    public long materialKey;
     public int enPassantFile;
     public int rights;
     public int halfMoveClock;
@@ -22,16 +23,18 @@ public class BoardState {
         this.key = 0L;
         this.pawnKey = 0L;
         this.nonPawnKeys = new long[2];
+        this.materialKey = 0L;
         this.captured = null;
         this.enPassantFile = -1;
         this.rights = Castling.INITIAL_CASTLING_RIGHTS;
         this.halfMoveClock = 0;
     }
 
-    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
+    public BoardState(long key, long pawnKey, long[] nonPawnKeys, long materialKey, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
         this.key = key;
         this.pawnKey = pawnKey;
         this.nonPawnKeys = nonPawnKeys;
+        this.materialKey = materialKey;
         this.captured = captured;
         this.enPassantFile = enPassantFile;
         this.rights = rights;
@@ -84,6 +87,10 @@ public class BoardState {
         this.nonPawnKeys = nonPawnKeys;
     }
 
+    public void setMaterialKey(long materialKey) {
+        this.materialKey = materialKey;
+    }
+
     public void setEnPassantFile(int enPassantFile) {
         this.enPassantFile = enPassantFile;
     }
@@ -98,20 +105,7 @@ public class BoardState {
 
     public BoardState copy() {
         long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
-        return new BoardState(key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BoardState boardState = (BoardState) o;
-        return key == boardState.key
-                && pawnKey == boardState.pawnKey
-                && enPassantFile == boardState.enPassantFile
-                && rights == boardState.rights
-                && halfMoveClock == boardState.halfMoveClock
-                && captured == boardState.captured;
+        return new BoardState(key, pawnKey, nonPawnKeysCopy, materialKey, captured, enPassantFile, rights, halfMoveClock);
     }
 
 }

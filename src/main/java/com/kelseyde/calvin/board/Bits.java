@@ -21,6 +21,10 @@ public class Bits {
         return 1L << sq;
     }
 
+    public static boolean contains(long bb, int sq) {
+        return (bb & of(sq)) != 0;
+    }
+
     public static long north(long board) {
         return board << 8;
     }
@@ -51,6 +55,15 @@ public class Bits {
 
     public static long southWest(long board) {
         return (board >>> 9) & ~File.H;
+    }
+
+    public static long murmurHash3(long bb) {
+        bb ^= bb >>> 33;
+        bb *= 0xff51afd7ed558ccdL;
+        bb ^= bb >>> 33;
+        bb *= 0xc4ceb9fe1a85ec53L;
+        bb ^= bb >>> 33;
+        return bb;
     }
 
     public static void print(long bb) {

@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -207,7 +208,8 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final boolean inCheck = movegen.isCheck(board, board.isWhite());
+        long threats = movegen.calculateThreats(board, !board.isWhite());
+        boolean inCheck = Bits.contains(threats, Bits.next(board.getKing(board.isWhite())));
 
         final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -236,7 +238,7 @@ public class Searcher implements Search {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedStaticEval = rawStaticEval;
-            staticEval = history.correctEvaluation(board, rawStaticEval);
+            staticEval = history.correctEvaluation(board, threats, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -474,7 +476,7 @@ public class Searcher implements Search {
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
-            history.updateCorrectionHistory(board, depth, bestScore, uncorrectedStaticEval);
+            history.updateCorrectionHistory(board, threats, depth, bestScore, uncorrectedStaticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.
@@ -512,7 +514,8 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final boolean inCheck = movegen.isCheck(board, board.isWhite());
+        long threats = movegen.calculateThreats(board, !board.isWhite());
+        boolean inCheck = Bits.contains(threats, Bits.next(board.getKing(board.isWhite())));
 
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -521,7 +524,7 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = history.correctEvaluation(board, rawStaticEval);
+            staticEval = history.correctEvaluation(board, threats, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||

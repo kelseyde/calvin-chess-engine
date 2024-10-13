@@ -20,6 +20,7 @@ public class SearchHistory {
     private final CaptureHistoryTable captureHistoryTable;
     private final CorrectionHistoryTable pawnCorrHistTable;
     private final CorrectionHistoryTable[] nonPawnCorrHistTables;
+    private final ContinuationCorrectionHistoryTable contCorrHistTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -33,6 +34,7 @@ public class SearchHistory {
         this.nonPawnCorrHistTables = new CorrectionHistoryTable[] {
                 new CorrectionHistoryTable(), new CorrectionHistoryTable()
         };
+        this.contCorrHistTable = new ContinuationCorrectionHistoryTable();
     }
 
     public void updateHistory(
@@ -75,18 +77,42 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int correctEvaluation(Board board, int staticEval) {
+    public int correctEvaluation(Board board, SearchStack ss, int ply, int staticEval) {
         int pawn = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
-        int correction = pawn + white + black;
+        int cont = getContCorrHistEntry(ss, ply, board.isWhite());
+        int correction = pawn + white + black + cont;
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 
-    public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
+    public void updateCorrectionHistory(Board board, SearchStack ss, int ply, int depth, int score, int staticEval) {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
+        updateContCorrHistEntry(ss, ply, board.isWhite(), depth, score, staticEval);
+    }
+
+    private int getContCorrHistEntry(SearchStack ss, int ply, boolean white) {
+        Move prevMove1 = ss.getMove(ply - 1);
+        Piece prevPiece1 = ss.getMovedPiece(ply - 1);
+        Move prevMove2 = ss.getMove(ply - 2);
+        Piece prevPiece2 = ss.getMovedPiece(ply - 2);
+        if (prevMove1 == null || prevMove2 == null) {
+            return 0;
+        }
+        return contCorrHistTable.get(white, prevMove1, prevPiece1, prevMove2, prevPiece2);
+    }
+
+    private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
+        Move prevMove1 = ss.getMove(ply - 1);
+        Piece prevPiece1 = ss.getMovedPiece(ply - 1);
+        Move prevMove2 = ss.getMove(ply - 2);
+        Piece prevPiece2 = ss.getMovedPiece(ply - 2);
+        if (prevMove1 == null || prevMove2 == null) {
+            return;
+        }
+        contCorrHistTable.update(prevMove1, prevPiece1, prevMove2, prevPiece2, white, depth, score, staticEval);
     }
 
     public int getBestMoveStability() {
@@ -128,6 +154,7 @@ public class SearchHistory {
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
+        contCorrHistTable.clear();
     }
 
 }

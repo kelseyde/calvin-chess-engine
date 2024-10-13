@@ -82,7 +82,7 @@ public class SearchHistory {
         int white = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int correction = pawn + white + black;
-        if (ttMove != null) {
+        if (ttMove != null && board.isQuiet(ttMove)) {
             Piece piece = board.pieceAt(ttMove.from());
             correction += ttMoveCorrectionHistoryTable.get(ttMove, piece, board.isWhite());
         }
@@ -93,7 +93,7 @@ public class SearchHistory {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
-        if (bestMove != null) {
+        if (bestMove != null && board.isQuiet(bestMove)) {
             Piece piece = board.pieceAt(bestMove.from());
             ttMoveCorrectionHistoryTable.update(bestMove, piece, board.isWhite(), depth, score, staticEval);
         }

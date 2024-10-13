@@ -55,14 +55,6 @@ public class TtMoveCorrectionHistoryTable {
     }
 
     /**
-     * Correct the static eval with the value from the correction history table.
-     */
-    public int correctEvaluation(Move move, Piece piece, boolean white, int staticEval) {
-        int entry = get(move, piece, white);
-        return staticEval + entry / SCALE;
-    }
-
-    /**
      * Retrieve the correction history entry for the given side to move and hash index.
      */
     public int get(Move move, Piece piece, boolean white) {

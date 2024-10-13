@@ -74,6 +74,18 @@ public class SearchStack {
         return entry != null && entry.nullMoveAllowed;
     }
 
+    public Move getExcludedMove(int ply) {
+        SearchStackEntry entry = get(ply);
+        return entry != null ? entry.excludedMove : null;
+    }
+
+    public void setExcludedMove(int ply, Move move) {
+        if (ply < 0 || ply >= Search.MAX_DEPTH) {
+            return;
+        }
+        stack[ply].excludedMove = move;
+    }
+
     public void clear() {
         for (int i = 0; i < Search.MAX_DEPTH; i++) {
             stack[i] = new SearchStackEntry();
@@ -84,6 +96,7 @@ public class SearchStack {
         public int staticEval;
         public PlayedMove currentMove;
         public PlayedMove bestMove;
+        public Move excludedMove;
         public boolean nullMoveAllowed = true;
     }
 

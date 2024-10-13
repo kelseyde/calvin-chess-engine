@@ -55,6 +55,7 @@ public class EngineConfig {
     public final Tunable hpMaxDepth           = new Tunable("HpMaxDepth", 3, 0, 10, 1);
     public final Tunable hpMargin             = new Tunable("HpMargin", -2197, -4000, -100, 50);
     public final Tunable hpOffset             = new Tunable("HpOffset", -1039, -3000, 0, 50);
+    public final Tunable ttExtensionDepth     = new Tunable("TtExtDepth", 6, 0, 12, 1);
     public final Tunable quietHistBonusMax    = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     public final Tunable quietHistBonusScale  = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     public final Tunable quietHistMalusMax    = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);

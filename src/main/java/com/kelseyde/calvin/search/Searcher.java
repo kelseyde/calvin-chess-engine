@@ -227,6 +227,7 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
+                && !excluded
                 && !inCheck
                 && (!ttHit || ttEntry.move() == null)
                 && ply > 0
@@ -338,6 +339,7 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
+                && !excluded
                 && depth <= config.fpDepth.value
                 && !inCheck && !isCapture && !isPromotion
                 && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {
@@ -392,9 +394,12 @@ public class Searcher implements Search {
                 int score = search(sDepth, ply, sBeta - 1, sBeta);
                 ss.setExcludedMove(ply, null);
 
-                if (score >= sBeta && sBeta >= beta) {
-                    return sBeta;
+                if (score < sBeta) {
+                    extension = 1;
                 }
+//                if (score >= sBeta && sBeta >= beta) {
+//                    return sBeta;
+//                }
 
             }
 
@@ -502,6 +507,7 @@ public class Searcher implements Search {
         }
 
         if (!inCheck
+            && !excluded
             && !Score.isUndefinedScore(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)

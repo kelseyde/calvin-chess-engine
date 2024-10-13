@@ -191,11 +191,14 @@ public class Searcher implements Search {
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
-        if (!pvNode
-                && ttHit
-                && isSufficientDepth(ttEntry, depth)
-                && isWithinBounds(ttEntry, alpha, beta)) {
-            return ttEntry.score();
+
+        if (!pvNode && ttHit && isSufficientDepth(ttEntry, depth)) {
+            if (isWithinBounds(ttEntry, alpha, beta)) {
+                return ttEntry.score();
+            }
+            else if (depth <= config.ttExtensionDepth.value) {
+                depth++;
+            }
         }
 
         Move ttMove = null;

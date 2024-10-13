@@ -231,7 +231,7 @@ public class Board {
         white = !white;
         final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
+        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, state.majorKey, state.minorKey, null, -1, state.getRights(), 0);
         states[ply++] = state;
         state = newState;
     }
@@ -279,6 +279,12 @@ public class Board {
         } else {
             final int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] ^= hash;
+            if (piece.isMajor() || piece.isKing()) {
+                state.majorKey ^= Key.piece(from, to, piece, white);
+            }
+            if (piece.isMinor() || piece.isKing()) {
+                state.minorKey ^= Key.piece(from, to, piece, white);
+            }
         }
     }
 
@@ -290,6 +296,12 @@ public class Board {
         } else {
             final int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] ^= hash;
+            if (piece.isMajor() || piece.isKing()) {
+                state.majorKey ^= Key.piece(square, piece, white);
+            }
+            if (piece.isMinor() || piece.isKing()) {
+                state.minorKey ^= Key.piece(square, piece, white);
+            }
         }
     }
 
@@ -526,8 +538,12 @@ public class Board {
         return state.nonPawnKeys;
     }
 
-    public int countPieces() {
-        return Bits.count(occupied);
+    public long majorKey() {
+        return state.majorKey;
+    }
+
+    public long minorKey() {
+        return state.minorKey;
     }
 
     public boolean hasPiecesRemaining(boolean white) {

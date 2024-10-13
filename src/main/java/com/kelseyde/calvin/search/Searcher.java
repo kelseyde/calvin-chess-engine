@@ -194,6 +194,13 @@ public class Searcher implements Search {
 
         if (!pvNode && ttHit && isSufficientDepth(ttEntry, depth)) {
             if (isWithinBounds(ttEntry, alpha, beta)) {
+                if (ttEntry.score() >= beta
+                        && ttEntry.move() != null
+                        && board.isQuiet(ttEntry.move())) {
+                    Move move = ttEntry.move();
+                    Piece piece = board.pieceAt(move.from());
+                    history.getQuietHistoryTable().update(move, piece, depth, board.isWhite(), true);
+                }
                 return ttEntry.score();
             }
             else if (depth <= config.ttExtensionDepth.value) {
@@ -337,7 +344,7 @@ public class Searcher implements Search {
                 continue;
             }
 
-            final int historyScore = this.history.getHistoryTable().get(move, piece, board.isWhite());
+            final int historyScore = this.history.getQuietHistoryTable().get(move, piece, board.isWhite());
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,

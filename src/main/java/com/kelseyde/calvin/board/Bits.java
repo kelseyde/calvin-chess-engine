@@ -21,6 +21,10 @@ public class Bits {
         return 1L << sq;
     }
 
+    public static boolean contains(long bb, int sq) {
+        return (bb & of(sq)) != 0;
+    }
+
     public static long north(long board) {
         return board << 8;
     }

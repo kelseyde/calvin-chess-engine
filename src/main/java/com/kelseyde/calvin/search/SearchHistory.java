@@ -36,14 +36,14 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures, long threats) {
 
         if (bestMove.isQuiet()) {
 
             killerTable.add(ply, bestMove.move());
             for (PlayedMove quiet : quiets) {
                 boolean good = bestMove.move().equals(quiet.move());
-                quietHistoryTable.update(quiet.move(), quiet.piece(), depth, white, good);
+                quietHistoryTable.update(quiet.move(), quiet.piece(), threats, depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
                     Move prevMove = ss.getMove(ply - prevPly);

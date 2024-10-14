@@ -643,7 +643,8 @@ public class Searcher implements Search {
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
         final int bestMoveNodes = td.getNodes(bestMoveCurrent);
-        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        final boolean recapture = bestMoveCurrent != null && tc.recaptureSquare() >= 0 && bestMoveCurrent.to() == tc.recaptureSquare();
+        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability, recapture);
     }
 
     private boolean isDraw() {

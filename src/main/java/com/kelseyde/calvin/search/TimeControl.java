@@ -16,7 +16,8 @@ import java.time.Instant;
  * point starting the iteration, since the time spent doing so is mostly wasted. That time can therefore be saved for
  * subsequent moves.
  */
-public record TimeControl(EngineConfig config, Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth) {
+public record TimeControl(
+        EngineConfig config, Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth, int recaptureSquare) {
 
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
@@ -27,16 +28,18 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
     static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
     static final double[] SCORE_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
 
+    static final double[] RECAPTURE_FACTOR = new double[] { 1.005, 0.925 };
+
     static final int UCI_OVERHEAD = 50;
 
-    public static TimeControl init(EngineConfig config, Board board, GoCommand command) {
+    public static TimeControl init(EngineConfig config, Board board, GoCommand command, int recaptureSquare) {
 
         double time;
         double inc;
         if (command.isMovetime()) {
             time = command.movetime();
             Duration movetime = Duration.ofMillis((long) time);
-            return new TimeControl(config, movetime, movetime, -1, -1, -1);
+            return new TimeControl(config, movetime, movetime, -1, -1, -1, recaptureSquare);
         } else if (command.isTimeAndInc()) {
             boolean white = board.isWhite();
             time = white ? command.wtime() : command.btime();
@@ -54,7 +57,7 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
         Duration soft = Duration.ofMillis((int) (base * SOFT_TIME_FACTOR));
         Duration hard = Duration.ofMillis((int) (base * HARD_TIME_FACTOR));
 
-        return new TimeControl(config, soft, hard, command.nodes(), -1, command.depth());
+        return new TimeControl(config, soft, hard, command.nodes(), -1, command.depth(), recaptureSquare);
 
     }
 
@@ -67,16 +70,16 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
     }
 
     public boolean isSoftLimitReached(
-            Instant start, int depth, int nodes, int bestMoveNodes, int bestMoveStability, int evalStability) {
+            Instant start, int depth, int nodes, int bestMoveNodes, int bestMoveStability, int evalStability, boolean recapture) {
         if (maxDepth > 0 && depth >= maxDepth) return true;
         if (softNodes > 0 && nodes >= softNodes) return true;
         Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
+        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth, recapture);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 
     private Duration adjustSoftLimit(
-            Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int scoreStability, int depth) {
+            Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int scoreStability, int depth, boolean recapture) {
 
         double scale = 1.0;
 
@@ -99,6 +102,8 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
             double nodeTmScale = (double) config.nodeTmScale.value / 100;
             scale *= (nodeTmBase - bestMoveNodeFraction) * nodeTmScale;
         }
+
+        scale *= RECAPTURE_FACTOR[recapture ? 1 : 0];
 
         // Clamp the scale factor to a reasonable range.
         scale = Math.min(Math.max(scale, SOFT_TIME_SCALE_MIN), SOFT_TIME_SCALE_MAX);

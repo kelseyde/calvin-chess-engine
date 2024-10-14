@@ -44,6 +44,7 @@ public class Engine {
 
     CompletableFuture<SearchResult> think;
     Board board;
+    int recaptureSquare;
 
     private Engine() {
         this.config = new EngineConfig();
@@ -61,9 +62,14 @@ public class Engine {
     }
 
     public void setPosition(PositionCommand command) {
+        List<Move> moves = command.moves();
         board = FEN.toBoard(command.fen());
-        for (Move move : command.moves()) {
-            Move legalMove = move(move);
+        recaptureSquare = -1;
+        for (int i = 0; i < moves.size(); i++) {
+            Move legalMove = move(moves.get(i));
+            if (i == moves.size() - 1 && board.pieceAt(legalMove.to()) != null) {
+                recaptureSquare = legalMove.to();
+            }
             board.makeMove(legalMove);
         }
         searcher.setPosition(board);
@@ -77,7 +83,7 @@ public class Engine {
         } else {
             this.config.pondering = command.ponder();
             setSearchCancelled(false);
-            TimeControl tc = TimeControl.init(config, board, command);
+            TimeControl tc = TimeControl.init(config, board, command, recaptureSquare);
             stopThinking();
             think = CompletableFuture.supplyAsync(() -> think(tc));
             think.thenAccept(UCI::writeMove);

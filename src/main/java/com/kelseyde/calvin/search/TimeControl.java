@@ -25,6 +25,7 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
     static final double SOFT_TIME_SCALE_MAX = 2.5;
 
     static final double[] BEST_MOVE_STABILITY_FACTOR = new double[] { 2.50, 1.20, 0.90, 0.80, 0.75 };
+    static final double[] BEST_MOVE_CHANGES_FACTOR = new double[] { 0.80, 0.90, 1.00, 1.10, 1.20 };
     static final double[] SCORE_STABILITY_FACTOR = new double[] { 1.25, 1.15, 1.00, 0.94, 0.88 };
 
     static final int UCI_OVERHEAD = 50;
@@ -67,16 +68,16 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
     }
 
     public boolean isSoftLimitReached(
-            Instant start, int depth, int nodes, int bestMoveNodes, int bestMoveStability, int evalStability) {
+            Instant start, int depth, int nodes, int bestMoveNodes, int bestMoveStability, int bestMoveChanges, int evalStability) {
         if (maxDepth > 0 && depth >= maxDepth) return true;
         if (softNodes > 0 && nodes >= softNodes) return true;
         Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
+        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, bestMoveChanges, evalStability, depth);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 
     private Duration adjustSoftLimit(
-            Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int scoreStability, int depth) {
+            Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int bestMoveChanges, int scoreStability, int depth) {
 
         double scale = 1.0;
 
@@ -84,6 +85,11 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
         // iterations, we can safely assume that we don't need to spend as much time searching further.
         bestMoveStability = Math.min(bestMoveStability, BEST_MOVE_STABILITY_FACTOR.length - 1);
         scale *= BEST_MOVE_STABILITY_FACTOR[bestMoveStability];
+
+        if (depth > 6) {
+            bestMoveChanges = Math.min(bestMoveChanges, BEST_MOVE_CHANGES_FACTOR.length - 1);
+            scale *= BEST_MOVE_CHANGES_FACTOR[bestMoveChanges];
+        }
 
         // Scale the soft limit based on the stability of the search score. If the evaluation has remained stable for
         // several iterations, we can safely assume that we don't need to spend as much time searching further.

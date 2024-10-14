@@ -22,6 +22,7 @@ public class SearchHistory {
     private final CorrectionHistoryTable[] nonPawnCorrHistTables;
 
     private int bestMoveStability = 0;
+    private int bestMoveChanges = 0;
     private int bestScoreStability = 0;
 
     public SearchHistory(EngineConfig config) {
@@ -69,6 +70,9 @@ public class SearchHistory {
             return;
         }
         bestMoveStability = bestMovePrevious.equals(bestMoveCurrent) ? bestMoveStability + 1 : 0;
+        if (!bestMoveCurrent.equals(bestMovePrevious)) {
+            bestMoveChanges++;
+        }
     }
 
     public void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
@@ -93,6 +97,10 @@ public class SearchHistory {
         return bestMoveStability;
     }
 
+    public int getBestMoveChanges() {
+        return bestMoveChanges;
+    }
+
     public int getBestScoreStability() {
         return bestScoreStability;
     }
@@ -115,6 +123,7 @@ public class SearchHistory {
 
     public void reset() {
         bestMoveStability = 0;
+        bestMoveChanges = 0;
         bestScoreStability = 0;
         quietHistoryTable.ageScores(true);
         quietHistoryTable.ageScores(false);

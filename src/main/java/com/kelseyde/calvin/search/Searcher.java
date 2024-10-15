@@ -543,8 +543,7 @@ public class Searcher implements Search {
             if (staticEval > alpha) {
                 alpha = staticEval;
             }
-            final MoveFilter filter = depth == 1 ? MoveGenerator.MoveFilter.NOISY : MoveGenerator.MoveFilter.CAPTURES_ONLY;
-            movePicker.setFilter(filter);
+            movePicker.setFilter(MoveFilter.CAPTURES_ONLY);
         }
 
         int movesSearched = 0;

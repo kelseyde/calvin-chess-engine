@@ -129,6 +129,21 @@ public class Key {
         return keys;
     }
 
+    public static long generateKingKey(Board board) {
+        long key = 0L;
+
+        int whiteKing = Bits.next(board.getKing(true));
+        int blackKing = Bits.next(board.getKing(false));
+
+        int whiteBucket = Bits.bucket(whiteKing);
+        int blackBucket = Bits.bucket(blackKing);
+
+        key ^= PIECE_SQUARE_HASH[whiteBucket][WHITE][Piece.KING.index()];
+        key ^= PIECE_SQUARE_HASH[blackBucket][BLACK][Piece.KING.index()];
+
+        return key;
+    }
+
     private static long updateKeyForPiece(long key, long whiteBitboard, long blackBitboard, int square, int pieceIndex) {
         if (((whiteBitboard >>> square) & 1) == 1) {
             key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndex];

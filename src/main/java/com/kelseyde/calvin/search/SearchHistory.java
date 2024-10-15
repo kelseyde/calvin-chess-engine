@@ -20,6 +20,7 @@ public class SearchHistory {
     private final CaptureHistoryTable captureHistoryTable;
     private final CorrectionHistoryTable pawnCorrHistTable;
     private final CorrectionHistoryTable[] nonPawnCorrHistTables;
+    private final CorrectionHistoryTable kingCorrHistTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -33,6 +34,7 @@ public class SearchHistory {
         this.nonPawnCorrHistTables = new CorrectionHistoryTable[] {
                 new CorrectionHistoryTable(), new CorrectionHistoryTable()
         };
+        this.kingCorrHistTable = new CorrectionHistoryTable();
     }
 
     public void updateHistory(
@@ -79,7 +81,8 @@ public class SearchHistory {
         int pawn = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
-        int correction = pawn + white + black;
+        int king = kingCorrHistTable.get(board.kingKey(), board.isWhite());
+        int correction = pawn + white + black + king;
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 
@@ -87,6 +90,7 @@ public class SearchHistory {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
+        kingCorrHistTable.update(board.kingKey(), board.isWhite(), depth, score, staticEval);
     }
 
     public int getBestMoveStability() {
@@ -128,6 +132,7 @@ public class SearchHistory {
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
+        kingCorrHistTable.clear();
     }
 
 }

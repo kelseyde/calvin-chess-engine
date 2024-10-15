@@ -25,7 +25,7 @@ import com.kelseyde.calvin.search.Search;
  */
 public class NNUE {
 
-    public static final Network NETWORK = Network.Builder.builder()
+    public static final Network NETWORK = Network.builder()
             .file("argonaut.nnue")
             .inputSize(768)
             .hiddenSize(768)

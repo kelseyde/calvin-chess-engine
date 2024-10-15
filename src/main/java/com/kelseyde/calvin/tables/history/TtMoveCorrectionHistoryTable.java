@@ -1,6 +1,9 @@
 package com.kelseyde.calvin.tables.history;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Colour;
+import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 
 /**
@@ -18,26 +21,25 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
  * @see <a href="https://www.chessprogramming.org/Static_Evaluation_Correction_History">Chess Programming Wiki</a>
  *
  */
-public class CorrectionHistoryTable {
+public class TtMoveCorrectionHistoryTable {
 
     public static final int SCALE = 256;
     private static final int MAX = SCALE * 32;
-    private static final int TABLE_SIZE = 16384;
 
-    int[][] entries;
+    int[][][] entries;
 
-    public CorrectionHistoryTable() {
-        this.entries = new int[2][TABLE_SIZE];
+    public TtMoveCorrectionHistoryTable() {
+        this.entries = new int[2][Piece.COUNT][Bits.Square.COUNT];
     }
 
     /**
      * Update the correction history entry to be a weighted sum old value and the new delta of the score and static eval.
      */
-    public void update(long key, boolean white, int depth, int score, int staticEval) {
+    public void update(Move move, Piece piece, boolean white, int depth, int score, int staticEval) {
 
         // Compute the new correction value, and retrieve the old value
         int newValue = (score - staticEval) * SCALE;
-        int oldValue = get(key, white);
+        int oldValue = get(move, piece, white);
 
         // Weight the new value based on the search depth, and the old value based on the remaining weight
         int newWeight = Math.min(depth + 1, 16);
@@ -48,40 +50,32 @@ public class CorrectionHistoryTable {
         update = clamp(update);
 
         // Update the correction history table with the new value.
-        put(key, white, update);
+        put(move, piece, white, update);
 
     }
 
     /**
      * Retrieve the correction history entry for the given side to move and hash index.
      */
-    public int get(long key, boolean white) {
+    public int get(Move move, Piece piece, boolean white) {
         int colourIndex = Colour.index(white);
-        int hashIndex = hashIndex(key);
-        return entries[colourIndex][hashIndex];
+        int pieceIndex = piece.index();
+        int to = move.to();
+        return entries[colourIndex][pieceIndex][to];
     }
 
     /**
      * Update the correction history entry for the given side to move and hash index.
      */
-    private void put(long key, boolean white, int value) {
+    private void put(Move move, Piece piece, boolean white, int value) {
         int colourIndex = Colour.index(white);
-        int hashIndex = hashIndex(key);
-        entries[colourIndex][hashIndex] = value;
+        int pieceIndex = piece.index();
+        int to = move.to();
+        entries[colourIndex][pieceIndex][to] = value;
     }
 
     public void clear() {
-        this.entries = new int[2][TABLE_SIZE];
-    }
-
-    /**
-     * Compute a unique index into the correction history table based on the given hash key.
-     */
-    private int hashIndex(long key) {
-        // Ensure the key is positive
-        key = key & 0x7FFFFFFF;
-        // Return a modulo of the key based on the table size
-        return (int) key % TABLE_SIZE;
+        this.entries = new int[2][Piece.COUNT][Bits.Square.COUNT];
     }
 
     private int clamp(int value) {

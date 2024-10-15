@@ -20,6 +20,7 @@ public class SearchHistory {
     private final CaptureHistoryTable captureHistoryTable;
     private final CorrectionHistoryTable pawnCorrHistTable;
     private final CorrectionHistoryTable[] nonPawnCorrHistTables;
+    private final TtMoveCorrectionHistoryTable ttMoveCorrectionHistoryTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -33,6 +34,7 @@ public class SearchHistory {
         this.nonPawnCorrHistTables = new CorrectionHistoryTable[] {
                 new CorrectionHistoryTable(), new CorrectionHistoryTable()
         };
+        this.ttMoveCorrectionHistoryTable = new TtMoveCorrectionHistoryTable();
     }
 
     public void updateHistory(
@@ -75,18 +77,26 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int correctEvaluation(Board board, int staticEval) {
+    public int correctEvaluation(Board board, Move ttMove, int staticEval) {
         int pawn = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int correction = pawn + white + black;
+        if (ttMove != null) {
+            Piece piece = board.pieceAt(ttMove.from());
+            correction += ttMoveCorrectionHistoryTable.get(ttMove, piece, board.isWhite());
+        }
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 
-    public void updateCorrectionHistory(Board board, int depth, int score, int staticEval) {
+    public void updateCorrectionHistory(Board board, int depth, Move bestMove, int score, int staticEval) {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
+        if (bestMove != null) {
+            Piece piece = board.pieceAt(bestMove.from());
+            ttMoveCorrectionHistoryTable.update(bestMove, piece, board.isWhite(), depth, score, staticEval);
+        }
     }
 
     public int getBestMoveStability() {
@@ -128,6 +138,7 @@ public class SearchHistory {
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
+        ttMoveCorrectionHistoryTable.clear();
     }
 
 }

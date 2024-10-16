@@ -21,9 +21,9 @@ public class MovePicker {
     public enum Stage {
         TT_MOVE,
         GEN_NOISY,
-        GOOD_NOISY,
+        NOISY,
         GEN_QUIET,
-        BAD_NOISY_AND_QUIET,
+        QUIET,
         END
     }
 
@@ -59,12 +59,12 @@ public class MovePicker {
         ScoredMove nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case TT_MOVE ->                 pickTTMove();
-                case GEN_NOISY ->               generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
-                case GOOD_NOISY ->              pickMove(Stage.GEN_QUIET);
-                case GEN_QUIET ->               generate(MoveFilter.QUIET, Stage.BAD_NOISY_AND_QUIET);
-                case BAD_NOISY_AND_QUIET ->     pickMove(Stage.END);
-                case END ->                     null;
+                case TT_MOVE ->     pickTTMove();
+                case GEN_NOISY ->   generate(MoveFilter.NOISY, Stage.NOISY);
+                case NOISY ->       pickMove(Stage.GEN_QUIET);
+                case GEN_QUIET ->   generate(MoveFilter.QUIET, Stage.QUIET);
+                case QUIET ->       pickMove(Stage.END);
+                case END ->         null;
             };
             if (stage == Stage.END) break;
         }
@@ -78,7 +78,7 @@ public class MovePicker {
      */
     protected ScoredMove pickMove(Stage nextStage) {
 
-        if (stage == Stage.BAD_NOISY_AND_QUIET && (skipQuiets || inCheck)) {
+        if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
             stage = nextStage;
             return null;
         }

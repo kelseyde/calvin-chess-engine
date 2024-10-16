@@ -349,7 +349,7 @@ public class Searcher implements Search {
                     && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)) {
 
                 // Reductions are based on the depth and the number of moves searched so far.
-                reduction = config.lmrReductions[depth][movesSearched];
+                reduction = config.lmrReductions[isCapture ? 1 : 0][depth][movesSearched];
 
                 // Reduce less in PV nodes.
                 reduction -= pvNode ? 1 : 0;

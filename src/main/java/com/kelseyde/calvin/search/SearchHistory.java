@@ -101,7 +101,7 @@ public class SearchHistory {
         return killerTable;
     }
 
-    public QuietHistoryTable getHistoryTable() {
+    public QuietHistoryTable getQuietHistoryTable() {
         return quietHistoryTable;
     }
 

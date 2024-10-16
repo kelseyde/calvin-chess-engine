@@ -337,7 +337,9 @@ public class Searcher implements Search {
                 continue;
             }
 
-            final int historyScore = this.history.getHistoryTable().get(move, piece, board.isWhite());
+            final int historyScore = isCapture ?
+                    this.history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite()) :
+                    this.history.getQuietHistoryTable().get(move, piece, board.isWhite());
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
@@ -399,6 +401,7 @@ public class Searcher implements Search {
             }
 
             int score;
+
             if (isDraw()) {
                 // No need to search if the position is a legal draw (3-fold, insufficient material, or 50-move rule).
                 score = Score.DRAW;

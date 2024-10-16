@@ -147,8 +147,8 @@ public class MovePicker {
 
         if (move.isPromotion()) {
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-            final int score = type.bonus + scoreHistory;
-            return new ScoredMove(move, piece, captured, score, 0, type);
+            final int score = type.bonus;
+            return new ScoredMove(move, piece, captured, score + scoreHistory, 0, type);
         }
 
         int captureScore = scoreHistory;
@@ -192,7 +192,7 @@ public class MovePicker {
         // Killers are ordered higher than normal history moves
         MoveType type = killerScore != 0 ? MoveType.KILLER : MoveType.QUIET;
 
-        int score = type.bonus + scoreHistoryScore + killerScore + quietHistoryScore + contHistScore;
+        int score = type.bonus + killerScore + scoreHistoryScore + quietHistoryScore + contHistScore;
 
         return new ScoredMove(move, piece, captured, score, quietHistoryScore, type);
     }

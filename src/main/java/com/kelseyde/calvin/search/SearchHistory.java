@@ -37,16 +37,12 @@ public class SearchHistory {
         };
     }
 
-    public void updateHistoryScores(PlayedMove bestMove,
-                                    boolean white,
-                                    SearchStack ss,
-                                    int depth,
-                                    int ply,
-                                    List<PlayedMove> quietMoves,
-                                    List<Integer> quietScores,
-                                    List<PlayedMove> noisyMoves,
-                                    List<Integer> noisyScores) {
-
+    public void updateScoreHistory(boolean white,
+                                   int depth,
+                                   List<PlayedMove> quietMoves,
+                                   List<Integer> quietScores,
+                                   List<PlayedMove> noisyMoves,
+                                   List<Integer> noisyScores) {
         for (int i = 0; i < quietMoves.size(); i++) {
             PlayedMove quiet = quietMoves.get(i);
             int score = quietScores.get(i);
@@ -58,31 +54,6 @@ public class SearchHistory {
             int score = noisyScores.get(i);
             scoreHistoryTable.update(noisy.piece(), noisy.move(), white, score, depth);
         }
-
-        if (bestMove != null && bestMove.isQuiet()) {
-
-            killerTable.add(ply, bestMove.move());
-            for (PlayedMove quiet : quietMoves) {
-                boolean good = bestMove.move().equals(quiet.move());
-                quietHistoryTable.update(quiet.move(), quiet.piece(), depth, white, good);
-
-                for (int prevPly : CONT_HIST_PLIES) {
-                    Move prevMove = ss.getMove(ply - prevPly);
-                    Piece prevPiece = ss.getMovedPiece(ply - prevPly);
-                    contHistTable.update(prevMove, prevPiece, quiet.move(), quiet.piece(), depth, white, good);
-                }
-            }
-
-        }
-
-        for (PlayedMove noisy : noisyMoves) {
-            boolean good = bestMove != null && bestMove.equals(noisy);
-            Piece piece = noisy.piece();
-            int to = noisy.move().to();
-            Piece captured = noisy.captured();
-            captureHistoryTable.update(piece, to, captured, depth, white, good);
-        }
-
     }
 
     public void updateHistory(

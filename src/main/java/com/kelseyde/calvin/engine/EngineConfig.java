@@ -73,11 +73,11 @@ public class EngineConfig {
     public final Tunable contHistMalusMax     = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     public final Tunable contHistMalusScale   = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     public final Tunable contHistMaxScore     = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
-    public final Tunable scoreHistBonusMax    = new Tunable("ScoreHistBonusMax", 256, 0, 600, 100);
-    public final Tunable scoreHistBonusScale  = new Tunable("ScoreHistBonusScale", 256, 50, 400, 25);
-    public final Tunable scoreHistMalusMax    = new Tunable("ScoreHistMalusMax", 256, 0, 600, 100);
-    public final Tunable scoreHistMalusScale  = new Tunable("ScoreHistMalusScale", 256, 50, 400, 25);
-    public final Tunable scoreHistMaxScore    = new Tunable("ScoreHistMaxScore", 1200, 0, 8192, 100);
+    public final Tunable scoreHistBonusMax    = new Tunable("ScoreHistBonusMax", 1200, 100, 2000, 100);
+    public final Tunable scoreHistBonusScale  = new Tunable("ScoreHistBonusScale", 200, 50, 400, 25);
+    public final Tunable scoreHistMalusMax    = new Tunable("ScoreHistMalusMax", 1200, 100, 2000, 100);
+    public final Tunable scoreHistMalusScale  = new Tunable("ScoreHistMalusScale", 200, 50, 400, 25);
+    public final Tunable scoreHistMaxScore    = new Tunable("ScoreHistMaxScore", 8192, 1000, 12000, 100);
     public final Tunable nodeTmMinDepth       = new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
     public final Tunable nodeTmBase           = new Tunable("NodeTmBase", 150, 100, 200, 10);
     public final Tunable nodeTmScale          = new Tunable("NodeTmScale", 135, 100, 200, 10);

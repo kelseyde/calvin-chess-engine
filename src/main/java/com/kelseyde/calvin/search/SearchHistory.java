@@ -46,13 +46,17 @@ public class SearchHistory {
         for (int i = 0; i < quietMoves.size(); i++) {
             PlayedMove quiet = quietMoves.get(i);
             int score = quietScores.get(i);
-            scoreHistoryTable.update(quiet.piece(), quiet.move(), white, score, depth);
+            if (!Score.isMateScore(score)) {
+                scoreHistoryTable.update(quiet.piece(), quiet.move(), white, score, depth);
+            }
         }
 
         for (int i = 0; i < noisyMoves.size(); i++) {
             PlayedMove noisy = noisyMoves.get(i);
             int score = noisyScores.get(i);
-            scoreHistoryTable.update(noisy.piece(), noisy.move(), white, score, depth);
+            if (!Score.isMateScore(score)) {
+                scoreHistoryTable.update(noisy.piece(), noisy.move(), white, score, depth);
+            }
         }
     }
 

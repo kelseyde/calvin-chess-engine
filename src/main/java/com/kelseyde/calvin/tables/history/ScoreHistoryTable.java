@@ -25,7 +25,7 @@ public class ScoreHistoryTable extends AbstractHistoryTable {
     public void update(Piece piece, Move move, boolean white, int score, int depth) {
         int colourIndex = Colour.index(white);
         int current = table[colourIndex][piece.index()][move.to()];
-        int bonus = score > 0 ? scoreBonus(score, depth) : scoreMalus(score, depth);
+        int bonus = scoreBonus(score, depth);
         int update = gravity(current, bonus);
         table[colourIndex][piece.index()][move.to()] = update;
     }
@@ -35,23 +35,10 @@ public class ScoreHistoryTable extends AbstractHistoryTable {
         return table[colourIndex][piece.index()][move.to()];
     }
 
-    // Apply a diminishing returns formula to scale the score based on the depth
-    private int depthFactor(int depth) {
-        return depth * SCALE_FACTOR / (depth + SCALE_FACTOR);  // Scaling depth with diminishing returns
-    }
-
     // Compute the bonus based on score and depth, capped to BONUS_MAX
-    private int scoreBonus(int score, int depth) {
+    public int scoreBonus(int score, int depth) {
         int scaledScore = mapToSymmetricRange(score);
-        int depthScaled = scaledScore * depthFactor(depth) / Search.MAX_DEPTH;
-        return Math.min(bonusMax, depthScaled);
-    }
-
-    // Compute the penalty based on score and depth, capped to BONUS_MIN
-    private int scoreMalus(int score, int depth) {
-        int scaledScore = mapToSymmetricRange(score);
-        int depthScaled = scaledScore * depthFactor(depth) / Search.MAX_DEPTH;
-        return -Math.max(bonusMax, depthScaled);
+        return Math.min(bonusMax, scaledScore);
     }
 
     // Map score into symmetric range [-1200, 1200]

@@ -10,6 +10,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.search.picker.ScoredMove;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -315,14 +316,15 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final Move move = movePicker.pickNextMove();
-            if (move == null) {
+            final ScoredMove scoredMove = movePicker.pickNextMove();
+            if (scoredMove == null) {
                 break;
             }
+            Move move = scoredMove.move();
             movesSearched++;
 
-            final Piece piece = board.pieceAt(move.from());
-            final Piece captured = board.pieceAt(move.to());
+            final Piece piece = scoredMove.piece();
+            final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
             final boolean isPromotion = move.promoPiece() != null;
 
@@ -337,9 +339,7 @@ public class Searcher implements Search {
                 continue;
             }
 
-            final int historyScore = isCapture ?
-                    this.history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite()) :
-                    this.history.getQuietHistoryTable().get(move, piece, board.isWhite());
+            final int historyScore = scoredMove.historyScore();
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
@@ -557,8 +557,9 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final Move move = movePicker.pickNextMove();
-            if (move == null) break;
+            final ScoredMove scoredMove = movePicker.pickNextMove();
+            if (scoredMove == null) break;
+            final Move move = scoredMove.move();
             movesSearched++;
 
             if (!inCheck) {

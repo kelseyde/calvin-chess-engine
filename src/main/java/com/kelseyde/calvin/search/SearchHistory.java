@@ -15,6 +15,7 @@ public class SearchHistory {
     private static final int[] CONT_HIST_PLIES = { 1, 2 };
 
     private final KillerTable killerTable;
+    private final ScoreHistoryTable scoreHistoryTable;
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
     private final CaptureHistoryTable captureHistoryTable;
@@ -26,6 +27,7 @@ public class SearchHistory {
 
     public SearchHistory(EngineConfig config) {
         this.killerTable = new KillerTable();
+        this.scoreHistoryTable = new ScoreHistoryTable(config);
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
@@ -33,6 +35,29 @@ public class SearchHistory {
         this.nonPawnCorrHistTables = new CorrectionHistoryTable[] {
                 new CorrectionHistoryTable(), new CorrectionHistoryTable()
         };
+    }
+
+    public void updateScoreHistory(boolean white,
+                                   int depth,
+                                   List<PlayedMove> quietMoves,
+                                   List<Integer> quietScores,
+                                   List<PlayedMove> noisyMoves,
+                                   List<Integer> noisyScores) {
+        for (int i = 0; i < quietMoves.size(); i++) {
+            PlayedMove quiet = quietMoves.get(i);
+            int score = quietScores.get(i);
+            if (!Score.isMateScore(score)) {
+                scoreHistoryTable.update(quiet.piece(), quiet.move(), white, score, depth);
+            }
+        }
+
+        for (int i = 0; i < noisyMoves.size(); i++) {
+            PlayedMove noisy = noisyMoves.get(i);
+            int score = noisyScores.get(i);
+            if (!Score.isMateScore(score)) {
+                scoreHistoryTable.update(noisy.piece(), noisy.move(), white, score, depth);
+            }
+        }
     }
 
     public void updateHistory(
@@ -101,6 +126,10 @@ public class SearchHistory {
         return killerTable;
     }
 
+    public ScoreHistoryTable getScoreHistoryTable() {
+        return scoreHistoryTable;
+    }
+
     public QuietHistoryTable getQuietHistoryTable() {
         return quietHistoryTable;
     }
@@ -116,12 +145,15 @@ public class SearchHistory {
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
+        scoreHistoryTable.ageScores(true);
+        scoreHistoryTable.ageScores(false);
         quietHistoryTable.ageScores(true);
         quietHistoryTable.ageScores(false);
     }
 
     public void clear() {
         killerTable.clear();
+        scoreHistoryTable.clear();
         quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();

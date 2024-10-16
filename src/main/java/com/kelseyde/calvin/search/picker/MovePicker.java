@@ -143,13 +143,15 @@ public class MovePicker {
 
     protected ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured) {
 
+        int scoreHistory = history.getScoreHistoryTable().get(move, piece, board.isWhite());
+
         if (move.isPromotion()) {
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
             final int score = type.bonus;
-            return new ScoredMove(move, piece, captured, score, 0, type);
+            return new ScoredMove(move, piece, captured, score + scoreHistory, 0, type);
         }
 
-        int captureScore = 0;
+        int captureScore = scoreHistory;
 
         // Separate captures into winning and losing
         final int materialDelta = captured.value() - piece.value();
@@ -175,7 +177,8 @@ public class MovePicker {
         int killerScore = killerIndex >= 0 ? MoveType.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
         // Get the history score for the move
-        int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+        int scoreHistoryScore = history.getScoreHistoryTable().get(move, piece, white);
+        int quietHistoryScore = history.getQuietHistoryTable().get(move, piece, white);
 
         // Get the continuation history score for the move
         Move prevMove = ss.getMove(ply - 1);
@@ -189,9 +192,9 @@ public class MovePicker {
         // Killers are ordered higher than normal history moves
         MoveType type = killerScore != 0 ? MoveType.KILLER : MoveType.QUIET;
 
-        int score = type.bonus + killerScore + historyScore + contHistScore;
+        int score = type.bonus + killerScore + scoreHistoryScore + quietHistoryScore + contHistScore;
 
-        return new ScoredMove(move, piece, captured, score, historyScore, type);
+        return new ScoredMove(move, piece, captured, score, quietHistoryScore, type);
     }
 
     /**

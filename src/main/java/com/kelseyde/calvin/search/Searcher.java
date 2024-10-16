@@ -402,11 +402,7 @@ public class Searcher implements Search {
 
             int score;
 
-            if (isDraw()) {
-                // No need to search if the position is a legal draw (3-fold, insufficient material, or 50-move rule).
-                score = Score.DRAW;
-            }
-            else if (pvNode && movesSearched == 1) {
+            if (pvNode && movesSearched == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.

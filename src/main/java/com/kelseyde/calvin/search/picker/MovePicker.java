@@ -87,10 +87,6 @@ public class MovePicker {
             return null;
         }
         ScoredMove move = pick();
-        if (move != null && stage == Stage.GOOD_NOISY && move.isBadNoisy()) {
-            stage = nextStage;
-            return null;
-        }
         moveIndex++;
         return move;
 
@@ -105,29 +101,19 @@ public class MovePicker {
 
     protected ScoredMove generate(MoveFilter filter, Stage nextStage) {
         List<Move> stagedMoves = movegen.generateMoves(board, filter);
-        if (moves == null) {
-            moves = scoreMoves(new ScoredMove[stagedMoves.size()], 0, stagedMoves);
-        } else {
-            int remaining = moves.length - moveIndex;
-            int newLength = stagedMoves.size() + remaining;
-            ScoredMove[] newMoves = new ScoredMove[newLength];
-            if (moves.length - moveIndex >= 0)
-                System.arraycopy(moves, 0, newMoves, 0, remaining);
-            newMoves = scoreMoves(newMoves, remaining, stagedMoves);
-            moves = newMoves;
-        }
+        scoreMoves(stagedMoves);
         moveIndex = 0;
         stage = nextStage;
         return null;
     }
 
-    protected ScoredMove[] scoreMoves(ScoredMove[] scoredMoves, int startIndex, List<Move> stagedMoves) {
-        for (Move move : stagedMoves) {
+    protected void scoreMoves(List<Move> stagedMoves) {
+        moves = new ScoredMove[stagedMoves.size()];
+        for (int i = 0; i < stagedMoves.size(); i++) {
+            Move move = stagedMoves.get(i);
             ScoredMove scoredMove = scoreMove(board, move, ttMove, ply);
-            scoredMoves[startIndex] = scoredMove;
-            startIndex++;
+            moves[i] = scoredMove;
         }
-        return scoredMoves;
     }
 
     protected ScoredMove scoreMove(Board board, Move move, Move ttMove, int ply) {
@@ -143,7 +129,7 @@ public class MovePicker {
         if (move.equals(ttMove)) {
             // Put the TT move last; it will be tried lazily
             MoveType type = MoveType.TT_MOVE;
-            final int score = MoveType.TT_MOVE.bonus;
+            final int score = -MoveType.TT_MOVE.bonus;
             return new ScoredMove(move, piece, captured, score, 0, type);
         }
 

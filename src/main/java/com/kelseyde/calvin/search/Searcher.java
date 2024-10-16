@@ -160,8 +160,8 @@ public class Searcher implements Search {
      *
      * @param depth               The number of ply deeper left to go in the current search ('ply remaining').
      * @param ply                 The number of ply already examined in the current search ('ply from root').
-     * @param alpha               The lower bound for child nodes at the current search depth.
-     * @param beta                The upper bound for child nodes at the current search depth.
+     * @param alpha               The lower bound for search scores ('we can do at least this well').
+     * @param beta                The upper bound for search scores ('our opponent can do at most this well').
      */
     public int search(int depth, int ply, int alpha, int beta) {
 

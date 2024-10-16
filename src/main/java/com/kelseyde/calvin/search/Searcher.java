@@ -311,8 +311,10 @@ public class Searcher implements Search {
         HashFlag flag = HashFlag.UPPER;
 
         int movesSearched = 0;
-        final List<PlayedMove> quietsSearched = new ArrayList<>();
-        final List<PlayedMove> capturesSearched = new ArrayList<>();
+        final List<PlayedMove> quietsMoves = new ArrayList<>();
+        final List<Integer> quietScores = new ArrayList<>();
+        final List<PlayedMove> noisyMoves = new ArrayList<>();
+        final List<Integer> noisyScores = new ArrayList<>();
 
         while (true) {
 
@@ -377,13 +379,6 @@ public class Searcher implements Search {
             final boolean isQuiet = !isCheck && !isCapture && !isPromotion;
             ss.setMove(ply, move, piece, captured, isCapture, isQuiet);
 
-            // Keep track of the quiet/noisy moves searched, used later to update search history.
-            if (isQuiet) {
-                quietsSearched.add(new PlayedMove(move, piece, captured, false, true));
-            } else if (isCapture) {
-                capturesSearched.add(new PlayedMove(move, piece, captured, true, false));
-            }
-
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
             // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
             // promotion, let's assume it's less likely to be good, and fully skip searching that move.
@@ -428,6 +423,15 @@ public class Searcher implements Search {
             board.unmakeMove();
             ss.unsetMove(ply);
 
+            // Keep track of the quiet/noisy moves searched, used later to update search history.
+            if (isQuiet) {
+                quietsMoves.add(new PlayedMove(move, piece, captured, false, true));
+                quietScores.add(score);
+            } else {
+                noisyMoves.add(new PlayedMove(move, piece, captured, true, false));
+                noisyScores.add(score);
+            }
+
             if (rootNode) {
                 td.addNodes(move, td.nodes - nodesBefore);
             }
@@ -466,11 +470,9 @@ public class Searcher implements Search {
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
-        if (bestScore >= beta) {
-            final PlayedMove best = ss.getBestMove(ply);
-            final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, quietsSearched, capturesSearched);
-        }
+        final PlayedMove best = ss.getBestMove(ply);
+        final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
+        history.updateHistoryScores(best, board.isWhite(), ss, historyDepth, ply, quietsMoves, quietScores, noisyMoves, noisyScores);
 
         if (!inCheck
             && !Score.isUndefinedScore(bestScore)

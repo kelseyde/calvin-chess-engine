@@ -24,9 +24,9 @@ public class QuiescentMovePicker extends MovePicker {
         while (nextMove == null) {
             nextMove = switch (stage) {
                 case TT_MOVE -> pickTTMove();
-                case GEN_NOISY -> generate(filter, Stage.NOISY);
-                case NOISY -> pickMove(Stage.END);
-                case GEN_QUIET, QUIET, END -> null;
+                case GEN_NOISY -> generate(filter, Stage.GOOD_NOISY);
+                case GOOD_NOISY -> pickMove(Stage.END);
+                case GEN_QUIET, BAD_NOISY_AND_QUIET, END -> null;
             };
             if (stage == Stage.END) break;
         }

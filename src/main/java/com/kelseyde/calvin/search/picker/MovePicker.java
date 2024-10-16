@@ -21,9 +21,9 @@ public class MovePicker {
     public enum Stage {
         TT_MOVE,
         GEN_NOISY,
-        NOISY,
+        GOOD_NOISY,
         GEN_QUIET,
-        QUIET,
+        BAD_NOISY_AND_QUIET,
         END
     }
 
@@ -59,12 +59,12 @@ public class MovePicker {
         ScoredMove nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case TT_MOVE ->         pickTTMove();
-                case GEN_NOISY ->       generate(MoveFilter.NOISY, Stage.NOISY);
-                case NOISY ->           pickMove(Stage.GEN_QUIET);
-                case GEN_QUIET ->       generate(MoveFilter.QUIET, Stage.QUIET);
-                case QUIET ->           pickMove(Stage.END);
-                case END ->             null;
+                case TT_MOVE ->                 pickTTMove();
+                case GEN_NOISY ->               generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
+                case GOOD_NOISY ->              pickMove(Stage.GEN_QUIET);
+                case GEN_QUIET ->               generate(MoveFilter.QUIET, Stage.BAD_NOISY_AND_QUIET);
+                case BAD_NOISY_AND_QUIET ->     pickMove(Stage.END);
+                case END ->                     null;
             };
             if (stage == Stage.END) break;
         }
@@ -78,7 +78,7 @@ public class MovePicker {
      */
     protected ScoredMove pickMove(Stage nextStage) {
 
-        if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
+        if (stage == Stage.BAD_NOISY_AND_QUIET && (skipQuiets || inCheck)) {
             stage = nextStage;
             return null;
         }
@@ -87,6 +87,10 @@ public class MovePicker {
             return null;
         }
         ScoredMove move = pick();
+        if (move != null && stage == Stage.GOOD_NOISY && move.isBadNoisy()) {
+            stage = nextStage;
+            return null;
+        }
         moveIndex++;
         return move;
 
@@ -101,19 +105,29 @@ public class MovePicker {
 
     protected ScoredMove generate(MoveFilter filter, Stage nextStage) {
         List<Move> stagedMoves = movegen.generateMoves(board, filter);
-        scoreMoves(stagedMoves);
+        if (moves == null) {
+            moves = scoreMoves(new ScoredMove[stagedMoves.size()], 0, stagedMoves);
+        } else {
+            int remaining = moves.length - moveIndex;
+            int newLength = stagedMoves.size() + remaining;
+            ScoredMove[] newMoves = new ScoredMove[newLength];
+            if (moves.length - moveIndex >= 0)
+                System.arraycopy(moves, 0, newMoves, 0, remaining);
+            newMoves = scoreMoves(newMoves, remaining, stagedMoves);
+            moves = newMoves;
+        }
         moveIndex = 0;
         stage = nextStage;
         return null;
     }
 
-    protected void scoreMoves(List<Move> stagedMoves) {
-        moves = new ScoredMove[stagedMoves.size()];
-        for (int i = 0; i < stagedMoves.size(); i++) {
-            Move move = stagedMoves.get(i);
+    protected ScoredMove[] scoreMoves(ScoredMove[] scoredMoves, int startIndex, List<Move> stagedMoves) {
+        for (Move move : stagedMoves) {
             ScoredMove scoredMove = scoreMove(board, move, ttMove, ply);
-            moves[i] = scoredMove;
+            scoredMoves[startIndex] = scoredMove;
+            startIndex++;
         }
+        return scoredMoves;
     }
 
     protected ScoredMove scoreMove(Board board, Move move, Move ttMove, int ply) {

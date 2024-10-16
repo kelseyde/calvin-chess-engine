@@ -151,6 +151,10 @@ public class SearchHistory {
         return killerTable;
     }
 
+    public ScoreHistoryTable getScoreHistoryTable() {
+        return scoreHistoryTable;
+    }
+
     public QuietHistoryTable getQuietHistoryTable() {
         return quietHistoryTable;
     }

@@ -109,14 +109,15 @@ public class MovePicker {
 
     protected void scoreMoves(List<Move> stagedMoves) {
         moves = new ScoredMove[stagedMoves.size()];
+        float phase = Phase.fromBoard(board);
         for (int i = 0; i < stagedMoves.size(); i++) {
             Move move = stagedMoves.get(i);
-            ScoredMove scoredMove = scoreMove(board, move, ttMove, ply);
+            ScoredMove scoredMove = scoreMove(board, move, ttMove, ply, phase);
             moves[i] = scoredMove;
         }
     }
 
-    protected ScoredMove scoreMove(Board board, Move move, Move ttMove, int ply) {
+    protected ScoredMove scoreMove(Board board, Move move, Move ttMove, int ply, float phase) {
 
         final int from = move.from();
         final int to = move.to();
@@ -134,14 +135,14 @@ public class MovePicker {
         }
 
         if (isNoisy) {
-            return scoreNoisy(board, move, piece, captured);
+            return scoreNoisy(board, move, piece, captured, phase);
         } else {
-            return scoreQuiet(board, move, piece, captured, ply);
+            return scoreQuiet(board, move, piece, captured, ply, phase);
         }
 
     }
 
-    protected ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured) {
+    protected ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, float phase) {
 
         if (move.isPromotion()) {
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
@@ -164,10 +165,13 @@ public class MovePicker {
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
         captureScore += historyScore;
 
+        int psqtScore = PSQT.score(piece, move.to(), board.isWhite(), phase) - PSQT.score(piece, move.from(), board.isWhite(), phase);
+        captureScore += psqtScore;
+
         return new ScoredMove(move, piece, captured, captureScore, historyScore, type);
     }
 
-    protected ScoredMove scoreQuiet(Board board, Move move, Piece piece, Piece captured, int ply) {
+    protected ScoredMove scoreQuiet(Board board, Move move, Piece piece, Piece captured, int ply, float phase) {
         boolean white = board.isWhite();
 
         // Check if the move is a killer move
@@ -189,7 +193,9 @@ public class MovePicker {
         // Killers are ordered higher than normal history moves
         MoveType type = killerScore != 0 ? MoveType.KILLER : MoveType.QUIET;
 
-        int score = type.bonus + killerScore + historyScore + contHistScore;
+        int psqtScore = PSQT.score(piece, move.to(), board.isWhite(), phase) - PSQT.score(piece, move.from(), board.isWhite(), phase);
+
+        int score = type.bonus + killerScore + historyScore + contHistScore + psqtScore;
 
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }

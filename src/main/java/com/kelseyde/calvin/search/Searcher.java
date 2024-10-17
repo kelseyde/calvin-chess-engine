@@ -10,6 +10,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.search.picker.ScoredMove;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -159,8 +160,8 @@ public class Searcher implements Search {
      *
      * @param depth               The number of ply deeper left to go in the current search ('ply remaining').
      * @param ply                 The number of ply already examined in the current search ('ply from root').
-     * @param alpha               The lower bound for child nodes at the current search depth.
-     * @param beta                The upper bound for child nodes at the current search depth.
+     * @param alpha               The lower bound for search scores ('we can do at least this well').
+     * @param beta                The upper bound for search scores ('our opponent can do at most this well').
      */
     public int search(int depth, int ply, int alpha, int beta) {
 
@@ -194,17 +195,19 @@ public class Searcher implements Search {
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
         HashEntry ttEntry = null;
         boolean ttHit = false;
+
         if (!excluded) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
-            if (!pvNode
-                    && ttHit
-                    && isSufficientDepth(ttEntry, depth)
-                    && isWithinBounds(ttEntry, alpha, beta)) {
-                return ttEntry.score();
+            if (!pvNode && ttHit && isSufficientDepth(ttEntry, depth)) {
+                if (isWithinBounds(ttEntry, alpha, beta)) {
+                    return ttEntry.score();
+                }
+                else if (depth <= config.ttExtensionDepth.value) {
+                    depth++;
+                }
             }
         }
-
 
         Move ttMove = null;
         if (ttHit && ttEntry.move() != null) {
@@ -321,17 +324,18 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final Move move = movePicker.pickNextMove();
-            if (move == null) {
+            final ScoredMove scoredMove = movePicker.pickNextMove();
+            if (scoredMove == null) {
                 break;
             }
+            Move move = scoredMove.move();
             if (move.equals(excludedMove)) {
-                continue;
+                continue;;
             }
             movesSearched++;
 
-            final Piece piece = board.pieceAt(move.from());
-            final Piece captured = board.pieceAt(move.to());
+            final Piece piece = scoredMove.piece();
+            final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
             final boolean isPromotion = move.promoPiece() != null;
 
@@ -347,7 +351,7 @@ public class Searcher implements Search {
                 continue;
             }
 
-            final int historyScore = this.history.getHistoryTable().get(move, piece, board.isWhite());
+            final int historyScore = scoredMove.historyScore();
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
@@ -357,7 +361,7 @@ public class Searcher implements Search {
                     && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)) {
 
                 // Reductions are based on the depth and the number of moves searched so far.
-                reduction = config.lmrReductions[depth][movesSearched];
+                reduction = config.lmrReductions[isCapture ? 1 : 0][depth][movesSearched];
 
                 // Reduce less in PV nodes.
                 reduction -= pvNode ? 1 : 0;
@@ -436,11 +440,8 @@ public class Searcher implements Search {
             }
 
             int score;
-            if (isDraw()) {
-                // No need to search if the position is a legal draw (3-fold, insufficient material, or 50-move rule).
-                score = Score.DRAW;
-            }
-            else if (pvNode && movesSearched == 1) {
+
+            if (pvNode && movesSearched == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
@@ -537,10 +538,13 @@ public class Searcher implements Search {
             return alpha;
         }
 
+        final boolean pvNode = beta - alpha > 1;
+
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
-        if (ttHit
+        if (!pvNode
+                && ttHit
                 && isSufficientDepth(ttEntry, depth)
                 && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();
@@ -592,8 +596,9 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final Move move = movePicker.pickNextMove();
-            if (move == null) break;
+            final ScoredMove scoredMove = movePicker.pickNextMove();
+            if (scoredMove == null) break;
+            final Move move = scoredMove.move();
             movesSearched++;
 
             if (!inCheck) {

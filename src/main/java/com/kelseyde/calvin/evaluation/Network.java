@@ -23,6 +23,10 @@ public record Network(int inputSize,
                       short[] outputWeights,
                       short outputBias) {
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
 
         private String file;
@@ -31,10 +35,6 @@ public record Network(int inputSize,
         private Activation activation;
         private int[] quantisations;
         private int scale;
-
-        public static Builder builder() {
-            return new Builder();
-        }
 
         public Builder file(String file) {
             this.file = file;

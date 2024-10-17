@@ -131,6 +131,9 @@ public class Board {
         toggleSquare(pawnSquare, Piece.PAWN, !white);
         updateMailbox(pawnSquare, null);
         updateKeys(pawnSquare, Piece.PAWN, !white);
+        int pawnCount = Bits.count(getPieces(Piece.PAWN));
+        state.materialKey ^= Key.material(Piece.PAWN, pawnCount + 1);
+        state.materialKey ^= Key.material(Piece.PAWN, pawnCount);
     }
 
     private void makePromotionMove(int from, int to, Piece promoted, Piece captured) {
@@ -141,10 +144,26 @@ public class Board {
         toggleSquare(to, promoted, white);
         updateMailbox(from, to, promoted);
         updateKeys(to, promoted, white);
+
+        int pawnCount = Bits.count(getPieces(Piece.PAWN));
+        int promoPieceCount = Bits.count(getPieces(promoted));
+        state.materialKey ^= Key.material(Piece.PAWN, pawnCount + 1);
+        state.materialKey ^= Key.material(Piece.PAWN, pawnCount);
+
+        if (captured != promoted) {
+            state.materialKey ^= Key.material(promoted, promoPieceCount - 1);
+            state.materialKey ^= Key.material(promoted, promoPieceCount);
+        }
+
         if (captured != null) {
             // Handle captured piece
             toggleSquare(to, captured, !white);
             updateKeys(to, captured, !white);
+            if (captured != promoted) {
+                int capturedCount = Bits.count(getPieces(captured));
+                state.materialKey ^= Key.material(captured, capturedCount + 1);
+                state.materialKey ^= Key.material(captured, capturedCount);
+            }
         }
     }
 
@@ -157,6 +176,9 @@ public class Board {
             // Remove captured piece
             toggleSquare(to, captured, !white);
             updateKeys(to, captured, !white);
+            int capturedCount = Bits.count(getPieces(captured));
+            state.materialKey ^= Key.material(captured, capturedCount + 1);
+            state.materialKey ^= Key.material(captured, capturedCount);
         }
     }
 
@@ -231,7 +253,7 @@ public class Board {
         white = !white;
         final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
+        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, state.materialKey, null, -1, state.getRights(), 0);
         states[ply++] = state;
         state = newState;
     }
@@ -486,6 +508,17 @@ public class Board {
         return blackPieces;
     }
 
+    public long getPieces(Piece piece) {
+        return switch (piece) {
+            case PAWN -> pawns;
+            case KNIGHT -> knights;
+            case BISHOP -> bishops;
+            case ROOK -> rooks;
+            case QUEEN -> queens;
+            case KING -> kings;
+        };
+    }
+
     public long getOccupied() {
         return occupied;
     }
@@ -524,6 +557,10 @@ public class Board {
 
     public long[] nonPawnKeys() {
         return state.nonPawnKeys;
+    }
+
+    public long materialKey() {
+        return state.materialKey;
     }
 
     public int countPieces() {

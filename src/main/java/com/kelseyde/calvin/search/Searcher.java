@@ -644,9 +644,10 @@ public class Searcher implements Search {
         if (config.pondering || tc == null)
             return false;
         final int bestMoveStability = history.getBestMoveStability();
+        final int bestMoveChanges = history.getBestMoveChanges();
         final int scoreStability = history.getBestScoreStability();
         final int bestMoveNodes = td.getNodes(bestMoveCurrent);
-        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveNodes, bestMoveStability, bestMoveChanges, scoreStability);
     }
 
     private boolean isDraw() {

@@ -498,10 +498,13 @@ public class Searcher implements Search {
             return alpha;
         }
 
+        final boolean pvNode = beta - alpha > 1;
+
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
-        if (ttHit
+        if (!pvNode
+                && ttHit
                 && isSufficientDepth(ttEntry, depth)
                 && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();

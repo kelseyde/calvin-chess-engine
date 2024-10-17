@@ -294,6 +294,8 @@ public class Searcher implements Search {
                 final int base = config.nmpBase.value;
                 final int divisor = config.nmpDivisor.value;
                 final int r = base + depth / divisor;
+                // TODO improving reduction
+                // TODO eval-based reduction
                 final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
 
                 board.unmakeNullMove();

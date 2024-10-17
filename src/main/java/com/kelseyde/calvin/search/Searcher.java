@@ -253,6 +253,8 @@ public class Searcher implements Search {
                 staticEval = ttEntry.score();
                 uncorrectedStaticEval = staticEval;
             }
+        } else if (excluded) {
+            staticEval = ss.getStaticEval(ply);
         }
 
         ss.setStaticEval(ply, staticEval);
@@ -330,7 +332,7 @@ public class Searcher implements Search {
             }
             Move move = scoredMove.move();
             if (move.equals(excludedMove)) {
-                continue;;
+                continue;
             }
             movesSearched++;
 
@@ -343,7 +345,6 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
-                && !excluded
                 && depth <= config.fpDepth.value
                 && !inCheck && !isCapture && !isPromotion
                 && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {

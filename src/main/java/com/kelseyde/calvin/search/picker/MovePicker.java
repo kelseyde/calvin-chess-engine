@@ -7,6 +7,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.tables.history.KillerTable;
 
 import java.util.List;
@@ -177,14 +178,17 @@ public class MovePicker {
         // Get the history score for the move
         int historyScore = history.getQuietHistoryTable().get(move, piece, white);
 
+        int contHistScore = 0;
         // Get the continuation history score for the move
-        Move prevMove = ss.getMove(ply - 1);
-        Piece prevPiece = ss.getMovedPiece(ply - 1);
-        int contHistScore = history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
+        PlayedMove prevMove = ss.getMove(ply - 1);
+        if (prevMove != null) {
+            contHistScore = history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
+        }
 
-        Move prevMove2 = ss.getMove(ply - 2);
-        Piece prevPiece2 = ss.getMovedPiece(ply - 2);
-        contHistScore += history.getContHistTable().get(prevMove2, prevPiece2, move, piece, white);
+        PlayedMove prevMove2 = ss.getMove(ply - 2);
+        if (prevMove2 != null) {
+            contHistScore += history.getContHistTable().get(prevMove2.move(), prevMove2.piece(), move, piece, white);
+        }
 
         // Killers are ordered higher than normal history moves
         MoveType type = killerScore != 0 ? MoveType.KILLER : MoveType.QUIET;

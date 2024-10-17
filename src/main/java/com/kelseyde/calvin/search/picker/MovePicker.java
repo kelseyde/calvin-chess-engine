@@ -185,7 +185,6 @@ public class MovePicker {
             contHistScore = history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
         }
 
-
         PlayedMove prevMove2 = ss.getMove(ply - 2);
         if (prevMove2 != null) {
             contHistScore += history.getContHistTable().get(prevMove2.move(), prevMove2.piece(), move, piece, white);

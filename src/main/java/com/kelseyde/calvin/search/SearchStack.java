@@ -26,14 +26,9 @@ public class SearchStack {
         stack[ply].staticEval = score;
     }
 
-    public Move getMove(int ply) {
+    public PlayedMove getMove(int ply) {
         SearchStackEntry entry = get(ply);
-        return entry != null && entry.currentMove != null ? entry.currentMove.move : null;
-    }
-
-    public Piece getMovedPiece(int ply) {
-        SearchStackEntry entry = get(ply);
-        return entry != null && entry.currentMove != null ? entry.currentMove.piece : null;
+        return entry != null ? entry.currentMove : null;
     }
 
     public void setMove(int ply, Move move, Piece piece, Piece captured, boolean capture, boolean quiet) {

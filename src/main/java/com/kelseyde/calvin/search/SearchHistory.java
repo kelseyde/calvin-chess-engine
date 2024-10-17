@@ -46,9 +46,10 @@ public class SearchHistory {
                 quietHistoryTable.update(quiet.move(), quiet.piece(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
-                    Move prevMove = ss.getMove(ply - prevPly);
-                    Piece prevPiece = ss.getMovedPiece(ply - prevPly);
-                    contHistTable.update(prevMove, prevPiece, quiet.move(), quiet.piece(), depth, white, good);
+                    PlayedMove prevMove = ss.getMove(ply - prevPly);
+                    if (prevMove != null) {
+                        contHistTable.update(prevMove.move(), prevMove.piece(), quiet.move(), quiet.piece(), depth, white, good);
+                    }
                 }
             }
 

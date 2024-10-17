@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.movegen.Attacks;
-
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +15,10 @@ public class Bits {
 
     public static int count(long board) {
         return Long.bitCount(board);
+    }
+
+    public static long of(int sq) {
+        return 1L << sq;
     }
 
     public static long north(long board) {
@@ -49,6 +51,24 @@ public class Bits {
 
     public static long southWest(long board) {
         return (board >>> 9) & ~File.H;
+    }
+
+    public static void print(long bb) {
+
+        for (int rank = 7; rank >= 0; --rank) {
+            System.out.print(" +---+---+---+---+---+---+---+---+\n");
+
+            for (int file = 0; file < 8; ++file) {
+                boolean piece = (bb & (Bits.of(Square.of(rank, file)))) != 0;
+                System.out.print(" | " + (piece ? '1' : ' '));
+            }
+
+            System.out.print(" | "  + (rank + 1) + "\n");
+        }
+
+        System.out.print(" +---+---+---+---+---+---+---+---+\n");
+        System.out.print("   a   b   c   d   e   f   g   h\n\n");
+
     }
 
     public static class Square {
@@ -145,7 +165,7 @@ public class Bits {
             long ray = 0L;
             int sq = from + offset;
             while (Square.isValid(sq) && sq != to) {
-                ray |= 1L << sq;
+                ray |= Bits.of(sq);
                 sq += offset;
             }
             return ray;
@@ -176,73 +196,6 @@ public class Bits {
 
     }
 
-    public static class Pin {
-
-        public static class PinData {
-            public long pinMask;
-            public long[] pinRayMasks;
-            public PinData() {}
-        }
-
-        private static final long[] pinRayMasks = new long[Square.COUNT];
-        private static final PinData pinData = new PinData();
-
-        /**
-         * Calculates the pin mask and pin ray masks for the given board position.
-         *
-         * @param board The game board.
-         * @param white Whether the current player is white.
-         * @return The pin data containing the pin mask and pin ray masks.
-         */
-        public static PinData calculatePins(Board board, boolean white) {
-            long pinMask = 0L;
-
-            int kingSquare = Bits.next(board.getKing(white));
-            long friendlies = board.getPieces(white);
-            long opponents = board.getPieces(!white);
-
-            long possiblePinners = 0L;
-
-            // Calculate possible orthogonal pins
-            long orthogonalSliders = board.getRooks(!white) | board.getQueens(!white);
-            if (orthogonalSliders != 0) {
-                possiblePinners |= Attacks.rookAttacks(kingSquare, 0) & orthogonalSliders;
-            }
-
-            // Calculate possible diagonal pins
-            long diagonalSliders = board.getBishops(!white) | board.getQueens(!white);
-            if (diagonalSliders != 0) {
-                possiblePinners |= Attacks.bishopAttacks(kingSquare, 0) & diagonalSliders;
-            }
-
-            while (possiblePinners != 0) {
-                int possiblePinner = Bits.next(possiblePinners);
-                long ray = Ray.between(kingSquare, possiblePinner);
-
-                // Skip if there are opponents between the king and the possible pinner
-                if ((ray & opponents) != 0) {
-                    possiblePinners = Bits.pop(possiblePinners);
-                    continue;
-                }
-
-                long friendliesBetween = ray & friendlies;
-                // If there is exactly one friendly piece between the king and the pinner, it's pinned
-                if (Bits.count(friendliesBetween) == 1) {
-                    int friendlySquare = Bits.next(friendliesBetween);
-                    pinMask |= friendliesBetween;
-                    pinRayMasks[friendlySquare] = ray | (1L << possiblePinner);
-                }
-
-                possiblePinners = Bits.pop(possiblePinners);
-            }
-
-            pinData.pinMask = pinMask;
-            pinData.pinRayMasks = pinRayMasks;
-            return pinData;
-        }
-
-    }
-
     public static class Castling {
         // Masks for the squares that must be unoccupied for legal castling
         public static final long WHITE_QUEENSIDE_TRAVEL_MASK = 0x000000000000000EL;
@@ -263,6 +216,22 @@ public class Bits {
         public static final int CLEAR_BLACK_KINGSIDE_MASK = 0b1011;
         public static final int CLEAR_WHITE_QUEENSIDE_MASK = 0b1101;
         public static final int CLEAR_BLACK_QUEENSIDE_MASK = 0b0111;
+
+        public static int rookFrom(boolean kingside, boolean white) {
+            if (kingside) {
+                return white ? 7 : 63;
+            } else {
+                return white ? 0 : 56;
+            }
+        }
+
+        public static int rookTo(boolean kingside, boolean white) {
+            if (kingside) {
+                return white ? 5 : 61;
+            } else {
+                return white ? 3 : 59;
+            }
+        }
     }
 
 

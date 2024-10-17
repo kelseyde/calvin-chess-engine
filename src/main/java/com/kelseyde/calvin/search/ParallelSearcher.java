@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 public class ParallelSearcher implements Search {
 
     final EngineConfig config;
-    TranspositionTable tt;
+    final TranspositionTable tt;
     int threadCount;
     int hashSize;
     Board board;
@@ -42,10 +42,10 @@ public class ParallelSearcher implements Search {
      * @param tt the shared transposition table
      */
     public ParallelSearcher(EngineConfig config, TranspositionTable tt) {
+        this.tt = tt;
         this.config = config;
         this.hashSize = config.defaultHashSizeMb;
-        this.threadCount = config.defaultThreadCount;
-        this.tt = tt;
+        this.threadCount = config.defaultThreads;
         this.searchers = initSearchers();
     }
 
@@ -65,7 +65,7 @@ public class ParallelSearcher implements Search {
                     .toList();
 
             SearchResult result = selectResult(threads).get();
-            tt.incrementGeneration();
+            tt.incrementAge();
             return result;
         } catch (Exception e) {
             System.out.println("info error " + e);
@@ -95,7 +95,7 @@ public class ParallelSearcher implements Search {
     @Override
     public void setHashSize(int hashSizeMb) {
         this.hashSize = hashSizeMb;
-        this.tt = new TranspositionTable(this.hashSize);
+        this.tt.resize(this.hashSize);
         this.searchers = initSearchers();
     }
 

@@ -1,25 +1,17 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.Castling;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.VectorOperators;
-import jdk.incubator.vector.VectorSpecies;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import com.kelseyde.calvin.evaluation.activation.Activation;
+import com.kelseyde.calvin.search.Search;
 
 /**
- * Implementation of {@link Evaluation} using an NNUE (Efficiently Updatable Neural Network) evaluation function.
+ * Calvin's evaluation function is an Efficiently Updatable Neural Network (NNUE).
  * <p>
  * The network has an input layer of 768 neurons, each representing the presence of a piece of each colour on a square
  * (64 squares * 6 pieces * 2 colours). Two versions of the hidden layer are accumulated: one from white's perspective
@@ -29,106 +21,76 @@ import java.util.Deque;
  * The network was trained on positions taken from a dataset of Leela Chess Zero, which were then re-scored with
  * Calvin's own search and hand-crafted evaluation.
  *
- * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
+ * @see <a href="https://www.chessprogramming.org/NNUE">Chess Programming Wiki</a>
  */
-public class NNUE implements Evaluation {
+public class NNUE {
 
-    public record Network(short[] inputWeights, short[] inputBiases, short[] outputWeights, short outputBias) {
+    public static final Network NETWORK = Network.builder()
+            .file("sunbeam.nnue")
+            .inputSize(768)
+            .hiddenSize(512)
+            .activation(Activation.SCReLU)
+            .quantisations(new int[]{255, 64})
+            .scale(400)
+            .build();
 
-        public static final String FILE = "dawn.nnue";
-        public static final int INPUT_SIZE = 768;
-        public static final int HIDDEN_SIZE = 384;
-
-        public static final Network NETWORK = loadNetwork(FILE, INPUT_SIZE, HIDDEN_SIZE);
-
-    }
-
-    static final int COLOUR_OFFSET = Square.COUNT * Piece.COUNT;
-    static final int PIECE_OFFSET = Square.COUNT;
-    static final int SCALE = 400;
-
-    static final int QA = 255;
-    static final int QB = 64;
-    static final int QAB = QA * QB;
-
-    static final int MATERIAL_BASE = 22400;
-    static final int MATERIAL_FACTOR = 32768;
-
-    static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
-    static final int UPPER_BOUND = SPECIES.loopBound(Network.HIDDEN_SIZE);
-
-    static final ShortVector FLOOR = ShortVector.broadcast(SPECIES, 0);
-    static final ShortVector CEIL = ShortVector.broadcast(SPECIES, QA);
-
-    // TODO test using array with single allocation at startup
-    final Deque<Accumulator> accumulatorHistory = new ArrayDeque<>();
-    Accumulator accumulator;
-    Board board;
+    private Accumulator[] accumulatorStack;
+    private int current;
+    private Board board;
 
     public NNUE() {
-        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
+        this.current = 0;
+        this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
+        this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
     }
 
     public NNUE(Board board) {
-        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
         this.board = board;
+        this.current = 0;
+        this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
+        this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
         activateAll(board);
     }
 
-    @Override
     public int evaluate() {
 
-        boolean white = board.isWhite();
-        short[] us = white ? accumulator.whiteFeatures : accumulator.blackFeatures;
-        short[] them = white ? accumulator.blackFeatures : accumulator.whiteFeatures;
-        int eval = Network.NETWORK.outputBias();
-        eval += forward(us, 0);
-        eval += forward(them, Network.HIDDEN_SIZE);
-        eval *= SCALE;
-        eval /= QAB;
-        eval = scaleEval(board, eval);
+        final boolean white = board.isWhite();
+        final Accumulator acc = accumulatorStack[current];
+
+        // Get the 'us-perspective' and 'them-perspective' feature sets, based on the side to move.
+        final short[] us = white ? acc.whiteFeatures : acc.blackFeatures;
+        final short[] them = white ? acc.blackFeatures : acc.whiteFeatures;
+
+        // Pass the features through the network to get the evaluation.
+        int eval = NETWORK.activation().forward(us, them);
+
+        // Scale the evaluation based on the material and proximity to 50-move rule draw.
+        eval = scaleEvaluation(board, eval);
+
         return eval;
 
     }
 
-    /**
-     * Forward pass through the network, using the clipped ReLU activation function.
-     * Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
-     */
-    private int forward(short[] features, int weightOffset) {
-        short[] weights = Network.NETWORK.outputWeights;
-        int sum = 0;
-
-        for (int i = 0; i < UPPER_BOUND; i += SPECIES.length()) {
-            sum += ShortVector.fromArray(SPECIES, features, i)
-                    .min(CEIL)
-                    .max(FLOOR)
-                    .mul(ShortVector.fromArray(SPECIES, weights, i + weightOffset))
-                    .reduceLanes(VectorOperators.ADD);
-        }
-
-        return sum;
-    }
-
     private void activateAll(Board board) {
 
-        for (int i = 0; i < Network.HIDDEN_SIZE; i++) {
-            accumulator.whiteFeatures[i] = Network.NETWORK.inputBiases()[i];
-            accumulator.blackFeatures[i] = Network.NETWORK.inputBiases()[i];
+        final Accumulator acc = accumulatorStack[current];
+        for (int i = 0; i < NETWORK.hiddenSize(); i++) {
+            acc.whiteFeatures[i] = NETWORK.inputBiases()[i];
+            acc.blackFeatures[i] = NETWORK.inputBiases()[i];
         }
 
-        activateSide(board, board.getWhitePieces(), true);
-        activateSide(board, board.getBlackPieces(), false);
+        activateSide(acc, board, board.getWhitePieces(), true);
+        activateSide(acc, board, board.getBlackPieces(), false);
 
     }
 
-    private void activateSide(Board board, long pieces, boolean white) {
+    private void activateSide(Accumulator acc, Board board, long pieces, boolean white) {
         while (pieces != 0) {
-            int square = Bits.next(pieces);
-            Piece piece = board.pieceAt(square);
-            int whiteIndex = featureIndex(piece, square, white, true);
-            int blackIndex = featureIndex(piece, square, white, false);
-            accumulator.add(whiteIndex, blackIndex);
+            final int square = Bits.next(pieces);
+            final Piece piece = board.pieceAt(square);
+            final int whiteIndex = featureIndex(piece, square, white, true);
+            final int blackIndex = featureIndex(piece, square, white, false);
+            acc.add(whiteIndex, blackIndex);
             pieces = Bits.pop(pieces);
         }
     }
@@ -136,75 +98,83 @@ public class NNUE implements Evaluation {
     /**
      * Efficiently update only the relevant features of the network after a move has been made.
      */
-    @Override
     public void makeMove(Board board, Move move) {
-        accumulatorHistory.push(accumulator.copy());
-        boolean white = board.isWhite();
-        int from = move.from();
-        int to = move.to();
-        Piece piece = board.pieceAt(from);
+
+        final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
+        final boolean white = board.isWhite();
+        final int from = move.from();
+        final int to = move.to();
+        final Piece piece = board.pieceAt(from);
         if (piece == null) return;
-        Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
-        Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
+        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
+        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
 
-        int oldWhiteIdx = featureIndex(piece, from, white, true);
-        int oldBlackIdx = featureIndex(piece, from, white, false);
+        final int oldWhiteIdx = featureIndex(piece, from, white, true);
+        final int oldBlackIdx = featureIndex(piece, from, white, false);
 
-        int newWhiteIdx = featureIndex(newPiece, to, white, true);
-        int newBlackIdx = featureIndex(newPiece, to, white, false);
+        final int newWhiteIdx = featureIndex(newPiece, to, white, true);
+        final int newBlackIdx = featureIndex(newPiece, to, white, false);
 
         if (move.isCastling()) {
-            handleCastleMove(white, to, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
+            handleCastleMove(acc, white, to, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
         } else if (captured != null) {
-            handleCapture(move, captured, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+            handleCapture(acc, move, captured, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         } else {
-            accumulator.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+            acc.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
         }
+
     }
 
-    private void handleCastleMove(boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        boolean isKingside = File.of(to) == 6;
-        int rookStart = isKingside ? white ? 7 : 63 : white ? 0 : 56;
-        int rookEnd = isKingside ? white ? 5 : 61 : white ? 3 : 59;
-        int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookStart, white, true);
-        int rookStartBlackIdx = featureIndex(Piece.ROOK, rookStart, white, false);
-        int rookEndWhiteIdx = featureIndex(Piece.ROOK, rookEnd, white, true);
-        int rookEndBlackIdx = featureIndex(Piece.ROOK, rookEnd, white, false);
-        accumulator.addAddSubSub(newWhiteIdx, newBlackIdx, rookEndWhiteIdx, rookEndBlackIdx, oldWhiteIdx, oldBlackIdx, rookStartWhiteIdx, rookStartBlackIdx);
+    private void handleCastleMove(Accumulator acc, boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
+        final boolean kingside = File.of(to) == 6;
+        final int rookFrom = Castling.rookFrom(kingside, white);
+        final int rookTo = Castling.rookTo(kingside, white);
+        final int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookFrom, white, true);
+        final int rookStartBlackIdx = featureIndex(Piece.ROOK, rookFrom, white, false);
+        final int rookEndWhiteIdx = featureIndex(Piece.ROOK, rookTo, white, true);
+        final int rookEndBlackIdx = featureIndex(Piece.ROOK, rookTo, white, false);
+        acc.addAddSubSub(newWhiteIdx, newBlackIdx, rookEndWhiteIdx, rookEndBlackIdx, oldWhiteIdx, oldBlackIdx, rookStartWhiteIdx, rookStartBlackIdx);
     }
 
-    private void handleCapture(Move move, Piece captured, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
+    private void handleCapture(Accumulator acc, Move move, Piece captured, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
         int captureSquare = move.to();
         if (move.isEnPassant()) captureSquare = white ? move.to() - 8 : move.to() + 8;
-        int capturedWhiteIdx = featureIndex(captured, captureSquare, !white, true);
-        int capturedBlackIdx = featureIndex(captured, captureSquare, !white, false);
-        accumulator.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
+        final int capturedWhiteIdx = featureIndex(captured, captureSquare, !white, true);
+        final int capturedBlackIdx = featureIndex(captured, captureSquare, !white, false);
+        acc.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
     }
 
-    @Override
     public void unmakeMove() {
-        this.accumulator = accumulatorHistory.pop();
+        current--;
     }
 
-    @Override
     public void setPosition(Board board) {
+        clearHistory();
         this.board = board;
         activateAll(board);
     }
 
-    private int scaleEval(Board board, int eval) {
-        int materialPhase = materialPhase(board);
-        eval = eval * materialPhase / MATERIAL_FACTOR;
+    private int scaleEvaluation(Board board, int eval) {
+
+        // Scale down the evaluation when there's not much material left on the board - this creates an incentive
+        // to keep pieces on the board when we have winning chances, and trade them off when we're under pressure.
+        final int materialPhase = materialPhase(board);
+        eval = eval * (22400 + materialPhase) / 32768;
+
+        // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
+        // of when no progress is being made in the position.
         eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
+
         return eval;
+
     }
 
     private int materialPhase(Board board) {
-        long knights = Bits.count(board.getKnights());
-        long bishops = Bits.count(board.getBishops());
-        long rooks = Bits.count(board.getRooks());
-        long queens = Bits.count(board.getQueens());
-        return (int) (MATERIAL_BASE + 3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
+        final long knights = Bits.count(board.getKnights());
+        final long bishops = Bits.count(board.getBishops());
+        final long rooks = Bits.count(board.getRooks());
+        final long queens = Bits.count(board.getQueens());
+        return (int) (3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
     }
 
     /**
@@ -212,63 +182,18 @@ public class NNUE implements Evaluation {
      * are mirrored (the square index is vertically flipped) in order to preserve symmetry.
      */
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
-        int squareIndex = whitePerspective ? square : square ^ 56;
-        int pieceIndex = piece.index();
-        int pieceOffset = pieceIndex * PIECE_OFFSET;
-        boolean ourPiece = whitePiece == whitePerspective;
-        int colourOffset = ourPiece ? 0 : COLOUR_OFFSET;
+        final int squareIndex = whitePerspective ? square : square ^ 56;
+        final int pieceIndex = piece.index();
+        final int pieceOffset = pieceIndex * Square.COUNT;
+        final boolean ourPiece = whitePiece == whitePerspective;
+        final int colourOffset = ourPiece ? 0 : (Square.COUNT * Piece.COUNT);
         return colourOffset + pieceOffset + squareIndex;
     }
 
-    @Override
     public void clearHistory() {
-        this.accumulator = new Accumulator(Network.HIDDEN_SIZE);
-        this.accumulatorHistory.clear();
-    }
-
-    public static NNUE.Network loadNetwork(String file, int inputSize, int hiddenSize) {
-        try {
-            InputStream inputStream = NNUE.Network.class.getClassLoader().getResourceAsStream(file);
-            if (inputStream == null) {
-                throw new FileNotFoundException("NNUE file not found in resources");
-            }
-
-            byte[] fileBytes = inputStream.readAllBytes();
-            inputStream.close();
-            ByteBuffer buffer = ByteBuffer.wrap(fileBytes).order(ByteOrder.LITTLE_ENDIAN);
-
-            int inputWeightsOffset = inputSize * hiddenSize;
-            int inputBiasesOffset = hiddenSize;
-            int outputWeightsOffset = hiddenSize * 2;
-
-            short[] inputWeights = new short[inputWeightsOffset];
-            short[] inputBiases = new short[inputBiasesOffset];
-            short[] outputWeights = new short[outputWeightsOffset];
-
-            for (int i = 0; i < inputWeightsOffset; i++) {
-                inputWeights[i] = buffer.getShort();
-            }
-
-            for (int i = 0; i < inputBiasesOffset; i++) {
-                inputBiases[i] = buffer.getShort();
-            }
-
-            for (int i = 0; i < outputWeightsOffset; i++) {
-                outputWeights[i] = buffer.getShort();
-            }
-
-            short outputBias = buffer.getShort();
-
-            while (buffer.hasRemaining()) {
-                if (buffer.getShort() != 0) {
-                    throw new RuntimeException("Failed to load NNUE network: invalid file format");
-                }
-            }
-
-            return new NNUE.Network(inputWeights, inputBiases, outputWeights, outputBias);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load NNUE network", e);
-        }
+        this.current = 0;
+        this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
+        this.accumulatorStack[0] = new Accumulator(NETWORK.hiddenSize());
     }
 
 }

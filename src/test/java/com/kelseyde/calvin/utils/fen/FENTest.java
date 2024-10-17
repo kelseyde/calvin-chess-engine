@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Disabled
@@ -40,8 +40,8 @@ public class FENTest {
 
         Assertions.assertEquals(newBoard.isWhite(), fenBoard.isWhite());
         Assertions.assertEquals(newBoard.getState(), fenBoard.getState());
-        Assertions.assertEquals(new ArrayList<>(newBoard.getStates()), new ArrayList<>(fenBoard.getStates()));
-        Assertions.assertEquals(new ArrayList<>(newBoard.getMoves()), new ArrayList<>(fenBoard.getMoves()));
+        Assertions.assertEquals(Arrays.asList(newBoard.getStates()), Arrays.asList(fenBoard.getStates()));
+        Assertions.assertEquals(Arrays.asList(newBoard.getMoves()), Arrays.asList(fenBoard.getMoves()));
 
     }
 

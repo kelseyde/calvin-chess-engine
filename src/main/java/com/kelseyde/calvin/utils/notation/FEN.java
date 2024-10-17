@@ -1,15 +1,14 @@
 package com.kelseyde.calvin.utils.notation;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Key;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.board.Zobrist;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -37,7 +36,6 @@ public class FEN {
             long blackQueens = 0L;
             long blackKing = 0L;
 
-
             List<List<String>> rankFileHash = Arrays.stream(files)
                     .map(file -> Arrays.stream(file.split(""))
                             .flatMap(FEN::parseSquare)
@@ -50,7 +48,7 @@ public class FEN {
                 for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
                     int square = Square.of(rankIndex, fileIndex);
                     String squareValue = rank.get(fileIndex);
-                    long squareBB = 1L << square;
+                    long squareBB = Bits.of(square);
                     switch (squareValue) {
                         case "P" -> whitePawns |= squareBB;
                         case "N" -> whiteKnights |= squareBB;
@@ -99,8 +97,9 @@ public class FEN {
             board.getState().setRights(castlingRights);
             board.getState().setEnPassantFile(enPassantFile);
             board.getState().setHalfMoveClock(fiftyMoveCounter);
-            board.getState().setKey(Zobrist.generateKey(board));
-            board.getState().setPawnKey(Zobrist.generatePawnKey(board));
+            board.getState().setKey(Key.generateKey(board));
+            board.getState().setPawnKey(Key.generatePawnKey(board));
+            board.getState().setNonPawnKeys(Key.generateNonPawnKeys(board));
 
             return board;
 
@@ -120,7 +119,7 @@ public class FEN {
                             sb.append(emptySquares);
                             emptySquares = 0;
                         }
-                        long squareBB = 1L << square;
+                        long squareBB = Bits.of(square);
                         boolean white = (board.getWhitePieces() & squareBB) != 0;
                         String pieceCode = piece.code();
                         if (white) pieceCode = pieceCode.toUpperCase();
@@ -149,7 +148,7 @@ public class FEN {
             String fiftyMoveCounter = toFiftyMoveCounter(board.getState().getHalfMoveClock());
             sb.append(" ").append(fiftyMoveCounter);
 
-            String fullMoveNumber = toFullMoveCounter(board.getMoves());
+            String fullMoveNumber = toFullMoveCounter(board.getPly());
             sb.append(" ").append(fullMoveNumber);
 
             return sb.toString();
@@ -157,8 +156,6 @@ public class FEN {
             throw new IllegalArgumentException(board.toString(), e);
         }
     }
-
-
 
     private static boolean parseSideToMove(String sideToMove) {
         return switch (sideToMove) {
@@ -233,9 +230,8 @@ public class FEN {
         return Integer.toString(fiftyMoveCounter);
     }
 
-    private static String toFullMoveCounter(Deque<Move> moveHistory) {
-        int halfMoves = moveHistory.size();
-        return Integer.toString(1 + (halfMoves / 2));
+    private static String toFullMoveCounter(int ply) {
+        return Integer.toString(1 + (ply / 2));
     }
 
     private static Stream<String> parseSquare(String square) {
@@ -250,7 +246,7 @@ public class FEN {
 
         Piece[] pieceList = new Piece[Square.COUNT];
         for (int square = 0; square < Square.COUNT; square++) {
-            long squareMask = 1L << square;
+            long squareMask = Bits.of(square);
             if ((squareMask & board.getPawns()) != 0)           pieceList[square] = Piece.PAWN;
             else if ((squareMask & board.getKnights()) != 0)    pieceList[square] = Piece.KNIGHT;
             else if ((squareMask & board.getBishops()) != 0)    pieceList[square] = Piece.BISHOP;

@@ -275,7 +275,7 @@ public class Attacks {
     public static long[] initBlockerMasks(long movementMask) {
         List<Integer> moveSquares = new ArrayList<>();
         for (int i = 0; i < Square.COUNT; i++) {
-            if ((movementMask & 1L << i) != 0) {
+            if ((movementMask & Bits.of(i)) != 0) {
                 moveSquares.add(i);
             }
         }
@@ -351,8 +351,8 @@ public class Attacks {
     }
 
     private static boolean isValidVectorOffset(int square, int vectorOffset) {
-        boolean isAFile = (File.A & 1L << square) != 0;
-        boolean isHFile = (File.H & 1L << square) != 0;
+        boolean isAFile = (File.A & Bits.of(square)) != 0;
+        boolean isHFile = (File.H & Bits.of(square)) != 0;
         boolean isVectorAFileException = A_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
         boolean isVectorHFileException = H_FILE_OFFSET_EXCEPTIONS.contains(vectorOffset);
         return (!isAFile || !isVectorAFileException) && (!isHFile || !isVectorHFileException);

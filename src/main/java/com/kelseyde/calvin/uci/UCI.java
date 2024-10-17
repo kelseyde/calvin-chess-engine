@@ -4,9 +4,8 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
-import com.kelseyde.calvin.evaluation.Score;
+import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.uci.UCICommand.ScoreDataCommand;
@@ -15,34 +14,42 @@ import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
 /**
- * Entrypoint for the Calvin chess engine. Calvin communicates using the Universal Chess Interface protocol (UCI).
- * This adapter acts as a UCI interface which translates the incoming commands to instructions for the {@link Engine},
- * which is responsible for actually playing the game of chess.
+ * Entrypoint for the Calvin chess engine.
+ * <p>
+ * Calvin communicates using the Universal Chess Interface protocol (UCI). This adapter acts as a UCI interface which
+ * allows the user to interact with the {@link Engine}, and provides a way to configure the engine and play games.
  * @see <a href="https://www.chessprogramming.org/UCI">Chess Programming Wiki</a>
  */
 public class UCI {
 
-    public static final Engine ENGINE = new Engine();
-    static final Scanner READER = new Scanner(System.in);
+    private static final Engine ENGINE = Engine.getInstance();
     public static boolean outputEnabled = true;
+    public static boolean prettyEnabled = false;
 
     public static void run(String[] args) {
 
-        write("Calvin by Dan Kelsey");
+        // Enable pretty printing if the engine is running in a terminal.
+        prettyEnabled = System.console() != null;
 
+        writeEngineInfo();
+
+        // Allow the engine to be benched from the command line at startup.
         if (args.length == 1 && args[0].equals("bench")) {
-            Bench.run();
+            Bench.run(ENGINE);
         }
 
-        try {
+        try (Scanner in = new Scanner(System.in)) {
             String input = "";
             while (!input.equals("quit")) {
-                input = READER.nextLine();
+                input = in.nextLine();
                 if (!input.isEmpty()) {
+                    // Parse the input and execute the command.
                     UCICommand command = UCICommand.parse(input);
                     command.execute();
                 }
@@ -50,6 +57,8 @@ public class UCI {
         } catch (Exception e) {
             writeError("error processing command", e);
         }
+
+
     }
 
     public static void handleUCI(UCICommand command) {
@@ -59,13 +68,15 @@ public class UCI {
         write(String.format("option name Hash type spin default %s min %s max %s",
                 config.defaultHashSizeMb, config.minHashSizeMb, config.maxHashSizeMb));
         write(String.format("option name Threads type spin default %s min %s max %s",
-                config.defaultThreadCount, config.minThreadCount, config.maxThreadCount));
+                config.defaultThreads, config.minThreads, config.maxThreads));
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
+        write("option name Pretty type check default false");
+        ENGINE.getConfig().getTunables().forEach(t -> write(t.toUCI()));
         write("uciok");
     }
 
     public static void handleBench(UCICommand command) {
-        Bench.run();
+        Bench.run(ENGINE);
     }
 
     public static void handleNewGame(UCICommand command) {
@@ -84,12 +95,8 @@ public class UCI {
     }
 
     public static void handleGo(UCICommand command) {
-        boolean ponder = command.contains("ponder");
-        ENGINE.setPondering(ponder);
-        ENGINE.setSearchCancelled(false);
-        GoCommand go = GoCommand.parse(command);
-        TimeControl tc = TimeControl.init(ENGINE.getBoard(), go);
-        ENGINE.findBestMove(tc, UCI::writeMove);
+        GoCommand goCommand = GoCommand.parse(command);
+        ENGINE.go(goCommand);
     }
 
     public static void handlePonderHit(UCICommand command) {
@@ -97,12 +104,13 @@ public class UCI {
     }
 
     public static void handleSetOption(UCICommand command) {
-        String optionType = command.getString("name", "", true);
-        switch (optionType) {
+        String name = command.getString("name", "", true);
+        switch (name) {
             case "Hash":          setHashSize(command); break;
-            case "Threads":       setThreadCount(command); break;
+            case "Threads":       setThreads(command); break;
             case "Ponder":        setPonder(command); break;
-            default:              write("unrecognised option name " + optionType);
+            case "Pretty":        setPretty(command); break;
+            default:              ENGINE.getConfig().setTunable(command); break;
         }
     }
 
@@ -115,39 +123,43 @@ public class UCI {
     public static void handleHelp(UCICommand command) {
         write("");
         write("the following commands are available:");
-        write("uci         -- print engine info");
-        write("isready     -- check if engine is ready");
-        write("setoption   -- set engine options (type 'uci' to see the available options'");
-        write("                args:");
-        write("                    -- name: the name of the option to change");
-        write("                    -- value: the new value for the option");
-        write("ucinewgame  -- clear the board and set up a new game");
-        write("position    -- set up the board position");
-        write("                args:");
-        write("                    -- startpos: set up the starting position");
-        write("                       OR");
-        write("                    -- fen: supply the position in FEN string format");
-        write("                    -- moves: the moves played from the supplied position");
-        write("go          -- start searching for the best move");
-        write("                args:");
-        write("                    -- movetime: the time to spend searching in milliseconds");
-        write("                       OR");
-        write("                    -- wtime: white time remaining in milliseconds");
-        write("                    -- btime: black time remaining in milliseconds");
-        write("                    -- winc: white increment in milliseconds");
-        write("                    -- binc: black increment in milliseconds");
-        write("                    -- nodes: max nodes to search");
-        write("                    -- depth: max depth to search");
-        write("stop        -- stop searching and return the best move");
-        write("fen         -- print the FEN string for the current position");
-        write("eval        -- evaluate the current position");
-        write("scoredata   -- score a data file with the engine, to train a neural network");
-        write("                args:");
-        write("                    -- input: the input file to score");
-        write("                    -- output: the output file to write the scores to");
-        write("                    -- depth: the depth to search to (default 5000)");
-        write("                    -- resume: the line number to resume from (default 0)");
-        write("quit        -- exit the application");
+        write("uci            -- print engine info");
+        write("isready        -- check if engine is ready");
+        write("setoption      -- set engine options (type 'uci' to see the available options'");
+        write("                   args:");
+        write("                       -- name: the name of the option to change");
+        write("                       -- value: the new value for the option");
+        write("ucinewgame     -- clear the board and set up a new game");
+        write("position       -- set up the board position");
+        write("                   args:");
+        write("                       -- startpos: set up the starting position");
+        write("                          OR");
+        write("                       -- fen: supply the position in FEN string format");
+        write("                       -- moves: the moves played from the supplied position");
+        write("go             -- start searching for the best move");
+        write("                   args:");
+        write("                       -- movetime: the time to spend searching in milliseconds");
+        write("                          OR");
+        write("                       -- wtime: white time remaining in milliseconds");
+        write("                       -- btime: black time remaining in milliseconds");
+        write("                       -- winc: white increment in milliseconds");
+        write("                       -- binc: black increment in milliseconds");
+        write("                       -- nodes: max nodes to search");
+        write("                       -- depth: max depth to search");
+        write("                          OR ");
+        write("                       -- perft <depth>: run a perft test to the specified depth");
+        write("stop           -- stop searching and return the best move");
+        write("display / d    -- display the current board state");
+        write("fen            -- print the FEN string for the current position");
+        write("eval           -- evaluate the current position");
+        write("pretty         -- toggle pretty console output");
+        write("scoredata      -- score a data file with the engine, to train a neural network");
+        write("                   args:");
+        write("                       -- input: the input file to score");
+        write("                       -- output: the output file to write the scores to");
+        write("                       -- depth: the depth to search to (default 5000)");
+        write("                       -- resume: the line number to resume from (default 0)");
+        write("quit           -- exit the application");
         write("");
     }
 
@@ -157,6 +169,14 @@ public class UCI {
         } else {
             write("info error no position specified, please use the 'position' command first");
         }
+    }
+
+    public static void handleDisplay(UCICommand command) {
+        ENGINE.getBoard().print();
+    }
+
+    public static void handleThreats(UCICommand command) {
+        //TODO
     }
 
     public static void handleEval(UCICommand command) {
@@ -178,15 +198,80 @@ public class UCI {
         write("info error unknown command " + command.args()[0]);
     }
 
+    public static void setOutputEnabled(boolean outputEnabled) {
+        UCI.outputEnabled = outputEnabled;
+    }
+
+    private static void setHashSize(UCICommand command) {
+        int hashSizeMb = command.getInt("value", -1, true);
+        int minHashSizeMb = ENGINE.getConfig().minHashSizeMb;
+        int maxHashSizeMb = ENGINE.getConfig().maxHashSizeMb;
+        if (hashSizeMb >= minHashSizeMb && hashSizeMb <= maxHashSizeMb) {
+            ENGINE.setHashSize(hashSizeMb);
+            write("info string Hash " + hashSizeMb);
+        } else {
+            write(String.format("hash size %s not in valid range %s - %s", hashSizeMb, minHashSizeMb, maxHashSizeMb));
+        }
+    }
+
+    private static void setThreads(UCICommand command) {
+        int threadCount = command.getInt("value", -1, true);
+        int minThreadCount = ENGINE.getConfig().minThreads;
+        int maxThreadCount = ENGINE.getConfig().maxThreads;
+        if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
+            ENGINE.setThreadCount(threadCount);
+            write("info string Threads " + threadCount);
+        } else {
+            write(String.format("thread count %s not in valid range %s - %s", threadCount, minThreadCount, maxThreadCount));
+        }
+    }
+
+    private static void setPonder(UCICommand command) {
+        boolean ponderEnabled = command.getBool("value", false, true);
+        ENGINE.setPonderEnabled(ponderEnabled);
+        write("info string Ponder " + ponderEnabled);
+    }
+
+    private static void setPretty(UCICommand command) {
+        boolean prettyEnabled = command.getBool("value", false, true);
+        UCI.prettyEnabled = prettyEnabled;
+        write("info string Pretty " + prettyEnabled);
+    }
+
+    public static void handlePretty(UCICommand command) {
+        UCI.prettyEnabled = !UCI.prettyEnabled;
+        write("info string Pretty " + UCI.prettyEnabled);
+    }
+
+    public static void handleHashfull(UCICommand command) {
+        write(String.format(Locale.ROOT, "%.1f", (float) ENGINE.hashfull() / 1000 * 100));
+    }
+
+    public static void writeEngineInfo() {
+
+        if (prettyEnabled) {
+            Pretty.printEngineInfo();
+        } else {
+            write("Calvin by Dan Kelsey");
+        }
+
+    }
+
     public static void writeSearchInfo(SearchResult searchResult) {
         int depth = searchResult.depth();
-        String score = formatScore(searchResult.eval());
+        int score = searchResult.eval();
         long time = searchResult.time();
         int nodes = searchResult.nodes();
         long nps = searchResult.nps();
-        String pv = ENGINE.extractPrincipalVariation().stream()
-                .map(Move::toUCI).collect(Collectors.joining(" "));
-        write(String.format("info depth %s score %s nodes %s time %s nps %s pv %s", depth, score, nodes, time, nps, pv));
+        int hashfull = ENGINE.hashfull();
+        List<Move> pv = ENGINE.extractPrincipalVariation();
+        if (prettyEnabled) {
+            Pretty.writeSearchInfo(depth, score, time, nodes, nps, hashfull, pv);
+        } else {
+            String pvString = pv.stream().map(Move::toUCI).collect(Collectors.joining(" "));
+            write(String.format("info depth %s score %s nodes %s time %s nps %s hashfull %s pv %s",
+                    depth, formatScore(score), nodes, time, nps, hashfull, pvString));
+        }
     }
 
     private static String formatScore(int eval) {
@@ -208,36 +293,6 @@ public class UCI {
         } else {
             write(String.format("bestmove %s", Move.toUCI(move)));
         }
-    }
-
-    private static void setHashSize(UCICommand command) {
-        int hashSizeMb = command.getInt("value", -1, true);
-        int minHashSizeMb = ENGINE.getConfig().minHashSizeMb;
-        int maxHashSizeMb = ENGINE.getConfig().maxHashSizeMb;
-        if (hashSizeMb >= minHashSizeMb && hashSizeMb <= maxHashSizeMb) {
-            ENGINE.setHashSize(hashSizeMb);
-            write("info string Hash " + hashSizeMb);
-        } else {
-            write(String.format("hash size %s not in valid range %s - %s", hashSizeMb, minHashSizeMb, maxHashSizeMb));
-        }
-    }
-
-    private static void setThreadCount(UCICommand command) {
-        int threadCount = command.getInt("value", -1, true);
-        int minThreadCount = ENGINE.getConfig().minThreadCount;
-        int maxThreadCount = ENGINE.getConfig().maxThreadCount;
-        if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
-            ENGINE.setThreadCount(threadCount);
-            write("info string Threads " + threadCount);
-        } else {
-            write(String.format("thread count %s not in valid range %s - %s", threadCount, minThreadCount, maxThreadCount));
-        }
-    }
-
-    private static void setPonder(UCICommand command) {
-        boolean ponderEnabled = command.getBool("value", false, true);
-        ENGINE.setPonderEnabled(ponderEnabled);
-        write("info string Ponder " + ponderEnabled);
     }
 
     public static void write(String output) {

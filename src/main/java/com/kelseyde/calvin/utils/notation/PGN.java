@@ -3,7 +3,7 @@ package com.kelseyde.calvin.utils.notation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,7 +11,7 @@ public class PGN {
 
     public static String toPGN(Board board) {
 
-        List<Move> moves = new ArrayList<>(board.getMoves());
+        List<Move> moves = Arrays.asList(board.getMoves());
         Collections.reverse(moves);
         Board boardCopy = new Board();
 

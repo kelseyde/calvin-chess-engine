@@ -1,11 +1,8 @@
-package com.kelseyde.calvin.evaluation;
+package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.GameState;
-import com.kelseyde.calvin.search.Search;
-
-import java.util.Iterator;
+import com.kelseyde.calvin.board.BoardState;
 
 public class Score {
 
@@ -14,8 +11,12 @@ public class Score {
     public static final int MATE = 32766;
     public static final int DRAW = 0;
 
-    public static boolean isMateScore(int eval) {
-        return Math.abs(eval) >= Score.MATE - Search.MAX_DEPTH;
+    public static boolean isMateScore(int score) {
+        return !isUndefinedScore(score) && Math.abs(score) >= Score.MATE - Search.MAX_DEPTH;
+    }
+
+    public static boolean isUndefinedScore(int score) {
+        return Math.abs(score) == Score.MAX;
     }
 
     /**
@@ -31,24 +32,26 @@ public class Score {
 
         int repetitionCount = 0;
         long zobrist = board.getState().getKey();
-        Iterator<GameState> iterator = board.getStates().descendingIterator();
-        while (iterator.hasNext()) {
-            GameState gameState = iterator.next();
-            if (gameState.getKey() == zobrist) {
+        BoardState[] states = board.getStates();
+        for (int i = board.getPly() - 1; i >= 0; i--) {
+            if (states[i].getKey() == zobrist) {
                 repetitionCount += 1;
             }
+            if (repetitionCount >= 2) {
+                return true;
+            }
         }
-        return repetitionCount >= 2;
+
+        return false;
 
     }
 
     public static boolean isDoubleRepetition(Board board) {
 
         long zobrist = board.getState().getKey();
-        Iterator<GameState> iterator = board.getStates().descendingIterator();
-        while (iterator.hasNext()) {
-            GameState gameState = iterator.next();
-            if (gameState.getKey() == zobrist) {
+        BoardState[] states = board.getStates();
+        for (int i = board.getPly() - 1; i >= 0; i--) {
+            if (states[i].getKey() == zobrist) {
                 return true;
             }
         }

@@ -2,6 +2,7 @@ package com.kelseyde.calvin.search.picker;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
@@ -22,11 +23,11 @@ public class MovePickerTest {
         String fen = "rnbqkbnr/1p2pppp/p2p4/1Bp5/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1";
         Board board = FEN.toBoard(fen);
 
-        MovePicker picker = new MovePicker(moveGenerator, new SearchStack(), new SearchHistory(), board, 0, null, true);
+        MovePicker picker = new MovePicker(moveGenerator, new SearchStack(), new SearchHistory(new EngineConfig()), board, 0, null, true);
 
-        List<Move> moves = new ArrayList<>();
+        List<ScoredMove> moves = new ArrayList<>();
         while (true) {
-            Move move = picker.pickNextMove();
+            ScoredMove move = picker.pickNextMove();
             if (move == null) break;
             moves.add(move);
         }

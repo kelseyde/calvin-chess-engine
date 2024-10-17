@@ -13,7 +13,8 @@ import java.util.concurrent.ThreadLocalRandom;
  *
  * @see <a href="https://www.chessprogramming.org/Zobrist_Hashing">Chess Programming Wiki</a>
  */
-public class Zobrist {
+// TODO: try only generating key once for each update
+public class Key {
 
     private static final int CASTLING_RIGHTS_COUNT = 16;
     private static final int EN_PASSANT_FILES_COUNT = 9;
@@ -21,7 +22,7 @@ public class Zobrist {
     private static final long[][][] PIECE_SQUARE_HASH = new long[Square.COUNT][2][Piece.COUNT];
     private static final long[] CASTLING_RIGHTS = new long[CASTLING_RIGHTS_COUNT];
     private static final long[] EN_PASSANT_FILE = new long[EN_PASSANT_FILES_COUNT];
-    private static final long BLACK_TO_MOVE;
+    private static final long SIDE_TO_MOVE;
     private static final int WHITE = 0;
     private static final int BLACK = 1;
 
@@ -46,7 +47,7 @@ public class Zobrist {
         }
 
         // Generate random key for side to move
-        BLACK_TO_MOVE = random.nextLong();
+        SIDE_TO_MOVE = random.nextLong();
     }
 
     public static long generateKey(Board board) {
@@ -73,18 +74,9 @@ public class Zobrist {
         key ^= EN_PASSANT_FILE[board.getState().getEnPassantFile() + 1];
         key ^= CASTLING_RIGHTS[board.getState().getRights()];
         if (board.isWhite()) {
-            key ^= BLACK_TO_MOVE;
+            key ^= SIDE_TO_MOVE;
         }
 
-        return key;
-    }
-
-    private static long updateKeyForPiece(long key, long whiteBitboard, long blackBitboard, int square, int pieceIndex) {
-        if (((whiteBitboard >>> square) & 1) == 1) {
-            key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndex];
-        } else if (((blackBitboard >>> square) & 1) == 1) {
-            key ^= PIECE_SQUARE_HASH[square][BLACK][pieceIndex];
-        }
         return key;
     }
 
@@ -105,29 +97,70 @@ public class Zobrist {
         return key;
     }
 
-    public static long updatePiece(long key, int from, int to, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[from][Colour.index(white)][pieceType.index()]
+    public static long[] generateNonPawnKeys(Board board) {
+        long[] keys = new long[2];
+
+        // Array of piece types and their corresponding bitboards for both sides
+        long[][] nonPawnPieces = {
+                { board.getKnights(true), board.getKnights(false) },
+                { board.getBishops(true), board.getBishops(false) },
+                { board.getRooks(true), board.getRooks(false) },
+                { board.getQueens(true), board.getQueens(false) },
+                { board.getKing(true), board.getKing(false) }
+        };
+
+        // Array of corresponding piece indices
+        int[] pieceIndices = {
+                Piece.KNIGHT.index(), Piece.BISHOP.index(),
+                Piece.ROOK.index(), Piece.QUEEN.index(), Piece.KING.index()
+        };
+
+        // Loop through each square and update the keys based on the pieces on the board
+        for (int square = 0; square < 64; square++) {
+            for (int i = 0; i < nonPawnPieces.length; i++) {
+                if (((nonPawnPieces[i][WHITE] >>> square) & 1) == 1) {
+                    keys[WHITE] ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndices[i]];
+                } else if (((nonPawnPieces[i][BLACK] >>> square) & 1) == 1) {
+                    keys[BLACK] ^= PIECE_SQUARE_HASH[square][BLACK][pieceIndices[i]];
+                }
+            }
+        }
+
+        return keys;
+    }
+
+    private static long updateKeyForPiece(long key, long whiteBitboard, long blackBitboard, int square, int pieceIndex) {
+        if (((whiteBitboard >>> square) & 1) == 1) {
+            key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndex];
+        } else if (((blackBitboard >>> square) & 1) == 1) {
+            key ^= PIECE_SQUARE_HASH[square][BLACK][pieceIndex];
+        }
+        return key;
+    }
+
+    public static long piece(int from, int to, Piece pieceType, boolean white) {
+        return PIECE_SQUARE_HASH[from][Colour.index(white)][pieceType.index()]
                 ^ PIECE_SQUARE_HASH[to][Colour.index(white)][pieceType.index()];
     }
 
-    public static long updatePiece(long key, int square, Piece pieceType, boolean white) {
-        return key ^ PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.index()];
+    public static long piece(int square, Piece pieceType, boolean white) {
+        return PIECE_SQUARE_HASH[square][Colour.index(white)][pieceType.index()];
     }
 
-    public static long updateCastlingRights(long key, int oldCastlingRights, int newCastlingRights) {
-        return key ^ CASTLING_RIGHTS[oldCastlingRights] ^ CASTLING_RIGHTS[newCastlingRights];
+    public static long rights(int oldCastlingRights, int newCastlingRights) {
+        return CASTLING_RIGHTS[oldCastlingRights] ^ CASTLING_RIGHTS[newCastlingRights];
     }
 
-    public static long updateEnPassantFile(long key, int oldEnPassantFile, int newEnPassantFile) {
-        return key ^ EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[newEnPassantFile + 1];
+    public static long enPassant(int oldEnPassantFile, int newEnPassantFile) {
+        return EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[newEnPassantFile + 1];
     }
 
-    public static long updateSideToMove(long key) {
-        return key ^ BLACK_TO_MOVE;
+    public static long sideToMove() {
+        return SIDE_TO_MOVE;
     }
 
-    public static long updateKeyAfterNullMove(long key, int oldEnPassantFile) {
-        return key ^ EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[0] ^ BLACK_TO_MOVE;
+    public static long nullMove(int oldEnPassantFile) {
+        return EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[0] ^ SIDE_TO_MOVE;
     }
 
 }

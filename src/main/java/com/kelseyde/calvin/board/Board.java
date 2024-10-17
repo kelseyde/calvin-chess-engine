@@ -530,6 +530,18 @@ public class Board {
         return Bits.count(occupied);
     }
 
+    public long getPieces(Piece piece, boolean white) {
+        return switch (piece) {
+            case PAWN -> getPawns(white);
+            case KNIGHT -> getKnights(white);
+            case BISHOP -> getBishops(white);
+            case ROOK -> getRooks(white);
+            case QUEEN -> getQueens(white);
+            case KING -> getKing(white);
+        };
+    }
+
+
     public boolean hasPiecesRemaining(boolean white) {
         return white ?
                 (getKnights(true) != 0 || getBishops(true) != 0 || getRooks(true) != 0 || getQueens(true) != 0) :

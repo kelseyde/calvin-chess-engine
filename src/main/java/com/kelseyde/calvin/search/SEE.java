@@ -24,8 +24,8 @@ public class SEE {
     public static boolean see(Board board, Move move, int threshold) {
 
         boolean white = board.isWhite();
-        int from = move.from();
-        int to = move.to();
+        final int from = move.from();
+        final int to = move.to();
         Piece nextVictim = move.isPromotion() ? move.promoPiece() : board.pieceAt(from);
         if (nextVictim == null)
             throw new IllegalArgumentException("SEE called with an illegal move");

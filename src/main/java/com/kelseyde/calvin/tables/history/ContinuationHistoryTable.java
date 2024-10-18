@@ -25,6 +25,13 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
         set(prevMove, prevPiece, currMove, currPiece, update, white);
     }
 
+    public void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white, int beta, int score) {
+        int current = get(prevMove, prevPiece, currMove, currPiece, white);
+        int bonus = scaledBonus(depth, beta, score);
+        int update = gravity(current, bonus);
+        set(prevMove, prevPiece, currMove, currPiece, update, white);
+    }
+
     public int get(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {
         if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
             return 0;

@@ -27,6 +27,16 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
         table[colourIndex][pieceIndex][to][capturedIndex] = update;
     }
 
+    public void update(Piece piece, int to, Piece captured, int depth, boolean white, int beta, int score) {
+        int colourIndex = Colour.index(white);
+        int pieceIndex = piece.index();
+        int capturedIndex = captured.index();
+        int current = table[colourIndex][pieceIndex][to][capturedIndex];
+        int bonus = scaledBonus(depth, beta, score);
+        int update = gravity(current, bonus);
+        table[colourIndex][pieceIndex][to][capturedIndex] = update;
+    }
+
     public int get(Piece piece, int to, Piece captured, boolean white) {
         int colourIndex = Colour.index(white);
         int pieceIndex = piece.index();

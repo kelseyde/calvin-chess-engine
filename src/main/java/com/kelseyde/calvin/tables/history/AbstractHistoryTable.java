@@ -29,7 +29,7 @@ public abstract class AbstractHistoryTable {
         return -Math.min(malusScale * depth, malusMax);
     }
 
-    public int scaledBonus(int depth, int score, int beta) {
+    public int scaledBonus(int depth, int beta, int score) {
         final boolean good = score >= beta;
         final int delta = Math.abs(Math.max(MIN_BETA_DELTA, Math.min(score - beta, MAX_BETA_DELTA)));
         final int scoreFactor = MIN_SCORE_SCALAR + (delta * (MAX_SCORE_SCALAR - MIN_SCORE_SCALAR)) / MAX_BETA_DELTA;

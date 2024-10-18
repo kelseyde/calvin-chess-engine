@@ -54,7 +54,7 @@ public class SearchHistory {
                         SearchStackEntry prevEntry = ss.get(ply - prevPly);
                         if (prevEntry != null && prevEntry.currentMove != null) {
                             PlayedMove prevMove = prevEntry.currentMove;
-                            contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, isBestMove);
+                            contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, beta, score);
                         }
                     }
                 }
@@ -62,7 +62,8 @@ public class SearchHistory {
             else if (playedMove.isCapture()) {
                 boolean good = bestMove.move.equals(playedMove.move);
                 if (good || failHigh) {
-                    captureHistoryTable.update(playedMove.piece, playedMove.move.to(), playedMove.captured, depth, white, good);
+                    int score = playedMove.score;
+                    captureHistoryTable.update(playedMove.piece, playedMove.move.to(), playedMove.captured, depth, white, beta, score);
                 }
             }
         }

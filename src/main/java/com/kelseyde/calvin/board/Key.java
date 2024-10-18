@@ -129,6 +129,21 @@ public class Key {
         return keys;
     }
 
+    public static long generateMaterialKey(Board board) {
+
+        long materialKey = 0L;
+
+        // We can get away with re-using the PSQT table here to generate the material key,
+        // except substituting the square index with the piece count (and ignoring the color)
+        for (Piece piece : Piece.values()) {
+            int count = Bits.count(board.getPieces(piece));
+            materialKey ^= PIECE_SQUARE_HASH[count][WHITE][piece.index()];
+        }
+
+        return materialKey;
+
+    }
+
     private static long updateKeyForPiece(long key, long whiteBitboard, long blackBitboard, int square, int pieceIndex) {
         if (((whiteBitboard >>> square) & 1) == 1) {
             key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndex];
@@ -153,6 +168,10 @@ public class Key {
 
     public static long enPassant(int oldEnPassantFile, int newEnPassantFile) {
         return EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[newEnPassantFile + 1];
+    }
+
+    public static long material(Piece piece, int count) {
+        return PIECE_SQUARE_HASH[count][WHITE][piece.index()];
     }
 
     public static long sideToMove() {

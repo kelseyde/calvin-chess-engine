@@ -46,8 +46,8 @@ public abstract class AbstractHistoryTable {
         int scoreFactor = MIN_SCORE_SCALAR + (delta * (MAX_SCORE_SCALAR - MIN_SCORE_SCALAR)) / MAX_BETA_DELTA;
         int depthFactor = MIN_DEPTH_RANGE + (clampedDepth * (MAX_DEPTH_SCALAR - MIN_DEPTH_SCALAR)) / MAX_DEPTH_RANGE;
 
-        int depthBonus = Math.min(depthFactor, max / 2);
-        int scoreBonus = Math.min(scoreFactor, max / 2);
+        int depthBonus = Math.min(depthFactor, max / 10 * 8);
+        int scoreBonus = Math.min(scoreFactor, max / 10 * 2);
         int bonus = depthBonus + scoreBonus;
         return good ? bonus : -bonus;
     }

@@ -8,6 +8,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
+import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.history.KillerTable;
 
 import java.util.List;
@@ -180,13 +181,15 @@ public class MovePicker {
 
         int contHistScore = 0;
         // Get the continuation history score for the move
-        PlayedMove prevMove = ss.getMove(ply - 1);
-        if (prevMove != null) {
+        SearchStackEntry prevEntry = ss.get(ply - 1);
+        if (prevEntry != null && prevEntry.currentMove != null) {
+            PlayedMove prevMove = prevEntry.currentMove;
             contHistScore = history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
         }
 
-        PlayedMove prevMove2 = ss.getMove(ply - 2);
-        if (prevMove2 != null) {
+        SearchStackEntry prevEntry2 = ss.get(ply - 2);
+        if (prevEntry2 != null && prevEntry2.currentMove != null) {
+            PlayedMove prevMove2 = prevEntry2.currentMove;
             contHistScore += history.getContHistTable().get(prevMove2.move(), prevMove2.piece(), move, piece, white);
         }
 

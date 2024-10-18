@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.PlayedMove;
+import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.history.*;
 
 import java.util.List;
@@ -46,8 +47,9 @@ public class SearchHistory {
                 quietHistoryTable.update(quiet.move(), quiet.piece(), depth, white, good);
 
                 for (int prevPly : CONT_HIST_PLIES) {
-                    PlayedMove prevMove = ss.getMove(ply - prevPly);
-                    if (prevMove != null) {
+                    SearchStackEntry prevEntry = ss.get(ply - prevPly);
+                    if (prevEntry != null && prevEntry.currentMove != null) {
+                        PlayedMove prevMove = prevEntry.currentMove;
                         contHistTable.update(prevMove.move(), prevMove.piece(), quiet.move(), quiet.piece(), depth, white, good);
                     }
                 }

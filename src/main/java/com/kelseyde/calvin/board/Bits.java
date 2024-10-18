@@ -21,6 +21,19 @@ public class Bits {
         return 1L << sq;
     }
 
+    public static int bucket(int sq) {
+        // Get the file and rank of the square
+        int file = File.of(sq);
+        int rank = Rank.of(sq);
+
+        // Divide the file and rank by 2 to group them into 2x2 blocks
+        int fileGroup = file / 2;
+        int rankGroup = rank / 2;
+
+        // Each rankGroup and fileGroup combination gives a unique bucket
+        return rankGroup * 4 + fileGroup;
+    }
+
     public static long north(long board) {
         return board << 8;
     }

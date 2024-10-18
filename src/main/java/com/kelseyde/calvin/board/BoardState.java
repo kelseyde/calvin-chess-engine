@@ -13,6 +13,7 @@ public class BoardState {
     public long key;
     public long pawnKey;
     public long[] nonPawnKeys;
+    public long kingKey;
     public int enPassantFile;
     public int rights;
     public int halfMoveClock;
@@ -22,16 +23,18 @@ public class BoardState {
         this.key = 0L;
         this.pawnKey = 0L;
         this.nonPawnKeys = new long[2];
+        this.kingKey = 0L;
         this.captured = null;
         this.enPassantFile = -1;
         this.rights = Castling.INITIAL_CASTLING_RIGHTS;
         this.halfMoveClock = 0;
     }
 
-    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
+    public BoardState(long key, long pawnKey, long[] nonPawnKeys, long kingKey, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
         this.key = key;
         this.pawnKey = pawnKey;
         this.nonPawnKeys = nonPawnKeys;
+        this.kingKey = kingKey;
         this.captured = captured;
         this.enPassantFile = enPassantFile;
         this.rights = rights;
@@ -84,6 +87,10 @@ public class BoardState {
         this.nonPawnKeys = nonPawnKeys;
     }
 
+    public void setKingKey(long kingKey) {
+        this.kingKey = kingKey;
+    }
+
     public void setEnPassantFile(int enPassantFile) {
         this.enPassantFile = enPassantFile;
     }
@@ -98,7 +105,7 @@ public class BoardState {
 
     public BoardState copy() {
         long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
-        return new BoardState(key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock);
+        return new BoardState(key, pawnKey, nonPawnKeysCopy, kingKey, captured, enPassantFile, rights, halfMoveClock);
     }
 
     @Override
@@ -108,6 +115,7 @@ public class BoardState {
         BoardState boardState = (BoardState) o;
         return key == boardState.key
                 && pawnKey == boardState.pawnKey
+                && kingKey == boardState.kingKey
                 && enPassantFile == boardState.enPassantFile
                 && rights == boardState.rights
                 && halfMoveClock == boardState.halfMoveClock

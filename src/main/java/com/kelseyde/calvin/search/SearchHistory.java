@@ -35,7 +35,7 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, boolean failHigh) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, boolean failHigh, int beta) {
 
         List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
 
@@ -46,14 +46,15 @@ public class SearchHistory {
         for (PlayedMove playedMove : playedMoves) {
             if (bestMove.isQuiet() && playedMove.isQuiet()) {
 
-                boolean good = bestMove.move.equals(playedMove.move);
-                if (good || failHigh) {
-                    quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, good);
+                boolean isBestMove = bestMove.move.equals(playedMove.move);
+                if (isBestMove || failHigh) {
+                    int score = playedMove.score;
+                    quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, beta, score);
                     for (int prevPly : CONT_HIST_PLIES) {
                         SearchStackEntry prevEntry = ss.get(ply - prevPly);
                         if (prevEntry != null && prevEntry.currentMove != null) {
                             PlayedMove prevMove = prevEntry.currentMove;
-                            contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, good);
+                            contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, isBestMove);
                         }
                     }
                 }

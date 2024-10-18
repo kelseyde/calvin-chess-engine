@@ -383,7 +383,6 @@ public class Searcher implements Search {
             playedMove.capture = isCapture;
 
             sse.currentMove = playedMove;
-            sse.searchedMoves.add(playedMove);
 
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
             // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
@@ -423,6 +422,9 @@ public class Searcher implements Search {
 
             eval.unmakeMove();
             board.unmakeMove();
+
+            playedMove.score = score;
+            sse.searchedMoves.add(playedMove);
             sse.currentMove = null;
 
             if (rootNode) {
@@ -465,9 +467,10 @@ public class Searcher implements Search {
 
         if (bestMove != null) {
             final PlayedMove best = sse.bestMove;
+
             final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
             final boolean failHigh = bestScore >= beta;
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, failHigh);
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, failHigh, beta);
         }
 
         if (!inCheck

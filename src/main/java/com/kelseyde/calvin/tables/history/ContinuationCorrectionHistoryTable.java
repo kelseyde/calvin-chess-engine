@@ -26,20 +26,20 @@ public class ContinuationCorrectionHistoryTable {
     private static final int MAX = SCALE * 32;
     private static final int TABLE_SIZE = 16384;
 
-    int[][][][][] entries;
+    int[][][] entries;
 
     public ContinuationCorrectionHistoryTable() {
-        this.entries = new int[2][6][64][6][64];
+        this.entries = new int[2][6][64];
     }
 
     /**
      * Update the correction history entry to be a weighted sum old value and the new delta of the score and static eval.
      */
-    public void update(Move prevMove1, Piece prevPiece1, Move prevMove2, Piece prevPiece2, boolean white, int depth, int score, int staticEval) {
+    public void update(Move prevMove, Piece prevPiece, boolean white, int staticEval, int score, int depth) {
 
         // Compute the new correction value, and retrieve the old value
         int newValue = (score - staticEval) * SCALE;
-        int oldValue = get(white, prevMove1, prevPiece1, prevMove2, prevPiece2);
+        int oldValue = get(white, prevMove, prevPiece);
 
         // Weight the new value based on the search depth, and the old value based on the remaining weight
         int newWeight = Math.min(depth + 1, 16);
@@ -50,44 +50,32 @@ public class ContinuationCorrectionHistoryTable {
         update = clamp(update);
 
         // Update the correction history table with the new value.
-        put(white, prevMove1, prevPiece1, prevMove2, prevPiece2, update);
+        put(white, prevMove, prevPiece, update);
 
-    }
-
-    /**
-     * Correct the static eval with the value from the correction history table.
-     */
-    public int correctEvaluation(Move prevMove1, Piece prevPiece1, Move prevMove2, Piece prevPiece2, boolean white, int staticEval) {
-        int entry = get(white, prevMove1, prevPiece1, prevMove2, prevPiece2);
-        return staticEval + entry / SCALE;
     }
 
     /**
      * Retrieve the correction history entry for the given side to move and hash index.
      */
-    public int get(boolean white, Move prevMove1, Piece prevPiece1, Move prevMove2, Piece prevPiece2) {
+    public int get(boolean white, Move prevMove, Piece prevPiece) {
         int colourIndex = Colour.index(white);
-        int pieceIndex1 = prevPiece1.index();
-        int to1 = prevMove1.to();
-        int pieceIndex2 = prevPiece2.index();
-        int to2 = prevMove2.to();
-        return entries[colourIndex][pieceIndex1][to1][pieceIndex2][to2];
+        int pieceIndex = prevPiece.index();
+        int to = prevMove.to();
+        return entries[colourIndex][pieceIndex][to];
     }
 
     /**
      * Update the correction history entry for the given side to move and hash index.
      */
-    private void put(boolean white, Move prevMove1, Piece prevPiece1, Move prevMove2, Piece prevPiece2, int value) {
+    private void put(boolean white, Move prevMove, Piece prevPiece, int value) {
         int colourIndex = Colour.index(white);
-        int pieceIndex1 = prevPiece1.index();
-        int to1 = prevMove1.to();
-        int pieceIndex2 = prevPiece2.index();
-        int to2 = prevMove2.to();
-        entries[colourIndex][pieceIndex1][to1][pieceIndex2][to2] = value;
+        int pieceIndex = prevPiece.index();
+        int to = prevMove.to();
+        entries[colourIndex][pieceIndex][to] = value;
     }
 
     public void clear() {
-        this.entries = new int[2][6][64][6][64];
+        this.entries = new int[2][6][64];
     }
 
     private int clamp(int value) {

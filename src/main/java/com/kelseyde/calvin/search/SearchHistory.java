@@ -98,25 +98,19 @@ public class SearchHistory {
     }
 
     private int getContCorrHistEntry(SearchStack ss, int ply, boolean white) {
-        Move prevMove1 = ss.getMove(ply - 1);
-        Piece prevPiece1 = ss.getMovedPiece(ply - 1);
-        Move prevMove2 = ss.getMove(ply - 2);
-        Piece prevPiece2 = ss.getMovedPiece(ply - 2);
-        if (prevMove1 == null || prevMove2 == null) {
+        SearchStackEntry sse = ss.get(ply);
+        if (sse == null || sse.currentMove == null) {
             return 0;
         }
-        return contCorrHistTable.get(white, prevMove1, prevPiece1, prevMove2, prevPiece2);
+        return contCorrHistTable.get(white, sse.currentMove.move, sse.currentMove.piece);
     }
 
     private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
-        Move prevMove1 = ss.getMove(ply - 1);
-        Piece prevPiece1 = ss.getMovedPiece(ply - 1);
-        Move prevMove2 = ss.getMove(ply - 2);
-        Piece prevPiece2 = ss.getMovedPiece(ply - 2);
-        if (prevMove1 == null || prevMove2 == null) {
+        SearchStackEntry sse = ss.get(ply);
+        if (sse == null || sse.currentMove == null) {
             return;
         }
-        contCorrHistTable.update(prevMove1, prevPiece1, prevMove2, prevPiece2, white, depth, score, staticEval);
+        contCorrHistTable.update(sse.currentMove.move, sse.currentMove.piece, white, staticEval, score, depth);
     }
 
     public int getBestMoveStability() {

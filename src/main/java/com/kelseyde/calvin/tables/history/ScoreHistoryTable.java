@@ -31,7 +31,7 @@ public class ScoreHistoryTable {
         this.entries = new int[2][Piece.COUNT][Square.COUNT];
     }
 
-    public void update(Move move, Piece piece, boolean white, int beta, int score) {
+    public void update(Move move, Piece piece, boolean white, int depth, int beta, int score) {
 
         if (Score.isMateScore(score)) {
             return;
@@ -40,29 +40,30 @@ public class ScoreHistoryTable {
         // we retrieve the current entry for the move
         int entry = get(move, piece, white);
 
-        // the average delta is stored in the bottom 16-bits
-        int runningAverage = entry & 0xFFFF;
+        // the average delta is stored in the bottom 16-bits, as a signed short
+        short runningAverage = (short) (entry & 0xFFFF);
 
         // the number of searches is stored in the top 16-bits
-        int searches = Math.max(0, entry >> 16);
+        int searches = entry >> 16;
 
         // we calculate the delta between the score and beta
-        int delta = beta - score;
-
-        // we add the new delta to the running average
-        int newAverage = (runningAverage * searches + delta) / (searches + 1);
+        int delta = score - beta;
+        int newScore = delta / 32 * Math.min(32, depth);
 
         // we increment the number of searches
         searches++;
 
+        // calculate the new running average
+        int newAverage = (runningAverage * (searches - 1) + newScore) / searches;
+
         // we store the new average and number of searches
-        put(move, piece, white, (searches << 16) | newAverage);
+        put(move, piece, white, (searches << 16) | (newAverage & 0xFFFF));
 
     }
 
     public int getRunningAverage(Move move, Piece piece, boolean white) {
         int entry = get(move, piece, white);
-        return entry & 0xFFFF;
+        return (short) (entry & 0xFFFF); // Cast to short to preserve the signed value
     }
 
     public int get(Move move, Piece piece, boolean white) {
@@ -94,5 +95,28 @@ public class ScoreHistoryTable {
     public void clear() {
         entries = new int[2][Piece.COUNT][Square.COUNT];
     }
+
+//    public static void main(String[] args) {
+//        ScoreHistoryTable sht = new ScoreHistoryTable();
+//        Move move = Move.fromUCI("e2e4");
+//        Piece piece = Piece.PAWN;
+//        boolean white = true;
+//        int beta = 0;
+//        int score = 100;
+//        sht.update(move, piece, white, beta, score);
+//        System.out.println(sht.getRunningAverage(move, piece, white));
+//
+//        move = Move.fromUCI("d2d4");
+//        piece = Piece.PAWN;
+//        white = false;
+//        beta = 0;
+//        score = -4000;
+//        sht.update(move, piece, white, beta, score);
+//        System.out.println(sht.getRunningAverage(move, piece, white));
+//
+//        score = 100;
+//        sht.update(move, piece, white, beta, score);
+//        System.out.println(sht.getRunningAverage(move, piece, white));
+//    }
 
 }

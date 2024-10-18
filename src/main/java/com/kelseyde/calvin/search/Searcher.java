@@ -466,7 +466,7 @@ public class Searcher implements Search {
         }
 
         for (PlayedMove playedMove : sse.searchedMoves) {
-            history.getScoreHistoryTable().update(playedMove.move, playedMove.piece, board.isWhite(), beta, playedMove.score);
+            history.getScoreHistoryTable().update(playedMove.move, playedMove.piece, board.isWhite(), depth, beta, playedMove.score);
         }
 
         if (bestMove != null) {

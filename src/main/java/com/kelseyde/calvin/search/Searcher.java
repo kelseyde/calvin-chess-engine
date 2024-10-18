@@ -463,10 +463,11 @@ public class Searcher implements Search {
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
-        if (bestScore >= beta) {
+        if (bestMove != null) {
             final PlayedMove best = sse.bestMove;
             final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss);
+            final boolean failHigh = bestScore >= beta;
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, failHigh);
         }
 
         if (!inCheck

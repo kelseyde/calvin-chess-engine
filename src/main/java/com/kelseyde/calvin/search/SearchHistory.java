@@ -35,7 +35,7 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, boolean failHigh) {
 
         List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
 
@@ -47,19 +47,22 @@ public class SearchHistory {
             if (bestMove.isQuiet() && playedMove.isQuiet()) {
 
                 boolean good = bestMove.move.equals(playedMove.move);
-                quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, good);
-
-                for (int prevPly : CONT_HIST_PLIES) {
-                    SearchStackEntry prevEntry = ss.get(ply - prevPly);
-                    if (prevEntry != null && prevEntry.currentMove != null) {
-                        PlayedMove prevMove = prevEntry.currentMove;
-                        contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, good);
+                if (good || failHigh) {
+                    quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, good);
+                    for (int prevPly : CONT_HIST_PLIES) {
+                        SearchStackEntry prevEntry = ss.get(ply - prevPly);
+                        if (prevEntry != null && prevEntry.currentMove != null) {
+                            PlayedMove prevMove = prevEntry.currentMove;
+                            contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, good);
+                        }
                     }
                 }
             }
             else if (playedMove.isCapture()) {
                 boolean good = bestMove.move.equals(playedMove.move);
-                captureHistoryTable.update(playedMove.piece, playedMove.move.to(), playedMove.captured, depth, white, good);
+                if (good || failHigh) {
+                    captureHistoryTable.update(playedMove.piece, playedMove.move.to(), playedMove.captured, depth, white, good);
+                }
             }
         }
 

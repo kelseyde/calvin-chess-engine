@@ -3,9 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.history.*;
 
@@ -37,32 +35,35 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, List<PlayedMove> quiets, List<PlayedMove> captures) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, boolean failHigh) {
+
+        List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
 
         if (bestMove.isQuiet()) {
+            killerTable.add(ply, bestMove.move);
+        }
 
-            killerTable.add(ply, bestMove.move());
-            for (PlayedMove quiet : quiets) {
-                boolean good = bestMove.move().equals(quiet.move());
-                quietHistoryTable.update(quiet.move(), quiet.piece(), depth, white, good);
+        for (PlayedMove playedMove : playedMoves) {
+            if (bestMove.isQuiet() && playedMove.isQuiet()) {
 
-                for (int prevPly : CONT_HIST_PLIES) {
-                    SearchStackEntry prevEntry = ss.get(ply - prevPly);
-                    if (prevEntry != null && prevEntry.currentMove != null) {
-                        PlayedMove prevMove = prevEntry.currentMove;
-                        contHistTable.update(prevMove.move(), prevMove.piece(), quiet.move(), quiet.piece(), depth, white, good);
+                boolean good = bestMove.move.equals(playedMove.move);
+                if (good || failHigh) {
+                    quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, good);
+                    for (int prevPly : CONT_HIST_PLIES) {
+                        SearchStackEntry prevEntry = ss.get(ply - prevPly);
+                        if (prevEntry != null && prevEntry.currentMove != null) {
+                            PlayedMove prevMove = prevEntry.currentMove;
+                            contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, good);
+                        }
                     }
                 }
             }
-
-        }
-
-        for (PlayedMove capture : captures) {
-            boolean good = bestMove.equals(capture);
-            Piece piece = capture.piece();
-            int to = capture.move().to();
-            Piece captured = capture.captured();
-            captureHistoryTable.update(piece, to, captured, depth, white, good);
+            else if (playedMove.isCapture()) {
+                boolean good = bestMove.move.equals(playedMove.move);
+                if (good || failHigh) {
+                    captureHistoryTable.update(playedMove.piece, playedMove.move.to(), playedMove.captured, depth, white, good);
+                }
+            }
         }
 
     }

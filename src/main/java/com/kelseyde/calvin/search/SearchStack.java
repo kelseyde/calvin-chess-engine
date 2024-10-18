@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.search;
 
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
+import java.util.List;
 
 public class SearchStack {
 
@@ -28,10 +27,7 @@ public class SearchStack {
         public PlayedMove currentMove;
         public PlayedMove bestMove;
         public boolean nullMoveAllowed = true;
-    }
-
-    public record PlayedMove(Move move, Piece piece, Piece captured, boolean isCapture, boolean isQuiet) {
-
+        public List<PlayedMove> searchedMoves;
     }
 
 }

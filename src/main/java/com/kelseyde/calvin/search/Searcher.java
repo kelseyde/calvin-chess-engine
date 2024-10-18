@@ -7,7 +7,6 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
-import com.kelseyde.calvin.search.SearchStack.PlayedMove;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
@@ -314,9 +313,8 @@ public class Searcher implements Search {
         int bestScore = Score.MIN;
         HashFlag flag = HashFlag.UPPER;
 
+        sse.searchedMoves = new ArrayList<>();
         int movesSearched = 0;
-        final List<PlayedMove> quietsSearched = new ArrayList<>();
-        final List<PlayedMove> capturesSearched = new ArrayList<>();
 
         while (true) {
 
@@ -331,6 +329,7 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
             final boolean isPromotion = move.promoPiece() != null;
+            PlayedMove playedMove = new PlayedMove(move, piece, captured);
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
@@ -379,15 +378,12 @@ public class Searcher implements Search {
 
             final boolean isCheck = movegen.isCheck(board, board.isWhite());
             final boolean isQuiet = !isCheck && !isCapture && !isPromotion;
-            PlayedMove currentMove = new PlayedMove(move, piece, captured, isCapture, isQuiet);
-            sse.currentMove = currentMove;
 
-            // Keep track of the quiet/noisy moves searched, used later to update search history.
-            if (isQuiet) {
-                quietsSearched.add(new PlayedMove(move, piece, captured, false, true));
-            } else if (isCapture) {
-                capturesSearched.add(new PlayedMove(move, piece, captured, true, false));
-            }
+            playedMove.quiet = isQuiet;
+            playedMove.capture = isCapture;
+
+            sse.currentMove = playedMove;
+            sse.searchedMoves.add(playedMove);
 
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
             // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
@@ -447,7 +443,7 @@ public class Searcher implements Search {
                 alpha = score;
                 flag = HashFlag.EXACT;
 
-                sse.bestMove = currentMove;
+                sse.bestMove = playedMove;
                 if (rootNode) {
                     bestMoveCurrent = move;
                     bestScoreCurrent = score;
@@ -470,7 +466,7 @@ public class Searcher implements Search {
         if (bestScore >= beta) {
             final PlayedMove best = sse.bestMove;
             final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, quietsSearched, capturesSearched);
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss);
         }
 
         if (!inCheck

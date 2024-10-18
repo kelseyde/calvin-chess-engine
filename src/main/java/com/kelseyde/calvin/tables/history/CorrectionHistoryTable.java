@@ -53,14 +53,6 @@ public class CorrectionHistoryTable {
     }
 
     /**
-     * Correct the static eval with the value from the correction history table.
-     */
-    public int correctEvaluation(long key, boolean white, int staticEval) {
-        int entry = get(key, white);
-        return staticEval + entry / SCALE;
-    }
-
-    /**
      * Retrieve the correction history entry for the given side to move and hash index.
      */
     public int get(long key, boolean white) {

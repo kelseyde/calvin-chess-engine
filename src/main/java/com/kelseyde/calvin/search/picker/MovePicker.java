@@ -166,6 +166,9 @@ public class MovePicker {
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
         captureScore += historyScore;
 
+        int scoreHistoryScore = history.getScoreHistoryTable().getRunningAverage(move, piece, board.isWhite());
+        captureScore += scoreHistoryScore;
+
         return new ScoredMove(move, piece, captured, captureScore, historyScore, type);
     }
 
@@ -196,7 +199,9 @@ public class MovePicker {
         // Killers are ordered higher than normal history moves
         MoveType type = killerScore != 0 ? MoveType.KILLER : MoveType.QUIET;
 
-        int score = type.bonus + killerScore + historyScore + contHistScore;
+        int scoreHistoryScore = history.getScoreHistoryTable().getRunningAverage(move, piece, board.isWhite());
+
+        int score = type.bonus + killerScore + historyScore + contHistScore + scoreHistoryScore;
 
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }

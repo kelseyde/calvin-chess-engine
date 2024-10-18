@@ -19,6 +19,7 @@ public class SearchHistory {
     private final CaptureHistoryTable captureHistoryTable;
     private final CorrectionHistoryTable pawnCorrHistTable;
     private final CorrectionHistoryTable[] nonPawnCorrHistTables;
+    private final ScoreHistoryTable scoreHistoryTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -32,6 +33,7 @@ public class SearchHistory {
         this.nonPawnCorrHistTables = new CorrectionHistoryTable[] {
                 new CorrectionHistoryTable(), new CorrectionHistoryTable()
         };
+        this.scoreHistoryTable = new ScoreHistoryTable();
     }
 
     public void updateHistory(
@@ -117,11 +119,18 @@ public class SearchHistory {
         return captureHistoryTable;
     }
 
-    public void reset() {
+    public ScoreHistoryTable getScoreHistoryTable() {
+        return scoreHistoryTable;
+    }
+
+    public void reset(boolean white) {
         bestMoveStability = 0;
         bestScoreStability = 0;
+        // TODO either age only one side or remove completely
         quietHistoryTable.ageScores(true);
         quietHistoryTable.ageScores(false);
+
+        scoreHistoryTable.ageEntries(white);
     }
 
     public void clear() {
@@ -132,6 +141,7 @@ public class SearchHistory {
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
+        scoreHistoryTable.clear();
     }
 
 }

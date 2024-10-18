@@ -76,7 +76,7 @@ public class Searcher implements Search {
         tc = timeControl;
         ss.clear();
         td.reset();
-        history.reset();
+        history.reset(board.isWhite());
 
         Move bestMoveRoot = null;
         int bestScoreRoot = 0;
@@ -383,7 +383,6 @@ public class Searcher implements Search {
             playedMove.capture = isCapture;
 
             sse.currentMove = playedMove;
-            sse.searchedMoves.add(playedMove);
 
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
             // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
@@ -423,6 +422,9 @@ public class Searcher implements Search {
 
             eval.unmakeMove();
             board.unmakeMove();
+
+            playedMove.score = score;
+            sse.searchedMoves.add(playedMove);
             sse.currentMove = null;
 
             if (rootNode) {
@@ -461,6 +463,10 @@ public class Searcher implements Search {
         if (movesSearched == 0) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
             return inCheck ? -Score.MATE + ply : Score.DRAW;
+        }
+
+        for (PlayedMove playedMove : sse.searchedMoves) {
+            history.getScoreHistoryTable().update(playedMove.move, playedMove.piece, board.isWhite(), beta, playedMove.score);
         }
 
         if (bestMove != null) {

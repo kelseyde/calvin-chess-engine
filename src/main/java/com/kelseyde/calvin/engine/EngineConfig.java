@@ -83,13 +83,14 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, fpDepth, rfpDepth, lmrDepth, lmrBase, lmrDivisor,
-                lmrCapBase, lmrCapDivisor, lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin,
-                nmpImpMargin, nmpBase, nmpDivisor, dpMargin, qsFpMargin, qsSeeEqualDepth, fpMargin, fpScale, rfpMargin,
-                rfpImpMargin, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale,
-                quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax, captHistBonusScale,
-                captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax, contHistBonusScale,
-                contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale
+                aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
+                rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves, lmrMinPvMoves,
+                lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
+                qsSeeEqualDepth, fpMargin, fpScale, rfpMargin, rfpImpMargin, razorDepth, razorMargin, hpMaxDepth,
+                hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale, quietHistMalusMax, quietHistMalusScale,
+                quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax, captHistMalusScale,
+                captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax, contHistMalusScale,
+                contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale
         );
     }
 

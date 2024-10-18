@@ -53,12 +53,12 @@ public class ContHistTableTest {
         SearchStack ss = new SearchStack();
         Move prevMove = Move.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
-        ss.setMove(0, prevMove, prevPiece, null, false, false);
+        ss.get(0).currentMove = new SearchStack.PlayedMove(prevMove, prevPiece, null, false, true);
         int depth = 8;
         Move currMove = Move.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
-        contHistTable.update(ss.getMove(0).move(), ss.getMove(0).piece(), currMove, currPiece, depth, true, true);
-        assertEquals(1200, contHistTable.get(ss.getMove(0).move(), ss.getMove(0).piece(), currMove, currPiece, true));
+        contHistTable.update(ss.get(0).currentMove.move(), ss.get(0).currentMove.piece(), currMove, currPiece, depth, true, true);
+        assertEquals(1200, contHistTable.get(ss.get(0).currentMove.move(), ss.get(0).currentMove.piece(), currMove, currPiece, true));
     }
 
     @Test

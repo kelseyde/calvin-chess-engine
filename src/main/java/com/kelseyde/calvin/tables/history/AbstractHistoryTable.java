@@ -4,8 +4,15 @@ public abstract class AbstractHistoryTable {
 
     private static final int MAX_BETA_DELTA = 400;
     private static final int MIN_BETA_DELTA = -MAX_BETA_DELTA;
-    private static final int MAX_SCORE_SCALAR = 1000;
+
+    private static final int MAX_DEPTH_RANGE = 30;
+    private static final int MIN_DEPTH_RANGE = 1;
+
+    private static final int MIN_DEPTH_SCALAR = 0;
+    private static final int MAX_DEPTH_SCALAR = 1000;
+
     private static final int MIN_SCORE_SCALAR = 0;
+    private static final int MAX_SCORE_SCALAR = 1000;
 
     private final int bonusMax;
     private final int bonusScale;
@@ -30,14 +37,18 @@ public abstract class AbstractHistoryTable {
     }
 
     public int scaledBonus(int depth, int beta, int score) {
-        final boolean good = score >= beta;
-        final int delta = Math.abs(Math.max(MIN_BETA_DELTA, Math.min(score - beta, MAX_BETA_DELTA)));
-        final int scoreFactor = MIN_SCORE_SCALAR + (delta * (MAX_SCORE_SCALAR - MIN_SCORE_SCALAR)) / MAX_BETA_DELTA;
-        final int depthFactor = depth * 1000;
-        final int scale = good ? bonusScale : malusScale;
-        final int max = good ? bonusMax : malusMax;
-        final int factor = (depthFactor + scoreFactor) / 2;
-        final int bonus = Math.min(factor * scale / 1000, max);
+        boolean good = score >= beta;
+        int scale = good ? bonusScale : malusScale;
+        int max = good ? bonusMax : malusMax;
+        int delta = Math.abs(Math.max(MIN_BETA_DELTA, Math.min(score - beta, MAX_BETA_DELTA)));
+        int clampedDepth = Math.max(MIN_DEPTH_SCALAR, Math.min(depth, MAX_DEPTH_SCALAR));
+
+        int scoreFactor = MIN_SCORE_SCALAR + (delta * (MAX_SCORE_SCALAR - MIN_SCORE_SCALAR)) / MAX_BETA_DELTA;
+        int depthFactor = MIN_DEPTH_RANGE + (clampedDepth * (MAX_DEPTH_SCALAR - MIN_DEPTH_SCALAR)) / MAX_DEPTH_RANGE;
+
+        int depthBonus = Math.min(depthFactor, max / 2);
+        int scoreBonus = Math.min(scoreFactor, max / 2);
+        int bonus = depthBonus + scoreBonus;
         return good ? bonus : -bonus;
     }
 
@@ -83,6 +94,20 @@ public abstract class AbstractHistoryTable {
 //        System.out.println(historyTable.scaledBonus(1, 0, -200));
 //        System.out.println(historyTable.scaledBonus(1, 0, -400));
 //        System.out.println(historyTable.scaledBonus(1, 0, -500));
+//
+//        System.out.println("increasing delta already high depth");
+//
+//        System.out.println(historyTable.scaledBonus(60, 0, 0));
+//        System.out.println(historyTable.scaledBonus(60, 0, 10));
+//        System.out.println(historyTable.scaledBonus(60, 0, 100));
+//        System.out.println(historyTable.scaledBonus(60, 0, 200));
+//        System.out.println(historyTable.scaledBonus(60, 0, 400));
+//        System.out.println(historyTable.scaledBonus(60, 0, 500));
+//
+//        System.out.println("max depth and delta");
+//
+//        System.out.println(historyTable.scaledBonus(6000, 0, 0));
+//        System.out.println(historyTable.scaledBonus(0, 0, 1000));
 //
 //    }
 //

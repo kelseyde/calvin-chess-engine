@@ -24,7 +24,10 @@
 - [ ] Material corrhist
 - [ ] Major/minor corrhist ( tried, try them separately? )
 - [ ] Contcorrhist
-- [ ] Threat corrhist
+- [ ] Threat corrhist ( tried, failed SPRT )
+- [ ] Countermove corrhist?
+- [ ] Follow-up move corrhist?
+- [ ] TT-move corrhist? ( tried, failed SPRT )
 - [x] TT score eval correction 
 - [x] Razoring
 - [x] History pruning
@@ -38,7 +41,8 @@
 ### Transposition Table
 
 - [ ] PV node flag in TT
-- [ ] 16-bit key in TT
+- [ ] 16-bits zobrist in TT? (SF does it)
+- [ ] Fully compress all fields to minimum size
 - [ ] Remove bucketing?
 - [ ] Other replacement schemes?
 

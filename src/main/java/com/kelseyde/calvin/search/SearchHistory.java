@@ -98,7 +98,7 @@ public class SearchHistory {
     }
 
     private int getContCorrHistEntry(SearchStack ss, int ply, boolean white) {
-        SearchStackEntry sse = ss.get(ply);
+        SearchStackEntry sse = ss.get(ply - 1);
         if (sse == null || sse.currentMove == null) {
             return 0;
         }
@@ -106,7 +106,7 @@ public class SearchHistory {
     }
 
     private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
-        SearchStackEntry sse = ss.get(ply);
+        SearchStackEntry sse = ss.get(ply - 1);
         if (sse == null || sse.currentMove == null) {
             return;
         }

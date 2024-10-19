@@ -15,7 +15,6 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -189,7 +188,6 @@ public class Searcher implements Search {
         boolean excluded = excludedMove != null;
 
         history.getKillerTable().clear(ply + 1);
-        ss.get(ply + 1).excludedMove = null;
 
         // Probe the transposition table in case this node has been searched before. If so, we can potentially re-use the
         // result of the previous search and save some time, only if the following conditions are met:
@@ -199,6 +197,7 @@ public class Searcher implements Search {
         HashEntry ttEntry = null;
         boolean ttHit = false;
 
+        // Don't probe the TT at all in singular search ?
         if (!excluded) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
@@ -233,6 +232,7 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
+                // Don't do IIR at all in singular search ?
                 && !excluded
                 && !inCheck
                 && (!ttHit || ttEntry.move() == null)
@@ -244,6 +244,7 @@ public class Searcher implements Search {
         int rawStaticEval = Integer.MIN_VALUE;
         int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
+        // No need to recompute staticEval in singular search - we already have it on the SearchStack
         if (!excluded && !inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
@@ -257,6 +258,7 @@ public class Searcher implements Search {
                 uncorrectedStaticEval = staticEval;
             }
         } else if (excluded) {
+            // In singular search get staticEval from the SearchStack
             staticEval = sse.staticEval;
         }
 
@@ -269,6 +271,7 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
         // can employ to prune the node and its entire subtree, without searching any moves.
+        // No pre-move-loop pruning at all in singular search
         if (!pvNode && !inCheck && !excluded) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
@@ -340,6 +343,7 @@ public class Searcher implements Search {
             }
             Move move = scoredMove.move();
             if (move.equals(excludedMove)) {
+                // Skip the excluded move in singular search
                 continue;
             }
             movesSearched++;
@@ -401,7 +405,10 @@ public class Searcher implements Search {
                     && (ttEntry.flag() == HashFlag.EXACT || ttEntry.flag() == HashFlag.LOWER)
                     && !Score.isMateScore(ttEntry.score())) {
 
+                // TODO - try other formulas for sBeta ?
                 int sBeta = ttEntry.score() - depth;
+
+                // TODO - try other formulas for sDepth ?
                 int sDepth = (depth - 1) / 2;
 
                 sse.excludedMove = move;
@@ -504,6 +511,7 @@ public class Searcher implements Search {
         if (movesSearched == 0) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
             if (excluded) {
+                // If excluded then there's at least 1 legal move, so it's not mate or stalemate.
                 return alpha;
             } else {
                 return inCheck ? -Score.MATE + ply : Score.DRAW;
@@ -517,6 +525,7 @@ public class Searcher implements Search {
             history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, failHigh);
         }
 
+        // TODO try allowing corrhist in SE search??
         if (!inCheck
             && !excluded
             && !Score.isUndefinedScore(bestScore)
@@ -527,6 +536,7 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
+        // Don't write to the TT in SE search
         if (!shouldStop() && !excluded) {
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
         }

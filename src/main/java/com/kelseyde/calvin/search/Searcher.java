@@ -376,7 +376,10 @@ public class Searcher implements Search {
             }
 
             eval.makeMove(board, move);
-            if (!board.makeMove(move)) continue;
+            if (!board.makeMove(move)) {
+                eval.unmakeMove();
+                continue;
+            }
             final int nodesBefore = td.nodes;
             td.nodes++;
 
@@ -527,16 +530,6 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
-        if (!inCheck) {
-            rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
-            if (ttHit &&
-                    (ttEntry.flag() == HashFlag.EXACT ||
-                    (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
-                    (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
-                staticEval = ttEntry.score();
-            }
-        }
 
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
@@ -545,14 +538,23 @@ public class Searcher implements Search {
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
+
+            rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
+            staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
+            if (ttHit &&
+                    (ttEntry.flag() == HashFlag.EXACT ||
+                    (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
+                    (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
+                staticEval = ttEntry.score();
+            }
+
             if (staticEval >= beta) {
                 return staticEval;
             }
             if (staticEval > alpha) {
                 alpha = staticEval;
             }
-            final MoveFilter filter = depth == 1 ? MoveGenerator.MoveFilter.NOISY : MoveGenerator.MoveFilter.CAPTURES_ONLY;
-            movePicker.setFilter(filter);
+            movePicker.setFilter(MoveFilter.CAPTURES_ONLY);
         }
 
         int movesSearched = 0;

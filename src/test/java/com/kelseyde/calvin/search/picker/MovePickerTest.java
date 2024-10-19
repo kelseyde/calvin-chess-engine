@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.search.picker;
 
 import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchHistory;

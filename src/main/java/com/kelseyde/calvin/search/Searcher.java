@@ -7,7 +7,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
-import com.kelseyde.calvin.search.SearchStack.PlayedMove;
+import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.picker.ScoredMove;
@@ -183,7 +183,8 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
-        Move excludedMove = ss.getExcludedMove(ply);
+        SearchStackEntry sse = ss.get(ply);
+        Move excludedMove = sse.excludedMove;
         boolean excluded = excludedMove != null;
 
         history.getKillerTable().clear(ply + 1);
@@ -245,7 +246,7 @@ public class Searcher implements Search {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedStaticEval = rawStaticEval;
-            staticEval = history.correctEvaluation(board, rawStaticEval);
+            staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -254,10 +255,10 @@ public class Searcher implements Search {
                 uncorrectedStaticEval = staticEval;
             }
         } else if (excluded) {
-            staticEval = ss.getStaticEval(ply);
+            staticEval = sse.staticEval;
         }
 
-        ss.setStaticEval(ply, staticEval);
+        sse.staticEval = staticEval;
 
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
@@ -293,21 +294,27 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
-            if (ss.isNullMoveAllowed(ply)
+            if (sse.nullMoveAllowed
                 && depth >= config.nmpDepth.value
                 && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
-                ss.setNullMoveAllowed(ply + 1, false);
+                ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();
 
                 final int base = config.nmpBase.value;
                 final int divisor = config.nmpDivisor.value;
-                final int r = base + depth / divisor;
+                final int evalScale = config.nmpEvalScale.value;
+                final int evalMaxReduction = config.nmpEvalMaxReduction.value;
+                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
+                final int r = base
+                        + depth / divisor
+                        + evalReduction;
+
                 final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
 
                 board.unmakeNullMove();
-                ss.setNullMoveAllowed(ply + 1, true);
+                ss.get(ply + 1).nullMoveAllowed = true;
 
                 if (score >= beta) {
                     return Score.isMateScore(score) ? beta : score;
@@ -320,9 +327,8 @@ public class Searcher implements Search {
         int bestScore = Score.MIN;
         HashFlag flag = HashFlag.UPPER;
 
+        sse.searchedMoves = new ArrayList<>();
         int movesSearched = 0;
-        final List<PlayedMove> quietsSearched = new ArrayList<>();
-        final List<PlayedMove> capturesSearched = new ArrayList<>();
 
         while (true) {
 
@@ -340,6 +346,7 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
             final boolean isPromotion = move.promoPiece() != null;
+            PlayedMove playedMove = new PlayedMove(move, piece, captured);
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
@@ -395,9 +402,9 @@ public class Searcher implements Search {
                 int sBeta = ttEntry.score() - depth;
                 int sDepth = (depth - 1) / 2;
 
-                ss.setExcludedMove(ply, move);
+                sse.excludedMove = move;
                 int score = search(sDepth, ply, sBeta - 1, sBeta);
-                ss.setExcludedMove(ply, null);
+                sse.excludedMove = null;
 
                 if (score < sBeta) {
                     extension = 1;
@@ -415,14 +422,12 @@ public class Searcher implements Search {
 
             final boolean isCheck = movegen.isCheck(board, board.isWhite());
             final boolean isQuiet = !isCheck && !isCapture && !isPromotion;
-            ss.setMove(ply, move, piece, captured, isCapture, isQuiet);
 
-            // Keep track of the quiet/noisy moves searched, used later to update search history.
-            if (isQuiet) {
-                quietsSearched.add(new PlayedMove(move, piece, captured, false, true));
-            } else if (isCapture) {
-                capturesSearched.add(new PlayedMove(move, piece, captured, true, false));
-            }
+            playedMove.quiet = isQuiet;
+            playedMove.capture = isCapture;
+
+            sse.currentMove = playedMove;
+            sse.searchedMoves.add(playedMove);
 
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
             // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
@@ -435,7 +440,7 @@ public class Searcher implements Search {
                     && movesSearched >= lmpCutoff) {
                 eval.unmakeMove();
                 board.unmakeMove();
-                ss.unsetMove(ply);
+                sse.currentMove = null;
                 movePicker.setSkipQuiets(true);
                 continue;
             }
@@ -462,7 +467,7 @@ public class Searcher implements Search {
 
             eval.unmakeMove();
             board.unmakeMove();
-            ss.unsetMove(ply);
+            sse.currentMove = null;
 
             if (rootNode) {
                 td.addNodes(move, td.nodes - nodesBefore);
@@ -482,7 +487,7 @@ public class Searcher implements Search {
                 alpha = score;
                 flag = HashFlag.EXACT;
 
-                ss.setBestMove(ply, move, piece, captured, isCapture, isQuiet);
+                sse.bestMove = playedMove;
                 if (rootNode) {
                     bestMoveCurrent = move;
                     bestScoreCurrent = score;
@@ -502,10 +507,11 @@ public class Searcher implements Search {
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
-        if (bestScore >= beta) {
-            final PlayedMove best = ss.getBestMove(ply);
+        if (bestMove != null) {
+            final PlayedMove best = sse.bestMove;
             final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, quietsSearched, capturesSearched);
+            final boolean failHigh = bestScore >= beta;
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, failHigh);
         }
 
         if (!inCheck
@@ -514,7 +520,7 @@ public class Searcher implements Search {
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
-            history.updateCorrectionHistory(board, depth, bestScore, uncorrectedStaticEval);
+            history.updateCorrectionHistory(board, ss, ply, depth, bestScore, uncorrectedStaticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.
@@ -564,7 +570,7 @@ public class Searcher implements Search {
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = history.correctEvaluation(board, rawStaticEval);
+            staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -701,10 +707,10 @@ public class Searcher implements Search {
     private boolean isImproving(int ply, int staticEval) {
         if (staticEval == Integer.MIN_VALUE) return false;
         if (ply < 2) return false;
-        int lastEval = ss.getStaticEval(ply - 2);
+        int lastEval = ss.get(ply - 2).staticEval;
         if (lastEval == Integer.MIN_VALUE) {
             if (ply < 4) return false;
-            lastEval = ss.getStaticEval(ply - 4);
+            lastEval = ss.get(ply - 4).staticEval;
             if (lastEval == Integer.MIN_VALUE) {
                 return true;
             }

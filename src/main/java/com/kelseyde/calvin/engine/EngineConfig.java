@@ -33,6 +33,8 @@ public class EngineConfig {
     public final Tunable nmpImpMargin         = new Tunable("NmpImpMargin", 52, 0, 250, 10);
     public final Tunable nmpBase              = new Tunable("NmpBase", 3, 0, 6, 1);
     public final Tunable nmpDivisor           = new Tunable("NmpDivisor", 2, 1, 4, 1);
+    public final Tunable nmpEvalScale         = new Tunable("NmpEvalScale", 210, 0, 400, 25);
+    public final Tunable nmpEvalMaxReduction  = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
     public final Tunable fpDepth              = new Tunable("FpDepth", 5, 0, 8, 1);
     public final Tunable fpMargin             = new Tunable("FpMargin", 259, 0, 500, 10);
     public final Tunable fpScale              = new Tunable("FpScale", 68, 0, 100, 5);
@@ -81,13 +83,14 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, fpDepth, rfpDepth, lmrDepth, lmrBase, lmrDivisor,
-                lmrCapBase, lmrCapDivisor, lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin,
-                nmpImpMargin, nmpBase, nmpDivisor, dpMargin, qsFpMargin, qsSeeEqualDepth, fpMargin, fpScale, rfpMargin,
-                rfpImpMargin, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale,
-                quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax, captHistBonusScale,
-                captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax, contHistBonusScale,
-                contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale
+                aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
+                rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves, lmrMinPvMoves,
+                lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
+                qsSeeEqualDepth, fpMargin, fpScale, rfpMargin, rfpImpMargin, razorDepth, razorMargin, hpMaxDepth,
+                hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale, quietHistMalusMax, quietHistMalusScale,
+                quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax, captHistMalusScale,
+                captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax, contHistMalusScale,
+                contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale
         );
     }
 

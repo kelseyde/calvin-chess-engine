@@ -15,6 +15,7 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -188,6 +189,7 @@ public class Searcher implements Search {
         boolean excluded = excludedMove != null;
 
         history.getKillerTable().clear(ply + 1);
+        ss.get(ply + 1).excludedMove = null;
 
         // Probe the transposition table in case this node has been searched before. If so, we can potentially re-use the
         // result of the previous search and save some time, only if the following conditions are met:
@@ -396,7 +398,7 @@ public class Searcher implements Search {
                     && ttHit
                     && move.equals(ttMove)
                     && ttEntry.depth() >= depth - 3
-                    && ttEntry.flag() != HashFlag.UPPER
+                    && (ttEntry.flag() == HashFlag.EXACT || ttEntry.flag() == HashFlag.LOWER)
                     && !Score.isMateScore(ttEntry.score())) {
 
                 int sBeta = ttEntry.score() - depth;
@@ -409,9 +411,6 @@ public class Searcher implements Search {
                 if (score < sBeta) {
                     extension = 1;
                 }
-//                if (score >= sBeta && sBeta >= beta) {
-//                    return sBeta;
-//                }
 
             }
 
@@ -504,7 +503,11 @@ public class Searcher implements Search {
 
         if (movesSearched == 0) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
-            return inCheck ? -Score.MATE + ply : Score.DRAW;
+            if (excluded) {
+                return alpha;
+            } else {
+                return inCheck ? -Score.MATE + ply : Score.DRAW;
+            }
         }
 
         if (bestMove != null) {

@@ -233,7 +233,6 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 // Don't do IIR at all in singular search ?
-                && !excluded
                 && !inCheck
                 && (!ttHit || ttEntry.move() == null)
                 && ply > 0
@@ -257,9 +256,6 @@ public class Searcher implements Search {
                 staticEval = ttEntry.score();
                 uncorrectedStaticEval = staticEval;
             }
-        } else if (excluded) {
-            // In singular search get staticEval from the SearchStack
-            staticEval = sse.staticEval;
         }
 
         sse.staticEval = staticEval;
@@ -398,7 +394,7 @@ public class Searcher implements Search {
             int extension = 0;
             if (!rootNode
                     && !excluded
-                    && depth >= 7
+                    && depth >= 8
                     && ttHit
                     && move.equals(ttMove)
                     && ttEntry.depth() >= depth - 3
@@ -406,7 +402,7 @@ public class Searcher implements Search {
                     && !Score.isMateScore(ttEntry.score())) {
 
                 // TODO - try other formulas for sBeta ?
-                int sBeta = ttEntry.score() - depth;
+                int sBeta = ttEntry.score() - depth * 14 / 16;
 
                 // TODO - try other formulas for sDepth ?
                 int sDepth = (depth - 1) / 2;

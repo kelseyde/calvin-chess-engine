@@ -2,7 +2,6 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.tables.tt.HashFlag;
 
 public class PlayedMove {
 

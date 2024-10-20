@@ -356,9 +356,7 @@ public class Searcher implements Search {
                 && !Score.isMateScore(bestScore)) {
 
                 final int margin = config.seeNoisyMargin.value;
-                final int divisor = config.seeNoisyHistDivisor.value;
-
-                int threshold = depth * margin - (historyScore / divisor);
+                int threshold = depth * margin;
                 if (SEE.see(board, move) < threshold) {
                     continue;
                 }

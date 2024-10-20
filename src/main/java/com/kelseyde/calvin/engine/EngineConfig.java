@@ -33,6 +33,8 @@ public class EngineConfig {
     public final Tunable nmpImpMargin         = new Tunable("NmpImpMargin", 52, 0, 250, 10);
     public final Tunable nmpBase              = new Tunable("NmpBase", 3, 0, 6, 1);
     public final Tunable nmpDivisor           = new Tunable("NmpDivisor", 2, 1, 4, 1);
+    public final Tunable nmpEvalScale         = new Tunable("NmpEvalScale", 210, 0, 400, 25);
+    public final Tunable nmpEvalMaxReduction  = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
     public final Tunable fpDepth              = new Tunable("FpDepth", 5, 0, 8, 1);
     public final Tunable fpMargin             = new Tunable("FpMargin", 259, 0, 500, 10);
     public final Tunable fpScale              = new Tunable("FpScale", 68, 0, 100, 5);
@@ -44,6 +46,8 @@ public class EngineConfig {
     public final Tunable lmrDepth             = new Tunable("LmrDepth", 2, 0, 8, 1);
     public final Tunable lmrBase              = new Tunable("LmrBase", 90, 50, 100, 5);
     public final Tunable lmrDivisor           = new Tunable("LmrDivisor", 310, 200, 400, 10);
+    public final Tunable lmrCapBase           = new Tunable("LmrCapBase", 90, 50, 100, 5);
+    public final Tunable lmrCapDivisor        = new Tunable("LmrCapDivisor", 310, 200, 400, 10);
     public final Tunable lmrMinMoves          = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     public final Tunable lmrMinPvMoves        = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     public final Tunable lmpDepth             = new Tunable("LmpDepth", 4, 0, 8, 1);
@@ -55,6 +59,7 @@ public class EngineConfig {
     public final Tunable hpMaxDepth           = new Tunable("HpMaxDepth", 3, 0, 10, 1);
     public final Tunable hpMargin             = new Tunable("HpMargin", -2197, -4000, -100, 50);
     public final Tunable hpOffset             = new Tunable("HpOffset", -1039, -3000, 0, 50);
+    public final Tunable ttExtensionDepth     = new Tunable("TtExtDepth", 6, 0, 12, 1);
     public final Tunable quietHistBonusMax    = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     public final Tunable quietHistBonusScale  = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     public final Tunable quietHistMalusMax    = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
@@ -74,17 +79,18 @@ public class EngineConfig {
     public final Tunable nodeTmBase           = new Tunable("NodeTmBase", 150, 100, 200, 10);
     public final Tunable nodeTmScale          = new Tunable("NodeTmScale", 135, 100, 200, 10);
 
-    public int[][] lmrReductions;
+    public int[][][] lmrReductions;
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, fpDepth, rfpDepth, lmrDepth, lmrBase, lmrDivisor,
-                lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase, nmpDivisor,
-                dpMargin, qsFpMargin, qsSeeEqualDepth, fpMargin, fpScale, rfpMargin, rfpImpMargin, razorDepth, razorMargin,
-                hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale, quietHistMalusMax, quietHistMalusScale,
-                quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore,
-                contHistBonusMax, contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth,
-                nodeTmBase, nodeTmScale
+                aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
+                rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves, lmrMinPvMoves,
+                lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
+                qsSeeEqualDepth, fpMargin, fpScale, rfpMargin, rfpImpMargin, razorDepth, razorMargin, hpMaxDepth,
+                hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale, quietHistMalusMax, quietHistMalusScale,
+                quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax, captHistMalusScale,
+                captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax, contHistMalusScale,
+                contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale
         );
     }
 
@@ -109,25 +115,34 @@ public class EngineConfig {
             UCI.write("info error value " + value + " is out of range for option " + name);
         }
         option.value = value;
-        if (name.equals("LmrBase") || name.equals("LmrDivisor")) {
-            calculateLmrReductions();
+        if (name.equals("LmrBase") || name.equals("LmrDivisor")
+                || name.equals("LmrCapBase") || name.equals("LmrCapDivisor")) {
+            calculateLmrTable();
         }
 
         UCI.write("info string " + name + " " + value);
     }
 
     public void postInitialise() {
-        calculateLmrReductions();
+        calculateLmrTable();
     }
 
-    private void calculateLmrReductions() {
-        float lmrBaseFloat = (float) lmrBase.value / 100;
-        float lmrDivisorFloat = (float) lmrDivisor.value / 100;
-        lmrReductions = new int[Search.MAX_DEPTH][];
-        for (int depth = 1; depth < Search.MAX_DEPTH; ++depth) {
-            lmrReductions[depth] = new int[250];
-            for (int movesSearched = 1; movesSearched < 250; ++movesSearched) {
-                lmrReductions[depth][movesSearched] = (int) Math.round(lmrBaseFloat + (Math.log(movesSearched) * Math.log(depth) / lmrDivisorFloat));
+    private void calculateLmrTable() {
+        float quietBase = (float) lmrBase.value / 100;
+        float quietDivisor = (float) lmrDivisor.value / 100;
+        float capBase = (float) lmrCapBase.value / 100;
+        float capDivisor = (float) lmrCapDivisor.value / 100;
+        lmrReductions = new int[2][][];
+
+        for (int quiet = 0; quiet < 2; quiet++) {
+            lmrReductions[quiet] = new int[Search.MAX_DEPTH][];
+            for (int depth = 1; depth < Search.MAX_DEPTH; ++depth) {
+                lmrReductions[quiet][depth] = new int[250];
+                float base = quiet == 0 ? quietBase : capBase;
+                float divisor = quiet == 0 ? quietDivisor : capDivisor;
+                for (int movesSearched = 1; movesSearched < 250; ++movesSearched) {
+                    lmrReductions[quiet][depth][movesSearched] = (int) Math.round(base + (Math.log(movesSearched) * Math.log(depth) / divisor));
+                }
             }
         }
     }

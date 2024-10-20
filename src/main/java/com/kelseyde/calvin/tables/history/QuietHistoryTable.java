@@ -53,12 +53,6 @@ public class QuietHistoryTable extends AbstractHistoryTable {
         }
     }
 
-    private int threatIndex(int from, int to, long threats) {
-        int fromThreatened = Bits.contains(threats, from) ? 1 : 0;
-        int toThreatened = Bits.contains(threats, to) ? 1 : 0;
-        return fromThreatened << 1 | toThreatened;
-    }
-
     public void clear() {
         table = new int[2][Piece.COUNT][Square.COUNT][4];
     }

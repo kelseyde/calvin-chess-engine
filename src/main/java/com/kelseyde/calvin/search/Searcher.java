@@ -518,12 +518,15 @@ public class Searcher implements Search {
                 && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();
         }
-        Move ttMove = null;
-        if (ttHit && ttEntry.move() != null) {
-            ttMove = ttEntry.move();
-        }
 
         final boolean inCheck = movegen.isCheck(board, board.isWhite());
+
+        Move ttMove = null;
+        if (ttHit
+                && ttEntry.move() != null
+                && (!board.isQuiet(ttEntry.move()) || inCheck)) {
+            ttMove = ttEntry.move();
+        }
 
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 

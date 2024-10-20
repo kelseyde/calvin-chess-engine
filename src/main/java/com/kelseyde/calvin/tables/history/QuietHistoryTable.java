@@ -1,6 +1,5 @@
 package com.kelseyde.calvin.tables.history;
 
-import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;

@@ -360,10 +360,8 @@ public class Searcher implements Search {
 
                 final int margin = config.seeNoisyMargin.value;
                 int threshold = depth * margin;
-                if (scoredMove.seeScore() < threshold) {
+                if (SEE.see(board, move) < threshold) {
                     continue;
-                } else if (scoredMove.seeScore() >= 0) {
-                    System.out.println(FEN.toFEN(board) + " , " + Move.toUCI(move) + " , " + scoredMove.seeScore());
                 }
 
             }
@@ -593,14 +591,14 @@ public class Searcher implements Search {
                 // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
                 // is bad for us no matter what we do, and not bother searching any further
-                final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
+                final Piece captured = scoredMove.captured();
                 if (captured != null
                         && !move.isPromotion()
                         && (staticEval + captured.value() + config.dpMargin.value < alpha)) {
                     continue;
                 }
 
-                final int seeScore = scoredMove.seeScore();
+                final int seeScore = SEE.see(board, move);
 
                 // Futility Pruning
                 // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't

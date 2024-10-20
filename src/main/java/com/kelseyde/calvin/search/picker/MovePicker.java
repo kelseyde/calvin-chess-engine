@@ -6,7 +6,6 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.PlayedMove;
-import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
@@ -99,8 +98,7 @@ public class MovePicker {
         stage = Stage.GEN_NOISY;
         final Piece piece = board.pieceAt(ttMove.from());
         final Piece captured = ttMove.isEnPassant() ? Piece.PAWN : board.pieceAt(ttMove.to());
-        int seeScore = captured != null ? SEE.see(board, ttMove) : Integer.MIN_VALUE;
-        return new ScoredMove(ttMove, piece, captured, MoveType.TT_MOVE.bonus, seeScore, 0, MoveType.TT_MOVE);
+        return new ScoredMove(ttMove, piece, captured, MoveType.TT_MOVE.bonus, 0, MoveType.TT_MOVE);
     }
 
     protected ScoredMove generate(MoveFilter filter, Stage nextStage) {
@@ -127,15 +125,14 @@ public class MovePicker {
 
         final Piece piece = board.pieceAt(from);
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
-        final boolean isCapture = captured != null || move.isEnPassant();
+        final boolean isCapture = captured != null;
         boolean isNoisy = isCapture || move.isPromotion();
 
         if (move.equals(ttMove)) {
             // Put the TT move last; it will be tried lazily
             MoveType type = MoveType.TT_MOVE;
             final int score = -MoveType.TT_MOVE.bonus;
-            final int seeScore = captured != null ? SEE.see(board, move) : Integer.MIN_VALUE;
-            return new ScoredMove(move, piece, captured, score, seeScore, 0, type);
+            return new ScoredMove(move, piece, captured, score, 0, type);
         }
 
         if (isNoisy) {
@@ -151,15 +148,14 @@ public class MovePicker {
         if (move.isPromotion()) {
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
             final int score = type.bonus;
-            final int seeScore = captured != null ? SEE.see(board, move) : Integer.MIN_VALUE;
-            return new ScoredMove(move, piece, captured, score, seeScore, 0, type);
+            return new ScoredMove(move, piece, captured, score, 0, type);
         }
 
         int captureScore = 0;
 
         // Separate captures into winning and losing
-        final int seeScore = SEE.see(board, move);
-        final MoveType type = seeScore >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        final int materialDelta = captured.value() - piece.value();
+        final MoveType type = materialDelta >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         captureScore += type.bonus;
 
@@ -170,7 +166,7 @@ public class MovePicker {
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
         captureScore += historyScore;
 
-        return new ScoredMove(move, piece, captured, captureScore, seeScore, historyScore, type);
+        return new ScoredMove(move, piece, captured, captureScore, historyScore, type);
     }
 
     protected ScoredMove scoreQuiet(Board board, Move move, Piece piece, Piece captured, int ply) {
@@ -202,7 +198,7 @@ public class MovePicker {
 
         int score = type.bonus + killerScore + historyScore + contHistScore;
 
-        return new ScoredMove(move, piece, captured, score, Integer.MIN_VALUE, historyScore, type);
+        return new ScoredMove(move, piece, captured, score, historyScore, type);
     }
 
     /**

@@ -7,7 +7,6 @@ public record ScoredMove(Move move,
                          Piece piece,
                          Piece captured,
                          int score,
-                         int seeScore,
                          int historyScore,
                          MoveType moveType) {
 

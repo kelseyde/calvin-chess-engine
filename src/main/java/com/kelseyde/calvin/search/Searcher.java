@@ -348,6 +348,21 @@ public class Searcher implements Search {
 
             final int historyScore = scoredMove.historyScore();
 
+            if (!pvNode
+                && !rootNode
+                && isCapture
+                && depth <= config.seeMaxDepth.value
+                && movesSearched > 1
+                && !Score.isMateScore(bestScore)) {
+
+                final int margin = config.seeNoisyMargin.value;
+                int threshold = depth * margin;
+                if (SEE.see(board, move) < threshold) {
+                    continue;
+                }
+
+            }
+
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.

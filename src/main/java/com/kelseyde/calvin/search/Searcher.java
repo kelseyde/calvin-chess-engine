@@ -573,7 +573,7 @@ public class Searcher implements Search {
                 // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
                 // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
                 // is bad for us no matter what we do, and not bother searching any further
-                final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
+                final Piece captured = scoredMove.captured();
                 if (captured != null
                         && !move.isPromotion()
                         && (staticEval + captured.value() + config.dpMargin.value < alpha)) {

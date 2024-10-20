@@ -44,7 +44,7 @@ public class MovePickerTest {
             history.getKillerTable().add(0, killer1);
             history.getKillerTable().add(0, killer2);
 
-            MovePicker picker = new MovePicker(moveGenerator, ss, history, board, 0, ttMove, false);
+            MovePicker picker = new MovePicker(moveGenerator, ss, history, board, 0, ttMove, false, 0);
 
             int maxIndex = -1;
             int tried = 0;

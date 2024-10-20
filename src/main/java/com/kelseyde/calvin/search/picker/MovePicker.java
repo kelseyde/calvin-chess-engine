@@ -102,6 +102,14 @@ public class MovePicker {
     }
 
     protected ScoredMove generate(MoveFilter filter, Stage nextStage) {
+        if (inCheck) {
+            filter = MoveFilter.ALL;
+            if (moves != null) {
+                // Only one call to movegen is necessary in check
+                stage = nextStage;
+                return null;
+            }
+        }
         List<Move> stagedMoves = movegen.generateMoves(board, filter);
         scoreMoves(stagedMoves);
         moveIndex = 0;

@@ -346,21 +346,24 @@ public class Searcher implements Search {
                 continue;
             }
 
+            final int historyScore = scoredMove.historyScore();
+
             if (!pvNode
                 && !rootNode
-                && movesSearched > 1
                 && isCapture
-                && scoredMove.isBadNoisy()
+                && depth <= config.seeMaxDepth.value
+                && movesSearched > 1
                 && !Score.isMateScore(bestScore)) {
 
-                int threshold = depth * config.seeNoisyMargin.value;
+                final int margin = config.seeNoisyMargin.value;
+                final int divisor = config.seeNoisyHistDivisor.value;
+
+                int threshold = depth * margin - (historyScore / divisor);
                 if (SEE.see(board, move) < threshold) {
                     continue;
                 }
 
             }
-
-            final int historyScore = scoredMove.historyScore();
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,

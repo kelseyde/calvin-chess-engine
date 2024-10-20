@@ -105,6 +105,7 @@ public class MovePicker {
         if (inCheck) {
             filter = MoveFilter.ALL;
             if (moves != null) {
+                stage = nextStage;
                 return null;
             }
         }

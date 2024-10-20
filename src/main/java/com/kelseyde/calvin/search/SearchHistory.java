@@ -67,7 +67,7 @@ public class SearchHistory {
             else if (playedMove.isCapture()) {
                 boolean good = bestMove.move.equals(playedMove.move);
                 if (good || failHigh) {
-                    captureHistoryTable.update(playedMove.move, playedMove.piece, playedMove.captured, threats, depth, white, good);
+                    captureHistoryTable.update(playedMove.piece, playedMove.move.to(), playedMove.captured, depth, white, good);
                 }
             }
         }

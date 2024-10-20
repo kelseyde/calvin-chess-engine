@@ -165,7 +165,7 @@ public class MovePicker {
         captureScore += MoveType.MVV_OFFSET * captured.index();
 
         // Tie-break with capture history
-        final int historyScore = history.getCaptureHistoryTable().get(move, piece, captured, threats, board.isWhite());
+        final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
         captureScore += historyScore;
 
         return new ScoredMove(move, piece, captured, captureScore, historyScore, type);

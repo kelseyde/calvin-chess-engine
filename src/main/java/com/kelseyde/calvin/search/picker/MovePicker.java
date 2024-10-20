@@ -105,6 +105,7 @@ public class MovePicker {
         if (inCheck) {
             filter = MoveFilter.ALL;
             if (moves != null) {
+                // Only one call to movegen is necessary in check
                 stage = nextStage;
                 return null;
             }

@@ -18,12 +18,12 @@ public record ScoredMove(Move move,
         return moveType == MoveType.GOOD_NOISY;
     }
 
-    public boolean isKiller() {
-        return moveType == MoveType.KILLER;
-    }
-
     public boolean isBadNoisy() {
         return moveType == MoveType.BAD_NOISY;
+    }
+
+    public boolean isKiller() {
+        return moveType == MoveType.KILLER;
     }
 
     public boolean isQuiet() {

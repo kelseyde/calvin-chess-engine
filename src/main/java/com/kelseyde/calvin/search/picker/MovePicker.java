@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.PlayedMove;
+import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
@@ -238,6 +239,10 @@ public class MovePicker {
 
     private boolean wasTriedLazily(Move move) {
         return move.equals(ttMove);
+    }
+
+    public Stage getStage() {
+        return stage;
     }
 
 }

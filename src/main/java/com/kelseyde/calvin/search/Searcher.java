@@ -346,6 +346,20 @@ public class Searcher implements Search {
                 continue;
             }
 
+            if (!pvNode
+                && !rootNode
+                && movesSearched > 1
+                && isCapture
+                && scoredMove.isBadNoisy()
+                && !Score.isMateScore(bestScore)) {
+
+                int threshold = depth * config.seeNoisyMargin.value;
+                if (SEE.see(board, move) < threshold) {
+                    continue;
+                }
+
+            }
+
             final int historyScore = scoredMove.historyScore();
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions

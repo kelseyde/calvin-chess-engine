@@ -170,7 +170,6 @@ public class Searcher implements Search {
 
         // If depth is reached, drop into quiescence search
         if (depth <= 0) return quiescenceSearch(alpha, beta, 1, ply);
-//        if (depth <= 0) return eval.evaluate();
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW;

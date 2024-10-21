@@ -74,7 +74,7 @@ public class MovePicker {
         ScoredMove nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case TT_MOVE ->     pickTTMove();
+                case TT_MOVE ->     pickTTMove(Stage.GEN_NOISY);
                 case GEN_NOISY ->   generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
                 case GOOD_NOISY ->  pickMove(Stage.KILLER);
                 case KILLER ->      pickKiller(Stage.GEN_QUIET);
@@ -96,8 +96,8 @@ public class MovePicker {
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
     protected ScoredMove pickMove(Stage nextStage) {
-        System.out.println("picking move at stage " + stage);
-        System.out.println("move index: " + moveIndex);
+//        System.out.println("picking move at stage " + stage);
+//        System.out.println("move index: " + moveIndex);
 
         ScoredMove[] moves = switch (stage) {
             case GOOD_NOISY, QSEARCH_NOISY -> goodNoisies;
@@ -105,22 +105,22 @@ public class MovePicker {
             case QUIET -> quiets;
             default -> throw new IllegalArgumentException("Invalid stage: " + stage);
         };
-        System.out.println("moves length: " + moves.length);
+//        System.out.println("moves length: " + moves.length);
 //        System.out.println(Arrays.stream(moves).map(ScoredMove::move).filter(Objects::nonNull).map(Move::toUCI).toList());
 
         if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
-            System.out.println("Skipping quiets");
+//            System.out.println("Skipping quiets");
             return nextStage(nextStage);
         }
         if (moveIndex >= moves.length) {
-            System.out.println("No more moves");
+//            System.out.println("No more moves");
             return nextStage(nextStage);
         }
 
         ScoredMove move = pick(moves);
 
         if (move == null) {
-            System.out.println("No more moves2");
+//            System.out.println("No more moves2");
             return nextStage(nextStage);
         }
 
@@ -138,20 +138,20 @@ public class MovePicker {
 
         Move killer = killers[killerIndex++];
         if (killer == null || killer.equals(ttMove)) {
-            System.out.println("Killer is null or ttMove: " + Move.toUCI(killer));
+//            System.out.println("Killer is null or ttMove: " + Move.toUCI(killer));
             return pickKiller(nextStage);
         }
 
         if (!movegen.isLegal(board, killer)) {
-            System.out.println("Killer is illegal: " + Move.toUCI(killer));
+//            System.out.println("Killer is illegal: " + Move.toUCI(killer));
             return pickKiller(nextStage);
         }
 
         return scoreMove(board, killer, ttMove, ply);
     }
 
-    protected ScoredMove pickTTMove() {
-        stage = Stage.GEN_NOISY;
+    protected ScoredMove pickTTMove(Stage nextStage) {
+        stage = nextStage;
         final Piece piece = board.pieceAt(ttMove.from());
         final Piece captured = ttMove.isEnPassant() ? Piece.PAWN : board.pieceAt(ttMove.to());
         return new ScoredMove(ttMove, piece, captured, MoveType.TT_MOVE.bonus, 0, MoveType.TT_MOVE);

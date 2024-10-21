@@ -2,9 +2,10 @@ package com.kelseyde.calvin.search.picker;
 
 public enum MoveType {
 
-    TT_MOVE     (5_000_000),
-    GOOD_NOISY  (4_000_000),
-    KILLER      (3_000_000),
+    TT_MOVE     (6_000_000),
+    GOOD_NOISY  (5_000_000),
+    KILLER      (4_000_000),
+    COUNTERMOVE (3_000_000),
     BAD_NOISY   (2_000_000),
     QUIET       (1_000_000);
 

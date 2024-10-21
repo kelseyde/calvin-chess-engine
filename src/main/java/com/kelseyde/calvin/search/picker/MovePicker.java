@@ -176,12 +176,20 @@ public class MovePicker {
         int killerIndex = history.getKillerTable().getIndex(move, ply);
         int killerScore = killerIndex >= 0 ? MoveType.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
+        SearchStackEntry prevEntry = ss.get(ply - 1);
+
+        boolean isCounterMove = false;
+        if (prevEntry != null && prevEntry.currentMove != null) {
+            PlayedMove prevMove = prevEntry.currentMove;
+            isCounterMove = history.getCounterMoveTable().isCounterMove(prevMove.piece, prevMove.move, white, move);
+        }
+
         // Get the history score for the move
         int historyScore = history.getQuietHistoryTable().get(move, piece, white);
 
         int contHistScore = 0;
         // Get the continuation history score for the move
-        SearchStackEntry prevEntry = ss.get(ply - 1);
+
         if (prevEntry != null && prevEntry.currentMove != null) {
             PlayedMove prevMove = prevEntry.currentMove;
             contHistScore = history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
@@ -194,7 +202,14 @@ public class MovePicker {
         }
 
         // Killers are ordered higher than normal history moves
-        MoveType type = killerScore != 0 ? MoveType.KILLER : MoveType.QUIET;
+        MoveType type;
+        if (killerScore > 0) {
+            type = MoveType.KILLER;
+        } else if (isCounterMove) {
+            type = MoveType.COUNTERMOVE;
+        } else {
+            type = MoveType.QUIET;
+        }
 
         int score = type.bonus + killerScore + historyScore + contHistScore;
 

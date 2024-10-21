@@ -8,10 +8,7 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
 import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.history.*;
 
 import java.util.List;
 
@@ -20,6 +17,7 @@ public class SearchHistory {
     private static final int[] CONT_HIST_PLIES = { 1, 2 };
 
     private final KillerTable killerTable;
+    private final CounterMoveTable counterMoveTable;
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
     private final CaptureHistoryTable captureHistoryTable;
@@ -32,6 +30,7 @@ public class SearchHistory {
 
     public SearchHistory(EngineConfig config) {
         this.killerTable = new KillerTable();
+        this.counterMoveTable = new CounterMoveTable();
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
@@ -45,8 +44,13 @@ public class SearchHistory {
 
         List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
 
+        SearchStackEntry prevEntry = ss.get(ply - 1);
+
         if (bestMove.isQuiet()) {
             killerTable.add(ply, bestMove.move);
+            if (prevEntry != null && prevEntry.currentMove != null) {
+                counterMoveTable.add(prevEntry.currentMove.piece, prevEntry.currentMove.move, white, bestMove.move);
+            }
         }
 
         for (PlayedMove playedMove : playedMoves) {
@@ -56,7 +60,7 @@ public class SearchHistory {
                 if (good || failHigh) {
                     quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, good);
                     for (int prevPly : CONT_HIST_PLIES) {
-                        SearchStackEntry prevEntry = ss.get(ply - prevPly);
+                        prevEntry = ss.get(ply - prevPly);
                         if (prevEntry != null && prevEntry.currentMove != null) {
                             PlayedMove prevMove = prevEntry.currentMove;
                             contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, good);
@@ -129,6 +133,10 @@ public class SearchHistory {
         return killerTable;
     }
 
+    public CounterMoveTable getCounterMoveTable() {
+        return counterMoveTable;
+    }
+
     public QuietHistoryTable getQuietHistoryTable() {
         return quietHistoryTable;
     }
@@ -150,6 +158,7 @@ public class SearchHistory {
 
     public void clear() {
         killerTable.clear();
+        counterMoveTable.clear();
         quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();

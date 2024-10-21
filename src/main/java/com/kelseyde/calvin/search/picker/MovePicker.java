@@ -77,10 +77,10 @@ public class MovePicker {
                 case TT_MOVE ->     pickTTMove(Stage.GEN_NOISY);
                 case GEN_NOISY ->   generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
                 case GOOD_NOISY ->  pickMove(Stage.KILLER);
-                case KILLER ->      pickKiller(Stage.BAD_NOISY);
-                case BAD_NOISY ->   pickMove(Stage.GEN_QUIET);
+                case KILLER ->      pickKiller(Stage.GEN_QUIET);
                 case GEN_QUIET ->   generate(MoveFilter.QUIET, Stage.QUIET);
-                case QUIET ->       pickMove(Stage.END);
+                case QUIET ->       pickMove(Stage.BAD_NOISY);
+                case BAD_NOISY ->   pickMove(Stage.END);
                 case END,
                      QSEARCH_GEN_NOISY,
                      QSEARCH_NOISY -> null;
@@ -210,7 +210,6 @@ public class MovePicker {
         final boolean isCheck = stage == Stage.GEN_NOISY && !isCapture;
         final boolean isNoisy = isCheck || isCapture || isPromotion;
 
-
         if (move.equals(ttMove)) {
             // Put the TT move last; it will be tried lazily
             MoveType type = MoveType.TT_MOVE;
@@ -228,6 +227,8 @@ public class MovePicker {
 
     protected ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean isCheck) {
 
+        boolean white = board.isWhite();
+
         if (move.isPromotion()) {
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
             final int score = type.bonus;
@@ -237,18 +238,31 @@ public class MovePicker {
         int noisyScore = 0;
 
         // Separate noisies into good and bad. Non-check captures sorted using MVV + capthist.
-        // Quiet checks are sorted using SEE.
+        // Quiet checks are scored as quiets and given bad noisy
 
         if (isCheck && captured == null) {
-            final int seeScore = SEE.see(board, move);
-            final MoveType type = seeScore >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-            noisyScore += type.bonus;
-            noisyScore += seeScore;
-            return new ScoredMove(move, piece, captured, noisyScore, 0, type);
+            final MoveType type = MoveType.GOOD_NOISY;
+            int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+
+            int contHistScore = 0;
+            // Get the continuation history score for the move
+            SearchStackEntry prevEntry = ss.get(ply - 1);
+            if (prevEntry != null && prevEntry.currentMove != null) {
+                PlayedMove prevMove = prevEntry.currentMove;
+                contHistScore = history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
+            }
+
+            SearchStackEntry prevEntry2 = ss.get(ply - 2);
+            if (prevEntry2 != null && prevEntry2.currentMove != null) {
+                PlayedMove prevMove2 = prevEntry2.currentMove;
+                contHistScore += history.getContHistTable().get(prevMove2.move, prevMove2.piece, move, piece, white);
+            }
+            noisyScore = type.bonus + historyScore + contHistScore;
+            return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
         }
 
-        final int materialDelta = captured.value() - piece.value();
-        final MoveType type = materialDelta >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        final int seeScore = SEE.see(board, move);
+        final MoveType type = seeScore >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         noisyScore += type.bonus;
 
@@ -266,8 +280,8 @@ public class MovePicker {
         boolean white = board.isWhite();
 
         // Check if the move is a killer move
-        int killerIndex = history.getKillerTable().getIndex(move, ply);
-        int killerScore = killerIndex >= 0 ? MoveType.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
+//        int killerIndex = history.getKillerTable().getIndex(move, ply);
+//        int killerScore = killerIndex >= 0 ? MoveType.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
         // Get the history score for the move
         int historyScore = history.getQuietHistoryTable().get(move, piece, white);
@@ -287,9 +301,9 @@ public class MovePicker {
         }
 
         // Killers are ordered higher than normal history moves
-        MoveType type = killerScore != 0 ? MoveType.KILLER : MoveType.QUIET;
+        MoveType type = MoveType.QUIET;
 
-        int score = type.bonus + killerScore + historyScore + contHistScore;
+        int score = type.bonus + historyScore + contHistScore;
 
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }

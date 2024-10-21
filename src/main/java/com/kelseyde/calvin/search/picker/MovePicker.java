@@ -40,12 +40,13 @@ public class MovePicker {
     Stage stage;
     boolean skipQuiets;
     boolean inCheck;
+    long threats;
 
     int moveIndex;
     ScoredMove[] moves;
 
     public MovePicker(
-            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck, long threats) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;
@@ -53,6 +54,7 @@ public class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
+        this.threats = threats;
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
@@ -177,7 +179,7 @@ public class MovePicker {
         int killerScore = killerIndex >= 0 ? MoveType.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
 
         // Get the history score for the move
-        int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+        int historyScore = history.getQuietHistoryTable().get(move, piece, threats, white);
 
         int contHistScore = 0;
         // Get the continuation history score for the move

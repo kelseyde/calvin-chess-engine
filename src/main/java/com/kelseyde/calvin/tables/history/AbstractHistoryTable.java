@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.tables.history;
 
+import com.kelseyde.calvin.board.Bits;
+
 public abstract class AbstractHistoryTable {
 
     private final int bonusMax;
@@ -26,6 +28,12 @@ public abstract class AbstractHistoryTable {
 
     protected int gravity(int current, int update) {
         return current + update - current * Math.abs(update) / scoreMax;
+    }
+
+    protected int threatIndex(int from, int to, long threats) {
+        int fromThreatened = Bits.contains(threats, from) ? 1 : 0;
+        int toThreatened = Bits.contains(threats, to) ? 1 : 0;
+        return fromThreatened << 1 | toThreatened;
     }
 
 }

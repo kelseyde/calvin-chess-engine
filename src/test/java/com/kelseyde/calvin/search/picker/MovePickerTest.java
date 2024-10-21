@@ -44,7 +44,7 @@ public class MovePickerTest {
             history.getKillerTable().add(0, killer1);
             history.getKillerTable().add(0, killer2);
 
-            MovePicker picker = new MovePicker(moveGenerator, ss, history, board, 0, ttMove, false);
+            MovePicker picker = new MovePicker(moveGenerator, ss, history, board, 0, ttMove, false, 0);
 
             int maxIndex = -1;
             int tried = 0;
@@ -88,7 +88,7 @@ public class MovePickerTest {
         String fen = "rnbqkbnr/1p2pppp/p2p4/1Bp5/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1";
         Board board = FEN.toBoard(fen);
 
-        MovePicker picker = new MovePicker(moveGenerator, new SearchStack(), new SearchHistory(new EngineConfig()), board, 0, null, true);
+        MovePicker picker = new MovePicker(moveGenerator, new SearchStack(), new SearchHistory(new EngineConfig()), board, 0, null, true, 0);
 
         List<ScoredMove> moves = new ArrayList<>();
         while (true) {

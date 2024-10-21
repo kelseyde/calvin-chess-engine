@@ -1,17 +1,13 @@
 package com.kelseyde.calvin.utils.train;
 
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.search.Score;
-import com.kelseyde.calvin.utils.notation.FEN;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class DataDebugger {

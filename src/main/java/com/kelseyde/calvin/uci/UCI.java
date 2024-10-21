@@ -1,9 +1,11 @@
 package com.kelseyde.calvin.uci;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
@@ -176,7 +178,9 @@ public class UCI {
     }
 
     public static void handleThreats(UCICommand command) {
-        //TODO
+        MoveGenerator movegen = new MoveGenerator();
+        long threats = movegen.calculateThreats(ENGINE.getBoard(), !ENGINE.getBoard().isWhite());
+        Bits.print(threats);
     }
 
     public static void handleEval(UCICommand command) {

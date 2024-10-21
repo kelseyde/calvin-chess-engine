@@ -97,7 +97,7 @@ public class MovePicker {
     protected ScoredMove pickTTMove() {
         stage = Stage.GEN_NOISY;
         final Piece piece = board.pieceAt(ttMove.from());
-        final Piece captured = board.pieceAt(ttMove.to());
+        final Piece captured = ttMove.isEnPassant() ? Piece.PAWN : board.pieceAt(ttMove.to());
         return new ScoredMove(ttMove, piece, captured, MoveType.TT_MOVE.bonus, 0, MoveType.TT_MOVE);
     }
 
@@ -124,7 +124,7 @@ public class MovePicker {
         final int to = move.to();
 
         final Piece piece = board.pieceAt(from);
-        final Piece captured = board.pieceAt(to);
+        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
         final boolean isCapture = captured != null;
         boolean isNoisy = isCapture || move.isPromotion();
 

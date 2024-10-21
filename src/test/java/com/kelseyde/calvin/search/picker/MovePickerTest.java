@@ -198,6 +198,8 @@ public class MovePickerTest {
             moves.add(move);
         }
 
+        System.out.println(moves.stream().map(m -> Move.toUCI(m.move())).toList());
+
         Assertions.assertEquals(5, moves.size());
     }
 

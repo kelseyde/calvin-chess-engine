@@ -77,10 +77,10 @@ public class MovePicker {
                 case TT_MOVE ->     pickTTMove(Stage.GEN_NOISY);
                 case GEN_NOISY ->   generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
                 case GOOD_NOISY ->  pickMove(Stage.KILLER);
-                case KILLER ->      pickKiller(Stage.GEN_QUIET);
+                case KILLER ->      pickKiller(Stage.BAD_NOISY);
+                case BAD_NOISY ->   pickMove(Stage.GEN_QUIET);
                 case GEN_QUIET ->   generate(MoveFilter.QUIET, Stage.QUIET);
-                case QUIET ->       pickMove(Stage.BAD_NOISY);
-                case BAD_NOISY ->   pickMove(Stage.END);
+                case QUIET ->       pickMove(Stage.END);
                 case END,
                      QSEARCH_GEN_NOISY,
                      QSEARCH_NOISY -> null;

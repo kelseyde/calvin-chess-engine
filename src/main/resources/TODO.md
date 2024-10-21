@@ -19,6 +19,7 @@
 
 - [x] SPSA tune
 - [ ] PV table
+- [ ] Exponentially widening aspiration window
 - [ ] Singular extensions ( tried )
 - [ ] Double extensions
 - [ ] Triple extensions

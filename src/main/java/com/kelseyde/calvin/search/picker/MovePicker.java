@@ -74,10 +74,10 @@ public class MovePicker {
                 case TT_MOVE ->     pickTTMove(Stage.GEN_NOISY);
                 case GEN_NOISY ->   generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
                 case GOOD_NOISY ->  pickMove(Stage.KILLER);
-                case KILLER ->      pickKiller(Stage.GEN_QUIET);
+                case KILLER ->      pickKiller(Stage.BAD_NOISY);
+                case BAD_NOISY ->   pickMove(Stage.GEN_QUIET);
                 case GEN_QUIET ->   generate(MoveFilter.QUIET, Stage.QUIET);
-                case QUIET ->       pickMove(Stage.BAD_NOISY);
-                case BAD_NOISY ->   pickMove(Stage.END);
+                case QUIET ->       pickMove(Stage.END);
                 case END,
                      QSEARCH_GEN_NOISY,
                      QSEARCH_NOISY -> null;
@@ -195,8 +195,8 @@ public class MovePicker {
         final boolean isPromotion = move.isPromotion();
         // Special case for quiet checks:
         // they are generated during 'noisy' movegen and should be treated as such
-        final boolean isCheck = stage == Stage.GEN_NOISY && !isCapture;
-        final boolean isNoisy = isCheck || isCapture || isPromotion;
+        final boolean isQuietCheck = stage == Stage.GEN_NOISY && !isCapture;
+        final boolean isNoisy = isQuietCheck || isCapture || isPromotion;
 
         if (move.equals(ttMove)) {
             // Put the TT move last; it will be tried lazily
@@ -206,14 +206,14 @@ public class MovePicker {
         }
 
         if (isNoisy) {
-            return scoreNoisy(board, move, piece, captured, isCheck);
+            return scoreNoisy(board, move, piece, captured, isQuietCheck);
         } else {
             return scoreQuiet(board, move, piece, captured, ply);
         }
 
     }
 
-    protected ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean isCheck) {
+    protected ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean isQuietCheck) {
 
         boolean white = board.isWhite();
 
@@ -225,16 +225,17 @@ public class MovePicker {
             return new ScoredMove(move, piece, captured, noisyScore, 0, type);
         }
 
-        if (isCheck && captured == null) {
-            final MoveType type = MoveType.GOOD_NOISY;
+        if (isQuietCheck) {
+            final MoveType type = MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white);
             noisyScore = type.bonus + historyScore + contHistScore;
             return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
         }
 
-        final int seeScore = SEE.see(board, move);
-        final MoveType type = seeScore >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        // Separate captures into winning and losing
+        final int materialDelta = captured.value() - piece.value();
+        final MoveType type = materialDelta >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         noisyScore += type.bonus;
 

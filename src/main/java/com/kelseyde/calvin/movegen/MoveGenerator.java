@@ -26,6 +26,12 @@ public class MoveGenerator {
 
     private List<Move> legalMoves;
 
+    public List<Move> generateLegalMoves(Board board) {
+        return generateMoves(board, MoveFilter.ALL).stream()
+                .filter(move -> isLegal(board, move))
+                .toList();
+    }
+
     public List<Move> generateMoves(Board board) {
         return generateMoves(board, MoveFilter.ALL);
     }

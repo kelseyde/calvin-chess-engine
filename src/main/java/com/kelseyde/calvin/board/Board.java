@@ -66,10 +66,6 @@ public class Board {
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
-        if (captured == Piece.KING) {
-            System.out.println(Arrays.stream(moves).map(Move::toUCI).toList());
-            System.out.println(FEN.toFEN(this) + ", " + Move.toUCI(move));
-        }
         states[ply] = state.copy();
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);

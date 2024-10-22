@@ -174,6 +174,7 @@ public class Engine {
     private Move move(Move move) {
         return movegen.generateMoves(board).stream()
                 .filter(move::matches)
+                .filter(m -> movegen.isLegal(board, m))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Move.toUCI(move)));
     }

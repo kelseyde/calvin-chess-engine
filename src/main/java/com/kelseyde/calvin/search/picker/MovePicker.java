@@ -6,7 +6,6 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.PlayedMove;
-import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
@@ -135,7 +134,7 @@ public class MovePicker {
         }
 
         // Skip illegal killers
-        if (!movegen.isLegal(board, killer)) {
+        if (!movegen.isPseudoLegal(board, killer) || !movegen.isLegal(board, killer)) {
             return pickKiller(nextStage);
         }
 
@@ -150,6 +149,14 @@ public class MovePicker {
     }
 
     protected ScoredMove generate(MoveFilter filter, Stage nextStage) {
+        if (inCheck && stage == Stage.GEN_NOISY) {
+            // If we're in check then all evasions have to be tried in the noisy stage
+            filter = MoveFilter.ALL;
+        }
+        if (inCheck && stage == Stage.QUIET) {
+            // If we're in check then all evasions have been tried in the noisy stage
+            return nextStage(nextStage);
+        }
         List<Move> stagedMoves = movegen.generateMoves(board, filter);
 
         if (stage == Stage.GEN_NOISY) {

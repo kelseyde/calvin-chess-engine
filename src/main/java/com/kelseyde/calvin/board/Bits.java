@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.movegen.Attacks;
+
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +25,10 @@ public class Bits {
 
     public static boolean contains(long bb, int sq) {
         return (bb & of(sq)) != 0;
+    }
+
+    public static boolean empty(long bb) {
+        return count(bb) == 0;
     }
 
     public static long north(long board) {
@@ -157,6 +163,12 @@ public class Bits {
 
     public static class Ray {
 
+        private static final long[][] INTERSECTING_RAYS = generateIntersectingRays();
+
+        public static long intersecting(int from, int to) {
+            return INTERSECTING_RAYS[from][to];
+        }
+
         /**
          * Calculates the ray (bitboard) between two squares on the chessboard.
          */
@@ -196,6 +208,39 @@ public class Bits {
                 return from > to ? -9 : 9;
             }
             return 0;
+        }
+
+        private static long[][] generateIntersectingRays() {
+
+            long[][] intersectingRays = new long[Square.COUNT][Square.COUNT];
+
+            for (int from = 0; from < Square.COUNT; ++from) {
+
+                long fromMask = Bits.of(from);
+                long empty = 0L;
+                long bishopAttacks = Attacks.bishopAttacks(from, empty);
+                long rookAttacks = Attacks.rookAttacks(from, empty);
+
+                for (int to = 0; to < Square.COUNT; ++to) {
+
+                    if (from == to)
+                        continue;
+
+                    long toMask = Bits.of(to);
+
+                    if ((bishopAttacks & toMask) != 0) {
+                        intersectingRays[from][to] =
+                                (fromMask | Attacks.bishopAttacks(from, empty)) & (toMask | Attacks.bishopAttacks(to, empty));
+                    }
+                    else if ((rookAttacks & toMask) != 0) {
+                        intersectingRays[from][to] =
+                                (fromMask | Attacks.rookAttacks(from, empty)) & (toMask | Attacks.rookAttacks(to, empty));
+                    }
+
+                }
+            }
+            return intersectingRays;
+
         }
 
     }

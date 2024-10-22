@@ -2,7 +2,9 @@ package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.Bits.Castling;
 import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Ray;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.movegen.Attacks;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.utils.notation.FEN;
 
@@ -29,7 +31,7 @@ public class Board {
     private long occupied;
 
     private Piece[] pieces;
-    private BoardState state;
+    public BoardState state;
     private BoardState[] states;
     private Move[] moves;
     private boolean white;
@@ -64,6 +66,10 @@ public class Board {
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
+        if (captured == Piece.KING) {
+            System.out.println(Arrays.stream(moves).map(Move::toUCI).toList());
+            System.out.println(FEN.toFEN(this) + ", " + Move.toUCI(move));
+        }
         states[ply] = state.copy();
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
@@ -75,6 +81,7 @@ public class Board {
         updateState(from, to, piece, captured, move);
         moves[ply++] = move;
         white = !white;
+
         return true;
 
     }
@@ -173,6 +180,10 @@ public class Board {
         state.key ^= Key.enPassant(state.enPassantFile, enPassantFile);
         state.enPassantFile = enPassantFile;
 
+        state.checkers = Board.checkers(this, !white);
+        state.pinned = Board.pinned(this, !white);
+        state.threats = Board.threats(this, white);
+
         state.key ^= Key.sideToMove();
     }
 
@@ -231,7 +242,11 @@ public class Board {
         white = !white;
         final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
+        long checkers = Board.checkers(this, white);
+        long pinned = Board.pinned(this, white);
+        long threats = Board.threats(this, !white);
+        final BoardState newState =
+                new BoardState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0, checkers, pinned, threats);
         states[ply++] = state;
         state = newState;
     }
@@ -538,6 +553,126 @@ public class Board {
 
     public static Board from(String fen) {
         return FEN.toBoard(fen);
+    }
+
+    public static long checkers(Board board, boolean white) {
+
+        final long king = board.getKing(white);
+        final int kingSquare = Bits.next(king);
+        final long occupied = board.getOccupied();
+        long checkers = 0L;
+
+        final long opponentPawns = board.getPawns(!white);
+        if (opponentPawns != 0) {
+            checkers |= Attacks.pawnAttacks(king, white) & opponentPawns;
+        }
+
+        final long opponentKnights = board.getKnights(!white);
+        if (opponentKnights != 0) {
+            checkers |= Attacks.knightAttacks(kingSquare) & opponentKnights;
+        }
+
+        final long opponentBishops = board.getBishops(!white);
+        final long opponentQueens = board.getQueens(!white);
+        final long diagonalSliders = opponentBishops | opponentQueens;
+        if (diagonalSliders != 0) {
+            checkers |= Attacks.bishopAttacks(kingSquare, occupied) & diagonalSliders;
+        }
+
+        final long opponentRooks = board.getRooks(!white);
+        final long orthogonalSliders = opponentRooks | opponentQueens;
+        if (orthogonalSliders != 0) {
+            checkers |= Attacks.rookAttacks(kingSquare, occupied) & orthogonalSliders;
+        }
+
+        final long opponentKings = board.getKing(!white);
+        if (opponentKings != 0) {
+            checkers |= Attacks.kingAttacks(kingSquare) & opponentKings;
+        }
+
+        return checkers;
+
+    }
+
+    public static long pinned(Board board, boolean white) {
+
+        long pinned = 0L;
+
+        final int kingSquare = Bits.next(board.getKing(white));
+        final long friendlies = board.getPieces(white);
+        final long opponents = board.getPieces(!white);
+
+        long possiblePinners = 0L;
+
+        // Calculate possible orthogonal pins
+        final long orthogonalSliders = board.getRooks(!white) | board.getQueens(!white);
+        if (orthogonalSliders != 0) {
+            possiblePinners |= Attacks.rookAttacks(kingSquare, 0) & orthogonalSliders;
+        }
+
+        // Calculate possible diagonal pins
+        final long diagonalSliders = board.getBishops(!white) | board.getQueens(!white);
+        if (diagonalSliders != 0) {
+            possiblePinners |= Attacks.bishopAttacks(kingSquare, 0) & diagonalSliders;
+        }
+
+        while (possiblePinners != 0) {
+            final int possiblePinner = Bits.next(possiblePinners);
+            final long ray = Ray.between(kingSquare, possiblePinner);
+
+            // Skip if there are opponents between the king and the possible pinner
+            if ((ray & opponents) != 0) {
+                possiblePinners = Bits.pop(possiblePinners);
+                continue;
+            }
+
+            final long friendliesBetween = ray & friendlies;
+            // If there is exactly one friendly piece between the king and the pinner, it's pinned
+            if (Bits.count(friendliesBetween) == 1) {
+                pinned |= friendliesBetween;
+            }
+
+            possiblePinners = Bits.pop(possiblePinners);
+        }
+
+        return pinned;
+
+    }
+
+    public static long threats(Board board, boolean white) {
+
+        long threats = 0L;
+        long occ = board.getOccupied();
+
+        long knights = board.getKnights(white);
+        while (knights != 0) {
+            final int square = Bits.next(knights);
+            threats |= Attacks.knightAttacks(square);
+            knights = Bits.pop(knights);
+        }
+
+        long bishops = board.getBishops(white) | board.getQueens(white);
+        while (bishops != 0) {
+            final int square = Bits.next(bishops);
+            threats |= Attacks.bishopAttacks(square, occ);
+            bishops = Bits.pop(bishops);
+        }
+
+        long rooks = board.getRooks(white) | board.getQueens(white);
+        while (rooks != 0) {
+            final int square = Bits.next(rooks);
+            threats |= Attacks.rookAttacks(square, occ);
+            rooks = Bits.pop(rooks);
+        }
+
+        long pawns = board.getPawns(white);
+        threats |= Attacks.pawnAttacks(pawns, white);
+
+        long king = board.getKing(white);
+        final int square = Bits.next(king);
+        threats |= Attacks.kingAttacks(square);
+
+        return threats;
     }
 
     public Board copy() {

@@ -101,6 +101,7 @@ public class MovePicker {
             default -> throw new IllegalArgumentException("Invalid stage: " + stage);
         };
 
+        // If we're in check then all evasions have been tried in the noisy stage
         if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
             return nextStage(nextStage);
         }
@@ -127,10 +128,13 @@ public class MovePicker {
         }
 
         Move killer = killers[killerIndex++];
+
+        // Skip the killer if it's also the TT move - it will be tried first
         if (killer == null || killer.equals(ttMove)) {
             return pickKiller(nextStage);
         }
 
+        // Skip illegal killers
         if (!movegen.isLegal(board, killer)) {
             return pickKiller(nextStage);
         }
@@ -149,6 +153,7 @@ public class MovePicker {
         List<Move> stagedMoves = movegen.generateMoves(board, filter);
 
         if (stage == Stage.GEN_NOISY) {
+            // In noisy movegen we separate the moves into 'good' and 'bad' noisies
             int goodIndex = 0;
             int badIndex = 0;
             goodNoisies = new ScoredMove[stagedMoves.size()];
@@ -163,6 +168,7 @@ public class MovePicker {
             }
         }
         else if (stage == Stage.GEN_QUIET) {
+            // In quiet movegen everything is treated as a 'quiet' move
             int quietIndex = 0;
             quiets = new ScoredMove[stagedMoves.size()];
             for (Move move : stagedMoves) {
@@ -171,6 +177,7 @@ public class MovePicker {
             }
         }
         else if (stage == Stage.QSEARCH_GEN_NOISY) {
+            // In quiescent movegen all moves are treated as 'good noisies'
             goodNoisies = new ScoredMove[stagedMoves.size()];
             int goodIndex = 0;
             for (Move move : stagedMoves) {
@@ -220,12 +227,14 @@ public class MovePicker {
         int noisyScore = 0;
 
         if (move.isPromotion()) {
+            // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
             noisyScore += type.bonus;
             return new ScoredMove(move, piece, captured, noisyScore, 0, type);
         }
 
         if (isQuietCheck) {
+            // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
             final MoveType type = MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white);
@@ -233,13 +242,13 @@ public class MovePicker {
             return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
         }
 
-        // Separate captures into winning and losing
+        // Separate noisies into good and bad based on the MVV ('most valuable victim') heuristic
         final int materialDelta = captured.value() - piece.value();
         final MoveType type = materialDelta >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         noisyScore += type.bonus;
 
-        // Add MVV score to the capture score
+        // Add MVV score to the noisy score
         noisyScore += MoveType.MVV_OFFSET * captured.index();
 
         // Tie-break with capture history
@@ -322,7 +331,6 @@ public class MovePicker {
         if (move.equals(ttMove)) {
             return true;
         }
-        // TODO unit test this with illegal moves
         for (Move killer : history.getKillerTable().getKillers(ply)) {
             if (move.equals(killer)) {
                 return true;

@@ -342,4 +342,23 @@ public class CheckTest {
 
     }
 
+    @Test
+    public void mate() {
+
+        Board board = FEN.toBoard("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4");
+
+        List<Move> legalMoves = TestUtils.legalMoves(board);
+        Assertions.assertTrue(legalMoves.isEmpty());
+    }
+
+    @Test
+    public void thing() {
+
+        Board board = FEN.toBoard("rnbqkbnr/pp2pppp/2p5/1B1P4/8/8/PPPP1PPP/RNBQK1NR b KQkq - 0 3");
+
+        List<Move> legalMoves = TestUtils.legalMoves(board);
+        Assertions.assertFalse(legalMoves.stream().anyMatch(m -> m.matches(Move.fromUCI("c6d5"))));
+
+    }
+
 }

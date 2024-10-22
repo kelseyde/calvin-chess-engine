@@ -638,15 +638,6 @@ public class MoveGenerator {
                         new Move(from, to, Move.PROMOTE_TO_KNIGHT_FLAG));
     }
 
-
-    private boolean leavesKingInCheck(Board board, Move move, boolean white) {
-        board.makeMove(move);
-        final int kingSquare = white ? Bits.next(board.getKing(true)) : Bits.next(board.getKing(false));
-        final boolean isAttacked = isAttacked(board, white, Bits.of(kingSquare));
-        board.unmakeMove();
-        return isAttacked;
-    }
-
     private long getCastleTravelSquares(boolean white, boolean isKingside) {
         if (isKingside) return white ? Castling.WHITE_KINGSIDE_TRAVEL_MASK : Castling.BLACK_KINGSIDE_TRAVEL_MASK;
         else return white ? Castling.WHITE_QUEENSIDE_TRAVEL_MASK : Castling.BLACK_QUEENSIDE_TRAVEL_MASK;

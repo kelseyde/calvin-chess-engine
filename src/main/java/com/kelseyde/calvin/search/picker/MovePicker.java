@@ -149,7 +149,7 @@ public class MovePicker {
     }
 
     protected ScoredMove generate(MoveFilter filter, Stage nextStage) {
-        if (inCheck && stage == Stage.GEN_NOISY) {
+        if (inCheck && (stage == Stage.GEN_NOISY || stage == Stage.QSEARCH_GEN_NOISY)) {
             // If we're in check then all evasions have to be tried in the noisy stage
             filter = MoveFilter.ALL;
         }

@@ -768,6 +768,17 @@ public class MoveGenerator {
 
     }
 
+    public boolean isLegal(Board board, Move move) {
+        if (!isPseudoLegal(board, move))
+            return false;
+
+        board.makeMove(move);
+        boolean legal = !isCheck(board, !board.isWhite());
+        board.unmakeMove();
+
+        return legal;
+    }
+
     private List<Move> getPromotionMoves(int from, int to) {
         return List.of(new Move(from, to, Move.PROMOTE_TO_QUEEN_FLAG),
                         new Move(from, to, Move.PROMOTE_TO_ROOK_FLAG),

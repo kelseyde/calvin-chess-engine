@@ -2,7 +2,6 @@ package com.kelseyde.calvin.movegen;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.perft.PerftService;
@@ -10,10 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class PseudoLegalTest {
 

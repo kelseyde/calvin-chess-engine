@@ -242,7 +242,7 @@ public class MovePicker {
             return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
         }
 
-        // Separate noisies into good and bad based on the MVV ('most valuable victim') heuristic
+        // Separate good and bad noisies based on the MVV-LVA ('most valuable victim, least valuable attacker') heuristic
         final int materialDelta = captured.value() - piece.value();
         final MoveType type = materialDelta >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 

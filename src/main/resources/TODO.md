@@ -51,7 +51,7 @@
 
 - [ ] Pseudo-legal movegen
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
-- [ ] The Great `MovePicker` Rewrite`™`
+- [x] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
 - [x] 1-ply Conthist
 - [x] 2-ply Conthist

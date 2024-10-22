@@ -10,11 +10,8 @@ import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
-import com.kelseyde.calvin.tables.history.KillerTable;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Selects the next move to try in a given position. Moves are selected in stages. First, the 'best' move from the
@@ -96,8 +93,6 @@ public class MovePicker {
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
     protected ScoredMove pickMove(Stage nextStage) {
-//        System.out.println("picking move at stage " + stage);
-//        System.out.println("move index: " + moveIndex);
 
         ScoredMove[] moves = switch (stage) {
             case GOOD_NOISY, QSEARCH_NOISY -> goodNoisies;
@@ -105,22 +100,17 @@ public class MovePicker {
             case QUIET -> quiets;
             default -> throw new IllegalArgumentException("Invalid stage: " + stage);
         };
-//        System.out.println("moves length: " + moves.length);
-//        System.out.println(Arrays.stream(moves).map(ScoredMove::move).filter(Objects::nonNull).map(Move::toUCI).toList());
 
         if (stage == Stage.QUIET && (skipQuiets || inCheck)) {
-//            System.out.println("Skipping quiets");
             return nextStage(nextStage);
         }
         if (moveIndex >= moves.length) {
-//            System.out.println("No more moves");
             return nextStage(nextStage);
         }
 
         ScoredMove move = pick(moves);
 
         if (move == null) {
-//            System.out.println("No more moves2");
             return nextStage(nextStage);
         }
 
@@ -138,12 +128,10 @@ public class MovePicker {
 
         Move killer = killers[killerIndex++];
         if (killer == null || killer.equals(ttMove)) {
-//            System.out.println("Killer is null or ttMove: " + Move.toUCI(killer));
             return pickKiller(nextStage);
         }
 
         if (!movegen.isLegal(board, killer)) {
-//            System.out.println("Killer is illegal: " + Move.toUCI(killer));
             return pickKiller(nextStage);
         }
 
@@ -229,34 +217,18 @@ public class MovePicker {
 
         boolean white = board.isWhite();
 
-        if (move.isPromotion()) {
-            final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-            final int score = type.bonus;
-            return new ScoredMove(move, piece, captured, score, 0, type);
-        }
-
         int noisyScore = 0;
 
-        // Separate noisies into good and bad. Non-check captures sorted using MVV + capthist.
-        // Quiet checks are scored as quiets and given bad noisy
+        if (move.isPromotion()) {
+            final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+            noisyScore += type.bonus;
+            return new ScoredMove(move, piece, captured, noisyScore, 0, type);
+        }
 
         if (isCheck && captured == null) {
             final MoveType type = MoveType.GOOD_NOISY;
-            int historyScore = history.getQuietHistoryTable().get(move, piece, white);
-
-            int contHistScore = 0;
-            // Get the continuation history score for the move
-            SearchStackEntry prevEntry = ss.get(ply - 1);
-            if (prevEntry != null && prevEntry.currentMove != null) {
-                PlayedMove prevMove = prevEntry.currentMove;
-                contHistScore = history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
-            }
-
-            SearchStackEntry prevEntry2 = ss.get(ply - 2);
-            if (prevEntry2 != null && prevEntry2.currentMove != null) {
-                PlayedMove prevMove2 = prevEntry2.currentMove;
-                contHistScore += history.getContHistTable().get(prevMove2.move, prevMove2.piece, move, piece, white);
-            }
+            final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+            final int contHistScore = continuationHistoryScore(move, piece, white);
             noisyScore = type.bonus + historyScore + contHistScore;
             return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
         }
@@ -278,14 +250,13 @@ public class MovePicker {
 
     protected ScoredMove scoreQuiet(Board board, Move move, Piece piece, Piece captured, int ply) {
         boolean white = board.isWhite();
-
-        // Check if the move is a killer move
-//        int killerIndex = history.getKillerTable().getIndex(move, ply);
-//        int killerScore = killerIndex >= 0 ? MoveType.KILLER_OFFSET * (KillerTable.KILLERS_PER_PLY - killerIndex) : 0;
-
-        // Get the history score for the move
         int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+        int contHistScore = continuationHistoryScore(move, piece, white);
+        int score = MoveType.QUIET.bonus + historyScore + contHistScore;
+        return new ScoredMove(move, piece, captured, score, historyScore, MoveType.QUIET);
+    }
 
+    int continuationHistoryScore(Move move, Piece piece, boolean white) {
         int contHistScore = 0;
         // Get the continuation history score for the move
         SearchStackEntry prevEntry = ss.get(ply - 1);
@@ -299,13 +270,7 @@ public class MovePicker {
             PlayedMove prevMove2 = prevEntry2.currentMove;
             contHistScore += history.getContHistTable().get(prevMove2.move, prevMove2.piece, move, piece, white);
         }
-
-        // Killers are ordered higher than normal history moves
-        MoveType type = MoveType.QUIET;
-
-        int score = type.bonus + historyScore + contHistScore;
-
-        return new ScoredMove(move, piece, captured, score, historyScore, type);
+        return contHistScore;
     }
 
     /**

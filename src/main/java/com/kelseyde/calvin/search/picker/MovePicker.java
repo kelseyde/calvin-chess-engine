@@ -94,7 +94,7 @@ public class MovePicker {
      */
     protected ScoredMove pickMove(Stage nextStage) {
 
-        ScoredMove[] moves = switch (stage) {
+        final ScoredMove[] moves = switch (stage) {
             case GOOD_NOISY, QSEARCH_NOISY -> goodNoisies;
             case BAD_NOISY -> badNoisies;
             case QUIET -> quiets;
@@ -198,31 +198,23 @@ public class MovePicker {
 
         final Piece piece = board.pieceAt(from);
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
-        final boolean isCapture = captured != null;
-        final boolean isPromotion = move.isPromotion();
-        // Special case for quiet checks:
-        // they are generated during 'noisy' movegen and should be treated as such
-        final boolean isQuietCheck = stage == Stage.GEN_NOISY && !isCapture;
-        final boolean isNoisy = isQuietCheck || isCapture || isPromotion;
 
-        if (move.equals(ttMove)) {
-            // Put the TT move last; it will be tried lazily
-            MoveType type = MoveType.TT_MOVE;
-            final int score = -MoveType.TT_MOVE.bonus;
-            return new ScoredMove(move, piece, captured, score, 0, type);
-        }
+        final boolean capture = captured != null;
+        final boolean promotion = move.isPromotion();
+        final boolean quietCheck = stage == Stage.GEN_NOISY && !promotion && !capture;
+        final boolean noisy = quietCheck || capture || promotion;
 
-        if (isNoisy) {
-            return scoreNoisy(board, move, piece, captured, isQuietCheck);
+        if (noisy) {
+            return scoreNoisy(board, move, piece, captured, quietCheck);
         } else {
             return scoreQuiet(board, move, piece, captured, ply);
         }
 
     }
 
-    protected ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean isQuietCheck) {
+    protected ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck) {
 
-        boolean white = board.isWhite();
+        final boolean white = board.isWhite();
 
         int noisyScore = 0;
 
@@ -233,7 +225,7 @@ public class MovePicker {
             return new ScoredMove(move, piece, captured, noisyScore, 0, type);
         }
 
-        if (isQuietCheck) {
+        if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
             final MoveType type = MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);

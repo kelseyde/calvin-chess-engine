@@ -100,6 +100,9 @@ public class FEN {
             board.getState().setKey(Key.generateKey(board));
             board.getState().setPawnKey(Key.generatePawnKey(board));
             board.getState().setNonPawnKeys(Key.generateNonPawnKeys(board));
+            board.getState().setThreats(Board.threats(board, !whiteToMove));
+            board.getState().setCheckers(Board.checkers(board, whiteToMove));
+            board.getState().setPinned(Board.pinned(board, whiteToMove));
 
             return board;
 

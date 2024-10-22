@@ -34,15 +34,19 @@ public class PerftService {
     public long perft(Board board, int depth, int originalDepth) {
         nodesSearched++;
         List<Move> moves = movegen.generateMoves(board);
-        if (depth == 1) {
-            return moves.size();
+        if (depth == 0) {
+            return 1;
         }
         long totalMoveCount = 0;
         for (Move move : moves) {
+            if (!movegen.isLegal(board, move)) {
+                continue;
+            }
             board.makeMove(move);
-            totalMoveCount += perft(board, depth - 1, originalDepth);
+            long nodes = perft(board, depth - 1, originalDepth);
+            totalMoveCount += nodes;
             if (depth == originalDepth) {
-                nodesPerMove.put(move, totalMoveCount);
+                nodesPerMove.put(move, nodes);
             }
             board.unmakeMove();
         }

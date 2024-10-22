@@ -68,7 +68,8 @@ public class Searcher implements Search {
     @Override
     public SearchResult search(TimeControl timeControl) {
 
-        final List<Move> rootMoves = movegen.generateMoves(board);
+        final List<Move> rootMoves = movegen.generateLegalMoves(board);
+
         if (rootMoves.size() == 1) {
             return handleOnlyOneLegalMove(rootMoves);
         }
@@ -327,6 +328,9 @@ public class Searcher implements Search {
                 break;
             }
             Move move = scoredMove.move();
+            if (!movegen.isLegal(board, move)) {
+                continue;
+            }
             movesSearched++;
 
             final Piece piece = scoredMove.piece();
@@ -562,8 +566,13 @@ public class Searcher implements Search {
         while (true) {
 
             final ScoredMove scoredMove = movePicker.pickNextMove();
-            if (scoredMove == null) break;
+            if (scoredMove == null) {
+                break;
+            }
             final Move move = scoredMove.move();
+            if (!movegen.isLegal(board, move)) {
+                continue;
+            }
             movesSearched++;
 
             if (!inCheck) {

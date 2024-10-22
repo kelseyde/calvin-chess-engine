@@ -17,6 +17,9 @@ public class BoardState {
     public int rights;
     public int halfMoveClock;
     public Piece captured;
+    public long checkers;
+    public long pinned;
+    public long threats;
 
     public BoardState() {
         this.key = 0L;
@@ -26,9 +29,13 @@ public class BoardState {
         this.enPassantFile = -1;
         this.rights = Castling.INITIAL_CASTLING_RIGHTS;
         this.halfMoveClock = 0;
+        this.checkers = 0L;
+        this.pinned = 0L;
+        this.threats = 0L;
     }
 
-    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
+    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock,
+            long checkers, long pinned, long threats) {
         this.key = key;
         this.pawnKey = pawnKey;
         this.nonPawnKeys = nonPawnKeys;
@@ -36,6 +43,9 @@ public class BoardState {
         this.enPassantFile = enPassantFile;
         this.rights = rights;
         this.halfMoveClock = halfMoveClock;
+        this.checkers = checkers;
+        this.pinned = pinned;
+        this.threats = threats;
     }
 
     public boolean isKingsideCastlingAllowed(boolean white) {
@@ -96,9 +106,22 @@ public class BoardState {
         this.halfMoveClock = halfMoveClock;
     }
 
+    public void setCheckers(long checkers) {
+        this.checkers = checkers;
+    }
+
+    public void setPinned(long pinned) {
+        this.pinned = pinned;
+    }
+
+    public void setThreats(long threats) {
+        this.threats = threats;
+    }
+
     public BoardState copy() {
         long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
-        return new BoardState(key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock);
+        return new BoardState(
+                key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock, checkers, pinned, threats);
     }
 
     @Override
@@ -111,7 +134,10 @@ public class BoardState {
                 && enPassantFile == boardState.enPassantFile
                 && rights == boardState.rights
                 && halfMoveClock == boardState.halfMoveClock
-                && captured == boardState.captured;
+                && captured == boardState.captured
+                && checkers == boardState.checkers
+                && pinned == boardState.pinned
+                && threats == boardState.threats;
     }
 
 }

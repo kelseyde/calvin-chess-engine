@@ -195,6 +195,9 @@ public class MovePickerTest {
         while (true) {
             ScoredMove move = picker.pickNextMove();
             if (move == null) break;
+            if (!moveGenerator.isLegal(board, move.move())) {
+                continue;
+            }
             moves.add(move);
         }
 

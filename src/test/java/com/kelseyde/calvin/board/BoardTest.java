@@ -223,8 +223,8 @@ public class BoardTest {
 
         MoveGenerator moveGenerator = new MoveGenerator();
 
-        Assertions.assertEquals(0, moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.QUIET).size());
-        Assertions.assertEquals(4, moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY).size());
+        Assertions.assertEquals(0, TestUtils.legalMoves(board, MoveGenerator.MoveFilter.QUIET).size());
+        Assertions.assertEquals(4, TestUtils.legalMoves(board, MoveGenerator.MoveFilter.NOISY).size());
 
     }
 

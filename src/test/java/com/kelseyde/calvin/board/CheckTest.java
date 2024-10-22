@@ -6,6 +6,8 @@ import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 public class CheckTest {
 
     @Test
@@ -327,6 +329,16 @@ public class CheckTest {
 
         Assertions.assertThrows(IllegalMoveException.class, () ->
                 TestUtils.getLegalMove(board, Move.fromUCI("g8h8")));
+
+    }
+
+    @Test
+    public void pinnedBishopCannotCaptureOutOfPinRay() {
+
+        Board board = FEN.toBoard("r4k1r/p1ppqpb1/bn2pQpB/3PN3/1p2P3/2N4p/PPP1BPPP/R3K2R b KQ - 0 2");
+
+        List<Move> legalMoves = TestUtils.legalMoves(board);
+        Assertions.assertTrue(legalMoves.stream().noneMatch(m -> m.matches(Move.fromUCI("g7f6"))));
 
     }
 

@@ -84,11 +84,12 @@ public class Searcher implements Search {
         int alpha = Score.MIN;
         int beta = Score.MAX;
 
-        int retries = 0;
         int reduction = 0;
         final int maxReduction = config.aspMaxReduction.value;
-        final int margin = config.aspMargin.value;
-        final int failMargin = config.aspFailMargin.value;
+
+        int delta = config.aspInitialWindow.value;
+        int aspMinDepth = config.aspMinDepth.value;
+        int wideningFactor = config.aspWideningFactor.value;
 
         while (!shouldStopSoft() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
@@ -96,7 +97,6 @@ public class Searcher implements Search {
             bestScoreCurrent = 0;
 
             final int searchDepth = td.depth - reduction;
-            final int delta = failMargin * retries;
 
             // Perform alpha-beta search for the current depth
             final int score = search(searchDepth, 0, alpha, beta);
@@ -123,28 +123,31 @@ public class Searcher implements Search {
             // Based on this guess, we can narrow the alpha-beta window around the previous score, causing more cut-offs
             // and thus speeding up the search. If the true score is outside the window, a costly re-search is required.
 
-            // Adjust the aspiration window in case the score fell outside the current window
-            if (score <= alpha) {
-                // If score <= alpha, re-search with an expanded aspiration window
-                reduction = 0;
-                retries++;
-                alpha -= delta;
-                continue;
-            }
-            if (score >= beta) {
-                // If score >= beta, re-search with an expanded aspiration window
-                reduction = Math.min(maxReduction, reduction + 1);
-                retries++;
-                beta += delta;
-                continue;
+            if (td.depth >= aspMinDepth) {
+
+                // Adjust the aspiration window in case the score fell outside the current window
+                if (score <= alpha) {
+                    // If score <= alpha, re-search with an expanded aspiration window
+                    reduction = 0;
+                    beta = (alpha + beta) / 2;
+                    alpha = Math.max(score - delta, Score.MIN);
+                    delta += delta * wideningFactor / 16;
+                    continue;
+                }
+                if (score >= beta) {
+                    // If score >= beta, re-search with an expanded aspiration window
+                    reduction = Math.min(maxReduction, reduction + 1);
+                    beta = Math.min(score + delta, Score.MAX);
+                    delta += delta * wideningFactor / 16;
+                    continue;
+                }
+
+                // Center the aspiration window around the score from the current iteration, to be used next time.
+                alpha = Math.max(score - delta, Score.MIN);
+                beta = Math.min(score + delta, Score.MAX);
+
             }
 
-            // Center the aspiration window around the score from the current iteration, to be used next time.
-            alpha = score - margin;
-            beta = score + margin;
-
-            // Increment depth and reset retry counter for next iteration
-            retries = 0;
             td.depth++;
         }
 

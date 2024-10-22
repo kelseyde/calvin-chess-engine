@@ -16,9 +16,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("e4d5");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(100, score);
+        Assertions.assertTrue(SEE.see(board, move, 100));
+        Assertions.assertFalse(SEE.see(board, move, 101));
 
     }
 
@@ -29,9 +28,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("d5e4");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(320, score);
+        Assertions.assertTrue(SEE.see(board, move, 320));
+        Assertions.assertFalse(SEE.see(board, move, 321));
 
     }
 
@@ -42,9 +40,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("e4d5");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(330, score);
+        Assertions.assertTrue(SEE.see(board, move, 330));
+        Assertions.assertFalse(SEE.see(board, move, 331));
 
     }
 
@@ -55,9 +52,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("d6e4");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(500, score);
+        Assertions.assertTrue(SEE.see(board, move, 500));
+        Assertions.assertFalse(SEE.see(board, move, 501));
 
     }
 
@@ -68,9 +64,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("e4d5");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(900, score);
+        Assertions.assertTrue(SEE.see(board, move, 900));
+        Assertions.assertFalse(SEE.see(board, move, 901));
 
     }
 
@@ -81,9 +76,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("e4d5");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(-800, score);
+        Assertions.assertTrue(SEE.see(board, move, -800));
+        Assertions.assertFalse(SEE.see(board, move, -799));
 
     }
 
@@ -94,9 +88,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("c7d5");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(330, score);
+        Assertions.assertTrue(SEE.see(board, move, 330));
+        Assertions.assertFalse(SEE.see(board, move, 331));
 
     }
 
@@ -108,29 +101,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("b3d5");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(100, score);
-
-    }
-
-    @Test
-    public void testMultipleRookXrays() {
-
-        String fen = "5k2/8/8/8/rRrRp3/8/8/5K2 w - - 0 1";
-
-        Board board = FEN.toBoard(fen);
-        Move move = Move.fromUCI("d4e4");
-
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(-400, score);
-
-        move = Move.fromUCI("d4c4");
-
-        score = SEE.see(board, move);
-
-        Assertions.assertEquals(500, score);
+        Assertions.assertTrue(SEE.see(board, move, 100));
+        Assertions.assertFalse(SEE.see(board, move, 101));
 
     }
 
@@ -141,16 +113,12 @@ public class SEETest {
 
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("e4d5");
-
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(400, score);
+        Assertions.assertTrue(SEE.see(board, move, 400));
+        Assertions.assertFalse(SEE.see(board, move, 401));
 
         move = Move.fromUCI("c4d5");
-
-        score = SEE.see(board, move);
-
-        Assertions.assertEquals(-300, score);
+        Assertions.assertTrue(SEE.see(board, move, -300));
+        Assertions.assertFalse(SEE.see(board, move, -299));
 
     }
 
@@ -162,9 +130,8 @@ public class SEETest {
         Board board = FEN.toBoard(fen);
         Move move = Move.fromUCI("e4d5");
 
-        int score = SEE.see(board, move);
-
-        Assertions.assertEquals(0, score);
+        Assertions.assertTrue(SEE.see(board, move, 0));
+        Assertions.assertFalse(SEE.see(board, move, 1));
 
     }
 

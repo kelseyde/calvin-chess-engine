@@ -285,32 +285,32 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
-//            if (sse.nullMoveAllowed
-//                && depth >= config.nmpDepth.value
-//                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
-//                && board.hasPiecesRemaining(board.isWhite())) {
-//
-//                ss.get(ply + 1).nullMoveAllowed = false;
-//                board.makeNullMove();
-//
-//                final int base = config.nmpBase.value;
-//                final int divisor = config.nmpDivisor.value;
-//                final int evalScale = config.nmpEvalScale.value;
-//                final int evalMaxReduction = config.nmpEvalMaxReduction.value;
-//                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
-//                final int r = base
-//                        + depth / divisor
-//                        + evalReduction;
-//
-//                final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
-//
-//                board.unmakeNullMove();
-//                ss.get(ply + 1).nullMoveAllowed = true;
-//
-//                if (score >= beta) {
-//                    return Score.isMateScore(score) ? beta : score;
-//                }
-//            }
+            if (sse.nullMoveAllowed
+                && depth >= config.nmpDepth.value
+                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
+                && board.hasPiecesRemaining(board.isWhite())) {
+
+                ss.get(ply + 1).nullMoveAllowed = false;
+                board.makeNullMove();
+
+                final int base = config.nmpBase.value;
+                final int divisor = config.nmpDivisor.value;
+                final int evalScale = config.nmpEvalScale.value;
+                final int evalMaxReduction = config.nmpEvalMaxReduction.value;
+                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
+                final int r = base
+                        + depth / divisor
+                        + evalReduction;
+
+                final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
+
+                board.unmakeNullMove();
+                ss.get(ply + 1).nullMoveAllowed = true;
+
+                if (score >= beta) {
+                    return Score.isMateScore(score) ? beta : score;
+                }
+            }
 
         }
 
@@ -586,14 +586,13 @@ public class Searcher implements Search {
                     continue;
                 }
 
-                final int seeScore = SEE.see(board, move);
 
                 // Futility Pruning
                 // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
                 // win material when the static eval plus some margin is sufficiently below alpha.
                 if (captured != null
                     && futilityScore <= alpha
-                    && seeScore <= 0) {
+                    && !SEE.see(board, move, 1)) {
                     continue;
                 }
 
@@ -601,7 +600,7 @@ public class Searcher implements Search {
                 // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
                 // chains, such as capturing with the queen a pawn defended by another pawn.
                 final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-                if (seeScore < seeThreshold) {
+                if (!SEE.see(board, move, seeThreshold)) {
                     continue;
                 }
             }

@@ -67,13 +67,7 @@ public class Board {
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
-        if (captured == Piece.KING) {
-            System.out.println(Arrays.stream(moves).map(Move::toUCI).toList());
-            System.out.println(FEN.toFEN(this) + ", " + Move.toUCI(move));
-        }
-//        if (!new MoveGenerator().isLegal(this, move)) {
-//            System.out.println("hello? " + FEN.toFEN(this) + ", " + Move.toUCI(move));
-//        }
+
         states[ply] = state.copy();
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
@@ -548,6 +542,18 @@ public class Board {
     public int countPieces() {
         return Bits.count(occupied);
     }
+
+    public long getPieces(Piece piece, boolean white) {
+        return switch (piece) {
+            case PAWN -> getPawns(white);
+            case KNIGHT -> getKnights(white);
+            case BISHOP -> getBishops(white);
+            case ROOK -> getRooks(white);
+            case QUEEN -> getQueens(white);
+            case KING -> getKing(white);
+        };
+    }
+
 
     public boolean hasPiecesRemaining(boolean white) {
         return white ?

@@ -93,7 +93,7 @@ public class EngineConfig {
                 hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale, quietHistMalusMax, quietHistMalusScale,
                 quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax, captHistMalusScale,
                 captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax, contHistMalusScale,
-                contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale
+                contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, fhrMaxDepth, fhrOffset, fhrMultiplier
         );
     }
 

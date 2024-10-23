@@ -237,6 +237,11 @@ public class Searcher implements Search {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedStaticEval = rawStaticEval;
+
+            if (!ttHit) {
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+            }
+
             staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
@@ -537,6 +542,11 @@ public class Searcher implements Search {
             // if the static evaluation of the position is good enough.
 
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
+
+            if (!ttHit) {
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+            }
+
             staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||

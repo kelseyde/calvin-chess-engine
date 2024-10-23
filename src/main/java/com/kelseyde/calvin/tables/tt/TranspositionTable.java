@@ -109,6 +109,11 @@ public class TranspositionTable {
                 break;
             }
 
+            if (HashEntry.Value.getFlag(values[i]) == HashFlag.NONE) {
+                replacedIndex = i;
+                break;
+            }
+
             long storedValue = values[i];
             int storedDepth = HashEntry.Value.getDepth(values[i]);
             // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.

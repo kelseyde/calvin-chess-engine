@@ -1,12 +1,10 @@
 package com.kelseyde.calvin.movegen;
 
 import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bits.Castling;
-import com.kelseyde.calvin.board.Bits.File;
-import com.kelseyde.calvin.board.Bits.Ray;
-import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.board.Bits.*;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,123 +111,129 @@ public class MoveGenerator {
     }
 
     private void generatePawnMoves(Board board) {
-
         if (pawns == 0) return;
+
         final long opponents = board.getPieces(!white);
         final long occupied = board.getOccupied();
         final int opponentKing = Bits.next(board.getKing(!white));
 
-        final long filterMask = checkersCount > 0 ? captureMask | pushMask : switch (filter) {
+        // Precompute attack and filter masks
+        final long opponentAttackMask = Attacks.pawnAttacks(Bits.of(opponentKing), !white);
+        final long filterMask = getFilterMask(opponents, opponentAttackMask);
+
+        if (filterMask == Square.NONE) return;
+
+        // Single and double pawn pushes
+        if (filter != MoveFilter.CAPTURES_ONLY) {
+            generatePawnPushes(occupied, filterMask);
+        }
+
+        // Pawn captures, en passant, and promotions
+        if (filter != MoveFilter.QUIET) {
+            generatePawnCaptures(opponents, filterMask);
+            generatePromotions(opponents, occupied);
+            generateEnPassant(board);
+        }
+    }
+
+    private void generatePawnPushes(long occupied, long filterMask) {
+        // Single and double pawn pushes combined
+        long singleMoves = Attacks.pawnSingleMoves(pawns, occupied, white) & pushMask & filterMask;
+        long doubleMoves = Attacks.pawnDoubleMoves(pawns, occupied, white) & pushMask & filterMask;
+
+        while (singleMoves != 0) {
+            final int to = Bits.next(singleMoves);
+            final int from = white ? to - 8 : to + 8;
+            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+                legalMoves.add(new Move(from, to));
+            }
+            singleMoves = Bits.pop(singleMoves);
+        }
+
+        while (doubleMoves != 0) {
+            final int to = Bits.next(doubleMoves);
+            final int from = white ? to - 16 : to + 16;
+            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+                legalMoves.add(new Move(from, to, Move.PAWN_DOUBLE_MOVE_FLAG));
+            }
+            doubleMoves = Bits.pop(doubleMoves);
+        }
+    }
+
+    private void generatePawnCaptures(long opponents, long filterMask) {
+        long leftCaptures = Attacks.pawnLeftCaptures(pawns, opponents, white) & captureMask & filterMask;
+        long rightCaptures = Attacks.pawnRightCaptures(pawns, opponents, white) & captureMask & filterMask;
+
+        while (leftCaptures != 0) {
+            final int to = Bits.next(leftCaptures);
+            final int from = white ? to - 7 : to + 9;
+            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+                legalMoves.add(new Move(from, to));
+            }
+            leftCaptures = Bits.pop(leftCaptures);
+        }
+
+        while (rightCaptures != 0) {
+            final int to = Bits.next(rightCaptures);
+            final int from = white ? to - 9 : to + 7;
+            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+                legalMoves.add(new Move(from, to));
+            }
+            rightCaptures = Bits.pop(rightCaptures);
+        }
+    }
+
+    private void generatePromotions(long opponents, long occupied) {
+        final long pushPromotions = Attacks.pawnPushPromotions(pawns, occupied, white) & pushMask;
+        final long leftCapturePromotions = Attacks.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
+        final long rightCapturePromotions = Attacks.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
+
+        generatePromotionMoves(pushPromotions, 8, 8);
+        generatePromotionMoves(leftCapturePromotions, 7, 9);
+        generatePromotionMoves(rightCapturePromotions, 9, 7);
+    }
+
+    private void generatePromotionMoves(long promotionMask, int offsetWhite, int offsetBlack) {
+        while (promotionMask != 0) {
+            final int to = Bits.next(promotionMask);
+            final int from = white ? to - offsetWhite : to + offsetBlack;
+            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+                legalMoves.addAll(getPromotionMoves(from, to));
+            }
+            promotionMask = Bits.pop(promotionMask);
+        }
+    }
+
+    private void generateEnPassant(Board board) {
+        if (board.getState().getEnPassantFile() < 0) return;
+
+        final long enPassantFile = File.toBitboard(board.getState().getEnPassantFile());
+        final long leftEnPassants = Attacks.pawnLeftEnPassants(pawns, enPassantFile, white);
+        final long rightEnPassants = Attacks.pawnRightEnPassants(pawns, enPassantFile, white);
+
+        generateEnPassantMoves(board, leftEnPassants, 7, 9);
+        generateEnPassantMoves(board, rightEnPassants, 9, 7);
+    }
+
+    private void generateEnPassantMoves(Board board, long enPassantMask, int offsetWhite, int offsetBlack) {
+        while (enPassantMask != 0) {
+            final int to = Bits.next(enPassantMask);
+            final int from = white ? to - offsetWhite : to + offsetBlack;
+            final Move move = new Move(from, to, Move.EN_PASSANT_FLAG);
+            if (!leavesKingInCheck(board, move, white)) {
+                legalMoves.add(move);
+            }
+            enPassantMask = Bits.pop(enPassantMask);
+        }
+    }
+
+    private long getFilterMask(long opponents, long opponentAttackMask) {
+        return checkersCount > 0 ? captureMask | pushMask : switch (filter) {
             case ALL -> Square.ALL;
             case CAPTURES_ONLY -> opponents;
-            case NOISY -> opponents | Attacks.pawnAttacks(Bits.of(opponentKing), !white);
-            case QUIET -> ~opponents & ~Attacks.pawnAttacks(Bits.of(opponentKing), !white);
+            case NOISY -> opponents | opponentAttackMask;
+            case QUIET -> ~opponents & ~opponentAttackMask;
         };
-        if (filterMask == Square.NONE) {
-            return;
-        }
-
-        if (filter != MoveFilter.CAPTURES_ONLY) {
-
-            long singleMoves = Attacks.pawnSingleMoves(pawns, occupied, white) & pushMask & filterMask;
-            long doubleMoves = Attacks.pawnDoubleMoves(pawns, occupied, white) & pushMask & filterMask;
-
-            while (singleMoves != 0) {
-                final int to = Bits.next(singleMoves);
-                final int from = white ? to - 8 : to + 8;
-                if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                    legalMoves.add(new Move(from, to));
-                }
-                singleMoves = Bits.pop(singleMoves);
-            }
-            while (doubleMoves != 0) {
-                final int to = Bits.next(doubleMoves);
-                final int from = white ? to - 16 : to + 16;
-                if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                    legalMoves.add(new Move(from, to, Move.PAWN_DOUBLE_MOVE_FLAG));
-                }
-                doubleMoves = Bits.pop(doubleMoves);
-            }
-        }
-
-        if (filter != MoveFilter.QUIET) {
-            long leftCaptures = Attacks.pawnLeftCaptures(pawns, opponents, white) & captureMask & filterMask;
-            long rightCaptures = Attacks.pawnRightCaptures(pawns, opponents, white) & captureMask & filterMask;
-            long pushPromotions = Attacks.pawnPushPromotions(pawns, occupied, white) & pushMask;
-            long leftCapturePromotions = Attacks.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
-            long rightCapturePromotions = Attacks.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
-
-            while (leftCaptures != 0) {
-                final int to = Bits.next(leftCaptures);
-                final int from = white ? to - 7 : to + 9;
-                if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                    legalMoves.add(new Move(from, to));
-                }
-                leftCaptures = Bits.pop(leftCaptures);
-            }
-            while (rightCaptures != 0) {
-                final int to = Bits.next(rightCaptures);
-                final int from = white ? to - 9 : to + 7;
-                if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                    legalMoves.add(new Move(from, to));
-                }
-                rightCaptures = Bits.pop(rightCaptures);
-            }
-
-            if (board.getState().getEnPassantFile() >= 0) {
-                final long enPassantFile = File.toBitboard(board.getState().getEnPassantFile());
-                long leftEnPassants = Attacks.pawnLeftEnPassants(pawns, enPassantFile, white);
-                long rightEnPassants = Attacks.pawnRightEnPassants(pawns, enPassantFile, white);
-                while (leftEnPassants != 0) {
-                    final int to = Bits.next(leftEnPassants);
-                    final int from = white ? to - 7 : to + 9;
-                    // En passant is complicated; just test legality by making the move on the board and checking
-                    // whether the king is attacked.
-                    final Move move = new Move(from, to, Move.EN_PASSANT_FLAG);
-                    if (!leavesKingInCheck(board, move, white)) {
-                        legalMoves.add(move);
-                    }
-                    leftEnPassants = Bits.pop(leftEnPassants);
-                }
-                while (rightEnPassants != 0) {
-                    final int to = Bits.next(rightEnPassants);
-                    final int from = white ? to - 9 : to + 7;
-                    // En passant is complicated; just test legality by making the move on the board and checking
-                    // whether the king is attacked.
-                    final Move move = new Move(from, to, Move.EN_PASSANT_FLAG);
-                    if (!leavesKingInCheck(board, move, white)) {
-                        legalMoves.add(move);
-                    }
-                    rightEnPassants = Bits.pop(rightEnPassants);
-                }
-            }
-
-            while (pushPromotions != 0) {
-                final int to = Bits.next(pushPromotions);
-                final int from = white ? to - 8 : to + 8;
-                if (!isPinned(from)) {
-                    legalMoves.addAll(getPromotionMoves(from, to));
-                }
-                pushPromotions = Bits.pop(pushPromotions);
-            }
-            while (leftCapturePromotions != 0) {
-                final int to = Bits.next(leftCapturePromotions);
-                final int from = white ? to - 7 : to + 9;
-                if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                    legalMoves.addAll(getPromotionMoves(from, to));
-                }
-                leftCapturePromotions = Bits.pop(leftCapturePromotions);
-            }
-            while (rightCapturePromotions != 0) {
-                final int to = Bits.next(rightCapturePromotions);
-                final int from = white ? to - 9 : to + 7;
-                if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                    legalMoves.addAll(getPromotionMoves(from, to));
-                }
-                rightCapturePromotions = Bits.pop(rightCapturePromotions);
-            }
-        }
-
     }
 
     private void generateKnightMoves(Board board) {
@@ -572,6 +576,207 @@ public class MoveGenerator {
             possiblePinners = Bits.pop(possiblePinners);
         }
 
+    }
+
+    public long calculateThreats(Board board, boolean white) {
+
+        long threats = 0L;
+        long occ = board.getOccupied();
+
+        long knights = board.getKnights(white);
+        while (knights != 0) {
+            final int square = Bits.next(knights);
+            threats |= Attacks.knightAttacks(square);
+            knights = Bits.pop(knights);
+        }
+
+        long bishops = board.getBishops(white) | board.getQueens(white);
+        while (bishops != 0) {
+            final int square = Bits.next(bishops);
+            threats |= Attacks.bishopAttacks(square, occ);
+            bishops = Bits.pop(bishops);
+        }
+
+        long rooks = board.getRooks(white) | board.getQueens(white);
+        while (rooks != 0) {
+            final int square = Bits.next(rooks);
+            threats |= Attacks.rookAttacks(square, occ);
+            rooks = Bits.pop(rooks);
+        }
+
+        long pawns = board.getPawns(white);
+        threats |= Attacks.pawnAttacks(pawns, white);
+
+        long king = board.getKing(white);
+        final int square = Bits.next(king);
+        threats |= Attacks.kingAttacks(square);
+
+        return threats;
+
+    }
+
+    public boolean isPseudoLegal(Board board, Move move) {
+
+        if (move == null)
+            return false;
+
+        final boolean white = board.isWhite();
+        final int from = move.from();
+        final int to = move.to();
+        final Piece piece = board.pieceAt(from);
+        final long occupied = board.getOccupied();
+
+        // Can't move without a piece
+        if (piece == null)
+            return false;
+
+        // Can't move from an empty square
+        if (!Bits.contains(board.getPieces(white), from))
+            return false;
+
+        Piece captured = board.pieceAt(to);
+        if (captured != null) {
+
+            // Can't capture our own piece
+            if (Bits.contains(board.getPieces(white), to))
+                return false;
+
+            // Can't capture a king
+            if (Bits.contains(board.getKings(), to))
+                return false;
+
+        }
+
+        if (move.isCastling()) {
+
+            // Can only castle with a king
+            if (piece != Piece.KING)
+                return false;
+
+            // Must be castling on the home rank
+            long rank = white ? Rank.FIRST : Rank.EIGHTH;
+            if (!Bits.contains(rank, from) || !Bits.contains(rank, to))
+                return false;
+
+            int kingsideCastleSquare = white ? 6 : 62;
+            int queensideCastleSquare = white ? 2 : 58;
+
+            // Must be valid castling squares
+            if (to != kingsideCastleSquare && to != queensideCastleSquare)
+                return false;
+
+            // Must have kingside rights
+            if (to == kingsideCastleSquare && !board.getState().isKingsideCastlingAllowed(white))
+                return false;
+
+            // Must have queenside rights
+            if (to == queensideCastleSquare && !board.getState().isQueensideCastlingAllowed(white))
+                return false;
+
+            boolean kingside = to == kingsideCastleSquare;
+
+            final long travelSquares = getCastleTravelSquares(white, kingside);
+            final long blockedSquares = travelSquares & occupied;
+            final long safeSquares = getCastleSafeSquares(white, kingside);
+
+            // Can't castle through check
+            return blockedSquares == 0 && !isAttacked(board, white, safeSquares);
+
+        }
+
+        if (piece == Piece.PAWN) {
+
+            if (move.isEnPassant()) {
+
+                // Can't en passant if there's no en passant square
+                if (board.getState().getEnPassantFile() < 0)
+                    return false;
+
+                final int epSquare = white ? to - 8 : to + 8;
+
+                // Can't en passant if there's no enemy pawn to capture
+                if (!Bits.contains(board.getPawns(!white), epSquare))
+                    return false;
+
+            }
+
+            int fromRank = Rank.of(from);
+            int toRank = Rank.of(to);
+
+            // Can't move backwards
+            if ((white && fromRank >= toRank) || (!white && fromRank <= toRank))
+                return false;
+
+            // Must promote on the promo rank, and can't promote on any other rank
+            long promoRank = white ? Rank.EIGHTH : Rank.FIRST;
+            if (move.isPromotion() != Bits.contains(promoRank, to))
+                return false;
+
+            int fromFile = File.of(from);
+            int toFile = File.of(to);
+
+            // Pawn captures
+            if (fromFile != toFile) {
+
+                // Must capture on an adjacent file
+                if (toFile != fromFile + 1 && toFile != fromFile - 1)
+                    return false;
+
+                // Must be capturing a piece
+                return captured != null || move.isEnPassant();
+
+            } else {
+                // Can't capture a piece with a pawn push
+                if (captured != null)
+                    return false;
+
+                if (move.isPawnDoubleMove()) {
+
+                    // Can't double push from the wrong rank
+                    long startRank = white ? Rank.SECOND : Rank.SEVENTH;
+                    if (!Bits.contains(startRank, from))
+                        return false;
+
+                    // Can't double push if there's a piece in the way
+                    int betweenSquare = white ? from + 8 : from - 8;
+                    return !Bits.contains(occupied, betweenSquare);
+
+                }
+            }
+
+        } else {
+
+            // Can't make pawn-specific moves with a non-pawn
+            if (move.isPawnDoubleMove() || move.isEnPassant() || move.isPromotion())
+                return false;
+
+            long attacks = switch (piece) {
+                case KNIGHT ->  getKnightAttacks(board, from, white);
+                case BISHOP ->  getBishopAttacks(board, from, white);
+                case ROOK ->    getRookAttacks(board, from, white);
+                case QUEEN ->   getQueenAttacks(board, from, white);
+                case KING ->    getKingAttacks(board, from, white);
+                default -> 0L;
+            };
+
+            // Must be a valid move for the piece
+            return Bits.contains(attacks, to);
+
+        }
+
+        return true;
+
+    }
+
+    public boolean isLegal(Board board, Move move) {
+        if (!isPseudoLegal(board, move))
+            return false;
+
+        board.makeMove(move);
+        boolean legal = !isCheck(board, !board.isWhite());
+        board.unmakeMove();
+
+        return legal;
     }
 
     private List<Move> getPromotionMoves(int from, int to) {

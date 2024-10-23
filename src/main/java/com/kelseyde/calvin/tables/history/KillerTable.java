@@ -43,6 +43,10 @@ public class KillerTable {
         return -1;
     }
 
+    public Move[] getKillers(int ply) {
+        return table[ply];
+    }
+
     public void clear(int ply) {
         if (ply >= Search.MAX_DEPTH) return;
         table[ply] = new Move[KILLERS_PER_PLY];

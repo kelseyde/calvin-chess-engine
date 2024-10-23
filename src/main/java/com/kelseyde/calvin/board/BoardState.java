@@ -8,7 +8,7 @@ import com.kelseyde.calvin.board.Bits.Castling;
  * (the number of half-moves since the last capture or pawn move), and the last captured piece.
  * The game state history is stored by the {@link Board} to easily 'unmake' moves during search + evaluation.
  */
-public class GameState {
+public class BoardState {
 
     public long key;
     public long pawnKey;
@@ -18,7 +18,7 @@ public class GameState {
     public int halfMoveClock;
     public Piece captured;
 
-    public GameState() {
+    public BoardState() {
         this.key = 0L;
         this.pawnKey = 0L;
         this.nonPawnKeys = new long[2];
@@ -28,7 +28,7 @@ public class GameState {
         this.halfMoveClock = 0;
     }
 
-    public GameState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
+    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
         this.key = key;
         this.pawnKey = pawnKey;
         this.nonPawnKeys = nonPawnKeys;
@@ -96,22 +96,22 @@ public class GameState {
         this.halfMoveClock = halfMoveClock;
     }
 
-    public GameState copy() {
+    public BoardState copy() {
         long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
-        return new GameState(key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock);
+        return new BoardState(key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GameState gameState = (GameState) o;
-        return key == gameState.key
-                && pawnKey == gameState.pawnKey
-                && enPassantFile == gameState.enPassantFile
-                && rights == gameState.rights
-                && halfMoveClock == gameState.halfMoveClock
-                && captured == gameState.captured;
+        BoardState boardState = (BoardState) o;
+        return key == boardState.key
+                && pawnKey == boardState.pawnKey
+                && enPassantFile == boardState.enPassantFile
+                && rights == boardState.rights
+                && halfMoveClock == boardState.halfMoveClock
+                && captured == boardState.captured;
     }
 
 }

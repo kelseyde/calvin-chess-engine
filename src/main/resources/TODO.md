@@ -19,6 +19,7 @@
 
 - [x] SPSA tune
 - [ ] PV table
+- [ ] Exponentially widening aspiration window
 - [ ] Singular extensions ( tried )
 - [ ] Double extensions
 - [ ] Triple extensions
@@ -50,7 +51,7 @@
 
 - [ ] Pseudo-legal movegen
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
-- [ ] The Great `MovePicker` Rewrite`™`
+- [x] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
 - [x] 1-ply Conthist
 - [x] 2-ply Conthist
@@ -80,6 +81,7 @@
 
 ### Transposition Table
 
+- [ ] Always store eval in TT (should be 5-ish elo?)
 - [ ] PV node flag in TT
 - [ ] 16-bits zobrist in TT? (SF does it)
 - [ ] Fully compress all fields to minimum size

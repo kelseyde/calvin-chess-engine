@@ -1,37 +1,30 @@
 package com.kelseyde.calvin.utils.train;
 
-import com.kelseyde.calvin.movegen.MoveGenerator;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class DataDebugger {
 
-    private static final int THREAD_COUNT = 20;
-    private static final int THREAD_TIMEOUT_SECONDS = 15;
-    private static final int BATCH_SIZE = THREAD_COUNT * 1000;
-    private static final int TT_SIZE = 64;
-    private static final int TOTAL_POSITIONS_PER_FILE = 100000000;
-    private static final Duration MAX_SEARCH_TIME = Duration.ofSeconds(30);
-    private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
+    private static final int BATCH_SIZE = 10000;
 
     private int count = 0;
-    private int maxScore = Integer.MIN_VALUE;
-    private int minScore = Integer.MAX_VALUE;
-    private long totalScore = 0;
+    private int filtered = 0;
+    private final List<String> batch = new ArrayList<>();
 
-    //private final Set<Long> keys = new HashSet<>();
+    public void score() throws IOException {
 
-    private int wonScores = 0;
-
-    public void score() {
-
-        Path inputPath = Paths.get("/Users/kelseyde/git/dan/calvin/data/calvindata_6.txt");
+        Path inputPath = Paths.get("/Users/kelseyde/git/dan/calvin/data/calvindata_12.txt");
+        Path outputPath = Paths.get("/Users/kelseyde/git/dan/calvin/data/calvindata_12_filtered.txt");
+        if (!Files.exists(outputPath)) {
+            Files.createFile(outputPath);
+        }
 
         try (Stream<String> lines = Files.lines(inputPath)) {
 
@@ -39,35 +32,45 @@ public class DataDebugger {
             while (iterator.hasNext()) {
 
                 count++;
-                if (count % 50000 == 0) {
-                    System.out.printf("count: %d\n", count);
+                if (count % 1000000 == 0) {
+                    System.out.printf("count: %d, filtered: %d\n", count, filtered);
                 }
 
                 String line = iterator.next();
                 String[] parts = line.split("\\|");
+                String fen = parts[0].trim();
                 int score = Integer.parseInt(parts[1].trim());
-                totalScore += score;
-                if (score > maxScore) {
-                    maxScore = score;
+                String result = parts[2].trim();
+
+                boolean isTooHigh = Math.abs(score) >= 10000;
+                boolean isBadResult = (score >= 1000 && result.equalsIgnoreCase("0.0"))
+                        || (score <= -1000 && result.equalsIgnoreCase("1.0"));
+
+                if (isTooHigh || isBadResult) {
+                    filtered++;
+                    continue;
                 }
-                if (score < minScore) {
-                    minScore = score;
+
+                batch.add(line);
+
+                if (batch.size() == BATCH_SIZE) {
+                    Files.write(outputPath, batch, StandardOpenOption.APPEND);
+                    batch.clear();
                 }
-                if (Math.abs(score) > 7500) {
-                    wonScores++;
-                }
+
+
             }
 
-            //System.out.printf("duplicate keys: %d\n", count - keys.size());
         } catch (IOException e) {
             throw new RuntimeException("Failed to read input file", e);
         }
 
         System.out.println("total positions: " + count);
+        System.out.printf("filtered positions: %d\n", filtered);
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         DataDebugger dataDebugger = new DataDebugger();
         dataDebugger.score();
     }

@@ -45,7 +45,7 @@ public class SearchHistory {
 
         List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
 
-        if (bestMove.isQuiet()) {
+        if (bestMove.isQuiet() && failHigh) {
             killerTable.add(ply, bestMove.move);
         }
 

@@ -43,6 +43,9 @@ public class EngineConfig {
     public final Tunable rfpDepth             = new Tunable("RfpDepth", 7, 0, 8, 1);
     public final Tunable rfpMargin            = new Tunable("RfpMargin", 86, 0, 250, 10);
     public final Tunable rfpImpMargin         = new Tunable("RfpImpMargin", 43, 0, 250, 10);
+    public final Tunable fhrMaxDepth          = new Tunable("FhrMaxDepth", 8, 0, 12, 1);
+    public final Tunable fhrOffset            = new Tunable("FhrOffset", 100, 0, 500, 50);
+    public final Tunable fhrMultiplier        = new Tunable("FhrMultiplier", 50, 0, 100, 25);
     public final Tunable lmrDepth             = new Tunable("LmrDepth", 2, 0, 8, 1);
     public final Tunable lmrBase              = new Tunable("LmrBase", 90, 50, 100, 5);
     public final Tunable lmrDivisor           = new Tunable("LmrDivisor", 310, 200, 400, 10);

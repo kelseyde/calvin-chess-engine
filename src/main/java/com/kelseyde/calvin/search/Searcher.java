@@ -311,12 +311,13 @@ public class Searcher implements Search {
                 }
             }
 
-            if (depth < 8
-                && staticEval >= beta + 200 + 50 * depth) {
+            // Fail-high reductions
+            // If the static evaluation suggests that this position is a cut-node, let's assume we won't need to spend
+            // too much time here to produce a cut-off, and reduce the search depth.
+            int fhrMaxDepth = config.fhrMaxDepth.value;
+            int fhrMargin = config.fhrOffset.value + config.fhrMultiplier.value * depth;
+            if (depth < fhrMaxDepth && staticEval >= beta + fhrMargin) {
                 depth--;
-                if (depth <= 0) {
-                    return quiescenceSearch(alpha, beta, 1, ply);
-                }
             }
 
         }

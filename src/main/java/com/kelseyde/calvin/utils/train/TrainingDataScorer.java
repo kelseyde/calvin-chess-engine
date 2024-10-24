@@ -143,7 +143,16 @@ public class TrainingDataScorer {
     private String scoreData(Searcher searcher, String line, ScoreDataCommand command) {
         String[] parts = line.split("\\|");
         String fen = parts[0].trim();
+        int score = Integer.parseInt(parts[1].trim());
         String result = parts[2].trim();
+        boolean isTooHigh = Math.abs(score) >= 10000;
+        boolean isBadResult = (score >= 1000 && result.equalsIgnoreCase("0.0"))
+                || (score <= -1000 && result.equalsIgnoreCase("1.0"));
+
+        if (isTooHigh || isBadResult) {
+            return "";
+        }
+
         Board board = FEN.toBoard(fen);
         if (MOVE_GENERATOR.isCheck(board, board.isWhite())) {
             // Filter out positions where the side to move is in check
@@ -168,9 +177,16 @@ public class TrainingDataScorer {
             // Filter out positions where the best move is a capture
             return "";
         }
-        int score = searchResult.eval();
+        score = searchResult.eval();
         if (Score.isMateScore(score)) {
             // Filter out positions where there is forced mate
+            return "";
+        }
+        isTooHigh = Math.abs(score) >= 10000;
+        isBadResult = (score >= 1000 && result.equalsIgnoreCase("0.0"))
+                || (score <= -1000 && result.equalsIgnoreCase("1.0"));
+
+        if (isTooHigh || isBadResult) {
             return "";
         }
         if (!board.isWhite()) score = -score;

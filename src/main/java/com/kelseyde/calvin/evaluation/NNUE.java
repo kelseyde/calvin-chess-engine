@@ -7,6 +7,7 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.evaluation.Accumulator.FeatureUpdate;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
 
@@ -54,6 +55,7 @@ public class NNUE {
 
     public int evaluate() {
 
+        applyLazyUpdates();
         final boolean white = board.isWhite();
         final Accumulator acc = accumulatorStack[current];
 
@@ -109,39 +111,41 @@ public class NNUE {
         final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
 
-        final int oldWhiteIdx = featureIndex(piece, from, white, true);
-        final int oldBlackIdx = featureIndex(piece, from, white, false);
-
-        final int newWhiteIdx = featureIndex(newPiece, to, white, true);
-        final int newBlackIdx = featureIndex(newPiece, to, white, false);
-
         if (move.isCastling()) {
-            handleCastleMove(acc, white, to, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
+            handleCastleMove(acc, move, white);
         } else if (captured != null) {
-            handleCapture(acc, move, captured, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+            handleCapture(acc, move, piece, newPiece, captured, white);
         } else {
-            acc.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+            handleStandardMove(acc, move, piece, newPiece, white);
         }
+        acc.correct = false;
 
     }
 
-    private void handleCastleMove(Accumulator acc, boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        final boolean kingside = File.of(to) == 6;
+    private void handleStandardMove(Accumulator acc, Move move, Piece piece, Piece newPiece, boolean white) {
+        final FeatureUpdate add = new FeatureUpdate(move.to(), newPiece, white);
+        final FeatureUpdate sub = new FeatureUpdate(move.from(), piece, white);
+        acc.update.pushAddSub(add, sub);
+    }
+
+    private void handleCastleMove(Accumulator acc, Move move, boolean white) {
+        final boolean kingside = File.of(move.to()) == 6;
         final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
-        final int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookFrom, white, true);
-        final int rookStartBlackIdx = featureIndex(Piece.ROOK, rookFrom, white, false);
-        final int rookEndWhiteIdx = featureIndex(Piece.ROOK, rookTo, white, true);
-        final int rookEndBlackIdx = featureIndex(Piece.ROOK, rookTo, white, false);
-        acc.addAddSubSub(newWhiteIdx, newBlackIdx, rookEndWhiteIdx, rookEndBlackIdx, oldWhiteIdx, oldBlackIdx, rookStartWhiteIdx, rookStartBlackIdx);
+        final FeatureUpdate kingAdd = new FeatureUpdate(move.to(), Piece.KING, white);
+        final FeatureUpdate kingSub = new FeatureUpdate(move.from(), Piece.KING, white);
+        final FeatureUpdate rookAdd = new FeatureUpdate(rookTo, Piece.ROOK, white);
+        final FeatureUpdate rookSub = new FeatureUpdate(rookFrom, Piece.ROOK, white);
+        acc.update.pushAddAddSubSub(kingAdd, rookAdd, kingSub, rookSub);
     }
 
-    private void handleCapture(Accumulator acc, Move move, Piece captured, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
+    private void handleCapture(Accumulator acc, Move move, Piece piece, Piece newPiece, Piece captured, boolean white) {
         int captureSquare = move.to();
         if (move.isEnPassant()) captureSquare = white ? move.to() - 8 : move.to() + 8;
-        final int capturedWhiteIdx = featureIndex(captured, captureSquare, !white, true);
-        final int capturedBlackIdx = featureIndex(captured, captureSquare, !white, false);
-        acc.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
+        final FeatureUpdate add = new FeatureUpdate(move.to(), newPiece, white);
+        final FeatureUpdate sub1 = new FeatureUpdate(captureSquare, captured, !white);
+        final FeatureUpdate sub2 = new FeatureUpdate(move.from(), piece, white);
+        acc.update.pushAddSubSub(add, sub1, sub2);
     }
 
     public void unmakeMove() {
@@ -152,6 +156,76 @@ public class NNUE {
         clearHistory();
         this.board = board;
         activateAll(board);
+    }
+
+    private void applyLazyUpdates() {
+
+        // Scan back to the last non-dirty accumulator.
+        if (accumulatorStack[current].correct) return;
+        int i = current - 1;
+        while (i >= 0 && !accumulatorStack[i].correct) i--;
+
+        while (i < current) {
+            if (i + 1 >= accumulatorStack.length) break;
+            Accumulator prev = accumulatorStack[i];
+            Accumulator curr = accumulatorStack[i + 1];
+            Accumulator.AccumulatorUpdate update = curr.update;
+            if (update.addCount == 1 && update.subCount == 1) {
+                lazyUpdateAddSub(prev, curr);
+            } else if (update.addCount == 1 && update.subCount == 2) {
+                lazyUpdateAddSubSub(prev, curr);
+            } else if (update.addCount == 2 && update.subCount == 2) {
+                lazyUpdateAddAddSubSub(prev, curr);
+            }
+            curr.correct = true;
+            i++;
+        }
+
+    }
+
+    private void lazyUpdateAddSub(Accumulator prev, Accumulator curr) {
+        final Accumulator.AccumulatorUpdate update = curr.update;
+        final Accumulator.FeatureUpdate add = update.adds[0];
+        final Accumulator.FeatureUpdate sub = update.subs[0];
+        final int whiteAddIdx = featureIndex(add.piece(), add.square(), add.white(), true);
+        final int blackAddIdx = featureIndex(add.piece(), add.square(), add.white(), false);
+        final int whiteSubIdx = featureIndex(sub.piece(), sub.square(), sub.white(), true);
+        final int blackSubIdx = featureIndex(sub.piece(), sub.square(), sub.white(), false);
+        curr.addSub(prev.whiteFeatures, prev.blackFeatures,
+                whiteAddIdx, blackAddIdx, whiteSubIdx, blackSubIdx);
+    }
+
+    private void lazyUpdateAddSubSub(Accumulator prev, Accumulator curr) {
+        final Accumulator.AccumulatorUpdate update = curr.update;
+        final Accumulator.FeatureUpdate add1 = update.adds[0];
+        final Accumulator.FeatureUpdate sub1 = update.subs[0];
+        final Accumulator.FeatureUpdate sub2 = update.subs[1];
+        final int whiteAdd1Idx = featureIndex(add1.piece(), add1.square(), add1.white(), true);
+        final int blackAdd1Idx = featureIndex(add1.piece(), add1.square(), add1.white(), false);
+        final int whiteSub1Idx = featureIndex(sub1.piece(), sub1.square(), sub1.white(), true);
+        final int blackSub1Idx = featureIndex(sub1.piece(), sub1.square(), sub1.white(), false);
+        final int whiteSub2Idx = featureIndex(sub2.piece(), sub2.square(), sub2.white(), true);
+        final int blackSub2Idx = featureIndex(sub2.piece(), sub2.square(), sub2.white(), false);
+        curr.addSubSub(prev.whiteFeatures, prev.blackFeatures,
+                whiteAdd1Idx, blackAdd1Idx, whiteSub1Idx, blackSub1Idx, whiteSub2Idx, blackSub2Idx);
+    }
+
+    private void lazyUpdateAddAddSubSub(Accumulator prev, Accumulator curr) {
+        Accumulator.AccumulatorUpdate update = curr.update;
+        Accumulator.FeatureUpdate add1 = update.adds[0];
+        Accumulator.FeatureUpdate add2 = update.adds[1];
+        Accumulator.FeatureUpdate sub1 = update.subs[0];
+        Accumulator.FeatureUpdate sub2 = update.subs[1];
+        int whiteAdd1Idx = featureIndex(add1.piece(), add1.square(), add1.white(), true);
+        int blackAdd1Idx = featureIndex(add1.piece(), add1.square(), add1.white(), false);
+        int whiteAdd2Idx = featureIndex(add2.piece(), add2.square(), add2.white(), true);
+        int blackAdd2Idx = featureIndex(add2.piece(), add2.square(), add2.white(), false);
+        int whiteSub1Idx = featureIndex(sub1.piece(), sub1.square(), sub1.white(), true);
+        int blackSub1Idx = featureIndex(sub1.piece(), sub1.square(), sub1.white(), false);
+        int whiteSub2Idx = featureIndex(sub2.piece(), sub2.square(), sub2.white(), true);
+        int blackSub2Idx = featureIndex(sub2.piece(), sub2.square(), sub2.white(), false);
+        curr.addAddSubSub(prev.whiteFeatures, prev.blackFeatures,
+                whiteAdd1Idx, blackAdd1Idx, whiteAdd2Idx, blackAdd2Idx, whiteSub1Idx, blackSub1Idx, whiteSub2Idx, blackSub2Idx);
     }
 
     private int scaleEvaluation(Board board, int eval) {

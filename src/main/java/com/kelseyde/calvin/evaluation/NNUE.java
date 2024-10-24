@@ -26,9 +26,9 @@ import com.kelseyde.calvin.search.Search;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("sunbeam.nnue")
+            .file("argonaut.nnue")
             .inputSize(768)
-            .hiddenSize(512)
+            .hiddenSize(768)
             .activation(Activation.SCReLU)
             .quantisations(new int[]{255, 64})
             .scale(400)

@@ -335,6 +335,8 @@ public class Searcher implements Search {
             final boolean isPromotion = move.promoPiece() != null;
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
 
+            int reduction = 0;
+
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
@@ -345,13 +347,18 @@ public class Searcher implements Search {
                 movePicker.setSkipQuiets(true);
                 continue;
             }
+            else if (!pvNode
+                    && depth <= config.fpDepth.value + 2
+                    && !inCheck && !isCapture && !isPromotion
+                    && staticEval + (config.fpMargin.value / 2) + depth * (config.fpScale.value / 2) <= alpha) {
+                reduction++;
+            }
 
             final int historyScore = scoredMove.historyScore();
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
-            int reduction = 0;
             if (depth >= config.lmrDepth.value
                     && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)) {
 

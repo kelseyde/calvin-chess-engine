@@ -403,12 +403,22 @@ public class Searcher implements Search {
             td.nodes++;
 
             final boolean isCheck = movegen.isCheck(board, board.isWhite());
+            final boolean isQuiet = !isCheck && !isCapture && !isPromotion;
 
-            playedMove.quiet = !isCheck && !isCapture && !isPromotion;;
+            playedMove.quiet = isQuiet;
             playedMove.capture = isCapture;
 
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);
+
+            if (pvNode
+                    && depth <= config.rfrDepth.value
+                    && !inCheck
+                    && isQuiet
+                    && staticEval - depth * (improving ? config.rfrImpMargin.value : config.rfrMargin.value) >= beta
+                    && !Score.isMateScore(alpha)) {
+                reduction++;
+            }
 
             int score;
 

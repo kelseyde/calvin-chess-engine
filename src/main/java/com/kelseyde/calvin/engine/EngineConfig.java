@@ -41,8 +41,8 @@ public class EngineConfig {
     public final Tunable qsFpMargin           = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeEqualDepth      = new Tunable("QsSeeEqualDepth", 3, 0, 6, 1);
     public final Tunable rfpDepth             = new Tunable("RfpDepth", 7, 0, 8, 1);
-    public final Tunable rfpMargin            = new Tunable("RfpMargin", 86, 0, 250, 10);
-    public final Tunable rfpImpMargin         = new Tunable("RfpImpMargin", 43, 0, 250, 10);
+    public final Tunable rfpMargin            = new Tunable("RfpMargin", 70, 0, 250, 25);
+    public final Tunable rfpImpMargin         = new Tunable("RfpImpMargin", 37, 0, 250, 25);
     public final Tunable lmrDepth             = new Tunable("LmrDepth", 2, 0, 8, 1);
     public final Tunable lmrBase              = new Tunable("LmrBase", 90, 50, 100, 5);
     public final Tunable lmrDivisor           = new Tunable("LmrDivisor", 310, 200, 400, 10);
@@ -50,6 +50,9 @@ public class EngineConfig {
     public final Tunable lmrCapDivisor        = new Tunable("LmrCapDivisor", 310, 200, 400, 10);
     public final Tunable lmrMinMoves          = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     public final Tunable lmrMinPvMoves        = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
+    public final Tunable rfrDepth             = new Tunable("RfrDepth", 7, 0, 8, 1);
+    public final Tunable rfrMargin            = new Tunable("RfrMargin", 102, 0, 250, 25);
+    public final Tunable rfrImpMargin         = new Tunable("RfrMargin", 59, 0, 250, 25);
     public final Tunable lmpDepth             = new Tunable("LmpDepth", 4, 0, 8, 1);
     public final Tunable lmpMultiplier        = new Tunable("LmpMultiplier", 8, 1, 20, 1);
     public final Tunable iirDepth             = new Tunable("IirDepth", 3, 0, 8, 1);

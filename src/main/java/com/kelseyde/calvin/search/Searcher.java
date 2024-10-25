@@ -271,10 +271,12 @@ public class Searcher implements Search {
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth.value
                 && !Score.isMateScore(alpha)) {
+
                 int blend = depth * 4;
                 int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
                 int pruneMargin = baseMargin - blend;
                 int reduceMargin = baseMargin + blend;
+
                 if (staticEval - pruneMargin >= beta) {
                     return (staticEval + beta) / 2;
                 }

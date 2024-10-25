@@ -21,13 +21,16 @@ public enum HashFlag {
      * I have already discovered an alternative move I can use to avoid reaching this position at all. The node value is
      * an upper bound because it is the maximum score you can hope to achieve from all the moves this position.
      */
-    UPPER;
+    UPPER,
+
+    NONE;
 
     public static int value(HashFlag flag) {
         return switch (flag) {
             case EXACT -> 0;
             case LOWER -> 1;
             case UPPER -> 2;
+            case NONE ->  3;
         };
     }
 
@@ -36,6 +39,7 @@ public enum HashFlag {
             case 0 -> EXACT;
             case 1 -> LOWER;
             case 2 -> UPPER;
+            case 3 -> NONE;
             default -> throw new IllegalArgumentException("Illegal node type " + value);
         };
     }

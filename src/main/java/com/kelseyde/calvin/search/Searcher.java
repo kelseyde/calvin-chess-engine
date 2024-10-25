@@ -275,7 +275,7 @@ public class Searcher implements Search {
                 int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
                 int blend = depth * 4;
 
-                // At the stricter margin we prune the entire node; at the softer margin we reduce search depth.
+                // At the stricter margin we prune the entire node; at the softer margin we reduce quiet moves only.
                 int pruneMargin = baseMargin - blend;
                 int reduceMargin = baseMargin + blend;
 

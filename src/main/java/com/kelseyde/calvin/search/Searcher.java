@@ -272,8 +272,10 @@ public class Searcher implements Search {
             if (depth <= config.rfpDepth.value
                 && !Score.isMateScore(alpha)) {
 
-                int blend = depth * 4;
                 int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
+                int blend = depth * 4;
+
+                // At the stricter margin we prune the entire node; at the softer margin we reduce search depth.
                 int pruneMargin = baseMargin - blend;
                 int reduceMargin = baseMargin + blend;
 

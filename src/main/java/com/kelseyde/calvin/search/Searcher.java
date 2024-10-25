@@ -255,6 +255,8 @@ public class Searcher implements Search {
         SearchStackEntry sse = ss.get(ply);
         sse.staticEval = staticEval;
 
+        int quietReduction = 0;
+
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
@@ -268,9 +270,17 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth.value
-                && staticEval - depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value) >= beta
                 && !Score.isMateScore(alpha)) {
-                return (staticEval + beta) / 2;
+                int blend = depth * 4;
+                int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
+                int pruneMargin = baseMargin - blend;
+                int reduceMargin = baseMargin + blend;
+                if (staticEval - pruneMargin >= beta) {
+                    return (staticEval + beta) / 2;
+                }
+                else if (staticEval - reduceMargin >= beta) {
+                    quietReduction = 1;
+                }
             }
 
             // Razoring - https://www.chessprogramming.org/Razoring
@@ -404,8 +414,13 @@ public class Searcher implements Search {
 
             final boolean isCheck = movegen.isCheck(board, board.isWhite());
 
-            playedMove.quiet = !isCheck && !isCapture && !isPromotion;;
+            boolean isQuiet = !isCheck && !isCapture && !isPromotion;
+            playedMove.quiet = isQuiet;
             playedMove.capture = isCapture;
+
+            if (isQuiet) {
+                reduction += quietReduction;
+            }
 
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);

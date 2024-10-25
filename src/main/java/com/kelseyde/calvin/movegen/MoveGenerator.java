@@ -118,7 +118,7 @@ public class MoveGenerator {
         final int opponentKing = Bits.next(board.getKing(!white));
 
         // Precompute attack and filter masks
-        final long opponentAttackMask = Attacks.pawnAttacks(Bits.of(opponentKing), !white);
+        final long opponentAttackMask = Attacks.pawn(Bits.of(opponentKing), !white);
         final long filterMask = getFilterMask(opponents, opponentAttackMask);
 
         if (filterMask == Square.NONE) return;
@@ -138,8 +138,8 @@ public class MoveGenerator {
 
     private void generatePawnPushes(long occupied, long filterMask) {
         // Single and double pawn pushes combined
-        long singleMoves = Attacks.pawnSingleMoves(pawns, occupied, white) & pushMask & filterMask;
-        long doubleMoves = Attacks.pawnDoubleMoves(pawns, occupied, white) & pushMask & filterMask;
+        long singleMoves = Attacks.pawnPushes(pawns, occupied, white) & pushMask & filterMask;
+        long doubleMoves = Attacks.pawnDoublePushes(pawns, occupied, white) & pushMask & filterMask;
 
         while (singleMoves != 0) {
             final int to = Bits.next(singleMoves);
@@ -184,9 +184,9 @@ public class MoveGenerator {
     }
 
     private void generatePromotions(long opponents, long occupied) {
-        final long pushPromotions = Attacks.pawnPushPromotions(pawns, occupied, white) & pushMask;
-        final long leftCapturePromotions = Attacks.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
-        final long rightCapturePromotions = Attacks.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
+        final long pushPromotions = Attacks.pawnPushPromos(pawns, occupied, white) & pushMask;
+        final long leftCapturePromotions = Attacks.pawnLeftCapturePromos(pawns, opponents, white) & (captureMask | pushMask);
+        final long rightCapturePromotions = Attacks.pawnRightCapturePromos(pawns, opponents, white) & (captureMask | pushMask);
 
         generatePromotionMoves(pushPromotions, 8, 8);
         generatePromotionMoves(leftCapturePromotions, 7, 9);
@@ -245,8 +245,8 @@ public class MoveGenerator {
         final long filterMask = checkersCount > 0 ? captureMask | pushMask : switch (filter) {
             case ALL -> Square.ALL;
             case CAPTURES_ONLY -> opponents;
-            case NOISY -> opponents | Attacks.knightAttacks(opponentKing);
-            case QUIET -> ~opponents & ~Attacks.knightAttacks(opponentKing);
+            case NOISY -> opponents | Attacks.knight(opponentKing);
+            case QUIET -> ~opponents & ~Attacks.knight(opponentKing);
         };
         if (filterMask == Square.NONE) {
             return;
@@ -282,7 +282,7 @@ public class MoveGenerator {
             return;
         }
 
-        long kingMoves = Attacks.kingAttacks(from) & ~friendlies & filterMask;
+        long kingMoves = Attacks.king(from) & ~friendlies & filterMask;
 
         // Temporarily remove the king from the board
         board.removeKing(white);
@@ -385,10 +385,10 @@ public class MoveGenerator {
         final int opponentKing = Bits.next(board.getKing(!white));
         long filterMask = opponents;
         if (isDiagonal) {
-            filterMask |= Attacks.bishopAttacks(opponentKing, occupied);
+            filterMask |= Attacks.bishop(opponentKing, occupied);
         }
         if (isOrthogonal) {
-            filterMask |= Attacks.rookAttacks(opponentKing, occupied);
+            filterMask |= Attacks.rook(opponentKing, occupied);
         }
         return filterMask;
     }
@@ -413,7 +413,7 @@ public class MoveGenerator {
 
     public long getKnightAttacks(Board board, int square, boolean white) {
         final long friendlies = board.getPieces(white);
-        return Attacks.knightAttacks(square) &~ friendlies;
+        return Attacks.knight(square) &~ friendlies;
     }
 
     public long getBishopAttacks(Board board, int square, boolean white) {
@@ -436,16 +436,16 @@ public class MoveGenerator {
 
     public long getKingAttacks(Board board, int square, boolean white) {
         final long friendlies = board.getPieces(white);
-        return Attacks.kingAttacks(square) &~ friendlies;
+        return Attacks.king(square) &~ friendlies;
     }
 
     private long getSlidingAttacks(int square, long friendlies, long occ, boolean isDiagonal, boolean isOrthogonal) {
         long attackMask = 0L;
         if (isOrthogonal) {
-            attackMask |= Attacks.rookAttacks(square, occ);
+            attackMask |= Attacks.rook(square, occ);
         }
         if (isDiagonal) {
-            attackMask |= Attacks.bishopAttacks(square, occ);
+            attackMask |= Attacks.bishop(square, occ);
         }
         return attackMask &~ friendlies;
     }
@@ -489,7 +489,7 @@ public class MoveGenerator {
 
         final long opponentPawns = board.getPawns(!white);
         if (opponentPawns != 0) {
-            long pawnAttackMask = Attacks.pawnAttacks(squareMask, white);
+            long pawnAttackMask = Attacks.pawn(squareMask, white);
             if ((pawnAttackMask & opponentPawns) != 0) {
                 return true;
             }
@@ -502,7 +502,7 @@ public class MoveGenerator {
 
             final long opponentKnights = board.getKnights(!white);
             if (opponentKnights != 0) {
-                if ((Attacks.knightAttacks(square) & opponentKnights) != 0) {
+                if ((Attacks.knight(square) & opponentKnights) != 0) {
                     return true;
                 }
             }
@@ -511,7 +511,7 @@ public class MoveGenerator {
             final long opponentQueens = board.getQueens(!white);
             final long diagonalSliders = opponentBishops | opponentQueens;
             if (diagonalSliders != 0) {
-                if ((Attacks.bishopAttacks(square, occupied) & diagonalSliders) != 0) {
+                if ((Attacks.bishop(square, occupied) & diagonalSliders) != 0) {
                     return true;
                 }
             }
@@ -519,13 +519,13 @@ public class MoveGenerator {
             final long opponentRooks = board.getRooks(!white);
             final long orthogonalSliders = opponentRooks | opponentQueens;
             if (orthogonalSliders != 0) {
-                if ((Attacks.rookAttacks(square, occupied) & orthogonalSliders) != 0) {
+                if ((Attacks.rook(square, occupied) & orthogonalSliders) != 0) {
                     return true;
                 }
             }
 
             final long opponentKing = board.getKing(!white);
-            if ((Attacks.kingAttacks(square) & opponentKing) != 0) {
+            if ((Attacks.king(square) & opponentKing) != 0) {
                 return true;
             }
 
@@ -546,13 +546,13 @@ public class MoveGenerator {
         // Calculate possible orthogonal pins
         final long orthogonalSliders = board.getRooks(!white) | board.getQueens(!white);
         if (orthogonalSliders != 0) {
-            possiblePinners |= Attacks.rookAttacks(kingSquare, 0) & orthogonalSliders;
+            possiblePinners |= Attacks.rook(kingSquare, 0) & orthogonalSliders;
         }
 
         // Calculate possible diagonal pins
         final long diagonalSliders = board.getBishops(!white) | board.getQueens(!white);
         if (diagonalSliders != 0) {
-            possiblePinners |= Attacks.bishopAttacks(kingSquare, 0) & diagonalSliders;
+            possiblePinners |= Attacks.bishop(kingSquare, 0) & diagonalSliders;
         }
 
         while (possiblePinners != 0) {
@@ -586,30 +586,30 @@ public class MoveGenerator {
         long knights = board.getKnights(white);
         while (knights != 0) {
             final int square = Bits.next(knights);
-            threats |= Attacks.knightAttacks(square);
+            threats |= Attacks.knight(square);
             knights = Bits.pop(knights);
         }
 
         long bishops = board.getBishops(white) | board.getQueens(white);
         while (bishops != 0) {
             final int square = Bits.next(bishops);
-            threats |= Attacks.bishopAttacks(square, occ);
+            threats |= Attacks.bishop(square, occ);
             bishops = Bits.pop(bishops);
         }
 
         long rooks = board.getRooks(white) | board.getQueens(white);
         while (rooks != 0) {
             final int square = Bits.next(rooks);
-            threats |= Attacks.rookAttacks(square, occ);
+            threats |= Attacks.rook(square, occ);
             rooks = Bits.pop(rooks);
         }
 
         long pawns = board.getPawns(white);
-        threats |= Attacks.pawnAttacks(pawns, white);
+        threats |= Attacks.pawn(pawns, white);
 
         long king = board.getKing(white);
         final int square = Bits.next(king);
-        threats |= Attacks.kingAttacks(square);
+        threats |= Attacks.king(square);
 
         return threats;
 

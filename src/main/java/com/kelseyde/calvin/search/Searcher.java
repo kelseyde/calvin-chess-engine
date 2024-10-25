@@ -411,7 +411,10 @@ public class Searcher implements Search {
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);
 
-            if (pvNode
+            // Reverse futility reductions
+            // A softer variant of reverse futility pruning, where adopt a more conservative approach and, instead of
+            // pruning the move entirely, we reduce the search depth given the move is quiet.
+            if (!pvNode
                     && depth <= config.rfrDepth.value
                     && !inCheck
                     && isQuiet

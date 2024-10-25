@@ -304,6 +304,30 @@ public class TranspositionTableTest {
 
     }
 
+    @Test
+    public void testStoreOnlyStaticEvalInTt() {
+
+        long key = board.key();
+        HashFlag flag = HashFlag.NONE;
+        Move move = null;
+        int depth = 0;
+        int ply = 0;
+        int eval = 126;
+        int score = 0;
+
+        table.put(key, flag, depth, ply, move, eval, score);
+
+        HashEntry ttEntry = table.get(key, ply);
+
+        Assertions.assertNotNull(ttEntry);
+        Assertions.assertEquals(HashFlag.NONE, ttEntry.flag());
+        Assertions.assertNull(ttEntry.move());
+        Assertions.assertEquals(126, ttEntry.staticEval());
+        Assertions.assertEquals(0, ttEntry.score());
+        Assertions.assertEquals(0, ttEntry.depth());
+
+    }
+
     private void assertEntry(long zobrist, int score, Move move, HashFlag flag, int depth) {
         long key = HashEntry.Key.of(zobrist, 0, 0);
         long value = HashEntry.Value.of(score, move, flag, depth);

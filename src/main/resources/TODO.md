@@ -20,12 +20,14 @@
 - [x] SPSA tune
 - [ ] PV table
 - [ ] Exponentially widening aspiration window
+- [ ] Write to TT during QS stand-pat cutoff
 - [ ] Singular extensions ( tried )
 - [ ] Double extensions
 - [ ] Triple extensions
 - [ ] Negative extensions
 - [ ] MultiCut ( tried )
 - [ ] ProbCut ( tried )
+- [ ] Use improving in NMP
 - [x] Pawn corrhist
 - [x] Non-pawn corrhist
 - [ ] Material corrhist
@@ -38,6 +40,7 @@
 - [ ] TT-move corrhist? ( tried, failed SPRT )
 - [x] TT score eval correction
 - [ ] LMP table
+- [ ] Reduce killers less
 - [x] Razoring
 - [x] History pruning
 - [ ] SEE pruning ( tried )
@@ -61,6 +64,7 @@
 - [ ] Countermoves ( tried )
 - [ ] Threat quiet history ( tried )
 - [ ] Threat capture history 
+- [ ] Increase history bonus/penalty when alpha > beta + 50
 - [ ] Score-based history bonuses
 - [ ] PSQT-based move ordering bonus
 - [ ] Add Killers, History etc. stages to `MovePicker`. ( tried )

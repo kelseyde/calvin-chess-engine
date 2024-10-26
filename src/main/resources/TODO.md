@@ -43,6 +43,8 @@
 - [ ] Reduce killers less
 - [x] Razoring
 - [x] History pruning
+- [x] Reverse futility reductions
+- [x] Futility reductions
 - [ ] SEE pruning ( tried )
 - [ ] Faster SEE ( tried )
 - [ ] Syzygy TB
@@ -52,7 +54,7 @@
 
 ### Move generation / Move ordering
 
-- [ ] Pseudo-legal movegen
+- [ ] Pseudo-legal movegen ( tried, didn't work, possible skill issue )
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [x] The Great `MovePicker` Rewrite`™`
 - [ ] Try copy/make rather than make/unmake
@@ -85,7 +87,7 @@
 
 ### Transposition Table
 
-- [ ] Always store eval in TT (should be 5-ish elo?)
+- [x] Always store eval in TT (should be 5-ish elo?)
 - [ ] PV node flag in TT
 - [ ] 16-bits zobrist in TT? (SF does it)
 - [ ] Fully compress all fields to minimum size

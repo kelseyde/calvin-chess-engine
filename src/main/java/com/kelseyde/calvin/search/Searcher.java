@@ -359,10 +359,19 @@ public class Searcher implements Search {
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
                 && depth <= config.fpDepth.value
-                && !inCheck && !isCapture && !isPromotion
-                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {
-                movePicker.setSkipQuiets(true);
-                continue;
+                && !inCheck && !isCapture && !isPromotion) {
+
+                // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
+                int pruneMargin = config.fpMargin.value + depth * config.fpScale.value;
+                int reduceMargin = pruneMargin + depth * 4;
+
+                if (staticEval + pruneMargin <= alpha) {
+                    movePicker.setSkipQuiets(true);
+                    continue;
+                }
+                else if (staticEval + reduceMargin <= alpha) {
+                    quietReduction = 1;
+                }
             }
 
             final int historyScore = scoredMove.historyScore();

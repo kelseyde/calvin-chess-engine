@@ -412,13 +412,15 @@ public class Searcher implements Search {
             sse.searchedMoves.add(playedMove);
 
             // Reverse futility reductions
-            // A softer variant of reverse futility pruning, where adopt a more conservative approach and, instead of
-            // pruning the move entirely, we reduce the search depth given the move is quiet.
+            // A softer variant of reverse futility pruning where, instead of pruning the move entirely when static eval
+            // is significantly above beta, we reduce the search depth for quiet moves.
+            int rfpMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
+            int reductionMargin = rfpMargin + depth * config.rfrScale.value;
             if (!pvNode
                     && depth <= config.rfrDepth.value
                     && !inCheck
                     && isQuiet
-                    && staticEval - depth * (improving ? config.rfrImpMargin.value : config.rfrMargin.value) >= beta
+                    && staticEval - reductionMargin >= beta
                     && !Score.isMateScore(alpha)) {
                 reduction++;
             }

@@ -114,3 +114,10 @@
 - [ ] MultiPV
 - [x] Coloured output
 
+### Wild (and potentially stupid) ideas
+
+- [ ] For every pruning heuristic, add a softer bound where instead of pruning, you reduce.
+- [ ] Use the delta between bestScore and beta to adjust the history bonus/penalty (how to make this interact with the depth bonus?)
+- [ ] Another softer version of pruning: reduce the a/b window in pv nodes? Seems risky. Or increase history bonus/penalty?
+- 
+

@@ -360,6 +360,8 @@ public class Searcher implements Search {
             if (!pvNode
                 && depth <= config.fpDepth.value
                 && !inCheck && !isCapture && !isPromotion) {
+
+                // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
                 int pruneMargin = config.fpMargin.value + depth * config.fpScale.value;
                 int reduceMargin = pruneMargin + depth * 4;
 

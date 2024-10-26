@@ -283,7 +283,7 @@ public class Searcher implements Search {
                     return (staticEval + beta) / 2;
                 }
                 else if (staticEval - reduceMargin >= beta) {
-                    quietReduction = 1;
+                    return quiescenceSearch(alpha, beta, 1, ply);
                 }
             }
 

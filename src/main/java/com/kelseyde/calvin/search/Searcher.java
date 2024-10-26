@@ -266,24 +266,32 @@ public class Searcher implements Search {
         // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck) {
 
-            // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
-            // If the static evaluation + some significant margin is still above beta, then let's assume this position
-            // is a cut-node and will fail-high, and not search any further.
-            if (depth <= config.rfpDepth.value
-                && !Score.isMateScore(alpha)) {
+// Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
+// If the static evaluation + some significant margin is still above beta, then let's assume this position
+// is a cut-node and will fail-high, and not search any further.
+            if (depth <= config.rfpDepth.value && !Score.isMateScore(alpha)) {
 
+                // Calculate base margin with additional blend factor to create softer pruning
                 int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
                 int blend = depth * 4;
 
-                // At the stricter margin we prune the entire node; at the softer margin we reduce quiet moves only.
+                // Define pruneMargin and reduceMargin
                 int pruneMargin = baseMargin - blend;
                 int reduceMargin = baseMargin + blend;
 
+                // If the evaluation is significantly higher than beta, prune the node entirely
                 if (staticEval - pruneMargin >= beta) {
                     return (staticEval + beta) / 2;
                 }
+
+                // Else, apply reduction to quiet moves, using a dynamic scaling based on how far the eval is from beta
                 else if (staticEval - reduceMargin >= beta) {
-                    quietReduction = 1;
+                    // Calculate distance from beta in units of 'blend' to scale reduction dynamically
+                    int delta = (staticEval - beta) - reduceMargin;
+
+                    // Scale quietReduction based on how far the eval is above beta, capped between 1 and 3
+                    // The idea is to reduce more if staticEval is much greater than beta
+                    quietReduction = 1 + Math.min(2, delta / blend);
                 }
             }
 

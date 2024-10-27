@@ -361,8 +361,8 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
-                && depth <= config.fpDepth.value
-                && !inCheck && !isCapture && !isPromotion) {
+                    && depth <= config.fpDepth.value
+                    && !inCheck && !isCapture && !isPromotion) {
 
                 // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
                 int pruneMargin = config.fpMargin.value + depth * config.fpScale.value;
@@ -373,7 +373,11 @@ public class Searcher implements Search {
                     continue;
                 }
                 else if (staticEval + reduceMargin <= alpha) {
-                    quietReduction = 1;
+                    // Calculate distance from alpha to scale reduction dynamically
+                    int delta = (alpha - staticEval) - pruneMargin;
+
+                    int maxReduction = config.fpDepth.value;
+                    quietReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
                 }
             }
 

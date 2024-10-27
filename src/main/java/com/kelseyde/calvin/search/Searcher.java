@@ -373,11 +373,11 @@ public class Searcher implements Search {
                     continue;
                 }
                 else if (staticEval + reduceMargin <= alpha) {
-                    // Calculate how far staticEval is from alpha, and determine dynamic reduction
-                    int distFromAlpha = (alpha - staticEval) - pruneMargin;
+                    // Calculate distance from alpha to scale reduction dynamically
+                    int delta = (alpha - staticEval) - pruneMargin;
 
                     int maxReduction = config.fpDepth.value;
-                    quietReduction = 1 + Math.min(distFromAlpha / (reduceMargin - pruneMargin), maxReduction - 1);
+                    quietReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
                 }
             }
 

@@ -5,16 +5,16 @@ import java.util.Map;
 
 public class Bits {
 
-    public static int next(final long board) {
-        return Long.numberOfTrailingZeros(board);
+    public static int next(final long bb) {
+        return Long.numberOfTrailingZeros(bb);
     }
 
-    public static long pop(long board) {
-        return board & (board - 1);
+    public static long pop(long bb) {
+        return bb & (bb - 1);
     }
 
-    public static int count(long board) {
-        return Long.bitCount(board);
+    public static int count(long bb) {
+        return Long.bitCount(bb);
     }
 
     public static long of(int sq) {
@@ -25,36 +25,36 @@ public class Bits {
         return (bb & of(sq)) != 0;
     }
 
-    public static long north(long board) {
-        return board << 8;
+    public static long north(long bb) {
+        return bb << 8;
     }
 
-    public static long south(long board) {
-        return board >>> 8;
+    public static long south(long bb) {
+        return bb >>> 8;
     }
 
-    public static long east(long board) {
-        return (board << 1) & ~File.A;
+    public static long east(long bb) {
+        return (bb << 1) & ~File.A;
     }
 
-    public static long west(long board) {
-        return (board >>> 1) & ~File.H;
+    public static long west(long bb) {
+        return (bb >>> 1) & ~File.H;
     }
 
-    public static long northEast(long board) {
-        return (board << 9) & ~File.A;
+    public static long northEast(long bb) {
+        return (bb << 9) & ~File.A;
     }
 
-    public static long southEast(long board) {
-        return (board >>> 7) & ~File.A;
+    public static long southEast(long bb) {
+        return (bb >>> 7) & ~File.A;
     }
 
-    public static long northWest(long board) {
-        return (board << 7) & ~File.H;
+    public static long northWest(long bb) {
+        return (bb << 7) & ~File.H;
     }
 
-    public static long southWest(long board) {
-        return (board >>> 9) & ~File.H;
+    public static long southWest(long bb) {
+        return (bb >>> 9) & ~File.H;
     }
 
     public static void print(long bb) {

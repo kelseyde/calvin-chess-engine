@@ -256,6 +256,8 @@ public class Searcher implements Search {
         SearchStackEntry sse = ss.get(ply);
         sse.staticEval = staticEval;
 
+        int quietReduction = 0;
+
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
@@ -268,10 +270,25 @@ public class Searcher implements Search {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
-            if (depth <= config.rfpDepth.value
-                && staticEval - depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value) >= beta
-                && !Score.isMateScore(alpha)) {
-                return (staticEval + beta) / 2;
+            if (depth <= config.rfpDepth.value && !Score.isMateScore(alpha)) {
+
+                int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
+                int blend = depth * 4;
+
+                int pruneMargin = baseMargin - blend;
+                int reduceMargin = baseMargin + blend;
+
+                // If the evaluation is significantly higher than beta, prune the node entirely
+                if (staticEval - pruneMargin >= beta) {
+                    return (staticEval + beta) / 2;
+                }
+
+                // Else, apply reduction to quiet moves, using a dynamic scaling based on how far the eval is from beta
+                else if (staticEval - reduceMargin >= beta) {
+                    // Calculate distance from beta in units of 'blend' to scale reduction dynamically
+                    int delta = (staticEval - beta) - reduceMargin;
+                    quietReduction = 1 + Math.min(2, delta / blend);
+                }
             }
 
             // Razoring - https://www.chessprogramming.org/Razoring
@@ -345,11 +362,24 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
-                && depth <= config.fpDepth.value
-                && !inCheck && !isCapture && !isPromotion
-                && staticEval + config.fpMargin.value + depth * config.fpScale.value <= alpha) {
-                movePicker.setSkipQuiets(true);
-                continue;
+                    && depth <= config.fpDepth.value
+                    && !inCheck && !isCapture && !isPromotion) {
+
+                // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
+                int pruneMargin = config.fpMargin.value + depth * config.fpScale.value;
+                int reduceMargin = pruneMargin + depth * 4;
+
+                if (staticEval + pruneMargin <= alpha) {
+                    movePicker.setSkipQuiets(true);
+                    continue;
+                }
+                else if (staticEval + reduceMargin <= alpha) {
+                    // Calculate distance from alpha to scale reduction dynamically
+                    int delta = (alpha - staticEval) - pruneMargin;
+
+                    int maxReduction = config.fpDepth.value;
+                    quietReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
+                }
             }
 
             final int historyScore = scoredMove.historyScore();
@@ -405,8 +435,13 @@ public class Searcher implements Search {
 
             final boolean isCheck = movegen.isCheck(board, board.isWhite());
 
-            playedMove.quiet = !isCheck && !isCapture && !isPromotion;
+            boolean isQuiet = !isCheck && !isCapture && !isPromotion;
+            playedMove.quiet = isQuiet;
             playedMove.capture = isCapture;
+
+            if (isQuiet) {
+                reduction += quietReduction;
+            }
 
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);

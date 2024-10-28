@@ -21,27 +21,27 @@ public class FENTest {
 
         Board fenBoard = FEN.toBoard(FEN.STARTPOS);
         Board newBoard = Board.from(FEN.STARTPOS);
-        Assertions.assertEquals(newBoard.getPawns(true), fenBoard.getPawns(true));
-        Assertions.assertEquals(newBoard.getKnights(true), fenBoard.getKnights(true));
-        Assertions.assertEquals(newBoard.getBishops(true), fenBoard.getBishops(true));
-        Assertions.assertEquals(newBoard.getRooks(true), fenBoard.getRooks(true));
-        Assertions.assertEquals(newBoard.getQueens(true), fenBoard.getQueens(true));
-        Assertions.assertEquals(newBoard.getKing(true), fenBoard.getKing(true));
-        Assertions.assertEquals(newBoard.getPawns(false), fenBoard.getPawns(false));
-        Assertions.assertEquals(newBoard.getKnights(false), fenBoard.getKnights(false));
-        Assertions.assertEquals(newBoard.getBishops(false), fenBoard.getBishops(false));
-        Assertions.assertEquals(newBoard.getRooks(false), fenBoard.getRooks(false));
-        Assertions.assertEquals(newBoard.getQueens(false), fenBoard.getQueens(false));
-        Assertions.assertEquals(newBoard.getKing(false), fenBoard.getKing(false));
+        Assertions.assertEquals(newBoard.pawns(true), fenBoard.pawns(true));
+        Assertions.assertEquals(newBoard.knights(true), fenBoard.knights(true));
+        Assertions.assertEquals(newBoard.bishops(true), fenBoard.bishops(true));
+        Assertions.assertEquals(newBoard.rooks(true), fenBoard.rooks(true));
+        Assertions.assertEquals(newBoard.queens(true), fenBoard.queens(true));
+        Assertions.assertEquals(newBoard.king(true), fenBoard.king(true));
+        Assertions.assertEquals(newBoard.pawns(false), fenBoard.pawns(false));
+        Assertions.assertEquals(newBoard.knights(false), fenBoard.knights(false));
+        Assertions.assertEquals(newBoard.bishops(false), fenBoard.bishops(false));
+        Assertions.assertEquals(newBoard.rooks(false), fenBoard.rooks(false));
+        Assertions.assertEquals(newBoard.queens(false), fenBoard.queens(false));
+        Assertions.assertEquals(newBoard.king(false), fenBoard.king(false));
 
-        Assertions.assertEquals(newBoard.getWhitePieces(), fenBoard.getWhitePieces());
-        Assertions.assertEquals(newBoard.getBlackPieces(), fenBoard.getBlackPieces());
-        Assertions.assertEquals(newBoard.getOccupied(), fenBoard.getOccupied());
+        Assertions.assertEquals(newBoard.whitePieces(), fenBoard.whitePieces());
+        Assertions.assertEquals(newBoard.blackPieces(), fenBoard.blackPieces());
+        Assertions.assertEquals(newBoard.occupied(), fenBoard.occupied());
 
         Assertions.assertEquals(newBoard.isWhite(), fenBoard.isWhite());
-        Assertions.assertEquals(newBoard.getState(), fenBoard.getState());
-        Assertions.assertEquals(Arrays.asList(newBoard.getStates()), Arrays.asList(fenBoard.getStates()));
-        Assertions.assertEquals(Arrays.asList(newBoard.getMoves()), Arrays.asList(fenBoard.getMoves()));
+        Assertions.assertEquals(newBoard.state(), fenBoard.state());
+        Assertions.assertEquals(Arrays.asList(newBoard.states()), Arrays.asList(fenBoard.states()));
+        Assertions.assertEquals(Arrays.asList(newBoard.moves()), Arrays.asList(fenBoard.moves()));
 
     }
 

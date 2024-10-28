@@ -46,7 +46,7 @@ public class SEE {
 
         boolean white = board.isWhite();
 
-        long pawns = board.getPawns(white);
+        long pawns = board.pawns(white);
         if (pawns > 0) {
             long pawnAttackMask = MOVEGEN.getPawnAttacks(board, square, !white);
             if ((pawnAttackMask & pawns) != 0) {
@@ -55,7 +55,7 @@ public class SEE {
             }
         }
 
-        long knights = board.getKnights(white);
+        long knights = board.knights(white);
         if (knights > 0) {
             long knightAttackMask = MOVEGEN.getKnightAttacks(board, square, !white);
             if ((knightAttackMask & knights) != 0) {
@@ -64,7 +64,7 @@ public class SEE {
             }
         }
 
-        long bishops = board.getBishops(white);
+        long bishops = board.bishops(white);
         if (bishops > 0) {
             long bishopAttackMask = MOVEGEN.getBishopAttacks(board, square, !white);
             if ((bishopAttackMask & bishops) != 0) {
@@ -73,7 +73,7 @@ public class SEE {
             }
         }
 
-        long rooks = board.getRooks(white);
+        long rooks = board.rooks(white);
         if (rooks > 0) {
             long rookAttackMask = MOVEGEN.getRookAttacks(board, square, !white);
             if ((rookAttackMask & rooks) != 0) {
@@ -82,7 +82,7 @@ public class SEE {
             }
         }
 
-        long queens = board.getQueens(white);
+        long queens = board.queens(white);
         if (queens > 0) {
             long queenAttackMask = MOVEGEN.getQueenAttacks(board, square, !white);
             if ((queenAttackMask & queens) != 0) {
@@ -91,7 +91,7 @@ public class SEE {
             }
         }
 
-        long king = board.getKing(white);
+        long king = board.king(white);
         long kingAttackMask = MOVEGEN.getKingAttacks(board, square, !white);
         if ((kingAttackMask & king) != 0) {
             int kingStartSquare = Bits.next(kingAttackMask & king);

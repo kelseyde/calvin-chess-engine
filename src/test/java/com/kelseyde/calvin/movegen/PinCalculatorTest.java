@@ -16,10 +16,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
     }
 
@@ -30,10 +30,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
     }
 
@@ -44,10 +44,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
     }
 
@@ -58,10 +58,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
     }
 
@@ -72,10 +72,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
     }
 
@@ -86,10 +86,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
     }
 
     @Test
@@ -99,10 +99,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(1L << 12, movegen.getPinMask());
+        Assertions.assertEquals(1L << 12, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
     }
 
@@ -113,10 +113,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0L, movegen.getPinMask());
+        Assertions.assertEquals(0L, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(1L << 52, movegen.getPinMask());
+        Assertions.assertEquals(1L << 52, movegen.getPinned());
 
     }
 
@@ -127,10 +127,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(1L << 19, movegen.getPinMask());
+        Assertions.assertEquals(1L << 19, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(1L << 43, movegen.getPinMask());
+        Assertions.assertEquals(1L << 43, movegen.getPinned());
 
     }
 
@@ -141,10 +141,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
     }
 
@@ -155,10 +155,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(1L << 28, movegen.getPinMask());
+        Assertions.assertEquals(1L << 28, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
     }
 
@@ -169,10 +169,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(1L << 62, movegen.getPinMask());
+        Assertions.assertEquals(1L << 62, movegen.getPinned());
 
     }
 
@@ -183,10 +183,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(1L << 57, movegen.getPinMask());
+        Assertions.assertEquals(1L << 57, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
     }
 
@@ -197,10 +197,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(1L << 37, movegen.getPinMask());
+        Assertions.assertEquals(1L << 37, movegen.getPinned());
 
     }
 
@@ -211,10 +211,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(1L << 18, movegen.getPinMask());
+        Assertions.assertEquals(1L << 18, movegen.getPinned());
 
     }
 
@@ -225,10 +225,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
     }
 
@@ -239,10 +239,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(1L << 54, movegen.getPinMask());
+        Assertions.assertEquals(1L << 54, movegen.getPinned());
 
     }
 
@@ -253,10 +253,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(1L << 52, movegen.getPinMask());
+        Assertions.assertEquals(1L << 52, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
     }
 
@@ -267,10 +267,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(1L << 36, movegen.getPinMask());
+        Assertions.assertEquals(1L << 36, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(1L << 27, movegen.getPinMask());
+        Assertions.assertEquals(1L << 27, movegen.getPinned());
 
     }
 
@@ -281,10 +281,10 @@ public class PinCalculatorTest {
         Board board = FEN.toBoard(fen);
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(1L << 36, movegen.getPinMask());
+        Assertions.assertEquals(1L << 36, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
     }
 
@@ -299,10 +299,10 @@ public class PinCalculatorTest {
         expectedPinMask |= 1L << 4;
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(expectedPinMask, movegen.getPinMask());
+        Assertions.assertEquals(expectedPinMask, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
     }
 
@@ -317,10 +317,10 @@ public class PinCalculatorTest {
         expectedPinMask |= 1L << 36;
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(expectedPinMask, movegen.getPinMask());
+        Assertions.assertEquals(expectedPinMask, movegen.getPinned());
 
     }
 
@@ -335,10 +335,10 @@ public class PinCalculatorTest {
         expectedPinMask |= 1L << 37;
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(0, movegen.getPinMask());
+        Assertions.assertEquals(0, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(expectedPinMask, movegen.getPinMask());
+        Assertions.assertEquals(expectedPinMask, movegen.getPinned());
 
     }
 
@@ -353,10 +353,10 @@ public class PinCalculatorTest {
         expectedPinMask |= 1L << 21;
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(1L << 42, movegen.getPinMask());
+        Assertions.assertEquals(1L << 42, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(expectedPinMask, movegen.getPinMask());
+        Assertions.assertEquals(expectedPinMask, movegen.getPinned());
     }
 
     @Test
@@ -376,10 +376,10 @@ public class PinCalculatorTest {
         expectedBlackPinMask |= 1L << 13;
 
         movegen.calculatePins(board, true);
-        Assertions.assertEquals(expectedWhitePinMask, movegen.getPinMask());
+        Assertions.assertEquals(expectedWhitePinMask, movegen.getPinned());
 
         movegen.calculatePins(board, false);
-        Assertions.assertEquals(expectedBlackPinMask, movegen.getPinMask());
+        Assertions.assertEquals(expectedBlackPinMask, movegen.getPinned());
 
     }
 

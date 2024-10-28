@@ -91,15 +91,14 @@ public class FEN {
             board.setKings(king);
             board.setWhitePieces(whitePieces);
             board.setBlackPieces(blackPieces);
-            board.setOccupied(occupied);
             board.setPieces(calculatePieceList(board));
             board.setWhite(whiteToMove);
-            board.getState().setRights(castlingRights);
-            board.getState().setEnPassantFile(enPassantFile);
-            board.getState().setHalfMoveClock(fiftyMoveCounter);
-            board.getState().setKey(Key.generateKey(board));
-            board.getState().setPawnKey(Key.generatePawnKey(board));
-            board.getState().setNonPawnKeys(Key.generateNonPawnKeys(board));
+            board.state().setRights(castlingRights);
+            board.state().setEnPassantFile(enPassantFile);
+            board.state().setHalfMoveClock(fiftyMoveCounter);
+            board.state().setKey(Key.generateKey(board));
+            board.state().setPawnKey(Key.generatePawnKey(board));
+            board.state().setNonPawnKeys(Key.generateNonPawnKeys(board));
 
             return board;
 
@@ -120,7 +119,7 @@ public class FEN {
                             emptySquares = 0;
                         }
                         long squareBB = Bits.of(square);
-                        boolean white = (board.getWhitePieces() & squareBB) != 0;
+                        boolean white = (board.whitePieces() & squareBB) != 0;
                         String pieceCode = piece.code();
                         if (white) pieceCode = pieceCode.toUpperCase();
                         sb.append(pieceCode);
@@ -139,16 +138,16 @@ public class FEN {
             String whiteToMove = toSideToMove(board.isWhite());
             sb.append(" ").append(whiteToMove);
 
-            String castlingRights = toCastlingRights(board.getState().getRights());
+            String castlingRights = toCastlingRights(board.state().getRights());
             sb.append(" ").append(castlingRights);
 
-            String enPassantSquare = toEnPassantSquare(board.getState().getEnPassantFile(), board.isWhite());
+            String enPassantSquare = toEnPassantSquare(board.state().getEnPassantFile(), board.isWhite());
             sb.append(" ").append(enPassantSquare);
 
-            String fiftyMoveCounter = toFiftyMoveCounter(board.getState().getHalfMoveClock());
+            String fiftyMoveCounter = toFiftyMoveCounter(board.state().getHalfMoveClock());
             sb.append(" ").append(fiftyMoveCounter);
 
-            String fullMoveNumber = toFullMoveCounter(board.getPly());
+            String fullMoveNumber = toFullMoveCounter(board.ply());
             sb.append(" ").append(fullMoveNumber);
 
             return sb.toString();
@@ -247,12 +246,12 @@ public class FEN {
         Piece[] pieceList = new Piece[Square.COUNT];
         for (int square = 0; square < Square.COUNT; square++) {
             long squareMask = Bits.of(square);
-            if ((squareMask & board.getPawns()) != 0)           pieceList[square] = Piece.PAWN;
-            else if ((squareMask & board.getKnights()) != 0)    pieceList[square] = Piece.KNIGHT;
-            else if ((squareMask & board.getBishops()) != 0)    pieceList[square] = Piece.BISHOP;
-            else if ((squareMask & board.getRooks()) != 0)      pieceList[square] = Piece.ROOK;
-            else if ((squareMask & board.getQueens()) != 0)     pieceList[square] = Piece.QUEEN;
-            else if ((squareMask & board.getKings()) != 0)      pieceList[square] = Piece.KING;
+            if ((squareMask & board.pawns()) != 0)           pieceList[square] = Piece.PAWN;
+            else if ((squareMask & board.knights()) != 0)    pieceList[square] = Piece.KNIGHT;
+            else if ((squareMask & board.bishops()) != 0)    pieceList[square] = Piece.BISHOP;
+            else if ((squareMask & board.rooks()) != 0)      pieceList[square] = Piece.ROOK;
+            else if ((squareMask & board.queens()) != 0)     pieceList[square] = Piece.QUEEN;
+            else if ((squareMask & board.kings()) != 0)      pieceList[square] = Piece.KING;
         }
         return pieceList;
 

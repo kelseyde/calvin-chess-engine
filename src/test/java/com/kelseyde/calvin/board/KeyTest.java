@@ -14,19 +14,19 @@ public class KeyTest {
 
         Board board1 = Board.from(FEN.STARTPOS);
         Board board2 = Board.from(FEN.STARTPOS);
-        Assertions.assertEquals(board1.getState().getKey(), board2.getState().getKey());
+        Assertions.assertEquals(board1.state().getKey(), board2.state().getKey());
 
         Move e4 = new Move(12, 28, Move.PAWN_DOUBLE_MOVE_FLAG);
         board1.makeMove(e4);
         board2.makeMove(e4);
 
-        Assertions.assertEquals(board1.getState().getKey(), board2.getState().getKey());
+        Assertions.assertEquals(board1.state().getKey(), board2.state().getKey());
 
         board1.unmakeMove();
         board2.unmakeMove();
 
-        Assertions.assertEquals(board1.getState().getKey(), board2.getState().getKey());
-        Assertions.assertEquals(board1.getState().getKey(), Board.from(FEN.STARTPOS).getState().getKey());
+        Assertions.assertEquals(board1.state().getKey(), board2.state().getKey());
+        Assertions.assertEquals(board1.state().getKey(), Board.from(FEN.STARTPOS).state().getKey());
 
     }
 
@@ -36,18 +36,18 @@ public class KeyTest {
         String fen = "k6K/1pp2P1P/p1p5/P7/8/8/5r2/2R5 w - - 1 51";
 
         Board board = FEN.toBoard(fen);
-        long firstZobrist1 = board.getState().getKey();
+        long firstZobrist1 = board.state().getKey();
 
         board.makeMove(Move.fromUCI("h8g8"));
-        long secondZobrist1 = board.getState().getKey();
+        long secondZobrist1 = board.state().getKey();
 
         board.makeMove(Move.fromUCI("f2g2"));
         board.makeMove(Move.fromUCI("g8h8"));
         board.makeMove(Move.fromUCI("g2f2"));
-        long firstZobrist2 = board.getState().getKey();
+        long firstZobrist2 = board.state().getKey();
 
         board.makeMove(Move.fromUCI("h8g8"));
-        long secondZobrist2 = board.getState().getKey();
+        long secondZobrist2 = board.state().getKey();
 
         Assertions.assertEquals(firstZobrist1, firstZobrist2);
         Assertions.assertEquals(secondZobrist1, secondZobrist2);
@@ -64,17 +64,17 @@ public class KeyTest {
         String fen = "1rb3k1/p1q3pp/4pr2/5p2/2pP4/1PQ3P1/4PPBP/2R1K2R b K - 0 21";
 
         Board board = FEN.toBoard(fen);
-        long z1 = board.getState().getKey();
+        long z1 = board.state().getKey();
         board.makeMove(Move.fromUCI("b8b3"));
-        long z2 = board.getState().getKey();
+        long z2 = board.state().getKey();
         board.makeMove(Move.fromUCI("c3b3"));
-        long z3 = board.getState().getKey();
+        long z3 = board.state().getKey();
         board.makeMove(Move.fromUCI("c7a5"));
-        long z4 = board.getState().getKey();
+        long z4 = board.state().getKey();
         board.makeMove(Move.fromUCI("b3c3"));
-        long z5 = board.getState().getKey();
+        long z5 = board.state().getKey();
         board.makeMove(Move.fromUCI("a5c7"));
-        long z6 = board.getState().getKey();
+        long z6 = board.state().getKey();
 
         long distinctZobristCount = Stream.of(z1, z2, z3, z4, z5, z6)
                 .distinct()
@@ -91,10 +91,10 @@ public class KeyTest {
 
         Board board1 = FEN.toBoard(fenBeforeMove);
         board1.makeMove(Move.fromUCI("e2e4"));
-        long zobrist1 = board1.getState().getKey();
+        long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterMove);
-        long zobrist2 = board2.getState().getKey();
+        long zobrist2 = board2.state().getKey();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -108,10 +108,10 @@ public class KeyTest {
 
         Board board1 = FEN.toBoard(fenBeforeMove);
         board1.makeMove(Move.fromUCI("e4d5"));
-        long zobrist1 = board1.getState().getKey();
+        long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterMove);
-        long zobrist2 = board2.getState().getKey();
+        long zobrist2 = board2.state().getKey();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -125,10 +125,10 @@ public class KeyTest {
 
         Board board1 = FEN.toBoard(fenBeforeMove);
         board1.makeMove(Move.fromUCI("e1e2"));
-        long zobrist1 = board1.getState().getKey();
+        long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterMove);
-        long zobrist2 = board2.getState().getKey();
+        long zobrist2 = board2.state().getKey();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -142,10 +142,10 @@ public class KeyTest {
 
         Board board1 = FEN.toBoard(fenBeforeCapture);
         board1.makeMove(Move.fromUCI("e5d6", Move.EN_PASSANT_FLAG));
-        long zobrist1 = board1.getState().getKey();
+        long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCapture);
-        long zobrist2 = board2.getState().getKey();
+        long zobrist2 = board2.state().getKey();
 
         Assertions.assertEquals(zobrist1, zobrist2);
     }
@@ -158,10 +158,10 @@ public class KeyTest {
 
         Board board1 = FEN.toBoard(fenBeforeCastle);
         board1.makeMove(Move.fromUCI("e1g1", Move.CASTLE_FLAG));
-        long zobrist1 = board1.getState().getKey();
+        long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCastle);
-        long zobrist2 = board2.getState().getKey();
+        long zobrist2 = board2.state().getKey();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -175,10 +175,10 @@ public class KeyTest {
 
         Board board1 = FEN.toBoard(fenBeforeCastle);
         board1.makeMove(Move.fromUCI("b7a8", Move.PROMOTE_TO_QUEEN_FLAG));
-        long zobrist1 = board1.getState().getKey();
+        long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCastle);
-        long zobrist2 = board2.getState().getKey();
+        long zobrist2 = board2.state().getKey();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 
@@ -192,10 +192,10 @@ public class KeyTest {
 
         Board board1 = FEN.toBoard(fenBeforePromotion);
         board1.makeMove(Move.fromUCI("b7a8q", Move.PROMOTE_TO_QUEEN_FLAG));
-        long zobrist1 = board1.getState().getPawnKey();
+        long zobrist1 = board1.state().getPawnKey();
 
         Board board2 = FEN.toBoard(fenAfterPromotion);
-        long zobrist2 = board2.getState().getPawnKey();
+        long zobrist2 = board2.state().getPawnKey();
 
         Assertions.assertEquals(zobrist1, zobrist2);
 

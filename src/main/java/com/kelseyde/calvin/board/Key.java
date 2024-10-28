@@ -55,12 +55,12 @@ public class Key {
 
         // Define arrays for each piece type and color
         long[][] pieces = {
-                { board.getPawns(true), board.getPawns(false) },
-                { board.getKnights(true), board.getKnights(false) },
-                { board.getBishops(true), board.getBishops(false) },
-                { board.getRooks(true), board.getRooks(false) },
-                { board.getQueens(true), board.getQueens(false) },
-                { board.getKing(true), board.getKing(false) }
+                { board.pawns(true), board.pawns(false) },
+                { board.knights(true), board.knights(false) },
+                { board.bishops(true), board.bishops(false) },
+                { board.rooks(true), board.rooks(false) },
+                { board.queens(true), board.queens(false) },
+                { board.king(true), board.king(false) }
         };
 
         // Loop through each square and piece type
@@ -71,8 +71,8 @@ public class Key {
         }
 
         // Update key with en passant, castling rights, and side to move
-        key ^= EN_PASSANT_FILE[board.getState().getEnPassantFile() + 1];
-        key ^= CASTLING_RIGHTS[board.getState().getRights()];
+        key ^= EN_PASSANT_FILE[board.state().getEnPassantFile() + 1];
+        key ^= CASTLING_RIGHTS[board.state().getRights()];
         if (board.isWhite()) {
             key ^= SIDE_TO_MOVE;
         }
@@ -84,8 +84,8 @@ public class Key {
         long key = 0L;
 
         // Get the bitboards for white and black pawns
-        long whitePawns = board.getPawns(true);
-        long blackPawns = board.getPawns(false);
+        long whitePawns = board.pawns(true);
+        long blackPawns = board.pawns(false);
 
         // Loop through each square
         if (whitePawns != 0L || blackPawns != 0L) {  // Early exit optimization if no pawns
@@ -102,11 +102,11 @@ public class Key {
 
         // Array of piece types and their corresponding bitboards for both sides
         long[][] nonPawnPieces = {
-                { board.getKnights(true), board.getKnights(false) },
-                { board.getBishops(true), board.getBishops(false) },
-                { board.getRooks(true), board.getRooks(false) },
-                { board.getQueens(true), board.getQueens(false) },
-                { board.getKing(true), board.getKing(false) }
+                { board.knights(true), board.knights(false) },
+                { board.bishops(true), board.bishops(false) },
+                { board.rooks(true), board.rooks(false) },
+                { board.queens(true), board.queens(false) },
+                { board.king(true), board.king(false) }
         };
 
         // Array of corresponding piece indices

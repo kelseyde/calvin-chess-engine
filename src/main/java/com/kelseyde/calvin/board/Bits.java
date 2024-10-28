@@ -221,6 +221,33 @@ public class Bits {
         public static final int CLEAR_WHITE_QUEENSIDE_MASK = 0b1101;
         public static final int CLEAR_BLACK_QUEENSIDE_MASK = 0b0111;
 
+        public static int updateRights(int newRights, int from, int to, Piece pieceType, boolean white) {
+            if (newRights == 0b0000) {
+                // Both sides already lost castling rights, so nothing to calculate.
+                return newRights;
+            }
+            // Any move by the king removes castling rights.
+            if (Piece.KING.equals(pieceType)) {
+                newRights &= white ? Castling.CLEAR_WHITE_CASTLING_MASK : Castling.CLEAR_BLACK_CASTLING_MASK;
+            }
+            // Any move starting from/ending at a rook square removes castling rights for that corner.
+            // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
+            // another rook in starting position; in that case, both sides lose castling rights!
+            if (from == 7 || to == 7) {
+                newRights &= Castling.CLEAR_WHITE_KINGSIDE_MASK;
+            }
+            if (from == 63 || to == 63) {
+                newRights &= Castling.CLEAR_BLACK_KINGSIDE_MASK;
+            }
+            if (from == 0 || to == 0) {
+                newRights &= Castling.CLEAR_WHITE_QUEENSIDE_MASK;
+            }
+            if (from == 56 || to == 56) {
+                newRights &= Castling.CLEAR_BLACK_QUEENSIDE_MASK;
+            }
+            return newRights;
+        }
+
         public static int rookFrom(boolean kingside, boolean white) {
             if (kingside) {
                 return white ? 7 : 63;
@@ -236,6 +263,22 @@ public class Bits {
                 return white ? 3 : 59;
             }
         }
+
+        public static int kingTo(boolean white, boolean isKingside) {
+            if (isKingside) return white ? 6 : 62;
+            else return white ? 2 : 58;
+        }
+
+        public static long travelSquares(boolean white, boolean isKingside) {
+            if (isKingside) return white ? WHITE_KINGSIDE_TRAVEL_MASK : BLACK_KINGSIDE_TRAVEL_MASK;
+            else return white ? WHITE_QUEENSIDE_TRAVEL_MASK : BLACK_QUEENSIDE_TRAVEL_MASK;
+        }
+
+        public static long safeSquares(boolean white, boolean isKingside) {
+            if (isKingside) return white ? WHITE_KINGSIDE_SAFE_MASK : BLACK_KINGSIDE_SAFE_MASK;
+            else return white ? WHITE_QUEENSIDE_SAFE_MASK : BLACK_QUEENSIDE_SAFE_MASK;
+        }
+
     }
 
 

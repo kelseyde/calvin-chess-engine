@@ -79,8 +79,8 @@ public class NNUE {
             acc.blackFeatures[i] = NETWORK.inputBiases()[i];
         }
 
-        activateSide(acc, board, board.getWhitePieces(), true);
-        activateSide(acc, board, board.getBlackPieces(), false);
+        activateSide(acc, board, board.whitePieces(), true);
+        activateSide(acc, board, board.blackPieces(), false);
 
     }
 
@@ -163,17 +163,17 @@ public class NNUE {
 
         // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
         // of when no progress is being made in the position.
-        eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
+        eval = eval * (200 - board.state().getHalfMoveClock()) / 200;
 
         return eval;
 
     }
 
     private int materialPhase(Board board) {
-        final long knights = Bits.count(board.getKnights());
-        final long bishops = Bits.count(board.getBishops());
-        final long rooks = Bits.count(board.getRooks());
-        final long queens = Bits.count(board.getQueens());
+        final long knights = Bits.count(board.knights());
+        final long bishops = Bits.count(board.bishops());
+        final long rooks = Bits.count(board.rooks());
+        final long queens = Bits.count(board.queens());
         return (int) (3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
     }
 

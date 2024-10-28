@@ -31,9 +31,9 @@ public class Score {
     public static boolean isThreefoldRepetition(Board board) {
 
         int repetitionCount = 0;
-        long zobrist = board.getState().getKey();
-        BoardState[] states = board.getStates();
-        for (int i = board.getPly() - 1; i >= 0; i--) {
+        long zobrist = board.state().getKey();
+        BoardState[] states = board.states();
+        for (int i = board.ply() - 1; i >= 0; i--) {
             if (states[i].getKey() == zobrist) {
                 repetitionCount += 1;
             }
@@ -48,9 +48,9 @@ public class Score {
 
     public static boolean isDoubleRepetition(Board board) {
 
-        long zobrist = board.getState().getKey();
-        BoardState[] states = board.getStates();
-        for (int i = board.getPly() - 1; i >= 0; i--) {
+        long zobrist = board.state().getKey();
+        BoardState[] states = board.states();
+        for (int i = board.ply() - 1; i >= 0; i--) {
             if (states[i].getKey() == zobrist) {
                 return true;
             }
@@ -60,17 +60,17 @@ public class Score {
     }
 
     public static boolean isInsufficientMaterial(Board board) {
-        if (board.getPawns() != 0 || board.getRooks() != 0 || board.getQueens() != 0) {
+        if (board.pawns() != 0 || board.rooks() != 0 || board.queens() != 0) {
             return false;
         }
-        long whitePieces = board.getKnights(true) | board.getBishops(true);
-        long blackPieces = board.getKnights(false) |  board.getBishops(false);
+        long whitePieces = board.knights(true) | board.bishops(true);
+        long blackPieces = board.knights(false) |  board.bishops(false);
 
         return (Bits.count(whitePieces) == 0 || Bits.count(whitePieces) == 1)
                 && (Bits.count(blackPieces) == 0 || Bits.count(blackPieces) == 1);
     }
 
     public static boolean isFiftyMoveRule(Board board) {
-        return board.getState().getHalfMoveClock() >= 100;
+        return board.state().getHalfMoveClock() >= 100;
     }
 }

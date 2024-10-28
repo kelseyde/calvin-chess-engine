@@ -26,7 +26,6 @@ public class Board {
     private long kings;
     private long whitePieces;
     private long blackPieces;
-    private long occupied;
 
     private Piece[] pieces;
     private BoardState state;
@@ -44,7 +43,6 @@ public class Board {
         this.kings       = 0L;
         this.whitePieces = 0L;
         this.blackPieces = 0L;
-        this.occupied    = 0L;
         this.pieces      = new Piece[Square.COUNT];
         this.moves       = new Move[Search.MAX_DEPTH];
         this.states      = new BoardState[Search.MAX_DEPTH];
@@ -165,7 +163,7 @@ public class Board {
         final boolean resetClock = captured != null || Piece.PAWN.equals(piece);
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
 
-        final int castleRights = updateCastleRights(from, to, piece);
+        final int castleRights = Castling.updateRights(state.rights, from, to, piece, white);
         state.key ^= Key.rights(state.rights, castleRights);
         state.rights = castleRights;
 
@@ -268,7 +266,6 @@ public class Board {
         } else {
             blackPieces ^= mask;
         }
-        occupied ^= mask;
     }
 
     private void updateKeys(int from, int to, Piece piece, boolean white) {
@@ -310,7 +307,6 @@ public class Board {
         } else {
             blackPieces ^= toggleMask;
         }
-        occupied ^= toggleMask;
     }
 
     public void addKing(int kingSquare, boolean white) {
@@ -321,35 +317,6 @@ public class Board {
         } else {
             blackPieces |= toggleMask;
         }
-        occupied |= toggleMask;
-    }
-
-    private int updateCastleRights(int from, int to, Piece pieceType) {
-        int newRights = state.getRights();
-        if (newRights == 0b0000) {
-            // Both sides already lost castling rights, so nothing to calculate.
-            return newRights;
-        }
-        // Any move by the king removes castling rights.
-        if (Piece.KING.equals(pieceType)) {
-            newRights &= white ? Castling.CLEAR_WHITE_CASTLING_MASK : Castling.CLEAR_BLACK_CASTLING_MASK;
-        }
-        // Any move starting from/ending at a rook square removes castling rights for that corner.
-        // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
-        // another rook in starting position; in that case, both sides lose castling rights!
-        if (from == 7 || to == 7) {
-            newRights &= Castling.CLEAR_WHITE_KINGSIDE_MASK;
-        }
-        if (from == 63 || to == 63) {
-            newRights &= Castling.CLEAR_BLACK_KINGSIDE_MASK;
-        }
-        if (from == 0 || to == 0) {
-            newRights &= Castling.CLEAR_WHITE_QUEENSIDE_MASK;
-        }
-        if (from == 56 || to == 56) {
-            newRights &= Castling.CLEAR_BLACK_QUEENSIDE_MASK;
-        }
-        return newRights;
     }
 
     public Piece pieceAt(int square) {
@@ -364,38 +331,110 @@ public class Board {
         return !move.isPromotion() && !isCapture(move);
     }
 
-    public long getPawns(boolean white) {
+    public long pawns(boolean white) {
         final long side = white ? whitePieces : blackPieces;
         return pawns & side;
     }
 
-    public long getKnights(boolean white) {
+    public long knights(boolean white) {
         final long side = white ? whitePieces : blackPieces;
         return knights & side;
     }
 
-    public long getBishops(boolean white) {
+    public long bishops(boolean white) {
         final long side = white ? whitePieces : blackPieces;
         return bishops & side;
     }
 
-    public long getRooks(boolean white) {
+    public long rooks(boolean white) {
         final long side = white ? whitePieces : blackPieces;
         return rooks & side;
     }
 
-    public long getQueens(boolean white) {
+    public long queens(boolean white) {
         final long side = white ? whitePieces : blackPieces;
         return queens & side;
     }
 
-    public long getKing(boolean white) {
+    public long king(boolean white) {
         final long side = white ? whitePieces : blackPieces;
         return kings & side;
     }
 
-    public long getPieces(boolean white) {
+    public long pieces(boolean white) {
         return white ? whitePieces : blackPieces;
+    }
+
+    public long pawns() {
+        return pawns;
+    }
+
+    public long knights() {
+        return knights;
+    }
+
+    public long bishops() {
+        return bishops;
+    }
+
+    public long rooks() {
+        return rooks;
+    }
+
+    public long queens() {
+        return queens;
+    }
+
+    public long kings() {
+        return kings;
+    }
+
+    public long whitePieces() {
+        return whitePieces;
+    }
+
+    public long blackPieces() {
+        return blackPieces;
+    }
+
+    public long occupied() {
+        return whitePieces | blackPieces;
+    }
+
+    public Piece[] pieces() {
+        return pieces;
+    }
+
+    public boolean isWhite() {
+        return white;
+    }
+
+    public BoardState state() {
+        return state;
+    }
+
+    public BoardState[] states() {
+        return states;
+    }
+
+    public Move[] moves() {
+        return moves;
+    }
+
+    public int ply() {
+        return ply;
+    }
+
+    public long key() {
+        return state.getKey();
+    }
+
+    public long pawnKey() {
+        return state.getPawnKey();
+    }
+
+    public long[] nonPawnKeys() {
+        return state.nonPawnKeys;
     }
 
     public void setPawns(long pawns) {
@@ -430,10 +469,6 @@ public class Board {
         this.blackPieces = blackPieces;
     }
 
-    public void setOccupied(long occupied) {
-        this.occupied = occupied;
-    }
-
     public void setPieces(Piece[] pieces) {
         this.pieces = pieces;
     }
@@ -454,82 +489,10 @@ public class Board {
         this.moves = moves;
     }
 
-    public long getPawns() {
-        return pawns;
-    }
-
-    public long getKnights() {
-        return knights;
-    }
-
-    public long getBishops() {
-        return bishops;
-    }
-
-    public long getRooks() {
-        return rooks;
-    }
-
-    public long getQueens() {
-        return queens;
-    }
-
-    public long getKings() {
-        return kings;
-    }
-
-    public long getWhitePieces() {
-        return whitePieces;
-    }
-
-    public long getBlackPieces() {
-        return blackPieces;
-    }
-
-    public long getOccupied() {
-        return occupied;
-    }
-
-    public Piece[] getPieces() {
-        return pieces;
-    }
-
-    public boolean isWhite() {
-        return white;
-    }
-
-    public BoardState getState() {
-        return state;
-    }
-
-    public BoardState[] getStates() {
-        return states;
-    }
-
-    public Move[] getMoves() {
-        return moves;
-    }
-
-    public int getPly() {
-        return ply;
-    }
-
-    public long key() {
-        return state.getKey();
-    }
-
-    public long pawnKey() {
-        return state.getPawnKey();
-    }
-
-    public long[] nonPawnKeys() {
-        return state.nonPawnKeys;
-    }
-
     public boolean hasPiecesRemaining(boolean white) {
         return white ?
-                (getKnights(true) != 0 || getBishops(true) != 0 || getRooks(true) != 0 || getQueens(true) != 0) :
-                (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
+                (knights(true) != 0 || bishops(true) != 0 || rooks(true) != 0 || queens(true) != 0) :
+                (knights(false) != 0 || bishops(false) != 0 || rooks(false) != 0 || queens(false) != 0);
     }
 
     public static Board from(String fen) {
@@ -538,34 +501,33 @@ public class Board {
 
     public Board copy() {
         final Board newBoard = new Board();
-        newBoard.setPawns(this.getPawns());
-        newBoard.setKnights(this.getKnights());
-        newBoard.setBishops(this.getBishops());
-        newBoard.setRooks(this.getRooks());
-        newBoard.setQueens(this.getQueens());
-        newBoard.setKings(this.getKings());
-        newBoard.setWhitePieces(this.getWhitePieces());
-        newBoard.setBlackPieces(this.getBlackPieces());
-        newBoard.setOccupied(this.getOccupied());
+        newBoard.setPawns(this.pawns());
+        newBoard.setKnights(this.knights());
+        newBoard.setBishops(this.bishops());
+        newBoard.setRooks(this.rooks());
+        newBoard.setQueens(this.queens());
+        newBoard.setKings(this.kings());
+        newBoard.setWhitePieces(this.whitePieces());
+        newBoard.setBlackPieces(this.blackPieces());
         newBoard.setWhite(this.isWhite());
-        newBoard.setState(this.getState().copy());
-        BoardState[] newStates = new BoardState[this.getStates().length];
-        for (int i = 0; i < this.getStates().length; i++) {
-            if (this.getStates()[i] == null) {
+        newBoard.setState(this.state().copy());
+        BoardState[] newStates = new BoardState[this.states().length];
+        for (int i = 0; i < this.states().length; i++) {
+            if (this.states()[i] == null) {
                 break;
             }
-            newStates[i] = this.getStates()[i].copy();
+            newStates[i] = this.states()[i].copy();
         }
         newBoard.setStates(newStates);
-        Move[] newMoves = new Move[this.getMoves().length];
-        for (int i = 0; i < this.getMoves().length; i++) {
-            if (this.getMoves()[i] == null) {
+        Move[] newMoves = new Move[this.moves().length];
+        for (int i = 0; i < this.moves().length; i++) {
+            if (this.moves()[i] == null) {
                 break;
             }
-            newMoves[i] = new Move(this.getMoves()[i].value());
+            newMoves[i] = new Move(this.moves()[i].value());
         }
         newBoard.setMoves(newMoves);
-        newBoard.setPieces(Arrays.copyOf(this.getPieces(), this.getPieces().length));
+        newBoard.setPieces(Arrays.copyOf(this.pieces(), this.pieces().length));
         return newBoard;
     }
 

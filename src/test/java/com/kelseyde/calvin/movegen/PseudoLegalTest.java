@@ -20,7 +20,7 @@ public class PseudoLegalTest {
     public void testIsLegalDebug() {
 
         Board board = Board.from("r3k2r/p1p1qpb1/bn1ppnpB/3PN3/1p2P3/1PN2Q1p/P1P1BPPP/R3K2R b KQkq - 0 2");
-        Move move = Move.fromUCI("e8g8", Move.CASTLE_FLAG);
+        Move move = Move.fromUCI("e8g8", Move.MoveFlag.CASTLE);
         Assertions.assertTrue(movegen.isPseudoLegal(board, move));
 
     }

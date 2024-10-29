@@ -71,6 +71,7 @@ public record Network(int inputSize,
         }
 
         public Network loadNetwork() {
+
             try {
                 InputStream inputStream = Network.class.getClassLoader().getResourceAsStream(file);
                 if (inputStream == null) {
@@ -110,10 +111,14 @@ public record Network(int inputSize,
                 }
 
                 return new Network(
-                        inputSize, hiddenSize, activation, quantisations, scale, inputWeights, inputBiases, outputWeights, outputBias);
+                        inputSize, hiddenSize, activation, quantisations, scale,
+                        inputWeights, inputBiases, outputWeights, outputBias
+                );
+
             } catch (IOException e) {
                 throw new RuntimeException("Failed to load NNUE network", e);
             }
+
         }
 
     }

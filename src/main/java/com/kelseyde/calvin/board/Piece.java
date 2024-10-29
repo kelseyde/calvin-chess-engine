@@ -7,12 +7,12 @@ import static com.kelseyde.calvin.board.Move.*;
  */
 public enum Piece {
 
-    PAWN(0, 100, "p"),
-    KNIGHT(1, 320, "n"),
-    BISHOP(2, 330, "b"),
-    ROOK(3, 500, "r"),
-    QUEEN(4, 900, "q"),
-    KING(5, 0, "k");
+    PAWN    (0, 100, "p"),
+    KNIGHT  (1, 320, "n"),
+    BISHOP  (2, 330, "b"),
+    ROOK    (3, 500, "r"),
+    QUEEN   (4, 900, "q"),
+    KING    (5, 0, "k");
 
     public static final int COUNT = 6;
 
@@ -46,14 +46,14 @@ public enum Piece {
 
     public static short promoFlag(Piece piece) {
         if (piece == null) {
-            return NO_FLAG;
+            return MoveFlag.NONE;
         }
         return switch (piece) {
-            case QUEEN -> PROMOTE_TO_QUEEN_FLAG;
-            case ROOK -> PROMOTE_TO_ROOK_FLAG;
-            case BISHOP -> PROMOTE_TO_BISHOP_FLAG;
-            case KNIGHT -> PROMOTE_TO_KNIGHT_FLAG;
-            default -> NO_FLAG;
+            case QUEEN -> MoveFlag.PROMO_QUEEN;
+            case ROOK -> MoveFlag.PROMO_ROOK;
+            case BISHOP -> MoveFlag.PROMO_BISHOP;
+            case KNIGHT -> MoveFlag.PROMO_KNIGHT;
+            default -> MoveFlag.NONE;
         };
     }
 

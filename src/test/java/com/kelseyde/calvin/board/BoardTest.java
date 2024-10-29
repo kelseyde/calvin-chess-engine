@@ -140,7 +140,7 @@ public class BoardTest {
         board.makeMove(new Move(5, 12));
         board.makeMove(new Move(61, 52));
         // castles
-        board.makeMove(new Move(4, 6, Move.CASTLE_FLAG));
+        board.makeMove(new Move(4, 6, Move.MoveFlag.CASTLE));
         Assertions.assertFalse(board.isWhite());
         Assertions.assertFalse(board.state().isKingsideCastlingAllowed(true));
         Assertions.assertFalse(board.state().isQueensideCastlingAllowed(true));
@@ -238,10 +238,10 @@ public class BoardTest {
         board.makeMove(Move.fromUCI("b8c6"));
         board.makeMove(Move.fromUCI("f1b5"));
         board.makeMove(Move.fromUCI("c8g4"));
-        board.makeMove(Move.fromUCI("e1g1", Move.CASTLE_FLAG));
+        board.makeMove(Move.fromUCI("e1g1", Move.MoveFlag.CASTLE));
         board.makeMove(Move.fromUCI("d8d7"));
         board.makeMove(Move.fromUCI("f1e1"));
-        board.makeMove(Move.fromUCI("e8c8", Move.CASTLE_FLAG));
+        board.makeMove(Move.fromUCI("e8c8", Move.MoveFlag.CASTLE));
 
         Board board2 = FEN.toBoard("2kr1bnr/pppqpppp/2n5/1B1p4/4P1b1/5N2/PPPP1PPP/RNBQR1K1 w - - 8 6");
         Assertions.assertEquals(board.whitePieces(), board2.whitePieces());

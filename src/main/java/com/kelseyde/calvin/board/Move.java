@@ -11,15 +11,16 @@ import java.util.Optional;
  */
 public record Move(short value) {
 
-    // Special move flags
-    public static final short NO_FLAG = 0b0000;
-    public static final short EN_PASSANT_FLAG = 0b0001;
-    public static final short CASTLE_FLAG = 0b0010;
-    public static final short PAWN_DOUBLE_MOVE_FLAG = 0b0011;
-    public static final short PROMOTE_TO_QUEEN_FLAG = 0b0100;
-    public static final short PROMOTE_TO_KNIGHT_FLAG = 0b0101;
-    public static final short PROMOTE_TO_ROOK_FLAG = 0b0110;
-    public static final short PROMOTE_TO_BISHOP_FLAG = 0b0111;
+    public static class MoveFlag {
+        public static final short NONE              = 0b0000;
+        public static final short EN_PASSANT        = 0b0001;
+        public static final short CASTLE            = 0b0010;
+        public static final short PAWN_DOUBLE_PUSH  = 0b0011;
+        public static final short PROMO_QUEEN       = 0b0100;
+        public static final short PROMO_KNIGHT      = 0b0101;
+        public static final short PROMO_ROOK        = 0b0110;
+        public static final short PROMO_BISHOP      = 0b0111;
+    }
 
     public static final int FROM_MASK = 0b0000000000111111;
     public static final int TO_MASK = 0b0000111111000000;
@@ -42,28 +43,28 @@ public record Move(short value) {
 
     public Piece promoPiece() {
         return switch (value >>> 12) {
-            case PROMOTE_TO_QUEEN_FLAG -> Piece.QUEEN;
-            case PROMOTE_TO_ROOK_FLAG -> Piece.ROOK;
-            case PROMOTE_TO_BISHOP_FLAG -> Piece.BISHOP;
-            case PROMOTE_TO_KNIGHT_FLAG -> Piece.KNIGHT;
+            case MoveFlag.PROMO_QUEEN -> Piece.QUEEN;
+            case MoveFlag.PROMO_ROOK -> Piece.ROOK;
+            case MoveFlag.PROMO_BISHOP -> Piece.BISHOP;
+            case MoveFlag.PROMO_KNIGHT -> Piece.KNIGHT;
             default -> null;
         };
     }
 
     public boolean isPromotion() {
-        return (value >>> 12) >= PROMOTE_TO_QUEEN_FLAG;
+        return (value >>> 12) >= MoveFlag.PROMO_QUEEN;
     }
 
     public boolean isEnPassant() {
-        return (value >>> 12) == EN_PASSANT_FLAG;
+        return (value >>> 12) == MoveFlag.EN_PASSANT;
     }
 
     public boolean isCastling() {
-        return (value >>> 12) == CASTLE_FLAG;
+        return (value >>> 12) == MoveFlag.CASTLE;
     }
 
     public boolean isPawnDoubleMove() {
-        return (value >>> 12) == PAWN_DOUBLE_MOVE_FLAG;
+        return (value >>> 12) == MoveFlag.PAWN_DOUBLE_PUSH;
     }
 
     /**
@@ -86,7 +87,7 @@ public record Move(short value) {
         int from = Bits.Square.fromNotation(uci.substring(0, 2));
         int to = Bits.Square.fromNotation(uci.substring(2, 4));
 
-        int flag = NO_FLAG;
+        int flag = MoveFlag.NONE;
         if (uci.length() == 5) {
             String pieceCode = uci.substring(4, 5);
             Piece promotionPieceType = Arrays.stream(Piece.values())

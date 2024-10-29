@@ -100,14 +100,14 @@ public class QuiescentTest {
         List<Move> moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.CAPTURES_ONLY);
         List<Move> expected = List.of(
                 Move.fromUCI("g4h3"),
-                Move.fromUCI("f2g1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.fromUCI("f2g1", Move.PROMOTE_TO_KNIGHT_FLAG),
-                Move.fromUCI("f2g1", Move.PROMOTE_TO_ROOK_FLAG),
-                Move.fromUCI("f2g1", Move.PROMOTE_TO_BISHOP_FLAG),
-                Move.fromUCI("f2f1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.fromUCI("f2f1", Move.PROMOTE_TO_KNIGHT_FLAG),
-                Move.fromUCI("f2f1", Move.PROMOTE_TO_ROOK_FLAG),
-                Move.fromUCI("f2f1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Move.fromUCI("f2g1", Move.MoveFlag.PROMO_QUEEN),
+                Move.fromUCI("f2g1", Move.MoveFlag.PROMO_KNIGHT),
+                Move.fromUCI("f2g1", Move.MoveFlag.PROMO_ROOK),
+                Move.fromUCI("f2g1", Move.MoveFlag.PROMO_BISHOP),
+                Move.fromUCI("f2f1", Move.MoveFlag.PROMO_QUEEN),
+                Move.fromUCI("f2f1", Move.MoveFlag.PROMO_KNIGHT),
+                Move.fromUCI("f2f1", Move.MoveFlag.PROMO_ROOK),
+                Move.fromUCI("f2f1", Move.MoveFlag.PROMO_BISHOP),
                 Move.fromUCI("e3d2")
         );
         assertMoves(expected, moves);
@@ -115,14 +115,14 @@ public class QuiescentTest {
         moves = moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY);
         expected = List.of(
                 Move.fromUCI("g4h3"),
-                Move.fromUCI("f2g1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.fromUCI("f2g1", Move.PROMOTE_TO_KNIGHT_FLAG),
-                Move.fromUCI("f2g1", Move.PROMOTE_TO_ROOK_FLAG),
-                Move.fromUCI("f2g1", Move.PROMOTE_TO_BISHOP_FLAG),
-                Move.fromUCI("f2f1", Move.PROMOTE_TO_QUEEN_FLAG),
-                Move.fromUCI("f2f1", Move.PROMOTE_TO_KNIGHT_FLAG),
-                Move.fromUCI("f2f1", Move.PROMOTE_TO_ROOK_FLAG),
-                Move.fromUCI("f2f1", Move.PROMOTE_TO_BISHOP_FLAG),
+                Move.fromUCI("f2g1", Move.MoveFlag.PROMO_QUEEN),
+                Move.fromUCI("f2g1", Move.MoveFlag.PROMO_KNIGHT),
+                Move.fromUCI("f2g1", Move.MoveFlag.PROMO_ROOK),
+                Move.fromUCI("f2g1", Move.MoveFlag.PROMO_BISHOP),
+                Move.fromUCI("f2f1", Move.MoveFlag.PROMO_QUEEN),
+                Move.fromUCI("f2f1", Move.MoveFlag.PROMO_KNIGHT),
+                Move.fromUCI("f2f1", Move.MoveFlag.PROMO_ROOK),
+                Move.fromUCI("f2f1", Move.MoveFlag.PROMO_BISHOP),
                 Move.fromUCI("e3d2"),
                 Move.fromUCI("b3b2")
         );

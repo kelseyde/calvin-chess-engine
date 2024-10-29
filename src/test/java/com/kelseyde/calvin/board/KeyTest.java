@@ -16,7 +16,7 @@ public class KeyTest {
         Board board2 = Board.from(FEN.STARTPOS);
         Assertions.assertEquals(board1.state().getKey(), board2.state().getKey());
 
-        Move e4 = new Move(12, 28, Move.PAWN_DOUBLE_MOVE_FLAG);
+        Move e4 = new Move(12, 28, Move.MoveFlag.PAWN_DOUBLE_PUSH);
         board1.makeMove(e4);
         board2.makeMove(e4);
 
@@ -141,7 +141,7 @@ public class KeyTest {
         String fenAfterCapture = "rnbqkb1r/ppp1pppp/3P1n2/8/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 3";
 
         Board board1 = FEN.toBoard(fenBeforeCapture);
-        board1.makeMove(Move.fromUCI("e5d6", Move.EN_PASSANT_FLAG));
+        board1.makeMove(Move.fromUCI("e5d6", Move.MoveFlag.EN_PASSANT));
         long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCapture);
@@ -157,7 +157,7 @@ public class KeyTest {
         String fenAfterCastle = "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4";
 
         Board board1 = FEN.toBoard(fenBeforeCastle);
-        board1.makeMove(Move.fromUCI("e1g1", Move.CASTLE_FLAG));
+        board1.makeMove(Move.fromUCI("e1g1", Move.MoveFlag.CASTLE));
         long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCastle);
@@ -174,7 +174,7 @@ public class KeyTest {
         String fenAfterCastle = "Qnbqkb1r/p4ppp/5n2/4p3/8/8/PPPP1PPP/RNBQKBNR b - - 0 7";
 
         Board board1 = FEN.toBoard(fenBeforeCastle);
-        board1.makeMove(Move.fromUCI("b7a8", Move.PROMOTE_TO_QUEEN_FLAG));
+        board1.makeMove(Move.fromUCI("b7a8", Move.MoveFlag.PROMO_QUEEN));
         long zobrist1 = board1.state().getKey();
 
         Board board2 = FEN.toBoard(fenAfterCastle);
@@ -191,7 +191,7 @@ public class KeyTest {
         String fenAfterPromotion = "Qnb1kb1r/p3pppp/5n2/8/8/3q4/PPPP1PPP/RNBQKBNR b KQk - 0 5";
 
         Board board1 = FEN.toBoard(fenBeforePromotion);
-        board1.makeMove(Move.fromUCI("b7a8q", Move.PROMOTE_TO_QUEEN_FLAG));
+        board1.makeMove(Move.fromUCI("b7a8q", Move.MoveFlag.PROMO_QUEEN));
         long zobrist1 = board1.state().getPawnKey();
 
         Board board2 = FEN.toBoard(fenAfterPromotion);
@@ -211,7 +211,7 @@ public class KeyTest {
         long[] newKeys = board.nonPawnKeys();
         Assertions.assertArrayEquals(keys, newKeys);
 
-        board.makeMove(Move.fromUCI("e7e5", Move.PAWN_DOUBLE_MOVE_FLAG));
+        board.makeMove(Move.fromUCI("e7e5", Move.MoveFlag.PAWN_DOUBLE_PUSH));
         newKeys = board.nonPawnKeys();
         Assertions.assertArrayEquals(keys, newKeys);
         Assertions.assertArrayEquals(newKeys, Key.generateNonPawnKeys(board));
@@ -239,7 +239,7 @@ public class KeyTest {
         Board board = Board.from(FEN.STARTPOS);
         long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
 
-        board.makeMove(Move.fromUCI("e2e4", Move.PAWN_DOUBLE_MOVE_FLAG));
+        board.makeMove(Move.fromUCI("e2e4", Move.MoveFlag.PAWN_DOUBLE_PUSH));
         board.makeMove(Move.fromUCI("g8f6"));
         long[] newKeys = board.nonPawnKeys();
 
@@ -255,7 +255,7 @@ public class KeyTest {
         Board board = Board.from("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
         long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
 
-        board.makeMove(Move.fromUCI("e1g1", Move.CASTLE_FLAG));
+        board.makeMove(Move.fromUCI("e1g1", Move.MoveFlag.CASTLE));
         long[] newKeys = board.nonPawnKeys();
 
         Assertions.assertNotEquals(keys[0], newKeys[0]);
@@ -300,7 +300,7 @@ public class KeyTest {
         Board board = Board.from("r2qkbnr/pP1npppp/8/5b2/8/8/PPPP1PPP/RNBQKBNR w KQkq - 1 5");
         long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
 
-        board.makeMove(Move.fromUCI("b7b8q", Move.PROMOTE_TO_QUEEN_FLAG));
+        board.makeMove(Move.fromUCI("b7b8q", Move.MoveFlag.PROMO_QUEEN));
         long[] newKeys = board.nonPawnKeys();
 
         Assertions.assertNotEquals(keys[0], newKeys[0]);
@@ -315,7 +315,7 @@ public class KeyTest {
         Board board = Board.from("r2qkbnr/pP1npppp/8/5b2/8/8/PPPP1PPP/RNBQKBNR w KQkq - 1 5");
         long[] keys = Arrays.copyOf(board.nonPawnKeys(), board.nonPawnKeys().length);
 
-        board.makeMove(Move.fromUCI("b7a8q", Move.PROMOTE_TO_QUEEN_FLAG));
+        board.makeMove(Move.fromUCI("b7a8q", Move.MoveFlag.PROMO_QUEEN));
         long[] newKeys = board.nonPawnKeys();
 
         Assertions.assertNotEquals(keys[0], newKeys[0]);

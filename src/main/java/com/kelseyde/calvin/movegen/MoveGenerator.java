@@ -147,7 +147,7 @@ public class MoveGenerator {
             final int to = Bits.next(doubleMoves);
             final int from = white ? to - 16 : to + 16;
             if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
-                legalMoves.add(new Move(from, to, Move.PAWN_DOUBLE_MOVE_FLAG));
+                legalMoves.add(new Move(from, to, Move.MoveFlag.PAWN_DOUBLE_PUSH));
             }
             doubleMoves = Bits.pop(doubleMoves);
         }
@@ -215,7 +215,7 @@ public class MoveGenerator {
         while (enPassantMask != 0) {
             final int to = Bits.next(enPassantMask);
             final int from = white ? to - offsetWhite : to + offsetBlack;
-            final Move move = new Move(from, to, Move.EN_PASSANT_FLAG);
+            final Move move = new Move(from, to, Move.MoveFlag.EN_PASSANT);
             if (!leavesKingInCheck(board, move, white)) {
                 legalMoves.add(move);
             }
@@ -326,7 +326,7 @@ public class MoveGenerator {
         final long safeSquares = Castling.safeSquares(white, isKingside);
         if (blockedSquares == 0 && !isAttacked(board, white, safeSquares)) {
             int to = Castling.kingTo(white, isKingside);
-            legalMoves.add(new Move(from, to, Move.CASTLE_FLAG));
+            legalMoves.add(new Move(from, to, Move.MoveFlag.CASTLE));
         }
     }
 
@@ -783,10 +783,10 @@ public class MoveGenerator {
     }
 
     private List<Move> getPromotionMoves(int from, int to) {
-        return List.of(new Move(from, to, Move.PROMOTE_TO_QUEEN_FLAG),
-                        new Move(from, to, Move.PROMOTE_TO_ROOK_FLAG),
-                        new Move(from, to, Move.PROMOTE_TO_BISHOP_FLAG),
-                        new Move(from, to, Move.PROMOTE_TO_KNIGHT_FLAG));
+        return List.of(new Move(from, to, Move.MoveFlag.PROMO_QUEEN),
+                        new Move(from, to, Move.MoveFlag.PROMO_ROOK),
+                        new Move(from, to, Move.MoveFlag.PROMO_BISHOP),
+                        new Move(from, to, Move.MoveFlag.PROMO_KNIGHT));
     }
 
 

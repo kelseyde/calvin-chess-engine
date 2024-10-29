@@ -29,28 +29,28 @@ public class MoveTest {
     @Test
     public void testPromotionPieceType() {
 
-        Move move = new Move(45, 63, Move.PROMOTE_TO_QUEEN_FLAG);
+        Move move = new Move(45, 63, Move.MoveFlag.PROMO_QUEEN);
         Assertions.assertEquals(Piece.QUEEN, move.promoPiece());
         Assertions.assertTrue(move.isPromotion());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());
         Assertions.assertFalse(move.isEnPassant());
 
-        move = new Move(45, 63, Move.PROMOTE_TO_ROOK_FLAG);
+        move = new Move(45, 63, Move.MoveFlag.PROMO_ROOK);
         Assertions.assertEquals(Piece.ROOK, move.promoPiece());
         Assertions.assertTrue(move.isPromotion());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());
         Assertions.assertFalse(move.isEnPassant());
 
-        move = new Move(45, 63, Move.PROMOTE_TO_BISHOP_FLAG);
+        move = new Move(45, 63, Move.MoveFlag.PROMO_BISHOP);
         Assertions.assertEquals(Piece.BISHOP, move.promoPiece());
         Assertions.assertTrue(move.isPromotion());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());
         Assertions.assertFalse(move.isEnPassant());
 
-        move = new Move(45, 63, Move.PROMOTE_TO_KNIGHT_FLAG);
+        move = new Move(45, 63, Move.MoveFlag.PROMO_KNIGHT);
         Assertions.assertEquals(Piece.KNIGHT, move.promoPiece());
         Assertions.assertTrue(move.isPromotion());
         Assertions.assertFalse(move.isCastling());
@@ -61,7 +61,7 @@ public class MoveTest {
 
     @Test
     public void testEnPassant() {
-        Move move = new Move(45, 63, Move.EN_PASSANT_FLAG);
+        Move move = new Move(45, 63, Move.MoveFlag.EN_PASSANT);
         Assertions.assertTrue(move.isEnPassant());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());
@@ -70,7 +70,7 @@ public class MoveTest {
 
     @Test
     public void testPawnDoubleMove() {
-        Move move = new Move(45, 63, Move.PAWN_DOUBLE_MOVE_FLAG);
+        Move move = new Move(45, 63, Move.MoveFlag.PAWN_DOUBLE_PUSH);
         Assertions.assertFalse(move.isEnPassant());
         Assertions.assertFalse(move.isCastling());
         Assertions.assertTrue(move.isPawnDoubleMove());
@@ -79,7 +79,7 @@ public class MoveTest {
 
     @Test
     public void testCastling() {
-        Move move = new Move(45, 63, Move.CASTLE_FLAG);
+        Move move = new Move(45, 63, Move.MoveFlag.CASTLE);
         Assertions.assertFalse(move.isEnPassant());
         Assertions.assertTrue(move.isCastling());
         Assertions.assertFalse(move.isPawnDoubleMove());

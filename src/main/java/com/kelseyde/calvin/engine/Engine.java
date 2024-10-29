@@ -62,10 +62,9 @@ public class Engine {
 
     public void setPosition(PositionCommand command) {
         board = FEN.toBoard(command.fen());
-        for (Move move : command.moves()) {
-            Move legalMove = move(move);
-            board.makeMove(legalMove);
-        }
+        command.moves().stream()
+                .map(this::move)
+                .forEach(board::makeMove);
         searcher.setPosition(board);
     }
 

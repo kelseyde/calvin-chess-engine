@@ -34,7 +34,7 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 
 | 	Version	 | 	Release date | Estimated | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | [CCRL Rapid](https://www.computerchess.org.uk/ccrl/4040/)
 | 	:-----:	 | 	:-----:	 | 	:-----:	 | :-----:	|  :-----:	 | :-----:	 |  
-| [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 | 3400 | - | - | - |
+| [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 | 3400 | - | - | 3400 |
 | [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.2.0) | 2024-09-19 | 3230 | - | - | 3224 |
 | [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-04 | 3150 | ~2850 | 3171 | 3161 |
 | [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) | 2024-07-30 | 3000 | ~2700 | 3011 | 3029 |
@@ -106,7 +106,7 @@ The search algorithm is all about exploring the possible positions in the game t
 
 For any given chess position, the engine needs a method of obtaining an estimate of how good the position is for the side to move. Chess engine evaluation mechanisms can be split into two camps: traditional [Hand-Crafted Evaluation](https://www.chessprogramming.org/Evaluation) (HCE), and [Efficiently Updatable Neural Networks](https://www.chessprogramming.org/NNUE) (NNUE). Since version [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0), Calvin has switched to a neural-net based eval. 
 
-The neural network was trained using the excellent [bullet](https://github.com/jw1912/bullet) trainer on a dataset of 1.2 billion positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->512)x2->1. 
+The neural network was trained using the excellent [bullet](https://github.com/jw1912/bullet) trainer on a dataset of 1.2 billion positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->768)x2->1. 
 
 ## Special Thanks To...
 

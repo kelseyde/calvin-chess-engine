@@ -59,10 +59,15 @@ public class Board {
      */
     public boolean makeMove(Move move) {
 
+
+        System.out.println("Making " + ply + " " + Move.toUCI(move));
         final int from = move.from();
         final int to = move.to();
         final Piece piece = pieces[from];
-        if (piece == null) return false;
+        if (piece == null) {
+            print();
+            throw new IllegalStateException(String.format("Move %s - %s illegal; no piece at %s", Square.toNotation(from), Square.toNotation(to), Square.toNotation(from)));
+        }
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
         states[ply] = state.copy();
 
@@ -75,6 +80,7 @@ public class Board {
         updateState(from, to, piece, captured, move);
         moves[ply++] = move;
         white = !white;
+        System.out.println("ply after move: " + ply);
         return true;
 
     }
@@ -84,6 +90,7 @@ public class Board {
      * piece + reinstate the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
      */
     public void unmakeMove() {
+        System.out.println("Unmaking " + ply);
 
         white = !white;
         final Move move = moves[--ply];
@@ -108,21 +115,41 @@ public class Board {
     }
 
     private void makeCastleMove(int from, int to) {
-        // Handle castling king
+        if (UCI.Options.chess960) {
+            makeChess960CastleMove(from, to);
+        } else {
+            makeStandardCastleMove(from, to);
+        }
+    }
+
+    private void makeStandardCastleMove(int from, int to) {
+        // Handle moving king
         toggleSquares(from, to, Piece.KING, white);
         updateMailbox(from, to, Piece.KING);
         updateKeys(from, to, Piece.KING, white);
-        // Handle castling rook
+        // Handle moving rook
         final boolean kingside = File.of(to) == 6;
-        final int rookFrom = UCI.Options.chess960 ?
-                // In Chess960 the rook starting square is dynamic
-                Castling.getRook(state.getRights(), kingside, white) :
-                // Fast-path for standard chess
-                Castling.rookFrom(kingside, white);
+        final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
         toggleSquares(rookFrom, rookTo, Piece.ROOK, white);
         updateMailbox(rookFrom, rookTo, Piece.ROOK);
         updateKeys(rookFrom, rookTo, Piece.ROOK, white);
+    }
+
+    private void makeChess960CastleMove(int from, int to) {
+        // Handle moving king
+        final boolean kingside = File.of(to) == 6;
+        final int kingTo = Castling.kingTo(kingside, white);
+        toggleSquare(from, Piece.KING, white);
+        updateMailbox(from, kingTo, Piece.KING);
+        updateKeys(from, kingTo, Piece.KING, white);
+
+        // Handle moving rook
+        // (in Chess960 the 'to' square of a castling move is the rook square)
+        final int rookTo = Castling.rookTo(kingside, white);
+        toggleSquares(to, rookTo, Piece.ROOK, white);
+        updateMailbox(to, rookTo, Piece.ROOK);
+        updateKeys(to, rookTo, Piece.ROOK, white);
     }
 
     private void makeEnPassantMove(int from, int to) {
@@ -181,19 +208,35 @@ public class Board {
     }
 
     private void unmakeCastlingMove(int from, int to) {
+        if (UCI.Options.chess960) {
+            unmakeChess960CastleMove(from, to);
+        } else {
+            unmakeStandardCastleMove(from, to);
+        }
+    }
+
+    private void unmakeStandardCastleMove(int from, int to) {
         // Put back king
         toggleSquares(to, from, Piece.KING, white);
         updateMailbox(to, from, Piece.KING);
         // Put back rook
-        final boolean kingside = File.of(to) == 6;
+        final boolean kingside = File.kingside(to);
+        final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
-        final int rookFrom = UCI.Options.chess960 ?
-                // In Chess960 the rook starting square is dynamic
-                Castling.getRook(states[ply].rights, kingside, white) :
-                // Fast-path for standard chess
-                Castling.rookFrom(kingside, white);
         toggleSquares(rookTo, rookFrom, Piece.ROOK, white);
         updateMailbox(rookTo, rookFrom, Piece.ROOK);
+    }
+
+    private void unmakeChess960CastleMove(int from, int to) {
+        // Put back king
+        final boolean kingside = File.kingside(to);
+        final int kingTo = Castling.kingTo(kingside, white);
+        toggleSquare(kingTo, Piece.KING, white);
+        updateMailbox(kingTo, from, Piece.KING);
+        // Put back rook
+        final int rookTo = Castling.rookTo(kingside, white);
+        toggleSquares(rookTo, to, Piece.ROOK, white);
+        updateMailbox(rookTo, to, Piece.ROOK);
     }
 
     private void unmakePromotionMove(int from, int to, Piece promotionPiece) {

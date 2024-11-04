@@ -11,7 +11,7 @@ public class Castling {
     private static final int BQ_SHIFT = 0;  // Black queenside rook (lowermost)
 
     public static int rookFrom(boolean kingside, boolean white) {
-        // Standard starting position for rooks
+        // (Standard chess) starting position for rooks
         if (kingside) {
             return white ? 7 : 63;
         } else {
@@ -20,12 +20,17 @@ public class Castling {
     }
 
     public static int rookTo(boolean kingside, boolean white) {
-        // Standard castling destination for rooks
+        // Castling destination for rooks
         if (kingside) {
             return white ? 5 : 61;
         } else {
             return white ? 3 : 59;
         }
+    }
+
+    public static int kingTo(boolean kingside, boolean white) {
+        // Castling destination for king
+        return white ? (kingside ? 6 : 2) : (kingside ? 62 : 58);
     }
 
     public static int empty() {

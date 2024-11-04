@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -28,6 +29,29 @@ public class CastlingTest {
     }
 
     @Test
+    public void testChess960KingsideCastling() {
+
+        UCI.Options.chess960 = true;
+
+        Board board = Board.from(FEN.STARTPOS);
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "b5"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "b4"));
+
+        // white castles
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "h1"));
+
+        // black castles
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "h8"));
+
+        UCI.Options.chess960 = false;
+
+    }
+
+    @Test
     public void testSimpleQueensideCastling() {
 
         Board board = Board.from(FEN.STARTPOS);
@@ -45,6 +69,31 @@ public class CastlingTest {
 
         // black castles
         board.makeMove(TestUtils.getLegalMove(board, "e8", "c8"));
+
+    }
+
+    @Test
+    public void testChess960QueensideCastling() {
+
+        UCI.Options.chess960 = true;
+
+        Board board = Board.from(FEN.STARTPOS);
+        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
+        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
+        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
+        board.makeMove(TestUtils.getLegalMove(board, "b8", "c6"));
+        board.makeMove(TestUtils.getLegalMove(board, "c1", "f4"));
+        board.makeMove(TestUtils.getLegalMove(board, "c8", "f5"));
+        board.makeMove(TestUtils.getLegalMove(board, "d1", "d2"));
+        board.makeMove(TestUtils.getLegalMove(board, "d8", "d7"));
+
+        // white castles
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "a1"));
+
+        // black castles
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "a8"));
+
+        UCI.Options.chess960 = false;
 
     }
 
@@ -300,6 +349,16 @@ public class CastlingTest {
 
         // black tries to castle
         Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "g8")));
+
+    }
+
+    @Test
+    public void testCannotCastleIfDestinationSquareAttacked() {
+
+        Board board = Board.from("rnbqkbn1/pppppppp/8/6r1/1B6/5N2/PPPPPP1P/RNBQK2R w KQq - 0 1");
+
+        // white tries to castle
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
 
     }
 

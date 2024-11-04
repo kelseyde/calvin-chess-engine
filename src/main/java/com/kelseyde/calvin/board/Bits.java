@@ -120,6 +120,10 @@ public class Bits {
             return sq & 7;
         }
 
+        public static boolean kingside(int sq) {
+            return of(sq) >= 4;
+        }
+
         public static long toBitboard(int file) {
             return 0x0101010101010101L << file;
         }

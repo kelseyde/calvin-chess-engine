@@ -320,12 +320,16 @@ public class MoveGenerator {
     }
 
     private void generateCastlingMove(Board board, boolean white, boolean kingside, int from, long occupied) {
+
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
+        final int kingDst = getKingCastleDstSquare(white, kingside);
+
         final long travelSquares = Ray.between(from, rookSquare);
         final long blockedSquares = travelSquares & occupied;
-        final long safeSquares = Bits.of(from) | travelSquares;
+        final long safeSquares = Bits.of(from) | Ray.between(from, kingDst) | Bits.of(kingDst);
         if (blockedSquares == 0 && !isAttacked(board, white, safeSquares)) {
             int to = getCastleEndSquare(white, kingside);
+            System.out.printf(String.format("Castle move %s - %s (white ? %s) (kingside ? %s)%n", Square.toNotation(from), Square.toNotation(to), white, kingside));
             legalMoves.add(new Move(from, to, Move.CASTLE_FLAG));
         }
     }
@@ -803,6 +807,14 @@ public class MoveGenerator {
     private boolean isMovingAlongPinRay(int from, int to) {
         final long pinRay = pinRayMasks[from];
         return (Bits.of(to) & pinRay) != 0;
+    }
+
+    private int getKingCastleDstSquare(boolean white, boolean isKingside) {
+        if (isKingside) {
+            return white ? 6 : 62;
+        } else {
+            return white ? 2 : 58;
+        }
     }
 
     private int getCastleEndSquare(boolean white, boolean isKingside) {

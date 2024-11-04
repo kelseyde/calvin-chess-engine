@@ -200,7 +200,7 @@ public class TrainingDataScorer {
     }
 
     private void logDatascoreInfo(ScoreDataCommand command) {
-        if (UCI.prettyEnabled) {
+        if (UCI.Options.pretty) {
             UCI.write("");
             UCI.write(String.format("""
                     %sBeginning Data Scoring%s
@@ -228,7 +228,7 @@ public class TrainingDataScorer {
         String rateFormatted = String.format("%.0f", rate);
         Duration estimate = Duration.ofSeconds((long) (remaining / rate)).truncatedTo(ChronoUnit.SECONDS);
 
-        if (UCI.prettyEnabled) {
+        if (UCI.Options.pretty) {
             System.out.printf("total %s%d%s, since resume %s%d%s, scored %s%d%s, excluded %s%d%s, time %s%s%s, pos/s %s%s%s, remaining pos %s%s%s remaining time %s%s%s\n",
                     Pretty.CYAN, total, Pretty.RESET,
                     Pretty.CYAN, totalSinceResume, Pretty.RESET,

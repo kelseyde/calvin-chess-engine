@@ -1,8 +1,6 @@
 package com.kelseyde.calvin.board;
 
 
-import com.kelseyde.calvin.board.Bits.Castling;
-
 /**
  * Stores the metadata for a given chess position - that is, the castling rights, en passant rights, the fifty-move counter
  * (the number of half-moves since the last capture or pawn move), and the last captured piece.

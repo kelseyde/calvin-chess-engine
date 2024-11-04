@@ -1,10 +1,7 @@
 package com.kelseyde.calvin.movegen;
 
-import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.*;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -805,13 +802,13 @@ public class MoveGenerator {
     }
 
     private long getCastleTravelSquares(boolean white, boolean isKingside) {
-        if (isKingside) return white ? Castling.WHITE_KINGSIDE_TRAVEL_MASK : Castling.BLACK_KINGSIDE_TRAVEL_MASK;
-        else return white ? Castling.WHITE_QUEENSIDE_TRAVEL_MASK : Castling.BLACK_QUEENSIDE_TRAVEL_MASK;
+        if (isKingside) return white ? Castling.Standard.WHITE_KINGSIDE_TRAVEL_MASK : Castling.Standard.BLACK_KINGSIDE_TRAVEL_MASK;
+        else return white ? Castling.Standard.WHITE_QUEENSIDE_TRAVEL_MASK : Castling.Standard.BLACK_QUEENSIDE_TRAVEL_MASK;
     }
 
     private long getCastleSafeSquares(boolean white, boolean isKingside) {
-        if (isKingside) return white ? Castling.WHITE_KINGSIDE_SAFE_MASK : Castling.BLACK_KINGSIDE_SAFE_MASK;
-        else return white ? Castling.WHITE_QUEENSIDE_SAFE_MASK : Castling.BLACK_QUEENSIDE_SAFE_MASK;
+        if (isKingside) return white ? Castling.Standard.WHITE_KINGSIDE_SAFE_MASK : Castling.Standard.BLACK_KINGSIDE_SAFE_MASK;
+        else return white ? Castling.Standard.WHITE_QUEENSIDE_SAFE_MASK : Castling.Standard.BLACK_QUEENSIDE_SAFE_MASK;
     }
 
     private int getCastleEndSquare(boolean white, boolean isKingside) {

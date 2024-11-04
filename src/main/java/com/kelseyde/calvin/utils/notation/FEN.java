@@ -175,18 +175,34 @@ public class FEN {
         for (int i = 0; i < castlingRights.length(); i++) {
             char right = castlingRights.charAt(i);
             switch (right) {
-                case 'K' -> rights = Castling.setRook(rights, true, true, 7);
-                case 'Q' -> rights = Castling.setRook(rights, false, true, 0);
-                case 'k' -> rights = Castling.setRook(rights, true, false, 63);
-                case 'q' -> rights = Castling.setRook(rights, false, false, 56);
-                case '-' -> {}
+                case 'K' -> rights = Castling.setRook(rights, true, true, 7);  // Standard FEN: White kingside castling
+                case 'Q' -> rights = Castling.setRook(rights, false, true, 0); // Standard FEN: White queenside castling
+                case 'k' -> rights = Castling.setRook(rights, true, false, 63); // Standard FEN: Black kingside castling
+                case 'q' -> rights = Castling.setRook(rights, false, false, 56); // Standard FEN: Black queenside castling
+                case 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' -> {
+                    // Shredder FEN: White rooks on specified files
+                    int file = File.fromNotation(right);
+                    if (file < 4) {
+                        rights = Castling.setRook(rights, false, true, Square.of(0, file)); // Queenside
+                    } else {
+                        rights = Castling.setRook(rights, true, true, Square.of(0, file));  // Kingside
+                    }
+                }
+                case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' -> {
+                    // Shredder FEN: Black rooks on specified files
+                    int file = File.fromNotation(Character.toUpperCase(right));
+                    if (file < 4) {
+                        rights = Castling.setRook(rights, false, false, Square.of(7, file)); // Queenside
+                    } else {
+                        rights = Castling.setRook(rights, true, false, Square.of(7, file));  // Kingside
+                    }
+                }
+                case '-' -> {
+                    // No castling rights, so return empty rights directly
+                    return Castling.empty();
+                }
                 default -> throw new IllegalArgumentException("Invalid castling right! " + right);
             }
-            int wk = Castling.getRook(rights, true, true);
-            int wq = Castling.getRook(rights, false, true);
-            int bk = Castling.getRook(rights, true, false);
-            int bq = Castling.getRook(rights, false, false);
-            System.out.printf("wk: %d, wq: %d, bk: %d, bq: %d\n", wk, wq, bk, bq);
         }
         return rights;
     }
@@ -198,19 +214,19 @@ public class FEN {
         String rightsString = "";
         int wk = Castling.getRook(rights, true, true);
         if (wk != Castling.NO_ROOK) {
-            rightsString += UCI.Options.chess960 ? File.toFileNotation(wk).toUpperCase() : "K";
+            rightsString += UCI.Options.chess960 ? File.toNotation(wk).toUpperCase() : "K";
         }
         int wq = Castling.getRook(rights, false, true);
         if (wq != Castling.NO_ROOK) {
-            rightsString += UCI.Options.chess960 ? File.toFileNotation(wq).toUpperCase() : "Q";
+            rightsString += UCI.Options.chess960 ? File.toNotation(wq).toUpperCase() : "Q";
         }
         int bk = Castling.getRook(rights, true, false);
         if (bk != Castling.NO_ROOK) {
-            rightsString += UCI.Options.chess960 ? File.toFileNotation(bk) : "k";
+            rightsString += UCI.Options.chess960 ? File.toNotation(bk) : "k";
         }
         int bq = Castling.getRook(rights, false, false);
         if (bq != Castling.NO_ROOK) {
-            rightsString += UCI.Options.chess960 ? File.toFileNotation(bq) : "q";
+            rightsString += UCI.Options.chess960 ? File.toNotation(bq) : "q";
         }
         return rightsString;
     }

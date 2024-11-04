@@ -90,7 +90,7 @@ public class Bits {
         }
 
         public static String toNotation(int sq) {
-            return File.toFileNotation(sq) + Rank.toRankNotation(sq);
+            return File.toNotation(sq) + Rank.toRankNotation(sq);
         }
 
         public static int fromNotation(String algebraic) {
@@ -124,8 +124,16 @@ public class Bits {
             return 0x0101010101010101L << file;
         }
 
-        public static String toFileNotation(int sq) {
+        public static String toNotation(int sq) {
             return FILE_CHAR_MAP.get(of(sq));
+        }
+
+        public static int fromNotation(char file) {
+            return FILE_CHAR_MAP.entrySet().stream()
+                    .filter(entry -> entry.getValue().equalsIgnoreCase(Character.toString(file)))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElseThrow();
         }
 
     }

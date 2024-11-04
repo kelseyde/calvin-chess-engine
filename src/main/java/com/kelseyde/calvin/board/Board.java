@@ -3,6 +3,7 @@ package com.kelseyde.calvin.board;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.Arrays;
@@ -57,7 +58,6 @@ public class Board {
      * piece + remove the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
      */
     public boolean makeMove(Move move) {
-        System.out.println("making move " + Move.toUCI(move));
 
         final int from = move.from();
         final int to = move.to();
@@ -114,7 +114,11 @@ public class Board {
         updateKeys(from, to, Piece.KING, white);
         // Handle castling rook
         final boolean kingside = File.of(to) == 6;
-        final int rookFrom = Castling.rookFrom(kingside, white);
+        final int rookFrom = UCI.Options.chess960 ?
+                // In Chess960 the rook starting square is dynamic
+                Castling.getRook(state.getRights(), kingside, white) :
+                // Fast-path for standard chess
+                Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
         toggleSquares(rookFrom, rookTo, Piece.ROOK, white);
         updateMailbox(rookFrom, rookTo, Piece.ROOK);
@@ -165,13 +169,7 @@ public class Board {
         final boolean resetClock = captured != null || Piece.PAWN.equals(piece);
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
 
-        int wk = Castling.getRook(state.rights, true, true);
-        int wq = Castling.getRook(state.rights, false, true);
-        int bk = Castling.getRook(state.rights, true, false);
-        int bq = Castling.getRook(state.rights, false, false);
-        System.out.printf("before: wk: %d, wq: %d, bk: %d, bq: %d%n", wk, wq, bk, bq);
         final int castleRights = updateCastleRights(from, to, piece);
-        System.out.printf("after: wk: %d, wq: %d, bk: %d, bq: %d%n", Castling.getRook(castleRights, true, true), Castling.getRook(castleRights, false, true), Castling.getRook(castleRights, true, false), Castling.getRook(castleRights, false, false));
         state.key ^= Key.rights(state.rights, castleRights);
         state.rights = castleRights;
 
@@ -189,7 +187,11 @@ public class Board {
         // Put back rook
         final boolean kingside = File.of(to) == 6;
         final int rookTo = Castling.rookTo(kingside, white);
-        final int rookFrom = Castling.rookFrom(kingside, white);
+        final int rookFrom = UCI.Options.chess960 ?
+                // In Chess960 the rook starting square is dynamic
+                Castling.getRook(states[ply].rights, kingside, white) :
+                // Fast-path for standard chess
+                Castling.rookFrom(kingside, white);
         toggleSquares(rookTo, rookFrom, Piece.ROOK, white);
         updateMailbox(rookTo, rookFrom, Piece.ROOK);
     }

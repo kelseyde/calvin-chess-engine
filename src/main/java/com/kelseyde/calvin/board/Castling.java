@@ -2,31 +2,16 @@ package com.kelseyde.calvin.board;
 
 public class Castling {
 
-    public static class Standard {
-
-        // Masks for the squares that must be unoccupied for legal castling (standard only)
-        public static final long WHITE_QUEENSIDE_TRAVEL_MASK = 0x000000000000000EL;
-        public static final long BLACK_QUEENSIDE_TRAVEL_MASK = WHITE_QUEENSIDE_TRAVEL_MASK << (7 * 8);
-        public static final long WHITE_KINGSIDE_TRAVEL_MASK = 0x0000000000000060L;
-        public static final long BLACK_KINGSIDE_TRAVEL_MASK = WHITE_KINGSIDE_TRAVEL_MASK << (7 * 8);
-        // Masks for the squares that must not be attacked for legal castling (standard only)
-        public static final long WHITE_QUEENSIDE_SAFE_MASK = 0x000000000000001CL;
-        public static final long BLACK_QUEENSIDE_SAFE_MASK = WHITE_QUEENSIDE_SAFE_MASK << (7 * 8);
-        public static final long WHITE_KINGSIDE_SAFE_MASK = WHITE_QUEENSIDE_SAFE_MASK << 2;
-        public static final long BLACK_KINGSIDE_SAFE_MASK = WHITE_KINGSIDE_SAFE_MASK << (7 * 8);
-
-    }
-
     // Constants to represent shifts and encoding limits
     public static final int NO_ROOK = 64;
     private static final int SQUARE_MASK = 0x7F; // Mask to allow 7 bits, covering 0-64 range
-    private static final int WK_SHIFT = 18; // White kingside rook (uppermost)
-    private static final int WQ_SHIFT = 12; // White queenside rook
-    private static final int BK_SHIFT = 6;  // Black kingside rook
+    private static final int WK_SHIFT = 21; // White kingside rook (uppermost)
+    private static final int WQ_SHIFT = 14; // White queenside rook
+    private static final int BK_SHIFT = 7;  // Black kingside rook
     private static final int BQ_SHIFT = 0;  // Black queenside rook (lowermost)
 
     public static int rookFrom(boolean kingside, boolean white) {
-        // TODO update for 960
+        // Standard starting position for rooks
         if (kingside) {
             return white ? 7 : 63;
         } else {
@@ -35,7 +20,7 @@ public class Castling {
     }
 
     public static int rookTo(boolean kingside, boolean white) {
-        // TODO update for 960
+        // Standard castling destination for rooks
         if (kingside) {
             return white ? 5 : 61;
         } else {
@@ -113,6 +98,5 @@ public class Castling {
             return kingside ? BK_SHIFT : BQ_SHIFT;
         }
     }
-
 
 }

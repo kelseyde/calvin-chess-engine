@@ -9,6 +9,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.uci.UCI;
 
 /**
  * Calvin's evaluation function is an Efficiently Updatable Neural Network (NNUE).
@@ -127,7 +128,11 @@ public class NNUE {
 
     private void handleCastleMove(Accumulator acc, boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
         final boolean kingside = File.of(to) == 6;
-        final int rookFrom = Castling.rookFrom(kingside, white);
+        final int rookFrom = UCI.Options.chess960 ?
+                // In Chess960, the rook starting square is dynamic
+                Castling.getRook(board.getState().getRights(), kingside, white) :
+                // Fast-path for standard chess
+                Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
         final int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookFrom, white, true);
         final int rookStartBlackIdx = featureIndex(Piece.ROOK, rookFrom, white, false);

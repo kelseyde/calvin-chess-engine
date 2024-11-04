@@ -363,4 +363,37 @@ public class CastlingTest {
 
     }
 
+    @Test
+    public void shredderFen() {
+        Board board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1");
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertTrue(Castling.queensideAllowed(board.getState().getRights(), false));
+
+        board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAh - 0 1");
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), false));
+
+        board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HA - 0 1");
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), false));
+
+        board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w H - 0 1");
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), false));
+
+        board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1");
+        Assertions.assertFalse(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), false));
+    }
+
 }

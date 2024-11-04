@@ -44,7 +44,7 @@ public class SAN {
                         int alternateFromRankIndex = Rank.of(legalMove.from());
 
                         if (fromFileIndex != alternateFromFileIndex) {
-                            notation += File.toFileNotation(move.from());
+                            notation += File.toNotation(move.from());
                             break;
                         }
                         else if (fromRankIndex != alternateFromRankIndex)
@@ -60,18 +60,18 @@ public class SAN {
         if (captured != null) {
             // add 'x' to indicate capture
             if (piece == Piece.PAWN) {
-                notation += File.toFileNotation(move.from());
+                notation += File.toNotation(move.from());
             }
             notation += "x";
         }
         else {
             // Check if capturing en passant
             if (move.isEnPassant()) {
-                notation += File.toFileNotation(move.from()) + "x";
+                notation += File.toNotation(move.from()) + "x";
             }
         }
 
-        notation += File.toFileNotation(move.to());
+        notation += File.toNotation(move.to());
         notation += Rank.toRankNotation(move.to());
 
         // Add promotion piece type

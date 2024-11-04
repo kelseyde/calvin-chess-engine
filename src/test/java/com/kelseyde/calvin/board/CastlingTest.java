@@ -303,4 +303,15 @@ public class CastlingTest {
 
     }
 
+    @Test
+    public void castleRightsEmpty() {
+
+        int rights = Castling.empty();
+        Assertions.assertFalse(Castling.kingsideAllowed(rights, true));
+        Assertions.assertFalse(Castling.kingsideAllowed(rights, false));
+        Assertions.assertFalse(Castling.queensideAllowed(rights, true));
+        Assertions.assertFalse(Castling.queensideAllowed(rights, false));
+
+    }
+
 }

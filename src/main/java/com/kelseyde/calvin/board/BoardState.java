@@ -22,7 +22,7 @@ public class BoardState {
         this.nonPawnKeys = new long[2];
         this.captured = null;
         this.enPassantFile = -1;
-        this.rights = Castling.INITIAL_CASTLING_RIGHTS;
+        this.rights = Castling.startpos();
         this.halfMoveClock = 0;
     }
 
@@ -34,16 +34,6 @@ public class BoardState {
         this.enPassantFile = enPassantFile;
         this.rights = rights;
         this.halfMoveClock = halfMoveClock;
-    }
-
-    public boolean isKingsideCastlingAllowed(boolean white) {
-        long kingsideMask = white ? 0b0001 : 0b0100;
-        return (rights & kingsideMask) == kingsideMask;
-    }
-
-    public boolean isQueensideCastlingAllowed(boolean white) {
-        long queensideMask = white ? 0b0010 : 0b1000;
-        return (rights & queensideMask) == queensideMask;
     }
 
     public long getKey() {

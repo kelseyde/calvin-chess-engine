@@ -17,17 +17,9 @@ public class Castling {
 
     }
 
-    public static final int INITIAL_CASTLING_RIGHTS = 0b1111;
-    public static final int CLEAR_WHITE_CASTLING_MASK = 0b1100;
-    public static final int CLEAR_BLACK_CASTLING_MASK = 0b0011;
-    public static final int CLEAR_WHITE_KINGSIDE_MASK = 0b1110;
-    public static final int CLEAR_BLACK_KINGSIDE_MASK = 0b1011;
-    public static final int CLEAR_WHITE_QUEENSIDE_MASK = 0b1101;
-    public static final int CLEAR_BLACK_QUEENSIDE_MASK = 0b0111;
-
     // Constants to represent shifts and encoding limits
-    private static final int NO_ROOK = 64;
-    private static final int SQUARE_MASK = 0x3F; // Mask to keep only 6 bits for square 0-63
+    public static final int NO_ROOK = 64;
+    private static final int SQUARE_MASK = 0x7F; // Mask to allow 7 bits, covering 0-64 range
     private static final int WK_SHIFT = 18; // White kingside rook (uppermost)
     private static final int WQ_SHIFT = 12; // White queenside rook
     private static final int BK_SHIFT = 6;  // Black kingside rook
@@ -56,10 +48,21 @@ public class Castling {
         return (NO_ROOK << WK_SHIFT) | (NO_ROOK << WQ_SHIFT) | (NO_ROOK << BK_SHIFT) | (NO_ROOK << BQ_SHIFT);
     }
 
+    public static int startpos() {
+        // Starting castling rights (standard chess only)
+        return from(0, 7, 56, 63);
+    }
+
     public static int from(int wk, int wq, int bk, int bq) {
         // Constructs castling rights from the starting rook squares
         return (encode(wk) << WK_SHIFT) | (encode(wq) << WQ_SHIFT) |
                 (encode(bk) << BK_SHIFT) | (encode(bq) << BQ_SHIFT);
+    }
+
+    public static int getRook(int rights, boolean kingside, boolean white) {
+        // Gets the starting rook square for the given side
+        int shift = shift(kingside, white);
+        return decode((rights >> shift) & SQUARE_MASK);
     }
 
     public static int setRook(int rights, boolean kingside, boolean white, int sq) {
@@ -70,11 +73,19 @@ public class Castling {
         return rights;
     }
 
+    public static int clearRook(int rights, boolean kingside, boolean white) {
+        // Unsets the starting rook square for the given side
+        return setRook(rights, kingside, white, NO_ROOK);
+    }
+
+    public static int clearSide(int rights, boolean white) {
+        // Unsets the starting rook squares for the given side
+        return clearRook(clearRook(rights, true, white), false, white);
+    }
+
     public static boolean kingsideAllowed(int rights, boolean white) {
         // Checks if kingside castling is allowed for the given side
         int shift = shift(true, white);
-        int square = decode((rights >> shift) & SQUARE_MASK);
-        System.out.println("sq: " + square);
         return decode((rights >> shift) & SQUARE_MASK) != NO_ROOK;
     }
 
@@ -84,14 +95,14 @@ public class Castling {
         return decode((rights >> shift) & SQUARE_MASK) != NO_ROOK;
     }
 
-    private static int encode(int sq) {
+    public static int encode(int sq) {
         // Encodes the rook square to the castling rights (0-64 range, with 64 representing no rook)
-        return sq == NO_ROOK ? NO_ROOK : (sq & SQUARE_MASK);
+        return (sq >= 0 && sq <= 64) ? sq : NO_ROOK;
     }
 
-    private static int decode(int mask) {
+    public static int decode(int mask) {
         // Decodes the castling rights to the rook square (0-64 range, with 64 representing no rook)
-        return mask == NO_ROOK ? NO_ROOK : (mask & SQUARE_MASK);
+        return (mask & SQUARE_MASK) <= 64 ? mask & SQUARE_MASK : NO_ROOK;
     }
 
     private static int shift(boolean kingside, boolean white) {

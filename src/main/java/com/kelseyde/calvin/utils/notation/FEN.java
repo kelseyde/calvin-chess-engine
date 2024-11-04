@@ -1,11 +1,9 @@
 package com.kelseyde.calvin.utils.notation;
 
-import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Key;
-import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.uci.UCI;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -170,40 +168,51 @@ public class FEN {
     }
 
     private static int parseCastlingRights(String castlingRights) {
-        int castlingRightsMask = 0b0000;
-        if (castlingRights.contains("K")) {
-            castlingRightsMask |= 0b0001;
+        if (castlingRights.length() > 4) {
+            throw new IllegalArgumentException("Invalid castling rights! " + castlingRights);
         }
-        if (castlingRights.contains("Q")) {
-            castlingRightsMask |= 0b0010;
+        int rights = Castling.empty();
+        for (int i = 0; i < castlingRights.length(); i++) {
+            char right = castlingRights.charAt(i);
+            switch (right) {
+                case 'K' -> rights = Castling.setRook(rights, true, true, 7);
+                case 'Q' -> rights = Castling.setRook(rights, false, true, 0);
+                case 'k' -> rights = Castling.setRook(rights, true, false, 63);
+                case 'q' -> rights = Castling.setRook(rights, false, false, 56);
+                case '-' -> {}
+                default -> throw new IllegalArgumentException("Invalid castling right! " + right);
+            }
+            int wk = Castling.getRook(rights, true, true);
+            int wq = Castling.getRook(rights, false, true);
+            int bk = Castling.getRook(rights, true, false);
+            int bq = Castling.getRook(rights, false, false);
+            System.out.printf("wk: %d, wq: %d, bk: %d, bq: %d\n", wk, wq, bk, bq);
         }
-        if (castlingRights.contains("k")) {
-            castlingRightsMask |= 0b0100;
-        }
-        if (castlingRights.contains("q")) {
-            castlingRightsMask |= 0b1000;
-        }
-        return castlingRightsMask;
+        return rights;
     }
 
-    private static String toCastlingRights(int castlingRights) {
-        if (castlingRights == 0b0000) {
+    private static String toCastlingRights(int rights) {
+        if (rights == Castling.empty()) {
             return "-";
         }
-        String castlingRightsString = "";
-        if ((castlingRights & 0b0001) != 0) {
-            castlingRightsString += "K";
+        String rightsString = "";
+        int wk = Castling.getRook(rights, true, true);
+        if (wk != Castling.NO_ROOK) {
+            rightsString += UCI.Options.chess960 ? File.toFileNotation(wk).toUpperCase() : "K";
         }
-        if ((castlingRights & 0b0010) != 0) {
-            castlingRightsString += "Q";
+        int wq = Castling.getRook(rights, false, true);
+        if (wq != Castling.NO_ROOK) {
+            rightsString += UCI.Options.chess960 ? File.toFileNotation(wq).toUpperCase() : "Q";
         }
-        if ((castlingRights & 0b0100) != 0) {
-            castlingRightsString += "k";
+        int bk = Castling.getRook(rights, true, false);
+        if (bk != Castling.NO_ROOK) {
+            rightsString += UCI.Options.chess960 ? File.toFileNotation(bk) : "k";
         }
-        if ((castlingRights & 0b1000) != 0) {
-            castlingRightsString += "q";
+        int bq = Castling.getRook(rights, false, false);
+        if (bq != Castling.NO_ROOK) {
+            rightsString += UCI.Options.chess960 ? File.toFileNotation(bq) : "q";
         }
-        return castlingRightsString;
+        return rightsString;
     }
 
     private static int parseEnPassantFile(String enPassantSquare) {

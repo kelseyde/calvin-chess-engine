@@ -306,12 +306,12 @@ public class MoveGenerator {
         final int from = Bits.next(king);
         final long occupied = board.getOccupied();
 
-        final boolean isKingsideAllowed = board.getState().isKingsideCastlingAllowed(white);
+        final boolean isKingsideAllowed = Castling.kingsideAllowed(board.getState().rights, white);
         if (isKingsideAllowed) {
             generateCastlingMove(board, white, true, from, occupied);
         }
 
-        final boolean isQueensideAllowed = board.getState().isQueensideCastlingAllowed(white);
+        final boolean isQueensideAllowed = Castling.queensideAllowed(board.getState().rights, white);
         if (isQueensideAllowed) {
             generateCastlingMove(board, white, false, from, occupied);
         }
@@ -663,11 +663,11 @@ public class MoveGenerator {
                 return false;
 
             // Must have kingside rights
-            if (to == kingsideCastleSquare && !board.getState().isKingsideCastlingAllowed(white))
+            if (to == kingsideCastleSquare && !Castling.kingsideAllowed(board.getState().rights, white))
                 return false;
 
             // Must have queenside rights
-            if (to == queensideCastleSquare && !board.getState().isQueensideCastlingAllowed(white))
+            if (to == queensideCastleSquare && !Castling.queensideAllowed(board.getState().rights, white))
                 return false;
 
             boolean kingside = to == kingsideCastleSquare;

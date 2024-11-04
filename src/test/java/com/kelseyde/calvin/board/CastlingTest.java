@@ -304,6 +304,16 @@ public class CastlingTest {
     }
 
     @Test
+    public void testCastleRightSquareEncoding() {
+
+        // including 64, representing no-square
+        for (int square = 0; square < 64; square++) {
+            Assertions.assertEquals(square, Castling.decode(Castling.encode(square)));
+        }
+
+    }
+
+    @Test
     public void castleRightsEmpty() {
 
         int rights = Castling.empty();
@@ -311,6 +321,45 @@ public class CastlingTest {
         Assertions.assertFalse(Castling.kingsideAllowed(rights, false));
         Assertions.assertFalse(Castling.queensideAllowed(rights, true));
         Assertions.assertFalse(Castling.queensideAllowed(rights, false));
+
+    }
+
+    @Test
+    public void castleRightsStartpos() {
+
+        int r = Castling.empty();
+        r = Castling.setRook(r, true, true, 7);
+        Assertions.assertEquals(7, Castling.getRook(r, true, true));
+
+        Board board = Board.from(FEN.STARTPOS);
+        int rights = board.getState().getRights();
+        Assertions.assertTrue(Castling.kingsideAllowed(rights, true));
+        Assertions.assertTrue(Castling.kingsideAllowed(rights, false));
+        Assertions.assertTrue(Castling.queensideAllowed(rights, true));
+        Assertions.assertTrue(Castling.queensideAllowed(rights, false));
+
+        Assertions.assertEquals(0, Castling.getRook(rights, false, true));
+        Assertions.assertEquals(7, Castling.getRook(rights, true, true));
+        Assertions.assertEquals(56, Castling.getRook(rights, false, false));
+        Assertions.assertEquals(63, Castling.getRook(rights, true, false));
+
+    }
+
+    @Test
+    public void updateCastleRights() {
+
+        int rights = Castling.empty();
+
+        for (int i = 0; i < 64; i++) {
+            rights = Castling.setRook(rights, true, true, i);
+            Assertions.assertEquals(i, Castling.getRook(rights, true, true));
+            rights = Castling.setRook(rights, false, true, i);
+            Assertions.assertEquals(i, Castling.getRook(rights, false, true));
+            rights = Castling.setRook(rights, true, false, i);
+            Assertions.assertEquals(i, Castling.getRook(rights, true, false));
+            rights = Castling.setRook(rights, false, false, i);
+            Assertions.assertEquals(i, Castling.getRook(rights, false, false));
+        }
 
     }
 

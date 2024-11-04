@@ -57,6 +57,7 @@ public class Board {
      * piece + remove the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
      */
     public boolean makeMove(Move move) {
+        System.out.println("making move " + Move.toUCI(move));
 
         final int from = move.from();
         final int to = move.to();
@@ -164,7 +165,13 @@ public class Board {
         final boolean resetClock = captured != null || Piece.PAWN.equals(piece);
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
 
+        int wk = Castling.getRook(state.rights, true, true);
+        int wq = Castling.getRook(state.rights, false, true);
+        int bk = Castling.getRook(state.rights, true, false);
+        int bq = Castling.getRook(state.rights, false, false);
+        System.out.printf("before: wk: %d, wq: %d, bk: %d, bq: %d%n", wk, wq, bk, bq);
         final int castleRights = updateCastleRights(from, to, piece);
+        System.out.printf("after: wk: %d, wq: %d, bk: %d, bq: %d%n", Castling.getRook(castleRights, true, true), Castling.getRook(castleRights, false, true), Castling.getRook(castleRights, true, false), Castling.getRook(castleRights, false, false));
         state.key ^= Key.rights(state.rights, castleRights);
         state.rights = castleRights;
 
@@ -325,28 +332,32 @@ public class Board {
 
     private int updateCastleRights(int from, int to, Piece pieceType) {
         int newRights = state.getRights();
-        if (newRights == 0b0000) {
+        if (newRights == Castling.empty()) {
             // Both sides already lost castling rights, so nothing to calculate.
             return newRights;
         }
         // Any move by the king removes castling rights.
         if (Piece.KING.equals(pieceType)) {
-            newRights &= white ? Castling.CLEAR_WHITE_CASTLING_MASK : Castling.CLEAR_BLACK_CASTLING_MASK;
+            newRights = Castling.clearSide(newRights, white);
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.
         // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
         // another rook in starting position; in that case, both sides lose castling rights!
-        if (from == 7 || to == 7) {
-            newRights &= Castling.CLEAR_WHITE_KINGSIDE_MASK;
+        int wk = Castling.getRook(newRights, true, true);
+        if (from == wk || to == wk) {
+            newRights = Castling.clearRook(newRights, true, true);
         }
-        if (from == 63 || to == 63) {
-            newRights &= Castling.CLEAR_BLACK_KINGSIDE_MASK;
+        int wq = Castling.getRook(newRights, false, true);
+        if (from == wq || to == wq) {
+            newRights = Castling.clearRook(newRights, false, true);
         }
-        if (from == 0 || to == 0) {
-            newRights &= Castling.CLEAR_WHITE_QUEENSIDE_MASK;
+        int bk = Castling.getRook(newRights, true, false);
+        if (from == bk || to == bk) {
+            newRights = Castling.clearRook(newRights, true, false);
         }
-        if (from == 56 || to == 56) {
-            newRights &= Castling.CLEAR_BLACK_QUEENSIDE_MASK;
+        int bq = Castling.getRook(newRights, false, false);
+        if (from == bq || to == bq) {
+            newRights = Castling.clearRook(newRights, false, false);
         }
         return newRights;
     }

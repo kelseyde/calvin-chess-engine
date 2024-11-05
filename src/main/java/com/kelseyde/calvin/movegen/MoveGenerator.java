@@ -335,18 +335,24 @@ public class MoveGenerator {
 
     }
 
-    private void generateCastlingMove(Board board, boolean white, boolean kingside, int from, long occupied) {
+    private void generateCastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
+
+        // abandon hope all ye who enter here
+
 
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
-        final int kingDst = getKingCastleDstSquare(white, kingside);
-        final int rookDst = UCI.Options.chess960 ? Castling.rookTo(kingside, white) : rookSquare;
+        final int kingDst = Castling.kingTo(kingside, white);
+        final int rookDst = Castling.rookTo(kingside, white);
 
-        final long travelSquares = Ray.between(from, kingDst) | Bits.of(kingDst) | (rookSquare != rookDst ? Bits.of(rookDst) : 0);
-        final long blockedSquares = travelSquares & (occupied &~ Bits.of(rookSquare));
-        final long safeSquares = Bits.of(from) | Ray.between(from, kingDst) | Bits.of(kingDst);
+        final long kingTravelSquares = (Ray.between(kingSquare, kingDst) | Bits.of(kingDst)) &~ Bits.of(rookSquare);
+        final long rookTravelSquares = (Ray.between(rookSquare, rookDst) | Bits.of(rookDst)) &~ Bits.of(kingSquare);
+        final long travelSquares = kingTravelSquares | rookTravelSquares;
+
+        final long blockedSquares = travelSquares & occupied;
+        final long safeSquares = Bits.of(kingSquare) | Ray.between(kingSquare, kingDst) | Bits.of(kingDst);
         if (blockedSquares == 0 && !isAttacked(board, white, safeSquares)) {
             int to = getCastleEndSquare(board, white, kingside);
-            legalMoves.add(new Move(from, to, Move.CASTLE_FLAG));
+            legalMoves.add(new Move(kingSquare, to, Move.CASTLE_FLAG));
         }
     }
 
@@ -823,14 +829,6 @@ public class MoveGenerator {
     private boolean isMovingAlongPinRay(int from, int to) {
         final long pinRay = pinRayMasks[from];
         return (Bits.of(to) & pinRay) != 0;
-    }
-
-    private int getKingCastleDstSquare(boolean white, boolean isKingside) {
-        if (isKingside) {
-            return white ? 6 : 62;
-        } else {
-            return white ? 2 : 58;
-        }
     }
 
     private int getCastleEndSquare(Board board, boolean white, boolean kingside) {

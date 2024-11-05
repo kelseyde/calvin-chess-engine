@@ -44,11 +44,11 @@ public class Chess960Test {
 
         UCI.Options.chess960 = true;
 
-        String fen = "rk1nqnbb/1prppp1p/2p3p1/p2P4/5PP1/P7/KPP1P2P/R1RNQNBB b a - 0 6";
+        String fen = "rb2r1k1/pp3q1n/2p1b1p1/P2p3p/3BPp1P/2P2P2/1P3NPQ/RB3K1R w HA - 2 20";
         Board board = Board.from(fen);
         List<Move> moves = MOVEGEN.generateMoves(board);
         System.out.println(moves.stream().map(Move::toUCI).toList());
-        Assertions.assertFalse(moves.stream().anyMatch(m -> Move.toUCI(m).equals("b8a8")));
+        Assertions.assertFalse(moves.stream().anyMatch(m -> Move.toUCI(m).equals("f1a1")));
 
         UCI.Options.chess960 = false;
 

@@ -35,7 +35,7 @@ public class UCI {
     public static class Options {
         public static boolean output = true;
         public static boolean pretty = false;
-        public static boolean chess960 = true;
+        public static boolean chess960 = false;
     }
 
     public static void run(String[] args) {

@@ -86,15 +86,7 @@ public class CastlingTest {
 
         UCI.Options.chess960 = true;
 
-        Board board = Board.from(FEN.STARTPOS);
-        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
-        board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
-        board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
-        board.makeMove(TestUtils.getLegalMove(board, "b8", "c6"));
-        board.makeMove(TestUtils.getLegalMove(board, "c1", "f4"));
-        board.makeMove(TestUtils.getLegalMove(board, "c8", "f5"));
-        board.makeMove(TestUtils.getLegalMove(board, "d1", "d2"));
-        board.makeMove(TestUtils.getLegalMove(board, "d8", "d7"));
+        Board board = Board.from("r3kbnr/pppqpppp/2n5/3p1b2/3P1B2/2N5/PPPQPPPP/R3KBNR w KQkq - 6 5");
 
         // white castles
         board.makeMove(TestUtils.getLegalMove(board, "e1", "a1"));

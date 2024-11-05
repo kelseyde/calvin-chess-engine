@@ -3,9 +3,12 @@ package com.kelseyde.calvin.movegen;
 import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.*;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Generates all the legal moves in a given position.
@@ -91,6 +94,16 @@ public class MoveGenerator {
         generateKnightMoves(board);
         generateAllSlidingMoves(board);
         generateCastlingMoves(board);
+
+        for (Move move : legalMoves) {
+            if (board.pieceAt(move.from()) == null) {
+                System.out.println(Move.toUCI(move) + " " + FEN.toFEN(board));
+                board.print();
+                System.out.println(Arrays.stream(board.getMoves()).map(Move::toUCI).collect(Collectors.joining(", ")));
+                System.out.println(Bits.contains(board.getPieces(white), move.from()));
+                throw new RuntimeException();
+            }
+        }
 
         return legalMoves;
 
@@ -323,8 +336,9 @@ public class MoveGenerator {
 
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
         final int kingDst = getKingCastleDstSquare(white, kingside);
+        final int rookDst = UCI.Options.chess960 ? Castling.rookTo(kingside, white) : rookSquare;
 
-        final long travelSquares = Ray.between(from, rookSquare);
+        final long travelSquares = Ray.between(from, rookSquare) | (rookSquare != rookDst ? Bits.of(rookDst) : 0);
         final long blockedSquares = travelSquares & occupied;
         final long safeSquares = Bits.of(from) | Ray.between(from, kingDst) | Bits.of(kingDst);
         if (blockedSquares == 0 && !isAttacked(board, white, safeSquares)) {

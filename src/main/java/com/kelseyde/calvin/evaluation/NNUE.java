@@ -1,12 +1,8 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Castling;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.uci.UCI;

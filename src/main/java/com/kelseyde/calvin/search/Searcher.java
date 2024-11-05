@@ -306,32 +306,32 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
-            if (sse.nullMoveAllowed
-                && depth >= config.nmpDepth.value
-                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
-                && board.hasPiecesRemaining(board.isWhite())) {
-
-                ss.get(ply + 1).nullMoveAllowed = false;
-                board.makeNullMove();
-
-                final int base = config.nmpBase.value;
-                final int divisor = config.nmpDivisor.value;
-                final int evalScale = config.nmpEvalScale.value;
-                final int evalMaxReduction = config.nmpEvalMaxReduction.value;
-                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
-                final int r = base
-                        + depth / divisor
-                        + evalReduction;
-
-                final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
-
-                board.unmakeNullMove();
-                ss.get(ply + 1).nullMoveAllowed = true;
-
-                if (score >= beta) {
-                    return Score.isMateScore(score) ? beta : score;
-                }
-            }
+//            if (sse.nullMoveAllowed
+//                && depth >= config.nmpDepth.value
+//                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
+//                && board.hasPiecesRemaining(board.isWhite())) {
+//
+//                ss.get(ply + 1).nullMoveAllowed = false;
+//                board.makeNullMove();
+//
+//                final int base = config.nmpBase.value;
+//                final int divisor = config.nmpDivisor.value;
+//                final int evalScale = config.nmpEvalScale.value;
+//                final int evalMaxReduction = config.nmpEvalMaxReduction.value;
+//                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
+//                final int r = base
+//                        + depth / divisor
+//                        + evalReduction;
+//
+//                final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
+//
+//                board.unmakeNullMove();
+//                ss.get(ply + 1).nullMoveAllowed = true;
+//
+//                if (score >= beta) {
+//                    return Score.isMateScore(score) ? beta : score;
+//                }
+//            }
 
         }
 

@@ -7,6 +7,7 @@ import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * Represents the current state of the chess board, including the positions of the pieces, the side to move, en passant
@@ -78,6 +79,18 @@ public class Board {
         updateState(from, to, piece, captured, move);
         moves[ply++] = move;
         white = !white;
+
+        for (int i = 0; i < 64; i++) {
+            boolean mailbox = pieceAt(i) != null;
+            boolean bitboard = Bits.contains(occupied, i);
+            if (mailbox != bitboard) {
+                print();
+                System.out.println(Move.toUCI(move));
+                System.out.println(Arrays.stream(moves).map(Move::toUCI).collect(Collectors.joining(", ")));
+                throw new IllegalStateException(String.format("Mailbox and bitboard mismatch at %s", Square.toNotation(i)));
+            }
+        }
+
         return true;
 
     }

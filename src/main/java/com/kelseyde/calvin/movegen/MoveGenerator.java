@@ -329,7 +329,6 @@ public class MoveGenerator {
         final long safeSquares = Bits.of(from) | Ray.between(from, kingDst) | Bits.of(kingDst);
         if (blockedSquares == 0 && !isAttacked(board, white, safeSquares)) {
             int to = getCastleEndSquare(white, kingside);
-            System.out.printf(String.format("Castle move %s - %s (white ? %s) (kingside ? %s)%n", Square.toNotation(from), Square.toNotation(to), white, kingside));
             legalMoves.add(new Move(from, to, Move.CASTLE_FLAG));
         }
     }

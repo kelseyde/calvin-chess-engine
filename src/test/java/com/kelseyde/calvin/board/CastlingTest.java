@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -43,9 +44,17 @@ public class CastlingTest {
 
         // white castles
         board.makeMove(TestUtils.getLegalMove(board, "e1", "h1"));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("g1")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("f1")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("g1")), board.getKing(true));
+        Assertions.assertTrue(Bits.contains(board.getRooks(true), Square.fromNotation("f1")));
 
         // black castles
         board.makeMove(TestUtils.getLegalMove(board, "e8", "h8"));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("g8")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("f8")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("g8")), board.getKing(false));
+        Assertions.assertTrue(Bits.contains(board.getRooks(false), Square.fromNotation("f8")));
 
         UCI.Options.chess960 = false;
 
@@ -89,9 +98,17 @@ public class CastlingTest {
 
         // white castles
         board.makeMove(TestUtils.getLegalMove(board, "e1", "a1"));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("c1")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("d1")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("c1")), board.getKing(true));
+        Assertions.assertTrue(Bits.contains(board.getRooks(true), Square.fromNotation("d1")));
 
         // black castles
         board.makeMove(TestUtils.getLegalMove(board, "e8", "a8"));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("c8")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("d8")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("c8")), board.getKing(false));
+        Assertions.assertTrue(Bits.contains(board.getRooks(false), Square.fromNotation("d8")));
 
         UCI.Options.chess960 = false;
 

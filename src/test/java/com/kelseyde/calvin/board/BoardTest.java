@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.IllegalMoveException;
@@ -17,8 +18,8 @@ public class BoardTest {
     public void testSimpleMakeMove() {
         Board board = Board.from(FEN.STARTPOS);
         board.makeMove(Move.fromUCI("e2e4"));
-        Assertions.assertNull(board.pieceAt(Bits.Square.fromNotation("e2")));
-        Assertions.assertEquals(Piece.PAWN, board.pieceAt(Bits.Square.fromNotation("e4")));
+        Assertions.assertNull(board.pieceAt(Square.fromNotation("e2")));
+        Assertions.assertEquals(Piece.PAWN, board.pieceAt(Square.fromNotation("e4")));
     }
 
     @Test
@@ -272,40 +273,18 @@ public class BoardTest {
 
         UCI.Options.chess960 = true;
 
-        Board board = Board.from(FEN.STARTPOS);
-        board.makeMove(Move.fromUCI("e2e4"));
-        board.makeMove(Move.fromUCI("d7d5"));
-        board.makeMove(Move.fromUCI("g1f3"));
-        board.makeMove(Move.fromUCI("b8c6"));
-        board.makeMove(Move.fromUCI("f1b5"));
-        board.makeMove(Move.fromUCI("c8g4"));
-        board.makeMove(Move.fromUCI("e1g1", Move.CASTLE_FLAG));
-        board.makeMove(Move.fromUCI("d8d7"));
-        board.makeMove(Move.fromUCI("f1e1"));
-        board.makeMove(Move.fromUCI("e8c8", Move.CASTLE_FLAG));
-
-        Board board2 = FEN.toBoard("2kr1bnr/pppqpppp/2n5/1B1p4/4P1b1/5N2/PPPP1PPP/RNBQR1K1 w - - 8 6");
-        board2.print();
-        board.print();
-        Assertions.assertEquals(board.getWhitePieces(), board2.getWhitePieces());
-        Assertions.assertEquals(board.getBlackPieces(), board2.getBlackPieces());
-        Assertions.assertEquals(board.getRooks(), board2.getRooks());
+        Board board = Board.from("rnbqk2r/pppp1ppp/5n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4");
+        board.makeMove(Move.fromUCI("e1h1", Move.CASTLE_FLAG));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("g1")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("f1")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("g1")), board.getKing(true));
+        Assertions.assertTrue(Bits.contains(board.getRooks(true), Square.fromNotation("f1")));
 
         board.unmakeMove();
-        board.unmakeMove();
-        board.unmakeMove();
-        board.unmakeMove();
-        board.unmakeMove();
-        board.unmakeMove();
-        board.unmakeMove();
-        board.unmakeMove();
-        board.unmakeMove();
-        board.unmakeMove();
-
-        Board board3 = Board.from(FEN.STARTPOS);
-        Assertions.assertEquals(board.getWhitePieces(), board3.getWhitePieces());
-        Assertions.assertEquals(board.getBlackPieces(), board3.getBlackPieces());
-        Assertions.assertEquals(board.getRooks(), board3.getRooks());
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("e1")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("h1")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("e1")), board.getKing(true));
+        Assertions.assertTrue(Bits.contains(board.getRooks(true), Square.fromNotation("h1")));
 
         UCI.Options.chess960 = false;
 

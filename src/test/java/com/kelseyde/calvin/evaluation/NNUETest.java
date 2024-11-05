@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -62,6 +63,25 @@ public class NNUETest {
         board.unmakeMove();
         nnue.unmakeMove();
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+    }
+
+    @Test
+    public void testWhiteQueensideCastlingChess960() {
+
+        UCI.Options.chess960 = true;
+        String fen = "rnbq1rk1/pp3pbp/2pp1np1/3Pp3/4P3/2N1BP2/PPPQ2PP/R3KBNR w KQ - 0 8";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        Move move = Move.fromUCI("e1a1", Move.CASTLE_FLAG);
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        UCI.Options.chess960 = false;
 
     }
 

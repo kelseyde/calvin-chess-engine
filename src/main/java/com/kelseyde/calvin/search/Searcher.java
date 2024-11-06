@@ -213,7 +213,7 @@ public class Searcher implements Search {
         final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
-        // If we are in check then there if a forcing sequence, so we could benefit from searching one ply deeper to
+        // If we are in check then there is a forcing sequence, so we could benefit from searching one ply deeper to
         // retrieve a more accurate evaluation.
         if (inCheck) {
             depth++;

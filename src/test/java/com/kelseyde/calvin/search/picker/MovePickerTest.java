@@ -48,7 +48,7 @@ public class MovePickerTest {
             int maxIndex = -1;
             List<Move> tried = new ArrayList<>();
             while (true) {
-                ScoredMove move = picker.pickNextMove();
+                ScoredMove move = picker.next();
                 if (move == null) break;  // No more moves to pick
 
                 // Get the move type from the current move
@@ -97,7 +97,7 @@ public class MovePickerTest {
             int maxIndex = -1;
             List<Move> tried = new ArrayList<>();
             while (true) {
-                ScoredMove move = picker.pickNextMove();
+                ScoredMove move = picker.next();
                 if (move == null) break;  // No more moves to pick
 
                 // Get the move type from the current move
@@ -145,7 +145,7 @@ public class MovePickerTest {
         int maxIndex = -1;
         List<Move> tried = new ArrayList<>();
         while (true) {
-            ScoredMove move = picker.pickNextMove();
+            ScoredMove move = picker.next();
             if (move == null) break;  // No more moves to pick
 
             // Get the move type from the current move
@@ -193,7 +193,7 @@ public class MovePickerTest {
 
         List<ScoredMove> moves = new ArrayList<>();
         while (true) {
-            ScoredMove move = picker.pickNextMove();
+            ScoredMove move = picker.next();
             if (move == null) break;
             moves.add(move);
         }

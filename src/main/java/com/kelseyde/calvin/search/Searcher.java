@@ -344,7 +344,7 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final ScoredMove scoredMove = movePicker.pickNextMove();
+            final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) {
                 break;
             }
@@ -606,7 +606,7 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final ScoredMove scoredMove = movePicker.pickNextMove();
+            final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) break;
             final Move move = scoredMove.move();
             movesSearched++;

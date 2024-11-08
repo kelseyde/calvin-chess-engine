@@ -18,6 +18,7 @@
 ### Search
 
 - [x] SPSA tune
+- [ ] Threefold repetition ( CCRL bug ? )
 - [ ] PV table
 - [ ] Exponentially widening aspiration window
 - [ ] Write to TT during QS stand-pat cutoff

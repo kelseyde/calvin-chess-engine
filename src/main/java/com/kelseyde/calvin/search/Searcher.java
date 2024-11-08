@@ -551,7 +551,6 @@ public class Searcher implements Search {
         final boolean ttHit = ttEntry != null;
         if (!pvNode
                 && ttHit
-                && isSufficientDepth(ttEntry, depth)
                 && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();
         }

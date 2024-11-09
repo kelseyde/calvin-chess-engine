@@ -280,7 +280,7 @@ public class Searcher implements Search {
             if (depth <= config.rfpDepth.value && !Score.isMateScore(alpha)) {
 
                 int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
-                int blend = depth * 4;
+                int blend = depth * config.rfpBlend.value;
 
                 int pruneMargin = baseMargin - blend;
                 int reduceMargin = baseMargin + blend;
@@ -374,7 +374,7 @@ public class Searcher implements Search {
 
                 // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
                 int pruneMargin = config.fpMargin.value + depth * config.fpScale.value;
-                int reduceMargin = pruneMargin + depth * 4;
+                int reduceMargin = pruneMargin + depth * config.fpBlend.value;
 
                 if (staticEval + pruneMargin <= alpha) {
                     movePicker.setSkipQuiets(true);

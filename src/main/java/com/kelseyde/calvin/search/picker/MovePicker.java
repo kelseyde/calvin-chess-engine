@@ -65,7 +65,7 @@ public class MovePicker {
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
-    public ScoredMove pickNextMove() {
+    public ScoredMove next() {
 
         ScoredMove nextMove = null;
         while (nextMove == null) {

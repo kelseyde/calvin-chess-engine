@@ -213,7 +213,7 @@ public class Searcher implements Search {
         final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
-        // If we are in check then there if a forcing sequence, so we could benefit from searching one ply deeper to
+        // If we are in check then there is a forcing sequence, so we could benefit from searching one ply deeper to
         // retrieve a more accurate evaluation.
         if (inCheck) {
             depth++;
@@ -344,7 +344,7 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final ScoredMove scoredMove = movePicker.pickNextMove();
+            final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) {
                 break;
             }
@@ -551,7 +551,6 @@ public class Searcher implements Search {
         final boolean ttHit = ttEntry != null;
         if (!pvNode
                 && ttHit
-                && isSufficientDepth(ttEntry, depth)
                 && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();
         }
@@ -606,7 +605,7 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final ScoredMove scoredMove = movePicker.pickNextMove();
+            final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) break;
             final Move move = scoredMove.move();
             movesSearched++;

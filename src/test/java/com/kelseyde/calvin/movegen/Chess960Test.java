@@ -151,6 +151,22 @@ public class Chess960Test {
     }
 
     @Test
+    public void testQueensideRookOnKingsideCastleKingside() {
+
+        Board board = Board.from("bnqbrk1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/BNQBRK1R w KQkq - 2 2");
+
+        Move target = Move.fromUCI("f1h1", Move.CASTLE_FLAG);
+        assertMove(board, target, true);
+        board.makeMove(target);
+        board.print();
+        assertKingAndRook(board, "f1", "g1", "h1", "f1", true);
+        board.unmakeMove();
+        board.print();
+        assertKingAndRook(board, "g1", "f1", "f1", "h1", true);
+
+    }
+
+    @Test
     public void testQueensideRookOnKingsideBlocked() {
 
         Board board = Board.from("nbb1rkrn/pp1ppppp/1qp5/8/8/1QP5/PP1PPPPP/NBB1RKRN w KQkq - 2 3");

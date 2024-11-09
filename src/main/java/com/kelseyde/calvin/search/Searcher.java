@@ -151,6 +151,11 @@ public class Searcher implements Search {
         // Clear move ordering cache and return the search result
         history.getKillerTable().clear();
 
+        if (bestMoveRoot == null) {
+            // If time expired before a best move was found in search, pick the first legal move.
+            bestMoveRoot = rootMoves.get(0);
+        }
+
         return SearchResult.of(bestMoveRoot, bestScoreRoot, td);
 
     }
@@ -653,7 +658,7 @@ public class Searcher implements Search {
             eval.makeMove(board, move);
             if (!board.makeMove(move)) continue;
             td.nodes++;
-            final int score = isDraw() ? Score.DRAW : -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
+            final int score = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
             eval.unmakeMove();
             board.unmakeMove();
 

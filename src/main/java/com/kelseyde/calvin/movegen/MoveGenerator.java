@@ -327,6 +327,24 @@ public class MoveGenerator {
     }
 
     private void generateCastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
+        if (UCI.Options.chess960) {
+            generateChess960CastlingMove(board, white, kingside, kingSquare, occupied);
+        } else {
+            generateStandardCastlingMove(board, white, kingside, kingSquare, occupied);
+        }
+    }
+
+    private void generateStandardCastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
+        final long travelSquares = Castling.Standard.travelSquares(white, kingside);
+        final long blockedSquares = travelSquares & occupied;
+        final long safeSquares = Castling.Standard.safeSquares(white, kingside);
+        if (blockedSquares == 0 && !isAttacked(board, white, safeSquares)) {
+            int to = getCastleEndSquare(board, white, kingside);
+            legalMoves.add(new Move(kingSquare, to, Move.CASTLE_FLAG));
+        }
+    }
+
+    private void generateChess960CastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
         final int kingDst = Castling.kingTo(kingside, white);
         final int rookDst = Castling.rookTo(kingside, white);

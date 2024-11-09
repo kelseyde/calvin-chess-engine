@@ -163,7 +163,6 @@ public class Chess960Test {
 
     private void assertMove(Board board, Move move, boolean exists) {
         List<Move> moves = MOVEGEN.generateMoves(board);
-        System.out.println(moves.stream().map(Move::toUCI).toList());
         Assertions.assertEquals(exists, moves.stream().anyMatch(m -> m.equals(move)));
     }
 

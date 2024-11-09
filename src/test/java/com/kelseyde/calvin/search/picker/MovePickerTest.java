@@ -37,9 +37,6 @@ public class MovePickerTest {
             Move ttMove = legalMoves.get(new Random().nextInt(legalMoves.size()));
             Move killer1 = randomQuiet(board, legalMoves);
             Move killer2 = randomQuiet(board, legalMoves);
-            System.out.println("ttMove: " + Move.toUCI(ttMove));
-            System.out.println("killer1: " + Move.toUCI(killer1));
-            System.out.println("killer2: " + Move.toUCI(killer2));
             history.getKillerTable().add(0, killer1);
             history.getKillerTable().add(0, killer2);
 
@@ -54,8 +51,6 @@ public class MovePickerTest {
                 // Get the move type from the current move
                 MoveType currentMoveType = move.moveType();
 
-                System.out.println(Move.toUCI(move.move()) + ", " + currentMoveType);
-
                 // Ensure the move type is in the expected order
                 int currentIndex = expectedOrder.indexOf(currentMoveType);
                 Assertions.assertTrue(currentIndex >= 0, "Unknown move type encountered.");
@@ -66,8 +61,6 @@ public class MovePickerTest {
                 tried.add(move.move());
             }
             if (tried.size() != legalMoves.size()) {
-                System.out.println("Legal moves: " + legalMoves.stream().map(Move::toUCI).sorted().toList());
-                System.out.println("Tried moves: " + tried.stream().map(Move::toUCI).sorted().toList());
                 Assertions.fail("Tried moves do not match legal moves.");
             }
         }
@@ -89,7 +82,6 @@ public class MovePickerTest {
             List<Move> legalMoves = moveGenerator.generateMoves(board);
 
             Move ttMove = legalMoves.get(new Random().nextInt(legalMoves.size()));
-            System.out.println("ttMove: " + Move.toUCI(ttMove));
 
             QuiescentMovePicker picker = new QuiescentMovePicker(moveGenerator, ss, history, board, 0, ttMove, false);
             picker.setFilter(MoveGenerator.MoveFilter.NOISY);
@@ -102,8 +94,6 @@ public class MovePickerTest {
 
                 // Get the move type from the current move
                 MoveType currentMoveType = move.moveType();
-
-                System.out.println(Move.toUCI(move.move()) + ", " + currentMoveType);
 
                 // Ensure the move type is in the expected order
                 int currentIndex = expectedOrder.indexOf(currentMoveType);
@@ -132,9 +122,6 @@ public class MovePickerTest {
         Move killer1 = Move.fromUCI("f4f5");
         Move killer2 = Move.fromUCI("f3e2");
 
-        System.out.println("ttMove: " + Move.toUCI(ttMove));
-        System.out.println("killer1: " + Move.toUCI(killer1));
-        System.out.println("killer2: " + Move.toUCI(killer2));
         history.getKillerTable().add(0, killer1);
         history.getKillerTable().add(0, killer2);
 
@@ -151,8 +138,6 @@ public class MovePickerTest {
             // Get the move type from the current move
             MoveType currentMoveType = move.moveType();
 
-            System.out.println(Move.toUCI(move.move()) + ", " + currentMoveType);
-
             // Ensure the move type is in the expected order
             int currentIndex = expectedOrder.indexOf(currentMoveType);
             Assertions.assertTrue(currentIndex >= 0, "Unknown move type encountered.");
@@ -163,8 +148,6 @@ public class MovePickerTest {
             tried.add(move.move());
         }
         if (tried.size() != legalMoves.size()) {
-            System.out.println("Legal moves: " + legalMoves.stream().map(Move::toUCI).sorted().toList());
-            System.out.println("Tried moves: " + tried.stream().map(Move::toUCI).sorted().toList());
             Assertions.fail("Tried moves do not match legal moves.");
         }
 
@@ -197,8 +180,6 @@ public class MovePickerTest {
             if (move == null) break;
             moves.add(move);
         }
-
-        System.out.println(moves.stream().map(m -> Move.toUCI(m.move())).toList());
 
         Assertions.assertEquals(5, moves.size());
     }

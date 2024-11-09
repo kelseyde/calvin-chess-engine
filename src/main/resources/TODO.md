@@ -19,6 +19,7 @@
 
 - [x] SPSA tune
 - [ ] Threefold repetition ( CCRL bug ? )
+- [ ] TT cut after RFP if depth - quietReduction <= ttDepth?
 - [ ] PV table
 - [ ] Exponentially widening aspiration window
 - [ ] Write to TT during QS stand-pat cutoff

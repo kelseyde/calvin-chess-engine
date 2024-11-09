@@ -1,14 +1,10 @@
 package com.kelseyde.calvin.evaluation;
 
-import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bits.Castling;
-import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.Square;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.uci.UCI;
 
 /**
  * Calvin's evaluation function is an Efficiently Updatable Neural Network (NNUE).
@@ -109,39 +105,63 @@ public class NNUE {
         final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
 
-        final int oldWhiteIdx = featureIndex(piece, from, white, true);
-        final int oldBlackIdx = featureIndex(piece, from, white, false);
-
-        final int newWhiteIdx = featureIndex(newPiece, to, white, true);
-        final int newBlackIdx = featureIndex(newPiece, to, white, false);
-
         if (move.isCastling()) {
-            handleCastleMove(acc, white, to, oldWhiteIdx, oldBlackIdx, newWhiteIdx, newBlackIdx);
-        } else if (captured != null) {
-            handleCapture(acc, move, captured, white, newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
-        } else {
-            acc.addSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx);
+            handleCastleMove(acc, move, white);
+        }
+        else if (captured != null) {
+            handleCapture(acc, move, piece, newPiece, captured, white);
+        }
+        else {
+            handleStandardMove(acc, move, piece, newPiece, white);
         }
 
     }
 
-    private void handleCastleMove(Accumulator acc, boolean white, int to, int oldWhiteIdx, int oldBlackIdx, int newWhiteIdx, int newBlackIdx) {
-        final boolean kingside = File.of(to) == 6;
-        final int rookFrom = Castling.rookFrom(kingside, white);
-        final int rookTo = Castling.rookTo(kingside, white);
-        final int rookStartWhiteIdx = featureIndex(Piece.ROOK, rookFrom, white, true);
-        final int rookStartBlackIdx = featureIndex(Piece.ROOK, rookFrom, white, false);
-        final int rookEndWhiteIdx = featureIndex(Piece.ROOK, rookTo, white, true);
-        final int rookEndBlackIdx = featureIndex(Piece.ROOK, rookTo, white, false);
-        acc.addAddSubSub(newWhiteIdx, newBlackIdx, rookEndWhiteIdx, rookEndBlackIdx, oldWhiteIdx, oldBlackIdx, rookStartWhiteIdx, rookStartBlackIdx);
+    private void handleStandardMove(Accumulator acc, Move move, Piece piece, Piece newPiece, boolean white) {
+        final int wSub = featureIndex(piece, move.from(), white, true);
+        final int bSub = featureIndex(piece, move.from(), white, false);
+
+        final int wAdd = featureIndex(newPiece, move.to(), white, true);
+        final int bAdd = featureIndex(newPiece, move.to(), white, false);
+
+        acc.addSub(wAdd, bAdd, wSub, bSub);
     }
 
-    private void handleCapture(Accumulator acc, Move move, Piece captured, boolean white, int newWhiteIdx, int newBlackIdx, int oldWhiteIdx, int oldBlackIdx) {
+    private void handleCastleMove(Accumulator acc, Move move, boolean white) {
+        final boolean kingside = Castling.isKingside(move.from(), move.to());
+
+        // In Chess960, castling is encoded as 'king captures rook'.
+        final int kingTo = UCI.Options.chess960 ? Castling.kingTo(kingside, white) : move.to();
+        final int rookFrom = UCI.Options.chess960 ? move.to() : Castling.rookFrom(kingside, white);
+        final int rookTo = Castling.rookTo(kingside, white);
+
+        final int wSub1 = featureIndex(Piece.KING, move.from(), white, true);
+        final int bSub1 = featureIndex(Piece.KING, move.from(), white, false);
+        final int wAdd1 = featureIndex(Piece.KING, kingTo, white, true);
+        final int bAdd1 = featureIndex(Piece.KING, kingTo, white, false);
+
+        final int wSub2 = featureIndex(Piece.ROOK, rookFrom, white, true);
+        final int bSub2 = featureIndex(Piece.ROOK, rookFrom, white, false);
+        final int wAdd2 = featureIndex(Piece.ROOK, rookTo, white, true);
+        final int bAdd2 = featureIndex(Piece.ROOK, rookTo, white, false);
+
+        acc.addAddSubSub(wAdd1, bAdd1, wAdd2, bAdd2, wSub1, bSub1, wSub2, bSub2);
+    }
+
+    private void handleCapture(Accumulator acc, Move move, Piece piece, Piece newPiece, Piece captured, boolean white) {
+        final int wSub1 = featureIndex(piece, move.from(), white, true);
+        final int bSub1 = featureIndex(piece, move.from(), white, false);
+
+        final int wAdd1 = featureIndex(newPiece, move.to(), white, true);
+        final int bAdd1 = featureIndex(newPiece, move.to(), white, false);
+
         int captureSquare = move.to();
         if (move.isEnPassant()) captureSquare = white ? move.to() - 8 : move.to() + 8;
-        final int capturedWhiteIdx = featureIndex(captured, captureSquare, !white, true);
-        final int capturedBlackIdx = featureIndex(captured, captureSquare, !white, false);
-        acc.addSubSub(newWhiteIdx, newBlackIdx, oldWhiteIdx, oldBlackIdx, capturedWhiteIdx, capturedBlackIdx);
+
+        final int wSub2 = featureIndex(captured, captureSquare, !white, true);
+        final int bSub2 = featureIndex(captured, captureSquare, !white, false);
+
+        acc.addSubSub(wAdd1, bAdd1, wSub1, bSub1, wSub2, bSub2);
     }
 
     public void unmakeMove() {

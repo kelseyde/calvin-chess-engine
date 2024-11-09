@@ -688,6 +688,7 @@ public class MoveGenerator {
             if (!Bits.contains(rank, from) || !Bits.contains(rank, to))
                 return false;
 
+            // TODO incorrect for Chess960
             int kingsideCastleSquare = white ? 6 : 62;
             int queensideCastleSquare = white ? 2 : 58;
 

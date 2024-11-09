@@ -821,9 +821,7 @@ public class MoveGenerator {
         // In standard chess, the king 'to' square is the actual destination square
         // In Chess960 UCI notation, castle moves are encoded as king-captures-rook
         if (UCI.Options.chess960) {
-            int rookSquare = Castling.getRook(board.getState().getRights(), kingside, white);
-//            System.out.println("ROOK SQUARE for " + (kingside ? "KINGSIDE" : "QUEENSIDE")+ " : " + rookSquare);
-            return rookSquare;
+            return Castling.getRook(board.getState().getRights(), kingside, white);
         } else {
             if (kingside) {
                 return white ? 6 : 62;

@@ -7,6 +7,7 @@ import com.kelseyde.calvin.uci.UCI;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -75,7 +76,7 @@ public class FEN {
             long occupied = whitePieces | blackPieces;
 
             boolean whiteToMove = parseSideToMove(parts[1]);
-            int castlingRights = parseCastlingRights(parts[2]);
+            int castlingRights = parseCastlingRights(parts[2], whiteRooks, blackRooks);
             int enPassantFile = parseEnPassantFile(parts[3]);
             int fiftyMoveCounter = parts.length > 4 ? parseFiftyMoveCounter(parts[4]) : 0;
             // This implementation does not require the full move counter (parts[5]).
@@ -167,7 +168,7 @@ public class FEN {
         return sideToMove ? "w" : "b";
     }
 
-    private static int parseCastlingRights(String castlingRights) {
+    private static int parseCastlingRights(String castlingRights, long whiteRooks, long blackRooks) {
         if (castlingRights.length() > 4) {
             throw new IllegalArgumentException("Invalid castling rights! " + castlingRights);
         }
@@ -175,10 +176,10 @@ public class FEN {
         for (int i = 0; i < castlingRights.length(); i++) {
             char right = castlingRights.charAt(i);
             switch (right) {
-                case 'K' -> rights = Castling.setRook(rights, true, true, 7);  // Standard FEN: White kingside castling
-                case 'Q' -> rights = Castling.setRook(rights, false, true, 0); // Standard FEN: White queenside castling
-                case 'k' -> rights = Castling.setRook(rights, true, false, 63); // Standard FEN: Black kingside castling
-                case 'q' -> rights = Castling.setRook(rights, false, false, 56); // Standard FEN: Black queenside castling
+                case 'K' -> rights = Castling.setRook(rights, true, true, findRook(whiteRooks, true, true));
+                case 'Q' -> rights = Castling.setRook(rights, false, true, findRook(whiteRooks, true, false));
+                case 'k' -> rights = Castling.setRook(rights, true, false, findRook(blackRooks, false, true));
+                case 'q' -> rights = Castling.setRook(rights, false, false, findRook(blackRooks, false, false));
                 case 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' -> {
                     // Shredder FEN: White rooks on specified files
                     int file = File.fromNotation(right);
@@ -280,6 +281,28 @@ public class FEN {
             else if ((squareMask & board.getKings()) != 0)      pieceList[square] = Piece.KING;
         }
         return pieceList;
+
+    }
+
+    private static int findRook(long rooks, boolean white, boolean kingside) {
+
+        long firstRank = white ? Bits.Rank.FIRST : Bits.Rank.EIGHTH;
+        long firstRankRooks = rooks & firstRank;
+
+        if (Bits.count(firstRankRooks) == 0) {
+            throw new IllegalArgumentException("Illegal FEN: castling rights with no rooks on the first rank!");
+        }
+
+        if (Bits.count(firstRankRooks) == 1) {
+            return Bits.next(firstRankRooks);
+        }
+
+        List<Integer> squares = Arrays.stream(Bits.collect(firstRankRooks))
+                .boxed()
+                .sorted(Comparator.comparing(File::of))
+                .toList();
+
+        return kingside ? squares.get(squares.size() - 1) : squares.get(0);
 
     }
 

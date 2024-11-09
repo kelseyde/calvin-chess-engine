@@ -6,12 +6,9 @@ import com.kelseyde.calvin.board.Bits.Rank;
 import com.kelseyde.calvin.board.Bits.Ray;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Generates all the legal moves in a given position.
@@ -122,6 +119,10 @@ public class MoveGenerator {
     public boolean isCheck(Board board, boolean white) {
         final long king = board.getKing(white);
         return isAttacked(board, white, king);
+    }
+
+    public boolean isCheck(Board board) {
+        return isCheck(board, board.isWhite());
     }
 
     private void generatePawnMoves(Board board) {

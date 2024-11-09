@@ -1,7 +1,6 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.*;
-import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
@@ -129,7 +128,7 @@ public class NNUE {
     }
 
     private void handleCastleMove(Accumulator acc, Move move, boolean white) {
-        final boolean kingside = File.kingside(move.to());
+        final boolean kingside = Castling.isKingside(move.from(), move.to());
 
         // In Chess960, castling is encoded as 'king captures rook'.
         final int kingTo = UCI.Options.chess960 ? Castling.kingTo(kingside, white) : move.to();

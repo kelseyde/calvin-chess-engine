@@ -65,6 +65,7 @@ public class Board {
         final Piece piece = pieces[from];
         if (piece == null) {
             print();
+            System.out.println(Arrays.stream(moves).map(Move::toUCI).collect(Collectors.joining(", ")));
             throw new IllegalStateException(String.format("Move %s - %s illegal; no piece at %s", Square.toNotation(from), Square.toNotation(to), Square.toNotation(from)));
         }
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
@@ -137,7 +138,7 @@ public class Board {
         updateMailbox(from, to, Piece.KING);
         updateKeys(from, to, Piece.KING, white);
         // Handle moving rook
-        final boolean kingside = File.kingside(to);
+        final boolean kingside = Castling.isKingside(from, to);
         final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
         updateBitboards(rookFrom, rookTo, Piece.ROOK, white);
@@ -146,7 +147,8 @@ public class Board {
     }
 
     private void makeChess960CastleMove(int from, int to) {
-        final boolean kingside = File.kingside(to);
+        // King is always inbetween the rooks.
+        final boolean kingside = from < to;
 
         // Unset king
         updateBitboard(from, Piece.KING, white);
@@ -240,7 +242,7 @@ public class Board {
         updateBitboards(to, from, Piece.KING, white);
         updateMailbox(to, from, Piece.KING);
         // Put back rook
-        final boolean kingside = File.kingside(to);
+        final boolean kingside = Castling.isKingside(from, to);
         final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
         updateBitboards(rookTo, rookFrom, Piece.ROOK, white);
@@ -248,7 +250,7 @@ public class Board {
     }
 
     private void unmakeChess960CastleMove(int from, int to) {
-        final boolean kingside = File.kingside(to);
+        final boolean kingside = Castling.isKingside(from, to);
         final int kingTo = Castling.kingTo(kingside, white);
         // Unset king
         updateBitboard(kingTo, Piece.KING, white);

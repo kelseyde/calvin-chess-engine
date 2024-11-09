@@ -33,6 +33,10 @@ public class Castling {
         return white ? (kingside ? 6 : 2) : (kingside ? 62 : 58);
     }
 
+    public static boolean isKingside(int kingSq, int rookSq) {
+        return kingSq < rookSq;
+    }
+
     public static int empty() {
         // All rooks set to NO_ROOK, meaning no castling rights
         return (NO_ROOK << WK_SHIFT) | (NO_ROOK << WQ_SHIFT) | (NO_ROOK << BK_SHIFT) | (NO_ROOK << BQ_SHIFT);

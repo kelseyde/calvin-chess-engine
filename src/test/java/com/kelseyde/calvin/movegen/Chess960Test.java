@@ -8,10 +8,7 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.TestUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.List;
 
@@ -21,7 +18,9 @@ public class Chess960Test {
 //            "nrkqrbbn/pppppppp/8/8/8/8/PPPPPPPP/NRKQRBBN w EBeb - 0 1"
 //            "rkrnqnbb/pppppppp/8/8/8/8/PPPPPPPP/RKRNQNBB w CAca - 0 1"
 //            "qrkbbnrn/pppppppp/8/8/8/8/PPPPPPPP/QRKBBNRN w GBgb - 0 1"
-            "qnnbrkbr/pppppppp/8/8/8/8/PPPPPPPP/QNNBRKBR w KQkq - 0 1"
+//            "qnnbrkbr/pppppppp/8/8/8/8/PPPPPPPP/QNNBRKBR w KQkq - 0 1",
+//            "bbqnrknr/pppppppp/8/8/8/8/PPPPPPPP/BBQNRKNR w KQkq - 0 1",
+            "bbqnrknr/pppppppp/8/8/8/8/PPPPPPPP/BBQNRKNR w KQkq - 0 1"
 //            "nrbnkbqr/pppppppp/8/8/8/8/PPPPPPPP/NRBNKBQR w KQkq - 0 1"
     );
 
@@ -39,9 +38,8 @@ public class Chess960Test {
     }
 
     @Test
+    @Disabled
     public void testFens() {
-
-        UCI.Options.chess960 = true;
 
         for (String fen : FENS) {
 
@@ -50,9 +48,6 @@ public class Chess960Test {
             SEARCHER.search(20, 0, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
 
         }
-
-        UCI.Options.chess960 = false;
-
 
     }
 
@@ -68,24 +63,34 @@ public class Chess960Test {
     }
 
     @Test
+    @Disabled
     public void badCastlingDebug() {
 
-        Board board = Board.from("qnnbrkbr/pppppppp/8/8/8/8/PPPPPPPP/QNNBRKBR w KQkq - 0 1");
-        board.makeMove(Move.fromUCI("h2h4"));
-        board.makeMove(Move.fromUCI("h7h5"));
-        board.makeMove(Move.fromUCI("h1h3"));
-        board.makeMove(Move.fromUCI("e7e5"));
-        board.makeMove(Move.fromUCI("e2e4"));
-        board.makeMove(Move.fromUCI("h8h6"));
-        board.makeMove(Move.fromUCI("b1c3"));
-        board.makeMove(Move.fromUCI("c8e7"));
-        board.makeMove(Move.fromUCI("g1h2"));
-        board.makeMove(Move.fromUCI("d7d6"));
-        board.makeMove(Move.fromUCI("f2f4"));
-        board.makeMove(Move.fromUCI("b8d7"));
+        Board board = Board.from("bbqnrknr/pppppppp/8/8/8/8/PPPPPPPP/BBQNRKNR w KQkq - 0 1");
+        board.makeMove(Move.fromUCI("a2a3"));
+        board.makeMove(Move.fromUCI("a7a6"));
+        board.makeMove(Move.fromUCI("b2b3"));
+        board.makeMove(Move.fromUCI("a6a5"));
+        board.makeMove(Move.fromUCI("a1g7"));
+        board.makeMove(Move.fromUCI("f8g7"));
+        board.makeMove(Move.fromUCI("c1b2"));
+        board.makeMove(Move.fromUCI("g7g6"));
+        board.makeMove(Move.fromUCI("b2h8"));
+        board.makeMove(Move.fromUCI("g6f5"));
+        board.makeMove(Move.fromUCI("g2g4"));
+        board.makeMove(Move.fromUCI("f5g4"));
+        board.makeMove(Move.fromUCI("d1e3"));
+        board.makeMove(Move.fromUCI("g4f4"));
+        board.makeMove(Move.fromUCI("f1e1", Move.CASTLE_FLAG));
+        board.print();
+        board.makeMove(Move.fromUCI("f4e4"));
+        board.makeMove(Move.fromUCI("h8h7"));
+        board.makeMove(Move.fromUCI("e4d4"));
+        board.makeMove(Move.fromUCI("h7f7"));
+        board.makeMove(Move.fromUCI("d8f7"));
         List<Move> moves = MOVEGEN.generateMoves(board);
         System.out.println(moves.stream().map(Move::toUCI).toList());
-        Assertions.assertFalse(moves.stream().anyMatch(m -> Move.toUCI(m).equals("f1e1")));
+        Assertions.assertFalse(moves.stream().anyMatch(m -> Move.toUCI(m).equals("g1f3")));
 
     }
 
@@ -124,7 +129,57 @@ public class Chess960Test {
         board.makeMove(target);
         board.print();
         assertKingAndRook(board, "f1", "c1", "e1", "d1", true);
+        board.unmakeMove();
+        assertKingAndRook(board, "c1", "f1", "d1", "e1", true);
 
+    }
+
+    @Test
+    public void testQueensideRookOnKingsideTwo() {
+
+        Board board = Board.from("bbqnr1nQ/1ppppp1p/8/p7/5k2/PP2N3/2PPPP1P/1B2RKNR w KQ - 2 8");
+
+        Move target = Move.fromUCI("f1e1", Move.CASTLE_FLAG);
+        assertMove(board, target, true);
+        board.makeMove(target);
+        board.print();
+        assertKingAndRook(board, "f1", "c1", "e1", "d1", true);
+        board.unmakeMove();
+        board.print();
+        assertKingAndRook(board, "c1", "f1", "d1", "e1", true);
+
+    }
+
+    @Test
+    public void testQueensideRookOnKingsideBlocked() {
+
+        Board board = Board.from("nbb1rkrn/pp1ppppp/1qp5/8/8/1QP5/PP1PPPPP/NBB1RKRN w KQkq - 2 3");
+
+        Move target = Move.fromUCI("f1e1", Move.CASTLE_FLAG);
+        assertMove(board, target, false);
+
+    }
+
+    @Test
+    public void testKingsideRookOnQueenside() {
+
+        Board board = Board.from("nbbqr2n/ppp2kr1/3ppppp/8/8/3PPPN1/PPPBBQPP/NRKR4 w KQ - 2 8");
+
+        Move target = Move.fromUCI("c1d1", Move.CASTLE_FLAG);
+        assertMove(board, target, true);
+        board.makeMove(target);
+        assertKingAndRook(board, "c1", "g1", "d1", "f1", true);
+        board.unmakeMove();
+        assertKingAndRook(board, "g1", "c1", "f1", "d1", true);
+    }
+
+    @Test
+    public void testKingsideRookOnQueensideBlocked() {
+
+        Board board = Board.from("nbbqr1rn/ppp2k2/3ppppp/8/8/3PPPN1/PPPBB1PP/NRKR2Q1 w KQ - 0 7");
+
+        Move target = Move.fromUCI("c1d1", Move.CASTLE_FLAG);
+        assertMove(board, target, false);
     }
 
     private void assertMove(Board board, Move move, boolean exists) {

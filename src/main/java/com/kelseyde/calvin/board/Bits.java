@@ -57,6 +57,16 @@ public class Bits {
         return (board >>> 9) & ~File.H;
     }
 
+    public static int[] collect(long bb) {
+        int size = count(bb);
+        int[] squares = new int[size];
+        for (int i = 0; i < size; ++i) {
+            squares[i] = next(bb);
+            bb = pop(bb);
+        }
+        return squares;
+    }
+
     public static void print(long bb) {
 
         for (int rank = 7; rank >= 0; --rank) {
@@ -120,9 +130,9 @@ public class Bits {
             return sq & 7;
         }
 
-        public static boolean kingside(int sq) {
-            return of(sq) >= 4;
-        }
+//        public static boolean kingside(int sq) {
+//            return of(sq) >= 4;
+//        }
 
         public static long toBitboard(int file) {
             return 0x0101010101010101L << file;

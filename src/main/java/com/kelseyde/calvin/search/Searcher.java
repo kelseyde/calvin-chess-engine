@@ -174,6 +174,9 @@ public class Searcher implements Search {
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW;
 
+        // If the maximum depth is reached, return the static evaluation of the position
+        if (ply >= MAX_DEPTH) return movegen.isCheck(board) ? 0 : eval.evaluate();
+
         final boolean rootNode = ply == 0;
         final boolean pvNode = beta - alpha > 1;
 
@@ -208,7 +211,7 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final boolean inCheck = movegen.isCheck(board, board.isWhite());
+        final boolean inCheck = movegen.isCheck(board);
 
         final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -306,32 +309,32 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
-//            if (sse.nullMoveAllowed
-//                && depth >= config.nmpDepth.value
-//                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
-//                && board.hasPiecesRemaining(board.isWhite())) {
-//
-//                ss.get(ply + 1).nullMoveAllowed = false;
-//                board.makeNullMove();
-//
-//                final int base = config.nmpBase.value;
-//                final int divisor = config.nmpDivisor.value;
-//                final int evalScale = config.nmpEvalScale.value;
-//                final int evalMaxReduction = config.nmpEvalMaxReduction.value;
-//                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
-//                final int r = base
-//                        + depth / divisor
-//                        + evalReduction;
-//
-//                final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
-//
-//                board.unmakeNullMove();
-//                ss.get(ply + 1).nullMoveAllowed = true;
-//
-//                if (score >= beta) {
-//                    return Score.isMateScore(score) ? beta : score;
-//                }
-//            }
+            if (sse.nullMoveAllowed
+                && depth >= config.nmpDepth.value
+                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
+                && board.hasPiecesRemaining(board.isWhite())) {
+
+                ss.get(ply + 1).nullMoveAllowed = false;
+                board.makeNullMove();
+
+                final int base = config.nmpBase.value;
+                final int divisor = config.nmpDivisor.value;
+                final int evalScale = config.nmpEvalScale.value;
+                final int evalMaxReduction = config.nmpEvalMaxReduction.value;
+                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
+                final int r = base
+                        + depth / divisor
+                        + evalReduction;
+
+                final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
+
+                board.unmakeNullMove();
+                ss.get(ply + 1).nullMoveAllowed = true;
+
+                if (score >= beta) {
+                    return Score.isMateScore(score) ? beta : score;
+                }
+            }
 
         }
 
@@ -432,7 +435,7 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
-            final boolean isCheck = movegen.isCheck(board, board.isWhite());
+            final boolean isCheck = movegen.isCheck(board);
 
             boolean isQuiet = !isCheck && !isCapture && !isPromotion;
             playedMove.quiet = isQuiet;
@@ -544,6 +547,12 @@ public class Searcher implements Search {
             return alpha;
         }
 
+        // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.
+        if (ply > 0 && isDraw()) return Score.DRAW;
+
+        // If the maximum depth is reached, return the static evaluation of the position.
+        if (ply >= MAX_DEPTH) return movegen.isCheck(board) ? 0 : eval.evaluate();
+
         final boolean pvNode = beta - alpha > 1;
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
@@ -559,7 +568,7 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final boolean inCheck = movegen.isCheck(board, board.isWhite());
+        final boolean inCheck = movegen.isCheck(board);
 
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
 

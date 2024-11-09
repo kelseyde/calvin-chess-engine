@@ -95,16 +95,6 @@ public class MoveGenerator {
         generateAllSlidingMoves(board);
         generateCastlingMoves(board);
 
-//        for (Move move : legalMoves) {
-//            if (board.pieceAt(move.from()) == null) {
-//                System.out.println(Move.toUCI(move) + " " + FEN.toFEN(board));
-//                board.print();
-//                System.out.println(Arrays.stream(board.getMoves()).map(Move::toUCI).collect(Collectors.joining(", ")));
-//                System.out.println(Bits.contains(board.getPieces(white), move.from()));
-//                throw new RuntimeException();
-//            }
-//        }
-
         return legalMoves;
 
     }
@@ -337,9 +327,6 @@ public class MoveGenerator {
     }
 
     private void generateCastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
-
-        // abandon hope all ye who enter here
-
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
         final int kingDst = Castling.kingTo(kingside, white);
         final int rookDst = Castling.rookTo(kingside, white);
@@ -701,7 +688,6 @@ public class MoveGenerator {
             boolean kingside = to == kingsideCastleSquare;
 
             final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
-
             final long travelSquares = Ray.between(from, rookSquare);
             final long blockedSquares = travelSquares & occupied;
             final long safeSquares = Bits.of(from) | travelSquares;

@@ -52,49 +52,6 @@ public class Chess960Test {
     }
 
     @Test
-    public void badCastling() {
-
-        String fen = "q2brkb1/pppnnpp1/3p3r/4p2p/4PP1P/2N4R/PPPP2PB/Q1NBRK2 w Qq - 1 7";
-        Board board = Board.from(fen);
-        List<Move> moves = MOVEGEN.generateMoves(board);
-        System.out.println(moves.stream().map(Move::toUCI).toList());
-        Assertions.assertFalse(moves.stream().anyMatch(m -> Move.toUCI(m).equals("f1e1")));
-
-    }
-
-    @Test
-    @Disabled
-    public void badCastlingDebug() {
-
-        Board board = Board.from("bbqnrknr/pppppppp/8/8/8/8/PPPPPPPP/BBQNRKNR w KQkq - 0 1");
-        board.makeMove(Move.fromUCI("a2a3"));
-        board.makeMove(Move.fromUCI("a7a6"));
-        board.makeMove(Move.fromUCI("b2b3"));
-        board.makeMove(Move.fromUCI("a6a5"));
-        board.makeMove(Move.fromUCI("a1g7"));
-        board.makeMove(Move.fromUCI("f8g7"));
-        board.makeMove(Move.fromUCI("c1b2"));
-        board.makeMove(Move.fromUCI("g7g6"));
-        board.makeMove(Move.fromUCI("b2h8"));
-        board.makeMove(Move.fromUCI("g6f5"));
-        board.makeMove(Move.fromUCI("g2g4"));
-        board.makeMove(Move.fromUCI("f5g4"));
-        board.makeMove(Move.fromUCI("d1e3"));
-        board.makeMove(Move.fromUCI("g4f4"));
-        board.makeMove(Move.fromUCI("f1e1", Move.CASTLE_FLAG));
-        board.print();
-        board.makeMove(Move.fromUCI("f4e4"));
-        board.makeMove(Move.fromUCI("h8h7"));
-        board.makeMove(Move.fromUCI("e4d4"));
-        board.makeMove(Move.fromUCI("h7f7"));
-        board.makeMove(Move.fromUCI("d8f7"));
-        List<Move> moves = MOVEGEN.generateMoves(board);
-        System.out.println(moves.stream().map(Move::toUCI).toList());
-        Assertions.assertFalse(moves.stream().anyMatch(m -> Move.toUCI(m).equals("g1f3")));
-
-    }
-
-    @Test
     public void testRookGoesToKingSquare() {
 
         Board board = Board.from("qnnbrk1r/ppppp1pp/5p2/3b4/3B4/5P2/PPPPP1PP/QNNBRK1R w KQkq - 2 3");

@@ -1,5 +1,9 @@
 package com.kelseyde.calvin.board;
 
+/**
+ * Utility class to handle castling rights. Especially important for (D)FRC, where the starting positions of the rooks
+ * and king can vary, and the logic for handling castle moves is more complex.
+ */
 public class Castling {
 
     // Constants to represent shifts and encoding limits

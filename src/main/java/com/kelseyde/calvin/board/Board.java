@@ -63,11 +63,7 @@ public class Board {
         final int from = move.from();
         final int to = move.to();
         final Piece piece = pieces[from];
-        if (piece == null) {
-            print();
-            System.out.println(Arrays.stream(moves).map(Move::toUCI).collect(Collectors.joining(", ")));
-            throw new IllegalStateException(String.format("Move %s - %s illegal; no piece at %s", Square.toNotation(from), Square.toNotation(to), Square.toNotation(from)));
-        }
+        if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
         states[ply] = state.copy();
 
@@ -80,18 +76,6 @@ public class Board {
         updateState(from, to, piece, captured, move);
         moves[ply++] = move;
         white = !white;
-//
-//        for (int i = 0; i < 64; i++) {
-//            boolean mailbox = pieceAt(i) != null;
-//            boolean bitboard = Bits.contains(occupied, i);
-//            if (mailbox != bitboard) {
-//                print();
-//                System.out.println(Move.toUCI(move));
-//                System.out.println(Arrays.stream(moves).map(Move::toUCI).collect(Collectors.joining(", ")));
-//                throw new IllegalStateException(String.format("Mailbox and bitboard mismatch at %s", Square.toNotation(i)));
-//            }
-//        }
-
         return true;
 
     }

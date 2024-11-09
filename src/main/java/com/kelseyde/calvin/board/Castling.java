@@ -6,6 +6,32 @@ package com.kelseyde.calvin.board;
  */
 public class Castling {
 
+    // For standard chess we can use some hardcoded shortcut values to simplify the logic
+    public static class Standard {
+        // Masks for the squares that must be unoccupied for legal castling
+        public static final long WHITE_QUEENSIDE_TRAVEL_MASK = 0x000000000000000EL;
+        public static final long WHITE_KINGSIDE_TRAVEL_MASK = 0x0000000000000060L;
+        public static final long BLACK_QUEENSIDE_TRAVEL_MASK = WHITE_QUEENSIDE_TRAVEL_MASK << (7 * 8);
+        public static final long BLACK_KINGSIDE_TRAVEL_MASK = WHITE_KINGSIDE_TRAVEL_MASK  << (7 * 8);
+
+        // Masks for the squares that must not be attacked for legal castling
+        public static final long WHITE_QUEENSIDE_SAFE_MASK = 0x000000000000001CL;
+        public static final long WHITE_KINGSIDE_SAFE_MASK = WHITE_QUEENSIDE_SAFE_MASK << 2;
+        public static final long BLACK_QUEENSIDE_SAFE_MASK = WHITE_QUEENSIDE_SAFE_MASK << (7 * 8);
+        public static final long BLACK_KINGSIDE_SAFE_MASK = WHITE_KINGSIDE_SAFE_MASK  << (7 * 8);
+
+        public static long travelSquares(boolean white, boolean isKingside) {
+            if (isKingside) return white ? WHITE_KINGSIDE_TRAVEL_MASK : BLACK_KINGSIDE_TRAVEL_MASK;
+            else return white ? WHITE_QUEENSIDE_TRAVEL_MASK : BLACK_QUEENSIDE_TRAVEL_MASK;
+        }
+
+        public static long safeSquares(boolean white, boolean isKingside) {
+            if (isKingside) return white ? WHITE_KINGSIDE_SAFE_MASK : BLACK_KINGSIDE_SAFE_MASK;
+            else return white ? WHITE_QUEENSIDE_SAFE_MASK : BLACK_QUEENSIDE_SAFE_MASK;
+        }
+
+    }
+
     // Constants to represent shifts and encoding limits
     public static final int NO_ROOK = 64;
     private static final int SQUARE_MASK = 0x7F; // Mask to allow 7 bits, covering 0-64 range

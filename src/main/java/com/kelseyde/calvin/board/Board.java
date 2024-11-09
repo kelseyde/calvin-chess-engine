@@ -7,7 +7,6 @@ import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  * Represents the current state of the chess board, including the positions of the pieces, the side to move, en passant

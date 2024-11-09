@@ -38,13 +38,13 @@ public class EngineConfig {
     public final Tunable fpDepth              = new Tunable("FpDepth", 5, 0, 8, 1);
     public final Tunable fpMargin             = new Tunable("FpMargin", 259, 0, 500, 10);
     public final Tunable fpScale              = new Tunable("FpScale", 68, 0, 100, 5);
-    public final Tunable fpBlend              = new Tunable("FpBlend", 4, 1, 10, 1);
+    public final Tunable fpBlend              = new Tunable("FpBlend", 4, 1, 10, 2);
     public final Tunable qsFpMargin           = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeEqualDepth      = new Tunable("QsSeeEqualDepth", 3, 0, 6, 1);
     public final Tunable rfpDepth             = new Tunable("RfpDepth", 7, 0, 8, 1);
     public final Tunable rfpMargin            = new Tunable("RfpMargin", 86, 0, 250, 10);
     public final Tunable rfpImpMargin         = new Tunable("RfpImpMargin", 43, 0, 250, 10);
-    public final Tunable rfpBlend             = new Tunable("RfpBlend", 4, 1, 10, 1);
+    public final Tunable rfpBlend             = new Tunable("RfpBlend", 4, 1, 10, 2);
     public final Tunable lmrDepth             = new Tunable("LmrDepth", 2, 0, 8, 1);
     public final Tunable lmrBase              = new Tunable("LmrBase", 90, 50, 100, 5);
     public final Tunable lmrDivisor           = new Tunable("LmrDivisor", 310, 200, 400, 10);

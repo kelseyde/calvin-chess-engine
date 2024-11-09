@@ -339,7 +339,6 @@ public class MoveGenerator {
 
         // abandon hope all ye who enter here
 
-
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
         final int kingDst = Castling.kingTo(kingside, white);
         final int rookDst = Castling.rookTo(kingside, white);

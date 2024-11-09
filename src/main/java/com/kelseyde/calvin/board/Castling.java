@@ -37,8 +37,9 @@ public class Castling {
         return white ? (kingside ? 6 : 2) : (kingside ? 62 : 58);
     }
 
-    public static boolean isKingside(int kingSq, int rookSq) {
-        return kingSq < rookSq;
+    public static boolean isKingside(int from, int to) {
+        // The king is always inbetween the rooks
+        return from < to;
     }
 
     public static int empty() {

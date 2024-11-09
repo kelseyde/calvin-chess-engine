@@ -119,22 +119,24 @@ public class Board {
     }
 
     private void makeStandardCastleMove(int from, int to) {
+        final boolean kingside = Castling.isKingside(from, to);
+
         // Handle moving king
         updateBitboards(from, to, Piece.KING, white);
         updateMailbox(from, to, Piece.KING);
-        updateKeys(from, to, Piece.KING, white);
+
         // Handle moving rook
-        final boolean kingside = Castling.isKingside(from, to);
         final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
         updateBitboards(rookFrom, rookTo, Piece.ROOK, white);
         updateMailbox(rookFrom, rookTo, Piece.ROOK);
+
+        updateKeys(from, to, Piece.KING, white);
         updateKeys(rookFrom, rookTo, Piece.ROOK, white);
     }
 
     private void makeChess960CastleMove(int from, int to) {
-        // King is always inbetween the rooks.
-        final boolean kingside = from < to;
+        final boolean kingside = Castling.isKingside(from, to);
 
         // Unset king
         updateBitboard(from, Piece.KING, white);

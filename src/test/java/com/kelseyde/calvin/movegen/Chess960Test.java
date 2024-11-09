@@ -84,7 +84,6 @@ public class Chess960Test {
         Move target = Move.fromUCI("f1e1", Move.CASTLE_FLAG);
         assertMove(board, target, true);
         board.makeMove(target);
-        board.print();
         assertKingAndRook(board, "f1", "c1", "e1", "d1", true);
         board.unmakeMove();
         assertKingAndRook(board, "c1", "f1", "d1", "e1", true);
@@ -99,10 +98,8 @@ public class Chess960Test {
         Move target = Move.fromUCI("f1e1", Move.CASTLE_FLAG);
         assertMove(board, target, true);
         board.makeMove(target);
-        board.print();
         assertKingAndRook(board, "f1", "c1", "e1", "d1", true);
         board.unmakeMove();
-        board.print();
         assertKingAndRook(board, "c1", "f1", "d1", "e1", true);
 
     }
@@ -115,10 +112,8 @@ public class Chess960Test {
         Move target = Move.fromUCI("f1h1", Move.CASTLE_FLAG);
         assertMove(board, target, true);
         board.makeMove(target);
-        board.print();
         assertKingAndRook(board, "f1", "g1", "h1", "f1", true);
         board.unmakeMove();
-        board.print();
         assertKingAndRook(board, "g1", "f1", "f1", "h1", true);
 
     }

@@ -76,6 +76,7 @@ public class Board {
         updateState(from, to, piece, captured, move);
         moves[ply++] = move;
         white = !white;
+
         return true;
 
     }
@@ -88,6 +89,7 @@ public class Board {
 
         white = !white;
         final Move move = moves[--ply];
+
         final int from = move.from();
         final int to = move.to();
         final Piece piece = pieceAt(to);

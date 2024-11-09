@@ -76,7 +76,7 @@ public class FEN {
             long occupied = whitePieces | blackPieces;
 
             boolean whiteToMove = parseSideToMove(parts[1]);
-            int castlingRights = parseCastlingRights(parts[2], whiteRooks, blackRooks);
+            int castlingRights = parseCastlingRights(parts[2], whiteRooks, blackRooks, Bits.next(whiteKing), Bits.next(blackKing));
             int enPassantFile = parseEnPassantFile(parts[3]);
             int fiftyMoveCounter = parts.length > 4 ? parseFiftyMoveCounter(parts[4]) : 0;
             // This implementation does not require the full move counter (parts[5]).
@@ -168,7 +168,7 @@ public class FEN {
         return sideToMove ? "w" : "b";
     }
 
-    private static int parseCastlingRights(String castlingRights, long whiteRooks, long blackRooks) {
+    private static int parseCastlingRights(String castlingRights, long whiteRooks, long blackRooks, int whiteKing, int blackKing) {
         if (castlingRights.length() > 4) {
             throw new IllegalArgumentException("Invalid castling rights! " + castlingRights);
         }
@@ -183,7 +183,8 @@ public class FEN {
                 case 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' -> {
                     // Shredder FEN: White rooks on specified files
                     int file = File.fromNotation(right);
-                    if (file < 4) {
+                    int kingFile = File.of(whiteKing);
+                    if (file < kingFile) {
                         rights = Castling.setRook(rights, false, true, Square.of(0, file)); // Queenside
                     } else {
                         rights = Castling.setRook(rights, true, true, Square.of(0, file));  // Kingside
@@ -192,7 +193,8 @@ public class FEN {
                 case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' -> {
                     // Shredder FEN: Black rooks on specified files
                     int file = File.fromNotation(Character.toUpperCase(right));
-                    if (file < 4) {
+                    int kingFile = File.of(blackKing);
+                    if (file < kingFile) {
                         rights = Castling.setRook(rights, false, false, Square.of(7, file)); // Queenside
                     } else {
                         rights = Castling.setRook(rights, true, false, Square.of(7, file));  // Kingside

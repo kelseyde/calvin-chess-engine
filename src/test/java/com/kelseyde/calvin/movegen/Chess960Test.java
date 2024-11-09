@@ -150,6 +150,17 @@ public class Chess960Test {
         assertMove(board, target, false);
     }
 
+    @Test
+    public void testDontGetConfusedBetweenKingsideQueenside() {
+
+        Board board = Board.from("bqnbrk1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/BQNBRK1R w KQkq - 2 2");
+        Move kingside = Move.fromUCI("f1h1", Move.CASTLE_FLAG);
+        Move queenside = Move.fromUCI("f1e1", Move.CASTLE_FLAG);
+        assertMove(board, kingside, true);
+        assertMove(board, queenside, false);
+
+    }
+
     private void assertMove(Board board, Move move, boolean exists) {
         List<Move> moves = MOVEGEN.generateMoves(board);
         System.out.println(moves.stream().map(Move::toUCI).toList());

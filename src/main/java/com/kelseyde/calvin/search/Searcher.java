@@ -395,6 +395,7 @@ public class Searcher implements Search {
             if (!pvNode
                 && !rootNode
                 && isCapture
+                && !scoredMove.isGoodNoisy()
                 && depth <= config.seeMaxDepth.value
                 && movesSearched > 1
                 && !Score.isMateScore(bestScore)) {

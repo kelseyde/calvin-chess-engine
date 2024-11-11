@@ -616,8 +616,10 @@ public class Searcher implements Search {
 
         int movesSearched = 0;
 
+        Move bestMove = null;
         int bestScore = alpha;
         final int futilityScore = bestScore + config.qsFpMargin.value;
+        HashFlag flag = HashFlag.UPPER;
 
         while (true) {
 
@@ -667,16 +669,23 @@ public class Searcher implements Search {
             if (score > bestScore) {
                 bestScore = score;
             }
-            if (score >= beta) {
-                return score;
-            }
             if (score > alpha) {
+                flag = HashFlag.EXACT;
+                bestMove = move;
                 alpha = score;
+                if (score >= beta) {
+                    flag = HashFlag.LOWER;
+                    break;
+                }
             }
         }
 
         if (movesSearched == 0 && inCheck) {
             return -Score.MATE + ply;
+        }
+
+        if (!shouldStop()) {
+            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
         }
 
         return bestScore;

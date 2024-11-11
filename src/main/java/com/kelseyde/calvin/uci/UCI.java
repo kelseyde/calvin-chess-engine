@@ -1,9 +1,11 @@
 package com.kelseyde.calvin.uci;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.Score;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
@@ -29,13 +31,17 @@ import java.util.stream.Collectors;
 public class UCI {
 
     private static final Engine ENGINE = Engine.getInstance();
-    public static boolean outputEnabled = true;
-    public static boolean prettyEnabled = false;
+
+    public static class Options {
+        public static boolean output = true;
+        public static boolean pretty = false;
+        public static boolean chess960 = false;
+    }
 
     public static void run(String[] args) {
 
         // Enable pretty printing if the engine is running in a terminal.
-        prettyEnabled = System.console() != null;
+        Options.pretty = System.console() != null;
 
         writeEngineInfo();
 
@@ -70,6 +76,7 @@ public class UCI {
         write(String.format("option name Threads type spin default %s min %s max %s",
                 config.defaultThreads, config.minThreads, config.maxThreads));
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
+        write("option name UCI_Chess960 type check default false");
         write("option name Pretty type check default false");
         ENGINE.getConfig().getTunables().forEach(t -> write(t.toUCI()));
         write("uciok");
@@ -110,6 +117,7 @@ public class UCI {
             case "Threads":       setThreads(command); break;
             case "Ponder":        setPonder(command); break;
             case "Pretty":        setPretty(command); break;
+            case "UCI_Chess960":  handleChess960(command); break;
             default:              ENGINE.getConfig().setTunable(command); break;
         }
     }
@@ -176,7 +184,9 @@ public class UCI {
     }
 
     public static void handleThreats(UCICommand command) {
-        //TODO
+        MoveGenerator movegen = new MoveGenerator();
+        long threats = movegen.calculateThreats(ENGINE.getBoard(), !ENGINE.getBoard().isWhite());
+        Bits.print(threats);
     }
 
     public static void handleEval(UCICommand command) {
@@ -198,8 +208,8 @@ public class UCI {
         write("info error unknown command " + command.args()[0]);
     }
 
-    public static void setOutputEnabled(boolean outputEnabled) {
-        UCI.outputEnabled = outputEnabled;
+    public static void setOutputEnabled(boolean output) {
+        UCI.Options.output = output;
     }
 
     private static void setHashSize(UCICommand command) {
@@ -234,13 +244,19 @@ public class UCI {
 
     private static void setPretty(UCICommand command) {
         boolean prettyEnabled = command.getBool("value", false, true);
-        UCI.prettyEnabled = prettyEnabled;
+        Options.pretty = prettyEnabled;
         write("info string Pretty " + prettyEnabled);
     }
 
+    public static void handleChess960(UCICommand command) {
+        boolean chess960Enabled = command.getBool("value", false, true);
+        Options.chess960 = chess960Enabled;
+        write("info string UCI_Chess960 " + chess960Enabled);
+    }
+
     public static void handlePretty(UCICommand command) {
-        UCI.prettyEnabled = !UCI.prettyEnabled;
-        write("info string Pretty " + UCI.prettyEnabled);
+        Options.pretty = !Options.pretty;
+        write("info string Pretty " + Options.pretty);
     }
 
     public static void handleHashfull(UCICommand command) {
@@ -249,7 +265,7 @@ public class UCI {
 
     public static void writeEngineInfo() {
 
-        if (prettyEnabled) {
+        if (Options.pretty) {
             Pretty.printEngineInfo();
         } else {
             write("Calvin by Dan Kelsey");
@@ -265,7 +281,7 @@ public class UCI {
         long nps = searchResult.nps();
         int hashfull = ENGINE.hashfull();
         List<Move> pv = ENGINE.extractPrincipalVariation();
-        if (prettyEnabled) {
+        if (Options.pretty) {
             Pretty.writeSearchInfo(depth, score, time, nodes, nps, hashfull, pv);
         } else {
             String pvString = pv.stream().map(Move::toUCI).collect(Collectors.joining(" "));
@@ -296,7 +312,7 @@ public class UCI {
     }
 
     public static void write(String output) {
-        if (outputEnabled) System.out.println(output);
+        if (Options.output) System.out.println(output);
     }
 
     public static void writeError(String output, Exception e) {

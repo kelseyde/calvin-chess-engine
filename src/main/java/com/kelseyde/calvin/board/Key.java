@@ -72,7 +72,7 @@ public class Key {
 
         // Update key with en passant, castling rights, and side to move
         key ^= EN_PASSANT_FILE[board.getState().getEnPassantFile() + 1];
-        key ^= CASTLING_RIGHTS[board.getState().getRights()];
+        key ^= castling(board.getState().getRights());
         if (board.isWhite()) {
             key ^= SIDE_TO_MOVE;
         }
@@ -148,7 +148,7 @@ public class Key {
     }
 
     public static long rights(int oldCastlingRights, int newCastlingRights) {
-        return CASTLING_RIGHTS[oldCastlingRights] ^ CASTLING_RIGHTS[newCastlingRights];
+        return castling(oldCastlingRights) ^ castling(newCastlingRights);
     }
 
     public static long enPassant(int oldEnPassantFile, int newEnPassantFile) {
@@ -161,6 +161,29 @@ public class Key {
 
     public static long nullMove(int oldEnPassantFile) {
         return EN_PASSANT_FILE[oldEnPassantFile + 1] ^ EN_PASSANT_FILE[0] ^ SIDE_TO_MOVE;
+    }
+
+    private static long castling(int rights) {
+        final int whiteShort = 0x04;
+        final int whiteLong = 0x08;
+        final int blackShort = 0x01;
+        final int blackLong = 0x02;
+
+        int flags = 0;
+        if (Castling.kingsideAllowed(rights, true)) {
+            flags |= whiteShort;
+        }
+        if (Castling.queensideAllowed(rights, true)) {
+            flags |= whiteLong;
+        }
+        if (Castling.kingsideAllowed(rights, false)) {
+            flags |= blackShort;
+        }
+        if (Castling.queensideAllowed(rights, false)) {
+            flags |= blackLong;
+        }
+        return CASTLING_RIGHTS[flags];
+
     }
 
 }

@@ -40,8 +40,12 @@ public record Move(short value) {
         return (value & TO_MASK) >>> 6;
     }
 
+    public int flag() {
+        return value >>> 12;
+    }
+
     public Piece promoPiece() {
-        return switch (value >>> 12) {
+        return switch (flag()) {
             case PROMOTE_TO_QUEEN_FLAG -> Piece.QUEEN;
             case PROMOTE_TO_ROOK_FLAG -> Piece.ROOK;
             case PROMOTE_TO_BISHOP_FLAG -> Piece.BISHOP;
@@ -51,19 +55,19 @@ public record Move(short value) {
     }
 
     public boolean isPromotion() {
-        return (value >>> 12) >= PROMOTE_TO_QUEEN_FLAG;
+        return flag() >= PROMOTE_TO_QUEEN_FLAG;
     }
 
     public boolean isEnPassant() {
-        return (value >>> 12) == EN_PASSANT_FLAG;
+        return flag() == EN_PASSANT_FLAG;
     }
 
     public boolean isCastling() {
-        return (value >>> 12) == CASTLE_FLAG;
+        return flag() == CASTLE_FLAG;
     }
 
     public boolean isPawnDoubleMove() {
-        return (value >>> 12) == PAWN_DOUBLE_MOVE_FLAG;
+        return flag() == PAWN_DOUBLE_MOVE_FLAG;
     }
 
     /**
@@ -76,6 +80,13 @@ public record Move(short value) {
                 .map(piece -> piece.equals(move.promoPiece()))
                 .orElse(true);
         return squareMatch && promotionMatch;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Move move)) return false;
+        return this.from() == move.from() && this.to() == move.to() && this.flag() == move.flag();
     }
 
     /**

@@ -14,19 +14,20 @@ public class QuiescentMovePicker extends MovePicker {
     public QuiescentMovePicker(
             MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
         super(movegen, ss, history, board, ply, ttMove, inCheck);
+        this.stage = ttMove != null ? Stage.TT_MOVE : Stage.QSEARCH_GEN_NOISY;
         this.skipQuiets = true;
     }
 
     @Override
-    public ScoredMove pickNextMove() {
+    public ScoredMove next() {
 
         ScoredMove nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case TT_MOVE -> pickTTMove();
-                case GEN_NOISY -> generate(filter, Stage.NOISY);
-                case NOISY -> pickMove(Stage.END);
-                case GEN_QUIET, QUIET, END -> null;
+                case TT_MOVE -> pickTTMove(Stage.QSEARCH_GEN_NOISY);
+                case QSEARCH_GEN_NOISY -> generate(filter, Stage.QSEARCH_NOISY);
+                case QSEARCH_NOISY -> pickMove(Stage.END);
+                case GEN_NOISY, GOOD_NOISY, KILLER, GEN_QUIET, QUIET, BAD_NOISY, END -> null;
             };
             if (stage == Stage.END) break;
         }

@@ -1,9 +1,9 @@
 package com.kelseyde.calvin.board;
 
-import com.kelseyde.calvin.board.Bits.Castling;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.Arrays;
@@ -75,6 +75,7 @@ public class Board {
         updateState(from, to, piece, captured, move);
         moves[ply++] = move;
         white = !white;
+
         return true;
 
     }
@@ -87,6 +88,7 @@ public class Board {
 
         white = !white;
         final Move move = moves[--ply];
+
         final int from = move.from();
         final int to = move.to();
         final Piece piece = pieceAt(to);
@@ -102,60 +104,98 @@ public class Board {
 
     private void makePawnDoubleMove(int from, int to) {
         // Handle moving pawn
-        toggleSquares(from, to, Piece.PAWN, white);
+        updateBitboards(from, to, Piece.PAWN, white);
         updateMailbox(from, to, Piece.PAWN);
         updateKeys(from, to, Piece.PAWN, white);
     }
 
     private void makeCastleMove(int from, int to) {
-        // Handle castling king
-        toggleSquares(from, to, Piece.KING, white);
+        if (UCI.Options.chess960) {
+            makeChess960CastleMove(from, to);
+        } else {
+            makeStandardCastleMove(from, to);
+        }
+    }
+
+    private void makeStandardCastleMove(int from, int to) {
+        final boolean kingside = Castling.isKingside(from, to);
+
+        // Handle moving king
+        updateBitboards(from, to, Piece.KING, white);
         updateMailbox(from, to, Piece.KING);
-        updateKeys(from, to, Piece.KING, white);
-        // Handle castling rook
-        final boolean kingside = File.of(to) == 6;
+
+        // Handle moving rook
         final int rookFrom = Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
-        toggleSquares(rookFrom, rookTo, Piece.ROOK, white);
+        updateBitboards(rookFrom, rookTo, Piece.ROOK, white);
         updateMailbox(rookFrom, rookTo, Piece.ROOK);
+
+        updateKeys(from, to, Piece.KING, white);
         updateKeys(rookFrom, rookTo, Piece.ROOK, white);
+    }
+
+    private void makeChess960CastleMove(int from, int to) {
+        final boolean kingside = Castling.isKingside(from, to);
+
+        // Unset king
+        updateBitboard(from, Piece.KING, white);
+        updateMailbox(from, null);
+
+        // Unset rook
+        // (in Chess960 the 'to' square of a castling move is the rook square)
+        final int rookTo = Castling.rookTo(kingside, white);
+        updateBitboard(to, Piece.ROOK, white);
+        updateMailbox(to, null);
+
+        final int kingTo = Castling.kingTo(kingside, white);
+
+        // Set king
+        updateBitboard(kingTo, Piece.KING, white);
+        updateMailbox(kingTo, Piece.KING);
+
+        // Set rook
+        updateBitboard(rookTo, Piece.ROOK, white);
+        updateMailbox(rookTo, Piece.ROOK);
+
+        updateKeys(from, kingTo, Piece.KING, white);
+        updateKeys(to, rookTo, Piece.ROOK, white);
     }
 
     private void makeEnPassantMove(int from, int to) {
         // Handle capturing pawn
-        toggleSquares(from, to, Piece.PAWN, white);
+        updateBitboards(from, to, Piece.PAWN, white);
         updateMailbox(from, to, Piece.PAWN);
         updateKeys(from, to, Piece.PAWN, white);
         // Handle captured pawn
         final int pawnSquare = white ? to - 8 : to + 8;
-        toggleSquare(pawnSquare, Piece.PAWN, !white);
+        updateBitboard(pawnSquare, Piece.PAWN, !white);
         updateMailbox(pawnSquare, null);
         updateKeys(pawnSquare, Piece.PAWN, !white);
     }
 
     private void makePromotionMove(int from, int to, Piece promoted, Piece captured) {
         // Remove promoting pawn
-        toggleSquare(from, Piece.PAWN, white);
+        updateBitboard(from, Piece.PAWN, white);
         updateKeys(from, Piece.PAWN, white);
         // Add promoted piece
-        toggleSquare(to, promoted, white);
+        updateBitboard(to, promoted, white);
         updateMailbox(from, to, promoted);
         updateKeys(to, promoted, white);
         if (captured != null) {
             // Handle captured piece
-            toggleSquare(to, captured, !white);
+            updateBitboard(to, captured, !white);
             updateKeys(to, captured, !white);
         }
     }
 
     private void makeStandardMove(int from, int to, Piece piece, Piece captured) {
         // Handle moving piece
-        toggleSquares(from, to, piece, white);
+        updateBitboards(from, to, piece, white);
         updateKeys(from, to, piece, white);
         updateMailbox(from, to, piece);
         if (captured != null) {
             // Remove captured piece
-            toggleSquare(to, captured, !white);
+            updateBitboard(to, captured, !white);
             updateKeys(to, captured, !white);
         }
     }
@@ -177,26 +217,52 @@ public class Board {
     }
 
     private void unmakeCastlingMove(int from, int to) {
+        if (UCI.Options.chess960) {
+            unmakeChess960CastleMove(from, to);
+        } else {
+            unmakeStandardCastleMove(from, to);
+        }
+    }
+
+    private void unmakeStandardCastleMove(int from, int to) {
         // Put back king
-        toggleSquares(to, from, Piece.KING, white);
+        updateBitboards(to, from, Piece.KING, white);
         updateMailbox(to, from, Piece.KING);
         // Put back rook
-        final boolean kingside = File.of(to) == 6;
-        final int rookTo = Castling.rookTo(kingside, white);
+        final boolean kingside = Castling.isKingside(from, to);
         final int rookFrom = Castling.rookFrom(kingside, white);
-        toggleSquares(rookTo, rookFrom, Piece.ROOK, white);
+        final int rookTo = Castling.rookTo(kingside, white);
+        updateBitboards(rookTo, rookFrom, Piece.ROOK, white);
         updateMailbox(rookTo, rookFrom, Piece.ROOK);
+    }
+
+    private void unmakeChess960CastleMove(int from, int to) {
+        final boolean kingside = Castling.isKingside(from, to);
+        final int kingTo = Castling.kingTo(kingside, white);
+        // Unset king
+        updateBitboard(kingTo, Piece.KING, white);
+        updateMailbox(kingTo, null);
+        // Unset rook
+        final int rookTo = Castling.rookTo(kingside, white);
+        updateBitboard(rookTo, Piece.ROOK, white);
+        updateMailbox(rookTo, null);
+        // Set king
+        updateBitboard(from, Piece.KING, white);
+        updateMailbox(from, Piece.KING);
+        // Set rook
+        updateBitboard(to, Piece.ROOK, white);
+        updateMailbox(to, Piece.ROOK);
     }
 
     private void unmakePromotionMove(int from, int to, Piece promotionPiece) {
         // Remove promoted piece
-        toggleSquare(to, promotionPiece, white);
+        updateBitboard(to, promotionPiece, white);
         // Put back promoting pawn
         updateMailbox(from, Piece.PAWN);
-        toggleSquare(from, Piece.PAWN, white);
+        updateBitboard(from, Piece.PAWN, white);
         // Put back captured piece
         if (state.getCaptured() != null) {
-            toggleSquare(to, state.getCaptured(), !white);
+            updateBitboard(to, state.getCaptured(), !white);
         }
         // If no piece was captured, this correctly nullifies the promo square
         updateMailbox(to, state.getCaptured());
@@ -204,21 +270,21 @@ public class Board {
 
     private void unmakeEnPassantMove(int from, int to) {
         // Put back capturing pawn
-        toggleSquares(to, from, Piece.PAWN, white);
+        updateBitboards(to, from, Piece.PAWN, white);
         updateMailbox(to, from, Piece.PAWN);
         // Add back captured pawn
         final int captureSquare = white ? to - 8 : to + 8;
-        toggleSquare(captureSquare, Piece.PAWN, !white);
+        updateBitboard(captureSquare, Piece.PAWN, !white);
         updateMailbox(captureSquare, Piece.PAWN);
     }
 
     private void unmakeStandardMove(int from, int to, Piece piece) {
         // Put back moving piece
-        toggleSquares(to, from, piece, white);
+        updateBitboards(to, from, piece, white);
         updateMailbox(to, from, piece);
         if (state.getCaptured() != null) {
             // Add back captured piece
-            toggleSquare(to, state.getCaptured(), !white);
+            updateBitboard(to, state.getCaptured(), !white);
             updateMailbox(to, state.getCaptured());
         }
     }
@@ -244,12 +310,12 @@ public class Board {
         state = states[--ply];
     }
 
-    public void toggleSquares(int from, int to, Piece piece, boolean white) {
+    public void updateBitboards(int from, int to, Piece piece, boolean white) {
         final long toggleMask = Bits.of(from) | Bits.of(to);
         toggle(toggleMask, piece, white);
     }
 
-    public void toggleSquare(int square, Piece piece, boolean white) {
+    public void updateBitboard(int square, Piece piece, boolean white) {
         final long toggleMask = Bits.of(square);
         toggle(toggleMask, piece, white);
     }
@@ -326,28 +392,32 @@ public class Board {
 
     private int updateCastleRights(int from, int to, Piece pieceType) {
         int newRights = state.getRights();
-        if (newRights == 0b0000) {
+        if (newRights == Castling.empty()) {
             // Both sides already lost castling rights, so nothing to calculate.
             return newRights;
         }
         // Any move by the king removes castling rights.
         if (Piece.KING.equals(pieceType)) {
-            newRights &= white ? Castling.CLEAR_WHITE_CASTLING_MASK : Castling.CLEAR_BLACK_CASTLING_MASK;
+            newRights = Castling.clearSide(newRights, white);
         }
         // Any move starting from/ending at a rook square removes castling rights for that corner.
         // Note: all of these cases need to be checked, to cover the scenario where a rook in starting position captures
         // another rook in starting position; in that case, both sides lose castling rights!
-        if (from == 7 || to == 7) {
-            newRights &= Castling.CLEAR_WHITE_KINGSIDE_MASK;
+        int wk = Castling.getRook(newRights, true, true);
+        if (from == wk || to == wk) {
+            newRights = Castling.clearRook(newRights, true, true);
         }
-        if (from == 63 || to == 63) {
-            newRights &= Castling.CLEAR_BLACK_KINGSIDE_MASK;
+        int wq = Castling.getRook(newRights, false, true);
+        if (from == wq || to == wq) {
+            newRights = Castling.clearRook(newRights, false, true);
         }
-        if (from == 0 || to == 0) {
-            newRights &= Castling.CLEAR_WHITE_QUEENSIDE_MASK;
+        int bk = Castling.getRook(newRights, true, false);
+        if (from == bk || to == bk) {
+            newRights = Castling.clearRook(newRights, true, false);
         }
-        if (from == 56 || to == 56) {
-            newRights &= Castling.CLEAR_BLACK_QUEENSIDE_MASK;
+        int bq = Castling.getRook(newRights, false, false);
+        if (from == bq || to == bq) {
+            newRights = Castling.clearRook(newRights, false, false);
         }
         return newRights;
     }

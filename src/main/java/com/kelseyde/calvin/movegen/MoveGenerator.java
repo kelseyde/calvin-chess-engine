@@ -1,10 +1,11 @@
 package com.kelseyde.calvin.movegen;
 
-import com.kelseyde.calvin.board.Bits;
-import com.kelseyde.calvin.board.Bits.*;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Rank;
+import com.kelseyde.calvin.board.Bits.Ray;
+import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.uci.UCI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,6 +109,10 @@ public class MoveGenerator {
     public boolean isCheck(Board board, boolean white) {
         final long king = board.getKing(white);
         return isAttacked(board, white, king);
+    }
+
+    public boolean isCheck(Board board) {
+        return isCheck(board, board.isWhite());
     }
 
     private void generatePawnMoves(Board board) {
@@ -309,25 +314,50 @@ public class MoveGenerator {
         final int from = Bits.next(king);
         final long occupied = board.getOccupied();
 
-        final boolean isKingsideAllowed = board.getState().isKingsideCastlingAllowed(white);
+        final boolean isKingsideAllowed = Castling.kingsideAllowed(board.getState().rights, white);
         if (isKingsideAllowed) {
             generateCastlingMove(board, white, true, from, occupied);
         }
 
-        final boolean isQueensideAllowed = board.getState().isQueensideCastlingAllowed(white);
+        final boolean isQueensideAllowed = Castling.queensideAllowed(board.getState().rights, white);
         if (isQueensideAllowed) {
             generateCastlingMove(board, white, false, from, occupied);
         }
 
     }
 
-    private void generateCastlingMove(Board board, boolean white, boolean isKingside, int from, long occupied) {
-        final long travelSquares = getCastleTravelSquares(white, isKingside);
+    private void generateCastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
+        if (UCI.Options.chess960) {
+            generateChess960CastlingMove(board, white, kingside, kingSquare, occupied);
+        } else {
+            generateStandardCastlingMove(board, white, kingside, kingSquare, occupied);
+        }
+    }
+
+    private void generateStandardCastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
+        final long travelSquares = Castling.Standard.travelSquares(white, kingside);
         final long blockedSquares = travelSquares & occupied;
-        final long safeSquares = getCastleSafeSquares(white, isKingside);
+        final long safeSquares = Castling.Standard.safeSquares(white, kingside);
         if (blockedSquares == 0 && !isAttacked(board, white, safeSquares)) {
-            int to = getCastleEndSquare(white, isKingside);
-            legalMoves.add(new Move(from, to, Move.CASTLE_FLAG));
+            int to = getCastleEndSquare(board, white, kingside);
+            legalMoves.add(new Move(kingSquare, to, Move.CASTLE_FLAG));
+        }
+    }
+
+    private void generateChess960CastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
+        final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
+        final int kingDst = Castling.kingTo(kingside, white);
+        final int rookDst = Castling.rookTo(kingside, white);
+
+        final long kingTravelSquares = (Ray.between(kingSquare, kingDst) | Bits.of(kingDst)) &~ Bits.of(rookSquare);
+        final long rookTravelSquares = (Ray.between(rookSquare, rookDst) | Bits.of(rookDst)) &~ Bits.of(kingSquare);
+        final long travelSquares = kingTravelSquares | rookTravelSquares;
+
+        final long blockedSquares = travelSquares & occupied;
+        final long safeSquares = Bits.of(kingSquare) | Ray.between(kingSquare, kingDst) | Bits.of(kingDst);
+        if (blockedSquares == 0 && !isAttacked(board, white, safeSquares)) {
+            int to = getCastleEndSquare(board, white, kingside);
+            legalMoves.add(new Move(kingSquare, to, Move.CASTLE_FLAG));
         }
     }
 
@@ -658,6 +688,7 @@ public class MoveGenerator {
             if (!Bits.contains(rank, from) || !Bits.contains(rank, to))
                 return false;
 
+            // TODO incorrect for Chess960
             int kingsideCastleSquare = white ? 6 : 62;
             int queensideCastleSquare = white ? 2 : 58;
 
@@ -666,18 +697,19 @@ public class MoveGenerator {
                 return false;
 
             // Must have kingside rights
-            if (to == kingsideCastleSquare && !board.getState().isKingsideCastlingAllowed(white))
+            if (to == kingsideCastleSquare && !Castling.kingsideAllowed(board.getState().rights, white))
                 return false;
 
             // Must have queenside rights
-            if (to == queensideCastleSquare && !board.getState().isQueensideCastlingAllowed(white))
+            if (to == queensideCastleSquare && !Castling.queensideAllowed(board.getState().rights, white))
                 return false;
 
             boolean kingside = to == kingsideCastleSquare;
 
-            final long travelSquares = getCastleTravelSquares(white, kingside);
+            final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
+            final long travelSquares = Ray.between(from, rookSquare);
             final long blockedSquares = travelSquares & occupied;
-            final long safeSquares = getCastleSafeSquares(white, kingside);
+            final long safeSquares = Bits.of(from) | travelSquares;
 
             // Can't castle through check
             return blockedSquares == 0 && !isAttacked(board, white, safeSquares);
@@ -804,23 +836,18 @@ public class MoveGenerator {
         return (Bits.of(to) & pinRay) != 0;
     }
 
-    private long getCastleTravelSquares(boolean white, boolean isKingside) {
-        if (isKingside) return white ? Castling.WHITE_KINGSIDE_TRAVEL_MASK : Castling.BLACK_KINGSIDE_TRAVEL_MASK;
-        else return white ? Castling.WHITE_QUEENSIDE_TRAVEL_MASK : Castling.BLACK_QUEENSIDE_TRAVEL_MASK;
-    }
-
-    private long getCastleSafeSquares(boolean white, boolean isKingside) {
-        if (isKingside) return white ? Castling.WHITE_KINGSIDE_SAFE_MASK : Castling.BLACK_KINGSIDE_SAFE_MASK;
-        else return white ? Castling.WHITE_QUEENSIDE_SAFE_MASK : Castling.BLACK_QUEENSIDE_SAFE_MASK;
-    }
-
-    private int getCastleEndSquare(boolean white, boolean isKingside) {
-        if (isKingside) return white ? 6 : 62;
-        else return white ? 2 : 58;
-    }
-
-    public long[] getPinRayMasks() {
-        return pinRayMasks;
+    private int getCastleEndSquare(Board board, boolean white, boolean kingside) {
+        // In standard chess, the king 'to' square is the actual destination square
+        // In Chess960 UCI notation, castle moves are encoded as king-captures-rook
+        if (UCI.Options.chess960) {
+            return Castling.getRook(board.getState().getRights(), kingside, white);
+        } else {
+            if (kingside) {
+                return white ? 6 : 62;
+            } else {
+                return white ? 2 : 58;
+            }
+        }
     }
 
     public long getPinMask() {

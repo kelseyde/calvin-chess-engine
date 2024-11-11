@@ -19,7 +19,7 @@ public class QuiescentMovePicker extends MovePicker {
     }
 
     @Override
-    public ScoredMove pickNextMove() {
+    public ScoredMove next() {
 
         ScoredMove nextMove = null;
         while (nextMove == null) {

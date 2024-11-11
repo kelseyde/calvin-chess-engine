@@ -66,6 +66,7 @@ public class Engine {
             Move legalMove = move(move);
             board.makeMove(legalMove);
         }
+        board.resetCounter();
         searcher.setPosition(board);
     }
 

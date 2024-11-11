@@ -606,6 +606,12 @@ public class Board {
                 (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
     }
 
+    public void resetCounter() {
+        ply = 0;
+        moves = new Move[Search.MAX_DEPTH];
+        states = new BoardState[Search.MAX_DEPTH];
+    }
+
     public static Board from(String fen) {
         return FEN.toBoard(fen);
     }

@@ -21,12 +21,21 @@ public class SEE {
 
     private static final MoveGenerator MOVEGEN = new MoveGenerator();
 
+    public static final int[] SEE_PIECE_VALUES = { 100, 320, 330, 500, 900, 0 };
+
+    public static int value(Piece piece) {
+        return SEE_PIECE_VALUES[piece.index()];
+    }
+
     public static int see(Board board, Move move) {
 
         int score = 0;
         int square = move.to();
         Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
-        score += captured != null ? captured.value() : 0;
+        score += captured != null ? SEE_PIECE_VALUES[captured.index()] : 0;
+        if (move.isPromotion()) {
+            score += SEE_PIECE_VALUES[move.promoPiece().index()] - SEE_PIECE_VALUES[Piece.PAWN.index()];
+        }
 
         board.makeMove(move);
         Move leastValuableAttacker = getLeastValuableAttacker(board, square);
@@ -47,7 +56,7 @@ public class SEE {
         boolean white = board.isWhite();
 
         long pawns = board.getPawns(white);
-        if (pawns > 0) {
+        if (Bits.count(pawns) > 0) {
             long pawnAttackMask = MOVEGEN.getPawnAttacks(board, square, !white);
             if ((pawnAttackMask & pawns) != 0) {
                 int pawnStartSquare = Bits.next(pawnAttackMask & pawns);
@@ -56,7 +65,7 @@ public class SEE {
         }
 
         long knights = board.getKnights(white);
-        if (knights > 0) {
+        if (Bits.count(knights) > 0) {
             long knightAttackMask = MOVEGEN.getKnightAttacks(board, square, !white);
             if ((knightAttackMask & knights) != 0) {
                 int knightStartSquare = Bits.next(knightAttackMask & knights);
@@ -65,7 +74,7 @@ public class SEE {
         }
 
         long bishops = board.getBishops(white);
-        if (bishops > 0) {
+        if (Bits.count(bishops) > 0) {
             long bishopAttackMask = MOVEGEN.getBishopAttacks(board, square, !white);
             if ((bishopAttackMask & bishops) != 0) {
                 int bishopStartSquare = Bits.next(bishopAttackMask & bishops);
@@ -74,7 +83,7 @@ public class SEE {
         }
 
         long rooks = board.getRooks(white);
-        if (rooks > 0) {
+        if (Bits.count(rooks) > 0) {
             long rookAttackMask = MOVEGEN.getRookAttacks(board, square, !white);
             if ((rookAttackMask & rooks) != 0) {
                 int rookStartSquare = Bits.next(rookAttackMask & rooks);
@@ -83,7 +92,7 @@ public class SEE {
         }
 
         long queens = board.getQueens(white);
-        if (queens > 0) {
+        if (Bits.count(queens) > 0) {
             long queenAttackMask = MOVEGEN.getQueenAttacks(board, square, !white);
             if ((queenAttackMask & queens) != 0) {
                 int queenStartSquare = Bits.next(queenAttackMask & queens);

@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 
 import java.util.Arrays;
@@ -32,6 +33,7 @@ public class ParallelSearcher implements Search {
     int threadCount;
     int hashSize;
     Board board;
+    MoveGenerator movegen;
     private List<Searcher> searchers;
 
     /**
@@ -41,9 +43,10 @@ public class ParallelSearcher implements Search {
      * @param config the engine configuration
      * @param tt the shared transposition table
      */
-    public ParallelSearcher(EngineConfig config, TranspositionTable tt) {
+    public ParallelSearcher(EngineConfig config, MoveGenerator movegen, TranspositionTable tt) {
         this.tt = tt;
         this.config = config;
+        this.movegen = movegen;
         this.hashSize = config.defaultHashSizeMb;
         this.threadCount = config.defaultThreads;
         this.searchers = initSearchers();
@@ -69,7 +72,9 @@ public class ParallelSearcher implements Search {
             return result;
         } catch (Exception e) {
             System.out.println("info error " + e);
-            return SearchResult.empty();
+            // In case of an error, return a random legal move to avoid crashing the engine
+            Move move = movegen.generateMoves(board).stream().findAny().orElse(null);
+            return SearchResult.of(move);
         }
     }
 

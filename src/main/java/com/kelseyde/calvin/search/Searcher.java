@@ -635,7 +635,7 @@ public class Searcher implements Search {
                 final Piece captured = scoredMove.captured();
                 if (captured != null
                         && !move.isPromotion()
-                        && (staticEval + captured.value() + config.dpMargin.value < alpha)) {
+                        && (staticEval + SEE.value(captured) + config.dpMargin.value < alpha)) {
                     continue;
                 }
 

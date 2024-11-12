@@ -21,12 +21,15 @@ public class SEE {
 
     private static final MoveGenerator MOVEGEN = new MoveGenerator();
 
+    private static final int[] SEE_PIECE_VALUES = { 100, 300, 300, 500, 900, 0 };
+
     public static int see(Board board, Move move) {
 
         int score = 0;
         int square = move.to();
         Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
-        score += captured != null ? captured.value() : 0;
+        System.out.println("captured: " + captured);
+        score += captured != null ? SEE_PIECE_VALUES[captured.index()] : 0;
 
         board.makeMove(move);
         Move leastValuableAttacker = getLeastValuableAttacker(board, square);

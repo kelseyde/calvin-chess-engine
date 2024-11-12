@@ -7,6 +7,13 @@ import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+
 public class SEETest {
 
     @Test
@@ -165,6 +172,36 @@ public class SEETest {
         int score = SEE.see(board, move);
 
         Assertions.assertEquals(0, score);
+
+    }
+
+    @Test
+    public void seeTestSuite() throws IOException {
+
+        Path path = Paths.get("src/test/resources/see.txt");
+        List<String> lines = Files.readAllLines(path);
+        lines.forEach(this::seeTest);
+    }
+
+    @Test
+    public void seeDebug() {
+
+        String line = "6rr/6pk/p1Qp1b1p/2n5/1B3p2/5p2/P1P2P2/4RK1R w - - | e1e8 | -500 | -R";
+        seeTest(line);
+
+    }
+
+    private void seeTest(String line) {
+
+        System.out.println(line);
+        String[] parts = line.split("\\|");
+        String fen = parts[0];
+        Move move = Move.fromUCI(parts[1].trim());
+        int score = Integer.parseInt(parts[2].trim());
+        Board board = Board.from(fen);
+        int actualScore = SEE.see(board, move);
+        Assertions.assertEquals(score, actualScore,
+                String.format("Failed %s, %s, expected %s, got %s", fen, Move.toUCI(move), score, actualScore));
 
     }
 

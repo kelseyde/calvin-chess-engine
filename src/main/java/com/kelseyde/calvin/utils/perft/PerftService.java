@@ -40,10 +40,11 @@ public class PerftService {
         long totalMoveCount = 0;
         for (Move move : moves) {
             board.makeMove(move);
-            totalMoveCount += perft(board, depth - 1, originalDepth);
+            long moveCount = perft(board, depth - 1, originalDepth);
             if (depth == originalDepth) {
-                nodesPerMove.put(move, totalMoveCount);
+                nodesPerMove.put(move, moveCount);
             }
+            totalMoveCount += moveCount;
             board.unmakeMove();
         }
         return totalMoveCount;

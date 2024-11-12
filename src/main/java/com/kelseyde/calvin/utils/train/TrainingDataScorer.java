@@ -143,7 +143,16 @@ public class TrainingDataScorer {
     private String scoreData(Searcher searcher, String line, ScoreDataCommand command) {
         String[] parts = line.split("\\|");
         String fen = parts[0].trim();
+        int score = Integer.parseInt(parts[1].trim());
         String result = parts[2].trim();
+        boolean isTooHigh = Math.abs(score) >= 10000;
+        boolean isBadResult = (score >= 1000 && result.equalsIgnoreCase("0.0"))
+                || (score <= -1000 && result.equalsIgnoreCase("1.0"));
+
+        if (isTooHigh || isBadResult) {
+            return "";
+        }
+
         Board board = FEN.toBoard(fen);
         if (MOVE_GENERATOR.isCheck(board, board.isWhite())) {
             // Filter out positions where the side to move is in check
@@ -168,9 +177,16 @@ public class TrainingDataScorer {
             // Filter out positions where the best move is a capture
             return "";
         }
-        int score = searchResult.eval();
+        score = searchResult.eval();
         if (Score.isMateScore(score)) {
             // Filter out positions where there is forced mate
+            return "";
+        }
+        isTooHigh = Math.abs(score) >= 10000;
+        isBadResult = (score >= 1000 && result.equalsIgnoreCase("0.0"))
+                || (score <= -1000 && result.equalsIgnoreCase("1.0"));
+
+        if (isTooHigh || isBadResult) {
             return "";
         }
         if (!board.isWhite()) score = -score;
@@ -184,7 +200,7 @@ public class TrainingDataScorer {
     }
 
     private void logDatascoreInfo(ScoreDataCommand command) {
-        if (UCI.prettyEnabled) {
+        if (UCI.Options.pretty) {
             UCI.write("");
             UCI.write(String.format("""
                     %sBeginning Data Scoring%s
@@ -212,7 +228,7 @@ public class TrainingDataScorer {
         String rateFormatted = String.format("%.0f", rate);
         Duration estimate = Duration.ofSeconds((long) (remaining / rate)).truncatedTo(ChronoUnit.SECONDS);
 
-        if (UCI.prettyEnabled) {
+        if (UCI.Options.pretty) {
             System.out.printf("total %s%d%s, since resume %s%d%s, scored %s%d%s, excluded %s%d%s, time %s%s%s, pos/s %s%s%s, remaining pos %s%s%s remaining time %s%s%s\n",
                     Pretty.CYAN, total, Pretty.RESET,
                     Pretty.CYAN, totalSinceResume, Pretty.RESET,

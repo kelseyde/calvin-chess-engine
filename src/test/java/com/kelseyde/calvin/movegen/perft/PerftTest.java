@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.movegen.perft;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.perft.PerftService;
 import org.junit.jupiter.api.Assertions;
@@ -22,6 +23,7 @@ public abstract class PerftTest {
     protected abstract String getSubFolder();
 
     protected void perft(int depth, long expectedTotalMoves) {
+        UCI.Options.chess960 = true;
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
         long totalMoveCount = perftService.perft(board, depth);

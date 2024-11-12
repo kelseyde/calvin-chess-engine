@@ -1,14 +1,13 @@
 package com.kelseyde.calvin.utils.notation;
 
-import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Key;
-import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.uci.UCI;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -77,7 +76,7 @@ public class FEN {
             long occupied = whitePieces | blackPieces;
 
             boolean whiteToMove = parseSideToMove(parts[1]);
-            int castlingRights = parseCastlingRights(parts[2]);
+            int castlingRights = parseCastlingRights(parts[2], whiteRooks, blackRooks, Bits.next(whiteKing), Bits.next(blackKing));
             int enPassantFile = parseEnPassantFile(parts[3]);
             int fiftyMoveCounter = parts.length > 4 ? parseFiftyMoveCounter(parts[4]) : 0;
             // This implementation does not require the full move counter (parts[5]).
@@ -169,41 +168,70 @@ public class FEN {
         return sideToMove ? "w" : "b";
     }
 
-    private static int parseCastlingRights(String castlingRights) {
-        int castlingRightsMask = 0b0000;
-        if (castlingRights.contains("K")) {
-            castlingRightsMask |= 0b0001;
+    private static int parseCastlingRights(String castlingRights, long whiteRooks, long blackRooks, int whiteKing, int blackKing) {
+        if (castlingRights.length() > 4) {
+            throw new IllegalArgumentException("Invalid castling rights! " + castlingRights);
         }
-        if (castlingRights.contains("Q")) {
-            castlingRightsMask |= 0b0010;
+        int rights = Castling.empty();
+        for (int i = 0; i < castlingRights.length(); i++) {
+            char right = castlingRights.charAt(i);
+            switch (right) {
+                case 'K' -> rights = Castling.setRook(rights, true, true, findRook(whiteRooks, true, true));
+                case 'Q' -> rights = Castling.setRook(rights, false, true, findRook(whiteRooks, true, false));
+                case 'k' -> rights = Castling.setRook(rights, true, false, findRook(blackRooks, false, true));
+                case 'q' -> rights = Castling.setRook(rights, false, false, findRook(blackRooks, false, false));
+                case 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' -> {
+                    // Shredder FEN: White rooks on specified files
+                    int file = File.fromNotation(right);
+                    int kingFile = File.of(whiteKing);
+                    if (file < kingFile) {
+                        rights = Castling.setRook(rights, false, true, Square.of(0, file)); // Queenside
+                    } else {
+                        rights = Castling.setRook(rights, true, true, Square.of(0, file));  // Kingside
+                    }
+                }
+                case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' -> {
+                    // Shredder FEN: Black rooks on specified files
+                    int file = File.fromNotation(Character.toUpperCase(right));
+                    int kingFile = File.of(blackKing);
+                    if (file < kingFile) {
+                        rights = Castling.setRook(rights, false, false, Square.of(7, file)); // Queenside
+                    } else {
+                        rights = Castling.setRook(rights, true, false, Square.of(7, file));  // Kingside
+                    }
+                }
+                case '-' -> {
+                    // No castling rights, so return empty rights directly
+                    return Castling.empty();
+                }
+                default -> throw new IllegalArgumentException("Invalid castling right! " + right);
+            }
         }
-        if (castlingRights.contains("k")) {
-            castlingRightsMask |= 0b0100;
-        }
-        if (castlingRights.contains("q")) {
-            castlingRightsMask |= 0b1000;
-        }
-        return castlingRightsMask;
+        return rights;
     }
 
-    private static String toCastlingRights(int castlingRights) {
-        if (castlingRights == 0b0000) {
+    private static String toCastlingRights(int rights) {
+        if (rights == Castling.empty()) {
             return "-";
         }
-        String castlingRightsString = "";
-        if ((castlingRights & 0b0001) != 0) {
-            castlingRightsString += "K";
+        String rightsString = "";
+        int wk = Castling.getRook(rights, true, true);
+        if (wk != Castling.NO_ROOK) {
+            rightsString += UCI.Options.chess960 ? File.toNotation(wk).toUpperCase() : "K";
         }
-        if ((castlingRights & 0b0010) != 0) {
-            castlingRightsString += "Q";
+        int wq = Castling.getRook(rights, false, true);
+        if (wq != Castling.NO_ROOK) {
+            rightsString += UCI.Options.chess960 ? File.toNotation(wq).toUpperCase() : "Q";
         }
-        if ((castlingRights & 0b0100) != 0) {
-            castlingRightsString += "k";
+        int bk = Castling.getRook(rights, true, false);
+        if (bk != Castling.NO_ROOK) {
+            rightsString += UCI.Options.chess960 ? File.toNotation(bk) : "k";
         }
-        if ((castlingRights & 0b1000) != 0) {
-            castlingRightsString += "q";
+        int bq = Castling.getRook(rights, false, false);
+        if (bq != Castling.NO_ROOK) {
+            rightsString += UCI.Options.chess960 ? File.toNotation(bq) : "q";
         }
-        return castlingRightsString;
+        return rightsString;
     }
 
     private static int parseEnPassantFile(String enPassantSquare) {
@@ -255,6 +283,28 @@ public class FEN {
             else if ((squareMask & board.getKings()) != 0)      pieceList[square] = Piece.KING;
         }
         return pieceList;
+
+    }
+
+    private static int findRook(long rooks, boolean white, boolean kingside) {
+
+        long firstRank = white ? Bits.Rank.FIRST : Bits.Rank.EIGHTH;
+        long firstRankRooks = rooks & firstRank;
+
+        if (Bits.count(firstRankRooks) == 0) {
+            throw new IllegalArgumentException("Illegal FEN: castling rights with no rooks on the first rank!");
+        }
+
+        if (Bits.count(firstRankRooks) == 1) {
+            return Bits.next(firstRankRooks);
+        }
+
+        List<Integer> squares = Arrays.stream(Bits.collect(firstRankRooks))
+                .boxed()
+                .sorted(Comparator.comparing(File::of))
+                .toList();
+
+        return kingside ? squares.get(squares.size() - 1) : squares.get(0);
 
     }
 

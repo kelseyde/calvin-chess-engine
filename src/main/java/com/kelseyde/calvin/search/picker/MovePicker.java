@@ -66,7 +66,7 @@ public class MovePicker {
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
-    public ScoredMove pickNextMove() {
+    public ScoredMove next() {
 
         ScoredMove nextMove = null;
         while (nextMove == null) {
@@ -235,7 +235,7 @@ public class MovePicker {
         }
 
         // Separate good and bad noisies based on the MVV-LVA ('most valuable victim, least valuable attacker') heuristic
-        final int materialDelta = captured.value() - piece.value();
+        final int materialDelta = SEE.value(captured) - SEE.value(piece);
         final MoveType type = materialDelta >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         noisyScore += type.bonus;

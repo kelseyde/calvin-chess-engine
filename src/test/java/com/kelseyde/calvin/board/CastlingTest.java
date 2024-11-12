@@ -1,5 +1,7 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -28,6 +30,37 @@ public class CastlingTest {
     }
 
     @Test
+    public void testChess960KingsideCastling() {
+
+        UCI.Options.chess960 = true;
+
+        Board board = Board.from(FEN.STARTPOS);
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
+        board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
+        board.makeMove(TestUtils.getLegalMove(board, "f1", "b5"));
+        board.makeMove(TestUtils.getLegalMove(board, "f8", "b4"));
+
+        // white castles
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "h1"));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("g1")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("f1")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("g1")), board.getKing(true));
+        Assertions.assertTrue(Bits.contains(board.getRooks(true), Square.fromNotation("f1")));
+
+        // black castles
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "h8"));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("g8")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("f8")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("g8")), board.getKing(false));
+        Assertions.assertTrue(Bits.contains(board.getRooks(false), Square.fromNotation("f8")));
+
+        UCI.Options.chess960 = false;
+
+    }
+
+    @Test
     public void testSimpleQueensideCastling() {
 
         Board board = Board.from(FEN.STARTPOS);
@@ -45,6 +78,31 @@ public class CastlingTest {
 
         // black castles
         board.makeMove(TestUtils.getLegalMove(board, "e8", "c8"));
+
+    }
+
+    @Test
+    public void testChess960QueensideCastling() {
+
+        UCI.Options.chess960 = true;
+
+        Board board = Board.from("r3kbnr/pppqpppp/2n5/3p1b2/3P1B2/2N5/PPPQPPPP/R3KBNR w KQkq - 6 5");
+
+        // white castles
+        board.makeMove(TestUtils.getLegalMove(board, "e1", "a1"));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("c1")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("d1")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("c1")), board.getKing(true));
+        Assertions.assertTrue(Bits.contains(board.getRooks(true), Square.fromNotation("d1")));
+
+        // black castles
+        board.makeMove(TestUtils.getLegalMove(board, "e8", "a8"));
+        Assertions.assertEquals(Piece.KING, board.pieceAt(Square.fromNotation("c8")));
+        Assertions.assertEquals(Piece.ROOK, board.pieceAt(Square.fromNotation("d8")));
+        Assertions.assertEquals(Bits.of(Square.fromNotation("c8")), board.getKing(false));
+        Assertions.assertTrue(Bits.contains(board.getRooks(false), Square.fromNotation("d8")));
+
+        UCI.Options.chess960 = false;
 
     }
 
@@ -301,6 +359,109 @@ public class CastlingTest {
         // black tries to castle
         Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e8", "g8")));
 
+    }
+
+    @Test
+    public void testCannotCastleIfDestinationSquareAttacked() {
+
+        Board board = Board.from("rnbqkbn1/pppppppp/8/6r1/1B6/5N2/PPPPPP1P/RNBQK2R w KQq - 0 1");
+
+        // white tries to castle
+        Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
+
+    }
+
+    @Test
+    public void testCastleRightSquareEncoding() {
+
+        // including 64, representing no-square
+        for (int square = 0; square < 64; square++) {
+            Assertions.assertEquals(square, Castling.decode(Castling.encode(square)));
+        }
+
+    }
+
+    @Test
+    public void castleRightsEmpty() {
+
+        int rights = Castling.empty();
+        Assertions.assertFalse(Castling.kingsideAllowed(rights, true));
+        Assertions.assertFalse(Castling.kingsideAllowed(rights, false));
+        Assertions.assertFalse(Castling.queensideAllowed(rights, true));
+        Assertions.assertFalse(Castling.queensideAllowed(rights, false));
+
+    }
+
+    @Test
+    public void castleRightsStartpos() {
+
+        int r = Castling.empty();
+        r = Castling.setRook(r, true, true, 7);
+        Assertions.assertEquals(7, Castling.getRook(r, true, true));
+
+        Board board = Board.from(FEN.STARTPOS);
+        int rights = board.getState().getRights();
+        Assertions.assertTrue(Castling.kingsideAllowed(rights, true));
+        Assertions.assertTrue(Castling.kingsideAllowed(rights, false));
+        Assertions.assertTrue(Castling.queensideAllowed(rights, true));
+        Assertions.assertTrue(Castling.queensideAllowed(rights, false));
+
+        Assertions.assertEquals(0, Castling.getRook(rights, false, true));
+        Assertions.assertEquals(7, Castling.getRook(rights, true, true));
+        Assertions.assertEquals(56, Castling.getRook(rights, false, false));
+        Assertions.assertEquals(63, Castling.getRook(rights, true, false));
+
+    }
+
+    @Test
+    public void updateCastleRights() {
+
+        int rights = Castling.empty();
+
+        for (int i = 0; i < 64; i++) {
+            rights = Castling.setRook(rights, true, true, i);
+            Assertions.assertEquals(i, Castling.getRook(rights, true, true));
+            rights = Castling.setRook(rights, false, true, i);
+            Assertions.assertEquals(i, Castling.getRook(rights, false, true));
+            rights = Castling.setRook(rights, true, false, i);
+            Assertions.assertEquals(i, Castling.getRook(rights, true, false));
+            rights = Castling.setRook(rights, false, false, i);
+            Assertions.assertEquals(i, Castling.getRook(rights, false, false));
+        }
+
+    }
+
+    @Test
+    public void shredderFen() {
+        Board board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1");
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertTrue(Castling.queensideAllowed(board.getState().getRights(), false));
+
+        board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAh - 0 1");
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), false));
+
+        board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HA - 0 1");
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertTrue(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), false));
+
+        board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w H - 0 1");
+        Assertions.assertTrue(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), false));
+
+        board = Board.from("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1");
+        Assertions.assertFalse(Castling.kingsideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), true));
+        Assertions.assertFalse(Castling.kingsideAllowed(board.getState().getRights(), false));
+        Assertions.assertFalse(Castling.queensideAllowed(board.getState().getRights(), false));
     }
 
 }

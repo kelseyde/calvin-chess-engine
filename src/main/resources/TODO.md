@@ -4,7 +4,7 @@
 
 - [ ] OpenBench
 - [ ] Cloud-hosted OB solution (with pythonanywhere?)
-- [ ] FRC/DFRC support
+- [x] FRC/DFRC support
 - [ ] Improve javadoc
 - [ ] Review all code comments
 - [x] Reduce artifact size (remove plugins, dependencies, delete old nets)
@@ -13,7 +13,7 @@
 - [ ] Check LazySMP still works
 - [ ] Put Calvin back on Lichess
 - [ ] Stop using int everywhere (use byte/short where possible)
-- [ ] Find solution to CCRL/ChessGUI/Vector API issue
+- [x] Find solution to CCRL/ChessGUI/Vector API issue
 
 ### Search
 

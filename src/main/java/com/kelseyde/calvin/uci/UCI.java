@@ -80,6 +80,10 @@ public class UCI {
         write("option name Pretty type check default false");
         ENGINE.getConfig().getTunables().forEach(t -> write(t.toUCI()));
         write("uciok");
+
+        // Typically 'uci' is only sent by tournament runners, not humans.
+        // Therefore, let's disable pretty print when receiving a 'uci' command.
+        Options.pretty = false;
     }
 
     public static void handleBench(UCICommand command) {

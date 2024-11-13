@@ -64,10 +64,9 @@ public class Engine {
         board = FEN.toBoard(command.fen());
         for (Move move : command.moves()) {
             Move legalMove = move(move);
-            board.makeMove(legalMove);
+            board.makeMove(legalMove, false);
         }
-        board.resetCounter();
-        searcher.setPosition(board);
+        searcher.setPosition(board.copy());
     }
 
     public void go(GoCommand command) {

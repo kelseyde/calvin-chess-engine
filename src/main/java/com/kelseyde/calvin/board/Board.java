@@ -53,18 +53,24 @@ public class Board {
         this.ply         = 0;
     }
 
+    public boolean makeMove(Move move) {
+        return makeMove(move, true);
+    }
+
     /**
      * Updates the internal board representation with the {@link Move} just made. Toggles the piece bitboards to move the
      * piece + remove the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
      */
-    public boolean makeMove(Move move) {
+    public boolean makeMove(Move move, boolean incrementPly) {
 
         final int from = move.from();
         final int to = move.to();
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
-        states[ply] = state.copy();
+        if (incrementPly) {
+            states[ply] = state.copy();
+        }
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
         else if (move.isCastling())   makeCastleMove(from, to);
@@ -73,7 +79,9 @@ public class Board {
         else                          makeStandardMove(from, to, piece, captured);
 
         updateState(from, to, piece, captured, move);
-        moves[ply++] = move;
+        if (incrementPly) {
+            moves[ply++] = move;
+        }
         white = !white;
 
         return true;
@@ -604,12 +612,6 @@ public class Board {
         return white ?
                 (getKnights(true) != 0 || getBishops(true) != 0 || getRooks(true) != 0 || getQueens(true) != 0) :
                 (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
-    }
-
-    public void resetCounter() {
-        ply = 0;
-        moves = new Move[Search.MAX_DEPTH];
-        states = new BoardState[Search.MAX_DEPTH];
     }
 
     public static Board from(String fen) {

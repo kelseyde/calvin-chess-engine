@@ -28,13 +28,14 @@ import java.util.stream.IntStream;
  */
 public class ParallelSearcher implements Search {
 
-    final EngineConfig config;
-    final TranspositionTable tt;
-    int threadCount;
-    int hashSize;
-    Board board;
-    MoveGenerator movegen;
+    private final EngineConfig config;
+    private final TranspositionTable tt;
+    private final MoveGenerator movegen;
+
     private List<Searcher> searchers;
+    private int threadCount;
+    private int hashSize;
+    private Board board;
 
     /**
      * Constructs a ParallelSearcher with the given {@link EngineConfig} config and {@link Supplier} suppliers.

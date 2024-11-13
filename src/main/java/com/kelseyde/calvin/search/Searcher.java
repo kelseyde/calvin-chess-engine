@@ -263,7 +263,7 @@ public class Searcher implements Search {
         SearchStackEntry sse = ss.get(ply);
         sse.staticEval = staticEval;
 
-        int quietReduction = 0;
+        int futilityReduction = 0;
 
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
@@ -294,7 +294,7 @@ public class Searcher implements Search {
                 else if (staticEval - reduceMargin >= beta) {
                     // Calculate distance from beta in units of 'blend' to scale reduction dynamically
                     int delta = (staticEval - beta) - reduceMargin;
-                    quietReduction = 1 + Math.min(2, delta / blend);
+                    futilityReduction = 1 + Math.min(2, delta / blend);
                 }
             }
 
@@ -385,7 +385,7 @@ public class Searcher implements Search {
                     int delta = (alpha - staticEval) - pruneMargin;
 
                     int maxReduction = config.fpDepth.value;
-                    quietReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
+                    futilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
                 }
             }
 
@@ -448,8 +448,8 @@ public class Searcher implements Search {
             playedMove.quiet = isQuiet;
             playedMove.capture = isCapture;
 
-            if (isQuiet) {
-                reduction += quietReduction;
+            if (isQuiet || scoredMove.isBadNoisy()) {
+                reduction += futilityReduction;
             }
 
             sse.currentMove = playedMove;

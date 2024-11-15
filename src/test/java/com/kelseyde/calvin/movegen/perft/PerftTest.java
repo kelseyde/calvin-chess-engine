@@ -34,10 +34,11 @@ public abstract class PerftTest {
 
         float nps = (float) totalNodeCount / ((float) performance.toNanos() / 1000000);
         System.out.println("nps: " + nps);
-        if (expectedTotalMoves == totalMoveCount) {
+        if (expectedTotalMoves == totalMoveCount && getSubFolder() != null) {
             writeResults(depth, performance);
         }
-        Assertions.assertEquals(expectedTotalMoves, totalMoveCount);
+        Assertions.assertEquals(expectedTotalMoves, totalMoveCount,
+                String.format("Fen: %s, Depth: %s, Expected: %s, Actual: %s", getFen(), depth, expectedTotalMoves, totalMoveCount));
     }
 
     private void writeResults(int depth, Duration performance) {

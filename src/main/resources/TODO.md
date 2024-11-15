@@ -39,10 +39,10 @@
 - [ ] Major corrhist ( tried )
 - [ ] Minor corrhist ( tried )
 - [ ] Contcorrhist
-- [ ] Threat corrhist ( tried, failed SPRT )
+- [ ] Threat corrhist ( tried )
 - [ ] Countermove corrhist?
 - [ ] Follow-up move corrhist?
-- [ ] TT-move corrhist? ( tried, failed SPRT )
+- [ ] TT-move corrhist? ( tried )
 - [x] TT score eval correction
 - [ ] LMP table
 - [ ] Reduce killers less

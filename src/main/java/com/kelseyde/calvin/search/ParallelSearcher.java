@@ -73,7 +73,9 @@ public class ParallelSearcher implements Search {
             return result;
         } catch (Exception e) {
             System.out.println("info error " + e);
-            return SearchResult.empty();
+            // In case of an error, return a random legal move to avoid crashing the engine
+            Move move = movegen.generateMoves(board).stream().findAny().orElse(null);
+            return SearchResult.of(move);
         }
     }
 
@@ -120,7 +122,9 @@ public class ParallelSearcher implements Search {
                 return searcher.search(tc);
             } catch (Exception e) {
                 System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
-                return SearchResult.empty();
+                // In case of an error, return a random legal move to avoid crashing the engine
+                Move move = movegen.generateMoves(board).stream().findAny().orElse(null);
+                return SearchResult.of(move);
             }
         });
     }

@@ -290,6 +290,17 @@ public class BoardTest {
 
     }
 
+    @Test
+    public void testMakeTooManyMoves() {
+        Board board = Board.from(FEN.STARTPOS);
+        for (int i = 0; i < 65; i++) {
+            board.makeMove(Move.fromUCI("g1f3"));
+            board.makeMove(Move.fromUCI("g8f6"));
+            board.makeMove(Move.fromUCI("f3g1"));
+            board.makeMove(Move.fromUCI("f6g8"));
+        }
+    }
+
     private Set<Integer> getPiecePositions(Board board, boolean whiteToMove) {
         Set<Integer> positions = new HashSet<>();
         if (whiteToMove) {

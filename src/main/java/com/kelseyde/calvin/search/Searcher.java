@@ -316,7 +316,7 @@ public class Searcher implements Search {
             // not search any further.
             if (sse.nullMoveAllowed
                 && depth >= config.nmpDepth.value
-                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
+                && staticEval >= beta
                 && board.hasPiecesRemaining(board.isWhite())) {
 
                 ss.get(ply + 1).nullMoveAllowed = false;

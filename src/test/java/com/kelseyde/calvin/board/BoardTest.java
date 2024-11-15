@@ -299,7 +299,6 @@ public class BoardTest {
             board.makeMove(Move.fromUCI("f3g1"));
             board.makeMove(Move.fromUCI("f6g8"));
         }
-        //Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(Move.fromUCI("e2e4")));
     }
 
     private Set<Integer> getPiecePositions(Board board, boolean whiteToMove) {

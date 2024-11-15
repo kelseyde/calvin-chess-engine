@@ -7,6 +7,10 @@ import java.time.Instant;
 
 public record SearchResult(int eval, Move move, int depth, long time, int nodes, long nps) {
 
+    public static SearchResult empty() {
+        return new SearchResult(0, null, 0, 0, 0, 0);
+    }
+
     public static SearchResult of(Move move) {
         return new SearchResult(0, move, 0, 0, 0, 0);
     }

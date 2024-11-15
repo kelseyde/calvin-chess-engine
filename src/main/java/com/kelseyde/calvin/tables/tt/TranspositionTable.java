@@ -121,7 +121,7 @@ public class TranspositionTable {
             // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
             // If the depth is < the store depth, don't replace it and exit (although this should never happen).
             if (HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
-                if (depth >= storedDepth) {
+                if (depth >= storedDepth - 4) {
                     // If the stored entry has a recorded best move but the new entry does not, use the stored one.
                     Move storedMove = HashEntry.Value.getMove(storedValue);
                     if (move == null && storedMove != null) {

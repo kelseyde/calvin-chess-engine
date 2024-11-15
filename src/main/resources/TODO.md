@@ -39,10 +39,10 @@
 - [ ] Major corrhist ( tried )
 - [ ] Minor corrhist ( tried )
 - [ ] Contcorrhist
-- [ ] Threat corrhist ( tried, failed SPRT )
+- [ ] Threat corrhist ( tried )
 - [ ] Countermove corrhist?
 - [ ] Follow-up move corrhist?
-- [ ] TT-move corrhist? ( tried, failed SPRT )
+- [ ] TT-move corrhist? ( tried )
 - [x] TT score eval correction
 - [ ] LMP table
 - [ ] Reduce killers less
@@ -93,6 +93,7 @@
 ### Transposition Table
 
 - [x] Always store eval in TT (should be 5-ish elo?)
+- [ ] Tune TT depth cut-off
 - [ ] PV node flag in TT
 - [ ] 16-bits zobrist in TT? (SF does it)
 - [ ] Fully compress all fields to minimum size

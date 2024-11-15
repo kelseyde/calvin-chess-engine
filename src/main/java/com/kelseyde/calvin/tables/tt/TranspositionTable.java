@@ -109,6 +109,12 @@ public class TranspositionTable {
                 break;
             }
 
+            // Second, always prefer an exact score
+            if (flag == HashFlag.EXACT) {
+                replacedIndex = i;
+                break;
+            }
+
             long storedValue = values[i];
 
             HashFlag storedFlag = HashEntry.Value.getFlag(storedValue);

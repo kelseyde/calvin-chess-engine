@@ -75,7 +75,7 @@ public class ParallelSearcher implements Search {
             System.out.println("info error " + e);
             // In case of an error, return a random legal move to avoid crashing the engine
             Move move = movegen.generateMoves(board).stream().findAny().orElse(null);
-            return SearchResult.empty();
+            return SearchResult.of(move);
         }
     }
 
@@ -124,7 +124,7 @@ public class ParallelSearcher implements Search {
                 System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
                 // In case of an error, return a random legal move to avoid crashing the engine
                 Move move = movegen.generateMoves(board).stream().findAny().orElse(null);
-                return SearchResult.empty();
+                return SearchResult.of(move);
             }
         });
     }

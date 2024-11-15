@@ -82,6 +82,7 @@ public class Board {
         if (incrementPly) {
             moves[ply++] = move;
         }
+        checkMaxPly();
         white = !white;
 
         return true;
@@ -616,6 +617,19 @@ public class Board {
 
     public static Board from(String fen) {
         return FEN.toBoard(fen);
+    }
+
+    private void checkMaxPly() {
+        if (ply >= states.length) {
+            BoardState[] newStates = new BoardState[states.length + 64];
+            System.arraycopy(states, 0, newStates, 0, states.length);
+
+            Move[] newMoves = new Move[moves.length + 64];
+            System.arraycopy(moves, 0, newMoves, 0, moves.length);
+
+            states = newStates;
+            moves = newMoves;
+        }
     }
 
     public Board copy() {

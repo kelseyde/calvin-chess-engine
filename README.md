@@ -24,7 +24,7 @@ Like most engines, Calvin does not implement its own user interface. Instead, it
 To run Calvin locally, you will need Java (minimum Java 17) installed on your machine. The binary calvin.jar can be downloaded from the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) section. Start up Calvin by executing the command:
 
 ```
-java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.0.1.jar
+java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.0.2.jar
 ```
 From there, use the "help" option or refer to UCI documentation for further information on available commands.
 
@@ -34,6 +34,7 @@ The table below tracks the strength of previous Calvin releases, both on the CCR
 
 | 	Version	 | 	Release date | Estimated | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | [CCRL Rapid](https://www.computerchess.org.uk/ccrl/4040/) 
 | 	:-----:	 | 	:-----:	 |:---------:| :-----:	|  :-----:	 |:---------------------------------------------------------:|  
+| [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) | 2024-11-12 |   3420    | - | - | - |
 | [5.0.1](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.1) | 2024-11-12 |   3410    | - | - | - |
 | [5.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.0) | 2024-11-11 |   3400    | - | - | - |
 | [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 |   3300    | - | - | 3277 |
@@ -122,5 +123,5 @@ If you would like to contribute, or just talk about chess/chess programming, get
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=ed5858
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
 
-[lichess-badge]: https://img.shields.io/badge/Play-v5.0.1-ffd25c?logo=lichess&style=for-the-badge
+[lichess-badge]: https://img.shields.io/badge/Play-v5.0.2-ffd25c?logo=lichess&style=for-the-badge
 [lichess-link]: https://lichess.org/@/Calvin_Bot

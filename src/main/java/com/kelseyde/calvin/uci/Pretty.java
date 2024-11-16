@@ -85,7 +85,7 @@ public class Pretty {
             paddedScore = " ".repeat(buffer) + mateString;
         } else {
             float scoreFloat = (float) score / 100;
-            String sign = scoreFloat >= 0 ? "+" : "";
+            String sign = scoreFloat >= 0 ? "+" : " ";
             String scoreString = String.format(Locale.ROOT, "%.2f", scoreFloat);
             int buffer = Math.max(0, scoreLength - scoreString.length());
             paddedScore = " ".repeat(buffer) + sign + scoreString;

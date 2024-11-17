@@ -270,7 +270,9 @@ public class Searcher implements Search {
                 uncorrectedStaticEval = staticEval;
             }
         }
-
+        else if (excluded) {
+            staticEval = sse.staticEval;
+        }
         sse.staticEval = staticEval;
 
         int futilityReduction = 0;

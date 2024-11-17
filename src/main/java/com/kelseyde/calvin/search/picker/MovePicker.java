@@ -74,10 +74,10 @@ public class MovePicker {
                 case TT_MOVE ->     pickTTMove(Stage.GEN_NOISY);
                 case GEN_NOISY ->   generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
                 case GOOD_NOISY ->  pickMove(Stage.KILLER);
-                case KILLER ->      pickKiller(Stage.BAD_NOISY);
-                case BAD_NOISY ->   pickMove(Stage.GEN_QUIET);
+                case KILLER ->      pickKiller(Stage.GEN_QUIET);
                 case GEN_QUIET ->   generate(MoveFilter.QUIET, Stage.QUIET);
-                case QUIET ->       pickMove(Stage.END);
+                case QUIET ->       pickMove(Stage.BAD_NOISY);
+                case BAD_NOISY ->   pickMove(Stage.END);
                 case END,
                      QSEARCH_GEN_NOISY,
                      QSEARCH_NOISY -> null;
@@ -160,7 +160,7 @@ public class MovePicker {
             badNoisies = new ScoredMove[stagedMoves.size()];
             for (Move move : stagedMoves) {
                 ScoredMove scoredMove = scoreMove(board, move, ttMove, ply);
-                if (scoredMove.moveType() == MoveType.GOOD_NOISY) {
+                if (scoredMove.isGoodNoisy()) {
                     goodNoisies[goodIndex++] = scoredMove;
                 } else {
                     badNoisies[badIndex++] = scoredMove;
@@ -182,7 +182,9 @@ public class MovePicker {
             int goodIndex = 0;
             for (Move move : stagedMoves) {
                 ScoredMove scoredMove = scoreMove(board, move, ttMove, ply);
-                goodNoisies[goodIndex++] = scoredMove;
+                if (scoredMove.isGoodNoisy() || inCheck) {
+                    goodNoisies[goodIndex++] = scoredMove;
+                }
             }
         }
 
@@ -235,8 +237,7 @@ public class MovePicker {
         }
 
         // Separate good and bad noisies based on the MVV-LVA ('most valuable victim, least valuable attacker') heuristic
-        final int materialDelta = SEE.value(captured) - SEE.value(piece);
-        final MoveType type = materialDelta >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        final MoveType type = SEE.see(board, move) >= 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         noisyScore += type.bonus;
 

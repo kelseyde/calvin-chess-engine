@@ -38,7 +38,7 @@ public class Pretty {
     public static void printEngineInfo() {
         UCI.write("");
         UCI.write(Pretty.BANNER);
-        UCI.write(Pretty.RED + "Engine" + Pretty.RESET + ": Calvin 5.0.0");
+        UCI.write(Pretty.RED + "Engine" + Pretty.RESET + ": Calvin 5.0.2");
         UCI.write(Pretty.RED + "Author" + Pretty.RESET + ": Dan Kelsey");
         UCI.write(Pretty.RED + "Source" + Pretty.RESET + ": https://github.com/kelseyde/calvin-chess-engine");
         UCI.write("");
@@ -85,7 +85,7 @@ public class Pretty {
             paddedScore = " ".repeat(buffer) + mateString;
         } else {
             float scoreFloat = (float) score / 100;
-            String sign = scoreFloat >= 0 ? "+" : "";
+            String sign = scoreFloat >= 0 ? "+" : " ";
             String scoreString = String.format(Locale.ROOT, "%.2f", scoreFloat);
             int buffer = Math.max(0, scoreLength - scoreString.length());
             paddedScore = " ".repeat(buffer) + sign + scoreString;

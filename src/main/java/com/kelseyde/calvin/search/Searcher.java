@@ -273,7 +273,7 @@ public class Searcher implements Search {
 
         sse.staticEval = staticEval;
 
-        int quietReduction = 0;
+        int futilityReduction = 0;
 
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
@@ -305,7 +305,7 @@ public class Searcher implements Search {
                 else if (staticEval - reduceMargin >= beta) {
                     // Calculate distance from beta in units of 'blend' to scale reduction dynamically
                     int delta = (staticEval - beta) - reduceMargin;
-                    quietReduction = 1 + Math.min(2, delta / blend);
+                    futilityReduction = 1 + Math.min(2, delta / blend);
                 }
             }
 
@@ -327,7 +327,7 @@ public class Searcher implements Search {
             // not search any further.
             if (sse.nullMoveAllowed
                 && depth >= config.nmpDepth.value
-                && staticEval >= beta - (improving ? config.nmpImpMargin.value : config.nmpMargin.value)
+                && staticEval >= beta
                 && board.hasPiecesRemaining(board.isWhite())) {
 
                 ss.get(ply + 1).nullMoveAllowed = false;
@@ -400,7 +400,7 @@ public class Searcher implements Search {
                     int delta = (alpha - staticEval) - pruneMargin;
 
                     int maxReduction = config.fpDepth.value;
-                    quietReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
+                    futilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
                 }
             }
 
@@ -421,6 +421,7 @@ public class Searcher implements Search {
 
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
                 reduction -= 2 * historyScore / config.quietHistMaxScore.value;
+
                 reduction = Math.max(0, reduction);
             }
 
@@ -489,8 +490,8 @@ public class Searcher implements Search {
             playedMove.quiet = isQuiet;
             playedMove.capture = isCapture;
 
-            if (isQuiet) {
-                reduction += quietReduction;
+            if (isQuiet || scoredMove.isBadNoisy()) {
+                reduction += futilityReduction;
             }
 
             sse.currentMove = playedMove;
@@ -665,8 +666,10 @@ public class Searcher implements Search {
 
         int movesSearched = 0;
 
+        Move bestMove = null;
         int bestScore = alpha;
         final int futilityScore = bestScore + config.qsFpMargin.value;
+        HashFlag flag = HashFlag.UPPER;
 
         while (true) {
 
@@ -682,7 +685,7 @@ public class Searcher implements Search {
                 final Piece captured = scoredMove.captured();
                 if (captured != null
                         && !move.isPromotion()
-                        && (staticEval + captured.value() + config.dpMargin.value < alpha)) {
+                        && (staticEval + SEE.value(captured) + config.dpMargin.value < alpha)) {
                     continue;
                 }
 
@@ -716,16 +719,23 @@ public class Searcher implements Search {
             if (score > bestScore) {
                 bestScore = score;
             }
-            if (score >= beta) {
-                return score;
-            }
             if (score > alpha) {
+                flag = HashFlag.EXACT;
+                bestMove = move;
                 alpha = score;
+                if (score >= beta) {
+                    flag = HashFlag.LOWER;
+                    break;
+                }
             }
         }
 
         if (movesSearched == 0 && inCheck) {
             return -Score.MATE + ply;
+        }
+
+        if (!shouldStop()) {
+            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
         }
 
         return bestScore;

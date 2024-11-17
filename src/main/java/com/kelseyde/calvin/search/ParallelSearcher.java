@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 
 import java.util.Arrays;
@@ -27,12 +28,14 @@ import java.util.stream.IntStream;
  */
 public class ParallelSearcher implements Search {
 
-    final EngineConfig config;
-    final TranspositionTable tt;
-    int threadCount;
-    int hashSize;
-    Board board;
+    private final EngineConfig config;
+    private final TranspositionTable tt;
+    private final MoveGenerator movegen;
+
     private List<Searcher> searchers;
+    private int threadCount;
+    private int hashSize;
+    private Board board;
 
     /**
      * Constructs a ParallelSearcher with the given {@link EngineConfig} config and {@link Supplier} suppliers.
@@ -41,9 +44,10 @@ public class ParallelSearcher implements Search {
      * @param config the engine configuration
      * @param tt the shared transposition table
      */
-    public ParallelSearcher(EngineConfig config, TranspositionTable tt) {
+    public ParallelSearcher(EngineConfig config, MoveGenerator movegen, TranspositionTable tt) {
         this.tt = tt;
         this.config = config;
+        this.movegen = movegen;
         this.hashSize = config.defaultHashSizeMb;
         this.threadCount = config.defaultThreads;
         this.searchers = initSearchers();
@@ -69,7 +73,9 @@ public class ParallelSearcher implements Search {
             return result;
         } catch (Exception e) {
             System.out.println("info error " + e);
-            return SearchResult.empty();
+            // In case of an error, return a random legal move to avoid crashing the engine
+            Move move = movegen.generateMoves(board).stream().findAny().orElse(null);
+            return SearchResult.of(move);
         }
     }
 
@@ -116,7 +122,9 @@ public class ParallelSearcher implements Search {
                 return searcher.search(tc);
             } catch (Exception e) {
                 System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
-                return SearchResult.empty();
+                // In case of an error, return a random legal move to avoid crashing the engine
+                Move move = movegen.generateMoves(board).stream().findAny().orElse(null);
+                return SearchResult.of(move);
             }
         });
     }

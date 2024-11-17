@@ -7,33 +7,26 @@ import static com.kelseyde.calvin.board.Move.*;
  */
 public enum Piece {
 
-    PAWN(0, 100, "p"),
-    KNIGHT(1, 320, "n"),
-    BISHOP(2, 330, "b"),
-    ROOK(3, 500, "r"),
-    QUEEN(4, 900, "q"),
-    KING(5, 0, "k");
+    PAWN    (0, "p"),
+    KNIGHT  (1, "n"),
+    BISHOP  (2, "b"),
+    ROOK    (3, "r"),
+    QUEEN   (4, "q"),
+    KING    (5, "k");
 
     public static final int COUNT = 6;
 
     final int index;
 
-    final int value;
-
     final String code;
 
-    Piece(int index, int value, String code) {
+    Piece(int index, String code) {
         this.index = index;
-        this.value = value;
         this.code = code;
     }
 
     public int index() {
         return index;
-    }
-
-    public int value() {
-        return value;
     }
 
     public String code() {

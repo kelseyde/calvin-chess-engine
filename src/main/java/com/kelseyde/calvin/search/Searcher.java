@@ -628,35 +628,34 @@ public class Searcher implements Search {
             final Move move = scoredMove.move();
             movesSearched++;
 
-            if (!inCheck) {
-                // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
-                // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
-                // is bad for us no matter what we do, and not bother searching any further
-                final Piece captured = scoredMove.captured();
-                if (captured != null
-                        && !move.isPromotion()
-                        && (staticEval + SEE.value(captured) + config.dpMargin.value < alpha)) {
-                    continue;
-                }
+            // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
+            // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
+            // is bad for us no matter what we do, and not bother searching any further
+            final Piece captured = scoredMove.captured();
+            if (!inCheck
+                    && captured != null
+                    && !move.isPromotion()
+                    && (staticEval + SEE.value(captured) + config.dpMargin.value < alpha)) {
+                continue;
+            }
 
-                final int seeScore = SEE.see(board, move);
+            final int seeScore = SEE.see(board, move);
 
-                // Futility Pruning
-                // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
-                // win material when the static eval plus some margin is sufficiently below alpha.
-                if (captured != null
-                    && futilityScore <= alpha
-                    && seeScore <= 0) {
-                    continue;
-                }
+            // Futility Pruning
+            // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
+            // win material when the static eval plus some margin is sufficiently below alpha.
+            if (captured != null
+                && futilityScore <= alpha
+                && seeScore <= 0) {
+                continue;
+            }
 
-                // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
-                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
-                // chains, such as capturing with the queen a pawn defended by another pawn.
-                final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-                if (seeScore < seeThreshold) {
-                    continue;
-                }
+            // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
+            // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
+            // chains, such as capturing with the queen a pawn defended by another pawn.
+            final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
+            if (seeScore < seeThreshold) {
+                continue;
             }
 
             eval.makeMove(board, move);

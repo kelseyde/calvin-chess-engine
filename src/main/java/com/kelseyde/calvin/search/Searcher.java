@@ -577,7 +577,7 @@ public class Searcher implements Search {
 
         final boolean inCheck = movegen.isCheck(board);
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        MoveFilter filter;
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Integer.MIN_VALUE;
@@ -586,7 +586,7 @@ public class Searcher implements Search {
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.
-            movePicker.setFilter(MoveFilter.ALL);
+            filter = MoveFilter.ALL;
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
@@ -611,8 +611,11 @@ public class Searcher implements Search {
             if (staticEval > alpha) {
                 alpha = staticEval;
             }
-            movePicker.setFilter(MoveFilter.CAPTURES_ONLY);
+            filter = MoveFilter.CAPTURES_ONLY;
         }
+
+        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        movePicker.setFilter(filter);
 
         int movesSearched = 0;
 

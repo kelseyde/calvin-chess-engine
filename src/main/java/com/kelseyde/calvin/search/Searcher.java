@@ -108,7 +108,7 @@ public class Searcher implements Search {
                 bestMoveRoot = bestMoveCurrent;
                 bestScoreRoot = bestScoreCurrent;
                 if (td.isMainThread()) {
-                    SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td);
+                    SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
                     UCI.writeSearchInfo(result);
                 }
             }
@@ -156,7 +156,7 @@ public class Searcher implements Search {
             bestMoveRoot = rootMoves.get(0);
         }
 
-        return SearchResult.of(bestMoveRoot, bestScoreRoot, td);
+        return SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
 
     }
 
@@ -710,7 +710,7 @@ public class Searcher implements Search {
     private boolean shouldStop() {
         // Exit if global search is cancelled
         if (config.searchCancelled) return true;
-        return !config.pondering && tc != null && tc.isHardLimitReached(td.start, td.depth, td.nodes);
+        return !config.pondering && tc != null && tc.isHardLimitReached(td.depth, td.nodes);
     }
 
     private boolean shouldStopSoft() {
@@ -719,7 +719,7 @@ public class Searcher implements Search {
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
         final int bestMoveNodes = td.getNodes(bestMoveCurrent);
-        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
     private boolean isDraw() {
@@ -748,7 +748,7 @@ public class Searcher implements Search {
         // If there is only one legal move, play it immediately
         final Move move = rootMoves.get(0);
         final int eval = this.eval.evaluate();
-        SearchResult result = SearchResult.of(move, eval, td);
+        SearchResult result = SearchResult.of(move, eval, td, tc);
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;

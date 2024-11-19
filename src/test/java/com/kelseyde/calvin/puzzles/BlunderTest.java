@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -616,7 +617,7 @@ public class BlunderTest {
     }
     
     private SearchResult think(int timeout) {
-        TimeControl tc = new TimeControl(new EngineConfig(), Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1, -1);
+        TimeControl tc = new TimeControl(new EngineConfig(), Instant.now(), Duration.ofMillis(timeout), Duration.ofMillis(timeout), -1, -1, -1);
         return engine.think(tc);
     }
 

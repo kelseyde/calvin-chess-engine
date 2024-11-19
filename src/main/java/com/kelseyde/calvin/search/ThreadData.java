@@ -8,7 +8,6 @@ import java.time.Instant;
 public class ThreadData {
 
     public final boolean mainThread;
-    public Instant start;
     public int nodes;
     public int[][] nodesPerMove;
     public int depth;
@@ -34,7 +33,6 @@ public class ThreadData {
     }
 
     public void reset() {
-        this.start = Instant.now();
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
         this.depth = 1;

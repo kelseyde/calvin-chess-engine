@@ -710,7 +710,7 @@ public class Searcher implements Search {
     private boolean shouldStop() {
         // Exit if global search is cancelled
         if (config.searchCancelled) return true;
-        return !config.pondering && tc != null && tc.isHardLimitReached(td.start, td.depth, td.nodes);
+        return !config.pondering && tc != null && tc.isHardLimitReached(td.depth, td.nodes);
     }
 
     private boolean shouldStopSoft() {
@@ -719,7 +719,7 @@ public class Searcher implements Search {
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
         final int bestMoveNodes = td.getNodes(bestMoveCurrent);
-        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
     private boolean isDraw() {

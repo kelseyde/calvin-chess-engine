@@ -16,7 +16,7 @@ import java.time.Instant;
  * point starting the iteration, since the time spent doing so is mostly wasted. That time can therefore be saved for
  * subsequent moves.
  */
-public record TimeControl(EngineConfig config, Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth) {
+public record TimeControl(EngineConfig config, Instant start, Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth) {
 
     static final double SOFT_TIME_FACTOR = 0.6666;
     static final double HARD_TIME_FACTOR = 2.0;
@@ -31,12 +31,14 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
 
     public static TimeControl init(EngineConfig config, Board board, GoCommand command) {
 
+        Instant start = Instant.now();
+
         double time;
         double inc;
         if (command.isMovetime()) {
             time = command.movetime();
             Duration movetime = Duration.ofMillis((long) time);
-            return new TimeControl(config, movetime, movetime, -1, -1, -1);
+            return new TimeControl(config, start, movetime, movetime, -1, -1, -1);
         } else if (command.isTimeAndInc()) {
             boolean white = board.isWhite();
             time = white ? command.wtime() : command.btime();
@@ -54,11 +56,11 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
         Duration soft = Duration.ofMillis((int) (base * SOFT_TIME_FACTOR));
         Duration hard = Duration.ofMillis((int) (base * HARD_TIME_FACTOR));
 
-        return new TimeControl(config, soft, hard, command.nodes(), -1, command.depth());
+        return new TimeControl(config, start, soft, hard, command.nodes(), -1, command.depth());
 
     }
 
-    public boolean isHardLimitReached(Instant start, int depth, int nodes) {
+    public boolean isHardLimitReached(int depth, int nodes) {
         if (nodes % 4096 != 0) return false;
         if (hardNodes > 0 && nodes >= hardNodes) return true;
         if (maxDepth > 0 && depth >= maxDepth) return true;
@@ -66,8 +68,7 @@ public record TimeControl(EngineConfig config, Duration softTime, Duration hardT
         return expired.compareTo(hardTime) > 0;
     }
 
-    public boolean isSoftLimitReached(
-            Instant start, int depth, int nodes, int bestMoveNodes, int bestMoveStability, int evalStability) {
+    public boolean isSoftLimitReached(int depth, int nodes, int bestMoveNodes, int bestMoveStability, int evalStability) {
         if (maxDepth > 0 && depth >= maxDepth) return true;
         if (softNodes > 0 && nodes >= softNodes) return true;
         Duration expired = Duration.between(start, Instant.now());

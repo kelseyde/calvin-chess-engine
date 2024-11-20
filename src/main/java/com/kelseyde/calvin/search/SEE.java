@@ -57,7 +57,7 @@ public class SEE {
             occ &= ~(1L << epSquare);
         }
 
-        long attackers = (getAttackers(board, to, white) | getAttackers(board, to, !white)) & occ;
+        long attackers = (getAttackers(board, to, occ, white) | getAttackers(board, to, occ, !white)) & occ;
         long diagonalAttackers = board.getBishops(white) | board.getQueens(white)
                 | board.getBishops(!white) | board.getQueens(!white);
         long orthogonalAttackers = board.getRooks(white) | board.getQueens(white)
@@ -126,13 +126,16 @@ public class SEE {
         return nextVictim;
     }
 
-    private static long getAttackers(Board board, int square, boolean white) {
-        return MOVEGEN.getPawnAttacks(board, square, !white) & board.getPawns(white) |
-                MOVEGEN.getKnightAttacks(board, square, !white) & board.getKnights(white) |
-                MOVEGEN.getBishopAttacks(board, square, !white) & board.getBishops(white) |
-                MOVEGEN.getRookAttacks(board, square, !white) & board.getRooks(white) |
-                MOVEGEN.getQueenAttacks(board, square, !white) & board.getQueens(white) |
-                MOVEGEN.getKingAttacks(board, square, !white) & board.getKing(white);
+    private static long getAttackers(Board board, int square, long occ, boolean white) {
+        long bishopAttacks = Attacks.bishopAttacks(square, occ);
+        long rookAttacks = Attacks.rookAttacks(square, occ);
+        long queenAttacks = bishopAttacks | rookAttacks;
+        return Attacks.pawnAttacks(Bits.of(square), !white) & board.getPawns(white) |
+                Attacks.knightAttacks(square) & board.getKnights(white) |
+                bishopAttacks & board.getBishops(white) |
+                rookAttacks & board.getRooks(white) |
+                queenAttacks & board.getQueens(white) |
+                Attacks.kingAttacks(square) & board.getKing(white);
     }
 
 

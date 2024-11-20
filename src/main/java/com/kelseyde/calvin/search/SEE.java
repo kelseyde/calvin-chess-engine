@@ -88,7 +88,7 @@ public class SEE {
             white = !white;
 
             if (score >= 0) {
-                if (nextVictim == Piece.KING & (attackers & board.getPieces(white)) != 0) {
+                if (nextVictim == Piece.KING && (attackers & board.getPieces(white)) != 0) {
                     white = !white;
                 }
                 break;

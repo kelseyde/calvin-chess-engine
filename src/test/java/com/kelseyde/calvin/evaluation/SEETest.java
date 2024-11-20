@@ -18,6 +18,9 @@ public class SEETest {
     @Test
     public void testSeeSuite() throws IOException {
 
+        int[] initialValues = SEE.SEE_PIECE_VALUES;
+        SEE.SEE_PIECE_VALUES = new int[] {100, 300, 300, 500, 900, 0};
+
         Path path = Path.of("src/test/resources/see_suite.epd");
         List<String> lines = Files.readAllLines(path);
 
@@ -26,6 +29,8 @@ public class SEETest {
         if (passed != lines.size()) {
             Assertions.fail("Passed " + passed + "/" + lines.size());
         }
+
+        SEE.SEE_PIECE_VALUES = initialValues;
 
     }
 

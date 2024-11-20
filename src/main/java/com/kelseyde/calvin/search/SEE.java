@@ -21,7 +21,7 @@ public class SEE {
 
     private static final MoveGenerator MOVEGEN = new MoveGenerator();
 
-    public static final int[] SEE_PIECE_VALUES = { 100, 320, 330, 500, 900, 0 };
+    public static int[] SEE_PIECE_VALUES = { 100, 320, 330, 500, 900, 0 };
 
     public static int value(Piece piece) {
         return SEE_PIECE_VALUES[piece.index()];

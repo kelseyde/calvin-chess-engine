@@ -24,7 +24,7 @@ public class SEETest {
         passed = 0;
         lines.forEach(this::runTest);
         if (passed != lines.size()) {
-            Assertions.fail("Failed " + (lines.size() - passed) + "/" + lines.size() + " tests");
+            Assertions.fail("Passed " + passed + "/" + lines.size());
         }
 
     }

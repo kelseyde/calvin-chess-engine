@@ -233,7 +233,6 @@ public class Searcher implements Search {
         if (!rootNode
                 && !inCheck
                 && (!ttHit || ttEntry.move() == null)
-                && ply > 0
                 && depth >= config.iirDepth.value) {
             --depth;
         }

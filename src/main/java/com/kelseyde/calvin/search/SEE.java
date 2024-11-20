@@ -27,86 +27,105 @@ public class SEE {
         return SEE_PIECE_VALUES[piece.index()];
     }
 
-    public static int see(Board board, Move move) {
+    public static boolean see(Board board, Move move, int threshold) {
 
-        int score = 0;
-        int square = move.to();
-        Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(square);
-        score += captured != null ? SEE_PIECE_VALUES[captured.index()] : 0;
-        if (move.isPromotion()) {
-            score += SEE_PIECE_VALUES[move.promoPiece().index()] - SEE_PIECE_VALUES[Piece.PAWN.index()];
+        boolean white = board.isWhite();
+        final int from = move.from();
+        final int to = move.to();
+        Piece nextVictim = move.isPromotion() ? move.promoPiece() : board.pieceAt(from);
+        if (nextVictim == null)
+            throw new IllegalArgumentException("SEE called with an illegal move");
+        int score = moveScore(board, move) - threshold;
+
+        if (score < 0)
+            return false;
+
+        score -= SEE_PIECE_VALUES[nextVictim.index()];
+
+        if (score >= 0)
+            return true;
+
+        long bishops = board.getBishops() | board.getQueens();
+        long rooks = board.getRooks() | board.getQueens();
+
+        long occ = board.getOccupied();
+        occ = (occ ^ (1L << from)) | (1L << to);
+        if (move.isEnPassant()) {
+            int epFile = board.getState().getEnPassantFile();
+            int epSquare = toEnPassantSquare(epFile, white);
+            occ &= ~(1L << epSquare);
         }
 
-        board.makeMove(move);
-        Move leastValuableAttacker = getLeastValuableAttacker(board, square);
-        if (leastValuableAttacker != null) {
-            /* The opponent should have the option of 'standing pat' - that is, declining to continue the capture
-             sequence if it would lead to a loss of material.
-             Therefore, we return the minimum of the stand-pat score and the capture score. */
-            score = Math.min(score, score - see(board, leastValuableAttacker));
+        long attackers = getAttackers(board, to, white) | getAttackers(board, to, !white) & occ;
+
+        white = !white;
+
+        while (true) {
+            long friendlyAttackers = attackers & board.getPieces(white);
+            if (friendlyAttackers == 0) {
+                break;
+            }
+            nextVictim = getLeastValuableAttacker(board, friendlyAttackers, white, bishops, rooks);
+            long pieces = board.getPieces(nextVictim, white);
+            occ ^= 1L << Bits.next(friendlyAttackers & pieces);
+            attackers &= occ;
+            white = !white;
+            score = -score - 1 - SEE_PIECE_VALUES[nextVictim.index()];
+            if (score >= 0) {
+                if (nextVictim == Piece.KING & (attackers & board.getPieces(white)) != 0) {
+                    white = !white;
+                }
+                break;
+            }
         }
-        board.unmakeMove();
-        return score;
+
+        return board.isWhite() != white;
 
     }
 
+    public static int moveScore(Board board, Move move) {
 
-    private static Move getLeastValuableAttacker(Board board, int square) {
-
-        boolean white = board.isWhite();
-
-        long pawns = board.getPawns(white);
-        if (Bits.count(pawns) > 0) {
-            long pawnAttackMask = MOVEGEN.getPawnAttacks(board, square, !white);
-            if ((pawnAttackMask & pawns) != 0) {
-                int pawnStartSquare = Bits.next(pawnAttackMask & pawns);
-                return new Move(pawnStartSquare, square);
-            }
+        if (move.isPromotion()) {
+            return SEE_PIECE_VALUES[move.promoPiece().index()] - SEE_PIECE_VALUES[Piece.PAWN.index()];
+        }
+        else if (move.isEnPassant()) {
+            return SEE_PIECE_VALUES[Piece.PAWN.index()];
+        }
+        else {
+            Piece targetPiece = board.pieceAt(move.to());
+            return targetPiece != null ? SEE_PIECE_VALUES[targetPiece.index()] : 0;
         }
 
-        long knights = board.getKnights(white);
-        if (Bits.count(knights) > 0) {
-            long knightAttackMask = MOVEGEN.getKnightAttacks(board, square, !white);
-            if ((knightAttackMask & knights) != 0) {
-                int knightStartSquare = Bits.next(knightAttackMask & knights);
-                return new Move(knightStartSquare, square);
-            }
-        }
+    }
 
-        long bishops = board.getBishops(white);
-        if (Bits.count(bishops) > 0) {
-            long bishopAttackMask = MOVEGEN.getBishopAttacks(board, square, !white);
-            if ((bishopAttackMask & bishops) != 0) {
-                int bishopStartSquare = Bits.next(bishopAttackMask & bishops);
-                return new Move(bishopStartSquare, square);
-            }
-        }
+    private static Piece getLeastValuableAttacker(Board board, long myAttackers, boolean white, long bishops, long rooks) {
+        Piece nextVictim;
+        if ((myAttackers & board.getPawns(white)) != 0)             nextVictim = Piece.PAWN;
+        else if ((myAttackers & board.getKnights(white)) != 0)      nextVictim = Piece.KNIGHT;
+        else if ((myAttackers & bishops) != 0)                      nextVictim = Piece.BISHOP;
+        else if ((myAttackers & rooks) != 0)                        nextVictim = Piece.ROOK;
+        else if ((myAttackers & board.getQueens(white)) != 0)       nextVictim = Piece.QUEEN;
+        else if ((myAttackers & board.getKing(white)) != 0)         nextVictim = Piece.KING;
+        else throw new IllegalArgumentException("Invalid piece type");
+        return nextVictim;
+    }
 
-        long rooks = board.getRooks(white);
-        if (Bits.count(rooks) > 0) {
-            long rookAttackMask = MOVEGEN.getRookAttacks(board, square, !white);
-            if ((rookAttackMask & rooks) != 0) {
-                int rookStartSquare = Bits.next(rookAttackMask & rooks);
-                return new Move(rookStartSquare, square);
-            }
-        }
+    private static long getAttackers(Board board, int square, boolean white) {
+        return MOVEGEN.getPawnAttacks(board, square, !white) & board.getPawns(white) |
+                MOVEGEN.getKnightAttacks(board, square, white) & board.getKnights(white) |
+                MOVEGEN.getBishopAttacks(board, square, white) & board.getBishops(white) |
+                MOVEGEN.getRookAttacks(board, square, white) & board.getRooks(white) |
+                MOVEGEN.getQueenAttacks(board, square, white) & board.getQueens(white) |
+                MOVEGEN.getKingAttacks(board, square, white) & board.getKing(white);
+    }
 
-        long queens = board.getQueens(white);
-        if (Bits.count(queens) > 0) {
-            long queenAttackMask = MOVEGEN.getQueenAttacks(board, square, !white);
-            if ((queenAttackMask & queens) != 0) {
-                int queenStartSquare = Bits.next(queenAttackMask & queens);
-                return new Move(queenStartSquare, square);
-            }
-        }
 
-        long king = board.getKing(white);
-        long kingAttackMask = MOVEGEN.getKingAttacks(board, square, !white);
-        if ((kingAttackMask & king) != 0) {
-            int kingStartSquare = Bits.next(kingAttackMask & king);
-            return new Move(kingStartSquare, square);
+    private static int toEnPassantSquare(int enPassantFile, boolean white) {
+        int rank = white ? 2 : 5;
+        if (enPassantFile == -1) {
+            return -1;
         }
-        return null;
+        return Bits.Square.of(rank, enPassantFile);
     }
 
 }

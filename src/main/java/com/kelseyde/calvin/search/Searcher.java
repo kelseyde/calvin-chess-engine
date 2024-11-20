@@ -643,14 +643,12 @@ public class Searcher implements Search {
                 continue;
             }
 
-            final int seeScore = SEE.see(board, move);
-
             // Futility Pruning
             // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
             // win material when the static eval plus some margin is sufficiently below alpha.
             if (captured != null
                 && futilityScore <= alpha
-                && seeScore <= 0) {
+                && !SEE.see(board, move, 1)) {
                 continue;
             }
 
@@ -658,7 +656,7 @@ public class Searcher implements Search {
             // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
             // chains, such as capturing with the queen a pawn defended by another pawn.
             final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-            if (seeScore < seeThreshold) {
+            if (!SEE.see(board, move, seeThreshold)) {
                 continue;
             }
 

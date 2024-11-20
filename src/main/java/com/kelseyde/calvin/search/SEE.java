@@ -116,12 +116,12 @@ public class SEE {
 
     private static Piece getLeastValuableAttacker(Board board, long attackers, boolean white) {
         Piece nextVictim;
-        if ((attackers & board.getPawns(white)) != 0)             nextVictim = Piece.PAWN;
-        else if ((attackers & board.getKnights(white)) != 0)      nextVictim = Piece.KNIGHT;
-        else if ((attackers & board.getBishops(white)) != 0)                      nextVictim = Piece.BISHOP;
-        else if ((attackers & board.getRooks(white)) != 0)                        nextVictim = Piece.ROOK;
-        else if ((attackers & board.getQueens(white)) != 0)       nextVictim = Piece.QUEEN;
-        else if ((attackers & board.getKing(white)) != 0)         nextVictim = Piece.KING;
+        if ((attackers & board.getPawns(white)) != 0)         nextVictim = Piece.PAWN;
+        else if ((attackers & board.getKnights(white)) != 0)  nextVictim = Piece.KNIGHT;
+        else if ((attackers & board.getBishops(white)) != 0)  nextVictim = Piece.BISHOP;
+        else if ((attackers & board.getRooks(white)) != 0)    nextVictim = Piece.ROOK;
+        else if ((attackers & board.getQueens(white)) != 0)   nextVictim = Piece.QUEEN;
+        else if ((attackers & board.getKing(white)) != 0)     nextVictim = Piece.KING;
         else throw new IllegalArgumentException("Invalid piece type");
         return nextVictim;
     }

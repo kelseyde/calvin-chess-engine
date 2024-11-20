@@ -13,6 +13,10 @@ public class Bits {
         return board & (board - 1);
     }
 
+    public static long pop(long bb, int sq) {
+        return bb ^ of(sq);
+    }
+
     public static int count(long board) {
         return Long.bitCount(board);
     }

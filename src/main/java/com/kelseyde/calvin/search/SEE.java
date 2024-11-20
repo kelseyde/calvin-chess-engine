@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.movegen.Attacks;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 
 /**
@@ -32,45 +33,60 @@ public class SEE {
         boolean white = board.isWhite();
         final int from = move.from();
         final int to = move.to();
+
+        int score = -threshold;
+        Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
+        score += captured != null ? SEE_PIECE_VALUES[captured.index()] : 0;
+
+        if (move.isPromotion()) {
+            score += SEE_PIECE_VALUES[move.promoPiece().index()] - SEE_PIECE_VALUES[Piece.PAWN.index()];
+        }
+
+        if (score < 0) return false;
+
         Piece nextVictim = move.isPromotion() ? move.promoPiece() : board.pieceAt(from);
-        if (nextVictim == null)
-            throw new IllegalArgumentException("SEE called with an illegal move");
-        int score = moveScore(board, move) - threshold;
-
-        if (score < 0)
-            return false;
-
         score -= SEE_PIECE_VALUES[nextVictim.index()];
 
-        if (score >= 0)
-            return true;
+        if (score >= 0) return true;
 
-        long bishops = board.getBishops() | board.getQueens();
-        long rooks = board.getRooks() | board.getQueens();
+        long occ = board.getOccupied() ^ Bits.of(from) ^ Bits.of(to);
 
-        long occ = board.getOccupied();
-        occ = (occ ^ (1L << from)) | (1L << to);
         if (move.isEnPassant()) {
             int epFile = board.getState().getEnPassantFile();
             int epSquare = toEnPassantSquare(epFile, white);
             occ &= ~(1L << epSquare);
         }
 
-        long attackers = getAttackers(board, to, white) | getAttackers(board, to, !white) & occ;
+        long attackers = (getAttackers(board, to, white) | getAttackers(board, to, !white)) & occ;
+        long diagonalAttackers = board.getBishops(white) | board.getQueens(white)
+                | board.getBishops(!white) | board.getQueens(!white);
+        long orthogonalAttackers = board.getRooks(white) | board.getQueens(white)
+                | board.getRooks(!white) | board.getQueens(!white);
 
         white = !white;
 
         while (true) {
             long friendlyAttackers = attackers & board.getPieces(white);
-            if (friendlyAttackers == 0) {
-                break;
-            }
-            nextVictim = getLeastValuableAttacker(board, friendlyAttackers, white, bishops, rooks);
+
+            if (friendlyAttackers == 0) break;
+
+            nextVictim = getLeastValuableAttacker(board, friendlyAttackers, white);
             long pieces = board.getPieces(nextVictim, white);
-            occ ^= 1L << Bits.next(friendlyAttackers & pieces);
+            int sq = Bits.next(friendlyAttackers & pieces);
+            occ = Bits.pop(occ, sq);
+
+            if (nextVictim == Piece.PAWN || nextVictim == Piece.BISHOP || nextVictim == Piece.QUEEN) {
+                attackers |= Attacks.bishopAttacks(to, occ) & diagonalAttackers;
+            }
+
+            if (nextVictim == Piece.ROOK || nextVictim == Piece.QUEEN) {
+                attackers |= Attacks.rookAttacks(to, occ) & orthogonalAttackers;
+            }
+
             attackers &= occ;
-            white = !white;
             score = -score - 1 - SEE_PIECE_VALUES[nextVictim.index()];
+            white = !white;
+
             if (score >= 0) {
                 if (nextVictim == Piece.KING & (attackers & board.getPieces(white)) != 0) {
                     white = !white;
@@ -98,25 +114,25 @@ public class SEE {
 
     }
 
-    private static Piece getLeastValuableAttacker(Board board, long myAttackers, boolean white, long bishops, long rooks) {
+    private static Piece getLeastValuableAttacker(Board board, long attackers, boolean white) {
         Piece nextVictim;
-        if ((myAttackers & board.getPawns(white)) != 0)             nextVictim = Piece.PAWN;
-        else if ((myAttackers & board.getKnights(white)) != 0)      nextVictim = Piece.KNIGHT;
-        else if ((myAttackers & bishops) != 0)                      nextVictim = Piece.BISHOP;
-        else if ((myAttackers & rooks) != 0)                        nextVictim = Piece.ROOK;
-        else if ((myAttackers & board.getQueens(white)) != 0)       nextVictim = Piece.QUEEN;
-        else if ((myAttackers & board.getKing(white)) != 0)         nextVictim = Piece.KING;
+        if ((attackers & board.getPawns(white)) != 0)             nextVictim = Piece.PAWN;
+        else if ((attackers & board.getKnights(white)) != 0)      nextVictim = Piece.KNIGHT;
+        else if ((attackers & board.getBishops(white)) != 0)                      nextVictim = Piece.BISHOP;
+        else if ((attackers & board.getRooks(white)) != 0)                        nextVictim = Piece.ROOK;
+        else if ((attackers & board.getQueens(white)) != 0)       nextVictim = Piece.QUEEN;
+        else if ((attackers & board.getKing(white)) != 0)         nextVictim = Piece.KING;
         else throw new IllegalArgumentException("Invalid piece type");
         return nextVictim;
     }
 
     private static long getAttackers(Board board, int square, boolean white) {
         return MOVEGEN.getPawnAttacks(board, square, !white) & board.getPawns(white) |
-                MOVEGEN.getKnightAttacks(board, square, white) & board.getKnights(white) |
-                MOVEGEN.getBishopAttacks(board, square, white) & board.getBishops(white) |
-                MOVEGEN.getRookAttacks(board, square, white) & board.getRooks(white) |
-                MOVEGEN.getQueenAttacks(board, square, white) & board.getQueens(white) |
-                MOVEGEN.getKingAttacks(board, square, white) & board.getKing(white);
+                MOVEGEN.getKnightAttacks(board, square, !white) & board.getKnights(white) |
+                MOVEGEN.getBishopAttacks(board, square, !white) & board.getBishops(white) |
+                MOVEGEN.getRookAttacks(board, square, !white) & board.getRooks(white) |
+                MOVEGEN.getQueenAttacks(board, square, !white) & board.getQueens(white) |
+                MOVEGEN.getKingAttacks(board, square, !white) & board.getKing(white);
     }
 
 

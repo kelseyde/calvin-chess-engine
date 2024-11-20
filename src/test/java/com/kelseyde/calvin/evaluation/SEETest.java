@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.SEE;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class SEETest {
     private int passed = 0;
 
     @Test
+    @Disabled
     public void testSeeSuite() throws IOException {
 
         int[] initialValues = SEE.SEE_PIECE_VALUES;

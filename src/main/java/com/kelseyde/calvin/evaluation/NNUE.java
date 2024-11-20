@@ -190,11 +190,11 @@ public class NNUE {
     }
 
     private int materialPhase(Board board) {
-        final long knights = Bits.count(board.getKnights());
-        final long bishops = Bits.count(board.getBishops());
-        final long rooks = Bits.count(board.getRooks());
-        final long queens = Bits.count(board.getQueens());
-        return (int) (3 * knights + 3 * bishops + 5 * rooks + 10 * queens);
+        final int knights = Bits.count(board.getKnights());
+        final int bishops = Bits.count(board.getBishops());
+        final int rooks = Bits.count(board.getRooks());
+        final int queens = Bits.count(board.getQueens());
+        return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
     /**

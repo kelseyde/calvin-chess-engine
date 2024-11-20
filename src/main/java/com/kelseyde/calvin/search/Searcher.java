@@ -108,7 +108,7 @@ public class Searcher implements Search {
                 bestMoveRoot = bestMoveCurrent;
                 bestScoreRoot = bestScoreCurrent;
                 if (td.isMainThread()) {
-                    SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td);
+                    SearchResult result = SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
                     UCI.writeSearchInfo(result);
                 }
             }
@@ -156,7 +156,7 @@ public class Searcher implements Search {
             bestMoveRoot = rootMoves.get(0);
         }
 
-        return SearchResult.of(bestMoveRoot, bestScoreRoot, td);
+        return SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
 
     }
 
@@ -243,7 +243,6 @@ public class Searcher implements Search {
                 // Don't do IIR at all in singular search ?
                 && !inCheck
                 && (!ttHit || ttEntry.move() == null)
-                && ply > 0
                 && depth >= config.iirDepth.value) {
             --depth;
         }
@@ -394,6 +393,7 @@ public class Searcher implements Search {
                 int reduceMargin = pruneMargin + depth * config.fpBlend.value;
 
                 if (staticEval + pruneMargin <= alpha) {
+                    sse.currentMove = null;
                     movePicker.setSkipQuiets(true);
                     continue;
                 }
@@ -433,6 +433,7 @@ public class Searcher implements Search {
             if (!pvNode && !isCapture && !isPromotion
                     && depth - reduction <= config.hpMaxDepth.value
                     && historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
+                sse.currentMove = null;
                 movePicker.setSkipQuiets(true);
                 continue;
             }
@@ -629,7 +630,7 @@ public class Searcher implements Search {
 
         final boolean inCheck = movegen.isCheck(board);
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        MoveFilter filter;
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Integer.MIN_VALUE;
@@ -638,7 +639,7 @@ public class Searcher implements Search {
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
             // we risk missing simple mate threats.
-            movePicker.setFilter(MoveFilter.ALL);
+            filter = MoveFilter.ALL;
         } else {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
@@ -663,8 +664,11 @@ public class Searcher implements Search {
             if (staticEval > alpha) {
                 alpha = staticEval;
             }
-            movePicker.setFilter(MoveFilter.CAPTURES_ONLY);
+            filter = MoveFilter.CAPTURES_ONLY;
         }
+
+        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        movePicker.setFilter(filter);
 
         int movesSearched = 0;
 
@@ -680,35 +684,34 @@ public class Searcher implements Search {
             final Move move = scoredMove.move();
             movesSearched++;
 
-            if (!inCheck) {
-                // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
-                // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
-                // is bad for us no matter what we do, and not bother searching any further
-                final Piece captured = scoredMove.captured();
-                if (captured != null
-                        && !move.isPromotion()
-                        && (staticEval + SEE.value(captured) + config.dpMargin.value < alpha)) {
-                    continue;
-                }
+            // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
+            // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
+            // is bad for us no matter what we do, and not bother searching any further
+            final Piece captured = scoredMove.captured();
+            if (!inCheck
+                    && captured != null
+                    && !move.isPromotion()
+                    && (staticEval + SEE.value(captured) + config.dpMargin.value < alpha)) {
+                continue;
+            }
 
-                final int seeScore = SEE.see(board, move);
+            final int seeScore = SEE.see(board, move);
 
-                // Futility Pruning
-                // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
-                // win material when the static eval plus some margin is sufficiently below alpha.
-                if (captured != null
-                    && futilityScore <= alpha
-                    && seeScore <= 0) {
-                    continue;
-                }
+            // Futility Pruning
+            // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
+            // win material when the static eval plus some margin is sufficiently below alpha.
+            if (captured != null
+                && futilityScore <= alpha
+                && seeScore <= 0) {
+                continue;
+            }
 
-                // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
-                // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
-                // chains, such as capturing with the queen a pawn defended by another pawn.
-                final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-                if (seeScore < seeThreshold) {
-                    continue;
-                }
+            // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
+            // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
+            // chains, such as capturing with the queen a pawn defended by another pawn.
+            final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
+            if (seeScore < seeThreshold) {
+                continue;
             }
 
             eval.makeMove(board, move);
@@ -763,7 +766,7 @@ public class Searcher implements Search {
     private boolean shouldStop() {
         // Exit if global search is cancelled
         if (config.searchCancelled) return true;
-        return !config.pondering && tc != null && tc.isHardLimitReached(td.start, td.depth, td.nodes);
+        return !config.pondering && tc != null && tc.isHardLimitReached(td.depth, td.nodes);
     }
 
     private boolean shouldStopSoft() {
@@ -772,7 +775,7 @@ public class Searcher implements Search {
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
         final int bestMoveNodes = td.getNodes(bestMoveCurrent);
-        return tc.isSoftLimitReached(td.start, td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
     private boolean isDraw() {
@@ -801,7 +804,7 @@ public class Searcher implements Search {
         // If there is only one legal move, play it immediately
         final Move move = rootMoves.get(0);
         final int eval = this.eval.evaluate();
-        SearchResult result = SearchResult.of(move, eval, td);
+        SearchResult result = SearchResult.of(move, eval, td, tc);
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;

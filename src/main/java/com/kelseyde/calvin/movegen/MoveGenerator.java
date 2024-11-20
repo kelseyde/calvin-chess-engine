@@ -429,13 +429,13 @@ public class MoveGenerator {
         final long friendlies = board.getPieces(white);
 
         long leftCapture = white ?
-                Bits.northWest(squareBB) &~ friendlies &~ File.H :
-                Bits.southWest(squareBB) &~ friendlies &~ File.H;
+                Bits.northWest(squareBB) &~ friendlies :
+                Bits.southWest(squareBB) &~ friendlies;
         attackMask |= leftCapture;
 
         long rightCapture = white ?
-                Bits.northEast(squareBB) &~ friendlies &~ File.A :
-                Bits.southEast(squareBB) &~ friendlies &~ File.A;
+                Bits.northEast(squareBB) &~ friendlies :
+                Bits.southEast(squareBB) &~ friendlies;
         attackMask |= rightCapture;
 
         return attackMask;

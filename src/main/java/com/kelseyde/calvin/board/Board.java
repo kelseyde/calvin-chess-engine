@@ -605,10 +605,6 @@ public class Board {
         return state.nonPawnKeys;
     }
 
-    public int countPieces() {
-        return Bits.count(occupied);
-    }
-
     public long getPieces(Piece piece, boolean white) {
         return switch (piece) {
             case PAWN -> getPawns(white);

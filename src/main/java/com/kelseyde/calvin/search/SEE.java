@@ -99,21 +99,6 @@ public class SEE {
 
     }
 
-    public static int moveScore(Board board, Move move) {
-
-        if (move.isPromotion()) {
-            return SEE_PIECE_VALUES[move.promoPiece().index()] - SEE_PIECE_VALUES[Piece.PAWN.index()];
-        }
-        else if (move.isEnPassant()) {
-            return SEE_PIECE_VALUES[Piece.PAWN.index()];
-        }
-        else {
-            Piece targetPiece = board.pieceAt(move.to());
-            return targetPiece != null ? SEE_PIECE_VALUES[targetPiece.index()] : 0;
-        }
-
-    }
-
     private static Piece getLeastValuableAttacker(Board board, long attackers, boolean white) {
         Piece nextVictim;
         if ((attackers & board.getPawns(white)) != 0)         nextVictim = Piece.PAWN;

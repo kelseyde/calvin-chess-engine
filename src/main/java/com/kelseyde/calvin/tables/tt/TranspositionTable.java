@@ -42,9 +42,6 @@ public class TranspositionTable {
 
     /**
      * Retrieves an entry from the transposition table using the given zobrist key.
-     *
-     * @param key the zobrist key of the position.
-     * @param ply the current ply in the search (used to adjust mate scores).
      */
     public HashEntry get(long key, int ply) {
         int index = index(key);
@@ -79,13 +76,6 @@ public class TranspositionTable {
      * <li>The oldest entry in the bucket, stored further back in the game and so less likely to be relevant.</li>
      * <li>The entry with the lowest depth.</li>
      * </ol>
-     *
-     * @param key the zobrist key of the position.
-     * @param flag the flag indicating the type of node (e.g., exact, upper bound, lower bound).
-     * @param depth the search depth of the entry.
-     * @param ply the current ply from root in the search.
-     * @param move the best move found at this position.
-     * @param score the score of the position.
      */
     public void put(long key, HashFlag flag, int depth, int ply, Move move, int staticEval, int score) {
 
@@ -121,7 +111,7 @@ public class TranspositionTable {
             // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
             // If the depth is < the store depth, don't replace it and exit (although this should never happen).
             if (HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
-                if (depth >= storedDepth) {
+                if (depth >= storedDepth - 4) {
                     // If the stored entry has a recorded best move but the new entry does not, use the stored one.
                     Move storedMove = HashEntry.Value.getMove(storedValue);
                     if (move == null && storedMove != null) {

@@ -64,10 +64,9 @@ public class Engine {
         board = FEN.toBoard(command.fen());
         for (Move move : command.moves()) {
             Move legalMove = move(move);
-            board.makeMove(legalMove);
+            board.makeMove(legalMove, false);
         }
-        board.resetCounter();
-        searcher.setPosition(board);
+        searcher.setPosition(board.copy());
     }
 
     public void go(GoCommand command) {
@@ -76,9 +75,9 @@ public class Engine {
             int depth = command.perft();
             perft.perft(board, depth);
         } else {
+            TimeControl tc = TimeControl.init(config, board, command);
             this.config.pondering = command.ponder();
             setSearchCancelled(false);
-            TimeControl tc = TimeControl.init(config, board, command);
             stopThinking();
             think = CompletableFuture.supplyAsync(() -> think(tc));
             think.thenAccept(UCI::writeMove);

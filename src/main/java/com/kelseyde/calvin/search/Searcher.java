@@ -251,7 +251,7 @@ public class Searcher implements Search {
         int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         // No need to recompute staticEval in singular search - we already have it on the SearchStack
-        if (!excluded && !inCheck) {
+        if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedStaticEval = rawStaticEval;
@@ -269,9 +269,9 @@ public class Searcher implements Search {
                 uncorrectedStaticEval = staticEval;
             }
         }
-        else if (excluded) {
-            staticEval = sse.staticEval;
-        }
+//        else if (excluded) {
+//            staticEval = sse.staticEval;
+//        }
         sse.staticEval = staticEval;
 
         int futilityReduction = 0;

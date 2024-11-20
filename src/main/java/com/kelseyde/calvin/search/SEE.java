@@ -39,13 +39,13 @@ public class SEE {
         score += captured != null ? SEE_PIECE_VALUES[captured.index()] : 0;
 
         if (move.isPromotion()) {
-            score += SEE_PIECE_VALUES[move.promoPiece().index()] - SEE_PIECE_VALUES[Piece.PAWN.index()];
+            score += value(move.promoPiece()) - value(Piece.PAWN);
         }
 
         if (score < 0) return false;
 
         Piece nextVictim = move.isPromotion() ? move.promoPiece() : board.pieceAt(from);
-        score -= SEE_PIECE_VALUES[nextVictim.index()];
+        score -= value(nextVictim);
 
         if (score >= 0) return true;
 
@@ -84,7 +84,7 @@ public class SEE {
             }
 
             attackers &= occ;
-            score = -score - 1 - SEE_PIECE_VALUES[nextVictim.index()];
+            score = -score - 1 - value(nextVictim);
             white = !white;
 
             if (score >= 0) {

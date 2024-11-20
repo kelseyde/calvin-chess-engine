@@ -46,7 +46,7 @@ public class SEETest {
         int[] initialValues = SEE.SEE_PIECE_VALUES;
         SEE.SEE_PIECE_VALUES = new int[] {100, 300, 300, 500, 900, 0};
 
-        String line = "3q2nk/pb1r1p2/np6/3P2Pp/2p1P3/2R1B2B/PQ3P1P/3R2K1 w - h6 | g5h6 | 100 | P";
+        String line = "rn2k2r/1bq2ppp/p2bpn2/1p1p4/3N4/1BN1P3/PPP2PPP/R1BQR1K1 b kq - | d6h2 | 100 | P";
         runTest(line);
 
         SEE.SEE_PIECE_VALUES = initialValues;

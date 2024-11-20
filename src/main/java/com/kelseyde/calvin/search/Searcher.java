@@ -376,6 +376,7 @@ public class Searcher implements Search {
                 int reduceMargin = pruneMargin + depth * config.fpBlend.value;
 
                 if (staticEval + pruneMargin <= alpha) {
+                    sse.currentMove = null;
                     movePicker.setSkipQuiets(true);
                     continue;
                 }
@@ -415,6 +416,7 @@ public class Searcher implements Search {
             if (!pvNode && !isCapture && !isPromotion
                     && depth - reduction <= config.hpMaxDepth.value
                     && historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
+                sse.currentMove = null;
                 movePicker.setSkipQuiets(true);
                 continue;
             }

@@ -391,6 +391,21 @@ public class Searcher implements Search {
 
             final int historyScore = scoredMove.historyScore();
 
+            // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
+            // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
+            if (!pvNode
+                && depth <= config.seeMaxDepth.value
+                && scoredMove.isQuiet()
+                && !Score.isMateScore(bestScore)) {
+
+                final int margin = config.seeQuietMargin.value;
+                int threshold = margin * depth;
+                if (!SEE.see(board, move, threshold)) {
+                    continue;
+                }
+
+            }
+
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.

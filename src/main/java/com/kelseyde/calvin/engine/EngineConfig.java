@@ -39,6 +39,9 @@ public class EngineConfig {
     public final Tunable fpMargin             = new Tunable("FpMargin", 259, 0, 500, 25);
     public final Tunable fpScale              = new Tunable("FpScale", 68, 0, 100, 5);
     public final Tunable fpBlend              = new Tunable("FpBlend", 4, 1, 10, 2);
+    public final Tunable seeMaxDepth          = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
+    public final Tunable seeQuietMargin       = new Tunable("SeeQuietMargin", -56, -250, -10, 25);
+    public final Tunable seeNoisyMargin       = new Tunable("SeeNoisyMargin", -36, -250, -10, 25);
     public final Tunable qsFpMargin           = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeEqualDepth      = new Tunable("QsSeeEqualDepth", 3, 0, 6, 1);
     public final Tunable rfpDepth             = new Tunable("RfpDepth", 7, 0, 8, 1);
@@ -92,7 +95,8 @@ public class EngineConfig {
                 hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale, quietHistMalusMax,
                 quietHistMalusScale, quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax,
                 captHistMalusScale, captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax,
-                contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, ttExtensionDepth
+                contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, ttExtensionDepth,
+                seeMaxDepth, seeQuietMargin, seeNoisyMargin
         );
     }
 

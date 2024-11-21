@@ -96,7 +96,7 @@ public class EngineConfig {
                 quietHistMalusScale, quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax,
                 captHistMalusScale, captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax,
                 contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, ttExtensionDepth,
-                seeMaxDepth, seeNoisyMargin
+                seeMaxDepth, seeQuietMargin, seeNoisyMargin
         );
     }
 

@@ -234,15 +234,14 @@ public class MovePicker {
             return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
         }
 
-        // Separate good and bad noisies based on the MVV-LVA ('most valuable victim, least valuable attacker') heuristic
+        // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
         final MoveType type = SEE.see(board, move, -SEE.value(Piece.PAWN)) ?
                 MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
-        final int materialDelta = SEE.value(captured) - SEE.value(piece);
-
-        noisyScore += materialDelta;
-
         noisyScore += type.bonus;
+
+        final int materialDelta = SEE.value(captured) - SEE.value(piece);
+        noisyScore += materialDelta;
 
         // Add MVV score to the noisy score
         noisyScore += MoveType.MVV_OFFSET * captured.index();

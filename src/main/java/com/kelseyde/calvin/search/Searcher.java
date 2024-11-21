@@ -395,12 +395,12 @@ public class Searcher implements Search {
             // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
             if (!pvNode
                 && depth <= config.seeMaxDepth.value
-                && scoredMove.isQuiet()
+                && (scoredMove.isQuiet() || scoredMove.isBadNoisy())
                 && !Score.isMateScore(bestScore)) {
 
-                final int margin = config.seeQuietMargin.value;
-                int threshold = margin * depth;
-                if (!SEE.see(board, move, threshold)) {
+                final int margin = scoredMove.isQuiet() ? config.seeQuietMargin.value : config.seeNoisyMargin.value;
+                if (!SEE.see(board, move, margin)) {
+                    sse.currentMove = null;
                     continue;
                 }
 

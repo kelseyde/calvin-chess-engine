@@ -398,7 +398,9 @@ public class Searcher implements Search {
                 && (scoredMove.isQuiet() || scoredMove.isBadNoisy())
                 && !Score.isMateScore(bestScore)) {
 
-                final int margin = scoredMove.isQuiet() ? config.seeQuietMargin.value : config.seeNoisyMargin.value;
+                final int margin = scoredMove.isQuiet() ?
+                        config.seeQuietMargin.value * depth:
+                        config.seeNoisyMargin.value * depth * depth;
                 if (!SEE.see(board, move, margin)) {
                     sse.currentMove = null;
                     continue;

@@ -398,10 +398,10 @@ public class Searcher implements Search {
                 && (scoredMove.isQuiet() || scoredMove.isBadNoisy())
                 && !Score.isMateScore(bestScore)) {
 
-                final int margin = scoredMove.isQuiet() ?
+                final int threshold = scoredMove.isQuiet() ?
                         config.seeQuietMargin.value * depth:
                         config.seeNoisyMargin.value * depth * depth;
-                if (!SEE.see(board, move, margin)) {
+                if (!SEE.see(board, move, threshold)) {
                     sse.currentMove = null;
                     continue;
                 }

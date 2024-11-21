@@ -235,7 +235,8 @@ public class MovePicker {
         }
 
         // Separate good and bad noisies based on the MVV-LVA ('most valuable victim, least valuable attacker') heuristic
-        final MoveType type = SEE.see(board, move, 0) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        final MoveType type = SEE.see(board, move, -SEE.value(Piece.PAWN)) ?
+                MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         final int materialDelta = SEE.value(captured) - SEE.value(piece);
 

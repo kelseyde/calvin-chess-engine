@@ -40,8 +40,8 @@ public class EngineConfig {
     public final Tunable fpScale              = new Tunable("FpScale", 68, 0, 100, 5);
     public final Tunable fpBlend              = new Tunable("FpBlend", 4, 1, 10, 2);
     public final Tunable seeMaxDepth          = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
-    public final Tunable seeQuietMargin       = new Tunable("SeeQuietMargin", -56, -250, -10, 25);
-    public final Tunable seeNoisyMargin       = new Tunable("SeeNoisyMargin", -36, -250, -10, 25);
+    public final Tunable seeQuietMargin       = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
+    public final Tunable seeNoisyMargin       = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
     public final Tunable qsFpMargin           = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeEqualDepth      = new Tunable("QsSeeEqualDepth", 3, 0, 6, 1);
     public final Tunable rfpDepth             = new Tunable("RfpDepth", 7, 0, 8, 1);

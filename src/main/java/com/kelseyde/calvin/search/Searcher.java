@@ -361,7 +361,6 @@ public class Searcher implements Search {
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
-            final boolean isPromotion = move.promoPiece() != null;
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
@@ -369,7 +368,7 @@ public class Searcher implements Search {
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
                     && depth <= config.fpDepth.value
-                    && !inCheck && !isCapture && !isPromotion) {
+                    && scoredMove.isQuiet()) {
 
                 // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
                 int pruneMargin = config.fpMargin.value + depth * config.fpScale.value;
@@ -430,7 +429,8 @@ public class Searcher implements Search {
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
             // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
             // that assumes that moves which have historically been bad are likely to be bad in the current position.
-            if (!pvNode && !isCapture && !isPromotion
+            if (!pvNode
+                    && scoredMove.isQuiet()
                     && depth - reduction <= config.hpMaxDepth.value
                     && historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
                 sse.currentMove = null;
@@ -460,13 +460,10 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
-            final boolean isCheck = movegen.isCheck(board);
+            playedMove.quiet = scoredMove.isQuiet();
+            playedMove.capture = scoredMove.captured() != null;
 
-            boolean isQuiet = !isCheck && !isCapture && !isPromotion;
-            playedMove.quiet = isQuiet;
-            playedMove.capture = isCapture;
-
-            if (isQuiet || scoredMove.isBadNoisy()) {
+            if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
                 reduction += futilityReduction;
             }
 

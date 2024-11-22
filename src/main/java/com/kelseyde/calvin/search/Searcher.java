@@ -237,6 +237,14 @@ public class Searcher implements Search {
             --depth;
         }
 
+        // Do another TT cutoff check after
+        if (!pvNode
+                && ttHit
+                && isSufficientDepth(ttEntry, depth)
+                && isWithinBounds(ttEntry, alpha, beta)) {
+            return ttEntry.score();
+        }
+
         int rawStaticEval = Integer.MIN_VALUE;
         int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;

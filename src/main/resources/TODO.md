@@ -51,8 +51,8 @@
 - [x] History pruning
 - [x] Reverse futility reductions
 - [x] Futility reductions
-- [ ] SEE pruning ( tried )
-- [ ] Faster SEE ( tried )
+- [x] SEE pruning
+- [x] Faster SEE 
 - [ ] Syzygy TB
 - [ ] Cuckoo hashing repetition detection
 - [x] Check root legal moves, if only one, play instantly

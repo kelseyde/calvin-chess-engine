@@ -227,7 +227,7 @@ public class Searcher implements Search {
             depth++;
         }
 
-        // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
+        // Internal Iterative Reduction - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
@@ -235,15 +235,16 @@ public class Searcher implements Search {
                 && (!ttHit || ttEntry.move() == null)
                 && depth >= config.iirDepth.value) {
             --depth;
+
+            // Do another TT cut-off check after IIR in case the reduced depth now allows us to re-use the TT entry.
+            if (!pvNode
+                    && ttHit
+                    && isSufficientDepth(ttEntry, depth)
+                    && isWithinBounds(ttEntry, alpha, beta)) {
+                return ttEntry.score();
+            }
         }
 
-        // Do another TT cutoff check after
-        if (!pvNode
-                && ttHit
-                && isSufficientDepth(ttEntry, depth)
-                && isWithinBounds(ttEntry, alpha, beta)) {
-            return ttEntry.score();
-        }
 
         int rawStaticEval = Integer.MIN_VALUE;
         int uncorrectedStaticEval = Integer.MIN_VALUE;

@@ -390,23 +390,6 @@ public class Searcher implements Search {
 
             final int historyScore = scoredMove.historyScore();
 
-            // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
-            // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
-            if (!pvNode
-                && depth <= config.seeMaxDepth.value
-                && movesSearched > 1
-                && (scoredMove.isQuiet() || (scoredMove.isBadNoisy() && isCapture))
-                && !Score.isMateScore(bestScore)) {
-
-                int threshold = scoredMove.isQuiet() ?
-                        config.seeQuietMargin.value * depth :
-                        config.seeNoisyMargin.value * depth * depth;
-                if (!SEE.see(board, move, threshold)) {
-                    continue;
-                }
-
-            }
-
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
@@ -451,6 +434,24 @@ public class Searcher implements Search {
                 movePicker.setSkipQuiets(true);
                 continue;
             }
+
+            // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
+            // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
+            if (!pvNode
+                    && depth <= config.seeMaxDepth.value
+                    && movesSearched > 1
+                    && (scoredMove.isQuiet() || (scoredMove.isBadNoisy() && isCapture))
+                    && !Score.isMateScore(bestScore)) {
+
+                int threshold = scoredMove.isQuiet() ?
+                        config.seeQuietMargin.value * depth :
+                        config.seeNoisyMargin.value * depth * depth;
+                if (!SEE.see(board, move, threshold)) {
+                    continue;
+                }
+
+            }
+
 
             eval.makeMove(board, move);
             if (!board.makeMove(move)) {

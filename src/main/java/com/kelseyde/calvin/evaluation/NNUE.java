@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
@@ -26,6 +27,7 @@ public class NNUE {
             .inputSize(768)
             .hiddenSize(768)
             .activation(Activation.SCReLU)
+            .horizontalMirror(false)
             .quantisations(new int[]{255, 64})
             .scale(400)
             .build();
@@ -197,12 +199,21 @@ public class NNUE {
         return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
+    private boolean mustRefresh(int prevKingSquare, int currKingSquare) {
+        return NETWORK.horizontalMirror()
+                && shouldMirror(prevKingSquare) != shouldMirror(currKingSquare);
+    }
+
+    private boolean shouldMirror(int kingSquare) {
+        return File.of(kingSquare) > 3;
+    }
+
     /**
      * Compute the index of the feature vector for a given piece, colour and square. Features from black's perspective
      * are mirrored (the square index is vertically flipped) in order to preserve symmetry.
      */
     private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
-        final int squareIndex = whitePerspective ? square : square ^ 56;
+        final int squareIndex = whitePerspective ? square : Square.flipRank(square);
         final int pieceIndex = piece.index();
         final int pieceOffset = pieceIndex * Square.COUNT;
         final boolean ourPiece = whitePiece == whitePerspective;

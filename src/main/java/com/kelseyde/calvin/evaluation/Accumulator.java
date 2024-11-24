@@ -33,6 +33,19 @@ public class Accumulator {
         this.loopLength = SPECIES.loopBound(this.featureCount);
     }
 
+    public void add(int index, boolean whitePerspective) {
+        final int offset = index * HIDDEN_SIZE;
+        final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
+
+        for (int i = 0; i < loopLength; i += SPECIES.length()) {
+
+            ShortVector.fromArray(SPECIES, whiteFeatures, i)
+                    .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + offset))
+                    .intoArray(features, i);
+
+        }
+    }
+
     public void add(int wx1, int bx1) {
         final int wOffset = wx1 * HIDDEN_SIZE;
         final int bOffset = bx1 * HIDDEN_SIZE;

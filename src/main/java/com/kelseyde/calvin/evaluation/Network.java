@@ -16,6 +16,7 @@ import java.nio.ByteOrder;
 public record Network(int inputSize,
                       int hiddenSize,
                       Activation activation,
+                      boolean horizontalMirror,
                       int[] quantisations,
                       int scale,
                       short[] inputWeights,
@@ -33,6 +34,7 @@ public record Network(int inputSize,
         private int inputSize;
         private int hiddenSize;
         private Activation activation;
+        private boolean horizontalMirror;
         private int[] quantisations;
         private int scale;
 
@@ -53,6 +55,11 @@ public record Network(int inputSize,
 
         public Builder hiddenSize(int hiddenSize) {
             this.hiddenSize = hiddenSize;
+            return this;
+        }
+
+        public Builder horizontalMirror(boolean horizontalMirror) {
+            this.horizontalMirror = horizontalMirror;
             return this;
         }
 
@@ -110,7 +117,9 @@ public record Network(int inputSize,
                 }
 
                 return new Network(
-                        inputSize, hiddenSize, activation, quantisations, scale, inputWeights, inputBiases, outputWeights, outputBias);
+                        inputSize, hiddenSize, activation, horizontalMirror, quantisations, scale,
+                        inputWeights, inputBiases, outputWeights, outputBias
+                );
             } catch (IOException e) {
                 throw new RuntimeException("Failed to load NNUE network", e);
             }

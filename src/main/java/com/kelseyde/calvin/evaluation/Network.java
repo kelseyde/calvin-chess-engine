@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -125,6 +126,42 @@ public record Network(int inputSize,
             }
         }
 
+    }
+
+    public void save(String outputPath) {
+        try (FileOutputStream outputStream = new FileOutputStream(outputPath)) {
+
+            int inputWeightsOffset = inputSize * hiddenSize;
+            int inputBiasesOffset = hiddenSize;
+            int outputWeightsOffset = hiddenSize * 2;
+
+            ByteBuffer buffer = ByteBuffer.allocate((inputWeightsOffset + inputBiasesOffset + outputWeightsOffset + 1) * 2)
+                    .order(ByteOrder.LITTLE_ENDIAN);
+
+            // Write the input weights (only once, skipping duplicates)
+            for (int i = 0; i < inputWeightsOffset; i++) {
+                buffer.putShort(inputWeights[i]);
+            }
+
+            // Write the input biases
+            for (int i = 0; i < inputBiasesOffset; i++) {
+                buffer.putShort(inputBiases[i]);
+            }
+
+            // Write the output weights
+            for (int i = 0; i < outputWeightsOffset; i++) {
+                buffer.putShort(outputWeights[i]);
+            }
+
+            // Write the output bias
+            buffer.putShort(outputBias);
+
+            // Write the buffer to the file
+            outputStream.write(buffer.array());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save NNUE network", e);
+        }
     }
 
 }

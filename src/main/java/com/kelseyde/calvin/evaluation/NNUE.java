@@ -7,6 +7,11 @@ import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.uci.UCI;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 /**
  * Calvin's evaluation function is an Efficiently Updatable Neural Network (NNUE).
  * <p>

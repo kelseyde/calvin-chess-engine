@@ -100,6 +100,10 @@ public record Network(int inputSize,
                     inputWeights[i] = buffer.getShort();
                 }
 
+                for (int i = 0; i < inputWeightsOffset; i++) {
+                    buffer.getShort();
+                }
+
                 for (int i = 0; i < inputBiasesOffset; i++) {
                     inputBiases[i] = buffer.getShort();
                 }

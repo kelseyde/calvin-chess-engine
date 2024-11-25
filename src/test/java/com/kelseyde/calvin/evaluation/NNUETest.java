@@ -121,6 +121,18 @@ public class NNUETest {
     }
 
     @Test
+    public void testKingCrossesAxisHorizontalFullRefresh() {
+
+        Board board = Board.from("rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2");
+        NNUE nnue = new NNUE(board);
+        Move move = Move.fromUCI("e1d2");
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+    }
+
+    @Test
     public void testCapture() {
 
         String fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";

@@ -47,7 +47,7 @@ public class Accumulator {
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
+            ShortVector.fromArray(SPECIES, features, i)
                     .add(ShortVector.fromArray(SPECIES, WEIGHTS, i + offset))
                     .intoArray(features, i);
 

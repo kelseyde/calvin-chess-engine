@@ -10,6 +10,7 @@ public class Accumulator {
     private static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
     private static final int HIDDEN_SIZE = NNUE.NETWORK.hiddenSize();
     private static final short[] WEIGHTS = NNUE.NETWORK.inputWeights();
+    private static final short[] BIASES = NNUE.NETWORK.inputBiases();
 
     /**
      * Two feature vectors, one from white's perspective, one from black's.
@@ -31,6 +32,13 @@ public class Accumulator {
         this.blackFeatures = blackFeatures;
         this.featureCount = whiteFeatures.length;
         this.loopLength = SPECIES.loopBound(this.featureCount);
+    }
+
+    public void reset(boolean whitePerspective) {
+        short[] features = whitePerspective ? whiteFeatures : blackFeatures;
+        for (int i = 0; i < SPECIES.loopBound(HIDDEN_SIZE); i += SPECIES.length()) {
+            ShortVector.fromArray(SPECIES, BIASES, i).intoArray(features, i);
+        }
     }
 
     public void add(int index, boolean whitePerspective) {

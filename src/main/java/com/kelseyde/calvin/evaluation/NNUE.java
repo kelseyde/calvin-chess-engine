@@ -70,16 +70,29 @@ public class NNUE {
     }
 
     private void activateAll(Board board) {
+        fullRefresh(board, true);
+        fullRefresh(board, false);
+    }
 
+    private void fullRefresh(Board board, boolean whitePerspective) {
         final Accumulator acc = accumulatorStack[current];
-        for (int i = 0; i < NETWORK.hiddenSize(); i++) {
-            acc.whiteFeatures[i] = NETWORK.inputBiases()[i];
-            acc.blackFeatures[i] = NETWORK.inputBiases()[i];
+        acc.reset(whitePerspective);
+
+        final int kingSquare = board.kingSquare(whitePerspective);
+        final boolean mirror = NETWORK.horizontalMirror() && shouldMirror(kingSquare);
+
+        long pieces = board.getOccupied();
+        while (pieces != 0) {
+            int square = Bits.next(pieces);
+            final Piece piece = board.pieceAt(square);
+            final boolean whitePiece = Bits.contains(board.getWhitePieces(), square);
+            if (mirror) {
+                square = Square.flipFile(square);
+            }
+            final int index = featureIndex(piece, square, whitePiece, whitePerspective);
+            acc.add(index, whitePerspective);
+            pieces = Bits.pop(pieces);
         }
-
-        activateSide(acc, board, board.getWhitePieces(), true);
-        activateSide(acc, board, board.getBlackPieces(), false);
-
     }
 
     private void activateSide(Accumulator acc, Board board, long pieces, boolean white) {

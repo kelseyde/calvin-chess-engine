@@ -138,25 +138,20 @@ public record Network(int inputSize,
             ByteBuffer buffer = ByteBuffer.allocate((inputWeightsOffset + inputBiasesOffset + outputWeightsOffset + 1) * 2)
                     .order(ByteOrder.LITTLE_ENDIAN);
 
-            // Write the input weights (only once, skipping duplicates)
             for (int i = 0; i < inputWeightsOffset; i++) {
                 buffer.putShort(inputWeights[i]);
             }
 
-            // Write the input biases
             for (int i = 0; i < inputBiasesOffset; i++) {
                 buffer.putShort(inputBiases[i]);
             }
 
-            // Write the output weights
             for (int i = 0; i < outputWeightsOffset; i++) {
                 buffer.putShort(outputWeights[i]);
             }
 
-            // Write the output bias
             buffer.putShort(outputBias);
 
-            // Write the buffer to the file
             outputStream.write(buffer.array());
 
         } catch (IOException e) {

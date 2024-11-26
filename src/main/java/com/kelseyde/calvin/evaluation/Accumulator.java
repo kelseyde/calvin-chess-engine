@@ -36,6 +36,7 @@ public class Accumulator {
 
     public void reset(boolean whitePerspective) {
         short[] features = whitePerspective ? whiteFeatures : blackFeatures;
+
         for (int i = 0; i < SPECIES.loopBound(HIDDEN_SIZE); i += SPECIES.length()) {
             ShortVector.fromArray(SPECIES, BIASES, i).intoArray(features, i);
         }

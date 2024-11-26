@@ -9,12 +9,14 @@ public class ThreadData {
     public int nodes;
     public int[][] nodesPerMove;
     public int depth;
+    public int seldepth;
 
     public ThreadData(boolean mainThread) {
         this.mainThread = mainThread;
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
         this.depth = 1;
+        this.seldepth = 0;
     }
 
     public void addNodes(Move move, int nodes) {

@@ -94,6 +94,7 @@ public class Searcher implements Search {
             // Reset variables for the current depth iteration
             bestMoveCurrent = null;
             bestScoreCurrent = 0;
+            td.seldepth = 0;
 
             final int searchDepth = td.depth - reduction;
             final int delta = failMargin * retries;
@@ -178,6 +179,9 @@ public class Searcher implements Search {
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW;
+
+        // Update the selective search depth
+        if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
 
         // If the maximum depth is reached, return the static evaluation of the position
         if (ply >= MAX_DEPTH) return movegen.isCheck(board) ? 0 : eval.evaluate();
@@ -575,6 +579,9 @@ public class Searcher implements Search {
 
         // If the maximum depth is reached, return the static evaluation of the position.
         if (ply >= MAX_DEPTH) return movegen.isCheck(board) ? 0 : eval.evaluate();
+
+        // Update the selective search depth
+        if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
 
         final boolean pvNode = beta - alpha > 1;
 

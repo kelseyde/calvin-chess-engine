@@ -3,8 +3,6 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Move;
 
-import java.time.Instant;
-
 public class ThreadData {
 
     public final boolean mainThread;

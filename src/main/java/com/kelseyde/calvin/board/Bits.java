@@ -99,6 +99,14 @@ public class Bits {
             return (rank << 3) + file;
         }
 
+        public static int flipRank(int sq) {
+            return sq ^ 56;
+        }
+
+        public static int flipFile(int sq) {
+            return sq ^ 7;
+        }
+
         public static boolean isValid(int sq) {
             return sq >= 0 && sq < Square.COUNT;
         }

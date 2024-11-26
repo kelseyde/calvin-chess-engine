@@ -605,6 +605,10 @@ public class Board {
         return state.nonPawnKeys;
     }
 
+    public int kingSquare(boolean white) {
+        return Bits.next(kings & (white ? whitePieces : blackPieces));
+    }
+
     public long getPieces(Piece piece, boolean white) {
         return switch (piece) {
             case PAWN -> getPawns(white);

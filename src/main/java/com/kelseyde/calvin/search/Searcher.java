@@ -378,7 +378,6 @@ public class Searcher implements Search {
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
-            final boolean isPromotion = move.promoPiece() != null;
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
@@ -386,7 +385,7 @@ public class Searcher implements Search {
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
                     && depth <= config.fpDepth.value
-                    && !inCheck && !isCapture && !isPromotion) {
+                    && scoredMove.isQuiet()) {
 
                 // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
                 int pruneMargin = config.fpMargin.value + depth * config.fpScale.value;
@@ -430,7 +429,8 @@ public class Searcher implements Search {
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
             // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
             // that assumes that moves which have historically been bad are likely to be bad in the current position.
-            if (!pvNode && !isCapture && !isPromotion
+            if (!pvNode
+                    && scoredMove.isQuiet()
                     && depth - reduction <= config.hpMaxDepth.value
                     && historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
                 sse.currentMove = null;
@@ -479,6 +479,24 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
+            // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
+            if (!pvNode
+                    && depth <= config.seeMaxDepth.value
+                    && movesSearched > 1
+                    && (scoredMove.isQuiet() || (scoredMove.isBadNoisy() && isCapture))
+                    && !Score.isMateScore(bestScore)) {
+
+                int threshold = scoredMove.isQuiet() ?
+                        config.seeQuietMargin.value * depth :
+                        config.seeNoisyMargin.value * depth * depth;
+                if (!SEE.see(board, move, threshold)) {
+                    continue;
+                }
+
+            }
+
+
             eval.makeMove(board, move);
             if (!board.makeMove(move)) {
                 eval.unmakeMove();
@@ -487,13 +505,10 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
-            final boolean isCheck = movegen.isCheck(board);
+            playedMove.quiet = scoredMove.isQuiet();
+            playedMove.capture = scoredMove.captured() != null;
 
-            boolean isQuiet = !isCheck && !isCapture && !isPromotion;
-            playedMove.quiet = isQuiet;
-            playedMove.capture = isCapture;
-
-            if (isQuiet || scoredMove.isBadNoisy()) {
+            if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
                 reduction += futilityReduction;
             }
 
@@ -695,14 +710,12 @@ public class Searcher implements Search {
                 continue;
             }
 
-            final int seeScore = SEE.see(board, move);
-
             // Futility Pruning
             // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
             // win material when the static eval plus some margin is sufficiently below alpha.
             if (captured != null
                 && futilityScore <= alpha
-                && seeScore <= 0) {
+                && !SEE.see(board, move, 1)) {
                 continue;
             }
 
@@ -710,7 +723,7 @@ public class Searcher implements Search {
             // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
             // chains, such as capturing with the queen a pawn defended by another pawn.
             final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-            if (seeScore < seeThreshold) {
+            if (!SEE.see(board, move, seeThreshold)) {
                 continue;
             }
 

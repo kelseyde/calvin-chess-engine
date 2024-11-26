@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.*;
+import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
@@ -22,10 +23,11 @@ import com.kelseyde.calvin.uci.UCI;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("argonaut.nnue")
+            .file("reflector.nnue")
             .inputSize(768)
             .hiddenSize(768)
             .activation(Activation.SCReLU)
+            .horizontalMirror(true)
             .quantisations(new int[]{255, 64})
             .scale(400)
             .build();
@@ -68,25 +70,26 @@ public class NNUE {
     }
 
     private void activateAll(Board board) {
-
         final Accumulator acc = accumulatorStack[current];
-        for (int i = 0; i < NETWORK.hiddenSize(); i++) {
-            acc.whiteFeatures[i] = NETWORK.inputBiases()[i];
-            acc.blackFeatures[i] = NETWORK.inputBiases()[i];
-        }
-
-        activateSide(acc, board, board.getWhitePieces(), true);
-        activateSide(acc, board, board.getBlackPieces(), false);
-
+        fullRefresh(board, acc, true);
+        fullRefresh(board, acc, false);
     }
 
-    private void activateSide(Accumulator acc, Board board, long pieces, boolean white) {
+    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective) {
+        final int kingSquare = board.kingSquare(whitePerspective);
+        final boolean mirror = NETWORK.horizontalMirror() && shouldMirror(kingSquare);
+        fullRefresh(board, acc, whitePerspective, mirror);
+    }
+
+    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror) {
+        acc.reset(whitePerspective);
+        long pieces = board.getOccupied();
         while (pieces != 0) {
-            final int square = Bits.next(pieces);
+            int square = Bits.next(pieces);
             final Piece piece = board.pieceAt(square);
-            final int whiteIndex = featureIndex(piece, square, white, true);
-            final int blackIndex = featureIndex(piece, square, white, false);
-            acc.add(whiteIndex, blackIndex);
+            final boolean whitePiece = Bits.contains(board.getWhitePieces(), square);
+            final int index = featureIndex(piece, square, mirror, whitePiece, whitePerspective);
+            acc.add(index, whitePerspective);
             pieces = Bits.pop(pieces);
         }
     }
@@ -102,32 +105,48 @@ public class NNUE {
         final int to = move.to();
         final Piece piece = board.pieceAt(from);
         if (piece == null) return;
+
+        final int whiteKingSquare = board.kingSquare(true);
+        final int blackKingSquare = board.kingSquare(false);
+        boolean whiteMirror = NETWORK.horizontalMirror() && shouldMirror(whiteKingSquare);
+        boolean blackMirror = NETWORK.horizontalMirror() && shouldMirror(blackKingSquare);
+
+        if (mustRefresh(board, move, piece)) {
+            if (white) {
+                whiteMirror = !whiteMirror;
+            } else {
+                blackMirror = !blackMirror;
+            }
+            boolean mirror = white ? whiteMirror : blackMirror;
+            fullRefresh(board, acc, white, mirror);
+        }
+
         final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
 
         if (move.isCastling()) {
-            handleCastleMove(acc, move, white);
+            handleCastleMove(acc, move, whiteMirror, blackMirror, white);
         }
         else if (captured != null) {
-            handleCapture(acc, move, piece, newPiece, captured, white);
+            handleCapture(acc, move, piece, newPiece, captured, whiteMirror, blackMirror, white);
         }
         else {
-            handleStandardMove(acc, move, piece, newPiece, white);
+            handleStandardMove(acc, move, piece, newPiece, whiteMirror, blackMirror, white);
         }
 
     }
 
-    private void handleStandardMove(Accumulator acc, Move move, Piece piece, Piece newPiece, boolean white) {
-        final int wSub = featureIndex(piece, move.from(), white, true);
-        final int bSub = featureIndex(piece, move.from(), white, false);
+    private void handleStandardMove(Accumulator acc, Move move, Piece piece, Piece newPiece, boolean whiteMirror, boolean blackMirror, boolean white) {
+        final int wSub = featureIndex(piece, move.from(), whiteMirror, white, true);
+        final int bSub = featureIndex(piece, move.from(), blackMirror, white, false);
 
-        final int wAdd = featureIndex(newPiece, move.to(), white, true);
-        final int bAdd = featureIndex(newPiece, move.to(), white, false);
+        final int wAdd = featureIndex(newPiece, move.to(), whiteMirror, white, true);
+        final int bAdd = featureIndex(newPiece, move.to(), blackMirror, white, false);
 
         acc.addSub(wAdd, bAdd, wSub, bSub);
     }
 
-    private void handleCastleMove(Accumulator acc, Move move, boolean white) {
+    private void handleCastleMove(Accumulator acc, Move move, boolean whiteMirror, boolean blackMirror, boolean white) {
         final boolean kingside = Castling.isKingside(move.from(), move.to());
 
         // In Chess960, castling is encoded as 'king captures rook'.
@@ -135,31 +154,32 @@ public class NNUE {
         final int rookFrom = UCI.Options.chess960 ? move.to() : Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
 
-        final int wSub1 = featureIndex(Piece.KING, move.from(), white, true);
-        final int bSub1 = featureIndex(Piece.KING, move.from(), white, false);
-        final int wAdd1 = featureIndex(Piece.KING, kingTo, white, true);
-        final int bAdd1 = featureIndex(Piece.KING, kingTo, white, false);
+        final int wSub1 = featureIndex(Piece.KING, move.from(), whiteMirror, white, true);
+        final int bSub1 = featureIndex(Piece.KING, move.from(), blackMirror, white, false);
+        final int wAdd1 = featureIndex(Piece.KING, kingTo, whiteMirror, white, true);
+        final int bAdd1 = featureIndex(Piece.KING, kingTo, blackMirror, white, false);
 
-        final int wSub2 = featureIndex(Piece.ROOK, rookFrom, white, true);
-        final int bSub2 = featureIndex(Piece.ROOK, rookFrom, white, false);
-        final int wAdd2 = featureIndex(Piece.ROOK, rookTo, white, true);
-        final int bAdd2 = featureIndex(Piece.ROOK, rookTo, white, false);
+        final int wSub2 = featureIndex(Piece.ROOK, rookFrom, whiteMirror, white, true);
+        final int bSub2 = featureIndex(Piece.ROOK, rookFrom, blackMirror, white, false);
+        final int wAdd2 = featureIndex(Piece.ROOK, rookTo, whiteMirror, white, true);
+        final int bAdd2 = featureIndex(Piece.ROOK, rookTo, blackMirror, white, false);
 
         acc.addAddSubSub(wAdd1, bAdd1, wAdd2, bAdd2, wSub1, bSub1, wSub2, bSub2);
     }
 
-    private void handleCapture(Accumulator acc, Move move, Piece piece, Piece newPiece, Piece captured, boolean white) {
-        final int wSub1 = featureIndex(piece, move.from(), white, true);
-        final int bSub1 = featureIndex(piece, move.from(), white, false);
+    private void handleCapture(
+            Accumulator acc, Move move, Piece piece, Piece newPiece, Piece captured, boolean whiteMirror, boolean blackMirror, boolean white) {
+        final int wSub1 = featureIndex(piece, move.from(), whiteMirror, white, true);
+        final int bSub1 = featureIndex(piece, move.from(), blackMirror, white, false);
 
-        final int wAdd1 = featureIndex(newPiece, move.to(), white, true);
-        final int bAdd1 = featureIndex(newPiece, move.to(), white, false);
+        final int wAdd1 = featureIndex(newPiece, move.to(), whiteMirror, white, true);
+        final int bAdd1 = featureIndex(newPiece, move.to(), blackMirror, white, false);
 
         int captureSquare = move.to();
         if (move.isEnPassant()) captureSquare = white ? move.to() - 8 : move.to() + 8;
 
-        final int wSub2 = featureIndex(captured, captureSquare, !white, true);
-        final int bSub2 = featureIndex(captured, captureSquare, !white, false);
+        final int wSub2 = featureIndex(captured, captureSquare, whiteMirror, !white, true);
+        final int bSub2 = featureIndex(captured, captureSquare, blackMirror, !white, false);
 
         acc.addSubSub(wAdd1, bAdd1, wSub1, bSub1, wSub2, bSub2);
     }
@@ -197,12 +217,29 @@ public class NNUE {
         return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
+    private boolean mustRefresh(Board board, Move move, Piece piece) {
+        if (!NETWORK.horizontalMirror()) return false;
+        if (piece != Piece.KING) return false;
+        int prevKingSquare = move.from();
+        int currKingSquare = move.to();
+        if (move.isCastling() && UCI.Options.chess960) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            currKingSquare = Castling.kingTo(kingside, board.isWhite());
+        }
+        return shouldMirror(prevKingSquare) != shouldMirror(currKingSquare);
+    }
+
+    private boolean shouldMirror(int kingSquare) {
+        return File.of(kingSquare) > 3;
+    }
+
     /**
      * Compute the index of the feature vector for a given piece, colour and square. Features from black's perspective
      * are mirrored (the square index is vertically flipped) in order to preserve symmetry.
      */
-    private static int featureIndex(Piece piece, int square, boolean whitePiece, boolean whitePerspective) {
-        final int squareIndex = whitePerspective ? square : square ^ 56;
+    private static int featureIndex(Piece piece, int square, boolean mirror, boolean whitePiece, boolean whitePerspective) {
+        int squareIndex = whitePerspective ? square : Square.flipRank(square);
+        if (mirror) squareIndex = Square.flipFile(squareIndex);
         final int pieceIndex = piece.index();
         final int pieceOffset = pieceIndex * Square.COUNT;
         final boolean ourPiece = whitePiece == whitePerspective;

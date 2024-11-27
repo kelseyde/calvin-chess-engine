@@ -118,7 +118,7 @@
 - [ ] Improve display visuals + add info
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
-- [ ] Add seldepth to info
+- [x] Add seldepth to info
 - [x] Add hashfull to info
 - [ ] MultiPV
 - [x] Coloured output

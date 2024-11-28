@@ -18,6 +18,7 @@
 
 ### Search
 
+- [ ] Use int16 for history scores
 - [ ] SPRT SPSA tune branch
 - [ ] LTC 1024 net
 - [ ] Threefold repetition ( CCRL bug ? )

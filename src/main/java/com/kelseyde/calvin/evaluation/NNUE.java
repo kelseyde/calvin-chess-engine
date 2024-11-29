@@ -23,9 +23,9 @@ import com.kelseyde.calvin.uci.UCI;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("reflector.nnue")
+            .file("calvin1024.nnue")
             .inputSize(768)
-            .hiddenSize(768)
+            .hiddenSize(1024)
             .activation(Activation.SCReLU)
             .horizontalMirror(true)
             .quantisations(new int[]{255, 64})

@@ -18,6 +18,7 @@
 
 ### Search
 
+- [ ] Use int16 for history scores
 - [ ] SPRT SPSA tune branch
 - [ ] LTC 1024 net
 - [ ] Threefold repetition ( CCRL bug ? )
@@ -118,7 +119,7 @@
 - [ ] Improve display visuals + add info
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
-- [ ] Add seldepth to info
+- [x] Add seldepth to info
 - [x] Add hashfull to info
 - [ ] MultiPV
 - [x] Coloured output

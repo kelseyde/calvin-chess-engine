@@ -10,6 +10,7 @@ import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
+import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 
 import java.util.List;
 
@@ -263,18 +264,15 @@ public class MovePicker {
 
     int continuationHistoryScore(Move move, Piece piece, boolean white) {
         int contHistScore = 0;
-        // Get the continuation history score for the move
-        SearchStackEntry prevEntry = ss.get(ply - 1);
-        if (prevEntry != null && prevEntry.currentMove != null) {
-            PlayedMove prevMove = prevEntry.currentMove;
-            contHistScore = history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
+
+        for (int ply : ContinuationHistoryTable.CONT_HIST_PLIES) {
+            SearchStackEntry prevEntry = ss.get(ply);
+            if (prevEntry != null && prevEntry.currentMove != null) {
+                PlayedMove prevMove = prevEntry.currentMove;
+                contHistScore += history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
+            }
         }
 
-        SearchStackEntry prevEntry2 = ss.get(ply - 2);
-        if (prevEntry2 != null && prevEntry2.currentMove != null) {
-            PlayedMove prevMove2 = prevEntry2.currentMove;
-            contHistScore += history.getContHistTable().get(prevMove2.move, prevMove2.piece, move, piece, white);
-        }
         return contHistScore;
     }
 

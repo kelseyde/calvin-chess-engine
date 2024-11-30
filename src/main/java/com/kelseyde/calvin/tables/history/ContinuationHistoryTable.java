@@ -8,6 +8,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 
 public class ContinuationHistoryTable extends AbstractHistoryTable {
 
+    public static final int[] CONT_HIST_PLIES = { 1, 2, 4 };
     int[][][][][] table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
 
     public ContinuationHistoryTable(EngineConfig config) {

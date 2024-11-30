@@ -17,8 +17,6 @@ import java.util.List;
 
 public class SearchHistory {
 
-    private static final int[] CONT_HIST_PLIES = { 1, 2 };
-
     private final KillerTable killerTable;
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
@@ -55,7 +53,7 @@ public class SearchHistory {
                 boolean good = bestMove.move.equals(playedMove.move);
                 if (good || failHigh) {
                     quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, good);
-                    for (int prevPly : CONT_HIST_PLIES) {
+                    for (int prevPly : ContinuationHistoryTable.CONT_HIST_PLIES) {
                         SearchStackEntry prevEntry = ss.get(ply - prevPly);
                         if (prevEntry != null && prevEntry.currentMove != null) {
                             PlayedMove prevMove = prevEntry.currentMove;

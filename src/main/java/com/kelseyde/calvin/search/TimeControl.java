@@ -84,17 +84,12 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
                 * nodeTmFactor(config, depth, bestMoveNodes, nodes);
 
         // Clamp the scale factor to the configured min/max values
-        double scaleMin = config.softTimeScaleMin.value / 100.0;
-        double scaleMax = config.softTimeScaleMax.value / 100.0;
-        scale = Math.min(Math.max(scale, scaleMin), scaleMax);
-
-        // Scale the soft limit based on the calculated scale factor
-        long scaled = (long) (softLimit.toMillis() * scale);
+        scale = clampScale(scale);
 
         // Clamp the scaled limit to the hard limit
-        scaled = Math.min(scaled, hardLimit);
+        long limit = (long) Math.min(softLimit.toMillis() * scale, hardLimit);
 
-        return Duration.ofMillis(scaled);
+        return Duration.ofMillis(limit);
 
     }
 
@@ -129,6 +124,12 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         double nodeTmBase = (double) config.nodeTmBase.value / 100;
         double nodeTmScale = (double) config.nodeTmScale.value / 100;
         return (nodeTmBase - bestMoveNodeFraction) * nodeTmScale;
+    }
+
+    private double clampScale(double scale) {
+        double scaleMin = config.softTimeScaleMin.value / 100.0;
+        double scaleMax = config.softTimeScaleMax.value / 100.0;
+        return Math.min(Math.max(scale, scaleMin), scaleMax);
     }
 
 

@@ -38,7 +38,7 @@ public class Pretty {
     public static void printEngineInfo() {
         UCI.write("");
         UCI.write(Pretty.BANNER);
-        UCI.write(Pretty.RED + "Engine" + Pretty.RESET + ": Calvin 5.0.1");
+        UCI.write(Pretty.RED + "Engine" + Pretty.RESET + ": Calvin 5.0.2");
         UCI.write(Pretty.RED + "Author" + Pretty.RESET + ": Dan Kelsey");
         UCI.write(Pretty.RED + "Source" + Pretty.RESET + ": https://github.com/kelseyde/calvin-chess-engine");
         UCI.write("");
@@ -46,23 +46,29 @@ public class Pretty {
         UCI.write("");
     }
 
-    public static void writeSearchInfo(int depth, int score, long time, int nodes, long nps, float hashfull, List<Move> pv) {
+    public static void writeSearchInfo(int depth, int seldepth, int score, long time, int nodes, long nps, float hashfull, List<Move> pv) {
 
         String formattedDepth = formatDepth(depth);
+        String formattedSeldepth = formatSeldepth(seldepth);
         String formattedScore = formatScore(score);
         String formattedTime = formatTime(time);
         String formattedNodes = formatNodes(nodes);
         String formattedNps = formatNps(nps);
         String formattedHashfull = formatHashfull(hashfull);
         String formattedPv = formatPv(pv);
-        UCI.write(String.format(" %s  %s  %s  %s  %s   %s   %s",
-                formattedDepth, formattedScore, formattedTime, formattedNodes, formattedNps, formattedHashfull, formattedPv));
+        UCI.write(String.format(" %s  %s  %s  %s  %s  %s   %s   %s",
+                formattedDepth, formattedSeldepth, formattedScore, formattedTime, formattedNodes, formattedNps, formattedHashfull, formattedPv));
 
     }
 
     private static String formatDepth(int depth) {
         final int depthLength = 3;
         return BLUE + " ".repeat(depthLength - String.valueOf(depth).length()) + depth + RESET;
+    }
+
+    private static String formatSeldepth(int seldepth) {
+        final int depthLength = 3;
+        return GRAY + " ".repeat(depthLength - String.valueOf(seldepth).length()) + seldepth + RESET;
     }
 
     private static String formatScore(int score) {
@@ -85,7 +91,7 @@ public class Pretty {
             paddedScore = " ".repeat(buffer) + mateString;
         } else {
             float scoreFloat = (float) score / 100;
-            String sign = scoreFloat >= 0 ? "+" : "";
+            String sign = scoreFloat >= 0 ? "+" : " ";
             String scoreString = String.format(Locale.ROOT, "%.2f", scoreFloat);
             int buffer = Math.max(0, scoreLength - scoreString.length());
             paddedScore = " ".repeat(buffer) + sign + scoreString;

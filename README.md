@@ -9,11 +9,9 @@
 
 Calvin is a superhuman chess engine written in Java. 
 
-It features a a traditional alpha-beta search algorithm paired with an NNUE evaluation function. 
+It features a a classical alpha-beta search algorithm paired with an NNUE evaluation function. 
 
-The NNUE neural network was trained using [bullet](https://github.com/jw1912/bullet) on a dataset of 1.2 billion positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. The network architecture is (768->768)x2->1. 
-
-Calvin is rated roughly 3400 elo (~62nd place) on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/4040/) leaderboards, and is currently playing on [Lichess](https://lichess.org/@/Calvin_Bot).
+Calvin is rated roughly 3400 elo (~62nd place) on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/4040/) leaderboards.
 
 My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented so that first-time readers can learn too. If you find some information is missing or poorly explained, don't hesitate to let me know!
 
@@ -21,19 +19,22 @@ My aim with this project was to combine my passion (playing mediocre chess) with
 
 Like most engines, Calvin does not implement its own user interface. Instead, it communicates using the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, meaning it can either be used directly from the command line, or via any popular chess GUI, such as [Arena Chess](http://www.playwitharena.de/), [Banksia](https://banksiagui.com/) or [Cute Chess](https://cutechess.com/).
 
-To run Calvin locally, you will need Java (minimum Java 17) installed on your machine. The binary calvin.jar can be downloaded from the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) section. Start up Calvin by executing the command:
+Calvin is available as a standalone windows executable, or as a raw Java .jar file. Please refer to the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases) section for the latest binary downloads.
+
+If you are running the jar file, you will need Java installed locally (minimum Java 17). Start up Calvin by executing the command:
 
 ```
-java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.0.1.jar
+java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.0.2.jar
 ```
-From there, use the "help" option or refer to UCI documentation for further information on available commands.
+From there, use the "help" option or refer to [UCI](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html) documentation for further information on available commands.
 
 ## Strength
 
-The table below tracks the strength of previous Calvin releases, both on the CCRL leaderboards and on Lichess.
+The table below tracks the estimated strength of previous Calvin releases, both on the CCRL leaderboards and on Lichess.
 
 | 	Version	 | 	Release date | Estimated | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | [CCRL Rapid](https://www.computerchess.org.uk/ccrl/4040/) 
 | 	:-----:	 | 	:-----:	 |:---------:| :-----:	|  :-----:	 |:---------------------------------------------------------:|  
+| [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) | 2024-11-16 |   3420    | - | - | - |
 | [5.0.1](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.1) | 2024-11-12 |   3410    | - | - | - |
 | [5.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.0) | 2024-11-11 |   3400    | - | - | - |
 | [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 |   3300    | - | - | 3277 |
@@ -122,5 +123,5 @@ If you would like to contribute, or just talk about chess/chess programming, get
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=ed5858
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
 
-[lichess-badge]: https://img.shields.io/badge/Play-v5.0.1-ffd25c?logo=lichess&style=for-the-badge
+[lichess-badge]: https://img.shields.io/badge/Play-v5.0.2-ffd25c?logo=lichess&style=for-the-badge
 [lichess-link]: https://lichess.org/@/Calvin_Bot

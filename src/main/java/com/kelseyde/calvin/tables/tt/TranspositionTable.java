@@ -42,9 +42,6 @@ public class TranspositionTable {
 
     /**
      * Retrieves an entry from the transposition table using the given zobrist key.
-     *
-     * @param key the zobrist key of the position.
-     * @param ply the current ply in the search (used to adjust mate scores).
      */
     public HashEntry get(long key, int ply) {
         int index = index(key);
@@ -79,13 +76,6 @@ public class TranspositionTable {
      * <li>The oldest entry in the bucket, stored further back in the game and so less likely to be relevant.</li>
      * <li>The entry with the lowest depth.</li>
      * </ol>
-     *
-     * @param key the zobrist key of the position.
-     * @param flag the flag indicating the type of node (e.g., exact, upper bound, lower bound).
-     * @param depth the search depth of the entry.
-     * @param ply the current ply from root in the search.
-     * @param move the best move found at this position.
-     * @param score the score of the position.
      */
     public void put(long key, HashFlag flag, int depth, int ply, Move move, int staticEval, int score) {
 

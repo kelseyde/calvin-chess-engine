@@ -75,9 +75,9 @@ public class Engine {
             int depth = command.perft();
             perft.perft(board, depth);
         } else {
+            TimeControl tc = TimeControl.init(config, board, command);
             this.config.pondering = command.ponder();
             setSearchCancelled(false);
-            TimeControl tc = TimeControl.init(config, board, command);
             stopThinking();
             think = CompletableFuture.supplyAsync(() -> think(tc));
             think.thenAccept(UCI::writeMove);

@@ -129,6 +129,7 @@ public class Searcher implements Search {
                 // If score <= alpha, re-search with an expanded aspiration window
                 reduction = 0;
                 retries++;
+                beta  = (alpha + beta) / 2;
                 alpha -= delta;
                 continue;
             }

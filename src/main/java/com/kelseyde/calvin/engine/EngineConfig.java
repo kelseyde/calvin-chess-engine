@@ -80,10 +80,10 @@ public class EngineConfig {
     public final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     public final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     public final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
-    public final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 6666, 5000, 7000, 100);
-    public final Tunable hardTimeFactor         = new Tunable("HardTimeFactor", 20000, 15000, 25000, 1000);
-    public final Tunable softTimeScaleMin       = new Tunable("SoftTimeScaleMin", 125, 100, 250, 25);
-    public final Tunable softTimeScaleMax       = new Tunable("SoftTimeScaleMax", 250, 100, 250, 25);
+    public final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
+    public final Tunable hardTimeFactor         = new Tunable("HardTimeFactor", 200, 150, 250, 10);
+    public final Tunable softTimeScaleMin       = new Tunable("SoftTimeScaleMin", 12, 10, 25, 2);
+    public final Tunable softTimeScaleMax       = new Tunable("SoftTimeScaleMax", 250, 100, 250, 50);
     public final Tunable uciOverhead            = new Tunable("UciOverhead", 50, 0, 1000, 50);
     public final Tunable nodeTmMinDepth         = new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
     public final Tunable nodeTmBase             = new Tunable("NodeTmBase", 150, 100, 200, 10);
@@ -92,8 +92,8 @@ public class EngineConfig {
     public final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
 
     public int[][][] lmrReductions;
-    public final int[] bmStabilityFactor = { 2500, 1200, 900, 800, 750 };
-    public final int[] scoreStabilityFactor = { 1250, 1150, 1000, 940, 880 };
+    public final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
+    public final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
 
     public Set<Tunable> getTunables() {
         return Set.of(

@@ -43,7 +43,9 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         if (time <= 0) time = 1000;
         if (inc < 0) inc = 0;
 
-        double base = time / 20 + inc * 0.75;
+        double timeFactor = config.timeFactor.value / 100.0;
+        double incrementFactor = config.incrementFactor.value / 100.0;
+        double base = time * timeFactor + inc * incrementFactor;
 
         double softFactor = config.softTimeFactor.value / 100.0;
         double hardFactor = config.hardTimeFactor.value / 100.0;

@@ -349,7 +349,7 @@ public class Searcher implements Search {
         HashFlag flag = HashFlag.UPPER;
 
         sse.searchedMoves = new ArrayList<>();
-        final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         int movesSearched = 0;
 
         while (true) {
@@ -636,7 +636,7 @@ public class Searcher implements Search {
             filter = MoveFilter.CAPTURES_ONLY;
         }
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         movePicker.setFilter(filter);
 
         int movesSearched = 0;

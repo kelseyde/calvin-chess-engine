@@ -216,12 +216,14 @@ public class MovePicker {
 
         final boolean white = board.isWhite();
 
-        int noisyScore = 0;
+        int score = 0;
 
-        if (move.isPromotion()) {
+        boolean promotion = move.promoPiece() != null;
+        if (promotion) {
             // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-            return new ScoredMove(move, piece, captured, noisyScore, 0, type);
+            score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
+            return new ScoredMove(move, piece, captured, score, 0, type);
         }
 
         if (quietCheck) {
@@ -229,25 +231,22 @@ public class MovePicker {
             final MoveType type = MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white);
-            noisyScore = historyScore + contHistScore;
-            return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
+            score = historyScore + contHistScore;
+            return new ScoredMove(move, piece, captured, score, historyScore, type);
         }
 
+        score += SEE.value(captured);
+
+        final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
+        score += historyScore / 8;
+
+        final int threshold = -score / 4 + 15;
+
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
-        final MoveType type = SEE.see(board, move, -SEE.value(Piece.PAWN)) ?
+        final MoveType type = SEE.see(board, move, threshold) ?
                 MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
-        final int materialDelta = SEE.value(captured) - SEE.value(piece);
-        noisyScore += materialDelta;
-
-        // Add MVV score to the noisy score
-        noisyScore += 1000 * captured.index();
-
-        // Tie-break with capture history
-        final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
-        noisyScore += historyScore;
-
-        return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
+        return new ScoredMove(move, piece, captured, score, historyScore, type);
     }
 
     protected ScoredMove scoreQuiet(Board board, Move move, Piece piece, Piece captured, int ply) {

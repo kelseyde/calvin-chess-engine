@@ -42,6 +42,7 @@ public class EngineConfig {
     public final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
     public final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
     public final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
+    public final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 15, -100, 200, 50);
     public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeEqualDepth        = new Tunable("QsSeeEqualDepth", 3, 0, 6, 1);
     public final Tunable rfpDepth               = new Tunable("RfpDepth", 7, 0, 8, 1);
@@ -96,6 +97,7 @@ public class EngineConfig {
     public int[][][] lmrReductions;
     public final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
     public final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
+    public final int[] contHistPlies = { 1, 2 };
 
     public Set<Tunable> getTunables() {
         return Set.of(
@@ -107,8 +109,8 @@ public class EngineConfig {
                 quietHistMalusScale, quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax,
                 captHistMalusScale, captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax,
                 contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, ttExtensionDepth,
-                seeMaxDepth, seeQuietMargin, seeNoisyMargin, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor,
-                softTimeScaleMin, softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth
+                seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset, timeFactor, incrementFactor, softTimeFactor,
+                hardTimeFactor, softTimeScaleMin, softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth
         );
     }
 

@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search.picker;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.PlayedMove;
@@ -35,6 +36,7 @@ public class MovePicker {
         END
     }
 
+    final EngineConfig config;
     final MoveGenerator movegen;
     final SearchHistory history;
     final SearchStack ss;
@@ -55,7 +57,8 @@ public class MovePicker {
     ScoredMove[] quiets;
 
     public MovePicker(
-            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+            EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+        this.config = config;
         this.movegen = movegen;
         this.history = history;
         this.board = board;
@@ -240,7 +243,7 @@ public class MovePicker {
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
         score += historyScore / 8;
 
-        final int threshold = -score / 4 + 15;
+        final int threshold = -score / 4 + config.seeNoisyOffset.value;
 
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
         final MoveType type = SEE.see(board, move, threshold) ?
@@ -260,16 +263,12 @@ public class MovePicker {
     int continuationHistoryScore(Move move, Piece piece, boolean white) {
         int contHistScore = 0;
         // Get the continuation history score for the move
-        SearchStackEntry prevEntry = ss.get(ply - 1);
-        if (prevEntry != null && prevEntry.currentMove != null) {
-            PlayedMove prevMove = prevEntry.currentMove;
-            contHistScore = history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
-        }
-
-        SearchStackEntry prevEntry2 = ss.get(ply - 2);
-        if (prevEntry2 != null && prevEntry2.currentMove != null) {
-            PlayedMove prevMove2 = prevEntry2.currentMove;
-            contHistScore += history.getContHistTable().get(prevMove2.move, prevMove2.piece, move, piece, white);
+        for (int contHistPly : config.contHistPlies) {
+            SearchStackEntry entry = ss.get(ply - contHistPly);
+            if (entry != null && entry.currentMove != null) {
+                PlayedMove prevMove = entry.currentMove;
+                contHistScore += history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
+            }
         }
         return contHistScore;
     }

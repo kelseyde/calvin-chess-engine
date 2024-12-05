@@ -41,7 +41,7 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, boolean failHigh) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, long threats, boolean failHigh) {
 
         List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
 
@@ -54,7 +54,7 @@ public class SearchHistory {
 
                 boolean good = bestMove.move.equals(playedMove.move);
                 if (good || failHigh) {
-                    quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, good);
+                    quietHistoryTable.update(playedMove.move, playedMove.piece, depth, threats, white, good);
                     for (int prevPly : config.contHistPlies) {
                         SearchStackEntry prevEntry = ss.get(ply - prevPly);
                         if (prevEntry != null && prevEntry.currentMove != null) {

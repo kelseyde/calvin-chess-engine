@@ -43,6 +43,7 @@ public class MovePicker {
 
     final Move ttMove;
     final Board board;
+    final long threats;
     final int ply;
 
     Stage stage;
@@ -57,12 +58,13 @@ public class MovePicker {
     ScoredMove[] quiets;
 
     public MovePicker(
-            EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+            EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, long threats, Move ttMove, boolean inCheck) {
         this.config = config;
         this.movegen = movegen;
         this.history = history;
         this.board = board;
         this.ss = ss;
+        this.threats = threats;
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
@@ -232,7 +234,7 @@ public class MovePicker {
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
             final MoveType type = MoveType.BAD_NOISY;
-            final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+            final int historyScore = history.getQuietHistoryTable().get(move, piece, threats, white);
             final int contHistScore = continuationHistoryScore(move, piece, white);
             score = historyScore + contHistScore;
             return new ScoredMove(move, piece, captured, score, historyScore, type);
@@ -254,7 +256,7 @@ public class MovePicker {
 
     protected ScoredMove scoreQuiet(Board board, Move move, Piece piece, Piece captured, int ply) {
         boolean white = board.isWhite();
-        int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+        int historyScore = history.getQuietHistoryTable().get(move, piece, threats, white);
         int contHistScore = continuationHistoryScore(move, piece, white);
         int score = historyScore + contHistScore;
         return new ScoredMove(move, piece, captured, score, historyScore, MoveType.QUIET);

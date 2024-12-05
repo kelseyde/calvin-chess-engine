@@ -464,8 +464,8 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
-            playedMove.quiet = scoredMove.isQuiet();
-            playedMove.capture = scoredMove.captured() != null;
+            playedMove.quiet = captured == null;
+            playedMove.capture = captured != null;
 
             if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
                 reduction += futilityReduction;

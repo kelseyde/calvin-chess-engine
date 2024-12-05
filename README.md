@@ -11,6 +11,8 @@ Calvin is a superhuman chess engine written in Java.
 
 It features a a classical alpha-beta search algorithm paired with an NNUE evaluation function. 
 
+Calvin can play standard chess, fischer random chess (FRC) and double fischer random chess (DFRC).
+
 Calvin is rated roughly 3400 elo (~62nd place) on the [Computer Chess Rating Lists](https://www.computerchess.org.uk/ccrl/4040/) leaderboards.
 
 My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented so that first-time readers can learn too. If you find some information is missing or poorly explained, don't hesitate to let me know!

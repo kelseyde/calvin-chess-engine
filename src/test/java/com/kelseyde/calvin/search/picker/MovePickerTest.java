@@ -7,6 +7,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.utils.Bench;
+import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -40,7 +41,7 @@ public class MovePickerTest {
             history.getKillerTable().add(0, killer1);
             history.getKillerTable().add(0, killer2);
 
-            MovePicker picker = new MovePicker(moveGenerator, ss, history, board, 0, ttMove, false);
+            MovePicker picker = new MovePicker(TestUtils.CONFIG, moveGenerator, ss, history, board, 0, ttMove, false);
 
             int maxIndex = -1;
             List<Move> tried = new ArrayList<>();
@@ -83,7 +84,7 @@ public class MovePickerTest {
 
             Move ttMove = legalMoves.get(new Random().nextInt(legalMoves.size()));
 
-            QuiescentMovePicker picker = new QuiescentMovePicker(moveGenerator, ss, history, board, 0, ttMove, false);
+            QuiescentMovePicker picker = new QuiescentMovePicker(TestUtils.CONFIG, moveGenerator, ss, history, board, 0, ttMove, false);
             picker.setFilter(MoveGenerator.MoveFilter.NOISY);
 
             int maxIndex = -1;
@@ -126,7 +127,7 @@ public class MovePickerTest {
         history.getKillerTable().add(0, killer2);
 
         SearchStack ss = new SearchStack();
-        MovePicker picker = new MovePicker(moveGenerator, ss, history, board, 0, ttMove, false);
+        MovePicker picker = new MovePicker(TestUtils.CONFIG, moveGenerator, ss, history, board, 0, ttMove, false);
         List<Move> legalMoves = moveGenerator.generateMoves(board);
 
         int maxIndex = -1;
@@ -172,7 +173,7 @@ public class MovePickerTest {
         String fen = "rnbqkbnr/1p2pppp/p2p4/1Bp5/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1";
         Board board = FEN.toBoard(fen);
 
-        MovePicker picker = new MovePicker(moveGenerator, new SearchStack(), new SearchHistory(new EngineConfig()), board, 0, null, true);
+        MovePicker picker = new MovePicker(TestUtils.CONFIG, moveGenerator, new SearchStack(), new SearchHistory(new EngineConfig()), board, 0, null, true);
 
         List<ScoredMove> moves = new ArrayList<>();
         while (true) {

@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search.picker;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.PlayedMove;
@@ -35,6 +36,7 @@ public class MovePicker {
         END
     }
 
+    final EngineConfig config;
     final MoveGenerator movegen;
     final SearchHistory history;
     final SearchStack ss;
@@ -55,7 +57,8 @@ public class MovePicker {
     ScoredMove[] quiets;
 
     public MovePicker(
-            MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+            EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+        this.config = config;
         this.movegen = movegen;
         this.history = history;
         this.board = board;
@@ -146,7 +149,7 @@ public class MovePicker {
         stage = nextStage;
         final Piece piece = board.pieceAt(ttMove.from());
         final Piece captured = ttMove.isEnPassant() ? Piece.PAWN : board.pieceAt(ttMove.to());
-        return new ScoredMove(ttMove, piece, captured, MoveType.TT_MOVE.bonus, 0, MoveType.TT_MOVE);
+        return new ScoredMove(ttMove, piece, captured, 0, 0, MoveType.TT_MOVE);
     }
 
     protected ScoredMove generate(MoveFilter filter, Stage nextStage) {
@@ -216,13 +219,14 @@ public class MovePicker {
 
         final boolean white = board.isWhite();
 
-        int noisyScore = 0;
+        int score = 0;
 
-        if (move.isPromotion()) {
+        boolean promotion = move.promoPiece() != null;
+        if (promotion) {
             // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-            noisyScore += type.bonus;
-            return new ScoredMove(move, piece, captured, noisyScore, 0, type);
+            score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
+            return new ScoredMove(move, piece, captured, score, 0, type);
         }
 
         if (quietCheck) {
@@ -230,50 +234,41 @@ public class MovePicker {
             final MoveType type = MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white);
-            noisyScore = type.bonus + historyScore + contHistScore;
-            return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
+            score = historyScore + contHistScore;
+            return new ScoredMove(move, piece, captured, score, historyScore, type);
         }
 
+        score += SEE.value(captured);
+
+        final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
+        score += historyScore / 8;
+
+        final int threshold = -score / 4 + config.seeNoisyOffset.value;
+
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
-        final MoveType type = SEE.see(board, move, -SEE.value(Piece.PAWN)) ?
+        final MoveType type = SEE.see(board, move, threshold) ?
                 MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
-        noisyScore += type.bonus;
-
-        final int materialDelta = SEE.value(captured) - SEE.value(piece);
-        noisyScore += materialDelta;
-
-        // Add MVV score to the noisy score
-        noisyScore += MoveType.MVV_OFFSET * captured.index();
-
-        // Tie-break with capture history
-        final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
-        noisyScore += historyScore;
-
-        return new ScoredMove(move, piece, captured, noisyScore, historyScore, type);
+        return new ScoredMove(move, piece, captured, score, historyScore, type);
     }
 
     protected ScoredMove scoreQuiet(Board board, Move move, Piece piece, Piece captured, int ply) {
         boolean white = board.isWhite();
         int historyScore = history.getQuietHistoryTable().get(move, piece, white);
         int contHistScore = continuationHistoryScore(move, piece, white);
-        int score = MoveType.QUIET.bonus + historyScore + contHistScore;
+        int score = historyScore + contHistScore;
         return new ScoredMove(move, piece, captured, score, historyScore, MoveType.QUIET);
     }
 
     int continuationHistoryScore(Move move, Piece piece, boolean white) {
         int contHistScore = 0;
         // Get the continuation history score for the move
-        SearchStackEntry prevEntry = ss.get(ply - 1);
-        if (prevEntry != null && prevEntry.currentMove != null) {
-            PlayedMove prevMove = prevEntry.currentMove;
-            contHistScore = history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
-        }
-
-        SearchStackEntry prevEntry2 = ss.get(ply - 2);
-        if (prevEntry2 != null && prevEntry2.currentMove != null) {
-            PlayedMove prevMove2 = prevEntry2.currentMove;
-            contHistScore += history.getContHistTable().get(prevMove2.move, prevMove2.piece, move, piece, white);
+        for (int contHistPly : config.contHistPlies) {
+            SearchStackEntry entry = ss.get(ply - contHistPly);
+            if (entry != null && entry.currentMove != null) {
+                PlayedMove prevMove = entry.currentMove;
+                contHistScore += history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
+            }
         }
         return contHistScore;
     }

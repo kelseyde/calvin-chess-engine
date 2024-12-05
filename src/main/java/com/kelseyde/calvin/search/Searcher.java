@@ -231,8 +231,6 @@ public class Searcher implements Search {
 
         final boolean inCheck = movegen.isCheck(board);
 
-        final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
-
         // Check extension - https://www.chessprogramming.org/Check_Extension
         // If we are in check then there is a forcing sequence, so we could benefit from searching one ply deeper to
         // retrieve a more accurate evaluation.
@@ -364,6 +362,7 @@ public class Searcher implements Search {
         HashFlag flag = HashFlag.UPPER;
 
         sse.searchedMoves = new ArrayList<>();
+        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         int movesSearched = 0;
 
         while (true) {
@@ -689,7 +688,7 @@ public class Searcher implements Search {
             filter = MoveFilter.CAPTURES_ONLY;
         }
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         movePicker.setFilter(filter);
 
         int movesSearched = 0;
@@ -730,7 +729,7 @@ public class Searcher implements Search {
             // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
             // chains, such as capturing with the queen a pawn defended by another pawn.
             final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-            if (!SEE.see(board, move, seeThreshold)) {
+            if (!inCheck && !SEE.see(board, move, seeThreshold)) {
                 continue;
             }
 

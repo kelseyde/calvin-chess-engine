@@ -41,34 +41,29 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss, boolean failHigh) {
+            PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss) {
 
         List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
 
-        if (bestMove.captured() == null && failHigh) {
+        if (bestMove.captured() == null) {
             killerTable.add(ply, bestMove.move());
         }
 
         for (PlayedMove playedMove : playedMoves) {
             if (bestMove.captured() == null && playedMove.captured() == null) {
-
                 boolean good = bestMove.move().equals(playedMove.move());
-                if (good || failHigh) {
-                    quietHistoryTable.update(playedMove.move(), playedMove.piece(), depth, white, good);
-                    for (int prevPly : config.contHistPlies) {
-                        SearchStackEntry prevEntry = ss.get(ply - prevPly);
-                        if (prevEntry != null && prevEntry.currentMove != null) {
-                            PlayedMove prevMove = prevEntry.currentMove;
-                            contHistTable.update(prevMove.move(), prevMove.piece(), playedMove.move(), playedMove.piece(), depth, white, good);
-                        }
+                quietHistoryTable.update(playedMove.move(), playedMove.piece(), depth, white, good);
+                for (int prevPly : config.contHistPlies) {
+                    SearchStackEntry prevEntry = ss.get(ply - prevPly);
+                    if (prevEntry != null && prevEntry.currentMove != null) {
+                        PlayedMove prevMove = prevEntry.currentMove;
+                        contHistTable.update(prevMove.move(), prevMove.piece(), playedMove.move(), playedMove.piece(), depth, white, good);
                     }
                 }
             }
             else if (playedMove.captured() != null) {
                 boolean good = bestMove.move().equals(playedMove.move());
-                if (good || failHigh) {
-                    captureHistoryTable.update(playedMove.piece(), playedMove.move().to(), playedMove.captured(), depth, white, good);
-                }
+                captureHistoryTable.update(playedMove.piece(), playedMove.move().to(), playedMove.captured(), depth, white, good);
             }
         }
 

@@ -45,29 +45,29 @@ public class SearchHistory {
 
         List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
 
-        if (bestMove.isQuiet() && failHigh) {
-            killerTable.add(ply, bestMove.move);
+        if (bestMove.captured() == null && failHigh) {
+            killerTable.add(ply, bestMove.move());
         }
 
         for (PlayedMove playedMove : playedMoves) {
-            if (bestMove.isQuiet() && playedMove.isQuiet()) {
+            if (bestMove.captured() == null && playedMove.captured() == null) {
 
-                boolean good = bestMove.move.equals(playedMove.move);
+                boolean good = bestMove.move().equals(playedMove.move());
                 if (good || failHigh) {
-                    quietHistoryTable.update(playedMove.move, playedMove.piece, depth, white, good);
+                    quietHistoryTable.update(playedMove.move(), playedMove.piece(), depth, white, good);
                     for (int prevPly : config.contHistPlies) {
                         SearchStackEntry prevEntry = ss.get(ply - prevPly);
                         if (prevEntry != null && prevEntry.currentMove != null) {
                             PlayedMove prevMove = prevEntry.currentMove;
-                            contHistTable.update(prevMove.move, prevMove.piece, playedMove.move, playedMove.piece, depth, white, good);
+                            contHistTable.update(prevMove.move(), prevMove.piece(), playedMove.move(), playedMove.piece(), depth, white, good);
                         }
                     }
                 }
             }
-            else if (playedMove.isCapture()) {
-                boolean good = bestMove.move.equals(playedMove.move);
+            else if (playedMove.captured() != null) {
+                boolean good = bestMove.move().equals(playedMove.move());
                 if (good || failHigh) {
-                    captureHistoryTable.update(playedMove.piece, playedMove.move.to(), playedMove.captured, depth, white, good);
+                    captureHistoryTable.update(playedMove.piece(), playedMove.move().to(), playedMove.captured(), depth, white, good);
                 }
             }
         }
@@ -106,7 +106,7 @@ public class SearchHistory {
         if (sse == null || sse.currentMove == null) {
             return 0;
         }
-        return countermoveCorrHistTable.get(white, sse.currentMove.move, sse.currentMove.piece);
+        return countermoveCorrHistTable.get(white, sse.currentMove.move(), sse.currentMove.piece());
     }
 
     private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
@@ -114,7 +114,7 @@ public class SearchHistory {
         if (sse == null || sse.currentMove == null) {
             return;
         }
-        countermoveCorrHistTable.update(sse.currentMove.move, sse.currentMove.piece, white, staticEval, score, depth);
+        countermoveCorrHistTable.update(sse.currentMove.move(), sse.currentMove.piece(), white, staticEval, score, depth);
     }
 
     public int getBestMoveStability() {

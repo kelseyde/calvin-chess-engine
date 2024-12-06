@@ -266,7 +266,7 @@ public class MovePicker {
             SearchStackEntry entry = ss.get(ply - contHistPly);
             if (entry != null && entry.currentMove != null) {
                 PlayedMove prevMove = entry.currentMove;
-                contHistScore += history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
+                contHistScore += history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
             }
         }
         return contHistScore;

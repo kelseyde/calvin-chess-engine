@@ -57,6 +57,10 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
 
     }
 
+    public static TimeControl nodes(EngineConfig config, int softNodes, int hardNodes) {
+        return new TimeControl(config, null, null, null, softNodes, hardNodes, -1);
+    }
+
     public boolean isHardLimitReached(int depth, int nodes) {
         if (nodes % 4096 != 0) return false;
         if (hardNodes > 0 && nodes >= hardNodes) return true;

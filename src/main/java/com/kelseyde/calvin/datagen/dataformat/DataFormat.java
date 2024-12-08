@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.datagen.dataformat;
 
-import com.kelseyde.calvin.board.Board;
-
 import java.util.List;
 
 public interface DataFormat<T> {

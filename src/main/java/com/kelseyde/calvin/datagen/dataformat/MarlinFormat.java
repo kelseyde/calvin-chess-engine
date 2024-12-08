@@ -1,7 +1,5 @@
 package com.kelseyde.calvin.datagen.dataformat;
 
-import com.kelseyde.calvin.utils.notation.FEN;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

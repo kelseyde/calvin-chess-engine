@@ -12,7 +12,6 @@ import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.ThreadData;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
-import com.kelseyde.calvin.uci.UCICommand.DatagenCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.time.Duration;
@@ -22,13 +21,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+/**
+ * A single worker thread that generates a batch of training data. The thread runs games until it has generated the
+ * required number of positions.
+ */
 public class DatagenThread {
 
     private final Searcher searcher;
-    private final MoveGenerator moveGenerator;
+    private final MoveGenerator movegen;
     private final Adjudicator adjudicator;
     private final TimeControl tc;
     private final Random random;
+
     private final int batchSize;
     private final int minPlies;
     private final int maxPlies;
@@ -37,8 +41,8 @@ public class DatagenThread {
 
     public DatagenThread(DatagenCommand command) {
         this.searcher = new Searcher(Engine.getInstance().getConfig(), new TranspositionTable(16), new ThreadData(false));
-        this.moveGenerator = new MoveGenerator();
-        this.adjudicator = new Adjudicator(command);
+        this.movegen = new MoveGenerator();
+        this.adjudicator = new Adjudicator(command, movegen);
         this.tc = initTimeControl(command);
         this.random = new Random();
         this.batchSize = command.batchSize();
@@ -57,6 +61,8 @@ public class DatagenThread {
     }
 
     private List<DataPoint> runGame() {
+        searcher.clearHistory();
+        adjudicator.reset();
         String[] fens = new String[maxGameLength];
         Integer[] scores = new Integer[maxGameLength];
         List<DataPoint> data;
@@ -67,20 +73,31 @@ public class DatagenThread {
             return runGame();
         }
 
+        int positionCount = 0;
+
         while (true) {
             searcher.setPosition(board);
             SearchResult searchResult = searcher.search(tc);
 
-            Move bestMove = searchResult.move();
+            Move move = searchResult.move();
             int score = searchResult.eval();
 
-            Optional<GameResult> gameResult = adjudicator.adjudicate(board, bestMove, score);
+            boolean isCheck = movegen.isCheck(board, board.isWhite());
+            boolean isCapture = board.pieceAt(move.to()) != null || move.isEnPassant();
+
+            Optional<GameResult> gameResult = adjudicator.adjudicate(board, move, score, isCheck);
             if (gameResult.isPresent()) {
                 data = convertGame(fens, scores, gameResult.get());
                 break;
             }
 
-            board.makeMove(bestMove);
+            if (!isCheck && !isCapture) {
+                fens[positionCount] = FEN.toFEN(board);
+                scores[positionCount] = board.isWhite() ? score : -score;
+                positionCount++;
+            }
+
+            board.makeMove(move);
 
         }
         return data;
@@ -113,7 +130,7 @@ public class DatagenThread {
     }
 
     private Move randomMove(Board board) {
-        List<Move> legalMoves = moveGenerator.generateMoves(board);
+        List<Move> legalMoves = movegen.generateMoves(board);
         return !legalMoves.isEmpty() ? legalMoves.get(random.nextInt(legalMoves.size())) : null;
     }
 

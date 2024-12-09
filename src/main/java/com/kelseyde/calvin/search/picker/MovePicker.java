@@ -246,8 +246,7 @@ public class MovePicker {
         final int threshold = -score / 4 + config.seeNoisyOffset.value;
 
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
-        final MoveType type = SEE.see(board, move, threshold) ?
-                MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        final MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }
@@ -267,7 +266,7 @@ public class MovePicker {
             SearchStackEntry entry = ss.get(ply - contHistPly);
             if (entry != null && entry.currentMove != null) {
                 PlayedMove prevMove = entry.currentMove;
-                contHistScore += history.getContHistTable().get(prevMove.move, prevMove.piece, move, piece, white);
+                contHistScore += history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
             }
         }
         return contHistScore;

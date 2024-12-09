@@ -149,9 +149,6 @@ public class Searcher implements Search {
             td.depth++;
         }
 
-        // Clear move ordering cache and return the search result
-        history.getKillerTable().clear();
-
         if (bestMoveRoot == null) {
             // If time expired before a best move was found in search, pick the first legal move.
             bestMoveRoot = rootMoves.get(0);

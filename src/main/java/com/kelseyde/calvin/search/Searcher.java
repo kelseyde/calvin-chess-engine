@@ -322,6 +322,7 @@ public class Searcher implements Search {
 
                 ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();
+                td.nodes++;
 
                 final int base = config.nmpBase.value;
                 final int divisor = config.nmpDivisor.value;

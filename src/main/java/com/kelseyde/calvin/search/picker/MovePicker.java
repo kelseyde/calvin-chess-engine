@@ -185,7 +185,11 @@ public class MovePicker {
             int goodIndex = 0;
             for (Move move : stagedMoves) {
                 ScoredMove scoredMove = scoreMove(board, move, ttMove, ply);
-                goodNoisies[goodIndex++] = scoredMove;
+                // In quiescence search, only consider good noisies or quiet checks,
+                // unless we are in check, in which case consider all moves.
+                if (inCheck || (scoredMove.isGoodNoisy() || scoredMove.captured() == null)) {
+                    goodNoisies[goodIndex++] = scoredMove;
+                }
             }
         }
 

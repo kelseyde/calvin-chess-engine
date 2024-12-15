@@ -324,6 +324,7 @@ public class Searcher implements Search {
 
                 ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();
+                td.nodes++;
 
                 final int base = config.nmpBase.value;
                 final int divisor = config.nmpDivisor.value;
@@ -366,7 +367,6 @@ public class Searcher implements Search {
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
-            PlayedMove playedMove = new PlayedMove(move, piece, captured);
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
@@ -466,13 +466,11 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
-            playedMove.quiet = scoredMove.isQuiet();
-            playedMove.capture = scoredMove.captured() != null;
-
             if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
                 reduction += futilityReduction;
             }
 
+            PlayedMove playedMove = new PlayedMove(move, piece, captured);
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);
 
@@ -538,11 +536,10 @@ public class Searcher implements Search {
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
-        if (bestMove != null) {
+        if (bestScore >= beta) {
             final PlayedMove best = sse.bestMove;
             final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
-            final boolean failHigh = bestScore >= beta;
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, threats, failHigh);
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, threats);
         }
 
         if (!inCheck

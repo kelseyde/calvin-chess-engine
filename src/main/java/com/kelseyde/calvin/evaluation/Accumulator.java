@@ -42,8 +42,8 @@ public class Accumulator {
         }
     }
 
-    public void add(int index, boolean whitePerspective) {
-        final int offset = index * HIDDEN_SIZE;
+    public void add(Feature feature, boolean whitePerspective, boolean mirror) {
+        final int offset = feature.index(whitePerspective, mirror) * HIDDEN_SIZE;
         final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
@@ -55,9 +55,20 @@ public class Accumulator {
         }
     }
 
-    public void add(int wx1, int bx1) {
-        final int wOffset = wx1 * HIDDEN_SIZE;
-        final int bOffset = bx1 * HIDDEN_SIZE;
+    public void apply(AccumulatorUpdate update, boolean whiteMirror, boolean blackMirror) {
+        switch (update.getUpdateType()) {
+            case ADD -> add(update, whiteMirror, blackMirror);
+            case ADD_SUB -> addSub(update, whiteMirror, blackMirror);
+            case ADD_SUB_SUB -> addSubSub(update, whiteMirror, blackMirror);
+            case ADD_ADD_SUB_SUB -> addAddSubSub(update, whiteMirror, blackMirror);
+        }
+    }
+
+    public void add(AccumulatorUpdate update, boolean whiteMirror, boolean blackMirror) {
+
+        final Feature add1 = update.adds[0];
+        final int wOffset = add1.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset = add1.index(false, blackMirror) * HIDDEN_SIZE;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
@@ -72,11 +83,15 @@ public class Accumulator {
         }
     }
 
-    public void addSub(int wx1, int bx1, int wx2, int bx2) {
-        final int wOffset1 = wx1 * HIDDEN_SIZE;
-        final int bOffset1 = bx1 * HIDDEN_SIZE;
-        final int wOffset2 = wx2 * HIDDEN_SIZE;
-        final int bOffset2 = bx2 * HIDDEN_SIZE;
+    public void addSub(AccumulatorUpdate update, boolean whiteMirror, boolean blackMirror) {
+
+        final Feature add1 = update.adds[0];
+        final Feature sub1 = update.subs[0];
+
+        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset2 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset2 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
@@ -93,13 +108,18 @@ public class Accumulator {
         }
     }
 
-    public void addSubSub(int wx1, int bx1, int wx2, int bx2, int wx3, int bx3) {
-        final int wOffset1 = wx1 * HIDDEN_SIZE;
-        final int bOffset1 = bx1 * HIDDEN_SIZE;
-        final int wOffset2 = wx2 * HIDDEN_SIZE;
-        final int bOffset2 = bx2 * HIDDEN_SIZE;
-        final int wOffset3 = wx3 * HIDDEN_SIZE;
-        final int bOffset3 = bx3 * HIDDEN_SIZE;
+    public void addSubSub(AccumulatorUpdate update, boolean whiteMirror, boolean blackMirror) {
+
+        final Feature add1 = update.adds[0];
+        final Feature sub1 = update.subs[0];
+        final Feature sub2 = update.subs[1];
+
+        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset2 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset2 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset3 = sub2.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset3 = sub2.index(false, blackMirror) * HIDDEN_SIZE;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
@@ -118,15 +138,21 @@ public class Accumulator {
         }
     }
 
-    public void addAddSubSub(int wx1, int bx1, int wx2, int bx2, int wx3, int bx3, int wx4, int bx4) {
-        final int wOffset1 = wx1 * HIDDEN_SIZE;
-        final int bOffset1 = bx1 * HIDDEN_SIZE;
-        final int wOffset2 = wx2 * HIDDEN_SIZE;
-        final int bOffset2 = bx2 * HIDDEN_SIZE;
-        final int wOffset3 = wx3 * HIDDEN_SIZE;
-        final int bOffset3 = bx3 * HIDDEN_SIZE;
-        final int wOffset4 = wx4 * HIDDEN_SIZE;
-        final int bOffset4 = bx4 * HIDDEN_SIZE;
+    public void addAddSubSub(AccumulatorUpdate update, boolean whiteMirror, boolean blackMirror) {
+
+        final Feature add1 = update.adds[0];
+        final Feature add2 = update.adds[1];
+        final Feature sub1 = update.subs[0];
+        final Feature sub2 = update.subs[1];
+
+        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset2 = add2.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset2 = add2.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset3 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset3 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset4 = sub2.index(true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset4 = sub2.index(false, blackMirror) * HIDDEN_SIZE;
 
         for (int i = 0; i < loopLength; i += SPECIES.length()) {
 
@@ -151,6 +177,69 @@ public class Accumulator {
         return new Accumulator(
                 Arrays.copyOf(whiteFeatures, whiteFeatures.length),
                 Arrays.copyOf(blackFeatures, blackFeatures.length));
+    }
+
+    public static class AccumulatorUpdate {
+
+        public AccumulatorUpdate() {}
+
+        public Feature[] adds = new Feature[2];
+        public Feature[] subs = new Feature[2];
+
+        public int addCount = 0;
+        public int subCount = 0;
+
+        public void pushAdd(Feature add) {
+            adds[addCount++] = add;
+        }
+
+        public void pushSub(Feature sub) {
+            subs[subCount++] = sub;
+        }
+
+        public void addSub(Feature add, Feature sub) {
+            pushAdd(add);
+            pushSub(sub);
+        }
+
+        public void addSubSub(Feature add, Feature sub1, Feature sub2) {
+            pushAdd(add);
+            pushSub(sub1);
+            pushSub(sub2);
+        }
+
+        public void addAddSubSub(Feature add1, Feature add2, Feature sub1, Feature sub2) {
+            pushAdd(add1);
+            pushAdd(add2);
+            pushSub(sub1);
+            pushSub(sub2);
+        }
+
+        public UpdateType getUpdateType() {
+            if (addCount == 1 && subCount == 0) {
+                return UpdateType.ADD;
+            }
+            else if (addCount == 1 && subCount == 1) {
+                return UpdateType.ADD_SUB;
+            }
+            else if (addCount == 1 && subCount == 2) {
+                return UpdateType.ADD_SUB_SUB;
+            }
+            else if (addCount == 2 && subCount == 2) {
+                return UpdateType.ADD_ADD_SUB_SUB;
+            }
+            else {
+                throw new IllegalStateException("Unexpected update type");
+            }
+        }
+
+    }
+
+    public enum UpdateType {
+        ADD,
+        ADD_SUB,
+        ADD_SUB_SUB,
+        ADD_ADD_SUB_SUB
     }
 
 }

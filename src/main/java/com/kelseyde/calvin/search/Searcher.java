@@ -365,6 +365,8 @@ public class Searcher implements Search {
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
+            int moveFutilityReduction = 0;
+
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
@@ -387,7 +389,7 @@ public class Searcher implements Search {
                     int delta = (alpha - staticEval) - pruneMargin;
 
                     int maxReduction = config.fpDepth.value;
-                    futilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
+                    moveFutilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
                 }
             }
 
@@ -465,7 +467,7 @@ public class Searcher implements Search {
             td.nodes++;
 
             if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
-                reduction += futilityReduction;
+                reduction += futilityReduction + moveFutilityReduction;
             }
 
             PlayedMove playedMove = new PlayedMove(move, piece, captured);

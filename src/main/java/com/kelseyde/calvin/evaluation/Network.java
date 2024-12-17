@@ -3,6 +3,7 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -16,6 +17,7 @@ import java.nio.ByteOrder;
 public record Network(int inputSize,
                       int hiddenSize,
                       Activation activation,
+                      boolean horizontalMirror,
                       int[] quantisations,
                       int scale,
                       short[] inputWeights,
@@ -33,6 +35,7 @@ public record Network(int inputSize,
         private int inputSize;
         private int hiddenSize;
         private Activation activation;
+        private boolean horizontalMirror;
         private int[] quantisations;
         private int scale;
 
@@ -53,6 +56,11 @@ public record Network(int inputSize,
 
         public Builder hiddenSize(int hiddenSize) {
             this.hiddenSize = hiddenSize;
+            return this;
+        }
+
+        public Builder horizontalMirror(boolean horizontalMirror) {
+            this.horizontalMirror = horizontalMirror;
             return this;
         }
 
@@ -110,12 +118,45 @@ public record Network(int inputSize,
                 }
 
                 return new Network(
-                        inputSize, hiddenSize, activation, quantisations, scale, inputWeights, inputBiases, outputWeights, outputBias);
+                        inputSize, hiddenSize, activation, horizontalMirror, quantisations, scale,
+                        inputWeights, inputBiases, outputWeights, outputBias
+                );
             } catch (IOException e) {
                 throw new RuntimeException("Failed to load NNUE network", e);
             }
         }
 
+    }
+
+    public void save(String outputPath) {
+        try (FileOutputStream outputStream = new FileOutputStream(outputPath)) {
+
+            int inputWeightsOffset = inputSize * hiddenSize;
+            int inputBiasesOffset = hiddenSize;
+            int outputWeightsOffset = hiddenSize * 2;
+
+            ByteBuffer buffer = ByteBuffer.allocate((inputWeightsOffset + inputBiasesOffset + outputWeightsOffset + 1) * 2)
+                    .order(ByteOrder.LITTLE_ENDIAN);
+
+            for (int i = 0; i < inputWeightsOffset; i++) {
+                buffer.putShort(inputWeights[i]);
+            }
+
+            for (int i = 0; i < inputBiasesOffset; i++) {
+                buffer.putShort(inputBiases[i]);
+            }
+
+            for (int i = 0; i < outputWeightsOffset; i++) {
+                buffer.putShort(outputWeights[i]);
+            }
+
+            buffer.putShort(outputBias);
+
+            outputStream.write(buffer.array());
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save NNUE network", e);
+        }
     }
 
 }

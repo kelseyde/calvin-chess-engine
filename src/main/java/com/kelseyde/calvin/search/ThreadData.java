@@ -3,21 +3,20 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Move;
 
-import java.time.Instant;
-
 public class ThreadData {
 
     public final boolean mainThread;
-    public Instant start;
     public int nodes;
     public int[][] nodesPerMove;
     public int depth;
+    public int seldepth;
 
     public ThreadData(boolean mainThread) {
         this.mainThread = mainThread;
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
         this.depth = 1;
+        this.seldepth = 0;
     }
 
     public void addNodes(Move move, int nodes) {
@@ -34,7 +33,6 @@ public class ThreadData {
     }
 
     public void reset() {
-        this.start = Instant.now();
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
         this.depth = 1;

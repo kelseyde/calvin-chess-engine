@@ -46,23 +46,29 @@ public class Pretty {
         UCI.write("");
     }
 
-    public static void writeSearchInfo(int depth, int score, long time, int nodes, long nps, float hashfull, List<Move> pv) {
+    public static void writeSearchInfo(int depth, int seldepth, int score, long time, int nodes, long nps, float hashfull, List<Move> pv) {
 
         String formattedDepth = formatDepth(depth);
+        String formattedSeldepth = formatSeldepth(seldepth);
         String formattedScore = formatScore(score);
         String formattedTime = formatTime(time);
         String formattedNodes = formatNodes(nodes);
         String formattedNps = formatNps(nps);
         String formattedHashfull = formatHashfull(hashfull);
         String formattedPv = formatPv(pv);
-        UCI.write(String.format(" %s  %s  %s  %s  %s   %s   %s",
-                formattedDepth, formattedScore, formattedTime, formattedNodes, formattedNps, formattedHashfull, formattedPv));
+        UCI.write(String.format(" %s  %s  %s  %s  %s  %s   %s   %s",
+                formattedDepth, formattedSeldepth, formattedScore, formattedTime, formattedNodes, formattedNps, formattedHashfull, formattedPv));
 
     }
 
     private static String formatDepth(int depth) {
         final int depthLength = 3;
         return BLUE + " ".repeat(depthLength - String.valueOf(depth).length()) + depth + RESET;
+    }
+
+    private static String formatSeldepth(int seldepth) {
+        final int depthLength = 3;
+        return GRAY + " ".repeat(depthLength - String.valueOf(seldepth).length()) + seldepth + RESET;
     }
 
     private static String formatScore(int score) {

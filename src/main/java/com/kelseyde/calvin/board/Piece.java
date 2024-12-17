@@ -15,6 +15,8 @@ public enum Piece {
     KING    (5, "k");
 
     public static final int COUNT = 6;
+    public static final int WHITE_PIECES = 6;
+    public static final int BLACK_PIECES = 7;
 
     final int index;
 

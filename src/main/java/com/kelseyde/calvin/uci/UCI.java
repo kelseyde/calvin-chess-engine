@@ -279,6 +279,7 @@ public class UCI {
 
     public static void writeSearchInfo(SearchResult searchResult) {
         int depth = searchResult.depth();
+        int seldepth = searchResult.seldepth();
         int score = searchResult.eval();
         long time = searchResult.time();
         int nodes = searchResult.nodes();
@@ -286,11 +287,11 @@ public class UCI {
         int hashfull = ENGINE.hashfull();
         List<Move> pv = ENGINE.extractPrincipalVariation();
         if (Options.pretty) {
-            Pretty.writeSearchInfo(depth, score, time, nodes, nps, hashfull, pv);
+            Pretty.writeSearchInfo(depth, seldepth, score, time, nodes, nps, hashfull, pv);
         } else {
             String pvString = pv.stream().map(Move::toUCI).collect(Collectors.joining(" "));
-            write(String.format("info depth %s score %s nodes %s time %s nps %s hashfull %s pv %s",
-                    depth, formatScore(score), nodes, time, nps, hashfull, pvString));
+            write(String.format("info depth %s seldepth %s score %s nodes %s time %s nps %s hashfull %s pv %s",
+                    depth, seldepth, formatScore(score), nodes, time, nps, hashfull, pvString));
         }
     }
 

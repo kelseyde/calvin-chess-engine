@@ -13,6 +13,10 @@ public class Bits {
         return board & (board - 1);
     }
 
+    public static long pop(long bb, int sq) {
+        return bb ^ of(sq);
+    }
+
     public static int count(long board) {
         return Long.bitCount(board);
     }
@@ -93,6 +97,14 @@ public class Bits {
 
         public static int of(int rank, int file) {
             return (rank << 3) + file;
+        }
+
+        public static int flipRank(int sq) {
+            return sq ^ 56;
+        }
+
+        public static int flipFile(int sq) {
+            return sq ^ 7;
         }
 
         public static boolean isValid(int sq) {

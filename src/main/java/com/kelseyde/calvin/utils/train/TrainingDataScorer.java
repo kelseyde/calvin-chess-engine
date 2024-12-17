@@ -159,7 +159,7 @@ public class TrainingDataScorer {
             return "";
         }
         searcher.setPosition(board);
-        TimeControl tc = new TimeControl(ENGINE_CONFIG, MAX_SEARCH_TIME, MAX_SEARCH_TIME, command.softNodes(), command.hardNodes(), -1);
+        TimeControl tc = new TimeControl(ENGINE_CONFIG, Instant.now(), MAX_SEARCH_TIME, MAX_SEARCH_TIME, command.softNodes(), command.hardNodes(), -1);
         SearchResult searchResult;
         try {
              searchResult = searcher.search(tc);

@@ -13,10 +13,12 @@
 - [ ] Check LazySMP still works
 - [ ] Put Calvin back on Lichess
 - [ ] Stop using int everywhere (use byte/short where possible)
+- [ ] Test invariants: alpha < beta && best score <= alpha
 - [x] Find solution to CCRL/ChessGUI/Vector API issue
 
 ### Search
 
+- [ ] Use int16 for history scores
 - [ ] SPRT SPSA tune branch
 - [ ] LTC 1024 net
 - [ ] Threefold repetition ( CCRL bug ? )
@@ -50,8 +52,8 @@
 - [x] History pruning
 - [x] Reverse futility reductions
 - [x] Futility reductions
-- [ ] SEE pruning ( tried )
-- [ ] Faster SEE ( tried )
+- [x] SEE pruning
+- [x] Faster SEE 
 - [ ] Syzygy TB
 - [ ] Cuckoo hashing repetition detection
 - [x] Check root legal moves, if only one, play instantly
@@ -117,7 +119,7 @@
 - [ ] Improve display visuals + add info
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
-- [ ] Add seldepth to info
+- [x] Add seldepth to info
 - [x] Add hashfull to info
 - [ ] MultiPV
 - [x] Coloured output

@@ -9,6 +9,8 @@ import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 public class Bench {
@@ -77,15 +79,16 @@ public class Bench {
         Search search = engine.getSearcher();
         search.setThreadCount(1);
         long nodes = 0;
-        long time = 0;
 
+        Instant start = Instant.now();
         for (String fen : FENS) {
             search.clearHistory();
             search.setPosition(FEN.toBoard(fen));
             SearchResult result = search.search(tc);
             nodes += result.nodes();
-            time += result.time();
         }
+        Instant end = Instant.now();
+        long time = Duration.between(start, end).toMillis();
 
         long nps = (nodes / time) * 1000;
         UCI.setOutputEnabled(true);

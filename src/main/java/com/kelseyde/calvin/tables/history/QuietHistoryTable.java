@@ -21,9 +21,19 @@ public class QuietHistoryTable extends AbstractHistoryTable {
 
     public void update(Move move, Piece piece, int depth, long threats, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
-        int threatIndex = Bits.contains(threats, move.to()) ? 1 : 0;
-        int current = table[colourIndex][piece.index()][move.to()][threatIndex];
+
         int bonus = good ? bonus(depth) : malus(depth);
+        int otherBonus = bonus / 2;
+
+        int threatIndex = Bits.contains(threats, move.to()) ? 1 : 0;
+        int otherThreadIndex = threatIndex == 0 ? 1 : 0;
+
+        update(move, piece, colourIndex, threatIndex, bonus);
+        update(move, piece, colourIndex, otherThreadIndex, otherBonus);
+    }
+
+    private void update(Move move, Piece piece, int colourIndex, int threatIndex, int bonus) {
+        int current = table[colourIndex][piece.index()][move.to()][threatIndex];
         int update = gravity(current, bonus);
         table[colourIndex][piece.index()][move.to()][threatIndex] = update;
     }

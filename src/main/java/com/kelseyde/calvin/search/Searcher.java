@@ -441,33 +441,6 @@ public class Searcher implements Search {
                 continue;
             }
 
-            // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
-            int extension = 0;
-            if (!rootNode
-                    && !excluded
-                    && depth >= 8
-                    && ttHit
-                    && move.equals(ttMove)
-                    && ttEntry.depth() >= depth - 3
-                    && (ttEntry.flag() == HashFlag.EXACT || ttEntry.flag() == HashFlag.LOWER)
-                    && !Score.isMateScore(ttEntry.score())) {
-
-                // TODO - try other formulas for sBeta ?
-                int sBeta = ttEntry.score() - depth * 14 / 16;
-
-                // TODO - try other formulas for sDepth ?
-                int sDepth = (depth - 1) / 2;
-
-                sse.excludedMove = move;
-                int score = search(sDepth, ply, sBeta - 1, sBeta);
-                sse.excludedMove = null;
-
-                if (score < sBeta) {
-                    extension = 1;
-                }
-
-            }
-
             // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
             // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
             // promotion, let's assume it's less likely to be good, and fully skip searching that move.
@@ -495,6 +468,33 @@ public class Searcher implements Search {
                         config.seeNoisyMargin.value * depth * depth;
                 if (!SEE.see(board, move, threshold)) {
                     continue;
+                }
+
+            }
+
+            // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
+            int extension = 0;
+            if (!rootNode
+                    && !excluded
+                    && depth >= 5
+                    && ttHit
+                    && move.equals(ttMove)
+                    && ttEntry.depth() >= depth - 4
+                    && (ttEntry.flag() == HashFlag.EXACT || ttEntry.flag() == HashFlag.LOWER)
+                    && !Score.isMateScore(ttEntry.score())) {
+
+                // TODO - try other formulas for sBeta ?
+                int sBeta = ttEntry.score() - 2 * depth;
+
+                // TODO - try other formulas for sDepth ?
+                int sDepth = (depth - 1) / 2;
+
+                sse.excludedMove = move;
+                int score = search(sDepth, ply, sBeta - 1, sBeta);
+                sse.excludedMove = null;
+
+                if (score < sBeta) {
+                    extension = 1;
                 }
 
             }

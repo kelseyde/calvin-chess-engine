@@ -575,12 +575,7 @@ public class Searcher implements Search {
 
         if (movesSearched == 0) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
-            if (excluded) {
-                // If excluded then there's at least 1 legal move, so it's not mate or stalemate.
-                return alpha;
-            } else {
-                return inCheck ? -Score.MATE + ply : Score.DRAW;
-            }
+            return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
         if (bestScore >= beta) {

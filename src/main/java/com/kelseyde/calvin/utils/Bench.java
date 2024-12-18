@@ -70,7 +70,7 @@ public class Bench {
 
     private static final int BENCH_DEPTH = 10;
 
-    public static void run(Engine engine) {
+    public static void run(Engine engine, boolean exit) {
 
         UCI.setOutputEnabled(false);
         GoCommand command = new GoCommand(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE,
@@ -93,6 +93,9 @@ public class Bench {
         long nps = (nodes / time) * 1000;
         UCI.setOutputEnabled(true);
         UCI.write(String.format("%s nodes %s nps", nodes, nps));
+        if (exit) {
+            UCI.handleQuit(null);
+        }
 
     }
 

@@ -71,7 +71,9 @@ public class Bench {
     public static void run(Engine engine) {
 
         UCI.setOutputEnabled(false);
-        TimeControl tc = TimeControl.init(engine.getConfig(), Board.from(FEN.STARTPOS), new GoCommand(-1, -1, -1, -1, -1, -1, BENCH_DEPTH, -1, false));
+        GoCommand command = new GoCommand(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE,
+                Integer.MIN_VALUE, Integer.MIN_VALUE, BENCH_DEPTH, Integer.MIN_VALUE, false);
+        TimeControl tc = TimeControl.init(engine.getConfig(), Board.from(FEN.STARTPOS), command);
         Search search = engine.getSearcher();
         search.setThreadCount(1);
         long nodes = 0;

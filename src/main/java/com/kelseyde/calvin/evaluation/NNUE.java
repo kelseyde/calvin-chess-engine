@@ -77,11 +77,12 @@ public class NNUE {
 
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective) {
         final int kingSquare = board.kingSquare(whitePerspective);
-        final boolean mirror = NETWORK.horizontalMirror() && shouldMirror(kingSquare);
+        final boolean mirror = shouldMirror(kingSquare);
         fullRefresh(board, acc, whitePerspective, mirror);
     }
 
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror) {
+        acc.mirrored[Colour.index(whitePerspective)] = mirror;
         acc.reset(whitePerspective);
         long pieces = board.getOccupied();
         while (pieces != 0) {
@@ -89,7 +90,7 @@ public class NNUE {
             final Piece piece = board.pieceAt(square);
             final boolean whitePiece = Bits.contains(board.getWhitePieces(), square);
             final Feature feature = new Feature(piece, square, whitePiece);
-            acc.add(feature, whitePerspective, mirror);
+            acc.add(feature, whitePerspective);
             pieces = Bits.pop(pieces);
         }
     }
@@ -102,16 +103,8 @@ public class NNUE {
         final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
         final boolean white = board.isWhite();
 
-        boolean whiteMirror = shouldMirror(board.kingSquare(true));
-        boolean blackMirror = shouldMirror(board.kingSquare(false));
-
         if (mustRefresh(board, move)) {
-            if (white) {
-                whiteMirror = !whiteMirror;
-            } else {
-                blackMirror = !blackMirror;
-            }
-            boolean mirror = white ? whiteMirror : blackMirror;
+            final boolean mirror = !shouldMirror(board.kingSquare(white));
             fullRefresh(board, acc, white, mirror);
         }
 
@@ -121,7 +114,7 @@ public class NNUE {
             case CAPTURE -> handleCapture(board, move, white);
         };
 
-        acc.apply(update, whiteMirror, blackMirror);
+        acc.apply(update);
 
     }
 

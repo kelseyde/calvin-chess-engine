@@ -140,11 +140,12 @@ public class NNUE {
         final boolean kingside = Castling.isKingside(move.from(), move.to());
 
         // In Chess960, castling is encoded as 'king captures rook'.
+        final int kingFrom = move.from();
         final int kingTo = UCI.Options.chess960 ? Castling.kingTo(kingside, white) : move.to();
         final int rookFrom = UCI.Options.chess960 ? move.to() : Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
 
-        update.pushSub(new Feature(Piece.KING, move.from(), white));
+        update.pushSub(new Feature(Piece.KING, kingFrom, white));
         update.pushSub(new Feature(Piece.ROOK, rookFrom, white));
         update.pushAdd(new Feature(Piece.KING, kingTo, white));
         update.pushAdd(new Feature(Piece.ROOK, rookTo, white));

@@ -36,10 +36,7 @@ public class Accumulator {
 
     public void reset(boolean whitePerspective) {
         short[] features = whitePerspective ? whiteFeatures : blackFeatures;
-
-        for (int i = 0; i < SPECIES.loopBound(HIDDEN_SIZE); i += SPECIES.length()) {
-            ShortVector.fromArray(SPECIES, BIASES, i).intoArray(features, i);
-        }
+        System.arraycopy(BIASES, 0, features, 0, NNUE.NETWORK.hiddenSize());
     }
 
     public void add(Feature feature, boolean whitePerspective, boolean mirror) {
@@ -181,8 +178,6 @@ public class Accumulator {
 
     public static class AccumulatorUpdate {
 
-        public AccumulatorUpdate() {}
-
         public Feature[] adds = new Feature[2];
         public Feature[] subs = new Feature[2];
 
@@ -195,24 +190,6 @@ public class Accumulator {
 
         public void pushSub(Feature sub) {
             subs[subCount++] = sub;
-        }
-
-        public void addSub(Feature add, Feature sub) {
-            pushAdd(add);
-            pushSub(sub);
-        }
-
-        public void addSubSub(Feature add, Feature sub1, Feature sub2) {
-            pushAdd(add);
-            pushSub(sub1);
-            pushSub(sub2);
-        }
-
-        public void addAddSubSub(Feature add1, Feature add2, Feature sub1, Feature sub2) {
-            pushAdd(add1);
-            pushAdd(add2);
-            pushSub(sub1);
-            pushSub(sub2);
         }
 
         public UpdateType getUpdateType() {

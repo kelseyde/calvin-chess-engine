@@ -101,17 +101,11 @@ public class NNUE {
 
         final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
         final boolean white = board.isWhite();
-        final int from = move.from();
-        final int to = move.to();
-        final Piece piece = board.pieceAt(from);
-        if (piece == null) return;
 
-        final int whiteKingSquare = board.kingSquare(true);
-        final int blackKingSquare = board.kingSquare(false);
-        boolean whiteMirror = NETWORK.horizontalMirror() && shouldMirror(whiteKingSquare);
-        boolean blackMirror = NETWORK.horizontalMirror() && shouldMirror(blackKingSquare);
+        boolean whiteMirror = shouldMirror(board.kingSquare(true));
+        boolean blackMirror = shouldMirror(board.kingSquare(false));
 
-        if (mustRefresh(board, move, piece)) {
+        if (mustRefresh(board, move)) {
             if (white) {
                 whiteMirror = !whiteMirror;
             } else {
@@ -121,24 +115,20 @@ public class NNUE {
             fullRefresh(board, acc, white, mirror);
         }
 
-        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
-        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
+        final AccumulatorUpdate update = switch (moveType(board, move)) {
+            case STANDARD -> handleStandardMove(board, move, white);
+            case CASTLE -> handleCastleMove(move, white);
+            case CAPTURE -> handleCapture(board, move, white);
+        };
 
-        AccumulatorUpdate update;
-        if (move.isCastling()) {
-            update = handleCastleMove(move, white);
-        }
-        else if (captured != null) {
-            update = handleCapture(move, piece, newPiece, captured, white);
-        }
-        else {
-            update = handleStandardMove(move, piece, newPiece, white);
-        }
         acc.apply(update, whiteMirror, blackMirror);
 
     }
 
-    private AccumulatorUpdate handleStandardMove(Move move, Piece piece, Piece newPiece, boolean white) {
+    private AccumulatorUpdate handleStandardMove(Board board, Move move, boolean white) {
+
+        final Piece piece = board.pieceAt(move.from());
+        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
 
         AccumulatorUpdate update = new AccumulatorUpdate();
         update.pushAdd(new Feature(newPiece, move.to(), white));
@@ -166,7 +156,11 @@ public class NNUE {
 
     }
 
-    private AccumulatorUpdate handleCapture(Move move, Piece piece, Piece newPiece, Piece captured, boolean white) {
+    private AccumulatorUpdate handleCapture(Board board, Move move, boolean white) {
+
+        final Piece piece = board.pieceAt(move.from());
+        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
+        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
 
         AccumulatorUpdate update = new AccumulatorUpdate();
         int captureSquare = move.to();
@@ -213,9 +207,13 @@ public class NNUE {
         return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
-    private boolean mustRefresh(Board board, Move move, Piece piece) {
-        if (!NETWORK.horizontalMirror()) return false;
-        if (piece != Piece.KING) return false;
+    private boolean mustRefresh(Board board, Move move) {
+        if (!NETWORK.horizontalMirror()) {
+            return false;
+        }
+        if (board.pieceAt(move.from()) != Piece.KING) {
+            return false;
+        }
         int prevKingSquare = move.from();
         int currKingSquare = move.to();
         if (move.isCastling() && UCI.Options.chess960) {
@@ -226,13 +224,29 @@ public class NNUE {
     }
 
     private boolean shouldMirror(int kingSquare) {
-        return File.of(kingSquare) > 3;
+        return NETWORK.horizontalMirror() && File.of(kingSquare) > 3;
+    }
+
+    private MoveType moveType(Board board, Move move) {
+        if (move.isCastling()) {
+            return MoveType.CASTLE;
+        } else if (move.isEnPassant() || board.pieceAt(move.to()) != null) {
+            return MoveType.CAPTURE;
+        } else {
+            return MoveType.STANDARD;
+        }
     }
 
     public void clearHistory() {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[0] = new Accumulator(NETWORK.hiddenSize());
+    }
+
+    private enum MoveType {
+        STANDARD,
+        CAPTURE,
+        CASTLE
     }
 
 }

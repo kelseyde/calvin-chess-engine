@@ -16,7 +16,7 @@ import com.kelseyde.calvin.uci.UCI;
  * relevant pieces need to be re-calculated, not the features of the entire board; this is a significant speed boost.
  * <p>
  * The network was trained on positions taken from a dataset of Leela Chess Zero, which were then re-scored with
- * Calvin's own search and hand-crafted evaluation.
+ * Calvin's own search and evaluation.
  *
  * @see <a href="https://www.chessprogramming.org/NNUE">Chess Programming Wiki</a>
  */
@@ -71,16 +71,15 @@ public class NNUE {
 
     private void activateAll(Board board) {
         final Accumulator acc = accumulatorStack[current];
-        fullRefresh(board, acc, true);
-        fullRefresh(board, acc, false);
+        final boolean whiteMirror = shouldMirror(board.kingSquare(true));
+        final boolean blackMirror = shouldMirror(board.kingSquare(false));
+        fullRefresh(board, acc, true, whiteMirror);
+        fullRefresh(board, acc, false, blackMirror);
     }
 
-    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective) {
-        final int kingSquare = board.kingSquare(whitePerspective);
-        final boolean mirror = shouldMirror(kingSquare);
-        fullRefresh(board, acc, whitePerspective, mirror);
-    }
-
+    /**
+     * Fully refresh the accumulator with the features of all pieces on the board.
+     */
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror) {
         acc.mirrored[Colour.index(whitePerspective)] = mirror;
         acc.reset(whitePerspective);
@@ -100,20 +99,25 @@ public class NNUE {
      */
     public void makeMove(Board board, Move move) {
 
+        // Update the top of the accumulator stack with a copy of the previous accumulator.
         final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
         final boolean white = board.isWhite();
 
+        // If the network is horizontally mirrored, and the king has just crossed the central axis,
+        // then a full accumulator refresh is required for the side-to-move before applying the move.
         if (mustRefresh(board, move)) {
             final boolean mirror = !shouldMirror(board.kingSquare(white));
             fullRefresh(board, acc, white, mirror);
         }
 
+        // Determine which features need to be updated based on the move type (standard, capture, or castle).
         final AccumulatorUpdate update = switch (moveType(board, move)) {
             case STANDARD -> handleStandardMove(board, move, white);
             case CASTLE -> handleCastleMove(move, white);
             case CAPTURE -> handleCapture(board, move, white);
         };
 
+        // Apply the update to the accumulator.
         acc.apply(update);
 
     }

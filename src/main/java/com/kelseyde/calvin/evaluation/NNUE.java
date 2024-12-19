@@ -16,7 +16,7 @@ import com.kelseyde.calvin.uci.UCI;
  * relevant pieces need to be re-calculated, not the features of the entire board; this is a significant speed boost.
  * <p>
  * The network was trained on positions taken from a dataset of Leela Chess Zero, which were then re-scored with
- * Calvin's own search and hand-crafted evaluation.
+ * Calvin's own search and evaluation.
  *
  * @see <a href="https://www.chessprogramming.org/NNUE">Chess Programming Wiki</a>
  */
@@ -71,17 +71,17 @@ public class NNUE {
 
     private void activateAll(Board board) {
         final Accumulator acc = accumulatorStack[current];
-        fullRefresh(board, acc, true);
-        fullRefresh(board, acc, false);
+        final boolean whiteMirror = shouldMirror(board.kingSquare(true));
+        final boolean blackMirror = shouldMirror(board.kingSquare(false));
+        fullRefresh(board, acc, true, whiteMirror);
+        fullRefresh(board, acc, false, blackMirror);
     }
 
-    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective) {
-        final int kingSquare = board.kingSquare(whitePerspective);
-        final boolean mirror = NETWORK.horizontalMirror() && shouldMirror(kingSquare);
-        fullRefresh(board, acc, whitePerspective, mirror);
-    }
-
+    /**
+     * Fully refresh the accumulator with the features of all pieces on the board.
+     */
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror) {
+        acc.mirrored[Colour.index(whitePerspective)] = mirror;
         acc.reset(whitePerspective);
         long pieces = board.getOccupied();
         while (pieces != 0) {
@@ -89,7 +89,7 @@ public class NNUE {
             final Piece piece = board.pieceAt(square);
             final boolean whitePiece = Bits.contains(board.getWhitePieces(), square);
             final Feature feature = new Feature(piece, square, whitePiece);
-            acc.add(feature, whitePerspective, mirror);
+            acc.add(feature, whitePerspective);
             pieces = Bits.pop(pieces);
         }
     }
@@ -99,46 +99,33 @@ public class NNUE {
      */
     public void makeMove(Board board, Move move) {
 
+        // Update the top of the accumulator stack with a copy of the previous accumulator.
         final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
         final boolean white = board.isWhite();
-        final int from = move.from();
-        final int to = move.to();
-        final Piece piece = board.pieceAt(from);
-        if (piece == null) return;
 
-        final int whiteKingSquare = board.kingSquare(true);
-        final int blackKingSquare = board.kingSquare(false);
-        boolean whiteMirror = NETWORK.horizontalMirror() && shouldMirror(whiteKingSquare);
-        boolean blackMirror = NETWORK.horizontalMirror() && shouldMirror(blackKingSquare);
-
-        if (mustRefresh(board, move, piece)) {
-            if (white) {
-                whiteMirror = !whiteMirror;
-            } else {
-                blackMirror = !blackMirror;
-            }
-            boolean mirror = white ? whiteMirror : blackMirror;
+        // If the network is horizontally mirrored, and the king has just crossed the central axis,
+        // then a full accumulator refresh is required for the side-to-move before applying the move.
+        if (mustRefresh(board, move)) {
+            final boolean mirror = !shouldMirror(board.kingSquare(white));
             fullRefresh(board, acc, white, mirror);
         }
 
-        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
-        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
+        // Determine which features need to be updated based on the move type (standard, capture, or castle).
+        final AccumulatorUpdate update = switch (moveType(board, move)) {
+            case STANDARD -> handleStandardMove(board, move, white);
+            case CASTLE -> handleCastleMove(move, white);
+            case CAPTURE -> handleCapture(board, move, white);
+        };
 
-        AccumulatorUpdate update;
-        if (move.isCastling()) {
-            update = handleCastleMove(move, white);
-        }
-        else if (captured != null) {
-            update = handleCapture(move, piece, newPiece, captured, white);
-        }
-        else {
-            update = handleStandardMove(move, piece, newPiece, white);
-        }
-        acc.apply(update, whiteMirror, blackMirror);
+        // Apply the update to the accumulator.
+        acc.apply(update);
 
     }
 
-    private AccumulatorUpdate handleStandardMove(Move move, Piece piece, Piece newPiece, boolean white) {
+    private AccumulatorUpdate handleStandardMove(Board board, Move move, boolean white) {
+
+        final Piece piece = board.pieceAt(move.from());
+        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
 
         AccumulatorUpdate update = new AccumulatorUpdate();
         update.pushAdd(new Feature(newPiece, move.to(), white));
@@ -166,7 +153,11 @@ public class NNUE {
 
     }
 
-    private AccumulatorUpdate handleCapture(Move move, Piece piece, Piece newPiece, Piece captured, boolean white) {
+    private AccumulatorUpdate handleCapture(Board board, Move move, boolean white) {
+
+        final Piece piece = board.pieceAt(move.from());
+        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
+        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
 
         AccumulatorUpdate update = new AccumulatorUpdate();
         int captureSquare = move.to();
@@ -213,9 +204,13 @@ public class NNUE {
         return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
-    private boolean mustRefresh(Board board, Move move, Piece piece) {
-        if (!NETWORK.horizontalMirror()) return false;
-        if (piece != Piece.KING) return false;
+    private boolean mustRefresh(Board board, Move move) {
+        if (!NETWORK.horizontalMirror()) {
+            return false;
+        }
+        if (board.pieceAt(move.from()) != Piece.KING) {
+            return false;
+        }
         int prevKingSquare = move.from();
         int currKingSquare = move.to();
         if (move.isCastling() && UCI.Options.chess960) {
@@ -226,13 +221,29 @@ public class NNUE {
     }
 
     private boolean shouldMirror(int kingSquare) {
-        return File.of(kingSquare) > 3;
+        return NETWORK.horizontalMirror() && File.of(kingSquare) > 3;
+    }
+
+    private MoveType moveType(Board board, Move move) {
+        if (move.isCastling()) {
+            return MoveType.CASTLE;
+        } else if (move.isEnPassant() || board.pieceAt(move.to()) != null) {
+            return MoveType.CAPTURE;
+        } else {
+            return MoveType.STANDARD;
+        }
     }
 
     public void clearHistory() {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[0] = new Accumulator(NETWORK.hiddenSize());
+    }
+
+    private enum MoveType {
+        STANDARD,
+        CAPTURE,
+        CASTLE
     }
 
 }

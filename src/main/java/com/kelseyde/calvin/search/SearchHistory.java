@@ -139,8 +139,6 @@ public class SearchHistory {
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
-        quietHistoryTable.ageScores(true);
-        quietHistoryTable.ageScores(false);
     }
 
     public void clear() {

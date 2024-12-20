@@ -6,6 +6,14 @@ import jdk.incubator.vector.VectorSpecies;
 
 import java.util.Arrays;
 
+/**
+ * The accumulator keeps track of the activations of the hidden layer of the neural network. It is incrementally updated
+ * during search to avoid recomputing the entire network each time evaluation is called. The activations are accumulated
+ * from both white's and black's perspective, so that during evaluation the 'side to move' and 'not side to move' can be
+ * easily flipped.
+ * </p>
+ * The Java Vector API is used to give the accumulator updates a performance boost via SIMD instructions.
+ */
 public class Accumulator {
 
     private static final int HIDDEN_SIZE = NNUE.NETWORK.hiddenSize();
@@ -14,9 +22,6 @@ public class Accumulator {
     private static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
     private static final int LOOP_LENGTH = SPECIES.loopBound(HIDDEN_SIZE);
 
-    /**
-     * Two feature vectors, one from white's perspective, one from black's.
-     */
     public final short[] whiteFeatures;
     public final short[] blackFeatures;
     public final boolean[] mirrored;
@@ -34,11 +39,13 @@ public class Accumulator {
     }
 
     public void reset(boolean whitePerspective) {
+        // Reset the features of the accumulator to the initial bias values.
         short[] features = whitePerspective ? whiteFeatures : blackFeatures;
         System.arraycopy(BIASES, 0, features, 0, NNUE.NETWORK.hiddenSize());
     }
 
     public void add(Feature feature, boolean whitePerspective) {
+        // Add a single feature to the accumulator.
         final boolean mirror = mirrored[Colour.index(whitePerspective)];
         final int offset = feature.index(whitePerspective, mirror) * HIDDEN_SIZE;
         final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
@@ -53,6 +60,7 @@ public class Accumulator {
     }
 
     public void apply(AccumulatorUpdate update) {
+        // Accumulator updates are 'fused' together, so that multiple feature updates can be applied in a single pass.
         switch (update.getUpdateType()) {
             case ADD -> add(update);
             case ADD_SUB -> addSub(update);

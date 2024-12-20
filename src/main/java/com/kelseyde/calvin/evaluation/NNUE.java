@@ -47,7 +47,7 @@ public class NNUE {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
-        activateAll(board);
+        fullRefresh(board);
     }
 
     public int evaluate() {
@@ -69,7 +69,8 @@ public class NNUE {
 
     }
 
-    private void activateAll(Board board) {
+    private void fullRefresh(Board board) {
+        // Fully refresh the accumulator from both perspectives with the features of all pieces on the board.
         final Accumulator acc = accumulatorStack[current];
         final boolean whiteMirror = shouldMirror(board.kingSquare(true));
         final boolean blackMirror = shouldMirror(board.kingSquare(false));
@@ -77,14 +78,14 @@ public class NNUE {
         fullRefresh(board, acc, false, blackMirror);
     }
 
-    /**
-     * Fully refresh the accumulator with the features of all pieces on the board.
-     */
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror) {
+        // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
         acc.mirrored[Colour.index(whitePerspective)] = mirror;
+        // Reset every feature in the accumulator to the initial bias value.
         acc.reset(whitePerspective);
         long pieces = board.getOccupied();
         while (pieces != 0) {
+            // For each piece on the board, activate the corresponding feature in the accumulator.
             int square = Bits.next(pieces);
             final Piece piece = board.pieceAt(square);
             final boolean whitePiece = Bits.contains(board.getWhitePieces(), square);
@@ -94,12 +95,10 @@ public class NNUE {
         }
     }
 
-    /**
-     * Efficiently update only the relevant features of the network after a move has been made.
-     */
+
     public void makeMove(Board board, Move move) {
 
-        // Update the top of the accumulator stack with a copy of the previous accumulator.
+        // Efficiently update only the relevant features of the network after a move has been made.
         final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
         final boolean white = board.isWhite();
 
@@ -124,6 +123,7 @@ public class NNUE {
 
     private AccumulatorUpdate handleStandardMove(Board board, Move move, boolean white) {
 
+        // For standard moves we simply need to remove the piece from the 'from' square and add it to the 'to' square.
         final Piece piece = board.pieceAt(move.from());
         final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
 
@@ -136,6 +136,7 @@ public class NNUE {
 
     private AccumulatorUpdate handleCastleMove(Move move, boolean white) {
 
+        // For castling moves we need to move both the king and the rook, with some special handling for Chess960.
         AccumulatorUpdate update = new AccumulatorUpdate();
         final boolean kingside = Castling.isKingside(move.from(), move.to());
 
@@ -156,6 +157,7 @@ public class NNUE {
 
     private AccumulatorUpdate handleCapture(Board board, Move move, boolean white) {
 
+        // For captures, we need to remove the captured piece as well as updating the capturing piece.
         final Piece piece = board.pieceAt(move.from());
         final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
@@ -179,7 +181,7 @@ public class NNUE {
     public void setPosition(Board board) {
         clearHistory();
         this.board = board;
-        activateAll(board);
+        fullRefresh(board);
     }
 
     private int scaleEvaluation(Board board, int eval) {

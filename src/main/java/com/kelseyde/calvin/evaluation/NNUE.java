@@ -70,19 +70,23 @@ public class NNUE {
     }
 
     private void fullRefresh(Board board) {
+
         // Fully refresh the accumulator from both perspectives with the features of all pieces on the board.
         final Accumulator acc = accumulatorStack[current];
         final boolean whiteMirror = shouldMirror(board.kingSquare(true));
         final boolean blackMirror = shouldMirror(board.kingSquare(false));
         fullRefresh(board, acc, true, whiteMirror);
         fullRefresh(board, acc, false, blackMirror);
+
     }
 
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror) {
+
         // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
         acc.mirrored[Colour.index(whitePerspective)] = mirror;
         // Reset every feature in the accumulator to the initial bias value.
         acc.reset(whitePerspective);
+
         long pieces = board.getOccupied();
         while (pieces != 0) {
             // For each piece on the board, activate the corresponding feature in the accumulator.
@@ -93,6 +97,7 @@ public class NNUE {
             acc.add(feature, whitePerspective);
             pieces = Bits.pop(pieces);
         }
+
     }
 
 

@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Bits.Square;
 
 import java.util.Arrays;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Utility class for generating Zobrist keys, which are 64-bit values that (almost uniquely) represent a chess position.

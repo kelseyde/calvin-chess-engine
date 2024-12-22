@@ -40,11 +40,9 @@ public class MoveScorer {
         // Noisy moves are captures, promotions, and quiet checks (meaning checks that are not captures or promotions).
         final boolean noisy = quietCheck || capture || promotion;
 
-        if (noisy) {
-            return scoreNoisy(board, move, piece, captured, quietCheck, ply);
-        } else {
-            return scoreQuiet(board, move, piece, ply);
-        }
+        return noisy ?
+                scoreNoisy(board, move, piece, captured, quietCheck, ply) :
+                scoreQuiet(board, move, piece, ply);
 
     }
 

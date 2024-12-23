@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
@@ -16,6 +17,8 @@ import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 import java.util.List;
 
 public class SearchHistory {
+
+    public record PlayedMove(Move move, Piece piece, Piece captured) {}
 
     private final EngineConfig config;
     private final KillerTable killerTable;

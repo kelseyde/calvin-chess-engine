@@ -468,7 +468,7 @@ public class Searcher implements Search {
                 reduction += futilityReduction;
             }
 
-            PlayedMove playedMove = new PlayedMove(move, piece, captured);
+            SearchHistory.PlayedMove playedMove = new SearchHistory.PlayedMove(move, piece, captured);
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);
 
@@ -535,13 +535,13 @@ public class Searcher implements Search {
         }
 
         if (bestScore >= beta) {
-            final PlayedMove best = sse.bestMove;
+            final SearchHistory.PlayedMove best = sse.bestMove;
             final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
             history.updateHistory(best, board.isWhite(), historyDepth, ply, ss);
         }
 
         if (!inCheck
-            && !Score.isUndefinedScore(bestScore)
+            && Score.isDefinedScore(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
@@ -776,7 +776,7 @@ public class Searcher implements Search {
 
     public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
         return entry.flag().equals(HashFlag.EXACT) ||
-                (!Score.isUndefinedScore(entry.score()) &&
+                (Score.isDefinedScore(entry.score()) &&
                         (entry.flag().equals(HashFlag.UPPER) && entry.score() <= alpha ||
                                 entry.flag().equals(HashFlag.LOWER) && entry.score() >= beta));
     }

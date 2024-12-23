@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.perft.PerftService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ import java.util.List;
 public class PseudoLegalTest {
 
     private final MoveGenerator movegen = new MoveGenerator();
-    private final PerftService perft = new PerftService();
 
     @Test
     public void testIsLegalDebug() {

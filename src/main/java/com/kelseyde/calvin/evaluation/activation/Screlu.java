@@ -8,6 +8,13 @@ import jdk.incubator.vector.VectorSpecies;
 import static com.kelseyde.calvin.evaluation.NNUE.NETWORK;
 import static jdk.incubator.vector.VectorOperators.S2I;
 
+/**
+ * Implementation of NNUE inference using the SCReLU (Squared Clipped Rectified Linear Unit) activation function.
+ * SCReLU is defined as follows:
+ * <p>
+ *     SCReLU(x) = clamp(x, 0, 1)^2
+ * </p>
+ */
 public class Screlu {
 
     static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;

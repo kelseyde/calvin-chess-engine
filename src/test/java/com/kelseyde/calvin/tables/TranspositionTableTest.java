@@ -44,8 +44,7 @@ public class TranspositionTableTest {
         int depth = 1;
         int score = 1;
         HashFlag flag = HashFlag.UPPER;
-        Move move = null;
-        assertEntry(zobristKey, score, move, flag, depth);
+        assertEntry(zobristKey, score, null, flag, depth);
     }
 
     @Test
@@ -77,8 +76,7 @@ public class TranspositionTableTest {
         int depth = 256;
         int score = -789;
         HashFlag flag = HashFlag.UPPER;
-        Move move = null;
-        assertEntry(zobristKey, score, move, flag, depth);
+        assertEntry(zobristKey, score, null, flag, depth);
     }
 
     @Test
@@ -133,15 +131,14 @@ public class TranspositionTableTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
         flag = HashFlag.LOWER;
-        bestMove = null;
         eval = 1000000;
         depth = 10;
-        table.put(board.getState().getKey(), flag, depth, ply + 2, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  eval);
 
         entry = table.get(board.getState().getKey(), ply);
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(flag, entry.flag());
-        Assertions.assertEquals(bestMove, entry.move());
+        Assertions.assertEquals(null, entry.move());
         Assertions.assertEquals(eval - 2, entry.score());
         Assertions.assertEquals(depth, entry.depth());
     }
@@ -182,7 +179,6 @@ public class TranspositionTableTest {
     @Test
     public void testCanStorePromotionFlag() {
 
-        long zobrist = board.getState().getKey();
         HashFlag flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e7e8b");
         int eval = 60;
@@ -310,13 +306,12 @@ public class TranspositionTableTest {
 
         long key = board.key();
         HashFlag flag = HashFlag.NONE;
-        Move move = null;
         int depth = 0;
         int ply = 0;
         int eval = 126;
         int score = 0;
 
-        table.put(key, flag, depth, ply, move, eval, score);
+        table.put(key, flag, depth, ply, null, eval, score);
 
         HashEntry ttEntry = table.get(key, ply);
 

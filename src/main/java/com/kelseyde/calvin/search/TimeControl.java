@@ -134,6 +134,4 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         return Math.min(Math.max(scale, scaleMin), scaleMax);
     }
 
-
-
 }

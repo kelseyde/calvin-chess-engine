@@ -200,8 +200,8 @@ public class Accumulator {
 
     public static class AccumulatorUpdate {
 
-        public Feature[] adds = new Feature[2];
-        public Feature[] subs = new Feature[2];
+        public final Feature[] adds = new Feature[2];
+        public final Feature[] subs = new Feature[2];
 
         public int addCount = 0;
         public int subCount = 0;

@@ -4,7 +4,6 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.search.PlayedMove;
 import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
@@ -100,7 +99,7 @@ public class MoveScorer {
         for (int contHistPly : config.contHistPlies) {
             SearchStackEntry entry = ss.get(ply - contHistPly);
             if (entry != null && entry.currentMove != null) {
-                PlayedMove prevMove = entry.currentMove;
+                SearchHistory.PlayedMove prevMove = entry.currentMove;
                 contHistScore += history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
             }
         }

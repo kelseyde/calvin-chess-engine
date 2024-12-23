@@ -13,8 +13,13 @@ import java.util.List;
 
 /**
  * Selects the next move to try in a given position. Moves are selected in stages. First, the 'best' move from the
- * transposition table is tried before any moves are generated. Then, all the 'noisy' moves are tried (captures,
- * checks and promotions). Finally, we generate the remaining quiet moves.
+ * transposition table is tried before any moves are generated. Then, the noisy moves are generated and separated into
+ * 'good' and 'bad' noisies. Finally, the quiet moves are generated.
+ * </p>
+ * Within each stage, the order in which moves are tried is determined by several heuristics in the {@link MoveScorer}.
+ * </p>
+ * The idea behind generating and selecting moves in stages is to save time. Since in most positions only a few moves -
+ * or even only a single move - will be tried, the time spent generating all the other moves is essentially wasted.
  */
 public class MovePicker {
 
@@ -33,7 +38,6 @@ public class MovePicker {
         END
     }
 
-    final EngineConfig config;
     final MoveGenerator movegen;
     final MoveScorer scorer;
     final SearchHistory history;
@@ -44,7 +48,7 @@ public class MovePicker {
 
     Stage stage;
     boolean skipQuiets;
-    boolean inCheck;
+    final boolean inCheck;
 
     int moveIndex;
     int killerIndex;
@@ -55,7 +59,6 @@ public class MovePicker {
 
     public MovePicker(EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history,
                       Board board, int ply, Move ttMove, boolean inCheck) {
-        this.config = config;
         this.movegen = movegen;
         this.scorer = new MoveScorer(config, history, ss);
         this.history = history;

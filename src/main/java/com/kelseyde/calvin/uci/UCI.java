@@ -82,7 +82,7 @@ public class UCI {
         write("uciok");
 
         // Typically 'uci' is only sent by tournament runners, not humans.
-        // Therefore, let's disable pretty print when receiving a 'uci' command.
+        // Therefore, let's disable pretty print when receiving the 'uci' command.
         Options.pretty = false;
     }
 

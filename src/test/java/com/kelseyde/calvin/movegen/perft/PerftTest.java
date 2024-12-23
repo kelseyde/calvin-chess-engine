@@ -3,7 +3,7 @@ package com.kelseyde.calvin.movegen.perft;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.perft.PerftService;
+import com.kelseyde.calvin.utils.Perft;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit;
 
 public abstract class PerftTest {
 
-    private static final PerftService perftService = new PerftService();
+    private static final Perft PERFT = new Perft();
 
     protected abstract String getFen();
     protected abstract String getSubFolder();
@@ -26,8 +26,8 @@ public abstract class PerftTest {
         UCI.Options.chess960 = true;
         Board board = FEN.toBoard(getFen());
         Instant start = Instant.now();
-        long totalMoveCount = perftService.perft(board, depth);
-        long totalNodeCount = perftService.nodesSearched;
+        long totalMoveCount = PERFT.perft(board, depth);
+        long totalNodeCount = PERFT.nodesSearched;
         System.out.println("totalMoveCount: " + totalNodeCount);
         Instant end = Instant.now();
         Duration performance = Duration.between(start, end);

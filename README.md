@@ -1,6 +1,8 @@
-<p align="center"><img src="src/main/resources/old_logo.png" width="350"></p>
+<p align="center"><img src="src/main/resources/logo.png" width="100"></p>
 
 <div align="center">
+
+# Calvin
 
 [![release][release-badge]][release-link]
 [![lichess-badge]][lichess-link]
@@ -122,8 +124,8 @@ The neural network was trained using the excellent [bullet](https://github.com/j
 
 If you would like to contribute, or just talk about chess/chess programming, get in touch!
 
-[release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=ed5858
+[release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=FF5757
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
 
-[lichess-badge]: https://img.shields.io/badge/Play-v5.0.2-ffd25c?logo=lichess&style=for-the-badge
+[lichess-badge]: https://img.shields.io/badge/Play-v5.0.2-FFDE59?logo=lichess&style=for-the-badge
 [lichess-link]: https://lichess.org/@/Calvin_Bot

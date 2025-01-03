@@ -347,7 +347,7 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = Score.MIN;
-        HashFlag flag = HashFlag.UPPER;
+        int flag = HashFlag.UPPER;
 
         sse.searchedMoves = new ArrayList<>();
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
@@ -643,7 +643,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = alpha;
         final int futilityScore = bestScore + config.qsFpMargin.value;
-        HashFlag flag = HashFlag.UPPER;
+        int flag = HashFlag.UPPER;
 
         while (true) {
 
@@ -777,10 +777,10 @@ public class Searcher implements Search {
     }
 
     public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
-        return entry.flag().equals(HashFlag.EXACT) ||
+        return entry.flag() == HashFlag.EXACT ||
                 (Score.isDefinedScore(entry.score()) &&
-                        (entry.flag().equals(HashFlag.UPPER) && entry.score() <= alpha ||
-                                entry.flag().equals(HashFlag.LOWER) && entry.score() >= beta));
+                        (entry.flag() == HashFlag.UPPER && entry.score() <= alpha ||
+                                entry.flag() == HashFlag.LOWER && entry.score() >= beta));
     }
 
     public boolean isSufficientDepth(HashEntry entry, int depth) {

@@ -23,7 +23,7 @@ import com.kelseyde.calvin.uci.UCI;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("calvin1024.nnue")
+            .file("calvin1024_2.nnue")
             .inputSize(768)
             .hiddenSize(1024)
             .activation(Activation.SCReLU)

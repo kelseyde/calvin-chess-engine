@@ -104,15 +104,8 @@ public class NNUE {
     public void makeMove(Board board, Move move) {
 
         // Efficiently update only the relevant features of the network after a move has been made.
-        final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
+        final Accumulator acc = accumulatorStack[current];
         final boolean white = board.isWhite();
-
-        // If the network is horizontally mirrored, and the king has just crossed the central axis,
-        // then a full accumulator refresh is required for the side-to-move before applying the move.
-        if (mustRefresh(board, move)) {
-            final boolean mirror = !shouldMirror(board.kingSquare(white));
-            fullRefresh(board, acc, white, mirror);
-        }
 
         // Determine which features need to be updated based on the move type (standard, capture, or castle).
         final AccumulatorUpdate update = switch (moveType(board, move)) {
@@ -121,8 +114,19 @@ public class NNUE {
             case CAPTURE -> handleCapture(board, move, white);
         };
 
-        // Apply the update to the accumulator.
-        acc.apply(update);
+        if (mustRefresh(board, move)) {
+            // If the network is horizontally mirrored, and the king has just crossed the central axis,
+            // then a full accumulator refresh is required for the side-to-move before applying the move.
+            final Accumulator newAcc = acc.copy();
+            final boolean mirror = !shouldMirror(board.kingSquare(white));
+            fullRefresh(board, newAcc, white, mirror);
+            accumulatorStack[++current] = newAcc.apply(update);
+
+        } else {
+            // Apply the update to the accumulator.
+            accumulatorStack[++current] = acc.apply(update);
+
+        }
 
     }
 

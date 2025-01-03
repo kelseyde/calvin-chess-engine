@@ -15,6 +15,7 @@ import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -106,8 +107,9 @@ public class UCI {
     }
 
     public static void handleGo(UCICommand command) {
+        Instant start = Instant.now();
         GoCommand goCommand = GoCommand.parse(command);
-        ENGINE.go(goCommand);
+        ENGINE.go(start, goCommand);
     }
 
     public static void handlePonderHit(UCICommand command) {

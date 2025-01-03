@@ -18,9 +18,7 @@ import java.time.Instant;
  */
 public record TimeControl(EngineConfig config, Instant start, Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth) {
 
-    public static TimeControl init(EngineConfig config, Board board, GoCommand command) {
-
-        Instant start = Instant.now();
+    public static TimeControl init(EngineConfig config, Board board, Instant start, GoCommand command) {
 
         double time;
         double inc;
@@ -61,15 +59,16 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         if (nodes % 4096 != 0) return false;
         if (hardNodes > 0 && nodes >= hardNodes) return true;
         if (maxDepth > 0 && depth >= maxDepth) return true;
-        Duration expired = Duration.between(start, Instant.now());
-        return expired.compareTo(hardTime) > 0;
+        final Duration expired = Duration.between(start, Instant.now());
+        final Duration overhead = Duration.ofMillis(config.uciOverhead.value);
+        return expired.compareTo(hardTime.minus(overhead)) > 0;
     }
 
     public boolean isSoftLimitReached(int depth, int nodes, int bestMoveNodes, int bestMoveStability, int evalStability) {
         if (maxDepth > 0 && depth >= maxDepth) return true;
         if (softNodes > 0 && nodes >= softNodes) return true;
-        Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
+        final Duration expired = Duration.between(start, Instant.now());
+        final Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 

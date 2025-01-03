@@ -31,7 +31,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getState().getKey();
         int depth = 17;
         int score = 548;
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move move = Move.fromUCI("e2e4");
         assertEntry(zobristKey, score, move, flag, depth);
 
@@ -43,9 +43,8 @@ public class TranspositionTableTest {
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = 1;
-        HashFlag flag = HashFlag.UPPER;
-        Move move = null;
-        assertEntry(zobristKey, score, move, flag, depth);
+        int flag = HashFlag.UPPER;
+        assertEntry(zobristKey, score, null, flag, depth);
     }
 
     @Test
@@ -54,7 +53,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = 1000000;
-        HashFlag flag = HashFlag.UPPER;
+        int flag = HashFlag.UPPER;
         Move move = Move.fromUCI("e2e4");
         assertEntry(zobristKey, score, move, flag, depth);
     }
@@ -65,7 +64,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = -1000000;
-        HashFlag flag = HashFlag.UPPER;
+        int flag = HashFlag.UPPER;
         Move move = Move.fromUCI("e2e4");
         assertEntry(zobristKey, score, move, flag, depth);
     }
@@ -76,9 +75,8 @@ public class TranspositionTableTest {
         long zobristKey = board.getState().getKey();
         int depth = 256;
         int score = -789;
-        HashFlag flag = HashFlag.UPPER;
-        Move move = null;
-        assertEntry(zobristKey, score, move, flag, depth);
+        int flag = HashFlag.UPPER;
+        assertEntry(zobristKey, score, null, flag, depth);
     }
 
     @Test
@@ -87,7 +85,7 @@ public class TranspositionTableTest {
         long zobristKey = board.getState().getKey();
         int depth = 256;
         int score = -789;
-        HashFlag flag = HashFlag.LOWER;
+        int flag = HashFlag.LOWER;
         Move move = Move.fromUCI("e7e8q");
         assertEntry(zobristKey, score, move, flag, depth);
     }
@@ -99,7 +97,7 @@ public class TranspositionTableTest {
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
         // Do some evaluation on the node at this position.
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e2e4");
         int eval = 60;
         int depth = 3;
@@ -133,15 +131,14 @@ public class TranspositionTableTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
         flag = HashFlag.LOWER;
-        bestMove = null;
         eval = 1000000;
         depth = 10;
-        table.put(board.getState().getKey(), flag, depth, ply + 2, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  eval);
 
         entry = table.get(board.getState().getKey(), ply);
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(flag, entry.flag());
-        Assertions.assertEquals(bestMove, entry.move());
+        Assertions.assertEquals(null, entry.move());
         Assertions.assertEquals(eval - 2, entry.score());
         Assertions.assertEquals(depth, entry.depth());
     }
@@ -153,7 +150,7 @@ public class TranspositionTableTest {
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
         // Do some evaluation on the node at this position.
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e2e4");
         int eval = 60;
         int depth = 3;
@@ -182,8 +179,7 @@ public class TranspositionTableTest {
     @Test
     public void testCanStorePromotionFlag() {
 
-        long zobrist = board.getState().getKey();
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e7e8b");
         int eval = 60;
         int depth = 3;
@@ -208,7 +204,7 @@ public class TranspositionTableTest {
     @Test
     public void testStoreCheckmateAtRoot() {
 
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e7e8b");
         int plyRemaining = 10;
         int plyFromRoot = 0;
@@ -226,7 +222,7 @@ public class TranspositionTableTest {
     @Test
     public void testStoreCheckmateAtRootPlusOne() {
 
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e7e8b");
         int plyRemaining = 10;
         int plyFromRoot = 1;
@@ -245,7 +241,7 @@ public class TranspositionTableTest {
     public void testScorePositiveCheckmateThenAccessFromDeeperPly() {
 
         long zobrist = board.getState().getKey();
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e7e8b");
         int eval = 1000000;
         int plyRemaining = 10;
@@ -265,7 +261,7 @@ public class TranspositionTableTest {
     public void testDoesNotReplaceEntryWithMoreDepth() {
 
         long zobrist = board.getState().getKey();
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e2e4");
         int eval = 60;
         int plyFromRoot = 0;
@@ -287,7 +283,7 @@ public class TranspositionTableTest {
     public void testReplacesEntryWithLessDepth() {
 
         long zobrist = board.getState().getKey();
-        HashFlag flag = HashFlag.EXACT;
+        int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e2e4");
         int eval = 60;
         int plyFromRoot = 0;
@@ -309,14 +305,13 @@ public class TranspositionTableTest {
     public void testStoreOnlyStaticEvalInTt() {
 
         long key = board.key();
-        HashFlag flag = HashFlag.NONE;
-        Move move = null;
+        int flag = HashFlag.NONE;
         int depth = 0;
         int ply = 0;
         int eval = 126;
         int score = 0;
 
-        table.put(key, flag, depth, ply, move, eval, score);
+        table.put(key, flag, depth, ply, null, eval, score);
 
         HashEntry ttEntry = table.get(key, ply);
 
@@ -329,7 +324,7 @@ public class TranspositionTableTest {
 
     }
 
-    private void assertEntry(long zobrist, int score, Move move, HashFlag flag, int depth) {
+    private void assertEntry(long zobrist, int score, Move move, int flag, int depth) {
         long key = HashEntry.Key.of(zobrist, 0, 0);
         long value = HashEntry.Value.of(score, move, flag, depth);
         HashEntry entry = HashEntry.of(key, value);

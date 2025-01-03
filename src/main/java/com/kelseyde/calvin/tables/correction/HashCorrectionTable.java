@@ -17,7 +17,7 @@ public class HashCorrectionTable extends CorrectionHistoryTable {
 
     public void update(long key, boolean white, int depth, int score, int staticEval) {
         int oldValue = get(key, white);
-        int correction = correction(oldValue, white, staticEval, score, depth);
+        int correction = correction(oldValue, staticEval, score, depth);
         put(key, white, correction);
     }
 

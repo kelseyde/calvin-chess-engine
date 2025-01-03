@@ -1,5 +1,9 @@
 package com.kelseyde.calvin.evaluation.activation;
 
+/**
+ * Represents the activation function used by the neural network.
+ * The {@link Activation::forward} method implements the entire NNUE inference using the specified activation function.
+ */
 public enum Activation {
 
     SCReLU(Screlu::forward),

@@ -18,7 +18,7 @@ public class PieceToCorrectionTable extends CorrectionHistoryTable {
 
     public void update(Move prevMove, Piece prevPiece, boolean white, int staticEval, int score, int depth) {
         int oldValue = get(white, prevMove, prevPiece);
-        int correction = correction(oldValue, white, staticEval, score, depth);
+        int correction = correction(oldValue, staticEval, score, depth);
         put(white, prevMove, prevPiece, correction);
 
     }

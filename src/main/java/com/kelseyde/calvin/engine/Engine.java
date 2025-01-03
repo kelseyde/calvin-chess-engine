@@ -13,7 +13,7 @@ import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
-import com.kelseyde.calvin.utils.perft.PerftService;
+import com.kelseyde.calvin.utils.Perft;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class Engine {
 
     final EngineConfig config;
     final MoveGenerator movegen;
-    final PerftService perft;
+    final Perft perft;
     final Search searcher;
 
     CompletableFuture<SearchResult> think;
@@ -49,7 +49,7 @@ public class Engine {
         this.config = new EngineConfig();
         this.board = Board.from(FEN.STARTPOS);
         this.movegen = new MoveGenerator();
-        this.perft = new PerftService();
+        this.perft = new Perft();
         this.searcher = new ParallelSearcher(config, movegen, new TranspositionTable(config.defaultHashSizeMb));
         this.searcher.setPosition(board);
     }
@@ -64,7 +64,7 @@ public class Engine {
         board = FEN.toBoard(command.fen());
         for (Move move : command.moves()) {
             Move legalMove = move(move);
-            board.makeMove(legalMove, false);
+            board.makeMove(legalMove);
         }
         searcher.setPosition(board.copy());
     }

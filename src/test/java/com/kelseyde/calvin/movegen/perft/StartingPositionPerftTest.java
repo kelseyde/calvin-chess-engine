@@ -6,18 +6,18 @@ import org.junit.jupiter.api.Test;
 @Disabled
 public class StartingPositionPerftTest extends PerftTest {
 
-    private final String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    private static final String FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    private final String subFolder = "starting_position";
+    private static final String SUB_FOLDER = "starting_position";
 
     @Override
     protected String getFen() {
-        return fen;
+        return FEN;
     }
 
     @Override
     protected String getSubFolder() {
-        return subFolder;
+        return SUB_FOLDER;
     }
 
     @Test

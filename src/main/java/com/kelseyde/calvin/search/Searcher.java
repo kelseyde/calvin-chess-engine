@@ -242,8 +242,8 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
-                // Don't do IIR at all in singular search ?
                 && !inCheck
+                && !excluded
                 && (!ttHit || ttEntry.move() == null)
                 && depth >= config.iirDepth.value) {
             --depth;
@@ -253,7 +253,7 @@ public class Searcher implements Search {
         int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         // No need to recompute staticEval in singular search - we already have it on the SearchStack
-        if (!inCheck) {
+        if (!excluded && !inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedStaticEval = rawStaticEval;
@@ -271,9 +271,9 @@ public class Searcher implements Search {
                 uncorrectedStaticEval = staticEval;
             }
         }
-//        else if (excluded) {
-//            staticEval = sse.staticEval;
-//        }
+        else if (excluded) {
+            staticEval = sse.staticEval;
+        }
         sse.staticEval = staticEval;
 
         int futilityReduction = 0;
@@ -473,20 +473,19 @@ public class Searcher implements Search {
             }
 
             // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
-            int extension = 0;
-            if (!rootNode
+            boolean doSingularSearch = !rootNode
                     && !excluded
-                    && depth >= 5
+                    && depth >= 7
                     && ttHit
                     && move.equals(ttMove)
-                    && ttEntry.depth() >= depth - 4
+                    && ttEntry.depth() >= depth - 3
                     && (ttEntry.flag() == HashFlag.EXACT || ttEntry.flag() == HashFlag.LOWER)
-                    && !Score.isMateScore(ttEntry.score())) {
+                    && !Score.isMateScore(ttEntry.score());
 
-                // TODO - try other formulas for sBeta ?
-                int sBeta = ttEntry.score() - 2 * depth;
+            int extension = 0;
+            if (doSingularSearch) {
 
-                // TODO - try other formulas for sDepth ?
+                int sBeta = Math.max(-Score.MATE, ttEntry.score() - 15 * depth / 16);
                 int sDepth = (depth - 1) / 2;
 
                 sse.excludedMove = move;

@@ -15,6 +15,7 @@ import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.Perft;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -69,13 +70,13 @@ public class Engine {
         searcher.setPosition(board.copy());
     }
 
-    public void go(GoCommand command) {
+    public void go(Instant start, GoCommand command) {
 
         if (command.isPerft()) {
             int depth = command.perft();
             perft.perft(board, depth);
         } else {
-            TimeControl tc = TimeControl.init(config, board, command);
+            TimeControl tc = TimeControl.init(config, board, start, command);
             this.config.pondering = command.ponder();
             setSearchCancelled(false);
             stopThinking();

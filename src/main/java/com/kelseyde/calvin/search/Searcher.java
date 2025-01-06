@@ -168,6 +168,7 @@ public class Searcher implements Search {
      * @param ply                 The number of ply already examined in the current search ('ply from root').
      * @param alpha               The lower bound for search scores ('we can do at least this well').
      * @param beta                The upper bound for search scores ('our opponent can do at most this well').
+     * @param cutNode             Whether this node is an expected cut-node (i.e. a fail-high node).
      */
     public int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
 

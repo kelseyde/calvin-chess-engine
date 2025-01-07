@@ -455,7 +455,7 @@ public class Searcher implements Search {
 
                 int threshold = scoredMove.isQuiet() ?
                         config.seeQuietMargin.value * depth :
-                        config.seeNoisyMargin.value * depth * depth;
+                        config.seeNoisyMargin.value * (depth - reduction) * (depth - reduction);
                 if (!SEE.see(board, move, threshold)) {
                     continue;
                 }

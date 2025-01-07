@@ -274,23 +274,6 @@ public class NNUE {
         return kingBucket(prevKingSquare, white) != kingBucket(currKingSquare, white);
     }
 
-    private boolean mustRefresh(Board board, Move move, boolean white) {
-        if (!NETWORK.horizontalMirror()) {
-            return false;
-        }
-        if (board.pieceAt(move.from()) != Piece.KING) {
-            return false;
-        }
-        int prevKingSquare = move.from();
-        int currKingSquare = move.to();
-        if (move.isCastling() && UCI.Options.chess960) {
-            final boolean kingside = Castling.isKingside(move.from(), move.to());
-            currKingSquare = Castling.kingTo(kingside, board.isWhite());
-        }
-        return (shouldMirror(prevKingSquare) != shouldMirror(currKingSquare)) ||
-                (kingBucket(prevKingSquare, white) != kingBucket(currKingSquare, white));
-    }
-
     private boolean shouldMirror(int kingSquare) {
         return NETWORK.horizontalMirror() && File.of(kingSquare) > 3;
     }

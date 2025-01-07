@@ -2,6 +2,7 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.evaluation.Accumulator.AccumulatorUpdate;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
@@ -23,11 +24,21 @@ import com.kelseyde.calvin.uci.UCI;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("calvin1024_2.nnue")
+            .file("calvin1024_4b.nnue")
             .inputSize(768)
             .hiddenSize(1024)
             .activation(Activation.SCReLU)
             .horizontalMirror(true)
+            .inputBuckets(new int[] {
+                    0, 0, 1, 1, 1, 1, 0, 0,
+                    2, 2, 2, 2, 2, 2, 2, 2,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+            })
             .quantisations(new int[]{255, 64})
             .scale(400)
             .build();
@@ -75,12 +86,16 @@ public class NNUE {
         final Accumulator acc = accumulatorStack[current];
         final boolean whiteMirror = shouldMirror(board.kingSquare(true));
         final boolean blackMirror = shouldMirror(board.kingSquare(false));
-        fullRefresh(board, acc, true, whiteMirror);
-        fullRefresh(board, acc, false, blackMirror);
+        int whiteKingBucket = kingBucket(board.kingSquare(true), true);
+        int blackKingBucket = kingBucket(board.kingSquare(false), false);
+        short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
+        short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
+        fullRefresh(board, acc, whiteWeights, true, whiteMirror);
+        fullRefresh(board, acc, blackWeights, false, blackMirror);
 
     }
 
-    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror) {
+    private void fullRefresh(Board board, Accumulator acc, short[] weights, boolean whitePerspective, boolean mirror) {
 
         // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
         acc.mirrored[Colour.index(whitePerspective)] = mirror;
@@ -94,7 +109,7 @@ public class NNUE {
             final Piece piece = board.pieceAt(square);
             final boolean whitePiece = Bits.contains(board.getWhitePieces(), square);
             final Feature feature = new Feature(piece, square, whitePiece);
-            acc.add(feature, whitePerspective);
+            acc.add(weights, feature, whitePerspective);
             pieces = Bits.pop(pieces);
         }
 
@@ -107,11 +122,32 @@ public class NNUE {
         final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
         final boolean white = board.isWhite();
 
-        // If the network is horizontally mirrored, and the king has just crossed the central axis,
-        // then a full accumulator refresh is required for the side-to-move before applying the move.
-        if (mustRefresh(board, move)) {
-            final boolean mirror = !shouldMirror(board.kingSquare(white));
-            fullRefresh(board, acc, white, mirror);
+        final Piece piece = board.pieceAt(move.from());
+        final int whiteKingSquare = board.kingSquare(true);
+        final int blackKingSquare = board.kingSquare(false);
+
+        final int whiteKingBucket = board.isWhite() ?
+                calculateNewKingBucket(whiteKingSquare, move, piece, true) :
+                kingBucket(whiteKingSquare, true);
+
+        final int blackKingBucket = board.isWhite() ?
+                kingBucket(blackKingSquare, false) :
+                calculateNewKingBucket(blackKingSquare, move, piece, false);
+
+        final short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
+        final short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
+
+        // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
+        // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
+        final boolean mirrorChanged = mirrorChanged(board, move, piece);
+        final boolean bucketChanged = bucketChanged(board, move, piece, white);
+        if (mirrorChanged || bucketChanged) {
+            boolean mirror = shouldMirror(board.kingSquare(white));
+            if (mirrorChanged) {
+                mirror = !mirror;
+            }
+            short[] weights = white ? whiteWeights : blackWeights;
+            fullRefresh(board, acc, weights, white, mirror);
         }
 
         // Determine which features need to be updated based on the move type (standard, capture, or castle).
@@ -122,7 +158,7 @@ public class NNUE {
         };
 
         // Apply the update to the accumulator.
-        acc.apply(update);
+        acc.apply(update, whiteWeights, blackWeights);
 
     }
 
@@ -212,7 +248,33 @@ public class NNUE {
         return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
-    private boolean mustRefresh(Board board, Move move) {
+    private boolean mirrorChanged(Board board, Move move, Piece piece) {
+        if (!NETWORK.horizontalMirror() || piece != Piece.KING) {
+            return false;
+        }
+        int prevKingSquare = move.from();
+        int currKingSquare = move.to();
+        if (move.isCastling() && UCI.Options.chess960) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            currKingSquare = Castling.kingTo(kingside, board.isWhite());
+        }
+        return shouldMirror(prevKingSquare) != shouldMirror(currKingSquare);
+    }
+
+    private boolean bucketChanged(Board board, Move move, Piece piece, boolean white) {
+        if (piece != Piece.KING) {
+            return false;
+        }
+        int prevKingSquare = move.from();
+        int currKingSquare = move.to();
+        if (move.isCastling() && UCI.Options.chess960) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            currKingSquare = Castling.kingTo(kingside, board.isWhite());
+        }
+        return kingBucket(prevKingSquare, white) != kingBucket(currKingSquare, white);
+    }
+
+    private boolean mustRefresh(Board board, Move move, boolean white) {
         if (!NETWORK.horizontalMirror()) {
             return false;
         }
@@ -225,11 +287,30 @@ public class NNUE {
             final boolean kingside = Castling.isKingside(move.from(), move.to());
             currKingSquare = Castling.kingTo(kingside, board.isWhite());
         }
-        return shouldMirror(prevKingSquare) != shouldMirror(currKingSquare);
+        return (shouldMirror(prevKingSquare) != shouldMirror(currKingSquare)) ||
+                (kingBucket(prevKingSquare, white) != kingBucket(currKingSquare, white));
     }
 
     private boolean shouldMirror(int kingSquare) {
         return NETWORK.horizontalMirror() && File.of(kingSquare) > 3;
+    }
+
+    private int calculateNewKingBucket(int kingSquare, Move move, Piece piece, boolean white) {
+        if (move == null) return kingBucket(kingSquare, white);
+        if (piece != Piece.KING) return kingBucket(kingSquare, white);
+        int to = move.to();
+        if (move.isCastling()) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            to = UCI.Options.chess960 ? Castling.kingTo(kingside, board.isWhite()) : move.to();
+        }
+        return kingBucket(to, white);
+    }
+
+    private int kingBucket(int kingSquare, boolean white) {
+        if (!white) {
+            kingSquare = Square.flipRank(kingSquare);
+        }
+        return NETWORK.inputBuckets()[kingSquare];
     }
 
     private MoveType moveType(Board board, Move move) {

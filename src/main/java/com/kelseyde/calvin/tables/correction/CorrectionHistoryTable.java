@@ -25,7 +25,7 @@ public abstract class CorrectionHistoryTable {
     /**
      * Compute the new correction based on a weighted sum of old value and the new delta of the score and static eval.
      */
-    public int correction(int oldValue, boolean white, int staticEval, int score, int depth) {
+    public int correction(int oldValue, int staticEval, int score, int depth) {
 
         // Compute the new correction value, and retrieve the old value
         int newValue = (score - staticEval) * SCALE;

@@ -82,7 +82,7 @@ public class Pretty {
             colour = Pretty.RED;
         }
 
-        String paddedScore = "";
+        String paddedScore;
         if (Score.isMateScore(score)) {
             int moves = Math.max((Score.MATE - Math.abs(score)) / 2, 1);
             if (score < 0) moves = -moves;
@@ -125,7 +125,7 @@ public class Pretty {
 
     private static String formatHashfull(float hashfull) {
         final int hashfullLength = 5;
-        String formatted = String.format(Locale.ROOT, "%.1f", (float) hashfull / 10);
+        String formatted = String.format(Locale.ROOT, "%.1f", hashfull / 10);
         int buffer = Math.max(0, hashfullLength - formatted.length());
         return GRAY + " ".repeat(buffer) + formatted + "%" + RESET;
     }

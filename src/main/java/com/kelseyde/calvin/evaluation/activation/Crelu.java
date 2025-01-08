@@ -6,6 +6,13 @@ import jdk.incubator.vector.VectorSpecies;
 
 import static com.kelseyde.calvin.evaluation.NNUE.NETWORK;
 
+/**
+ * Implementation of NNUE inference using the CReLU (Clipped Rectified Linear Unit) activation function.
+ * CReLU is defined as follows:
+ * <p>
+ *     CReLU(x) = clamp(x, 0, 1)
+ * </p>
+ */
 public class Crelu {
 
     static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;

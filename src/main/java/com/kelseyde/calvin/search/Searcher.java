@@ -7,6 +7,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
+import com.kelseyde.calvin.search.SearchHistory.PlayedMove;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
@@ -100,7 +101,7 @@ public class Searcher implements Search {
             final int delta = failMargin * retries;
 
             // Perform alpha-beta search for the current depth
-            final int score = search(searchDepth, 0, alpha, beta);
+            final int score = search(searchDepth, 0, alpha, beta, false);
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrent != null) {
@@ -168,8 +169,9 @@ public class Searcher implements Search {
      * @param ply                 The number of ply already examined in the current search ('ply from root').
      * @param alpha               The lower bound for search scores ('we can do at least this well').
      * @param beta                The upper bound for search scores ('our opponent can do at most this well').
+     * @param cutNode             Whether this node is an expected cut-node (i.e. a fail-high node).
      */
-    public int search(int depth, int ply, int alpha, int beta) {
+    public int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
 
         // If timeout is reached, exit immediately
         if (shouldStop()) return alpha;
@@ -205,7 +207,10 @@ public class Searcher implements Search {
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
 
-        if (!pvNode && ttHit && isSufficientDepth(ttEntry, depth)) {
+        if (!pvNode
+                && ttHit
+                && isSufficientDepth(ttEntry, depth)
+                && (ttEntry.score() <= alpha || cutNode)) {
             if (isWithinBounds(ttEntry, alpha, beta)) {
                 return ttEntry.score();
             }
@@ -233,7 +238,7 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
-                && !inCheck
+                && (pvNode || cutNode)
                 && (!ttHit || ttEntry.move() == null)
                 && depth >= config.iirDepth.value) {
             --depth;
@@ -251,7 +256,9 @@ public class Searcher implements Search {
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
             }
 
-            staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
+            staticEval = ttMove != null ?
+                    rawStaticEval :
+                    history.correctEvaluation(board, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -333,7 +340,7 @@ public class Searcher implements Search {
                         + depth / divisor
                         + evalReduction;
 
-                final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
+                final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
 
                 board.unmakeNullMove();
                 ss.get(ply + 1).nullMoveAllowed = true;
@@ -347,7 +354,7 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = Score.MIN;
-        HashFlag flag = HashFlag.UPPER;
+        int flag = HashFlag.UPPER;
 
         sse.searchedMoves = new ArrayList<>();
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
@@ -480,17 +487,17 @@ public class Searcher implements Search {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                score = -search(depth - 1, ply + 1, -beta, -alpha);
+                score = -search(depth - 1, ply + 1, -beta, -alpha, false);
             }
             else {
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha);
+                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha, true);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1, ply + 1, -beta, -alpha);
+                    score = -search(depth - 1, ply + 1, -beta, -alpha, false);
                 }
             }
 
@@ -543,7 +550,7 @@ public class Searcher implements Search {
         }
 
         if (!inCheck
-            && !Score.isUndefinedScore(bestScore)
+            && Score.isDefinedScore(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
@@ -618,7 +625,9 @@ public class Searcher implements Search {
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
             }
 
-            staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
+            staticEval = ttMove != null ?
+                    rawStaticEval :
+                    history.correctEvaluation(board, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -643,7 +652,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = alpha;
         final int futilityScore = bestScore + config.qsFpMargin.value;
-        HashFlag flag = HashFlag.UPPER;
+        int flag = HashFlag.UPPER;
 
         while (true) {
 
@@ -777,10 +786,10 @@ public class Searcher implements Search {
     }
 
     public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
-        return entry.flag().equals(HashFlag.EXACT) ||
-                (!Score.isUndefinedScore(entry.score()) &&
-                        (entry.flag().equals(HashFlag.UPPER) && entry.score() <= alpha ||
-                                entry.flag().equals(HashFlag.LOWER) && entry.score() >= beta));
+        return entry.flag() == HashFlag.EXACT ||
+                (Score.isDefinedScore(entry.score()) &&
+                        (entry.flag() == HashFlag.UPPER && entry.score() <= alpha ||
+                                entry.flag() == HashFlag.LOWER && entry.score() >= beta));
     }
 
     public boolean isSufficientDepth(HashEntry entry, int depth) {

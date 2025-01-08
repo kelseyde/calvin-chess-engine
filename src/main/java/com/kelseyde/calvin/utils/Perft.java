@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.utils.perft;
+package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
@@ -10,7 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PerftService {
+/**
+ * Perft, ('Performance Test') is a debugging function to walk the move generation tree of strictly legal moves to count
+ * all the leaf nodes of a certain depth, which is compared to predetermined values and used to isolate bugs.
+ */
+public class Perft {
 
     private final MoveGenerator movegen = new MoveGenerator();
 

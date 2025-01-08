@@ -490,7 +490,11 @@ public class Searcher implements Search {
             else {
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha, true);
+                int lmrDepth = depth - 1 - reduction;
+                if (inCheck) {
+                    lmrDepth = Math.max(1, lmrDepth);
+                }
+                score = -search(lmrDepth, ply + 1, -alpha - 1, -alpha, true);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a

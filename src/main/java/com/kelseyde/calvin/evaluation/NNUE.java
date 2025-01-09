@@ -144,6 +144,7 @@ public class NNUE {
             }
         }
 
+        cacheEntry.bitboards = Arrays.copyOf(board.getBitboards(), Piece.COUNT + 2);
         cacheEntry.features = Arrays.copyOf(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, NETWORK.hiddenSize());
 
     }

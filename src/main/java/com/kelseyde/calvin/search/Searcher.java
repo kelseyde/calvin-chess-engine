@@ -325,6 +325,7 @@ public class Searcher implements Search {
             if (sse.nullMoveAllowed
                 && depth >= config.nmpDepth.value
                 && staticEval >= beta
+                && (!ttHit || cutNode || ttEntry.score() >= beta)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
                 ss.get(ply + 1).nullMoveAllowed = false;

@@ -581,6 +581,10 @@ public class Board {
         };
     }
 
+    public long getPieces(int pieceIndex, int colourIndex) {
+        return bitboards[pieceIndex] & bitboards[Piece.COUNT + colourIndex];
+    }
+
 
     public boolean hasPiecesRemaining(boolean white) {
         return white ?

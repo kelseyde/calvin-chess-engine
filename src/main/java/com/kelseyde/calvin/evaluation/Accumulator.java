@@ -21,8 +21,8 @@ public class Accumulator {
     private static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
     private static final int LOOP_LENGTH = SPECIES.loopBound(HIDDEN_SIZE);
 
-    public final short[] whiteFeatures;
-    public final short[] blackFeatures;
+    public short[] whiteFeatures;
+    public short[] blackFeatures;
     public final boolean[] mirrored;
 
     public Accumulator(int featureCount) {
@@ -53,6 +53,21 @@ public class Accumulator {
 
             ShortVector.fromArray(SPECIES, features, i)
                     .add(ShortVector.fromArray(SPECIES, weights, i + offset))
+                    .intoArray(features, i);
+
+        }
+    }
+
+    public void sub(short[] weights, Feature feature, boolean whitePerspective) {
+        // Subtract a single feature from the accumulator.
+        final boolean mirror = mirrored[Colour.index(whitePerspective)];
+        final int offset = feature.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
+
+        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
+
+            ShortVector.fromArray(SPECIES, features, i)
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset))
                     .intoArray(features, i);
 
         }
@@ -195,6 +210,14 @@ public class Accumulator {
                 Arrays.copyOf(whiteFeatures, whiteFeatures.length),
                 Arrays.copyOf(blackFeatures, blackFeatures.length),
                 Arrays.copyOf(mirrored, mirrored.length));
+    }
+
+    public void copyFrom(short[] features, boolean whitePerspective) {
+        if (whitePerspective) {
+            whiteFeatures = Arrays.copyOf(features, features.length);
+        } else {
+            blackFeatures = Arrays.copyOf(features, features.length);
+        }
     }
 
     public static class AccumulatorUpdate {

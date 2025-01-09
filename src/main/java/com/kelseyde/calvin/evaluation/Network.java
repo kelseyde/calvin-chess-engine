@@ -31,7 +31,7 @@ public record Network(int inputSize,
         return new Builder();
     }
 
-    public int bucketCount() {
+    public int inputBucketCount() {
         return inputBuckets != null ? (int) Arrays.stream(inputBuckets).distinct().count() : 1;
     }
 
@@ -155,7 +155,7 @@ public record Network(int inputSize,
             int inputWeightsOffset = inputSize * hiddenSize;
             int inputBiasesOffset = hiddenSize;
             int outputWeightsOffset = hiddenSize * 2;
-            int buckets = bucketCount();
+            int buckets = inputBucketCount();
 
             ByteBuffer buffer = ByteBuffer.allocate(((inputWeightsOffset * buckets) + inputBiasesOffset + outputWeightsOffset + 1) * 2)
                     .order(ByteOrder.LITTLE_ENDIAN);

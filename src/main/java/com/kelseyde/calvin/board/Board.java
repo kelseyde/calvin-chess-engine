@@ -436,6 +436,10 @@ public class Board {
         return bitboards[white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES];
     }
 
+    public long[] getBitboards() {
+        return bitboards;
+    }
+
     public void setPawns(long pawns) {
         this.bitboards[Piece.PAWN.index] = pawns;
     }
@@ -579,6 +583,10 @@ public class Board {
             case QUEEN -> getQueens(white);
             case KING -> getKing(white);
         };
+    }
+
+    public long getPieces(int pieceIndex, int colourIndex) {
+        return bitboards[pieceIndex] & bitboards[Piece.COUNT + colourIndex];
     }
 
 

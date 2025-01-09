@@ -4,9 +4,12 @@ import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.evaluation.Accumulator.AccumulatorUpdate;
+import com.kelseyde.calvin.evaluation.InputBucketCache.BucketCacheEntry;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.uci.UCI;
+
+import java.util.Arrays;
 
 /**
  * Calvin's evaluation function is an Efficiently Updatable Neural Network (NNUE).
@@ -44,6 +47,7 @@ public class NNUE {
             .build();
 
     private Accumulator[] accumulatorStack;
+    private InputBucketCache bucketCache;
     private int current;
     private Board board;
 
@@ -51,6 +55,7 @@ public class NNUE {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
+        this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }
 
     public NNUE(Board board) {
@@ -58,6 +63,7 @@ public class NNUE {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
+        this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
         fullRefresh(board);
     }
 
@@ -88,30 +94,58 @@ public class NNUE {
         final boolean blackMirror = shouldMirror(board.kingSquare(false));
         int whiteKingBucket = kingBucket(board.kingSquare(true), true);
         int blackKingBucket = kingBucket(board.kingSquare(false), false);
-        short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
-        short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
-        fullRefresh(board, acc, whiteWeights, true, whiteMirror);
-        fullRefresh(board, acc, blackWeights, false, blackMirror);
+        fullRefresh(board, acc, true, whiteMirror, whiteKingBucket);
+        fullRefresh(board, acc, false, blackMirror, blackKingBucket);
 
     }
 
-    private void fullRefresh(Board board, Accumulator acc, short[] weights, boolean whitePerspective, boolean mirror) {
+    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror, int bucket) {
 
         // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
         acc.mirrored[Colour.index(whitePerspective)] = mirror;
-        // Reset every feature in the accumulator to the initial bias value.
-        acc.reset(whitePerspective);
 
-        long pieces = board.getOccupied();
-        while (pieces != 0) {
-            // For each piece on the board, activate the corresponding feature in the accumulator.
-            int square = Bits.next(pieces);
-            final Piece piece = board.pieceAt(square);
-            final boolean whitePiece = Bits.contains(board.getWhitePieces(), square);
-            final Feature feature = new Feature(piece, square, whitePiece);
-            acc.add(weights, feature, whitePerspective);
-            pieces = Bits.pop(pieces);
+        BucketCacheEntry cacheEntry = bucketCache.get(whitePerspective, mirror, bucket);
+        short[] cachedFeatures = cacheEntry.features;
+
+        if (cachedFeatures == null) {
+            // If there is no cached accumulator for this bucket, then we will need to
+            // reset every feature in the accumulator to the initial bias value.
+            cachedFeatures = Arrays.copyOf(NETWORK.inputBiases(), NETWORK.inputBiases().length);
         }
+        acc.copyFrom(cachedFeatures, whitePerspective);
+
+        final short[] weights = NETWORK.inputWeights()[bucket];
+
+        // Loop over each colour and piece type
+        for (int colourIndex = 0; colourIndex < 2; colourIndex++) {
+            final boolean white = colourIndex == 0;
+            for (int pieceIndex = 0; pieceIndex < Piece.COUNT; pieceIndex++) {
+
+                final Piece piece = Piece.values()[pieceIndex];
+                final long pieces = board.getPieces(piece, white);
+                final long cachedPieces = cacheEntry.bitboards[pieceIndex] & cacheEntry.bitboards[Piece.COUNT + colourIndex];
+
+                long added = pieces & ~cachedPieces;
+                while (added != 0) {
+                    final int square = Bits.next(added);
+                    Feature feature = new Feature(piece, square, white);
+                    acc.add(weights, feature, whitePerspective);
+                    added = Bits.pop(added);
+                }
+
+                long removed = cachedPieces & ~pieces;
+                while (removed != 0) {
+                    final int square = Bits.next(removed);
+                    Feature feature = new Feature(piece, square, white);
+                    acc.sub(weights, feature, whitePerspective);
+                    removed = Bits.pop(removed);
+                }
+
+            }
+        }
+
+        cacheEntry.bitboards = Arrays.copyOf(board.getBitboards(), Piece.COUNT + 2);
+        cacheEntry.features = Arrays.copyOf(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, NETWORK.hiddenSize());
 
     }
 
@@ -146,8 +180,8 @@ public class NNUE {
             if (mirrorChanged) {
                 mirror = !mirror;
             }
-            short[] weights = white ? whiteWeights : blackWeights;
-            fullRefresh(board, acc, weights, white, mirror);
+            final int bucket = white ? whiteKingBucket : blackKingBucket;
+            fullRefresh(board, acc, white, mirror, bucket);
         }
 
         // Determine which features need to be updated based on the move type (standard, capture, or castle).

@@ -125,6 +125,7 @@ public class NNUE {
                 final long pieces = board.getPieces(piece, white);
                 final long cachedPieces = cacheEntry.bitboards[pieceIndex] & cacheEntry.bitboards[Piece.COUNT + colourIndex];
 
+                // Calculate which pieces need to be added and removed from the accumulator.
                 long added = pieces & ~cachedPieces;
                 while (added != 0) {
                     final int square = Bits.next(added);
@@ -144,6 +145,7 @@ public class NNUE {
             }
         }
 
+        // Finally, update the cache entry with the new board state and accumulated features.
         cacheEntry.bitboards = Arrays.copyOf(board.getBitboards(), Piece.COUNT + 2);
         cacheEntry.features = Arrays.copyOf(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, NETWORK.hiddenSize());
 

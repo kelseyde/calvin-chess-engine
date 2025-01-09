@@ -4,6 +4,14 @@ import com.kelseyde.calvin.board.Piece;
 
 import java.util.Objects;
 
+/**
+ * Whenever the king changes bucket, a costly full refresh of the accumulator is required. This service implements a
+ * technique to improve the performance of this refresh known as 'Finny tables'.
+ * </p>
+ * We keep a cache of the last accumulator and board state used for each bucket. When refreshing, instead of starting
+ * from an empty board, we start from the last board state used for the bucket. We therefore only need to apply the diff
+ * between the last board state and the current board state to the accumulator.
+ */
 public class InputBucketCache {
 
     public static final class BucketCacheEntry {

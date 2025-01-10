@@ -15,6 +15,7 @@ import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -47,7 +48,7 @@ public class UCI {
 
         // Allow the engine to be benched from the command line at startup.
         if (args.length == 1 && args[0].equals("bench")) {
-            Bench.run(ENGINE);
+            Bench.run(ENGINE, true);
         }
 
         try (Scanner in = new Scanner(System.in)) {
@@ -82,12 +83,12 @@ public class UCI {
         write("uciok");
 
         // Typically 'uci' is only sent by tournament runners, not humans.
-        // Therefore, let's disable pretty print when receiving a 'uci' command.
+        // Therefore, let's disable pretty print when receiving the 'uci' command.
         Options.pretty = false;
     }
 
     public static void handleBench(UCICommand command) {
-        Bench.run(ENGINE);
+        Bench.run(ENGINE, false);
     }
 
     public static void handleNewGame(UCICommand command) {
@@ -106,8 +107,9 @@ public class UCI {
     }
 
     public static void handleGo(UCICommand command) {
+        Instant start = Instant.now();
         GoCommand goCommand = GoCommand.parse(command);
-        ENGINE.go(goCommand);
+        ENGINE.go(start, goCommand);
     }
 
     public static void handlePonderHit(UCICommand command) {

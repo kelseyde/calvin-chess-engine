@@ -18,16 +18,7 @@ import java.util.Arrays;
  */
 public class Board {
 
-    private long pawns;
-    private long knights;
-    private long bishops;
-    private long rooks;
-    private long queens;
-    private long kings;
-    private long whitePieces;
-    private long blackPieces;
-    private long occupied;
-
+    private long[] bitboards;
     private Piece[] pieces;
     private BoardState state;
     private BoardState[] states;
@@ -36,15 +27,7 @@ public class Board {
     private int ply;
 
     public Board() {
-        this.pawns       = 0L;
-        this.knights     = 0L;
-        this.bishops     = 0L;
-        this.rooks       = 0L;
-        this.queens      = 0L;
-        this.kings       = 0L;
-        this.whitePieces = 0L;
-        this.blackPieces = 0L;
-        this.occupied    = 0L;
+        this.bitboards   = new long[Piece.COUNT + 2];
         this.pieces      = new Piece[Square.COUNT];
         this.moves       = new Move[Search.MAX_DEPTH];
         this.states      = new BoardState[Search.MAX_DEPTH];
@@ -53,24 +36,18 @@ public class Board {
         this.ply         = 0;
     }
 
-    public boolean makeMove(Move move) {
-        return makeMove(move, true);
-    }
-
     /**
      * Updates the internal board representation with the {@link Move} just made. Toggles the piece bitboards to move the
      * piece + remove the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
      */
-    public boolean makeMove(Move move, boolean incrementPly) {
+    public boolean makeMove(Move move) {
 
         final int from = move.from();
         final int to = move.to();
         final Piece piece = pieces[from];
         if (piece == null) return false;
         final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
-        if (incrementPly) {
-            states[ply] = state.copy();
-        }
+        states[ply] = state.copy();
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
         else if (move.isCastling())   makeCastleMove(from, to);
@@ -79,9 +56,7 @@ public class Board {
         else                          makeStandardMove(from, to, piece, captured);
 
         updateState(from, to, piece, captured, move);
-        if (incrementPly) {
-            moves[ply++] = move;
-        }
+        moves[ply++] = move;
         checkMaxPly();
         white = !white;
 
@@ -330,20 +305,10 @@ public class Board {
     }
 
     private void toggle(long mask, Piece type, boolean white) {
-        switch (type) {
-            case PAWN ->    pawns ^= mask;
-            case KNIGHT ->  knights ^= mask;
-            case BISHOP ->  bishops ^= mask;
-            case ROOK ->    rooks ^= mask;
-            case QUEEN ->   queens ^= mask;
-            case KING ->    kings ^= mask;
-        }
-        if (white) {
-            whitePieces ^= mask;
-        } else {
-            blackPieces ^= mask;
-        }
-        occupied ^= mask;
+        final int pieceIndex = type.index();
+        bitboards[pieceIndex] ^= mask;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        bitboards[colourIndex] ^= mask;
     }
 
     private void updateKeys(int from, int to, Piece piece, boolean white) {
@@ -378,25 +343,19 @@ public class Board {
     }
 
     public void removeKing(boolean white) {
-        final long toggleMask = white ? (kings & whitePieces) : (kings & blackPieces);
-        kings ^= toggleMask;
-        if (white) {
-            whitePieces ^= toggleMask;
-        } else {
-            blackPieces ^= toggleMask;
-        }
-        occupied ^= toggleMask;
+        final int pieceIndex = Piece.KING.index;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        final long toggleMask = bitboards[pieceIndex] & bitboards[colourIndex];
+        bitboards[pieceIndex] ^= toggleMask;
+        bitboards[colourIndex] ^= toggleMask;
     }
 
     public void addKing(int kingSquare, boolean white) {
         final long toggleMask = Bits.of(kingSquare);
-        kings |= toggleMask;
-        if (white) {
-            whitePieces |= toggleMask;
-        } else {
-            blackPieces |= toggleMask;
-        }
-        occupied |= toggleMask;
+        final int pieceIndex = Piece.KING.index;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        bitboards[pieceIndex] |= toggleMask;
+        bitboards[colourIndex] |= toggleMask;
     }
 
     private int updateCastleRights(int from, int to, Piece pieceType) {
@@ -444,73 +403,73 @@ public class Board {
     }
 
     public long getPawns(boolean white) {
-        final long side = white ? whitePieces : blackPieces;
-        return pawns & side;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        return bitboards[Piece.PAWN.index] & bitboards[colourIndex];
     }
 
     public long getKnights(boolean white) {
-        final long side = white ? whitePieces : blackPieces;
-        return knights & side;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        return bitboards[Piece.KNIGHT.index] & bitboards[colourIndex];
     }
 
     public long getBishops(boolean white) {
-        final long side = white ? whitePieces : blackPieces;
-        return bishops & side;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        return bitboards[Piece.BISHOP.index] & bitboards[colourIndex];
     }
 
     public long getRooks(boolean white) {
-        final long side = white ? whitePieces : blackPieces;
-        return rooks & side;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        return bitboards[Piece.ROOK.index] & bitboards[colourIndex];
     }
 
     public long getQueens(boolean white) {
-        final long side = white ? whitePieces : blackPieces;
-        return queens & side;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        return bitboards[Piece.QUEEN.index] & bitboards[colourIndex];
     }
 
     public long getKing(boolean white) {
-        final long side = white ? whitePieces : blackPieces;
-        return kings & side;
+        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        return bitboards[Piece.KING.index] & bitboards[colourIndex];
     }
 
     public long getPieces(boolean white) {
-        return white ? whitePieces : blackPieces;
+        return bitboards[white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES];
     }
 
     public void setPawns(long pawns) {
-        this.pawns = pawns;
+        this.bitboards[Piece.PAWN.index] = pawns;
     }
 
     public void setKnights(long knights) {
-        this.knights = knights;
+        this.bitboards[Piece.KNIGHT.index] = knights;
     }
 
     public void setBishops(long bishops) {
-        this.bishops = bishops;
+        this.bitboards[Piece.BISHOP.index] = bishops;
     }
 
     public void setRooks(long rooks) {
-        this.rooks = rooks;
+        this.bitboards[Piece.ROOK.index] = rooks;
     }
 
     public void setQueens(long queens) {
-        this.queens = queens;
+        this.bitboards[Piece.QUEEN.index] = queens;
     }
 
     public void setKings(long kings) {
-        this.kings = kings;
+        this.bitboards[Piece.KING.index] = kings;
     }
 
     public void setWhitePieces(long whitePieces) {
-        this.whitePieces = whitePieces;
+        this.bitboards[Piece.WHITE_PIECES] = whitePieces;
     }
 
     public void setBlackPieces(long blackPieces) {
-        this.blackPieces = blackPieces;
+        this.bitboards[Piece.BLACK_PIECES] = blackPieces;
     }
 
-    public void setOccupied(long occupied) {
-        this.occupied = occupied;
+    public void setBitboards(long[] bitboards) {
+        this.bitboards = bitboards;
     }
 
     public void setPieces(Piece[] pieces) {
@@ -534,39 +493,39 @@ public class Board {
     }
 
     public long getPawns() {
-        return pawns;
+        return bitboards[Piece.PAWN.index];
     }
 
     public long getKnights() {
-        return knights;
+        return bitboards[Piece.KNIGHT.index];
     }
 
     public long getBishops() {
-        return bishops;
+        return bitboards[Piece.BISHOP.index];
     }
 
     public long getRooks() {
-        return rooks;
+        return bitboards[Piece.ROOK.index];
     }
 
     public long getQueens() {
-        return queens;
+        return bitboards[Piece.QUEEN.index];
     }
 
     public long getKings() {
-        return kings;
+        return bitboards[Piece.KING.index];
     }
 
     public long getWhitePieces() {
-        return whitePieces;
+        return bitboards[Piece.WHITE_PIECES];
     }
 
     public long getBlackPieces() {
-        return blackPieces;
+        return bitboards[Piece.BLACK_PIECES];
     }
 
     public long getOccupied() {
-        return occupied;
+        return bitboards[Piece.WHITE_PIECES] | bitboards[Piece.BLACK_PIECES];
     }
 
     public Piece[] getPieces() {
@@ -606,7 +565,9 @@ public class Board {
     }
 
     public int kingSquare(boolean white) {
-        return Bits.next(kings & (white ? whitePieces : blackPieces));
+        final long kings = getKing(white);
+        final long pieces = getPieces(white);
+        return Bits.next(kings & pieces);
     }
 
     public long getPieces(Piece piece, boolean white) {
@@ -654,7 +615,6 @@ public class Board {
         newBoard.setKings(this.getKings());
         newBoard.setWhitePieces(this.getWhitePieces());
         newBoard.setBlackPieces(this.getBlackPieces());
-        newBoard.setOccupied(this.getOccupied());
         newBoard.setWhite(this.isWhite());
         newBoard.setState(this.getState().copy());
         BoardState[] newStates = new BoardState[this.getStates().length];
@@ -689,7 +649,7 @@ public class Board {
                     System.out.print(" |  ");
                     continue;
                 }
-                boolean white = (whitePieces & Bits.of(sq)) != 0;
+                boolean white = (getWhitePieces() & Bits.of(sq)) != 0;
                 System.out.print(" | " + (white ? piece.code().toUpperCase() : piece.code()));
             }
 

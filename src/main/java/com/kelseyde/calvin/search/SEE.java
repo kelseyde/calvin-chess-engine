@@ -35,13 +35,13 @@ public class SEE {
         Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
         score += captured != null ? SEE_PIECE_VALUES[captured.index()] : 0;
 
-        if (move.isPromotion()) {
+        if (move.promoPiece() != null) {
             score += value(move.promoPiece()) - value(Piece.PAWN);
         }
 
         if (score < 0) return false;
 
-        Piece nextVictim = move.isPromotion() ? move.promoPiece() : board.pieceAt(from);
+        Piece nextVictim = move.promoPiece() != null ? move.promoPiece() : board.pieceAt(from);
         score -= value(nextVictim);
 
         if (score >= 0) return true;

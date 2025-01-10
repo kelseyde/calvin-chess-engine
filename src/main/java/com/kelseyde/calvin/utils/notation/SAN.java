@@ -75,7 +75,7 @@ public class SAN {
         notation += Rank.toRankNotation(move.to());
 
         // Add promotion piece type
-        if (move.isPromotion()) {
+        if (move.promoPiece() != null) {
             Piece promotionPieceType = move.promoPiece();
             notation += "=" + promotionPieceType.code().toUpperCase();
         }

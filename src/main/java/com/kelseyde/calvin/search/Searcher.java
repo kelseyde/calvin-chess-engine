@@ -7,6 +7,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
+import com.kelseyde.calvin.search.SearchHistory.PlayedMove;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
@@ -84,11 +85,9 @@ public class Searcher implements Search {
         int alpha = Score.MIN;
         int beta = Score.MAX;
 
-        int retries = 0;
         int reduction = 0;
         final int maxReduction = config.aspMaxReduction.value;
-        final int margin = config.aspMargin.value;
-        final int failMargin = config.aspFailMargin.value;
+        int window = config.aspMargin.value;
 
         while (!shouldStopSoft() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
@@ -97,10 +96,9 @@ public class Searcher implements Search {
             td.seldepth = 0;
 
             final int searchDepth = td.depth - reduction;
-            final int delta = failMargin * retries;
 
             // Perform alpha-beta search for the current depth
-            final int score = search(searchDepth, 0, alpha, beta);
+            final int score = search(searchDepth, 0, alpha, beta, false);
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrent != null) {
@@ -127,25 +125,26 @@ public class Searcher implements Search {
             // Adjust the aspiration window in case the score fell outside the current window
             if (score <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
+                beta = (alpha + beta) / 2;
+                alpha -= window;
+                window *= 2;
                 reduction = 0;
-                retries++;
-                alpha -= delta;
                 continue;
             }
             if (score >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
+                beta += window;
+                window *= 2;
                 reduction = Math.min(maxReduction, reduction + 1);
-                retries++;
-                beta += delta;
                 continue;
             }
 
             // Center the aspiration window around the score from the current iteration, to be used next time.
-            alpha = score - margin;
-            beta = score + margin;
+            window = config.aspMargin.value;
+            alpha = score - window;
+            beta = score + window;
 
             // Increment depth and reset retry counter for next iteration
-            retries = 0;
             td.depth++;
         }
 
@@ -168,8 +167,9 @@ public class Searcher implements Search {
      * @param ply                 The number of ply already examined in the current search ('ply from root').
      * @param alpha               The lower bound for search scores ('we can do at least this well').
      * @param beta                The upper bound for search scores ('our opponent can do at most this well').
+     * @param cutNode             Whether this node is an expected cut-node (i.e. a fail-high node).
      */
-    public int search(int depth, int ply, int alpha, int beta) {
+    public int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
 
         // If timeout is reached, exit immediately
         if (shouldStop()) return alpha;
@@ -205,7 +205,10 @@ public class Searcher implements Search {
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
 
-        if (!pvNode && ttHit && isSufficientDepth(ttEntry, depth)) {
+        if (!pvNode
+                && ttHit
+                && isSufficientDepth(ttEntry, depth)
+                && (ttEntry.score() <= alpha || cutNode)) {
             if (isWithinBounds(ttEntry, alpha, beta)) {
                 return ttEntry.score();
             }
@@ -222,8 +225,6 @@ public class Searcher implements Search {
 
         final boolean inCheck = movegen.isCheck(board);
 
-        final MovePicker movePicker = new MovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
-
         // Check extension - https://www.chessprogramming.org/Check_Extension
         // If we are in check then there is a forcing sequence, so we could benefit from searching one ply deeper to
         // retrieve a more accurate evaluation.
@@ -235,7 +236,7 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
-                && !inCheck
+                && (pvNode || cutNode)
                 && (!ttHit || ttEntry.move() == null)
                 && depth >= config.iirDepth.value) {
             --depth;
@@ -253,7 +254,9 @@ public class Searcher implements Search {
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
             }
 
-            staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
+            staticEval = ttMove != null ?
+                    rawStaticEval :
+                    history.correctEvaluation(board, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -320,10 +323,12 @@ public class Searcher implements Search {
             if (sse.nullMoveAllowed
                 && depth >= config.nmpDepth.value
                 && staticEval >= beta
+                && (!ttHit || cutNode || ttEntry.score() >= beta)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
                 ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();
+                td.nodes++;
 
                 final int base = config.nmpBase.value;
                 final int divisor = config.nmpDivisor.value;
@@ -334,7 +339,7 @@ public class Searcher implements Search {
                         + depth / divisor
                         + evalReduction;
 
-                final int score = -search(depth - r, ply + 1, -beta, -beta + 1);
+                final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
 
                 board.unmakeNullMove();
                 ss.get(ply + 1).nullMoveAllowed = true;
@@ -348,9 +353,10 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = Score.MIN;
-        HashFlag flag = HashFlag.UPPER;
+        int flag = HashFlag.UPPER;
 
         sse.searchedMoves = new ArrayList<>();
+        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         int movesSearched = 0;
 
         while (true) {
@@ -365,12 +371,12 @@ public class Searcher implements Search {
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
-            PlayedMove playedMove = new PlayedMove(move, piece, captured);
 
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
+                    && !inCheck
                     && depth <= config.fpDepth.value
                     && scoredMove.isQuiet()) {
 
@@ -465,13 +471,11 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
-            playedMove.quiet = scoredMove.isQuiet();
-            playedMove.capture = scoredMove.captured() != null;
-
             if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
                 reduction += futilityReduction;
             }
 
+            PlayedMove playedMove = new PlayedMove(move, piece, captured);
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);
 
@@ -481,17 +485,17 @@ public class Searcher implements Search {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                score = -search(depth - 1, ply + 1, -beta, -alpha);
+                score = -search(depth - 1, ply + 1, -beta, -alpha, false);
             }
             else {
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha);
+                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha, true);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1, ply + 1, -beta, -alpha);
+                    score = -search(depth - 1, ply + 1, -beta, -alpha, false);
                 }
             }
 
@@ -537,15 +541,14 @@ public class Searcher implements Search {
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
-        if (bestMove != null) {
+        if (bestScore >= beta) {
             final PlayedMove best = sse.bestMove;
             final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
-            final boolean failHigh = bestScore >= beta;
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, failHigh);
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss);
         }
 
         if (!inCheck
-            && !Score.isUndefinedScore(bestScore)
+            && Score.isDefinedScore(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
@@ -620,7 +623,9 @@ public class Searcher implements Search {
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
             }
 
-            staticEval = history.correctEvaluation(board, ss, ply, rawStaticEval);
+            staticEval = ttMove != null ?
+                    rawStaticEval :
+                    history.correctEvaluation(board, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -637,7 +642,7 @@ public class Searcher implements Search {
             filter = MoveFilter.CAPTURES_ONLY;
         }
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(movegen, ss, history, board, ply, ttMove, inCheck);
+        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         movePicker.setFilter(filter);
 
         int movesSearched = 0;
@@ -645,7 +650,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = alpha;
         final int futilityScore = bestScore + config.qsFpMargin.value;
-        HashFlag flag = HashFlag.UPPER;
+        int flag = HashFlag.UPPER;
 
         while (true) {
 
@@ -678,7 +683,7 @@ public class Searcher implements Search {
             // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
             // chains, such as capturing with the queen a pawn defended by another pawn.
             final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-            if (!SEE.see(board, move, seeThreshold)) {
+            if (!inCheck && !SEE.see(board, move, seeThreshold)) {
                 continue;
             }
 
@@ -779,10 +784,10 @@ public class Searcher implements Search {
     }
 
     public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
-        return entry.flag().equals(HashFlag.EXACT) ||
-                (!Score.isUndefinedScore(entry.score()) &&
-                        (entry.flag().equals(HashFlag.UPPER) && entry.score() <= alpha ||
-                                entry.flag().equals(HashFlag.LOWER) && entry.score() >= beta));
+        return entry.flag() == HashFlag.EXACT ||
+                (Score.isDefinedScore(entry.score()) &&
+                        (entry.flag() == HashFlag.UPPER && entry.score() <= alpha ||
+                                entry.flag() == HashFlag.LOWER && entry.score() >= beta));
     }
 
     public boolean isSufficientDepth(HashEntry entry, int depth) {

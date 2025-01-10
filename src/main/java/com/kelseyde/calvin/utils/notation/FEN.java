@@ -73,7 +73,6 @@ public class FEN {
             long king = whiteKing | blackKing;
             long whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
             long blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;
-            long occupied = whitePieces | blackPieces;
 
             boolean whiteToMove = parseSideToMove(parts[1]);
             int castlingRights = parseCastlingRights(parts[2], whiteRooks, blackRooks, Bits.next(whiteKing), Bits.next(blackKing));
@@ -82,6 +81,7 @@ public class FEN {
             // This implementation does not require the full move counter (parts[5]).
 
             Board board = new Board();
+            board.setBitboards(new long[Piece.COUNT + 2]);
             board.setPawns(pawns);
             board.setKnights(knight);
             board.setBishops(bishops);
@@ -90,7 +90,6 @@ public class FEN {
             board.setKings(king);
             board.setWhitePieces(whitePieces);
             board.setBlackPieces(blackPieces);
-            board.setOccupied(occupied);
             board.setPieces(calculatePieceList(board));
             board.setWhite(whiteToMove);
             board.getState().setRights(castlingRights);

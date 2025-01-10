@@ -405,7 +405,8 @@ public class Searcher implements Search {
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
             int reduction = 0;
             if (depth >= config.lmrDepth.value
-                    && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)) {
+                    && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)
+                    && !scoredMove.isGoodNoisy()) {
 
                 // Reductions are based on the depth and the number of moves searched so far.
                 reduction = config.lmrReductions[isCapture ? 1 : 0][depth][movesSearched];

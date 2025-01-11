@@ -174,8 +174,13 @@ public class Searcher implements Search {
         // If timeout is reached, exit immediately
         if (shouldStop()) return alpha;
 
+        final boolean inCheck = movegen.isCheck(board);
+        final boolean rootNode = ply == 0;
+        final boolean pvNode = beta - alpha > 1;
+
         // If depth is reached, drop into quiescence search
-        if (depth <= 0) return quiescenceSearch(alpha, beta, 1, ply);
+        if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, 1, ply);
+        if (depth < 0) depth = 0;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW;
@@ -184,10 +189,7 @@ public class Searcher implements Search {
         if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
 
         // If the maximum depth is reached, return the static evaluation of the position
-        if (ply >= MAX_DEPTH) return movegen.isCheck(board) ? 0 : eval.evaluate();
-
-        final boolean rootNode = ply == 0;
-        final boolean pvNode = beta - alpha > 1;
+        if (ply >= MAX_DEPTH) return inCheck ? 0 : eval.evaluate();
 
         // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
@@ -222,8 +224,6 @@ public class Searcher implements Search {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.move();
         }
-
-        final boolean inCheck = movegen.isCheck(board);
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
         // If we are in check then there is a forcing sequence, so we could benefit from searching one ply deeper to

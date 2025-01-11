@@ -25,7 +25,7 @@ public class EngineConfig {
     public boolean pondering = false;
     public boolean searchCancelled = false;
 
-    public final Tunable aspMargin              = new Tunable("AspMargin", 20, 0, 250, 25);
+    public final Tunable aspMargin              = new Tunable("AspMargin", 12, 0, 250, 25);
     public final Tunable aspFailMargin          = new Tunable("AspFailMargin", 105, 0, 300, 25);
     public final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     public final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);

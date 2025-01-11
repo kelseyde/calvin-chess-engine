@@ -85,11 +85,9 @@ public class Searcher implements Search {
         int alpha = Score.MIN;
         int beta = Score.MAX;
 
-        int retries = 0;
         int reduction = 0;
         final int maxReduction = config.aspMaxReduction.value;
-        final int margin = config.aspMargin.value;
-        final int failMargin = config.aspFailMargin.value;
+        int window = config.aspMargin.value;
 
         while (!shouldStopSoft() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
@@ -98,7 +96,6 @@ public class Searcher implements Search {
             td.seldepth = 0;
 
             final int searchDepth = td.depth - reduction;
-            final int delta = failMargin * retries;
 
             // Perform alpha-beta search for the current depth
             final int score = search(searchDepth, 0, alpha, beta, false);
@@ -128,25 +125,26 @@ public class Searcher implements Search {
             // Adjust the aspiration window in case the score fell outside the current window
             if (score <= alpha) {
                 // If score <= alpha, re-search with an expanded aspiration window
+                beta = (alpha + beta) / 2;
+                alpha -= window;
+                window *= 2;
                 reduction = 0;
-                retries++;
-                alpha -= delta;
                 continue;
             }
             if (score >= beta) {
                 // If score >= beta, re-search with an expanded aspiration window
+                beta += window;
+                window *= 2;
                 reduction = Math.min(maxReduction, reduction + 1);
-                retries++;
-                beta += delta;
                 continue;
             }
 
             // Center the aspiration window around the score from the current iteration, to be used next time.
-            alpha = score - margin;
-            beta = score + margin;
+            window = config.aspMargin.value;
+            alpha = score - window;
+            beta = score + window;
 
             // Increment depth and reset retry counter for next iteration
-            retries = 0;
             td.depth++;
         }
 
@@ -176,8 +174,13 @@ public class Searcher implements Search {
         // If timeout is reached, exit immediately
         if (shouldStop()) return alpha;
 
+        final boolean inCheck = movegen.isCheck(board);
+        final boolean rootNode = ply == 0;
+        final boolean pvNode = beta - alpha > 1;
+
         // If depth is reached, drop into quiescence search
-        if (depth <= 0) return quiescenceSearch(alpha, beta, 1, ply);
+        if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, 1, ply);
+        if (depth < 0) depth = 0;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW;
@@ -186,10 +189,7 @@ public class Searcher implements Search {
         if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
 
         // If the maximum depth is reached, return the static evaluation of the position
-        if (ply >= MAX_DEPTH) return movegen.isCheck(board) ? 0 : eval.evaluate();
-
-        final boolean rootNode = ply == 0;
-        final boolean pvNode = beta - alpha > 1;
+        if (ply >= MAX_DEPTH) return inCheck ? 0 : eval.evaluate();
 
         // Mate Distance Pruning - https://www.chessprogramming.org/Mate_Distance_Pruning
         // Exit early if we have already found a forced mate at an earlier ply
@@ -224,8 +224,6 @@ public class Searcher implements Search {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.move();
         }
-
-        final boolean inCheck = movegen.isCheck(board);
 
         // Check extension - https://www.chessprogramming.org/Check_Extension
         // If we are in check then there is a forcing sequence, so we could benefit from searching one ply deeper to
@@ -378,6 +376,7 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
+                    && !inCheck
                     && depth <= config.fpDepth.value
                     && scoredMove.isQuiet()) {
 

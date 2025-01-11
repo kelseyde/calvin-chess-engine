@@ -682,8 +682,7 @@ public class Searcher implements Search {
             // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
             // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
             // chains, such as capturing with the queen a pawn defended by another pawn.
-            final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-            if (!inCheck && !SEE.see(board, move, seeThreshold)) {
+            if (!inCheck && !SEE.see(board, move, config.qsSeeMargin.value)) {
                 continue;
             }
 

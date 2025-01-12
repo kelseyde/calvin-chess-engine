@@ -12,8 +12,8 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
-import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.Perft;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.time.Instant;
 import java.util.ArrayList;

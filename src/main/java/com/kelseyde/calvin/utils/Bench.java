@@ -68,7 +68,7 @@ public class Bench {
             "2r2b2/5p2/5k2/p1r1pP2/P2pB3/1P3P2/K1P3R1/7R w - - 23 93"
     );
 
-    private static final int BENCH_DEPTH = 10;
+    private static final int BENCH_DEPTH = 15;
 
     public static void run(Engine engine, boolean exit) {
 
@@ -79,16 +79,16 @@ public class Bench {
         Search search = engine.getSearcher();
         search.setThreadCount(1);
         long nodes = 0;
+        long time = 0;
 
-        Instant start = Instant.now();
         for (String fen : FENS) {
             search.clearHistory();
             search.setPosition(FEN.toBoard(fen));
+            Instant now = Instant.now();
             SearchResult result = search.search(tc);
             nodes += result.nodes();
+            time += Duration.between(now, Instant.now()).toMillis();
         }
-        Instant end = Instant.now();
-        long time = Duration.between(start, end).toMillis();
 
         long nps = (nodes / time) * 1000;
         UCI.setOutputEnabled(true);

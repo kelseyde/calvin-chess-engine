@@ -22,11 +22,11 @@ import com.kelseyde.calvin.board.Move;
  */
 public record HashEntry(Move move, int score, int staticEval, int flag, int depth) {
 
-    public static HashEntry of(long key, long value) {
+    public static HashEntry of(long key, int value) {
         final Move move       = Value.getMove(value);
         final int flag        = Value.getFlag(value);
         final int depth       = Value.getDepth(value);
-        final int score       = Value.getScore(value);
+        final int score       = Key.getScore(key);
         final int staticEval  = Key.getStaticEval(key);
         return new HashEntry(move, score, staticEval, flag, depth);
     }
@@ -42,15 +42,25 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
 
         public static int getScore(long key) {
-            return (int) ((key & SCORE_MASK) >>> 32);
+            return (short) ((key & SCORE_MASK) >> 32);
+        }
+
+        public static long setScore(long key, int score) {
+            return (key & ~SCORE_MASK) | ((long) score << 32);
         }
 
         public static int getStaticEval(long key) {
-            return (short) ((key & STATIC_EVAL_MASK) >>> 48);
+            return (short) ((key & STATIC_EVAL_MASK) >> 48);
         }
 
         public static long of(long signature, int score, int staticEval) {
-            return signature | ((long) score << 32) | ((long) staticEval << 48);
+            if (score > Short.MAX_VALUE || score < Short.MIN_VALUE) {
+                throw new IllegalArgumentException("Score must be a 16-bit integer, is " + score);
+            }
+            if (staticEval > Short.MAX_VALUE || staticEval < Short.MIN_VALUE) {
+                throw new IllegalArgumentException("Static eval must be a 16-bit integer, is " + staticEval);
+            }
+            return (signature & SIGNATURE_MASK) | ((long) score << 32) | ((long) staticEval << 48);
         }
 
     }
@@ -61,26 +71,22 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         private static final int FLAG_MASK  = 0x0000f000;
         private static final int DEPTH_MASK = 0x00000fff;
 
-        public static int getMove(int value) {
-
-        }
-
-        public static Move getMove(long value) {
+        public static Move getMove(int value) {
             long move = (value & MOVE_MASK) >>> 16;
             return move > 0 ? new Move((short) move) : null;
         }
 
-        public static int getFlag(long value) {
-            return (int) (value & FLAG_MASK) >>> 12;
+        public static int getFlag(int value) {
+            return (value & FLAG_MASK) >>> 12;
         }
 
-        public static int getDepth(long value) {
-            return (int) (value & DEPTH_MASK);
+        public static int getDepth(int value) {
+            return value & DEPTH_MASK;
         }
 
-        public static long of(int score, Move move, int flag, int depth) {
-            long moveValue = move != null ? move.value() : 0;
-            return (long) score << 32 | moveValue << 16 | (long) flag << 12 | depth;
+        public static int of(Move move, int flag, int depth) {
+            short moveValue = move != null ? move.value() : 0;
+            return (int) ((moveValue << 16) | ((long) flag << 12) | depth);
         }
 
     }

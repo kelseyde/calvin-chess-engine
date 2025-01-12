@@ -709,9 +709,9 @@ public class MoveGenerator {
             final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
             final long travelSquares = Ray.between(from, rookSquare);
             final long blockedSquares = travelSquares & occupied;
-            final long safeSquares = Bits.of(from) | travelSquares;
+            final long safeSquares = Bits.of(from) | Ray.between(from, to) | Bits.of(to);
 
-            // Can't castle through check
+            // Can't castle through check or occupied cell
             return blockedSquares == 0 && !isAttacked(board, white, safeSquares);
 
         }

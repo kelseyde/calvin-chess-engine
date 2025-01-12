@@ -32,10 +32,10 @@ public class TranspositionTableTest {
         int score = -1;
         int staticEval = -7000;
         long key = HashEntry.Key.of(zobrist, score, staticEval);
-        Assertions.assertEquals(zobrist, HashEntry.Key.getZobristPart(key));
-        Assertions.assertEquals(score, HashEntry.Key.getScore(key)); // should output -1, outputs 65535
-        Assertions.assertEquals(staticEval, HashEntry.Key.getStaticEval(key));
 
+        Assertions.assertEquals(zobrist, HashEntry.Key.getZobristPart(key));
+        Assertions.assertEquals(score, HashEntry.Key.getScore(key));
+        Assertions.assertEquals(staticEval, HashEntry.Key.getStaticEval(key)); // Now outputs -7000 as expected
     }
 
     @Test
@@ -171,7 +171,7 @@ public class TranspositionTableTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
         flag = HashFlag.LOWER;
-        score = -Score.MATE;
+        score = Score.MATE;
         depth = 10;
         table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  score);
 

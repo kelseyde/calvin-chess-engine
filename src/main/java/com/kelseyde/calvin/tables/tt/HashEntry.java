@@ -9,16 +9,6 @@ import com.kelseyde.calvin.board.Move;
  * table, this information is packed into two 64-bit longs: a key and a value. The encoding scheme is as follows:
  * - Key: 0-31 (zobrist key), 32-47 (age), 48-63 (static eval)
  * - Value: 0-11 (depth), 12-15 (flag), 16-31 (move), 32-63 (score)
- *
- *
- * Key: 32 bits
- * Score: 16 bits
- * Eval: 16 bits
- *
- * Flag: 2 bits
- * Move: 16 bits
- * Depth: 8 bits
- * total: 90 bits
  */
 public record HashEntry(Move move, int score, int staticEval, int flag, int depth) {
 
@@ -50,17 +40,11 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
 
         public static int getStaticEval(long key) {
-            return (short) ((key & STATIC_EVAL_MASK) >> 48);
+            return (short) ((key & STATIC_EVAL_MASK) >>> 48);
         }
 
         public static long of(long signature, int score, int staticEval) {
-            if (score > Short.MAX_VALUE || score < Short.MIN_VALUE) {
-                throw new IllegalArgumentException("Score must be a 16-bit integer, is " + score);
-            }
-            if (staticEval > Short.MAX_VALUE || staticEval < Short.MIN_VALUE) {
-                throw new IllegalArgumentException("Static eval must be a 16-bit integer, is " + staticEval);
-            }
-            return (signature & SIGNATURE_MASK) | ((long) score << 32) | ((long) staticEval << 48);
+            return (signature & SIGNATURE_MASK) | ((long) (score & 0xFFFF) << 32) | ((long) (staticEval & 0xFFFF) << 48);
         }
 
     }

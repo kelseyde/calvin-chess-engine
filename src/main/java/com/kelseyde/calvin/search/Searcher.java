@@ -242,9 +242,9 @@ public class Searcher implements Search {
             --depth;
         }
 
-        int rawStaticEval = Integer.MIN_VALUE;
-        int uncorrectedStaticEval = Integer.MIN_VALUE;
-        int staticEval = Integer.MIN_VALUE;
+        int rawStaticEval = Short.MIN_VALUE;
+        int uncorrectedStaticEval = Short.MIN_VALUE;
+        int staticEval = Short.MIN_VALUE;
         if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
@@ -606,8 +606,8 @@ public class Searcher implements Search {
         MoveFilter filter;
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
-        int rawStaticEval = Integer.MIN_VALUE;
-        int staticEval = Integer.MIN_VALUE;
+        int rawStaticEval = Short.MIN_VALUE;
+        int staticEval = Short.MIN_VALUE;
 
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,

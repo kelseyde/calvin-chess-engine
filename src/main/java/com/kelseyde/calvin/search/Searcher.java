@@ -760,13 +760,13 @@ public class Searcher implements Search {
      * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
      */
     private boolean isImproving(int ply, int staticEval) {
-        if (staticEval == Integer.MIN_VALUE) return false;
+        if (staticEval == Short.MIN_VALUE) return false;
         if (ply < 2) return false;
         int lastEval = ss.get(ply - 2).staticEval;
-        if (lastEval == Integer.MIN_VALUE) {
+        if (lastEval == Short.MIN_VALUE) {
             if (ply < 4) return false;
             lastEval = ss.get(ply - 4).staticEval;
-            if (lastEval == Integer.MIN_VALUE) {
+            if (lastEval == Short.MIN_VALUE) {
                 return true;
             }
         }

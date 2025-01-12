@@ -9,6 +9,16 @@ import com.kelseyde.calvin.board.Move;
  * table, this information is packed into two 64-bit longs: a key and a value. The encoding scheme is as follows:
  * - Key: 0-31 (zobrist key), 32-47 (age), 48-63 (static eval)
  * - Value: 0-11 (depth), 12-15 (flag), 16-31 (move), 32-63 (score)
+ *
+ *
+ * Key: 32 bits
+ * Score: 16 bits
+ * Eval: 16 bits
+ *
+ * Flag: 2 bits
+ * Move: 16 bits
+ * Depth: 8 bits
+ * total: 90 bits
  */
 public record HashEntry(Move move, int score, int staticEval, int flag, int depth) {
 
@@ -23,45 +33,36 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
 
     public static class Key {
 
-        private static final long STATIC_EVAL_MASK    = 0xffff000000000000L;
-        private static final long AGE_MASK            = 0x0000ffff00000000L;
-        private static final long ZOBRIST_PART_MASK   = 0x00000000ffffffffL;
+        private static final long SIGNATURE_MASK    = 0x00000000ffffffffL;
+        private static final long SCORE_MASK        = 0x0000ffff00000000L;
+        private static final long STATIC_EVAL_MASK  = 0xffff000000000000L;
 
         public static long getZobristPart(long key) {
-            return key & ZOBRIST_PART_MASK;
+            return key & SIGNATURE_MASK;
         }
 
-        public static int getAge(long key) {
-            return (int) ((key & AGE_MASK) >>> 32);
-        }
-
-        public static long setAge(long key, int age) {
-            return (key & ~AGE_MASK) | ((long) age << 32);
+        public static int getScore(long key) {
+            return (int) ((key & SCORE_MASK) >>> 32);
         }
 
         public static int getStaticEval(long key) {
             return (short) ((key & STATIC_EVAL_MASK) >>> 48);
         }
 
-        public static long of(long zobristKey, int staticEval, int age) {
-            return (zobristKey & ZOBRIST_PART_MASK) | ((long) age << 32) | ((long) (staticEval & 0xFFFF) << 48);
+        public static long of(long signature, int score, int staticEval) {
+            return signature | ((long) score << 32) | ((long) staticEval << 48);
         }
 
     }
 
     public static class Value {
 
-        private static final long SCORE_MASK    = 0xffffffff00000000L;
-        private static final long MOVE_MASK     = 0x00000000ffff0000L;
-        private static final long FLAG_MASK     = 0x000000000000f000L;
-        private static final long DEPTH_MASK    = 0x0000000000000fffL;
+        private static final int MOVE_MASK  = 0xffff0000;
+        private static final int FLAG_MASK  = 0x0000f000;
+        private static final int DEPTH_MASK = 0x00000fff;
 
-        public static int getScore(long value) {
-            return (int) ((value & SCORE_MASK) >>> 32);
-        }
+        public static int getMove(int value) {
 
-        public static long setScore(long value, int score) {
-            return (value & ~SCORE_MASK) | (long) score << 32;
         }
 
         public static Move getMove(long value) {

@@ -346,13 +346,18 @@ public class MoveGenerator {
 
     private void generateChess960CastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
+        final long rookSquareBit = Bits.of(rookSquare); 
+        if ((pinMask & rookSquareBit) != 0) {
+            // can't castle if rook is pinned 
+        	return;
+        }
         final int kingDst = Castling.kingTo(kingside, white);
         final int rookDst = Castling.rookTo(kingside, white);
 
         final long kingTravelSquares = (Ray.between(kingSquare, kingDst) | Bits.of(kingDst));
         final long rookTravelSquares = (Ray.between(rookSquare, rookDst) | Bits.of(rookDst));
         // Warning : King and rook initial positions should be ignored when verifying if cells are free
-        final long travelSquares = (kingTravelSquares | rookTravelSquares) & ~ (Bits.of(rookSquare) | Bits.of(kingSquare));
+        final long travelSquares = (kingTravelSquares | rookTravelSquares) & ~ (rookSquareBit | Bits.of(kingSquare));
 
         final long blockedSquares = travelSquares & occupied;
         final long safeSquares = Bits.of(kingSquare) | Ray.between(kingSquare, kingDst) | Bits.of(kingDst);

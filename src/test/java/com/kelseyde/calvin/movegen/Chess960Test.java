@@ -169,12 +169,18 @@ public class Chess960Test {
 		assertMove(board, move, true);
 	}
 
+	@Test
+	void testPinnedRookCastling() {
+		// Test castling where king seems safe ... but is not because it does not move and the rook does not defend it anymore
+		final Board board = Board.from("nrk1brnb/pp1ppppp/8/2p5/3P4/1N1Q1N2/1PP1PPPP/qRK1BR1B w KQkq - 2 10");
+		final Move move = Move.fromUCI("c1b1", Move.CASTLE_FLAG);
+		assertMove(board, move, false);
+	}
 
     private void assertMove(Board board, Move move, boolean exists) {
         List<Move> moves = MOVEGEN.generateMoves(board);
         Assertions.assertEquals(exists, moves.stream().anyMatch(m -> m.equals(move)));
-    	final boolean isPseudoLegal = MOVEGEN.isPseudoLegal(board, move);
-		Assertions.assertEquals(exists, isPseudoLegal);
+		Assertions.assertEquals(exists, MOVEGEN.isLegal(board, move));
     }
 
     private void assertKingAndRook(Board board, String kingFrom, String kingTo, String rookFrom, String rookTo) {

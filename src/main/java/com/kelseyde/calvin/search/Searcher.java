@@ -225,13 +225,6 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        // Check extension - https://www.chessprogramming.org/Check_Extension
-        // If we are in check then there is a forcing sequence, so we could benefit from searching one ply deeper to
-        // retrieve a more accurate evaluation.
-        if (inCheck) {
-            depth++;
-        }
-
         // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
@@ -372,6 +365,13 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final boolean isCapture = captured != null;
 
+            int extension = 0;
+            int reduction = 0;
+
+            if (inCheck) {
+                extension = 1;
+            }
+
             // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
@@ -403,7 +403,6 @@ public class Searcher implements Search {
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
-            int reduction = 0;
             if (depth >= config.lmrDepth.value
                     && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)) {
 
@@ -485,17 +484,17 @@ public class Searcher implements Search {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                score = -search(depth - 1, ply + 1, -beta, -alpha, false);
+                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
             }
             else {
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction, ply + 1, -alpha - 1, -alpha, true);
+                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1, ply + 1, -beta, -alpha, false);
+                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
                 }
             }
 
@@ -543,7 +542,9 @@ public class Searcher implements Search {
 
         if (bestScore >= beta) {
             final PlayedMove best = sse.bestMove;
-            final int historyDepth = depth + (staticEval > alpha ? 1 : 0);
+            final int historyDepth = depth
+                    + (staticEval <= alpha ? 1 : 0)
+                    + (bestScore > beta + 50 ? 1 : 0);
             history.updateHistory(best, board.isWhite(), historyDepth, ply, ss);
         }
 

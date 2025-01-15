@@ -28,6 +28,7 @@ public class InputBucketCache {
 
     public InputBucketCache(int bucketCount) {
         cache = new BucketCacheEntry[2][2][bucketCount];
+
         for (int whitePerspective = 0; whitePerspective < 2; whitePerspective++) {
             for (int mirror = 0; mirror < 2; mirror++) {
                 for (int i = 0; i < cache[0][0].length; i++) {

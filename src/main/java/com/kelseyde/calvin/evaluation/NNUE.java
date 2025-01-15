@@ -346,6 +346,7 @@ public class NNUE {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[0] = new Accumulator(NETWORK.hiddenSize());
+        this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }
 
     private enum MoveType {

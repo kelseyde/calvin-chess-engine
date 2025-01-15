@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 /**
  * Represents the neural network used by the engine in its evaluation function.
@@ -18,15 +19,20 @@ public record Network(int inputSize,
                       int hiddenSize,
                       Activation activation,
                       boolean horizontalMirror,
+                      int[] inputBuckets,
                       int[] quantisations,
                       int scale,
-                      short[] inputWeights,
+                      short[][] inputWeights,
                       short[] inputBiases,
                       short[] outputWeights,
                       short outputBias) {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public int inputBucketCount() {
+        return inputBuckets != null ? (int) Arrays.stream(inputBuckets).distinct().count() : 1;
     }
 
     public static class Builder {
@@ -36,6 +42,7 @@ public record Network(int inputSize,
         private int hiddenSize;
         private Activation activation;
         private boolean horizontalMirror;
+        private int[] inputBuckets;
         private int[] quantisations;
         private int scale;
 
@@ -64,6 +71,11 @@ public record Network(int inputSize,
             return this;
         }
 
+        public Builder inputBuckets(int[] inputBuckets) {
+            this.inputBuckets = inputBuckets;
+            return this;
+        }
+
         public Builder quantisations(int[] quantisations) {
             this.quantisations = quantisations;
             return this;
@@ -72,6 +84,10 @@ public record Network(int inputSize,
         public Builder scale(int scale) {
             this.scale = scale;
             return this;
+        }
+
+        public int bucketCount() {
+            return inputBuckets != null ? (int) Arrays.stream(inputBuckets).distinct().count() : 1;
         }
 
         public Network build() {
@@ -93,12 +109,17 @@ public record Network(int inputSize,
                 int inputBiasesOffset = hiddenSize;
                 int outputWeightsOffset = hiddenSize * 2;
 
-                short[] inputWeights = new short[inputWeightsOffset];
+                int buckets = bucketCount();
+
+                short[][] inputWeights = new short[buckets][];
                 short[] inputBiases = new short[inputBiasesOffset];
                 short[] outputWeights = new short[outputWeightsOffset];
 
-                for (int i = 0; i < inputWeightsOffset; i++) {
-                    inputWeights[i] = buffer.getShort();
+                for (int bucket = 0; bucket < buckets; bucket++) {
+                    inputWeights[bucket] = new short[inputWeightsOffset];
+                    for (int i = 0; i < inputWeightsOffset; i++) {
+                        inputWeights[bucket][i] = buffer.getShort();
+                    }
                 }
 
                 for (int i = 0; i < inputBiasesOffset; i++) {
@@ -118,7 +139,7 @@ public record Network(int inputSize,
                 }
 
                 return new Network(
-                        inputSize, hiddenSize, activation, horizontalMirror, quantisations, scale,
+                        inputSize, hiddenSize, activation, horizontalMirror, inputBuckets, quantisations, scale,
                         inputWeights, inputBiases, outputWeights, outputBias
                 );
             } catch (IOException e) {
@@ -134,12 +155,15 @@ public record Network(int inputSize,
             int inputWeightsOffset = inputSize * hiddenSize;
             int inputBiasesOffset = hiddenSize;
             int outputWeightsOffset = hiddenSize * 2;
+            int buckets = inputBucketCount();
 
-            ByteBuffer buffer = ByteBuffer.allocate((inputWeightsOffset + inputBiasesOffset + outputWeightsOffset + 1) * 2)
+            ByteBuffer buffer = ByteBuffer.allocate(((inputWeightsOffset * buckets) + inputBiasesOffset + outputWeightsOffset + 1) * 2)
                     .order(ByteOrder.LITTLE_ENDIAN);
 
-            for (int i = 0; i < inputWeightsOffset; i++) {
-                buffer.putShort(inputWeights[i]);
+            for (int bucket = 0; bucket < buckets; bucket++) {
+                for (int i = 0; i < inputWeightsOffset; i++) {
+                    buffer.putShort(inputWeights[bucket][i]);
+                }
             }
 
             for (int i = 0; i < inputBiasesOffset; i++) {

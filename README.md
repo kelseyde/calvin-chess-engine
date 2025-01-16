@@ -28,7 +28,7 @@ Calvin is available as a standalone windows executable, or as a raw Java .jar fi
 If you are running the jar file, you will need Java installed locally (minimum Java 17). Start up Calvin by executing the command:
 
 ```
-java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.0.2.jar
+java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.1.0.jar
 ```
 From there, use the "help" option or refer to [UCI](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html) documentation for further information on available commands.
 
@@ -38,9 +38,9 @@ The table below tracks the estimated strength of previous Calvin releases, both 
 
 | 	Version	 | 	Release date | Estimated | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | [CCRL Rapid](https://www.computerchess.org.uk/ccrl/4040/) 
 | 	:-----:	 | 	:-----:	 |:---------:| :-----:	|  :-----:	 |:---------------------------------------------------------:|  
-| [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) | 2024-11-16 |   3400    | - | - | - |
-| [5.0.1](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.1) | 2024-11-12 |   3380    | - | - | - |
-| [5.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.0) | 2024-11-11 |   3380    | - | - | - |
+| [5.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.1.0) | 2025-01-16 |   3460    | - | - | - |
+| [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) | 2024-11-16 |   3360    | - | - | - |
+| [5.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.0) | 2024-11-11 |   3350    | - | - | - |
 | [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 |   3300    | - | 3332 | 3277 |
 | [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.2.0) | 2024-09-19 |   3230    | - | - | 3224 |
 | [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-04 |   3150    | ~2850 | 3171 | 3161 |
@@ -127,5 +127,5 @@ If you would like to contribute, or just talk about chess/chess programming, get
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=FF5757
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
 
-[lichess-badge]: https://img.shields.io/badge/Play-v5.0.2-FFDE59?logo=lichess&style=for-the-badge
+[lichess-badge]: https://img.shields.io/badge/Play-v5.1.0-FFDE59?logo=lichess&style=for-the-badge
 [lichess-link]: https://lichess.org/@/Calvin_Bot

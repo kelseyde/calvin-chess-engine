@@ -9,7 +9,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 
 public class QuietHistoryTable extends AbstractHistoryTable {
 
-    int[][][][] table = new int[2][Piece.COUNT][Square.COUNT][4];
+    int[][][][] table = new int[2][Piece.COUNT][Square.COUNT][2];
 
     public QuietHistoryTable(EngineConfig config) {
         super(config.quietHistBonusMax.value,
@@ -21,7 +21,7 @@ public class QuietHistoryTable extends AbstractHistoryTable {
 
     public void update(Move move, Piece piece, int depth, boolean white, long threats, boolean good) {
         int colourIndex = Colour.index(white);
-        int threatIndex = threatIndex(threats, move);
+        int threatIndex = Bits.contains(threats, move.to()) ? 1 : 0;
         int current = table[colourIndex][piece.index()][move.to()][threatIndex];
         int bonus = good ? bonus(depth) : malus(depth);
         int update = gravity(current, bonus);
@@ -30,20 +30,12 @@ public class QuietHistoryTable extends AbstractHistoryTable {
 
     public int get(Move move, Piece piece, boolean white, long threats) {
         int colourIndex = Colour.index(white);
-        int threatIndex = threatIndex(threats, move);
+        int threatIndex = Bits.contains(threats, move.to()) ? 1 : 0;
         return table[colourIndex][piece.index()][move.to()][threatIndex];
     }
 
     public void clear() {
-        table = new int[2][Piece.COUNT][Square.COUNT][4];
-    }
-
-    private int threatIndex(long threats, Move move) {
-        // Creates a 2-bit threat index.
-        // The first bit is set if the 'from' square is attacked. The second bit is set if the 'to' square is attacked.
-        final boolean fromAttacked = Bits.contains(threats, move.from());
-        final boolean toAttacked = Bits.contains(threats, move.to());
-        return (toAttacked ? 1 : 0) << 1 | (fromAttacked ? 1 : 0);
+        table = new int[2][Piece.COUNT][Square.COUNT][2];
     }
 
 }

@@ -48,6 +48,7 @@ public class MovePicker {
 
     Stage stage;
     boolean skipQuiets;
+    final long threats;
     final boolean inCheck;
 
     int moveIndex;
@@ -58,7 +59,7 @@ public class MovePicker {
     ScoredMove[] quiets;
 
     public MovePicker(EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history,
-                      Board board, int ply, Move ttMove, boolean inCheck) {
+                      Board board, int ply, Move ttMove, long threats, boolean inCheck) {
         this.movegen = movegen;
         this.scorer = new MoveScorer(config, history, ss);
         this.history = history;
@@ -66,6 +67,7 @@ public class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
+        this.threats = threats;
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
@@ -140,7 +142,7 @@ public class MovePicker {
             return pickKiller(nextStage);
         }
 
-        return scorer.score(board, killer, ply, stage);
+        return scorer.score(board, killer, ply, threats, stage);
     }
 
     protected ScoredMove pickTTMove(Stage nextStage) {
@@ -160,7 +162,7 @@ public class MovePicker {
             goodNoisies = new ScoredMove[stagedMoves.size()];
             badNoisies = new ScoredMove[stagedMoves.size()];
             for (Move move : stagedMoves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(board, move, ply, threats, stage);
                 if (scoredMove.moveType() == MoveType.GOOD_NOISY) {
                     goodNoisies[goodIndex++] = scoredMove;
                 } else {
@@ -173,7 +175,7 @@ public class MovePicker {
             int quietIndex = 0;
             quiets = new ScoredMove[stagedMoves.size()];
             for (Move move : stagedMoves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(board, move, ply, threats, stage);
                 quiets[quietIndex++] = scoredMove;
             }
         }
@@ -182,7 +184,7 @@ public class MovePicker {
             goodNoisies = new ScoredMove[stagedMoves.size()];
             int goodIndex = 0;
             for (Move move : stagedMoves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(board, move, ply, threats, stage);
                 // In q-search, only consider good noisies
                 // unless we are in check, in which case consider all moves.
                 if (scoredMove.isGoodNoisy() || inCheck) {

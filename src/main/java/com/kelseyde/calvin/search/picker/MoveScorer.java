@@ -27,7 +27,7 @@ public class MoveScorer {
         this.ss = ss;
     }
 
-    public ScoredMove score(Board board, Move move, int ply, Stage stage) {
+    public ScoredMove score(Board board, Move move, int ply, long threats, Stage stage) {
 
         final Piece piece = board.pieceAt(move.from());
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
@@ -40,12 +40,13 @@ public class MoveScorer {
         final boolean noisy = quietCheck || capture || promotion;
 
         return noisy ?
-                scoreNoisy(board, move, piece, captured, quietCheck, ply) :
-                scoreQuiet(board, move, piece, ply);
+                scoreNoisy(board, move, piece, captured, quietCheck, ply, threats) :
+                scoreQuiet(board, move, piece, ply, threats);
 
     }
 
-    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck, int ply) {
+    private ScoredMove scoreNoisy(
+            Board board, Move move, Piece piece, Piece captured, boolean quietCheck, int ply, long threats) {
 
         final boolean white = board.isWhite();
 
@@ -62,7 +63,7 @@ public class MoveScorer {
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
             final MoveType type = MoveType.BAD_NOISY;
-            final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+            final int historyScore = history.getQuietHistoryTable().get(move, piece, white, threats);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;
             return new ScoredMove(move, piece, captured, score, historyScore, type);
@@ -81,10 +82,10 @@ public class MoveScorer {
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }
 
-    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
+    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply, long threats) {
 
         // Quiet moves are scored using the quiet history and continuation history heuristics.
-        final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite());
+        final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite(), threats);
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
 

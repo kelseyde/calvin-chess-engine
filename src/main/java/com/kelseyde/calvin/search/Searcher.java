@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -174,7 +175,8 @@ public class Searcher implements Search {
         // If timeout is reached, exit immediately
         if (shouldStop()) return alpha;
 
-        final boolean inCheck = movegen.isCheck(board);
+        final long threats = movegen.calculateThreats(board, !board.isWhite());
+        final boolean inCheck = Bits.contains(threats, board.kingSquare(board.isWhite()));
         final boolean rootNode = ply == 0;
         final boolean pvNode = beta - alpha > 1;
 
@@ -349,7 +351,7 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
 
         sse.searchedMoves = new ArrayList<>();
-        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, threats, inCheck);
         int movesSearched = 0;
 
         while (true) {
@@ -545,7 +547,7 @@ public class Searcher implements Search {
             final int historyDepth = depth
                     + (staticEval <= alpha ? 1 : 0)
                     + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss);
+            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss, threats);
         }
 
         if (!inCheck
@@ -602,7 +604,8 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final boolean inCheck = movegen.isCheck(board);
+        final long threats = movegen.calculateThreats(board, !board.isWhite());
+        final boolean inCheck = Bits.contains(threats, board.kingSquare(board.isWhite()));
 
         MoveFilter filter;
 
@@ -643,7 +646,7 @@ public class Searcher implements Search {
             filter = MoveFilter.CAPTURES_ONLY;
         }
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, threats, inCheck);
         movePicker.setFilter(filter);
 
         int movesSearched = 0;

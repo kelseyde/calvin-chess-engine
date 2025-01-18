@@ -72,7 +72,7 @@ public class SearchHistory {
             PlayedMove quietMove, PlayedMove bestMove, SearchStack ss, boolean white, int depth, int ply, long threats) {
         // For quiet moves we update both the standard quiet and continuation history tables
         boolean good = quietMove.move().equals(bestMove.move());
-        quietHistoryTable.update(quietMove.move(), quietMove.piece(), depth, white, threats, good);
+        quietHistoryTable.update(quietMove.move(), depth, white, threats, good);
         for (int prevPly : config.contHistPlies) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.currentMove != null) {

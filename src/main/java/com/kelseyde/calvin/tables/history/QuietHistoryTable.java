@@ -9,7 +9,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 
 public class QuietHistoryTable extends AbstractHistoryTable {
 
-    int[][][][] table = new int[2][Piece.COUNT][Square.COUNT][2];
+    int[][][][][] table = new int[2][Square.COUNT][Square.COUNT][2][2];
 
     public QuietHistoryTable(EngineConfig config) {
         super(config.quietHistBonusMax.value,
@@ -19,23 +19,25 @@ public class QuietHistoryTable extends AbstractHistoryTable {
                 config.quietHistMaxScore.value);
     }
 
-    public void update(Move move, Piece piece, int depth, boolean white, long threats, boolean good) {
+    public void update(Move move, int depth, boolean white, long threats, boolean good) {
         int colourIndex = Colour.index(white);
-        int threatIndex = Bits.contains(threats, move.to()) ? 1 : 0;
-        int current = table[colourIndex][piece.index()][move.to()][threatIndex];
+        int fromThreatIndex = Bits.contains(threats, move.from()) ? 1 : 0;
+        int toThreatIndex = Bits.contains(threats, move.to()) ? 1 : 0;
+        int current = table[colourIndex][move.from()][move.to()][fromThreatIndex][toThreatIndex];
         int bonus = good ? bonus(depth) : malus(depth);
         int update = gravity(current, bonus);
-        table[colourIndex][piece.index()][move.to()][threatIndex] = update;
+        table[colourIndex][move.from()][move.to()][fromThreatIndex][toThreatIndex] = update;
     }
 
     public int get(Move move, Piece piece, boolean white, long threats) {
         int colourIndex = Colour.index(white);
-        int threatIndex = Bits.contains(threats, move.to()) ? 1 : 0;
-        return table[colourIndex][piece.index()][move.to()][threatIndex];
+        int fromThreatIndex = Bits.contains(threats, move.from()) ? 1 : 0;
+        int toThreatIndex = Bits.contains(threats, move.to()) ? 1 : 0;
+        return table[colourIndex][move.from()][move.to()][fromThreatIndex][toThreatIndex];
     }
 
     public void clear() {
-        table = new int[2][Piece.COUNT][Square.COUNT][2];
+        table = new int[2][Square.COUNT][Square.COUNT][2][2];
     }
 
 }

@@ -43,7 +43,7 @@ public class EngineConfig {
     public final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
     public final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
     public final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 15, -100, 200, 50);
-    public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
+    public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 130, 0, 250, 50);
     public final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 0, -300, 300, 100);
     public final Tunable rfpDepth               = new Tunable("RfpDepth", 7, 0, 8, 1);
     public final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);

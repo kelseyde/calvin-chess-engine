@@ -678,9 +678,11 @@ public class Searcher implements Search {
             // Futility Pruning
             // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
             // win material when the static eval plus some margin is sufficiently below alpha.
-            if (captured != null
+            if (!inCheck
+                && captured != null
                 && futilityScore <= alpha
                 && !SEE.see(board, move, 1)) {
+                bestScore = Math.max(bestScore, futilityScore);
                 continue;
             }
 

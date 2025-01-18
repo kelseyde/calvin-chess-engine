@@ -688,7 +688,7 @@ public class Searcher implements Search {
             // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
             // chains, such as capturing with the queen a pawn defended by another pawn.
             final int seeThreshold = config.qsSeeThreshold.value
-                    + staticEval + 100 < alpha ? (alpha - staticEval) : 0;
+                    + staticEval + config.qsSeeEvalMargin.value < alpha ? (alpha - staticEval) : 0;
             if (!inCheck && !SEE.see(board, move, seeThreshold)) {
                 continue;
             }

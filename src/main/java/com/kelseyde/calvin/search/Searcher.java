@@ -286,7 +286,7 @@ public class Searcher implements Search {
 
                 // If the evaluation is significantly higher than beta, prune the node entirely
                 if (staticEval - pruneMargin >= beta) {
-                    return (staticEval + beta) / 2;
+                    return beta + (staticEval - beta) / 3;
                 }
 
                 // Else, apply reduction to quiet moves, using a dynamic scaling based on how far the eval is from beta

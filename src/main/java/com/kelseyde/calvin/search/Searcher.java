@@ -181,7 +181,7 @@ public class Searcher implements Search {
         final boolean pvNode = beta - alpha > 1;
 
         // If depth is reached, drop into quiescence search
-        if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, 1, ply);
+        if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, ply);
         if (depth < 0) depth = 0;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
@@ -305,7 +305,7 @@ public class Searcher implements Search {
             if (depth <= config.razorDepth.value
                 && staticEval + config.razorMargin.value * depth < alpha) {
 
-                final int score = quiescenceSearch(alpha, alpha + 1, 1, ply);
+                final int score = quiescenceSearch(alpha, alpha + 1, ply);
                 if (score < alpha) {
                     return score;
                 }
@@ -378,6 +378,7 @@ public class Searcher implements Search {
             // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
             // captures, promotions), then let's assume it will fail low and prune this node.
             if (!pvNode
+                    && !rootNode
                     && !inCheck
                     && depth <= config.fpDepth.value
                     && scoredMove.isQuiet()) {
@@ -406,7 +407,7 @@ public class Searcher implements Search {
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
             if (depth >= config.lmrDepth.value
-                    && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value)) {
+                    && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value) + (rootNode ? 1 : 0)) {
 
                 // Reductions are based on the depth and the number of moves searched so far.
                 reduction = config.lmrReductions[isCapture ? 1 : 0][depth][movesSearched];
@@ -424,6 +425,7 @@ public class Searcher implements Search {
             // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
             // that assumes that moves which have historically been bad are likely to be bad in the current position.
             if (!pvNode
+                    && !rootNode
                     && scoredMove.isQuiet()
                     && depth - reduction <= config.hpMaxDepth.value
                     && historyScore < config.hpMargin.value * depth + config.hpOffset.value) {
@@ -437,6 +439,7 @@ public class Searcher implements Search {
             // promotion, let's assume it's less likely to be good, and fully skip searching that move.
             final int lmpCutoff = (depth * config.lmpMultiplier.value) / (1 + (improving ? 0 : 1));
             if (!pvNode
+                    && !rootNode
                     && !inCheck
                     && scoredMove.isQuiet()
                     && depth <= config.lmpDepth.value
@@ -449,6 +452,7 @@ public class Searcher implements Search {
             // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
             // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
             if (!pvNode
+                    && !rootNode
                     && depth <= config.seeMaxDepth.value
                     && movesSearched > 1
                     && (scoredMove.isQuiet() || (scoredMove.isBadNoisy() && isCapture))
@@ -574,7 +578,7 @@ public class Searcher implements Search {
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta, int depth, int ply) {
+    int quiescenceSearch(int alpha, int beta, int ply) {
 
         if (shouldStop()) {
             return alpha;
@@ -686,15 +690,14 @@ public class Searcher implements Search {
             // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
             // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
             // chains, such as capturing with the queen a pawn defended by another pawn.
-            final int seeThreshold = depth <= config.qsSeeEqualDepth.value ? 0 : 1;
-            if (!inCheck && !SEE.see(board, move, seeThreshold)) {
+            if (!inCheck && !SEE.see(board, move, config.qsSeeThreshold.value)) {
                 continue;
             }
 
             eval.makeMove(board, move);
             if (!board.makeMove(move)) continue;
             td.nodes++;
-            final int score = -quiescenceSearch(-beta, -alpha, depth + 1, ply + 1);
+            final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
             eval.unmakeMove();
             board.unmakeMove();
 

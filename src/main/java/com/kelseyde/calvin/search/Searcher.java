@@ -174,9 +174,14 @@ public class Searcher implements Search {
         // If timeout is reached, exit immediately
         if (shouldStop()) return alpha;
 
-        final boolean inCheck = movegen.isCheck(board);
-        final boolean rootNode = ply == 0;
+        // A PV (principal variation) node is one that falls within the alpha-beta window.
         final boolean pvNode = beta - alpha > 1;
+
+        // The root node is the first node in the search tree, and is thus also always a PV node.
+        final boolean rootNode = ply == 0;
+
+        // Determine if we are currently in check.
+        final boolean inCheck = movegen.isCheck(board);
 
         // If depth is reached, drop into quiescence search
         if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, ply);
@@ -415,7 +420,6 @@ public class Searcher implements Search {
                 else if (staticEval + reduceMargin <= alpha) {
                     // Calculate distance from alpha to scale reduction dynamically
                     int delta = (alpha - staticEval) - pruneMargin;
-
                     int maxReduction = config.fpDepth.value;
                     futilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
                 }
@@ -461,6 +465,7 @@ public class Searcher implements Search {
                 int threshold = scoredMove.isQuiet() ?
                         config.seeQuietMargin.value * depth :
                         config.seeNoisyMargin.value * depth * depth;
+                threshold -= historyScore / config.seeHistoryDivisor.value;
                 if (!SEE.see(board, move, threshold)) {
                     continue;
                 }

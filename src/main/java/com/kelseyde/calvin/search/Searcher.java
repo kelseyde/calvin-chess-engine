@@ -372,33 +372,6 @@ public class Searcher implements Search {
                 extension = 1;
             }
 
-            // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
-            // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
-            // captures, promotions), then let's assume it will fail low and prune this node.
-            if (!pvNode
-                    && !rootNode
-                    && !inCheck
-                    && depth <= config.fpDepth.value
-                    && scoredMove.isQuiet()) {
-
-                // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
-                int pruneMargin = config.fpMargin.value + depth * config.fpScale.value;
-                int reduceMargin = pruneMargin + depth * config.fpBlend.value;
-
-                if (staticEval + pruneMargin <= alpha) {
-                    sse.currentMove = null;
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
-                else if (staticEval + reduceMargin <= alpha) {
-                    // Calculate distance from alpha to scale reduction dynamically
-                    int delta = (alpha - staticEval) - pruneMargin;
-
-                    int maxReduction = config.fpDepth.value;
-                    futilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
-                }
-            }
-
             final int historyScore = scoredMove.historyScore();
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
@@ -417,6 +390,35 @@ public class Searcher implements Search {
                 reduction -= 2 * historyScore / config.quietHistMaxScore.value;
 
                 reduction = Math.max(0, reduction);
+            }
+
+            // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
+            // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
+            // captures, promotions), then let's assume it will fail low and prune this node.
+            if (!pvNode
+                    && !rootNode
+                    && !inCheck
+                    && depth - reduction <= config.fpDepth.value
+                    && scoredMove.isQuiet()) {
+
+                // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
+                int pruneMargin = config.fpMargin.value
+                        + (depth - reduction) * config.fpScale.value
+                        + (historyScore / config.fpHistDivisor.value);
+                int reduceMargin = pruneMargin + depth * config.fpBlend.value;
+
+                if (staticEval + pruneMargin <= alpha) {
+                    sse.currentMove = null;
+                    movePicker.setSkipQuiets(true);
+                    continue;
+                }
+                else if (staticEval + reduceMargin <= alpha) {
+                    // Calculate distance from alpha to scale reduction dynamically
+                    int delta = (alpha - staticEval) - pruneMargin;
+
+                    int maxReduction = config.fpDepth.value;
+                    futilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
+                }
             }
 
             // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning

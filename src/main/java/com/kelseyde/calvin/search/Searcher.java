@@ -482,20 +482,14 @@ public class Searcher implements Search {
 
             }
 
-            // Singular Extension - https://www.chessprogramming.org/Singular_Extensions
-            boolean doSingularSearch = !rootNode
-                    && !excluded
-                    && depth >= 7
-                    && ttHit
-                    && move.equals(ttMove)
-                    && ttEntry.depth() >= depth - 3
-                    && (ttEntry.flag() == HashFlag.EXACT || ttEntry.flag() == HashFlag.LOWER)
-                    && !Score.isMateScore(ttEntry.score());
+            if (!rootNode
+                && depth >= 8
+                && move == ttMove
+                && !excluded
+                && ttEntry.depth() >= depth - 3
+                && ttEntry.flag() != HashFlag.UPPER) {
 
-            int extension = 0;
-            if (doSingularSearch) {
-
-                int sBeta = Math.max(-Score.MATE, ttEntry.score() - 15 * depth / 16);
+                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * 2);
                 int sDepth = (depth - 1) / 2;
 
                 sse.excludedMove = move;
@@ -505,7 +499,6 @@ public class Searcher implements Search {
                 if (score < sBeta) {
                     extension = 1;
                 }
-
             }
 
 

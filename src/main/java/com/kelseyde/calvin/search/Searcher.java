@@ -467,7 +467,6 @@ public class Searcher implements Search {
 
             }
 
-
             eval.makeMove(board, move);
             if (!board.makeMove(move)) {
                 eval.unmakeMove();
@@ -475,6 +474,12 @@ public class Searcher implements Search {
             }
             final int nodesBefore = td.nodes;
             td.nodes++;
+
+            if (reduction > 0) {
+                // Reduce less if this move gives check
+                boolean givesCheck = movegen.isCheck(board);
+                reduction -= givesCheck ? 1 : 0;
+            }
 
             if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
                 reduction += futilityReduction;

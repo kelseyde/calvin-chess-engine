@@ -133,6 +133,42 @@ public class NNUETest {
     }
 
     @Test
+    public void testKingCrossedBucketFullRefresh() {
+
+        Board board = Board.from("rnbq1bnr/ppppkppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR w - - 2 3");
+        NNUE nnue = new NNUE(board);
+        Move move = Move.fromUCI("e2e3");
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+    }
+
+    @Test
+    public void testKingCrossedBucketAndMirrorFullRefresh() {
+
+        Board board = Board.from("rnbq1bnr/ppppkppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR w - - 2 3");
+        NNUE nnue = new NNUE(board);
+        Move move = Move.fromUCI("e2d3");
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+    }
+
+    @Test
+    public void testKingCrossedBucketAndMirrorFullRefreshBlackPerspective() {
+
+        Board board = Board.from("rn1q1bnr/ppp2ppp/8/3p4/4P3/PNK2kpb/1PPP3P/RNB4R b - - 0 12");
+        NNUE nnue = new NNUE(board);
+        Move move = Move.fromUCI("f3e2");
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+    }
+
+    @Test
     public void testCapture() {
 
         String fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";

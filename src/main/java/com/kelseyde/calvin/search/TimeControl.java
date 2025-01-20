@@ -72,6 +72,18 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 
+    public int percentTimeRemaining() {
+        final Duration elapsed = Duration.between(start, Instant.now());
+        final Duration remaining = hardTime.minus(elapsed);
+        return (int) (100 * remaining.toMillis() / hardTime.toMillis());
+    }
+
+    public int timeFactor(int value) {
+        // Scales a value based on the percentage time remaining.
+        // With 100% time remaining, 0 is returned. With 0% time remaining, the value is returned unchanged.
+        return (int) (value * (100 - percentTimeRemaining()) / 100.0);
+    }
+
     private Duration adjustSoftLimit(
             Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int scoreStability, int depth) {
 

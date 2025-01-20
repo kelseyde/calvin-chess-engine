@@ -50,6 +50,7 @@ public class EngineConfig {
     public final Tunable rfpDepth               = new Tunable("RfpDepth", 7, 0, 8, 1);
     public final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);
     public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
+    public final Tunable rfpTimeMargin          = new Tunable("RfpTimeMargin", 75, 0, 250, 25);
     public final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
     public final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     public final Tunable lmrBase                = new Tunable("LmrBase", 90, 50, 100, 5);
@@ -104,7 +105,7 @@ public class EngineConfig {
     public Set<Tunable> getTunables() {
         return Set.of(
                 aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
-                fpBlend, fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor,
+                fpBlend, fpHistDivisor, rfpDepth, rfpTimeMargin, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor,
                 lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase,
                 nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin,
                 rfpBlend, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax,

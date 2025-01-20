@@ -474,10 +474,8 @@ public class Searcher implements Search {
 
 
             eval.makeMove(board, move);
-            if (!board.makeMove(move)) {
-                eval.unmakeMove();
-                continue;
-            }
+            board.makeMove(move);
+
             final int nodesBefore = td.nodes;
             td.nodes++;
 

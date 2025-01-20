@@ -121,31 +121,34 @@ public class Searcher implements Search {
             // Use the search score from the previous iteration to guess the score from the current iteration.
             // Based on this guess, we can narrow the alpha-beta window around the previous score, causing more cut-offs
             // and thus speeding up the search. If the true score is outside the window, a costly re-search is required.
+            if (td.depth > config.aspMinDepth.value) {
 
-            // Adjust the aspiration window in case the score fell outside the current window
-            if (score <= alpha) {
-                // If score <= alpha, re-search with an expanded aspiration window
-                beta = (alpha + beta) / 2;
-                alpha -= window;
-                window *= 2;
-                reduction = 0;
-                continue;
-            }
-            if (score >= beta) {
-                // If score >= beta, re-search with an expanded aspiration window
-                beta += window;
-                window *= 2;
-                reduction = Math.min(maxReduction, reduction + 1);
-                continue;
-            }
+                // Adjust the aspiration window in case the score fell outside the current window
+                if (score <= alpha) {
+                    // If score <= alpha, re-search with an expanded aspiration window
+                    beta = (alpha + beta) / 2;
+                    alpha -= window;
+                    window *= 2;
+                    reduction = 0;
+                    continue;
+                }
+                if (score >= beta) {
+                    // If score >= beta, re-search with an expanded aspiration window
+                    beta += window;
+                    window *= 2;
+                    reduction = Math.min(maxReduction, reduction + 1);
+                    continue;
+                }
 
-            // Center the aspiration window around the score from the current iteration, to be used next time.
-            window = config.aspMargin.value;
-            alpha = score - window;
-            beta = score + window;
+                // Center the aspiration window around the score from the current iteration, to be used next time.
+                window = config.aspMargin.value;
+                alpha = score - window;
+                beta = score + window;
+            }
 
             // Increment depth and reset retry counter for next iteration
             td.depth++;
+
         }
 
         // Clear move ordering cache and return the search result

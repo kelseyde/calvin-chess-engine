@@ -2,8 +2,8 @@ package com.kelseyde.calvin.movegen.perft;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.Perft;
+import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 
 import java.io.IOException;

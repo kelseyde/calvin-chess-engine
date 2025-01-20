@@ -45,7 +45,7 @@ public class Chess960Test {
 
             SEARCHER.clearHistory();
             SEARCHER.setPosition(Board.from(fen));
-            SEARCHER.search(20, 0, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1);
+            SEARCHER.search(20, 0, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, false);
 
         }
 
@@ -160,10 +160,27 @@ public class Chess960Test {
         assertMove(board, queenside, false);
 
     }
+    
+	@Test
+	void testKingDoesntMoveCastling() {
+		// Rook is attacked, but the castling is legal
+		final Board board = Board.from("nrk2rnb/pp1ppppp/6b1/q1p5/3P2Q1/1N3N2/1P2PPPP/1RK1BR1B w KQkq - 2 10");
+		final Move move = Move.fromUCI("c1b1", Move.CASTLE_FLAG);
+		assertMove(board, move, true);
+	}
+
+	@Test
+	void testPinnedRookCastling() {
+		// Test castling where king seems safe ... but is not because it does not move and the rook does not defend it anymore
+		final Board board = Board.from("nrk1brnb/pp1ppppp/8/2p5/3P4/1N1Q1N2/1PP1PPPP/qRK1BR1B w KQkq - 2 10");
+		final Move move = Move.fromUCI("c1b1", Move.CASTLE_FLAG);
+		assertMove(board, move, false);
+	}
 
     private void assertMove(Board board, Move move, boolean exists) {
         List<Move> moves = MOVEGEN.generateMoves(board);
         Assertions.assertEquals(exists, moves.stream().anyMatch(m -> m.equals(move)));
+		Assertions.assertEquals(exists, MOVEGEN.isLegal(board, move));
     }
 
     private void assertKingAndRook(Board board, String kingFrom, String kingTo, String rookFrom, String rookTo) {

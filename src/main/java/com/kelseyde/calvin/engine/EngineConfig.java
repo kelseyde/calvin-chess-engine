@@ -48,7 +48,7 @@ public class EngineConfig {
     public final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 125, 50, 250, 25);
     public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 0, -300, 300, 100);
-    public final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 8, 1);
+    public final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     public final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);
     public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
     public final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);

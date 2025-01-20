@@ -281,7 +281,9 @@ public class Searcher implements Search {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
-            if (depth <= config.rfpDepth.value && !Score.isMateScore(alpha)) {
+            if (depth <= config.rfpDepth.value
+                    && (ttMove == null || board.isCapture(ttMove))
+                    && !Score.isMateScore(alpha)) {
 
                 int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
                 int blend = depth * config.rfpBlend.value;

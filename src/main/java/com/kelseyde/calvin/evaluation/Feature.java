@@ -24,6 +24,7 @@ public record Feature(Piece piece, int square, boolean white) {
         int squareIndex = whitePerspective ? square : Square.flipRank(square);
         if (mirror) squareIndex = Square.flipFile(squareIndex);
         return squareIndex;
+
     }
 
 }

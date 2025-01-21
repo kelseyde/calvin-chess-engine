@@ -385,8 +385,10 @@ public class Searcher implements Search {
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
+            final int minLmrMoves = (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value) + (rootNode ? 1 : 0);
             if (depth >= config.lmrDepth.value
-                    && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value) + (rootNode ? 1 : 0)) {
+                    && movesSearched >= minLmrMoves
+                    && !(pvNode && isCapture)) {
 
                 // Reductions are based on the depth and the number of moves searched so far.
                 reduction = config.lmrReductions[isCapture ? 1 : 0][depth][movesSearched];

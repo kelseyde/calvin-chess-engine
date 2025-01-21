@@ -531,7 +531,7 @@ public class Searcher implements Search {
             }
 
             if (score > alpha) {
-                // If the score is better than alpha, we have a new best move.
+                // If the score is greater than alpha, then this is the best move we have examined so far.
                 bestMove = move;
                 alpha = score;
                 flag = HashFlag.EXACT;
@@ -543,8 +543,8 @@ public class Searcher implements Search {
                 }
 
                 if (score >= beta) {
-                    // If the score is greater than beta, the position is outside the bounds of the current alpha-beta
-                    // window. Our opponent won't allow us to reach this position, so we can cut off the search here.
+                    // If the score is greater than beta, then this position is 'too good' - our opponent won't let us
+                    // get here assuming perfect play, and so there's no point searching further.
                     flag = HashFlag.LOWER;
                     break;
                 }
@@ -557,6 +557,7 @@ public class Searcher implements Search {
         }
 
         if (bestScore >= beta) {
+            // Update the search history with the information from the current search, to improve future move ordering.
             final PlayedMove best = sse.bestMove;
             final int historyDepth = depth
                     + (staticEval <= alpha ? 1 : 0)
@@ -569,6 +570,7 @@ public class Searcher implements Search {
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
+            // Update the correction history table with the current search score, to improve future static evaluations.
             history.updateCorrectionHistory(board, ss, ply, depth, bestScore, uncorrectedStaticEval);
         }
 

@@ -53,10 +53,10 @@ public class EngineConfig {
     public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
     public final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
     public final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
-    public final Tunable lmrBase                = new Tunable("LmrBase", 90, 50, 100, 5);
-    public final Tunable lmrDivisor             = new Tunable("LmrDivisor", 310, 200, 400, 10);
-    public final Tunable lmrCapBase             = new Tunable("LmrCapBase", 90, 50, 100, 5);
-    public final Tunable lmrCapDivisor          = new Tunable("LmrCapDivisor", 310, 200, 400, 10);
+    public final Tunable lmrQuietBase           = new Tunable("LmrQuietBase", 90, 50, 100, 5);
+    public final Tunable lmrQuietDivisor        = new Tunable("LmrQuietDivisor", 310, 200, 400, 10);
+    public final Tunable lmrNoisyBase           = new Tunable("LmrNoisyBase", 90, 50, 100, 5);
+    public final Tunable lmrNoisyDivisor        = new Tunable("LmrNoisyDivisor", 310, 200, 400, 10);
     public final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     public final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     public final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
@@ -105,7 +105,7 @@ public class EngineConfig {
     public Set<Tunable> getTunables() {
         return Set.of(
                 aspMinDepth, aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction,
-                fpDepth, fpBlend, fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor,
+                fpDepth, fpBlend, fpHistDivisor, rfpDepth, lmrDepth, lmrQuietBase, lmrQuietDivisor, lmrNoisyBase, lmrNoisyDivisor,
                 lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase,
                 nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin,
                 rfpBlend, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax,
@@ -152,18 +152,18 @@ public class EngineConfig {
     }
 
     private void calculateLmrTable() {
-        float quietBase = (float) lmrBase.value / 100;
-        float quietDivisor = (float) lmrDivisor.value / 100;
-        float capBase = (float) lmrCapBase.value / 100;
-        float capDivisor = (float) lmrCapDivisor.value / 100;
+        final float quietBase      = (float) lmrQuietBase.value / 100;
+        final float quietDivisor   = (float) lmrQuietDivisor.value / 100;
+        final float noisyBase      = (float) lmrNoisyBase.value / 100;
+        final float noisyDivisor   = (float) lmrNoisyDivisor.value / 100;
         lmrReductions = new int[2][][];
 
         for (int quiet = 0; quiet < 2; quiet++) {
             lmrReductions[quiet] = new int[Search.MAX_DEPTH][];
             for (int depth = 1; depth < Search.MAX_DEPTH; ++depth) {
                 lmrReductions[quiet][depth] = new int[250];
-                float base = quiet == 0 ? quietBase : capBase;
-                float divisor = quiet == 0 ? quietDivisor : capDivisor;
+                float base = quiet == 0 ? quietBase : noisyBase;
+                float divisor = quiet == 0 ? quietDivisor : noisyDivisor;
                 for (int movesSearched = 1; movesSearched < 250; ++movesSearched) {
                     lmrReductions[quiet][depth][movesSearched] = (int) Math.round(base + (Math.log(movesSearched) * Math.log(depth) / divisor));
                 }

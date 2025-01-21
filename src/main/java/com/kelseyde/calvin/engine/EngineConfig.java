@@ -25,6 +25,7 @@ public class EngineConfig {
     public boolean pondering = false;
     public boolean searchCancelled = false;
 
+    public final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
     public final Tunable aspMargin              = new Tunable("AspMargin", 12, 0, 250, 25);
     public final Tunable aspFailMargin          = new Tunable("AspFailMargin", 105, 0, 300, 25);
     public final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
@@ -44,9 +45,10 @@ public class EngineConfig {
     public final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
     public final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
     public final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 15, -100, 200, 50);
+    public final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 125, 50, 250, 25);
     public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 0, -300, 300, 100);
-    public final Tunable rfpDepth               = new Tunable("RfpDepth", 7, 0, 8, 1);
+    public final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     public final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);
     public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
     public final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
@@ -59,11 +61,11 @@ public class EngineConfig {
     public final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     public final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     public final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
-    public final Tunable iirDepth               = new Tunable("IirDepth", 3, 0, 8, 1);
+    public final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);
     public final Tunable dpMargin               = new Tunable("DpMargin", 111, 0, 250, 10);
-    public final Tunable razorDepth             = new Tunable("RazorDepth", 5, 0, 8, 1);
+    public final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
     public final Tunable razorMargin            = new Tunable("RazorMargin", 496, 0, 600, 10);
-    public final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 3, 0, 10, 1);
+    public final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     public final Tunable hpMargin               = new Tunable("HpMargin", -2197, -4000, -100, 50);
     public final Tunable hpOffset               = new Tunable("HpOffset", -1039, -3000, 0, 50);
     public final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
@@ -102,16 +104,17 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth, fpBlend,
-                rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves, lmrMinPvMoves, lmpDepth,
-                lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
-                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, rfpBlend, razorDepth, razorMargin,
-                hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax, quietHistBonusScale, quietHistMalusMax,
-                quietHistMalusScale, quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax,
-                captHistMalusScale, captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax,
-                contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, ttExtensionDepth,
-                seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset, timeFactor, incrementFactor, softTimeFactor,
-                hardTimeFactor, softTimeScaleMin, softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth
+                aspMinDepth, aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction,
+                fpDepth, fpBlend, fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor,
+                lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase,
+                nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin,
+                rfpBlend, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax,
+                quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
+                captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
+                contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth,
+                nodeTmBase, nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
+                seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
+                softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth
         );
     }
 

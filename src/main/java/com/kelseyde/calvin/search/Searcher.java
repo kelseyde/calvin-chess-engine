@@ -373,6 +373,7 @@ public class Searcher implements Search {
                     if (!SEE.see(board, scoredMove.move(), pcBeta - staticEval))
                         continue;
 
+                    eval.makeMove(board, scoredMove.move());
                     board.makeMove(scoredMove.move());
 
                     int score = Score.MIN;
@@ -381,6 +382,7 @@ public class Searcher implements Search {
                     if (depth < 2 * pcDepth || score >= pcBeta)
                         score = -search(depth - 4, ply + 1, -pcBeta, -pcBeta + 1, !cutNode);
 
+                    eval.unmakeMove();
                     board.unmakeMove();
 
                     if (score >= pcBeta && (!ttHit || ttEntry.depth() < depth - 3))

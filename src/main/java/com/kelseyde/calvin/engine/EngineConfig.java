@@ -53,10 +53,10 @@ public class EngineConfig {
     public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
     public final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
     public final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
-    public final Tunable lmrQuietBase           = new Tunable("LmrQuietBase", 90, 50, 100, 5);
-    public final Tunable lmrQuietDivisor        = new Tunable("LmrQuietDivisor", 310, 200, 400, 10);
-    public final Tunable lmrNoisyBase           = new Tunable("LmrNoisyBase", 90, 50, 100, 5);
-    public final Tunable lmrNoisyDivisor        = new Tunable("LmrNoisyDivisor", 310, 200, 400, 10);
+    public final Tunable lmrQuietBase           = new Tunable("LmrQuietBase", 85, 50, 100, 20);
+    public final Tunable lmrQuietDivisor        = new Tunable("LmrQuietDivisor", 220, 100, 400, 20);
+    public final Tunable lmrNoisyBase           = new Tunable("LmrNoisyBase", -10, -100, 100, 20);
+    public final Tunable lmrNoisyDivisor        = new Tunable("LmrNoisyDivisor", 250, 200, 400, 10);
     public final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     public final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     public final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
@@ -139,8 +139,8 @@ public class EngineConfig {
             UCI.write("info error value " + value + " is out of range for option " + name);
         }
         option.value = value;
-        if (name.equals("LmrBase") || name.equals("LmrDivisor")
-                || name.equals("LmrCapBase") || name.equals("LmrCapDivisor")) {
+        if (name.equals("LmrQuietBase") || name.equals("LmrQuietDivisor")
+                || name.equals("LmrNoisyBase") || name.equals("LmrNoisyDivisor")) {
             calculateLmrTable();
         }
 

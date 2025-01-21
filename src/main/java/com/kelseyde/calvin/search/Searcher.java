@@ -355,6 +355,43 @@ public class Searcher implements Search {
                 }
             }
 
+            // Probcut
+            int pcBeta = beta + 100;
+            int pcDepth = 5;
+            if (depth >= pcDepth
+                    &&  !Score.isMateScore(beta)
+                    && (!ttHit || ttEntry.score() >= pcBeta || ttEntry.depth() < depth - 3)) {
+
+                QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, false);
+                movePicker.setFilter(MoveFilter.NOISY);
+
+                while (true) {
+
+                    ScoredMove scoredMove = movePicker.next();
+                    if (scoredMove == null)
+                        break;
+                    if (!SEE.see(board, scoredMove.move(), pcBeta - staticEval))
+                        continue;
+
+                    board.makeMove(scoredMove.move());
+
+                    int score = Score.MIN;
+                    if (depth >= 2 * pcDepth)
+                        score = -quiescenceSearch(-pcBeta, -pcBeta + 1, ply + 1);
+                    if (depth < 2 * pcDepth || score >= pcBeta)
+                        score = -search(depth - 4, ply + 1, -pcBeta, -pcBeta + 1, !cutNode);
+
+                    board.unmakeMove();
+
+                    if (score >= pcBeta && (!ttHit || ttEntry.depth() < depth - 3))
+                        tt.put(board.key(), HashFlag.LOWER, depth - 3, ply, scoredMove.move(), staticEval, score);
+
+                    if (score >= pcBeta)
+                        return score;
+
+                }
+            }
+
         }
 
         // We have decided that the current node should not be pruned and is worth examining further.

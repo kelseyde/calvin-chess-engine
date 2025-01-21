@@ -478,7 +478,7 @@ public class Searcher implements Search {
 
             }
 
-            // We have decided that the current move should not be pruned is worth searching further.
+            // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
 
             eval.makeMove(board, move);

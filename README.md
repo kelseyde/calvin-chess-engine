@@ -21,7 +21,7 @@ My aim with this project was to combine my passion (playing mediocre chess) with
 
 ## How to Play
 
-Like most engines, Calvin does not implement its own user interface. Instead, it communicates using the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, meaning it can either be used directly from the command line, or via any popular chess GUI, such as [Arena Chess](http://www.playwitharena.de/), [Banksia](https://banksiagui.com/) or [Cute Chess](https://cutechess.com/).
+Like most engines, Calvin does not implement its own user interface. Instead, it communicates using the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, meaning it can either be used directly from the command line, or via any popular chess GUI, such as [Arena Chess](http://www.playwitharena.de/), [Banksia](https://banksiagui.com/), [Cute Chess](https://cutechess.com/), or [En Croissant](https://encroissant.org/).
 
 Please refer to the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases) section for the latest binary downloads.
 

@@ -130,3 +130,4 @@ If you would like to contribute to Calvin, or just talk about chess/chess progra
 
 [lichess-badge]: https://img.shields.io/badge/Play-v5.1.0-FFDE59?logo=lichess&style=for-the-badge
 [lichess-link]: https://lichess.org/@/Calvin_Bot
+

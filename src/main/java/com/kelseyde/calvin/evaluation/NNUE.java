@@ -155,7 +155,9 @@ public class NNUE {
     public void makeMove(Board board, Move move) {
 
         // Efficiently update only the relevant features of the network after a move has been made.
-        final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
+        final Accumulator prev = accumulatorStack[current];
+        final Accumulator curr = accumulatorStack[++current] = new Accumulator(prev);
+
         final boolean white = board.isWhite();
 
         final Piece piece = board.pieceAt(move.from());
@@ -183,7 +185,7 @@ public class NNUE {
                 mirror = !mirror;
             }
             final int bucket = white ? whiteKingBucket : blackKingBucket;
-            fullRefresh(board, acc, white, mirror, bucket);
+            fullRefresh(board, prev, white, mirror, bucket);
         }
 
         // Determine which features need to be updated based on the move type (standard, capture, or castle).
@@ -194,7 +196,7 @@ public class NNUE {
         };
 
         // Apply the update to the accumulator.
-        acc.apply(update, whiteWeights, blackWeights);
+        curr.apply(prev, update, whiteWeights, blackWeights);
 
     }
 

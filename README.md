@@ -115,14 +115,16 @@ For any given chess position, the engine needs a method of obtaining an estimate
 
 The neural network was trained using the excellent [bullet](https://github.com/jw1912/bullet) trainer on a dataset of 1.2 billion positions taken from the [Leela dataset](https://www.kaggle.com/datasets/linrock/t77dec2021-t78janfeb2022-t80apr2022), that I re-scored using Calvin's own search and evaluation. 
 
-## Special Thanks To...
+## Credits
 
-- The [Chess Programming Wiki](https://www.chessprogramming.org) - A brilliant resource for all chess engine programmers, this wiki has been my go-to reference for every new topic.
-- The kind folks in the Engine Programming Discord server, who were very helpful for answering my various questions related to NNUE implementation.
-- The [TalkChess forums](https://talkchess.com/) - The home for chess engine geeks to talk about geeky chess engine stuff.
-- Other engines - I have drawn inspiration from countless others' engines, including but not limited to: [Chess Coding Adventure](https://github.com/SebLague/Chess-Coding-Adventure) (whose Youtube video inspired me to write my own engine); [Stockfish](https://github.com/official-stockfish/Stockfish) (the queen of all engines); [Leorik](https://github.com/lithander/Leorik) (whose author keeps an excellent devlog on the TalkChess forum); [Lynx](https://github.com/lynx-chess/Lynx) (my frequent Lichess rival); [Rustic](https://github.com/mvanthoor/rustic), [Simbelyne](https://github.com/sroelants/simbelmyne) and [Mantissa](https://github.com/jtheardw/mantissa) (who taught me that Rust is Cool); and many others.
+I am hugely grateful to the many people who have shared their knowledge and resources with me throughout Calvin's development. Without them, Calvin would be nowhere near the level it is at today. To name just a few people, places and things that I am thankful for:
 
-If you would like to contribute, or just talk about chess/chess programming, get in touch!
+- The Engine Programming and Stockfish Discord servers, both amazing resources for chess engine knowledge and full of patient, helpful people.
+- Jamie Whiting, the author of [bullet](https://github.com/jw1912/bullet), an incredible tool for training NNUEs among other things, which I have used to train all of Calvin's neural networks.
+- The [Chess Programming Wiki](https://www.chessprogramming.org) and [TalkChess forums](https://talkchess.com/), both a huge help in the early days of Calvin's development.
+- Other engines - I have drawn inspiration from countless others' engines, including but not limited to: [Chess Coding Adventure](https://github.com/SebLague/Chess-Coding-Adventure) (whose Youtube video inspired me to write my own engine); [Stockfish](https://github.com/official-stockfish/Stockfish) (the queen of all engines); [Leorik](https://github.com/lithander/Leorik) (whose author keeps an excellent devlog on the TalkChess forum); [Lynx](https://github.com/lynx-chess/Lynx); [Simbelyne](https://github.com/sroelants/simbelmyne); [Stormphrax](https://github.com/Ciekce/Stormphrax); [Viridithas](https://github.com/cosmobobak/viridithas), and many more.
+
+If you would like to contribute to Calvin, or just talk about chess/chess programming, get in touch!
 
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=FF5757
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest

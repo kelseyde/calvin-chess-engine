@@ -74,11 +74,11 @@ public class EngineConfig {
     public final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
     public final Tunable quietHistMalusScale    = new Tunable("QuietHistMalusScale", 200, 50, 400, 25);
     public final Tunable quietHistMaxScore      = new Tunable("QuietHistMaxScore", 8192, 1000, 12000, 100);
-    public final Tunable captHistBonusMax       = new Tunable("CaptHistBonusMax", 1200, 100, 2000, 100);
-    public final Tunable captHistBonusScale     = new Tunable("CaptHistBonusScale", 200, 50, 400, 25);
-    public final Tunable captHistMalusMax       = new Tunable("CaptHistMalusMax", 1200, 100, 2000, 100);
-    public final Tunable captHistMalusScale     = new Tunable("CaptHistMalusScale", 200, 50, 400, 25);
-    public final Tunable captHistMaxScore       = new Tunable("CaptHistMaxScore", 8192, 1000, 12000, 100);
+    public final Tunable noisyHistBonusMax      = new Tunable("NoisyHistBonusMax", 1200, 100, 2000, 100);
+    public final Tunable noisyHistBonusScale    = new Tunable("NoisyHistBonusScale", 200, 50, 400, 25);
+    public final Tunable noisyHistMalusMax      = new Tunable("NoisyHistMalusMax", 1200, 100, 2000, 100);
+    public final Tunable noisyHistMalusScale    = new Tunable("NoisyHistMalusScale", 200, 50, 400, 25);
+    public final Tunable noisyHistMaxScore      = new Tunable("NoisyHistMaxScore", 8192, 1000, 12000, 100);
     public final Tunable contHistBonusMax       = new Tunable("ContHistBonusMax", 1200, 100, 2000, 100);
     public final Tunable contHistBonusScale     = new Tunable("ContHistBonusScale", 200, 50, 400, 25);
     public final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
@@ -109,8 +109,8 @@ public class EngineConfig {
                 lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase,
                 nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin,
                 rfpBlend, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, quietHistBonusMax,
-                quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
-                captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
+                quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, noisyHistBonusMax,
+                noisyHistBonusScale, noisyHistMalusMax, noisyHistMalusScale, noisyHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth,
                 nodeTmBase, nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,

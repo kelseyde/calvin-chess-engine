@@ -6,6 +6,10 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 
+/**
+ * A history table that stores the history of quiet moves (moves that are neither checks, captures nor promotions).
+ * This table is used to improve move ordering for these moves.
+ */
 public class QuietHistoryTable extends AbstractHistoryTable {
 
     int[][][] table = new int[2][Piece.COUNT][Square.COUNT];

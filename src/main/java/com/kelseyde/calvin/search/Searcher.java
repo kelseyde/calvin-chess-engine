@@ -484,6 +484,8 @@ public class Searcher implements Search {
             eval.makeMove(board, move);
             board.makeMove(move);
 
+            final boolean givesCheck = movegen.isCheck(board);
+
             final int nodesBefore = td.nodes;
             td.nodes++;
 
@@ -491,7 +493,7 @@ public class Searcher implements Search {
                 reduction += futilityReduction;
             }
 
-            PlayedMove playedMove = new PlayedMove(move, piece, captured);
+            PlayedMove playedMove = new PlayedMove(move, piece, captured, givesCheck);
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);
 

@@ -9,7 +9,7 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
 import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
+import com.kelseyde.calvin.tables.history.NoisyHistoryTable;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
 import com.kelseyde.calvin.tables.history.QuietHistoryTable;
@@ -18,13 +18,19 @@ import java.util.List;
 
 public class SearchHistory {
 
-    public record PlayedMove(Move move, Piece piece, Piece captured) {}
+    public record PlayedMove(Move move, Piece piece, Piece captured, boolean givesCheck) {
+
+        public boolean isNoisy() {
+            return captured != null || move.isPromotion() || givesCheck;
+        }
+
+    }
 
     private final EngineConfig config;
     private final KillerTable killerTable;
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
-    private final CaptureHistoryTable captureHistoryTable;
+    private final NoisyHistoryTable noisyHistoryTable;
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
     private final PieceToCorrectionTable countermoveCorrHistTable;
@@ -37,7 +43,7 @@ public class SearchHistory {
         this.killerTable = new KillerTable();
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
-        this.captureHistoryTable = new CaptureHistoryTable(config);
+        this.noisyHistoryTable = new NoisyHistoryTable(config);
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
@@ -55,14 +61,13 @@ public class SearchHistory {
         }
 
         for (PlayedMove playedMove : playedMoves) {
-            if (bestMove.captured() == null && playedMove.captured() == null) {
+            if (playedMove.isNoisy()) {
+                // If the best move was noisy, give it a boost in the noisy history table. Regardless of whether the
+                // best move was quiet or noisy, penalise all other noisies.
+                updateNoisyHistory(playedMove, bestMove, white, depth);
+            } else {
                 // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
                 updateQuietHistory(playedMove, bestMove, ss, white, depth, ply);
-            }
-            else if (playedMove.captured() != null) {
-                // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
-                // best move was quiet or a capture, penalise all other captures.
-                updateCaptureHistory(playedMove, bestMove, white, depth);
             }
         }
 
@@ -81,9 +86,9 @@ public class SearchHistory {
         }
     }
 
-    private void updateCaptureHistory(PlayedMove captureMove, PlayedMove bestMove, boolean white, int depth) {
-        boolean good = captureMove.move().equals(bestMove.move());
-        captureHistoryTable.update(captureMove.piece(), captureMove.move().to(), captureMove.captured(), depth, white, good);
+    private void updateNoisyHistory(PlayedMove noisyMove, PlayedMove bestMove, boolean white, int depth) {
+        boolean good = noisyMove.move().equals(bestMove.move());
+        noisyHistoryTable.update(noisyMove.move(), noisyMove.piece(), noisyMove.captured(), depth, white, good);
     }
 
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {
@@ -149,8 +154,8 @@ public class SearchHistory {
         return contHistTable;
     }
 
-    public CaptureHistoryTable getCaptureHistoryTable() {
-        return captureHistoryTable;
+    public NoisyHistoryTable getNoisyHistoryTable() {
+        return noisyHistoryTable;
     }
 
     public void reset() {
@@ -162,7 +167,7 @@ public class SearchHistory {
         killerTable.clear();
         quietHistoryTable.clear();
         contHistTable.clear();
-        captureHistoryTable.clear();
+        noisyHistoryTable.clear();
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();

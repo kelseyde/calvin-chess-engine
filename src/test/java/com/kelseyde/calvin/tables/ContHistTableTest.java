@@ -54,7 +54,7 @@ public class ContHistTableTest {
         SearchStack ss = new SearchStack();
         Move prevMove = Move.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
-        ss.get(0).currentMove = new SearchHistory.PlayedMove(prevMove, prevPiece, null);
+        ss.get(0).currentMove = new SearchHistory.PlayedMove(prevMove, prevPiece, null, false);
         int depth = 8;
         Move currMove = Move.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;

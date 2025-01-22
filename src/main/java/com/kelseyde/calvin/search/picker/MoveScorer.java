@@ -40,45 +40,43 @@ public class MoveScorer {
         final boolean noisy = quietCheck || capture || promotion;
 
         return noisy ?
-                scoreNoisy(board, move, piece, captured, quietCheck, ply) :
+                scoreNoisy(board, move, piece, captured, quietCheck) :
                 scoreQuiet(board, move, piece, ply);
 
     }
 
-    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck, int ply) {
+    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck) {
 
         final boolean white = board.isWhite();
+        final boolean capture = captured != null;
+        final boolean promotion = move.promoPiece() != null;
 
         int score = 0;
 
-        boolean promotion = move.promoPiece() != null;
-        if (promotion) {
-            // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
-            final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-            score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
-            return new ScoredMove(move, piece, captured, score, 0, type);
-        }
-
-        if (quietCheck) {
-            // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
-            final MoveType type = MoveType.BAD_NOISY;
-            final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
-            final int contHistScore = continuationHistoryScore(move, piece, white, ply);
-            score = historyScore + contHistScore;
-            return new ScoredMove(move, piece, captured, score, historyScore, type);
-        }
-
-        score += SEE.value(captured);
-
-        final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
+        final int historyScore = history.getNoisyHistoryTable().get(move, piece, captured, white);
         score += historyScore / 8;
 
-        final int threshold = -score / 4 + config.seeNoisyOffset.value;
+        MoveType type = MoveType.GOOD_NOISY;
 
-        // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
-        final MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        if (capture) {
+            // Captures are separated into good and bad based on the SEE score, with a threshold based on the history score.
+            score += SEE.value(captured);
+            final int threshold = -score / 4 + config.seeNoisyOffset.value;
+            type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+
+        } else if (promotion) {
+            // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
+            score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
+            type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+
+        } else if (quietCheck) {
+            // Quiet checks are separated into good and bad based simply on the history score.
+            type = historyScore > 0 ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+
+        }
 
         return new ScoredMove(move, piece, captured, score, historyScore, type);
+
     }
 
     private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {

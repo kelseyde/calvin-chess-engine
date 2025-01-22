@@ -1,9 +1,6 @@
 package com.kelseyde.calvin.search;
 
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Colour;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
@@ -98,12 +95,18 @@ public class SearchHistory {
     }
 
     public int correctEvaluation(Board board, SearchStack ss, int ply, int staticEval) {
+
+        staticEval = scaleMaterial(board, staticEval);
+        staticEval = scaleFiftyMoveRule(board, staticEval);
+
         int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int counter = getContCorrHistEntry(ss, ply, board.isWhite());
         int correction = pawn + white + black + counter;
+
         return staticEval + correction / CorrectionHistoryTable.SCALE;
+
     }
 
     public void updateCorrectionHistory(Board board, SearchStack ss, int ply, int depth, int score, int staticEval) {
@@ -111,6 +114,27 @@ public class SearchHistory {
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
         updateContCorrHistEntry(ss, ply, board.isWhite(), depth, score, staticEval);
+    }
+
+    private int scaleMaterial(Board board, int material) {
+        // Scale down the evaluation when there's not much material left on the board - this creates an incentive
+        // to keep pieces on the board when we have winning chances, and trade them off when we're under pressure.
+        final int materialPhase = materialPhase(board);
+        return material * (22400 + materialPhase) / 32768;
+    }
+
+    private int scaleFiftyMoveRule(Board board, int material) {
+        // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
+        // of when no progress is being made in the position.
+        return material * (200 - board.getState().getHalfMoveClock()) / 200;
+    }
+
+    private int materialPhase(Board board) {
+        final int knights = Bits.count(board.getKnights());
+        final int bishops = Bits.count(board.getBishops());
+        final int rooks = Bits.count(board.getRooks());
+        final int queens = Bits.count(board.getQueens());
+        return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
     private int getContCorrHistEntry(SearchStack ss, int ply, boolean white) {

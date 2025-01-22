@@ -23,9 +23,9 @@ My aim with this project was to combine my passion (playing mediocre chess) with
 
 Like most engines, Calvin does not implement its own user interface. Instead, it communicates using the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, meaning it can either be used directly from the command line, or via any popular chess GUI, such as [Arena Chess](http://www.playwitharena.de/), [Banksia](https://banksiagui.com/) or [Cute Chess](https://cutechess.com/).
 
-Calvin is available as a standalone windows executable, or as a raw Java .jar file. Please refer to the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases) section for the latest binary downloads.
+Please refer to the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases) section for the latest binary downloads.
 
-If you are running the jar file, you will need Java installed locally (minimum Java 17). Start up Calvin by executing the command:
+To run Calvin, you will need Java installed locally (minimum Java 17). Start up Calvin by executing the command:
 
 ```
 java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.1.0.jar

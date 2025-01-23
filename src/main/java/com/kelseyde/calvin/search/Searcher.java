@@ -414,7 +414,7 @@ public class Searcher implements Search {
                 // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
                 // captures, promotions), then let's assume it will fail low and prune this node.
                 if (!inCheck
-                        && depth - reduction <= config.fpDepth.value
+                        && depth - reduction - (!improving ? 1 : 0) <= config.fpDepth.value
                         && scoredMove.isQuiet()) {
 
                     // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.

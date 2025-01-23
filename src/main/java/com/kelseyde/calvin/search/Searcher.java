@@ -217,16 +217,25 @@ public class Searcher implements Search {
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
+        boolean ttPrune = false;
 
-        if (!pvNode
+        if (!rootNode
                 && ttHit
-                && isSufficientDepth(ttEntry, depth)
+                && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
                 && (ttEntry.score() <= alpha || cutNode)) {
             if (isWithinBounds(ttEntry, alpha, beta)) {
-                return ttEntry.score();
+                ttPrune = true;
             }
             else if (depth <= config.ttExtensionDepth.value) {
                 depth++;
+            }
+        }
+
+        if (ttPrune) {
+            if (pvNode) {
+                depth--;
+            } else {
+                return ttEntry.score();
             }
         }
 
@@ -575,7 +584,7 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        if (!hardLimitReached()) {
+        if (!hardLimitReached() && !ttPrune) {
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
         }
 

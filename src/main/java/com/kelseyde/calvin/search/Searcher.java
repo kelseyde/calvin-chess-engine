@@ -250,12 +250,10 @@ public class Searcher implements Search {
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
         // In non-leaf nodes, this is used as a guide for several heuristics, such as extensions, reductions and pruning.
         int rawStaticEval = Integer.MIN_VALUE;
-        int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            uncorrectedStaticEval = rawStaticEval;
 
             if (!ttHit) {
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
@@ -269,7 +267,6 @@ public class Searcher implements Search {
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                     (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
                 staticEval = ttEntry.score();
-                uncorrectedStaticEval = staticEval;
             }
         }
 
@@ -568,8 +565,8 @@ public class Searcher implements Search {
         if (!inCheck
             && Score.isDefinedScore(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
-            && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
-            && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
+            && !(flag == HashFlag.LOWER && staticEval >= bestScore)
+            && !(flag == HashFlag.UPPER && staticEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
             history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
         }

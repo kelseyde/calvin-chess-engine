@@ -10,7 +10,7 @@ import com.kelseyde.calvin.board.Move;
  * - Key: 0-31 (zobrist key), 32-47 (age), 48-63 (static eval)
  * - Value: 0-11 (depth), 12-15 (flag), 16-31 (move), 32-63 (score)
  */
-public record HashEntry(Move move, int score, int staticEval, int flag, int depth) {
+public record HashEntry(Move move, int score, int staticEval, int flag, int depth, boolean pv) {
 
     public static HashEntry of(long key, long value) {
         final Move move       = Value.getMove(value);
@@ -18,17 +18,19 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         final int depth       = Value.getDepth(value);
         final int score       = Value.getScore(value);
         final int staticEval  = Key.getStaticEval(key);
-        return new HashEntry(move, score, staticEval, flag, depth);
+        final boolean pv      = Key.isPv(key);
+        return new HashEntry(move, score, staticEval, flag, depth, pv);
     }
 
     public static class Key {
 
         private static final long STATIC_EVAL_MASK    = 0xffff000000000000L;
-        private static final long AGE_MASK            = 0x0000ffff00000000L;
-        private static final long ZOBRIST_PART_MASK   = 0x00000000ffffffffL;
+        private static final long AGE_MASK            = 0x00000fff00000000L;
+        private static final long PV_MASK             = 0x0000f00000000000L;
+        private static final long SIGNATURE_MASK = 0x00000000ffffffffL;
 
-        public static long getZobristPart(long key) {
-            return key & ZOBRIST_PART_MASK;
+        public static long getSignature(long key) {
+            return key & SIGNATURE_MASK;
         }
 
         public static int getAge(long key) {
@@ -39,12 +41,20 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
             return (key & ~AGE_MASK) | ((long) age << 32);
         }
 
+        public static boolean isPv(long key) {
+            return (key & PV_MASK) != 0;
+        }
+
+        public static long setPv(long key, boolean pv) {
+            return pv ? key | PV_MASK : key & ~PV_MASK;
+        }
+
         public static int getStaticEval(long key) {
             return (short) ((key & STATIC_EVAL_MASK) >>> 48);
         }
 
-        public static long of(long zobristKey, int staticEval, int age) {
-            return (zobristKey & ZOBRIST_PART_MASK) | ((long) age << 32) | ((long) (staticEval & 0xFFFF) << 48);
+        public static long of(long key, int staticEval, int age, boolean pv) {
+            return (key & SIGNATURE_MASK) | ((long) (pv ? 1 : 0) << 44) | ((long) age << 32) | ((long) (staticEval & 0xFFFF) << 48);
         }
 
     }

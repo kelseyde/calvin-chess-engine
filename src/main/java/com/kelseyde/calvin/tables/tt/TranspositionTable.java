@@ -48,7 +48,7 @@ public class TranspositionTable {
         tries++;
         for (int i = 0; i < BUCKET_SIZE; i++) {
             long storedKey = keys[index + i];
-            if (storedKey != 0 && HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
+            if (storedKey != 0 && HashEntry.Key.getSignature(storedKey) == HashEntry.Key.getSignature(key)) {
                 hits++;
                 storedKey = HashEntry.Key.setAge(storedKey, age);
                 keys[index + i] = storedKey;
@@ -77,7 +77,7 @@ public class TranspositionTable {
      * <li>The entry with the lowest depth.</li>
      * </ol>
      */
-    public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score) {
+    public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score, boolean ttPv) {
 
         // Get the start index of the 4-item bucket.
         final int startIndex = index(key);
@@ -116,7 +116,7 @@ public class TranspositionTable {
             int storedDepth = HashEntry.Value.getDepth(values[i]);
             // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
             // If the depth is < the store depth, don't replace it and exit (although this should never happen).
-            if (HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
+            if (HashEntry.Key.getSignature(storedKey) == HashEntry.Key.getSignature(key)) {
                 if (depth >= storedDepth - 4) {
                     // If the stored entry has a recorded best move but the new entry does not, use the stored one.
                     Move storedMove = HashEntry.Value.getMove(storedValue);
@@ -146,7 +146,7 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            keys[replacedIndex] = HashEntry.Key.of(key, staticEval, age);
+            keys[replacedIndex] = HashEntry.Key.of(key, staticEval, age, ttPv);
             values[replacedIndex] = HashEntry.Value.of(score, move, flag, depth);
         }
     }

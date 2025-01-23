@@ -217,16 +217,18 @@ public class Searcher implements Search {
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
+        boolean ttPv = pvNode;
 
-        if (!pvNode
-                && ttHit
-                && isSufficientDepth(ttEntry, depth)
-                && (ttEntry.score() <= alpha || cutNode)) {
-            if (isWithinBounds(ttEntry, alpha, beta)) {
-                return ttEntry.score();
-            }
-            else if (depth <= config.ttExtensionDepth.value) {
-                depth++;
+        if (ttHit ) {
+            ttPv = pvNode || ttEntry.pv();
+            if (!pvNode
+                    && isSufficientDepth(ttEntry, depth)
+                    && (ttEntry.score() <= alpha || cutNode)) {
+                if (isWithinBounds(ttEntry, alpha, beta)) {
+                    return ttEntry.score();
+                } else if (depth <= config.ttExtensionDepth.value) {
+                    depth++;
+                }
             }
         }
 
@@ -258,7 +260,7 @@ public class Searcher implements Search {
             uncorrectedStaticEval = rawStaticEval;
 
             if (!ttHit) {
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
             }
 
             staticEval = ttMove != null ?
@@ -398,8 +400,11 @@ public class Searcher implements Search {
                 // Reductions are based on the depth and the number of moves searched so far.
                 reduction = config.lmrReductions[isCapture ? 1 : 0][depth][movesSearched];
 
-                // Reduce less in PV nodes.
-                reduction -= pvNode ? 1 : 0;
+                // Reduce more in non-PV nodes.
+                reduction += !pvNode ? 1 : 0;
+
+                // Reduce less in nodes that were once PV nodes.
+                reduction -= ttPv ? 1 : 0;
 
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
                 reduction -= 2 * historyScore / config.quietHistMaxScore.value;
@@ -576,7 +581,7 @@ public class Searcher implements Search {
 
         // Store the best move and score in the transposition table for future reference.
         if (!hardLimitReached()) {
-            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, ttPv);
         }
 
         return bestScore;
@@ -610,10 +615,12 @@ public class Searcher implements Search {
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
-        if (!pvNode
-                && ttHit
-                && isWithinBounds(ttEntry, alpha, beta)) {
-            return ttEntry.score();
+        boolean ttPv = pvNode;
+        if (ttHit) {
+            ttPv = pvNode || ttEntry.pv();
+            if (!pvNode && isWithinBounds(ttEntry, alpha, beta)) {
+                return ttEntry.score();
+            }
         }
         Move ttMove = null;
         if (ttHit && ttEntry.move() != null) {
@@ -639,7 +646,7 @@ public class Searcher implements Search {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
 
             if (!ttHit) {
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, pvNode);
             }
 
             staticEval = ttMove != null ?
@@ -731,7 +738,7 @@ public class Searcher implements Search {
         }
 
         if (!hardLimitReached()) {
-            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, pvNode);
         }
 
         return bestScore;

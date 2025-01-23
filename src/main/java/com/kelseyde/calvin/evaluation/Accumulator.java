@@ -218,6 +218,14 @@ public class Accumulator {
         }
     }
 
+    public void copyFrom(Accumulator prev, boolean whitePerspective) {
+        if (whitePerspective) {
+            whiteFeatures = Arrays.copyOf(prev.whiteFeatures, prev.whiteFeatures.length);
+        } else {
+            blackFeatures = Arrays.copyOf(prev.blackFeatures, prev.blackFeatures.length);
+        }
+    }
+
     public static class AccumulatorUpdate {
 
         public final Feature[] adds = new Feature[2];

@@ -157,8 +157,6 @@ public class NNUE {
         // Efficiently update only the relevant features of the network after a move has been made.
         final Accumulator prev = accumulatorStack[current];
         final Accumulator curr = accumulatorStack[++current] = new Accumulator(prev);
-        curr.whiteFeatures = Arrays.copyOf(prev.whiteFeatures, prev.whiteFeatures.length);
-        curr.blackFeatures = Arrays.copyOf(prev.blackFeatures, prev.blackFeatures.length);
 
         final boolean white = board.isWhite();
 
@@ -181,18 +179,13 @@ public class NNUE {
         // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
         final boolean mirrorChanged = mirrorChanged(board, move, piece);
         final boolean bucketChanged = bucketChanged(board, move, piece, white);
-        if (mirrorChanged || bucketChanged) {
+        final boolean refreshRequired = mirrorChanged || bucketChanged;
+        if (refreshRequired) {
             boolean mirror = shouldMirror(board.kingSquare(white));
-            if (mirrorChanged) {
-                mirror = !mirror;
-            }
+            if (mirrorChanged) mirror = !mirror;
             final int bucket = white ? whiteKingBucket : blackKingBucket;
             fullRefresh(board, curr, white, mirror, bucket);
-//            if (white) {
-//                curr.blackFeatures = Arrays.copyOf(prev.blackFeatures, prev.blackFeatures.length);
-//            } else {
-//                curr.whiteFeatures = Arrays.copyOf(prev.whiteFeatures, prev.whiteFeatures.length);
-//            }
+            curr.copyFrom(prev, !white);
         }
 
         // Determine which features need to be updated based on the move type (standard, capture, or castle).
@@ -203,7 +196,8 @@ public class NNUE {
         };
 
         // Apply the update to the accumulator.
-        curr.apply(prev, update, whiteWeights, blackWeights);
+        final Accumulator base = refreshRequired ? curr : prev;
+        curr.apply(base, update, whiteWeights, blackWeights);
 
     }
 

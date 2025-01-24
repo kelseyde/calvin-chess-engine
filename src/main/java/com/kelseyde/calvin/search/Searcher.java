@@ -240,7 +240,6 @@ public class Searcher implements Search {
             }
         }
 
-
         if (ttPrune) {
             // In non-PV nodes with an eligible TT hit, we fully prune the node.
             // In PV nodes, rather than pruning we reduce search depth.

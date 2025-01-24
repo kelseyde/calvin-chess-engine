@@ -508,6 +508,7 @@ public class Searcher implements Search {
             }
 
             if (!rootNode
+                    && !inCheck
                     && depth >= 8
                     && move.equals(ttMove)
                     && !excluded

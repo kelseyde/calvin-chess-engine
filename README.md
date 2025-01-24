@@ -123,6 +123,7 @@ I am hugely grateful to the many people who have shared their knowledge and reso
 
 If you would like to contribute to Calvin, or just talk about chess/chess programming, get in touch!
 
+
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=FF5757
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
 

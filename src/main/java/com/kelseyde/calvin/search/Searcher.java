@@ -219,22 +219,29 @@ public class Searcher implements Search {
         //  a) we are not in a PV node,
         //  b) it was searched to a sufficient depth, and
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
-        HashEntry ttEntry = null;
-        boolean ttHit = false;
+        final HashEntry ttEntry = tt.get(board.key(), ply);
+        final boolean ttHit = ttEntry != null;
+        boolean ttPrune = false;
 
-        if (!excluded) {
-            ttEntry = tt.get(board.key(), ply);
-            ttHit = ttEntry != null;
-            if (!pvNode
-                    && ttHit
-                    && isSufficientDepth(ttEntry, depth)
-                    && (ttEntry.score() <= alpha || cutNode)) {
-                if (isWithinBounds(ttEntry, alpha, beta)) {
-                    return ttEntry.score();
-                }
-                else if (depth <= config.ttExtensionDepth.value) {
-                    depth++;
-                }
+        if (!rootNode
+                && ttHit
+                && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
+                && (ttEntry.score() <= alpha || cutNode)) {
+            if (isWithinBounds(ttEntry, alpha, beta)) {
+                ttPrune = true;
+            }
+            else if (depth <= config.ttExtensionDepth.value) {
+                depth++;
+            }
+        }
+
+        if (ttPrune) {
+            // In non-PV nodes with an eligible TT hit, we fully prune the node.
+            // In PV nodes, rather than pruning we reduce search depth.
+            if (pvNode) {
+                depth--;
+            } else {
+                return ttEntry.score();
             }
         }
 
@@ -608,12 +615,12 @@ public class Searcher implements Search {
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
-            history.updateCorrectionHistory(board, ss, ply, depth, bestScore, uncorrectedStaticEval);
+            history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.
         // Don't write to the TT in SE search
-        if (!hardLimitReached() && !excluded) {
+        if (!hardLimitReached() && !excluded && !ttPrune) {
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
         }
 

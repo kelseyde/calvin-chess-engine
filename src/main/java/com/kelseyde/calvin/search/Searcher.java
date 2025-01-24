@@ -260,6 +260,7 @@ public class Searcher implements Search {
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
+                && !excluded
                 && (pvNode || cutNode)
                 && (!ttHit || ttEntry.move() == null)
                 && depth >= config.iirDepth.value) {
@@ -307,7 +308,7 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristic we
         // can employ to prune the node and its entire subtree, without searching any moves.
-        if (!pvNode && !inCheck) {
+        if (!pvNode && !inCheck && !excluded) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
@@ -508,9 +509,10 @@ public class Searcher implements Search {
 
             if (!rootNode
                     && depth >= 8
-                    && move == ttMove
+                    && move.equals(ttMove)
                     && !excluded
-                    && ttEntry.depth() >= depth - 3
+                    && ttEntry.depth() >= depth - 4
+                    && !Score.isMateScore(ttEntry.score())
                     && ttEntry.flag() != HashFlag.UPPER) {
 
                 int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * 2);
@@ -599,6 +601,9 @@ public class Searcher implements Search {
         }
 
         if (movesSearched == 0) {
+            if (excluded) {
+                return alpha;
+            }
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }

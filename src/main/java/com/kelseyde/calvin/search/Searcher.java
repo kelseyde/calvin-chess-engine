@@ -219,21 +219,27 @@ public class Searcher implements Search {
         //  a) we are not in a PV node,
         //  b) it was searched to a sufficient depth, and
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
-        final HashEntry ttEntry = tt.get(board.key(), ply);
-        final boolean ttHit = ttEntry != null;
+        HashEntry ttEntry = null;
+        boolean ttHit = false;
         boolean ttPrune = false;
 
-        if (!rootNode
-                && ttHit
-                && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
-                && (ttEntry.score() <= alpha || cutNode)) {
-            if (isWithinBounds(ttEntry, alpha, beta)) {
-                ttPrune = true;
-            }
-            else if (depth <= config.ttExtensionDepth.value) {
-                depth++;
+        if (!excluded) {
+            ttEntry = tt.get(board.key(), ply);
+            ttHit = ttEntry != null;
+
+            if (!rootNode
+                    && ttHit
+                    && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
+                    && (ttEntry.score() <= alpha || cutNode)) {
+                if (isWithinBounds(ttEntry, alpha, beta)) {
+                    ttPrune = true;
+                }
+                else if (depth <= config.ttExtensionDepth.value) {
+                    depth++;
+                }
             }
         }
+
 
         if (ttPrune) {
             // In non-PV nodes with an eligible TT hit, we fully prune the node.

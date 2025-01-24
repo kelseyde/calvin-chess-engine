@@ -103,7 +103,7 @@ public class TranspositionTableTest {
         int depth = 3;
         int ply = 2;
 
-        table.put(board.getState().getKey(), flag, depth, ply, bestMove,  0, eval);
+        table.put(board.getState().getKey(), flag, depth, ply, bestMove,  0, eval, false);
 
         // Do some more searching, return to this position
 
@@ -120,7 +120,7 @@ public class TranspositionTableTest {
         bestMove = Move.fromUCI("e2e4");
         eval = 28666;
         depth = 256;
-        table.put(board.getState().getKey(), flag, depth, ply + 1, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, depth, ply + 1, bestMove, 0,  eval, false);
 
         entry = table.get(board.getState().getKey(), ply);
         Assertions.assertNotNull(entry);
@@ -133,7 +133,7 @@ public class TranspositionTableTest {
         flag = HashFlag.LOWER;
         eval = 1000000;
         depth = 10;
-        table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  eval);
+        table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  eval, false);
 
         entry = table.get(board.getState().getKey(), ply);
         Assertions.assertNotNull(entry);
@@ -156,7 +156,7 @@ public class TranspositionTableTest {
         int depth = 3;
         int ply = 25;
 
-        table.put(board.getState().getKey(), flag, depth, ply, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, depth, ply, bestMove, 0,  eval, false);
 
         board.unmakeMove();
         board.unmakeMove();
@@ -185,7 +185,7 @@ public class TranspositionTableTest {
         int depth = 3;
         int ply = 255;
 
-        table.put(board.getState().getKey(), flag, depth, ply, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, depth, ply, bestMove, 0,  eval, false);
 
         // Do some more searching, return to this position
 
@@ -209,11 +209,11 @@ public class TranspositionTableTest {
         int plyRemaining = 10;
         int plyFromRoot = 0;
 
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  1000000);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  1000000, false);
 
         Assertions.assertEquals(1000000, table.get(board.getState().getKey(), 0).score());
 
-        table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -1000000);
+        table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -1000000, false);
 
         Assertions.assertEquals(-1000000, table.get(board.getState().getKey(), 0).score());
 
@@ -227,11 +227,11 @@ public class TranspositionTableTest {
         int plyRemaining = 10;
         int plyFromRoot = 1;
 
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  1000000);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  1000000, false);
 
         Assertions.assertEquals(999999, table.get(board.getState().getKey(), 0).score());
 
-        table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -1000000);
+        table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -1000000, false);
 
         Assertions.assertEquals(-999999, table.get(board.getState().getKey(), 0).score());
 
@@ -247,7 +247,7 @@ public class TranspositionTableTest {
         int plyRemaining = 10;
         int plyFromRoot = 5;
 
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval, false);
 
         Assertions.assertEquals(1000000, table.get(zobrist, 5).score());
         Assertions.assertEquals(999999, table.get(zobrist, 4).score());
@@ -267,13 +267,13 @@ public class TranspositionTableTest {
         int plyFromRoot = 0;
         int plyRemaining = 12;
 
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval, false);
 
         flag = HashFlag.UPPER;
         eval = 70;
         plyRemaining = 11;
         bestMove = Move.fromUCI("e2e4");
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval, false);
 
         assertEntry(zobrist, 60, Move.fromUCI("e2e4"), HashFlag.EXACT, 12);
 
@@ -289,13 +289,13 @@ public class TranspositionTableTest {
         int plyFromRoot = 0;
         int plyRemaining = 12;
 
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval, false);
 
         flag = HashFlag.UPPER;
         eval = 70;
         plyRemaining = 13;
         bestMove = Move.fromUCI("e2e4");
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval, false);
 
         assertEntry(zobrist, 60, bestMove, flag, 13);
 
@@ -311,7 +311,7 @@ public class TranspositionTableTest {
         int eval = 126;
         int score = 0;
 
-        table.put(key, flag, depth, ply, null, eval, score);
+        table.put(key, flag, depth, ply, null, eval, score, false);
 
         HashEntry ttEntry = table.get(key, ply);
 

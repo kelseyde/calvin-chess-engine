@@ -77,7 +77,7 @@ public class TranspositionTable {
      * <li>The entry with the lowest depth.</li>
      * </ol>
      */
-    public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score) {
+    public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score, boolean improving) {
 
         // Get the start index of the 4-item bucket.
         final int startIndex = index(key);
@@ -100,7 +100,7 @@ public class TranspositionTable {
             }
 
             // Second, always prefer an exact score
-            if (flag == HashFlag.EXACT) {
+            if (flag == HashFlag.EXACT || improving) {
                 replacedIndex = i;
                 break;
             }

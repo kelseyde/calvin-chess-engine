@@ -269,7 +269,7 @@ public class Searcher implements Search {
             uncorrectedStaticEval = rawStaticEval;
 
             if (!ttHit) {
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, false);
             }
 
             staticEval = ttMove != null ?
@@ -587,7 +587,7 @@ public class Searcher implements Search {
 
         // Store the best move and score in the transposition table for future reference.
         if (!hardLimitReached() && !ttPrune) {
-            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, improving);
         }
 
         return bestScore;
@@ -650,7 +650,7 @@ public class Searcher implements Search {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
 
             if (!ttHit) {
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, false);
             }
 
             staticEval = ttMove != null ?
@@ -671,6 +671,8 @@ public class Searcher implements Search {
             }
             filter = MoveFilter.CAPTURES_ONLY;
         }
+
+        final boolean improving = isImproving(ply, staticEval);
 
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         movePicker.setFilter(filter);
@@ -742,7 +744,7 @@ public class Searcher implements Search {
         }
 
         if (!hardLimitReached()) {
-            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, improving);
         }
 
         return bestScore;

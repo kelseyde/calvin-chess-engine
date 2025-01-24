@@ -128,6 +128,31 @@ public class Key {
         return keys;
     }
 
+    public static long generateMajorKey(Board board) {
+
+        long key = 0L;
+
+        for (int white = 0; white < 2; white++) {
+            long rooks = board.getRooks(white == 0);
+            while (rooks != 0) {
+                int sq = Bits.next(rooks);
+                key ^= PIECE_SQUARE_HASH[sq][white][Piece.ROOK.index()];
+                rooks = Bits.pop(rooks);
+            }
+            long queens = board.getQueens(white == 0);
+            while (queens != 0) {
+                int sq = Bits.next(queens);
+                key ^= PIECE_SQUARE_HASH[sq][white][Piece.QUEEN.index()];
+                queens = Bits.pop(queens);
+            }
+            int king = board.kingSquare(white == 0);
+            key ^= PIECE_SQUARE_HASH[king][white][Piece.KING.index()];
+        }
+
+        return key;
+
+    }
+
     private static long updateKeyForPiece(long key, long whiteBitboard, long blackBitboard, int square, int pieceIndex) {
         if (((whiteBitboard >>> square) & 1) == 1) {
             key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndex];

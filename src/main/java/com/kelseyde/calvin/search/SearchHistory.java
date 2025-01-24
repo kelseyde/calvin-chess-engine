@@ -27,6 +27,7 @@ public class SearchHistory {
     private final CaptureHistoryTable captureHistoryTable;
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
+    private final HashCorrectionTable majorCorrHistTable;
     private final PieceToCorrectionTable countermoveCorrHistTable;
 
     private int bestMoveStability = 0;
@@ -40,6 +41,7 @@ public class SearchHistory {
         this.captureHistoryTable = new CaptureHistoryTable(config);
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
+        this.majorCorrHistTable = new HashCorrectionTable();
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
     }
 
@@ -101,8 +103,9 @@ public class SearchHistory {
         int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
+        int major   = majorCorrHistTable.get(board.majorKey(), board.isWhite());
         int counter = getContCorrHistEntry(ss, ply, board.isWhite());
-        int correction = pawn + white + black + counter;
+        int correction = pawn + white + black + major + counter;
         return staticEval + correction / CorrectionHistoryTable.SCALE;
     }
 
@@ -110,6 +113,7 @@ public class SearchHistory {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
+        majorCorrHistTable.update(board.majorKey(), board.isWhite(), depth, score, staticEval);
         updateContCorrHistEntry(ss, ply, board.isWhite(), depth, score, staticEval);
     }
 
@@ -166,6 +170,7 @@ public class SearchHistory {
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
+        majorCorrHistTable.clear();
         countermoveCorrHistTable.clear();
     }
 

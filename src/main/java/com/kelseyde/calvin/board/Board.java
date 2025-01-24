@@ -281,7 +281,8 @@ public class Board {
         white = !white;
         final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
+        final BoardState newState =
+                new BoardState(key, state.pawnKey, nonPawnKeys, state.majorKey, null, -1, state.getRights(), 0);
         states[ply++] = state;
         state = newState;
     }
@@ -320,6 +321,9 @@ public class Board {
             final int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] ^= hash;
         }
+        if (piece.isMajor()) {
+            state.majorKey ^= hash;
+        }
     }
 
     private void updateKeys(int square, Piece piece, boolean white) {
@@ -330,6 +334,9 @@ public class Board {
         } else {
             final int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] ^= hash;
+        }
+        if (piece.isMajor()) {
+            state.majorKey ^= hash;
         }
     }
 
@@ -566,6 +573,10 @@ public class Board {
 
     public long[] nonPawnKeys() {
         return state.nonPawnKeys;
+    }
+
+    public long majorKey() {
+        return state.majorKey;
     }
 
     public int kingSquare(boolean white) {

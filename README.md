@@ -17,37 +17,34 @@ Calvin can play standard chess, fischer random chess (FRC) and double fischer ra
 
 My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented so that first-time readers can learn too. If you find some information is missing or poorly explained, don't hesitate to let me know!
 
-## How to Play
+## How to Play 
 
-Like most engines, Calvin does not implement its own user interface. Instead, it communicates using the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, meaning it can either be used directly from the command line, or via any popular chess GUI, such as [Arena Chess](http://www.playwitharena.de/), [Banksia](https://banksiagui.com/), [Cute Chess](https://cutechess.com/), or [En Croissant](https://encroissant.org/).
+Calvin communicates via the [Universal Chess Interface](https://www.chessprogramming.org/UCI) (UCI), meaning you can run it via the command line or paired with your favorite chess GUI:
 
-Please refer to the [Releases](https://github.com/kelseyde/calvin-chess-engine/releases) section for the latest binary downloads.
+1. Download the latest release from [Releases](https://github.com/kelseyde/calvin-chess-engine/releases).
+2. Ensure **Java 17+** is installed locally.
+3. Start Calvin from the command line:
 
-To run Calvin, you will need Java installed locally (minimum Java 17). Start up Calvin by executing the command:
+   ```bash
+   java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.1.0.jar
+4. Type "help" or refer to [UCI](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html) documentation for further information on available commands.
 
-```
-java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.1.0.jar
-```
-From there, use the "help" option or refer to [UCI](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html) documentation for further information on available commands.
+## Strength 
 
-## Strength
-
-The table below tracks the estimated strength of previous Calvin releases, both on the CCRL leaderboards and on Lichess.
-
-| 	Version	 | 	Release date | Estimated | [Lichess](https://lichess.org/)	 | 	[CCRL Blitz](https://www.computerchess.org.uk/ccrl/404/)	 | [CCRL Rapid](https://www.computerchess.org.uk/ccrl/4040/) 
-| 	:-----:	 | 	:-----:	 |:---------:| :-----:	|  :-----:	 |:---------------------------------------------------------:|  
-| [5.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.1.0) | 2025-01-16 |   3460    | - | - | - |
-| [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) | 2024-11-16 |   3360    | - | - | - |
-| [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 |   3300    | - | 3332 | 3277 |
-| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.2.0) | 2024-09-19 |   3230    | - | - | 3224 |
-| [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-04 |   3150    | ~2850 | 3171 | 3161 |
-| [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) | 2024-07-30 |   3000    | ~2700 | 3011 | 3029 |
-| [3.4.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) | 2024-05-19 |   2500    | ~2580 | - | 2492 |
-| [3.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.3.0) | 2024-05-10 |   2450    | ~2550 | 2453 | - |
-| [3.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.2.0) | 2023-12-09 |   2250    | ~2400 | 2233 | - |
-| [3.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.1.0) | 2023-12-05 |   2220    | ~2390 | - | - |
-| [3.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.0.0) | 2023-12-02 |   2200    | ~2380 | - | - |
-| [2.6.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/2.6.2) | 2023-11-12 |   2175    | ~2300 | 2173 | - |
+| Version | Release Date | 🎯 Elo  | Lichess Elo | CCRL Blitz Elo | CCRL Rapid Elo |
+|:-------:|:------------:|:------:|:-----------:|:---------------:|:--------------:|
+| [5.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.1.0) | 2025-01-16 | **3460** | -           | -             | -              |
+| [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) | 2024-11-16 | **3360** | -           | -             | -              |
+| [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 | **3300** | -           | 3332          | 3277           |
+| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.2.0) | 2024-09-19 | **3230** | -           | -             | 3224           |
+| [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-04 | **3150** | ~2850       | 3171          | 3161           |
+| [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) | 2024-07-30 | **3000** | ~2700       | 3011          | 3029           |
+| [3.4.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) | 2024-05-19 | **2500** | ~2580       | -             | 2492           |
+| [3.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.3.0) | 2024-05-10 | **2450** | ~2550       | 2453          | -              |
+| [3.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.2.0) | 2023-12-09 | **2250** | ~2400       | 2233          | -              |
+| [3.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.1.0) | 2023-12-05 | **2220** | ~2390       | -             | -              |
+| [3.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.0.0) | 2023-12-02 | **2200** | ~2380       | -             | -              |
+| [2.6.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/2.6.2) | 2023-11-12 | **2175** | ~2300       | 2173          | -              |
 
 ## Features
 

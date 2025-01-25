@@ -29,7 +29,7 @@ public class TranspositionTableTest {
     public void testKeyScore() {
 
         int score = 1;
-        long key = HashEntry.Key.of(0L, null, score, 0);
+        long key = HashEntry.Key.of(0L, score, 0);
         int storedScore = HashEntry.Key.getScore(key);
         Assertions.assertEquals(score, storedScore);
 
@@ -39,7 +39,7 @@ public class TranspositionTableTest {
     public void testKeyScoreNegative() {
 
         int score = -1;
-        long key = HashEntry.Key.of(0L, null, score, 0);
+        long key = HashEntry.Key.of(0L, score, 0);
         int storedScore = HashEntry.Key.getScore(key);
         Assertions.assertEquals(score, storedScore);
 
@@ -49,7 +49,7 @@ public class TranspositionTableTest {
     public void testKeyScoreMax() {
 
         int score = Score.MATE;
-        long key = HashEntry.Key.of(0L, null, score, 0);
+        long key = HashEntry.Key.of(0L, score, 0);
         int storedScore = HashEntry.Key.getScore(key);
         Assertions.assertEquals(score, storedScore);
 
@@ -59,7 +59,7 @@ public class TranspositionTableTest {
     public void testKeyScoreMin() {
 
         int score = -Score.MATE;
-        long key = HashEntry.Key.of(0L, null, score, 0);
+        long key = HashEntry.Key.of(0L, score, 0);
         int storedScore = HashEntry.Key.getScore(key);
         Assertions.assertEquals(score, storedScore);
 
@@ -69,7 +69,7 @@ public class TranspositionTableTest {
     public void testKeySetScore() {
 
         int score = 1;
-        long key = HashEntry.Key.of(0L, null, score, 0);
+        long key = HashEntry.Key.of(0L, score, 0);
         long newKey = HashEntry.Key.setScore(key, 2);
         int storedScore = HashEntry.Key.getScore(newKey);
         Assertions.assertEquals(2, storedScore);
@@ -81,7 +81,7 @@ public class TranspositionTableTest {
     public void testKeyStaticEval() {
 
         int staticEval = 1;
-        long key = HashEntry.Key.of(0L, null, 0, staticEval);
+        long key = HashEntry.Key.of(0L, 0, staticEval);
         int storedStaticEval = HashEntry.Key.getStaticEval(key);
         Assertions.assertEquals(staticEval, storedStaticEval);
 
@@ -91,7 +91,7 @@ public class TranspositionTableTest {
     public void testKeyStaticEvalNegative() {
 
         int staticEval = -1;
-        long key = HashEntry.Key.of(0L, null, 0, staticEval);
+        long key = HashEntry.Key.of(0L, 0, staticEval);
         int storedStaticEval = HashEntry.Key.getStaticEval(key);
         Assertions.assertEquals(staticEval, storedStaticEval);
 
@@ -101,7 +101,7 @@ public class TranspositionTableTest {
     public void testKeyStaticEvalMax() {
 
         int staticEval = Short.MAX_VALUE;
-        long key = HashEntry.Key.of(0L, null, 0, staticEval);
+        long key = HashEntry.Key.of(0L, 0, staticEval);
         int storedStaticEval = HashEntry.Key.getStaticEval(key);
         Assertions.assertEquals(staticEval, storedStaticEval);
 
@@ -111,39 +111,9 @@ public class TranspositionTableTest {
     public void testKeyStaticEvalMin() {
 
         int staticEval = Short.MIN_VALUE;
-        long key = HashEntry.Key.of(0L, null, 0, staticEval);
+        long key = HashEntry.Key.of(0L, 0, staticEval);
         int storedStaticEval = HashEntry.Key.getStaticEval(key);
         Assertions.assertEquals(staticEval, storedStaticEval);
-
-    }
-
-    @Test
-    public void testKeyMove() {
-
-        Move move = Move.fromUCI("e2e4");
-        long key = HashEntry.Key.of(0L, move, 0, 0);
-        Move storedMove = HashEntry.Key.getMove(key);
-        Assertions.assertEquals(move, storedMove);
-
-    }
-
-    @Test
-    public void testKeyMoveNull() {
-
-        Move move = null;
-        long key = HashEntry.Key.of(0L, move, 0, 0);
-        Move storedMove = HashEntry.Key.getMove(key);
-        Assertions.assertNull(storedMove);
-
-    }
-
-    @Test
-    public void testKeyMoveWithFlag() {
-
-        Move move = Move.fromUCI("e7e8q");
-        long key = HashEntry.Key.of(0L, move, 0, 0);
-        Move storedMove = HashEntry.Key.getMove(key);
-        Assertions.assertEquals(move, storedMove);
 
     }
 
@@ -151,38 +121,67 @@ public class TranspositionTableTest {
     public void testKeyZobrist() {
 
         long zobrist = Board.from(FEN.STARTPOS).key();
-        long key = HashEntry.Key.of(zobrist, null, 0, 0);
+        long key = HashEntry.Key.of(zobrist, 0, 0);
         Assertions.assertTrue(HashEntry.matches(zobrist, key));
 
         zobrist = Board.from("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -").key();
-        key = HashEntry.Key.of(zobrist, null, 0, 0);
+        key = HashEntry.Key.of(zobrist, 0, 0);
         Assertions.assertTrue(HashEntry.matches(zobrist, key));
 
     }
 
+//    @Test
+//    public void testMoveAndScore() {
+//
+//        Move move = Move.fromUCI("e2e4");
+//        int score = 1;
+//        long key = HashEntry.Key.of(0L, move, score, 0);
+//        Move storedMove = HashEntry.Key.getMove(key);
+//        int storedScore = HashEntry.Key.getScore(key);
+//        Assertions.assertEquals(move, storedMove);
+//        Assertions.assertEquals(score, storedScore);
+//
+//    }
+//
+//    @Test
+//    public void testMoveAndScoreNegative() {
+//
+//        Move move = Move.fromUCI("e2e4");
+//        int score = -1;
+//        long key = HashEntry.Key.of(0L, move, score, 0);
+//        Move storedMove = HashEntry.Key.getMove(key);
+//        int storedScore = HashEntry.Key.getScore(key);
+//        Assertions.assertEquals(move, storedMove);
+//        Assertions.assertEquals(score, storedScore);
+//
+//    }
+
     @Test
-    public void testMoveAndScore() {
+    public void testValueMove() {
 
         Move move = Move.fromUCI("e2e4");
-        int score = 1;
-        long key = HashEntry.Key.of(0L, move, score, 0);
-        Move storedMove = HashEntry.Key.getMove(key);
-        int storedScore = HashEntry.Key.getScore(key);
+        int value = HashEntry.Value.of(move, 0, HashFlag.EXACT, 0);
+        Move storedMove = HashEntry.Value.getMove(value);
         Assertions.assertEquals(move, storedMove);
-        Assertions.assertEquals(score, storedScore);
 
     }
 
     @Test
-    public void testMoveAndScoreNegative() {
+    public void testValueMoveNull() {
 
-        Move move = Move.fromUCI("e2e4");
-        int score = -1;
-        long key = HashEntry.Key.of(0L, move, score, 0);
-        Move storedMove = HashEntry.Key.getMove(key);
-        int storedScore = HashEntry.Key.getScore(key);
+        int value = HashEntry.Value.of(null, 0, HashFlag.EXACT, 0);
+        Move storedMove = HashEntry.Value.getMove(value);
+        Assertions.assertNull(storedMove);
+
+    }
+
+    @Test
+    public void testValueMoveWithFlag() {
+
+        Move move = Move.fromUCI("e7e8q");
+        int value = HashEntry.Value.of(move, 0, HashFlag.EXACT, 0);
+        Move storedMove = HashEntry.Value.getMove(value);
         Assertions.assertEquals(move, storedMove);
-        Assertions.assertEquals(score, storedScore);
 
     }
 
@@ -190,7 +189,7 @@ public class TranspositionTableTest {
     public void testValueDepth() {
 
         int depth = 1;
-        short value = HashEntry.Value.of(depth, HashFlag.EXACT, 0);
+        int value = HashEntry.Value.of(null, depth, HashFlag.EXACT, 0);
         int storedDepth = HashEntry.Value.getDepth(value);
         Assertions.assertEquals(depth, storedDepth);
 
@@ -200,7 +199,7 @@ public class TranspositionTableTest {
     public void testValueFlag() {
 
         int flag = HashFlag.EXACT;
-        short value = HashEntry.Value.of(0, flag, 0);
+        int value = HashEntry.Value.of(null, 0, flag, 0);
         int storedFlag = HashEntry.Value.getFlag(value);
         Assertions.assertEquals(flag, storedFlag);
 
@@ -210,7 +209,7 @@ public class TranspositionTableTest {
     public void testValueAge() {
 
         int age = 1;
-        short value = HashEntry.Value.of(0, HashFlag.EXACT, age);
+        int value = HashEntry.Value.of(null, 0, HashFlag.EXACT, age);
         int storedAge = HashEntry.Value.getAge(value);
         Assertions.assertEquals(age, storedAge);
 
@@ -222,7 +221,7 @@ public class TranspositionTableTest {
         int depth = 3;
         int flag = HashFlag.EXACT;
         int age = 1;
-        short value = HashEntry.Value.of(depth, flag, age);
+        int value = HashEntry.Value.of(null, depth, flag, age);
         int storedDepth = HashEntry.Value.getDepth(value);
         int storedFlag = HashEntry.Value.getFlag(value);
         int storedAge = HashEntry.Value.getAge(value);
@@ -541,8 +540,8 @@ public class TranspositionTableTest {
     }
 
     private void assertEntry(long zobrist, int score, int staticEval, Move move, int flag, int depth) {
-        long key = HashEntry.Key.of(zobrist, move, score, staticEval);
-        short value = HashEntry.Value.of(depth, flag, 0);
+        long key = HashEntry.Key.of(zobrist, score, staticEval);
+        int value = HashEntry.Value.of(move, depth, flag, 0);
         HashEntry entry = HashEntry.of(key, value);
         Assertions.assertEquals(depth, entry.depth());
         Assertions.assertEquals(score, entry.score());

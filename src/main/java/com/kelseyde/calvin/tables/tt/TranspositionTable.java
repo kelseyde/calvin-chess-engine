@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 public class TranspositionTable {
 
     private long[] keys;
-    private short[] values;
+    private int[] values;
     private int size;
     private int mask;
     private int age;
@@ -31,7 +31,7 @@ public class TranspositionTable {
         this.size = Integer.highestOneBit(tableSizeMb * 1024 * 1024 / HashEntry.SIZE_BYTES);
         this.mask = size - 1;
         this.keys = new long[size];
-        this.values = new short[size];
+        this.values = new int[size];
         this.age = 0;
     }
 
@@ -43,7 +43,7 @@ public class TranspositionTable {
         long storedKey = keys[index];
         if (storedKey != 0 && HashEntry.matches(key, storedKey)) {
             keys[index] = storedKey;
-            short storedValue = values[index];
+            int storedValue = values[index];
             storedValue = HashEntry.Value.setAge(storedValue, age);
             int score = HashEntry.Key.getScore(storedKey);
             if (Score.isMateScore(score)) {
@@ -77,8 +77,8 @@ public class TranspositionTable {
             score = calculateMateScore(score, ply);
 
         if (flag == HashFlag.EXACT) {
-            keys[index] = HashEntry.Key.of(key, move, score, staticEval);
-            values[index] = HashEntry.Value.of(depth, flag, age);
+            keys[index] = HashEntry.Key.of(key, score, staticEval);
+            values[index] = HashEntry.Value.of(move, depth, flag, age);
             return;
         }
 
@@ -87,24 +87,24 @@ public class TranspositionTable {
         final boolean matches = HashEntry.matches(key, storedKey);
 
         if (storedKey == 0 || !matches) {
-            keys[index] = HashEntry.Key.of(key, move, score, staticEval);
-            values[index] = HashEntry.Value.of(depth, flag, age);
+            keys[index] = HashEntry.Key.of(key, score, staticEval);
+            values[index] = HashEntry.Value.of(move, depth, flag, age);
             return;
         }
 
-        short storedValue = values[index];
+        int storedValue = values[index];
 
         int storedDepth = HashEntry.Value.getDepth(storedValue);
 
         if (depth >= storedDepth - 4) {
 
-            Move storedMove = HashEntry.Key.getMove(storedKey);
+            Move storedMove = HashEntry.Value.getMove(storedValue);
             if (move == null && storedMove != null) {
                 move = storedMove;
             }
 
-            keys[index] = HashEntry.Key.of(key, move, score, staticEval);
-            values[index] = HashEntry.Value.of(depth, flag, age);
+            keys[index] = HashEntry.Key.of(key, score, staticEval);
+            values[index] = HashEntry.Value.of(move, depth, flag, age);
         }
 
     }
@@ -130,7 +130,7 @@ public class TranspositionTable {
         this.size = Integer.highestOneBit(tableSizeMb * 1024 * 1024 / HashEntry.SIZE_BYTES);
         this.mask = size - 1;
         this.keys = new long[size];
-        this.values = new short[size];
+        this.values = new int[size];
         this.age = 0;
     }
 
@@ -140,7 +140,7 @@ public class TranspositionTable {
     public void clear() {
         this.age = 0;
         this.keys = new long[size];
-        this.values = new short[size];
+        this.values = new int[size];
     }
 
     // On insertion, adjust the mate score to reflect the number of ply from the root position

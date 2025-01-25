@@ -20,12 +20,12 @@ import com.kelseyde.calvin.board.Move;
  */
 public record HashEntry(Move move, int score, int staticEval, int flag, int depth) {
 
-    public static final int SIZE_BYTES = 10;
+    public static final int SIZE_BYTES = 12;
 
-    public static HashEntry of(long key, short value) {
-        final Move move        = Key.getMove(key);
+    public static HashEntry of(long key, int value) {
         final int score        = Key.getScore(key);
         final int staticEval   = Key.getStaticEval(key);
+        final Move move        = Value.getMove(value);
         final int flag         = Value.getFlag(value);
         final int depth        = Value.getDepth(value);
         return new HashEntry(move, score, staticEval, flag, depth);
@@ -37,30 +37,22 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
 
     public static class Key {
 
-        private static final long SIGNATURE_MASK = 0xFFFF000000000000L;
-        private static final long MOVE_MASK = 0x0000FFFF00000000L;
+        private static final long SIGNATURE_MASK = 0xFFFFFFFF00000000L;
         private static final long SCORE_MASK = 0x00000000FFFF0000L;
         private static final long STATIC_EVAL_MASK = 0x000000000000FFFFL;
 
-        public static long of(long signature, Move move, int score, int staticEval) {
+        public static long of(long signature, int score, int staticEval) {
             final long signatureValue = getSignature(signature);
-            final long moveValue = (move != null ? move.value() : 0) & 0xFFFF;
             final long scoreValue = score & 0xFFFF;
             final long staticEvalValue = staticEval & 0xFFFF;
-            return (signatureValue << 48) |
-                    (moveValue << 32) |
+            return (signatureValue << 32) |
                     (scoreValue << 16) |
                     staticEvalValue;
         }
 
         public static short getSignature(long key) {
             // TODO try remove signature mask
-            return (short) ((key & SIGNATURE_MASK) >>> 48);
-        }
-
-        public static Move getMove(long key) {
-            short moveValue = (short) ((key & MOVE_MASK) >>> 32);
-            return moveValue != 0 ? new Move(moveValue) : null;
+            return (short) ((key & SIGNATURE_MASK) >>> 32);
         }
 
         public static short getScore(long key) {
@@ -79,9 +71,10 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
 
     public static class Value {
 
-        private static final int DEPTH_MASK = 0xFF00; // Mask for depth (upper byte)
-        private static final int FLAG_MASK = 0x00F0; // Mask for flag (bits 4-7 of lower byte)
-        private static final int AGE_MASK = 0x000F;  // Mask for age (bits 0-3 of lower byte)
+        private static final int MOVE_MASK = 0xFFFF0000; // Mask for move (upper 16 bits)
+        private static final int DEPTH_MASK = 0xFF00; // Mask for depth (bits 8-15)
+        private static final int FLAG_MASK = 0x00F0; // Mask for flag (bits 4-7 )
+        private static final int AGE_MASK = 0x000F;  // Mask for age (bits 0-3)
 
         /**
          * Encodes the depth, flag, and age into a single short value.
@@ -92,11 +85,16 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
          * @param age   The age (capped at 15, max value for 4 bits).
          * @return The encoded short value.
          */
-        public static short of(int depth, int flag, int age) {
-            // Ensure depth, flag, and age values fit within their bit boundaries
+        public static int of(Move move, int depth, int flag, int age) {
             final int depthValue = Math.min(255, depth) & 0xFF; // Ensure only 8 bits
-            final int flagAndAgeValue = ((flag & 0b1111) << 4) | (age & 0b1111); // Pack flag and age into 8 bits
-            return (short) ((depthValue << 8) | flagAndAgeValue); // Combine depth (upper 8 bits) with flag+age (lower 8 bits)
+            final long moveValue = (move != null ? move.value() : 0) & 0xFFFF;
+            final int flagAndAgeValue = ((flag & 0b1111) << 4) | (age & 0b1111);
+            return (int) ((moveValue << 16) | (depthValue << 8) | flagAndAgeValue);
+        }
+
+        public static Move getMove(int value) {
+            short moveValue = (short) ((value & MOVE_MASK) >>> 16);
+            return moveValue != 0 ? new Move(moveValue) : null;
         }
 
         /**
@@ -105,7 +103,7 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
          * @param value The encoded short value.
          * @return The depth (0-255).
          */
-        public static int getDepth(short value) {
+        public static int getDepth(int value) {
             return (value & DEPTH_MASK) >>> 8; // Extract upper 8 bits for depth
         }
 
@@ -115,7 +113,7 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
          * @param value The encoded short value.
          * @return The flag (0-15).
          */
-        public static int getFlag(short value) {
+        public static int getFlag(int value) {
             return (value & FLAG_MASK) >>> 4; // Extract bits 4-7 for flag
         }
 
@@ -125,7 +123,7 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
          * @param value The encoded short value.
          * @return The age (0-15).
          */
-        public static int getAge(short value) {
+        public static int getAge(int value) {
             return value & AGE_MASK; // Extract bits 0-3 for age
         }
 
@@ -136,8 +134,8 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
          * @param age   The new age value (0-15).
          * @return The updated encoded short value with the new age.
          */
-        public static short setAge(short value, int age) {
-            return (short) ((value & ~AGE_MASK) | (age & 0b1111)); // Clear age bits and set new age
+        public static int setAge(int value, int age) {
+            return (value & ~AGE_MASK) | (age & 0b1111); // Clear age bits and set new age
         }
     }
 }

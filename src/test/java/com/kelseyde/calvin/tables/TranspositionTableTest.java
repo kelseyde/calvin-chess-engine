@@ -174,133 +174,177 @@ public class TranspositionTableTest {
 
     }
 
+    @Test
+    public void testValueDepth() {
 
-//
-//    @Test
-//    public void testBasicEntry() {
-//
-//        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
-//        long zobristKey = board.getState().getKey();
-//        int depth = 17;
-//        int score = 548;
-//        int staticEval = -5099;
-//        int flag = HashFlag.EXACT;
-//        Move move = Move.fromUCI("e2e4");
-//        assertEntry(zobristKey, score, staticEval, move, flag, depth);
-//
-//    }
-//
-//    @Test
-//    public void testNullMoveEntry() {
-//        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
-//        long zobristKey = board.getState().getKey();
-//        int depth = 1;
-//        int score = 1;
-//        int staticEval = 9000;
-//        int flag = HashFlag.UPPER;
-//        assertEntry(zobristKey, score, staticEval, null, flag, depth);
-//    }
-//
-//    @Test
-//    public void testCheckmateEntry() {
-//        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
-//        long zobristKey = board.getState().getKey();
-//        int depth = 1;
-//        int score = 1000000;
-//        int staticEval = 0;
-//        int flag = HashFlag.UPPER;
-//        Move move = Move.fromUCI("e2e4");
-//        assertEntry(zobristKey, score, staticEval, move, flag, depth);
-//    }
-//
-//    @Test
-//    public void testNegativeCheckmateEntry() {
-//        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
-//        long zobristKey = board.getState().getKey();
-//        int depth = 1;
-//        int score = -Score.MATE;
-//        int staticEval = -20000;
-//        int flag = HashFlag.UPPER;
-//        Move move = Move.fromUCI("e2e4");
-//        assertEntry(zobristKey, score, staticEval, move, flag, depth);
-//    }
-//
-//    @Test
-//    public void testMaxDepth() {
-//        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
-//        long zobristKey = board.getState().getKey();
-//        int depth = 127;
-//        int score = -1;
-//        int staticEval = -789;
-//        int flag = HashFlag.UPPER;
-//        assertEntry(zobristKey, score, staticEval, null, flag, depth);
-//    }
-//
-//    @Test
-//    public void testPromotionFlag() {
-//        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
-//        long zobristKey = board.getState().getKey();
-//        int depth = 127;
-//        int score = -789;
-//        int staticEval = 1;
-//        int flag = HashFlag.LOWER;
-//        Move move = Move.fromUCI("e7e8q");
-//        assertEntry(zobristKey, score, staticEval, move, flag, depth);
-//    }
-//
-//    @Test
-//    public void testSimplePutAndGetExact() {
-//
-//        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-//        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-//
-//        // Do some evaluation on the node at this position.
-//        int flag = HashFlag.EXACT;
-//        Move bestMove = Move.fromUCI("e2e4");
-//        int eval = 60;
-//        int depth = 3;
-//        int ply = 2;
-//
-//        table.put(board.getState().getKey(), flag, depth, ply, bestMove,  0, eval);
-//
-//        // Do some more searching, return to this position
-//
-//        HashEntry entry = table.get(board.getState().getKey(), ply);
-//
-//        Assertions.assertNotNull(entry);
-//        Assertions.assertEquals(flag, entry.flag());
-//        Assertions.assertEquals(bestMove, entry.move());
-//        Assertions.assertEquals(eval, entry.score());
-//        Assertions.assertEquals(depth, entry.depth());
-//
-//        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
-//        flag = HashFlag.UPPER;
-//        bestMove = Move.fromUCI("e2e4");
-//        eval = 28666;
-//        depth = 256;
-//        table.put(board.getState().getKey(), flag, depth, ply + 1, bestMove, 0,  eval);
-//
-//        entry = table.get(board.getState().getKey(), ply);
-//        Assertions.assertNotNull(entry);
-//        Assertions.assertEquals(flag, entry.flag());
-//        Assertions.assertEquals(bestMove, entry.move());
-//        Assertions.assertEquals(eval, entry.score());
-//        Assertions.assertEquals(depth, entry.depth());
-//
-//        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
-//        flag = HashFlag.LOWER;
-//        eval = 1000000;
-//        depth = 10;
-//        table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  eval);
-//
-//        entry = table.get(board.getState().getKey(), ply);
-//        Assertions.assertNotNull(entry);
-//        Assertions.assertEquals(flag, entry.flag());
-//        Assertions.assertEquals(null, entry.move());
-//        Assertions.assertEquals(eval - 2, entry.score());
-//        Assertions.assertEquals(depth, entry.depth());
-//    }
-//
+        int depth = 1;
+        short value = HashEntry.Value.of(depth, HashFlag.EXACT, 0);
+        int storedDepth = HashEntry.Value.getDepth(value);
+        Assertions.assertEquals(depth, storedDepth);
+
+    }
+
+    @Test
+    public void testValueFlag() {
+
+        int flag = HashFlag.EXACT;
+        short value = HashEntry.Value.of(0, flag, 0);
+        int storedFlag = HashEntry.Value.getFlag(value);
+        Assertions.assertEquals(flag, storedFlag);
+
+    }
+
+    @Test
+    public void testValueAge() {
+
+        int age = 1;
+        short value = HashEntry.Value.of(0, HashFlag.EXACT, age);
+        int storedAge = HashEntry.Value.getAge(value);
+        Assertions.assertEquals(age, storedAge);
+
+    }
+
+    @Test
+    public void testValueCombined() {
+
+        int depth = 3;
+        int flag = HashFlag.EXACT;
+        int age = 1;
+        short value = HashEntry.Value.of(depth, flag, age);
+        int storedDepth = HashEntry.Value.getDepth(value);
+        int storedFlag = HashEntry.Value.getFlag(value);
+        int storedAge = HashEntry.Value.getAge(value);
+        Assertions.assertEquals(depth, storedDepth);
+        Assertions.assertEquals(flag, storedFlag);
+        Assertions.assertEquals(age, storedAge);
+
+    }
+
+    @Test
+    public void testBasicEntry() {
+
+        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        long zobristKey = board.getState().getKey();
+        int depth = 17;
+        int score = 548;
+        int staticEval = -5099;
+        int flag = HashFlag.EXACT;
+        Move move = Move.fromUCI("e2e4");
+        assertEntry(zobristKey, score, staticEval, move, flag, depth);
+
+    }
+
+    @Test
+    public void testNullMoveEntry() {
+        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        long zobristKey = board.getState().getKey();
+        int depth = 1;
+        int score = 1;
+        int staticEval = 9000;
+        int flag = HashFlag.UPPER;
+        assertEntry(zobristKey, score, staticEval, null, flag, depth);
+    }
+
+    @Test
+    public void testCheckmateEntry() {
+        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        long zobristKey = board.getState().getKey();
+        int depth = 1;
+        int score = Score.MATE;
+        int staticEval = 0;
+        int flag = HashFlag.UPPER;
+        Move move = Move.fromUCI("e2e4");
+        assertEntry(zobristKey, score, staticEval, move, flag, depth);
+    }
+
+    @Test
+    public void testNegativeCheckmateEntry() {
+        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        long zobristKey = board.getState().getKey();
+        int depth = 1;
+        int score = -Score.MATE;
+        int staticEval = -20000;
+        int flag = HashFlag.UPPER;
+        Move move = Move.fromUCI("e2e4");
+        assertEntry(zobristKey, score, staticEval, move, flag, depth);
+    }
+
+    @Test
+    public void testMaxDepth() {
+        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        long zobristKey = board.getState().getKey();
+        int depth = 255;
+        int score = -1;
+        int staticEval = -789;
+        int flag = HashFlag.UPPER;
+        assertEntry(zobristKey, score, staticEval, null, flag, depth);
+    }
+
+    @Test
+    public void testPromotionFlag() {
+        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        long zobristKey = board.getState().getKey();
+        int depth = 127;
+        int score = -789;
+        int staticEval = 1;
+        int flag = HashFlag.LOWER;
+        Move move = Move.fromUCI("e7e8q");
+        assertEntry(zobristKey, score, staticEval, move, flag, depth);
+    }
+
+    @Test
+    public void testSimplePutAndGetExact() {
+
+        board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
+        board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
+
+        // Do some evaluation on the node at this position.
+        int flag = HashFlag.LOWER;
+        Move bestMove = Move.fromUCI("e2e4");
+        int eval = 60;
+        int depth = 3;
+        int ply = 2;
+
+        table.put(board.getState().getKey(), flag, depth, ply, bestMove, 0, eval);
+
+        // Do some more searching, return to this position
+
+        HashEntry entry = table.get(board.getState().getKey(), ply);
+
+        Assertions.assertNotNull(entry);
+        Assertions.assertEquals(flag, entry.flag());
+        Assertions.assertEquals(bestMove, entry.move());
+        Assertions.assertEquals(eval, entry.score());
+        Assertions.assertEquals(depth, entry.depth());
+
+        board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
+        flag = HashFlag.UPPER;
+        bestMove = Move.fromUCI("e2e4");
+        eval = 28666;
+        depth = 255;
+        table.put(board.getState().getKey(), flag, depth, ply + 1, bestMove, 0,  eval);
+
+        entry = table.get(board.getState().getKey(), ply);
+        Assertions.assertNotNull(entry);
+        Assertions.assertEquals(flag, entry.flag());
+        Assertions.assertEquals(bestMove, entry.move());
+        Assertions.assertEquals(eval, entry.score());
+        Assertions.assertEquals(depth, entry.depth());
+
+        board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
+        flag = HashFlag.LOWER;
+        eval = Score.MAX;
+        depth = 10;
+        table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  eval);
+
+        entry = table.get(board.getState().getKey(), ply);
+        Assertions.assertNotNull(entry);
+        Assertions.assertEquals(flag, entry.flag());
+        Assertions.assertEquals(null, entry.move());
+        Assertions.assertEquals(eval - 2, entry.score());
+        Assertions.assertEquals(depth, entry.depth());
+    }
+
 //    @Test
 //    public void testSimplePutAndGetNotFound() {
 //

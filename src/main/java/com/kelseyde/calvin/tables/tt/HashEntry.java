@@ -41,16 +41,14 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         private static final long STATIC_EVAL_MASK = 0x000000000000FFFFL;
 
         public static long of(long signature, Move move, int score, int staticEval) {
-            // Take the lowest 16 bits of the signature
-            final short signatureValue    = getSignature(signature);
-            final short moveValue         = move != null ? move.value() : 0;
-            System.out.println("moveValue: " + moveValue);
-            final short scoreValue        = (short) score;
-            final short staticEvalValue   = (short) staticEval;
-            return ((long) signatureValue << 48) |
-                    ((long) moveValue << 32) |
-                    ((long) scoreValue << 16) |
-                    (long) staticEvalValue;
+            final long signatureValue = getSignature(signature);
+            final long moveValue = (move != null ? move.value() : 0) & 0xFFFF;
+            final long scoreValue = score & 0xFFFF;
+            final long staticEvalValue = staticEval & 0xFFFF;
+            return (signatureValue << 48) |
+                    (moveValue << 32) |
+                    (scoreValue << 16) |
+                    staticEvalValue;
         }
 
         public static short getSignature(long key) {
@@ -59,9 +57,6 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
 
         public static Move getMove(long key) {
             short moveValue = (short) ((key & MOVE_MASK) >>> 32);
-            System.out.println("moveValue2: " + moveValue);
-            int moveValue2 = (int) ((key & 0x0000FFFF00000000L) >>> 32);
-            System.out.println("moveValue2: " + (short) moveValue2);
             return moveValue != 0 ? new Move(moveValue) : null;
         }
 
@@ -81,22 +76,29 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
 
     public static class Value {
 
+        private static final short DEPTH_MASK = (short) 0xFF00;
+        private static final short FLAG_MASK = (short) 0x00F0;
+        private static final short AGE_MASK = (short) 0x000F;
+
         public static short of(int depth, int flag, int age) {
-            final byte depthValue = (byte) Math.min(Byte.MAX_VALUE, depth);
-            final byte flagAndAgeValue = (byte) ((flag & 0b1111) << 4 | (age & 0b1111));
+            // Depth should be capped at 255, since it is stored in a byte.
+            // Flag and age should be capped at 15, since they are stored in 4 bits each.
+            // ChatGPT, please fix the below stuff
+            final int depthValue = Math.min(255, depth);
+            final int flagAndAgeValue = ((flag & 0b1111) << 4 | (age & 0b1111));
             return (short) ((depthValue << 8) | (flagAndAgeValue & 0xFF));
         }
 
         public static int getDepth(short value) {
-            return (value >>> 8) & 0xFF;
+            return (value & DEPTH_MASK) >>> 8;
         }
 
         public static int getFlag(short value) {
-            return (value >>> 4) & 0b1111;
+            return (value & FLAG_MASK) >>> 4;
         }
 
         public static int getAge(short value) {
-            return value & 0b1111;
+            return value & AGE_MASK;
         }
 
         public static short setAge(short value, int age) {

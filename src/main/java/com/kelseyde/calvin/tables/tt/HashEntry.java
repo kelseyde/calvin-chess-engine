@@ -10,15 +10,16 @@ import com.kelseyde.calvin.board.Move;
  * - Key: 0-31 (zobrist key), 32-47 (age), 48-63 (static eval)
  * - Value: 0-11 (depth), 12-15 (flag), 16-31 (move), 32-63 (score)
  */
-public record HashEntry(Move move, int score, int staticEval, int flag, int depth) {
+public record HashEntry(long zobrist, Move move, int score, int staticEval, int flag, int depth) {
 
     public static HashEntry of(long key, long value) {
+        final long zobrist    = Key.getZobristPart(key);
         final Move move       = Value.getMove(value);
         final int flag        = Value.getFlag(value);
         final int depth       = Value.getDepth(value);
         final int score       = Value.getScore(value);
         final int staticEval  = Key.getStaticEval(key);
-        return new HashEntry(move, score, staticEval, flag, depth);
+        return new HashEntry(zobrist, move, score, staticEval, flag, depth);
     }
 
     public static class Key {

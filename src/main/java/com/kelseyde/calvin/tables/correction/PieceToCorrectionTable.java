@@ -10,10 +10,10 @@ import com.kelseyde.calvin.board.Piece;
  */
 public class PieceToCorrectionTable extends CorrectionHistoryTable {
 
-    int[][][] entries;
+    short[][][] entries;
 
     public PieceToCorrectionTable() {
-        this.entries = new int[2][Piece.COUNT][Square.COUNT];
+        this.entries = new short[2][Piece.COUNT][Square.COUNT];
     }
 
     public void update(Move prevMove, Piece prevPiece, boolean white, int staticEval, int score, int depth) {
@@ -34,12 +34,12 @@ public class PieceToCorrectionTable extends CorrectionHistoryTable {
         int colourIndex = Colour.index(white);
         int pieceIndex = prevPiece.index();
         int to = prevMove.to();
-        entries[colourIndex][pieceIndex][to] = value;
+        entries[colourIndex][pieceIndex][to] = (short) value;
     }
 
     @Override
     public void clear() {
-        this.entries = new int[2][Piece.COUNT][Square.COUNT];
+        this.entries = new short[2][Piece.COUNT][Square.COUNT];
     }
 
 }

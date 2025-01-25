@@ -419,7 +419,7 @@ public class Searcher implements Search {
             }
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
-            if (!pvNode && !rootNode) {
+            if (!rootNode) {
 
                 // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
                 // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,

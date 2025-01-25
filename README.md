@@ -19,7 +19,7 @@ My aim with this project was to combine my passion (playing mediocre chess) with
 
 ## How to Play 
 
-Calvin communicates via the [Universal Chess Interface](https://www.chessprogramming.org/UCI) (UCI), meaning you can run it via the command line or paired with your favorite chess GUI:
+Calvin communicates via the [Universal Chess Interface](https://www.chessprogramming.org/UCI) (UCI), meaning you can run it via the command line or paired with your favourite chess GUI:
 
 1. Download the latest release from [Releases](https://github.com/kelseyde/calvin-chess-engine/releases).
 2. Ensure **Java 17+** is installed locally.

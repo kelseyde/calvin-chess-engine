@@ -55,14 +55,14 @@ public class TranspositionTable {
         boolean replace = entry == null
                 || entry.flag() == HashFlag.NONE
                 || flag == HashFlag.EXACT
-                || entry.zobrist() != key
+                || entry.zobristPart() != key
                 || depth >= entry.depth() - 4;
 
         if (replace) {
             if (Score.isMateScore(score)) {
                 score = calculateMateScore(score, ply);
             }
-            if (entry != null && entry.zobrist() == key && move == null && entry.move() != null) {
+            if (entry != null && entry.zobristPart() == HashEntry.Key.getZobristPart(key) && move == null && entry.move() != null) {
                 move = entry.move();
             }
             int index = index(key);
@@ -106,10 +106,10 @@ public class TranspositionTable {
     }
 
     /**
-     * Compresses the 64-bit zobrist key into a 32-bit key, to be used as an index in the hash table.
+     * Compresses the 64-bit zobristPart key into a 32-bit key, to be used as an index in the hash table.
      */
     private int index(long key) {
-        // XOR the upper and lower halves of the zobrist key together, producing a pseudo-random 32-bit result.
+        // XOR the upper and lower halves of the zobristPart key together, producing a pseudo-random 32-bit result.
         // Then apply a mask ensuring the number is always positive, since it is to be used as an array index.
         long index = (key ^ (key >>> 32)) & 0x7FFFFFFF;
         // Modulo the result with the number of entries in the table, and align it with a multiple of 4,

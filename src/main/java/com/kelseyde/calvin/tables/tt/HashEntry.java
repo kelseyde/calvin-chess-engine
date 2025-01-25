@@ -7,19 +7,19 @@ import com.kelseyde.calvin.board.Move;
  * </p>
  * Records the move, score, static evaluation, flag, and depth of a position that has been searched. When stored in the
  * table, this information is packed into two 64-bit longs: a key and a value. The encoding scheme is as follows:
- * - Key: 0-31 (zobrist key), 32-47 (age), 48-63 (static eval)
+ * - Key: 0-31 (zobristPart key), 32-47 (age), 48-63 (static eval)
  * - Value: 0-11 (depth), 12-15 (flag), 16-31 (move), 32-63 (score)
  */
-public record HashEntry(long zobrist, Move move, int score, int staticEval, int flag, int depth) {
+public record HashEntry(long zobristPart, Move move, int score, int staticEval, int flag, int depth) {
 
     public static HashEntry of(long key, long value) {
-        final long zobrist    = Key.getZobristPart(key);
+        final long zobristPart    = Key.getZobristPart(key);
         final Move move       = Value.getMove(value);
         final int flag        = Value.getFlag(value);
         final int depth       = Value.getDepth(value);
         final int score       = Value.getScore(value);
         final int staticEval  = Key.getStaticEval(key);
-        return new HashEntry(zobrist, move, score, staticEval, flag, depth);
+        return new HashEntry(zobristPart, move, score, staticEval, flag, depth);
     }
 
     public static class Key {

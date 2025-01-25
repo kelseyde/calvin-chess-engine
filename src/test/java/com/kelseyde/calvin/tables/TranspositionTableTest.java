@@ -73,7 +73,7 @@ public class TranspositionTableTest {
     public void testMaxDepth() {
         Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
         long zobristKey = board.getState().getKey();
-        int depth = 256;
+        int depth = 127;
         int score = -789;
         int flag = HashFlag.UPPER;
         assertEntry(zobristKey, score, null, flag, depth);
@@ -83,7 +83,7 @@ public class TranspositionTableTest {
     public void testPromotionFlag() {
         Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
         long zobristKey = board.getState().getKey();
-        int depth = 256;
+        int depth = 127;
         int score = -789;
         int flag = HashFlag.LOWER;
         Move move = Move.fromUCI("e7e8q");

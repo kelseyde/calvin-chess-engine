@@ -7,14 +7,14 @@ import com.kelseyde.calvin.board.Move;
  * </p>
  * Records the move, score, static evaluation, flag, and depth of a position that has been searched. When stored in the
  * table, this information is packed into two 64-bit longs: a key and a value. The encoding scheme is as follows:
- * - Key: 0-31 (zobrist key), 32-47 (age), 48-63 (static eval)
- * - Value: 0-11 (depth), 12-15 (flag), 16-31 (move), 32-63 (score)
- *
- *
+ * <br>
+ * KEY (64 bits):
  * 2 byte key
  * 2 byte move
  * 2 byte score
  * 2 byte static eval
+ * <br>
+ * VALUE (16 bits):
  * 1 byte depth
  * 1 byte flag + age
  *
@@ -53,7 +53,8 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
 
         public static Move getMove(long key) {
-            return new Move((short) (key >>> 32));
+            short moveValue = (short) (key >>> 32);
+            return moveValue != 0 ? new Move(moveValue) : null;
         }
 
         public static short getScore(long key) {

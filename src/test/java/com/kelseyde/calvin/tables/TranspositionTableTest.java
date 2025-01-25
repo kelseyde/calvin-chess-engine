@@ -325,8 +325,8 @@ public class TranspositionTableTest {
     }
 
     private void assertEntry(long zobrist, int score, Move move, int flag, int depth) {
-        long key = HashEntry.Key.of(zobrist, 0, 0);
-        long value = HashEntry.Value.of(score, move, flag, depth);
+        long key = HashEntry.Key.of(zobrist, move, score, 0);
+        short value = HashEntry.Value.of(depth, flag, 0);
         HashEntry entry = HashEntry.of(key, value);
         Assertions.assertEquals(depth, entry.depth());
         Assertions.assertEquals(score, entry.score());

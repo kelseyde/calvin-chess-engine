@@ -125,7 +125,7 @@ public class TranspositionTable {
             }
 
             // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (age > HashEntry.Key.getAge(storedKey)) {
+            if (age > HashEntry.Value.getAge(storedValue)) {
                 replacedByAge = true;
                 replacedIndex = i;
             }
@@ -140,8 +140,8 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            keys[replacedIndex] = HashEntry.Key.of(key, staticEval, age);
-            values[replacedIndex] = HashEntry.Value.of(score, move, flag, depth);
+            keys[replacedIndex] = HashEntry.Key.of(key, move, score, staticEval);
+            values[replacedIndex] = HashEntry.Value.of(flag, depth, age);
         }
     }
 
@@ -165,9 +165,7 @@ public class TranspositionTable {
     public void resize(int tableSizeMb) {
         this.size = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         this.keys = new long[size];
-        this.values = new long[size];
-        this.tries = 0;
-        this.hits = 0;
+        this.values = new short[size];
         this.age = 0;
     }
 
@@ -175,11 +173,9 @@ public class TranspositionTable {
      * Clears the transposition table, resetting all entries and statistics.
      */
     public void clear() {
-        this.tries = 0;
-        this.hits = 0;
         this.age = 0;
         this.keys = new long[size];
-        this.values = new long[size];
+        this.values = new short[size];
     }
 
     /**

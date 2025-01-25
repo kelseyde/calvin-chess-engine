@@ -242,7 +242,7 @@ public class Searcher implements Search {
         }
 
         Move ttMove = null;
-        if (ttHit && ttEntry.move() != null) {
+        if (ttHit && ttEntry.move() != null && movegen.isPseudoLegal(board, ttEntry.move())) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.move();
         }
@@ -627,7 +627,7 @@ public class Searcher implements Search {
             return ttEntry.score();
         }
         Move ttMove = null;
-        if (ttHit && ttEntry.move() != null) {
+        if (ttHit && ttEntry.move() != null && movegen.isPseudoLegal(board, ttEntry.move())) {
             ttMove = ttEntry.move();
         }
 

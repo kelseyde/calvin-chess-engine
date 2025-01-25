@@ -20,6 +20,8 @@ import com.kelseyde.calvin.board.Move;
  */
 public record HashEntry(Move move, int score, int staticEval, int flag, int depth) {
 
+    public static final int SIZE_BYTES = 10;
+
     public static HashEntry of(long key, short value) {
         final Move move        = Key.getMove(key);
         final int score        = Key.getScore(key);
@@ -52,6 +54,7 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
 
         public static short getSignature(long key) {
+            // TODO try remove signature mask
             return (short) ((key & SIGNATURE_MASK) >>> 48);
         }
 

@@ -109,7 +109,12 @@ public class TranspositionTable {
      * Compresses the 64-bit zobrist key into a 32-bit key, to be used as an index in the hash table.
      */
     private int index(long key) {
-        return (int) key & (size - 1);
+        // XOR the upper and lower halves of the zobrist key together, producing a pseudo-random 32-bit result.
+        // Then apply a mask ensuring the number is always positive, since it is to be used as an array index.
+        long index = (key ^ (key >>> 32)) & 0x7FFFFFFF;
+        // Modulo the result with the number of entries in the table, and align it with a multiple of 4,
+        // ensuring the entries are always divided into 4-sized buckets.
+        return (int) (index % (size - 1));
     }
 
     // On insertion, adjust the mate score to reflect the number of ply from the root position

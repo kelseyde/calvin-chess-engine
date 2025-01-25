@@ -394,12 +394,6 @@ public class Searcher implements Search {
             int extension = 0;
             int reduction = 0;
 
-            // Check Extensions - https://www.chessprogramming.org/Check_Extensions
-            // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
-            if (inCheck) {
-                extension = 1;
-            }
-
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
@@ -497,6 +491,13 @@ public class Searcher implements Search {
 
             final int nodesBefore = td.nodes;
             td.nodes++;
+
+            // Check Extensions - https://www.chessprogramming.org/Check_Extensions
+            // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
+            final boolean givesCheck = movegen.isCheck(board);
+            if (givesCheck) {
+                extension = 1;
+            }
 
             if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
                 reduction += futilityReduction;

@@ -65,7 +65,7 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
 
         public static long setScore(long key, int score) {
-            return (key & 0xFFFFFFFFFFFF0000L) | ((long) score & 0xFFFF) << 16;
+            return (key &~ SCORE_MASK) | (((long) score & 0xFFFF) << 16);
         }
 
         public static short getStaticEval(long key) {
@@ -76,35 +76,65 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
 
     public static class Value {
 
-        private static final short DEPTH_MASK = (short) 0xFF00;
-        private static final short FLAG_MASK = (short) 0x00F0;
-        private static final short AGE_MASK = (short) 0x000F;
+        private static final int DEPTH_MASK = 0xFF00; // Mask for depth (upper byte)
+        private static final int FLAG_MASK = 0x00F0; // Mask for flag (bits 4-7 of lower byte)
+        private static final int AGE_MASK = 0x000F;  // Mask for age (bits 0-3 of lower byte)
 
+        /**
+         * Encodes the depth, flag, and age into a single short value.
+         * Depth is stored in the upper 8 bits, and flag + age are packed into the lower 8 bits.
+         *
+         * @param depth The search depth (capped at 255, max value for 8 bits).
+         * @param flag  The flag (capped at 15, max value for 4 bits).
+         * @param age   The age (capped at 15, max value for 4 bits).
+         * @return The encoded short value.
+         */
         public static short of(int depth, int flag, int age) {
-            // Depth should be capped at 255, since it is stored in a byte.
-            // Flag and age should be capped at 15, since they are stored in 4 bits each.
-            // ChatGPT, please fix the below stuff
-            final int depthValue = Math.min(255, depth);
-            final int flagAndAgeValue = ((flag & 0b1111) << 4 | (age & 0b1111));
-            return (short) ((depthValue << 8) | (flagAndAgeValue & 0xFF));
+            // Ensure depth, flag, and age values fit within their bit boundaries
+            final int depthValue = Math.min(255, depth) & 0xFF; // Ensure only 8 bits
+            final int flagAndAgeValue = ((flag & 0b1111) << 4) | (age & 0b1111); // Pack flag and age into 8 bits
+            return (short) ((depthValue << 8) | flagAndAgeValue); // Combine depth (upper 8 bits) with flag+age (lower 8 bits)
         }
 
+        /**
+         * Extracts the depth (upper 8 bits) from the encoded short value.
+         *
+         * @param value The encoded short value.
+         * @return The depth (0-255).
+         */
         public static int getDepth(short value) {
-            return (value & DEPTH_MASK) >>> 8;
+            return (value & DEPTH_MASK) >>> 8; // Extract upper 8 bits for depth
         }
 
+        /**
+         * Extracts the flag (bits 4-7 of the lower byte) from the encoded short value.
+         *
+         * @param value The encoded short value.
+         * @return The flag (0-15).
+         */
         public static int getFlag(short value) {
-            return (value & FLAG_MASK) >>> 4;
+            return (value & FLAG_MASK) >>> 4; // Extract bits 4-7 for flag
         }
 
+        /**
+         * Extracts the age (bits 0-3 of the lower byte) from the encoded short value.
+         *
+         * @param value The encoded short value.
+         * @return The age (0-15).
+         */
         public static int getAge(short value) {
-            return value & AGE_MASK;
+            return value & AGE_MASK; // Extract bits 0-3 for age
         }
 
+        /**
+         * Sets a new age value in the lower 4 bits of the encoded short value.
+         *
+         * @param value The existing encoded short value.
+         * @param age   The new age value (0-15).
+         * @return The updated encoded short value with the new age.
+         */
         public static short setAge(short value, int age) {
-            return (short) ((value & 0xFFF0) | (age & 0b1111));
+            return (short) ((value & ~AGE_MASK) | (age & 0b1111)); // Clear age bits and set new age
         }
-
     }
-
 }

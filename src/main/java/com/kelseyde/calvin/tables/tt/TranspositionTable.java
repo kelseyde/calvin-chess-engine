@@ -141,7 +141,7 @@ public class TranspositionTable {
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
             keys[replacedIndex] = HashEntry.Key.of(key, move, score, staticEval);
-            values[replacedIndex] = HashEntry.Value.of(flag, depth, age);
+            values[replacedIndex] = HashEntry.Value.of(depth, flag, age);
         }
     }
 

@@ -35,10 +35,16 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
 
     public static class Key {
 
+        private static final long SIGNATURE_MASK = 0xFFFF000000000000L;
+        private static final long MOVE_MASK = 0x0000FFFF00000000L;
+        private static final long SCORE_MASK = 0x00000000FFFF0000L;
+        private static final long STATIC_EVAL_MASK = 0x000000000000FFFFL;
+
         public static long of(long signature, Move move, int score, int staticEval) {
             // Take the lowest 16 bits of the signature
-            final short signatureValue    = (short) (signature & 0xFFFF);
+            final short signatureValue    = getSignature(signature);
             final short moveValue         = move != null ? move.value() : 0;
+            System.out.println("moveValue: " + moveValue);
             final short scoreValue        = (short) score;
             final short staticEvalValue   = (short) staticEval;
             return ((long) signatureValue << 48) |
@@ -48,16 +54,19 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
 
         public static short getSignature(long key) {
-            return (short) (key >>> 48);
+            return (short) ((key & SIGNATURE_MASK) >>> 48);
         }
 
         public static Move getMove(long key) {
-            short moveValue = (short) (key >>> 32);
+            short moveValue = (short) ((key & MOVE_MASK) >>> 32);
+            System.out.println("moveValue2: " + moveValue);
+            int moveValue2 = (int) ((key & 0x0000FFFF00000000L) >>> 32);
+            System.out.println("moveValue2: " + (short) moveValue2);
             return moveValue != 0 ? new Move(moveValue) : null;
         }
 
         public static short getScore(long key) {
-            return (short) (key >>> 16);
+            return (short) ((key & SCORE_MASK) >>> 16);
         }
 
         public static long setScore(long key, int score) {
@@ -65,7 +74,7 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
 
         public static short getStaticEval(long key) {
-            return (short) key;
+            return (short) (key & STATIC_EVAL_MASK);
         }
 
     }

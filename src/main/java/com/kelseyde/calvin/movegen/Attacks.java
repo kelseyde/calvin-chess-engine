@@ -149,6 +149,10 @@ public class Attacks {
         return sliderAttacks(square, blockers, BISHOP_MAGIC_LOOKUP);
     }
 
+    public static long queenAttacks(int square, long blockers) {
+        return rookAttacks(square, blockers) | bishopAttacks(square, blockers);
+    }
+
     /**
      * Calculate single pawn moves.
      */

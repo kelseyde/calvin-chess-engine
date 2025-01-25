@@ -600,6 +600,18 @@ public class Board {
         return FEN.toBoard(fen);
     }
 
+    public boolean hasUpcomingRepetition(int searchPly) {
+
+        int maxDst = Math.min(state.halfMoveClock / 2, ply);
+        if (maxDst < 3) {
+            return false;
+        }
+
+
+
+
+    }
+
     private void checkMaxPly() {
         if (ply >= states.length) {
             BoardState[] newStates = new BoardState[states.length + 64];

@@ -128,6 +128,12 @@ public class Key {
         return keys;
     }
 
+    public static long moveKey(Move move, Piece piece, boolean white) {
+        return piece(move.from(), piece, white)
+            ^ piece(move.to(), piece, white)
+            ^ sideToMove();
+    }
+
     private static long updateKeyForPiece(long key, long whiteBitboard, long blackBitboard, int square, int pieceIndex) {
         if (((whiteBitboard >>> square) & 1) == 1) {
             key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndex];

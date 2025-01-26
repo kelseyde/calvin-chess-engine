@@ -521,6 +521,11 @@ public class Searcher implements Search {
                     newDepth += (doDeeper ? 1 : 0) - (doShallower ? 1 : 0);
                     score = -search(newDepth, ply + 1, -beta, -alpha, false);
                 }
+
+                if (score > alpha && score < beta) {
+                    // If the null window search failed high, we need to do a full re-search with the full alpha-beta window.
+                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                }
             }
 
             eval.unmakeMove();

@@ -242,9 +242,11 @@ public class Searcher implements Search {
         }
 
         Move ttMove = null;
+        boolean ttCapture = false;
         if (ttHit && ttEntry.move() != null) {
             // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
             ttMove = ttEntry.move();
+            ttCapture = board.isCapture(ttMove);
         }
 
         // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
@@ -411,6 +413,8 @@ public class Searcher implements Search {
 
                 // Reduce less in PV nodes.
                 reduction -= pvNode ? 1 : 0;
+
+                reduction += (!isCapture && ttCapture) ? 1 : 0;
 
                 // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
                 reduction -= 2 * historyScore / config.quietHistMaxScore.value;

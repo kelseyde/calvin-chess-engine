@@ -420,26 +420,13 @@ public class Searcher implements Search {
                 // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
                 // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
                 // captures, promotions), then let's assume it will fail low and prune this node.
-                if (!inCheck
-                        && depth - reduction <= config.fpDepth.value
-                        && scoredMove.isQuiet()) {
-
-                    // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
-                    int pruneMargin = config.fpMargin.value
+                if (!inCheck && depth - reduction <= config.fpDepth.value && scoredMove.isQuiet()) {
+                    final int futilityMargin = config.fpMargin.value
                             + (depth - reduction) * config.fpScale.value
                             + (historyScore / config.fpHistDivisor.value);
-                    int reduceMargin = pruneMargin - depth * config.fpBlend.value;
-
-                    if (staticEval + pruneMargin <= alpha) {
-                        sse.currentMove = null;
+                    if (staticEval + futilityMargin <= alpha) {
                         movePicker.setSkipQuiets(true);
                         continue;
-                    }
-                    else if (staticEval + reduceMargin <= alpha) {
-                        // Calculate distance from alpha to scale reduction dynamically
-                        int delta = (alpha - staticEval) - pruneMargin;
-                        int maxReduction = config.fpDepth.value;
-                        futilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
                     }
                 }
 

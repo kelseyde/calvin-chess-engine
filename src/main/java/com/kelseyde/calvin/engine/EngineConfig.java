@@ -45,6 +45,9 @@ public class EngineConfig {
     public final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
     public final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
     public final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 15, -100, 200, 50);
+    public final Tunable seeNoisyDivisor        = new Tunable("SeeNoisyDivisor", 4, 2, 6, 1);
+    public final Tunable seeQsNoisyOffset       = new Tunable("SeeQsNoisyOffset", 15, -100, 200, 50);
+    public final Tunable seeQsNoisyDivisor      = new Tunable("SeeQsNoisyDivisor", 4, 2, 6, 1);
     public final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 125, 50, 250, 25);
     public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 0, -300, 300, 100);
@@ -117,7 +120,8 @@ public class EngineConfig {
                 captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax, contHistMalusScale,
                 contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin,
                 seeNoisyMargin, seeNoisyOffset, seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor,
-                hardTimeFactor, softTimeScaleMin, softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth
+                hardTimeFactor, softTimeScaleMin, softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth,
+                seeNoisyDivisor, seeQsNoisyDivisor, seeQsNoisyOffset
         );
     }
 

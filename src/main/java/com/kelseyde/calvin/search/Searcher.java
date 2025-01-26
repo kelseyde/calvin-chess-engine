@@ -394,28 +394,20 @@ public class Searcher implements Search {
             int extension = 0;
             int reduction = 0;
 
-            // Check Extensions - https://www.chessprogramming.org/Check_Extensions
-            // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
-            if (inCheck) {
-                extension = 1;
-            }
-
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // If the move is ordered late in the list, and isn't a 'noisy' move like a check, capture or promotion,
             // let's save time by assuming it's less likely to be good, and reduce the search depth.
             if (depth >= config.lmrDepth.value
                     && movesSearched >= (pvNode ? config.lmrMinPvMoves.value : config.lmrMinMoves.value) + (rootNode ? 1 : 0)) {
 
-                // Reductions are based on the depth and the number of moves searched so far.
-                reduction = config.lmrReductions[isCapture ? 1 : 0][depth][movesSearched];
+                int r = config.lmrReductions[isCapture ? 1 : 0][depth][movesSearched] * 1024;
+                r -= pvNode ? config.lmrPvNode.value : 0;
+                r -= inCheck ? config.lmrInCheck.value : 0;
+                r += cutNode ? config.lmrCutNode.value : 0;
+                r += !improving ? config.lmrNotImproving.value : 0;
+                r -= (2 * historyScore / config.quietHistMaxScore.value) * 1024;
 
-                // Reduce less in PV nodes.
-                reduction -= pvNode ? 1 : 0;
-
-                // Reduce moves with a bad history score more aggressively, and reduce less if the history score is good.
-                reduction -= 2 * historyScore / config.quietHistMaxScore.value;
-
-                reduction = Math.max(0, reduction);
+                reduction = Math.max(0, r / 1024);
             }
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.

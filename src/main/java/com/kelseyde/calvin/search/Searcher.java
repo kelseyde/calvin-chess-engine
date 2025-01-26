@@ -293,6 +293,7 @@ public class Searcher implements Search {
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
         final boolean improving = isImproving(ply, staticEval);
+        final boolean opponentWorsening = isOpponentWorsening(ply, staticEval);
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
@@ -301,9 +302,13 @@ public class Searcher implements Search {
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
-            if (depth <= config.rfpDepth.value && !Score.isMateScore(alpha)) {
+            if (depth <= config.rfpDepth.value
+                    && staticEval >= beta
+                    && !Score.isMateScore(alpha)) {
 
-                int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
+                int baseMargin = (int) (depth * config.rfpMargin.value
+                                     - (improving ? 1.5 * config.rfpMargin.value : 0)
+                                     - (opponentWorsening ? config.rfpOppWorseningMargin.value : 0));
                 int blend = depth * config.rfpBlend.value;
 
                 int pruneMargin = baseMargin - blend;
@@ -788,8 +793,9 @@ public class Searcher implements Search {
      * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
      */
     private boolean isImproving(int ply, int staticEval) {
-        if (staticEval == Integer.MIN_VALUE) return false;
-        if (ply < 2) return false;
+        if (staticEval == Integer.MIN_VALUE || ply < 2) {
+            return false;
+        }
         int lastEval = ss.get(ply - 2).staticEval;
         if (lastEval == Integer.MIN_VALUE) {
             if (ply < 4) return false;
@@ -799,6 +805,17 @@ public class Searcher implements Search {
             }
         }
         return lastEval < staticEval;
+    }
+
+    private boolean isOpponentWorsening(int ply, int staticEval) {
+        if (staticEval == Integer.MIN_VALUE || ply < 2) {
+            return false;
+        }
+        int lastEval = ss.get(ply - 2).staticEval;
+        if (lastEval == Integer.MIN_VALUE) {
+            return false;
+        }
+        return staticEval + lastEval > 1;
     }
 
     private SearchResult handleOnlyOneLegalMove(List<Move> rootMoves) {

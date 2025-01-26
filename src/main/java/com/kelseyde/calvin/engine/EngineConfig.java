@@ -52,8 +52,8 @@ public class EngineConfig {
     public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 0, -300, 300, 100);
     public final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
-    public final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);
-    public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
+    public final Tunable rfpMargin              = new Tunable("RfpMargin", 58, 50, 150, 25);
+    public final Tunable rfpOppWorseningMargin  = new Tunable("RfpImpMargin", 18, 5, 70, 20);
     public final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
     public final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     public final Tunable lmrBase                = new Tunable("LmrBase", 90, 50, 100, 5);
@@ -113,7 +113,7 @@ public class EngineConfig {
                 aspMinDepth, aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction,
                 fpDepth, fpBlend, fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor,
                 lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase,
-                nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin,
+                nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpOppWorseningMargin,
                 rfpBlend, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving,
                 quietHistBonusMax, quietHistBonusScale, quietHistMalusMax, quietHistMalusScale,
                 quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax, captHistMalusScale,

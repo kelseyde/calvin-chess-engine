@@ -502,22 +502,24 @@ public class Searcher implements Search {
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);
 
+            int newDepth = depth + extension - 1;
             int score;
 
             if (pvNode && movesSearched == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                score = -search(newDepth, ply + 1, -beta, -alpha, false);
             } else {
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
+                score = -search(newDepth - reduction, ply + 1, -alpha - 1, -alpha, true);
 
-                if (score > alpha && (score < beta || reduction > 0)) {
-                    // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
-                    // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                if (score > alpha && reduction > 0) {
+                    boolean doDeeper = score > bestScore + 35 + 32 * newDepth / 16;
+                    boolean doShallower = score < bestScore + 8;
+                    newDepth += (doDeeper ? 1 : 0) - (doShallower ? 1 : 0);
+                    score = -search(newDepth, ply + 1, -beta, -alpha, false);
                 }
             }
 

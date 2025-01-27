@@ -302,7 +302,6 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth() && !Score.isMateScore(alpha)) {
-
                 final int futilityMargin = depth * (improving ? config.rfpImpMargin() : config.rfpMargin())
                         + depth * config.rfpBlend();
 
@@ -352,7 +351,7 @@ public class Searcher implements Search {
                 ss.get(ply + 1).nullMoveAllowed = true;
 
                 if (score >= beta) {
-                    return Score.isMateScore(score) ? beta : score;
+                    return Score.isMateScore(score) ? beta : beta + (score - beta) / 3;
                 }
             }
 

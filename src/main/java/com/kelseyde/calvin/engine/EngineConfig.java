@@ -27,11 +27,8 @@ public class EngineConfig {
 
     private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
     private final Tunable aspMargin              = new Tunable("AspMargin", 12, 0, 250, 25);
-    private final Tunable aspFailMargin          = new Tunable("AspFailMargin", 105, 0, 300, 25);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
-    private final Tunable nmpMargin              = new Tunable("NmpMargin", 18, 0, 250, 25);
-    private final Tunable nmpImpMargin           = new Tunable("NmpImpMargin", 52, 0, 250, 25);
     private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
     private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 210, 0, 400, 25);
@@ -110,18 +107,18 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMinDepth, aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction,
-                fpDepth, fpBlend, fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor,
-                lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase,
-                nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin,
-                rfpBlend, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving,
-                quietHistBonusMax, quietHistBonusScale, quietHistMalusMax, quietHistMalusScale,
-                quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax, captHistMalusScale,
-                captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax, contHistMalusScale,
-                contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin,
-                seeNoisyMargin, seeNoisyOffset, seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor,
-                hardTimeFactor, softTimeScaleMin, softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth,
-                seeNoisyDivisor, seeQsNoisyDivisor, seeQsNoisyOffset
+                aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth, fpBlend,
+                fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
+                lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
+                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, rfpBlend, razorDepth, razorMargin,
+                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, quietHistBonusMax,
+                quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
+                captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
+                contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
+                nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
+                seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
+                softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
+                seeQsNoisyDivisor, seeQsNoisyOffset
         );
     }
 
@@ -207,24 +204,12 @@ public class EngineConfig {
         return aspMargin.value;
     }
 
-    public int aspFailMargin() {
-        return aspFailMargin.value;
-    }
-
     public int aspMaxReduction() {
         return aspMaxReduction.value;
     }
 
     public int nmpDepth() {
         return nmpDepth.value;
-    }
-
-    public int nmpMargin() {
-        return nmpMargin.value;
-    }
-
-    public int nmpImpMargin() {
-        return nmpImpMargin.value;
     }
 
     public int nmpBase() {

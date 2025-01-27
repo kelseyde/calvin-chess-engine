@@ -301,7 +301,8 @@ public class Searcher implements Search {
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth() && !Score.isMateScore(alpha)) {
                 final int futilityMargin = depth * (improving ? config.rfpImpMargin() : config.rfpMargin())
-                        + depth * config.rfpBlend();
+                        + depth * config.rfpBlend()
+                        + ss.get(ply - 1).historyScore / config.rfpHistoryDivisor();
                 if (staticEval - futilityMargin >= beta) {
                     return beta + (staticEval - beta) / 3;
                 }
@@ -463,6 +464,8 @@ public class Searcher implements Search {
 
             final int nodesBefore = td.nodes;
             td.nodes++;
+
+            sse.historyScore = historyScore;
 
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
             sse.currentMove = playedMove;

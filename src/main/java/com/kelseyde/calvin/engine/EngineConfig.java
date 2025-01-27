@@ -52,6 +52,7 @@ public class EngineConfig {
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);
     private final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
     private final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
+    private final Tunable rfpHistoryDivisor      = new Tunable("RfpHistoryDivisor", 560, 200, 800, 50);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 90, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 310, 200, 400, 10);
@@ -118,7 +119,7 @@ public class EngineConfig {
                 nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
-                seeQsNoisyDivisor, seeQsNoisyOffset
+                seeQsNoisyDivisor, seeQsNoisyOffset, rfpHistoryDivisor
         );
     }
 
@@ -302,6 +303,10 @@ public class EngineConfig {
 
     public int rfpBlend() {
         return rfpBlend.value;
+    }
+
+    public int rfpHistoryDivisor() {
+        return rfpHistoryDivisor.value;
     }
 
     public int lmrDepth() {

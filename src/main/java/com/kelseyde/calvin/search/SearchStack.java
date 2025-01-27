@@ -27,6 +27,7 @@ public class SearchStack {
 
     public static class SearchStackEntry {
         public int staticEval;
+        public int historyScore;
         public PlayedMove currentMove;
         public PlayedMove bestMove;
         public boolean nullMoveAllowed = true;

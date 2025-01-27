@@ -306,8 +306,8 @@ public class Searcher implements Search {
                 int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
                 int blend = depth * config.rfpBlend.value;
 
-                int pruneMargin = baseMargin - blend;
-                int reduceMargin = baseMargin + blend;
+                int pruneMargin = baseMargin + blend;
+                int reduceMargin = baseMargin - blend;
 
                 // If the evaluation is significantly higher than beta, prune the node entirely
                 if (staticEval - pruneMargin >= beta) {
@@ -428,7 +428,7 @@ public class Searcher implements Search {
                     int pruneMargin = config.fpMargin.value
                             + (depth - reduction) * config.fpScale.value
                             + (historyScore / config.fpHistDivisor.value);
-                    int reduceMargin = pruneMargin + depth * config.fpBlend.value;
+                    int reduceMargin = pruneMargin - depth * config.fpBlend.value;
 
                     if (staticEval + pruneMargin <= alpha) {
                         sse.currentMove = null;

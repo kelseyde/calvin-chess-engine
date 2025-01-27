@@ -25,103 +25,100 @@ public class EngineConfig {
     public boolean pondering = false;
     public boolean searchCancelled = false;
 
-    public final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
-    public final Tunable aspMargin              = new Tunable("AspMargin", 12, 0, 250, 25);
-    public final Tunable aspFailMargin          = new Tunable("AspFailMargin", 105, 0, 300, 25);
-    public final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
-    public final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
-    public final Tunable nmpMargin              = new Tunable("NmpMargin", 18, 0, 250, 25);
-    public final Tunable nmpImpMargin           = new Tunable("NmpImpMargin", 52, 0, 250, 25);
-    public final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
-    public final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
-    public final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 210, 0, 400, 25);
-    public final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
-    public final Tunable fpDepth                = new Tunable("FpDepth", 8, 0, 8, 1);
-    public final Tunable fpMargin               = new Tunable("FpMargin", 200, 0, 500, 25);
-    public final Tunable fpScale                = new Tunable("FpScale", 83, 0, 100, 5);
-    public final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 137, 1, 1000, 25);
-    public final Tunable fpBlend                = new Tunable("FpBlend", 4, 1, 10, 2);
-    public final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
-    public final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
-    public final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
-    public final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 15, -100, 200, 50);
-    public final Tunable seeNoisyDivisor        = new Tunable("SeeNoisyDivisor", 4, 2, 6, 1);
-    public final Tunable seeQsNoisyOffset       = new Tunable("SeeQsNoisyOffset", 15, -100, 200, 50);
-    public final Tunable seeQsNoisyDivisor      = new Tunable("SeeQsNoisyDivisor", 4, 2, 6, 1);
-    public final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 125, 50, 250, 25);
-    public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
-    public final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 0, -300, 300, 100);
-    public final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
-    public final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);
-    public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
-    public final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
-    public final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
-    public final Tunable lmrBase                = new Tunable("LmrBase", 90, 50, 100, 5);
-    public final Tunable lmrDivisor             = new Tunable("LmrDivisor", 310, 200, 400, 10);
-    public final Tunable lmrCapBase             = new Tunable("LmrCapBase", 90, 50, 100, 5);
-    public final Tunable lmrCapDivisor          = new Tunable("LmrCapDivisor", 310, 200, 400, 10);
-    public final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
-    public final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
-    public final Tunable lmrPvNode              = new Tunable("LmrPvNode", 1024, 0, 2048, 150);
-    public final Tunable lmrCutNode             = new Tunable("LmrPvNode", 0, 0, 2048, 150);
-    public final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 0, 0, 2048, 150);
-    public final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
-    public final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
-    public final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);
-    public final Tunable dpMargin               = new Tunable("DpMargin", 111, 0, 250, 10);
-    public final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
-    public final Tunable razorMargin            = new Tunable("RazorMargin", 496, 0, 600, 10);
-    public final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
-    public final Tunable hpMargin               = new Tunable("HpMargin", -2197, -4000, -100, 50);
-    public final Tunable hpOffset               = new Tunable("HpOffset", -1039, -3000, 0, 50);
-    public final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
-    public final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
-    public final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
-    public final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
-    public final Tunable quietHistMalusScale    = new Tunable("QuietHistMalusScale", 200, 50, 400, 25);
-    public final Tunable quietHistMaxScore      = new Tunable("QuietHistMaxScore", 8192, 1000, 12000, 100);
-    public final Tunable captHistBonusMax       = new Tunable("CaptHistBonusMax", 1200, 100, 2000, 100);
-    public final Tunable captHistBonusScale     = new Tunable("CaptHistBonusScale", 200, 50, 400, 25);
-    public final Tunable captHistMalusMax       = new Tunable("CaptHistMalusMax", 1200, 100, 2000, 100);
-    public final Tunable captHistMalusScale     = new Tunable("CaptHistMalusScale", 200, 50, 400, 25);
-    public final Tunable captHistMaxScore       = new Tunable("CaptHistMaxScore", 8192, 1000, 12000, 100);
-    public final Tunable contHistBonusMax       = new Tunable("ContHistBonusMax", 1200, 100, 2000, 100);
-    public final Tunable contHistBonusScale     = new Tunable("ContHistBonusScale", 200, 50, 400, 25);
-    public final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
-    public final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
-    public final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
-    public final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
-    public final Tunable incrementFactor        = new Tunable("IncrementFactor", 75, 50, 100, 5);
-    public final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
-    public final Tunable hardTimeFactor         = new Tunable("HardTimeFactor", 200, 150, 250, 10);
-    public final Tunable softTimeScaleMin       = new Tunable("SoftTimeScaleMin", 12, 10, 25, 2);
-    public final Tunable softTimeScaleMax       = new Tunable("SoftTimeScaleMax", 250, 100, 250, 50);
-    public final Tunable uciOverhead            = new Tunable("UciOverhead", 50, 0, 1000, 50);
-    public final Tunable nodeTmMinDepth         = new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
-    public final Tunable nodeTmBase             = new Tunable("NodeTmBase", 150, 100, 200, 10);
-    public final Tunable nodeTmScale            = new Tunable("NodeTmScale", 135, 100, 200, 10);
-    public final Tunable bmStabilityMinDepth    = new Tunable("BmStabilityMinDepth", 0, 0, 10, 1);
-    public final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
+    private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
+    private final Tunable aspMargin              = new Tunable("AspMargin", 12, 0, 250, 25);
+    private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
+    private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
+    private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
+    private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
+    private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 210, 0, 400, 25);
+    private final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
+    private final Tunable fpDepth                = new Tunable("FpDepth", 8, 0, 8, 1);
+    private final Tunable fpMargin               = new Tunable("FpMargin", 200, 0, 500, 25);
+    private final Tunable fpScale                = new Tunable("FpScale", 83, 0, 100, 5);
+    private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 137, 1, 1000, 25);
+    private final Tunable fpBlend                = new Tunable("FpBlend", 4, 1, 10, 2);
+    private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
+    private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
+    private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
+    private final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 15, -100, 200, 50);
+    private final Tunable seeNoisyDivisor        = new Tunable("SeeNoisyDivisor", 4, 2, 6, 1);
+    private final Tunable seeQsNoisyOffset       = new Tunable("SeeQsNoisyOffset", 15, -100, 200, 50);
+    private final Tunable seeQsNoisyDivisor      = new Tunable("SeeQsNoisyDivisor", 4, 2, 6, 1);
+    private final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 125, 50, 250, 25);
+    private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
+    private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 0, -300, 300, 100);
+    private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
+    private final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);
+    private final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
+    private final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
+    private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
+    private final Tunable lmrBase                = new Tunable("LmrBase", 90, 50, 100, 5);
+    private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 310, 200, 400, 10);
+    private final Tunable lmrCapBase             = new Tunable("LmrCapBase", 90, 50, 100, 5);
+    private final Tunable lmrCapDivisor          = new Tunable("LmrCapDivisor", 310, 200, 400, 10);
+    private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
+    private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
+    private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 1024, 0, 2048, 150);
+    private final Tunable lmrCutNode             = new Tunable("LmrPvNode", 0, 0, 2048, 150);
+    private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 0, 0, 2048, 150);
+    private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
+    private final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
+    private final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);
+    private final Tunable dpMargin               = new Tunable("DpMargin", 111, 0, 250, 10);
+    private final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
+    private final Tunable razorMargin            = new Tunable("RazorMargin", 496, 0, 600, 10);
+    private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
+    private final Tunable hpMargin               = new Tunable("HpMargin", -2197, -4000, -100, 50);
+    private final Tunable hpOffset               = new Tunable("HpOffset", -1039, -3000, 0, 50);
+    private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
+    private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
+    private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
+    private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
+    private final Tunable quietHistMalusScale    = new Tunable("QuietHistMalusScale", 200, 50, 400, 25);
+    private final Tunable quietHistMaxScore      = new Tunable("QuietHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable captHistBonusMax       = new Tunable("CaptHistBonusMax", 1200, 100, 2000, 100);
+    private final Tunable captHistBonusScale     = new Tunable("CaptHistBonusScale", 200, 50, 400, 25);
+    private final Tunable captHistMalusMax       = new Tunable("CaptHistMalusMax", 1200, 100, 2000, 100);
+    private final Tunable captHistMalusScale     = new Tunable("CaptHistMalusScale", 200, 50, 400, 25);
+    private final Tunable captHistMaxScore       = new Tunable("CaptHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable contHistBonusMax       = new Tunable("ContHistBonusMax", 1200, 100, 2000, 100);
+    private final Tunable contHistBonusScale     = new Tunable("ContHistBonusScale", 200, 50, 400, 25);
+    private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
+    private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
+    private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
+    private final Tunable incrementFactor        = new Tunable("IncrementFactor", 75, 50, 100, 5);
+    private final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
+    private final Tunable hardTimeFactor         = new Tunable("HardTimeFactor", 200, 150, 250, 10);
+    private final Tunable softTimeScaleMin       = new Tunable("SoftTimeScaleMin", 12, 10, 25, 2);
+    private final Tunable softTimeScaleMax       = new Tunable("SoftTimeScaleMax", 250, 100, 250, 50);
+    private final Tunable uciOverhead            = new Tunable("UciOverhead", 50, 0, 1000, 50);
+    private final Tunable nodeTmMinDepth         = new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
+    private final Tunable nodeTmBase             = new Tunable("NodeTmBase", 150, 100, 200, 10);
+    private final Tunable nodeTmScale            = new Tunable("NodeTmScale", 135, 100, 200, 10);
+    private final Tunable bmStabilityMinDepth    = new Tunable("BmStabilityMinDepth", 0, 0, 10, 1);
+    private final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
 
-    public int[][][] lmrReductions;
-    public final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
-    public final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
-    public final int[] contHistPlies = { 1, 2 };
+    private int[][][] lmrReductions;
+    private final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
+    private final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
+    private final int[] contHistPlies = { 1, 2 };
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMinDepth, aspMargin, aspFailMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction,
-                fpDepth, fpBlend, fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor,
-                lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpMargin, nmpImpMargin, nmpBase,
-                nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin,
-                rfpBlend, razorDepth, razorMargin, hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving,
-                quietHistBonusMax, quietHistBonusScale, quietHistMalusMax, quietHistMalusScale,
-                quietHistMaxScore, captHistBonusMax, captHistBonusScale, captHistMalusMax, captHistMalusScale,
-                captHistMaxScore, contHistBonusMax, contHistBonusScale, contHistMalusMax, contHistMalusScale,
-                contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin,
-                seeNoisyMargin, seeNoisyOffset, seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor,
-                hardTimeFactor, softTimeScaleMin, softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth,
-                seeNoisyDivisor, seeQsNoisyDivisor, seeQsNoisyOffset
+                aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth, fpBlend,
+                fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
+                lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
+                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, rfpBlend, razorDepth, razorMargin,
+                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, quietHistBonusMax,
+                quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
+                captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
+                contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
+                nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
+                seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
+                softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
+                seeQsNoisyDivisor, seeQsNoisyOffset
         );
     }
 
@@ -197,6 +194,318 @@ public class EngineConfig {
             return String.format("option name %s type spin default %d min %d max %d", name, value, min, max);
         }
 
+    }
+
+    public int aspMinDepth() {
+        return aspMinDepth.value;
+    }
+
+    public int aspMargin() {
+        return aspMargin.value;
+    }
+
+    public int aspMaxReduction() {
+        return aspMaxReduction.value;
+    }
+
+    public int nmpDepth() {
+        return nmpDepth.value;
+    }
+
+    public int nmpBase() {
+        return nmpBase.value;
+    }
+
+    public int nmpDivisor() {
+        return nmpDivisor.value;
+    }
+
+    public int nmpEvalScale() {
+        return nmpEvalScale.value;
+    }
+
+    public int nmpEvalMaxReduction() {
+        return nmpEvalMaxReduction.value;
+    }
+
+    public int fpDepth() {
+        return fpDepth.value;
+    }
+
+    public int fpMargin() {
+        return fpMargin.value;
+    }
+
+    public int fpScale() {
+        return fpScale.value;
+    }
+
+    public int fpHistDivisor() {
+        return fpHistDivisor.value;
+    }
+
+    public int fpBlend() {
+        return fpBlend.value;
+    }
+
+    public int seeMaxDepth() {
+        return seeMaxDepth.value;
+    }
+
+    public int seeQuietMargin() {
+        return seeQuietMargin.value;
+    }
+
+    public int seeNoisyMargin() {
+        return seeNoisyMargin.value;
+    }
+
+    public int seeNoisyOffset() {
+        return seeNoisyOffset.value;
+    }
+
+    public int seeNoisyDivisor() {
+        return seeNoisyDivisor.value;
+    }
+
+    public int seeQsNoisyOffset() {
+        return seeQsNoisyOffset.value;
+    }
+
+    public int seeQsNoisyDivisor() {
+        return seeQsNoisyDivisor.value;
+    }
+
+    public int seeHistoryDivisor() {
+        return seeHistoryDivisor.value;
+    }
+
+    public int qsFpMargin() {
+        return qsFpMargin.value;
+    }
+
+    public int qsSeeThreshold() {
+        return qsSeeThreshold.value;
+    }
+
+    public int rfpDepth() {
+        return rfpDepth.value;
+    }
+
+    public int rfpMargin() {
+        return rfpMargin.value;
+    }
+
+    public int rfpImpMargin() {
+        return rfpImpMargin.value;
+    }
+
+    public int rfpBlend() {
+        return rfpBlend.value;
+    }
+
+    public int lmrDepth() {
+        return lmrDepth.value;
+    }
+
+    public int lmrBase() {
+        return lmrBase.value;
+    }
+
+    public int lmrDivisor() {
+        return lmrDivisor.value;
+    }
+
+    public int lmrCapBase() {
+        return lmrCapBase.value;
+    }
+
+    public int lmrCapDivisor() {
+        return lmrCapDivisor.value;
+    }
+
+    public int lmrMinMoves() {
+        return lmrMinMoves.value;
+    }
+
+    public int lmrMinPvMoves() {
+        return lmrMinPvMoves.value;
+    }
+
+    public int lmrPvNode() {
+        return lmrPvNode.value;
+    }
+
+    public int lmrCutNode() {
+        return lmrCutNode.value;
+    }
+
+    public int lmrNotImproving() {
+        return lmrNotImproving.value;
+    }
+
+    public int lmpDepth() {
+        return lmpDepth.value;
+    }
+
+    public int lmpMultiplier() {
+        return lmpMultiplier.value;
+    }
+
+    public int iirDepth() {
+        return iirDepth.value;
+    }
+
+    public int dpMargin() {
+        return dpMargin.value;
+    }
+
+    public int razorDepth() {
+        return razorDepth.value;
+    }
+
+    public int razorMargin() {
+        return razorMargin.value;
+    }
+
+    public int hpMaxDepth() {
+        return hpMaxDepth.value;
+    }
+
+    public int hpMargin() {
+        return hpMargin.value;
+    }
+
+    public int hpOffset() {
+        return hpOffset.value;
+    }
+
+    public int ttExtensionDepth() {
+        return ttExtensionDepth.value;
+    }
+
+    public int quietHistBonusMax() {
+        return quietHistBonusMax.value;
+    }
+
+    public int quietHistBonusScale() {
+        return quietHistBonusScale.value;
+    }
+
+    public int quietHistMalusMax() {
+        return quietHistMalusMax.value;
+    }
+
+    public int quietHistMalusScale() {
+        return quietHistMalusScale.value;
+    }
+
+    public int quietHistMaxScore() {
+        return quietHistMaxScore.value;
+    }
+
+    public int captHistBonusMax() {
+        return captHistBonusMax.value;
+    }
+
+    public int captHistBonusScale() {
+        return captHistBonusScale.value;
+    }
+
+    public int captHistMalusMax() {
+        return captHistMalusMax.value;
+    }
+
+    public int captHistMalusScale() {
+        return captHistMalusScale.value;
+    }
+
+    public int captHistMaxScore() {
+        return captHistMaxScore.value;
+    }
+
+    public int contHistBonusMax() {
+        return contHistBonusMax.value;
+    }
+
+    public int contHistBonusScale() {
+        return contHistBonusScale.value;
+    }
+
+    public int contHistMalusMax() {
+        return contHistMalusMax.value;
+    }
+
+    public int contHistMalusScale() {
+        return contHistMalusScale.value;
+    }
+
+    public int contHistMaxScore() {
+        return contHistMaxScore.value;
+    }
+
+    public int timeFactor() {
+        return timeFactor.value;
+    }
+
+    public int incrementFactor() {
+        return incrementFactor.value;
+    }
+
+    public int softTimeFactor() {
+        return softTimeFactor.value;
+    }
+
+    public int hardTimeFactor() {
+        return hardTimeFactor.value;
+    }
+
+    public int softTimeScaleMin() {
+        return softTimeScaleMin.value;
+    }
+
+    public int softTimeScaleMax() {
+        return softTimeScaleMax.value;
+    }
+
+    public int uciOverhead() {
+        return uciOverhead.value;
+    }
+
+    public int nodeTmMinDepth() {
+        return nodeTmMinDepth.value;
+    }
+
+    public int nodeTmBase() {
+        return nodeTmBase.value;
+    }
+
+    public int nodeTmScale() {
+        return nodeTmScale.value;
+    }
+
+    public int bmStabilityMinDepth() {
+        return bmStabilityMinDepth.value;
+    }
+
+    public int scoreStabilityMinDepth() {
+        return scoreStabilityMinDepth.value;
+    }
+
+    public int[][][] lmrReductions() {
+        return lmrReductions;
+    }
+
+    public int[] bmStabilityFactor() {
+        return bmStabilityFactor;
+    }
+
+    public int[] scoreStabilityFactor() {
+        return scoreStabilityFactor;
+    }
+
+    public int[] contHistPlies() {
+        return contHistPlies;
     }
 
 }

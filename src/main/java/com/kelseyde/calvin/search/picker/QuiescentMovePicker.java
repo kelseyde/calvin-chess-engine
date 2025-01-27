@@ -15,8 +15,8 @@ public class QuiescentMovePicker extends MovePicker {
     public QuiescentMovePicker(
             EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
         super(config, movegen, ss, history, board, ply, ttMove, inCheck);
-        this.scorer.setSeeNoisyDivisor(config.seeQsNoisyDivisor.value);
-        this.scorer.setSeeNoisyOffset(config.seeQsNoisyOffset.value);
+        this.scorer.setSeeNoisyDivisor(config.seeQsNoisyDivisor());
+        this.scorer.setSeeNoisyOffset(config.seeQsNoisyOffset());
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.QSEARCH_GEN_NOISY;
         this.skipQuiets = true;
     }

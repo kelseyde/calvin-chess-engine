@@ -303,21 +303,11 @@ public class Searcher implements Search {
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth.value && !Score.isMateScore(alpha)) {
 
-                int baseMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value);
-                int blend = depth * config.rfpBlend.value;
+                final int futilityMargin = depth * (improving ? config.rfpImpMargin.value : config.rfpMargin.value)
+                        + depth * config.rfpBlend.value;
 
-                int pruneMargin = baseMargin + blend;
-                int reduceMargin = baseMargin - blend;
-
-                // If the evaluation is significantly higher than beta, prune the node entirely
-                if (staticEval - pruneMargin >= beta) {
+                if (staticEval - futilityMargin >= beta) {
                     return beta + (staticEval - beta) / 3;
-                }
-                // Else, apply reduction to quiet moves, using a dynamic scaling based on how far the eval is from beta
-                else if (staticEval - reduceMargin >= beta) {
-                    // Calculate distance from beta in units of 'blend' to scale reduction dynamically
-                    int delta = (staticEval - beta) - reduceMargin;
-                    futilityReduction = 1 + Math.min(2, delta / blend);
                 }
             }
 

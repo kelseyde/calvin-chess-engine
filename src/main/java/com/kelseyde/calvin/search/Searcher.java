@@ -287,8 +287,6 @@ public class Searcher implements Search {
         SearchStackEntry sse = ss.get(ply);
         sse.staticEval = staticEval;
 
-        int futilityReduction = 0;
-
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
@@ -302,10 +300,8 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth() && !Score.isMateScore(alpha)) {
-
                 final int futilityMargin = depth * (improving ? config.rfpImpMargin() : config.rfpMargin())
                         + depth * config.rfpBlend();
-
                 if (staticEval - futilityMargin >= beta) {
                     return beta + (staticEval - beta) / 3;
                 }
@@ -316,7 +312,6 @@ public class Searcher implements Search {
             // a quick quiescence search to see if the position is really that bad. If it is, we can prune the node.
             if (depth <= config.razorDepth()
                 && staticEval + config.razorMargin() * depth < alpha) {
-
                 final int score = quiescenceSearch(alpha, alpha + 1, ply);
                 if (score < alpha) {
                     return score;
@@ -410,26 +405,13 @@ public class Searcher implements Search {
                 // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
                 // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
                 // captures, promotions), then let's assume it will fail low and prune this node.
-                if (!inCheck
-                        && depth - reduction <= config.fpDepth()
-                        && scoredMove.isQuiet()) {
-
-                    // Two margins - a strict margin where we fully prune the move, and a softer margin where we reduce depth.
-                    int pruneMargin = config.fpMargin()
+                if (!inCheck && depth - reduction <= config.fpDepth() && scoredMove.isQuiet()) {
+                    final int futilityMargin = config.fpMargin()
                             + (depth - reduction) * config.fpScale()
                             + (historyScore / config.fpHistDivisor());
-                    int reduceMargin = pruneMargin - depth * config.fpBlend();
-
-                    if (staticEval + pruneMargin <= alpha) {
-                        sse.currentMove = null;
+                    if (staticEval + futilityMargin <= alpha) {
                         movePicker.setSkipQuiets(true);
                         continue;
-                    }
-                    else if (staticEval + reduceMargin <= alpha) {
-                        // Calculate distance from alpha to scale reduction dynamically
-                        int delta = (alpha - staticEval) - pruneMargin;
-                        int maxReduction = config.fpDepth();
-                        futilityReduction = 1 + Math.min(delta / (reduceMargin - pruneMargin), maxReduction - 1);
                     }
                 }
 
@@ -439,7 +421,6 @@ public class Searcher implements Search {
                 if (scoredMove.isQuiet()
                         && depth - reduction <= config.hpMaxDepth()
                         && historyScore < config.hpMargin() * depth + config.hpOffset()) {
-                    sse.currentMove = null;
                     movePicker.setSkipQuiets(true);
                     continue;
                 }
@@ -452,7 +433,6 @@ public class Searcher implements Search {
                         && scoredMove.isQuiet()
                         && depth <= config.lmpDepth()
                         && movesSearched >= lmpCutoff) {
-                    sse.currentMove = null;
                     movePicker.setSkipQuiets(true);
                     continue;
                 }
@@ -483,10 +463,6 @@ public class Searcher implements Search {
 
             final int nodesBefore = td.nodes;
             td.nodes++;
-
-            if (scoredMove.isQuiet() || scoredMove.isBadNoisy()) {
-                reduction += futilityReduction;
-            }
 
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
             sse.currentMove = playedMove;

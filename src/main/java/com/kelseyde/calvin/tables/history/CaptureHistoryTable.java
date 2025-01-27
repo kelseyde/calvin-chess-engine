@@ -10,11 +10,11 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
     short[][][][] table = new short[2][Piece.COUNT][Square.COUNT][Piece.COUNT];
 
     public CaptureHistoryTable(EngineConfig config) {
-        super((short) config.captHistBonusMax.value,
-                (short) config.captHistBonusScale.value,
-                (short) config.captHistMalusMax.value,
-                (short) config.captHistMalusScale.value,
-                (short) config.captHistMaxScore.value);
+        super((short) config.captHistBonusMax(),
+                (short) config.captHistBonusScale(),
+                (short) config.captHistMalusMax(),
+                (short) config.captHistMalusScale(),
+                (short) config.captHistMaxScore());
     }
 
     public void update(Piece piece, int to, Piece captured, int depth, boolean white, boolean good) {

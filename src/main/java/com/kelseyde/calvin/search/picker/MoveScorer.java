@@ -104,7 +104,7 @@ public class MoveScorer {
 
         // Continuation history is based on the history score indexed by the current move and the move played x plies ago.
         int contHistScore = 0;
-        for (int contHistPly : config.contHistPlies) {
+        for (int contHistPly : config.contHistPlies()) {
             SearchStackEntry entry = ss.get(ply - contHistPly);
             if (entry != null && entry.currentMove != null) {
                 SearchHistory.PlayedMove prevMove = entry.currentMove;

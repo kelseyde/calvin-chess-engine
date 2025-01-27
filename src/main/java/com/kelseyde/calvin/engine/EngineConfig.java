@@ -52,8 +52,8 @@ public class EngineConfig {
     public final Tunable qsFpMargin             = new Tunable("QsFpMargin", 99, 0, 250, 10);
     public final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 0, -300, 300, 100);
     public final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
-    public final Tunable rfpMargin              = new Tunable("RfpMargin", 86, 0, 250, 25);
-    public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 43, 0, 250, 25);
+    public final Tunable rfpMargin              = new Tunable("RfpMargin", 58, 0, 250, 25);
+    public final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 87, 0, 250, 25);
     public final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
     public final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     public final Tunable lmrBase                = new Tunable("LmrBase", 90, 50, 100, 5);

@@ -402,19 +402,6 @@ public class Searcher implements Search {
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
             if (!pvNode && !rootNode) {
 
-                // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
-                // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
-                // captures, promotions), then let's assume it will fail low and prune this node.
-                if (!inCheck && depth - reduction <= config.fpDepth() && scoredMove.isQuiet()) {
-                    final int futilityMargin = config.fpMargin()
-                            + (depth - reduction) * config.fpScale()
-                            + (historyScore / config.fpHistDivisor());
-                    if (staticEval + futilityMargin <= alpha) {
-                        movePicker.setSkipQuiets(true);
-                        continue;
-                    }
-                }
-
                 // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning
                 // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
                 // that assumes that moves which have historically been bad are likely to be bad in the current position.
@@ -463,6 +450,24 @@ public class Searcher implements Search {
 
             final int nodesBefore = td.nodes;
             td.nodes++;
+
+            final boolean givesCheck = movegen.isCheck(board);
+
+            // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
+            // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
+            // captures, promotions), then let's assume it will fail low and prune this node.
+            if (!inCheck && !givesCheck && depth - reduction <= config.fpDepth() && scoredMove.isQuiet()) {
+                final int futilityMargin = config.fpMargin()
+                        + (depth - reduction) * config.fpScale()
+                        + (historyScore / config.fpHistDivisor());
+                if (staticEval + futilityMargin <= alpha) {
+                    eval.unmakeMove();
+                    board.unmakeMove();
+                    movePicker.setSkipQuiets(true);
+                    continue;
+                }
+            }
+
 
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
             sse.currentMove = playedMove;

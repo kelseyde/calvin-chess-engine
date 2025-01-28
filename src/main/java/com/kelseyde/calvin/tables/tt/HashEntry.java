@@ -47,6 +47,10 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
             return (zobristKey & ZOBRIST_PART_MASK) | ((long) age << 32) | ((long) (staticEval & 0xFFFF) << 48);
         }
 
+        public static boolean matches(long key1, long key2) {
+            return getZobristPart(key1) == getZobristPart(key2);
+        }
+
     }
 
     public static class Value {

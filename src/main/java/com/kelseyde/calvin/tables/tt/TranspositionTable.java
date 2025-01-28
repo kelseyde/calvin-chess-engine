@@ -2,6 +2,8 @@ package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.Score;
+import com.kelseyde.calvin.tables.tt.HashEntry.Key;
+import com.kelseyde.calvin.tables.tt.HashEntry.Value;
 
 import java.util.stream.IntStream;
 
@@ -18,7 +20,6 @@ import java.util.stream.IntStream;
  */
 public class TranspositionTable {
 
-    private static final int BUCKET_SIZE = 4;
     private static final int ENTRY_SIZE_BYTES = 16;
 
     private long[] keys;
@@ -46,21 +47,20 @@ public class TranspositionTable {
     public HashEntry get(long key, int ply) {
         int index = index(key);
         tries++;
-        for (int i = 0; i < BUCKET_SIZE; i++) {
-            long storedKey = keys[index + i];
-            if (storedKey != 0 && HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
-                hits++;
-                storedKey = HashEntry.Key.setAge(storedKey, age);
-                keys[index + i] = storedKey;
-                long storedValue = values[index + i];
-                int score = HashEntry.Value.getScore(storedValue);
-                if (Score.isMateScore(score)) {
-                    score = retrieveMateScore(score, ply);
-                    storedValue = HashEntry.Value.setScore(storedValue, score);
-                }
-                return HashEntry.of(storedKey, storedValue);
+        long storedKey = keys[index];
+        if (storedKey != 0 && Key.matches(storedKey, key)) {
+            hits++;
+            storedKey = Key.setAge(storedKey, age);
+            keys[index] = storedKey;
+            long storedValue = values[index];
+            int score = Value.getScore(storedValue);
+            if (Score.isMateScore(score)) {
+                score = retrieveMateScore(score, ply);
+                storedValue = Value.setScore(storedValue, score);
             }
+            return HashEntry.of(storedKey, storedValue);
         }
+
         return null;
     }
 
@@ -80,75 +80,37 @@ public class TranspositionTable {
     public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score) {
 
         // Get the start index of the 4-item bucket.
-        final int startIndex = index(key);
+        final int index = index(key);
 
         // If the eval is checkmate, adjust the score to reflect the number of ply from the root position
         if (Score.isMateScore(score)) score = calculateMateScore(score, ply);
 
-        int replacedIndex = -1;
-        int minDepth = Integer.MAX_VALUE;
-        boolean replacedByAge = false;
+        long storedKey = keys[index];
 
-        // Iterate over the four items in the bucket
-        for (int i = startIndex; i < startIndex + 4; i++) {
-            long storedKey = keys[i];
-
-            // First, always prefer an empty slot if it is available.
-            if (storedKey == 0) {
-                replacedIndex = i;
-                break;
-            }
-
-            // Second, always prefer an exact score
-            if (flag == HashFlag.EXACT) {
-                replacedIndex = i;
-                break;
-            }
-
-            long storedValue = values[i];
-
-            int storedFlag = HashEntry.Value.getFlag(storedValue);
-            if (storedFlag == HashFlag.NONE) {
-                replacedIndex = i;
-                break;
-            }
-
-            int storedDepth = HashEntry.Value.getDepth(values[i]);
-            // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
-            // If the depth is < the store depth, don't replace it and exit (although this should never happen).
-            if (HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
-                if (depth >= storedDepth - 4) {
-                    // If the stored entry has a recorded best move but the new entry does not, use the stored one.
-                    Move storedMove = HashEntry.Value.getMove(storedValue);
-                    if (move == null && storedMove != null) {
-                        move = storedMove;
-                    }
-                    replacedIndex = i;
-                    break;
-                } else {
-                    return;
-                }
-            }
-
-            // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (age > HashEntry.Key.getAge(storedKey)) {
-                replacedByAge = true;
-                replacedIndex = i;
-            }
-
-            // Finally, just replace the entry with the shallowest search depth.
-            if (!replacedByAge && storedDepth < minDepth) {
-                minDepth = storedDepth;
-                replacedIndex = i;
-            }
-
+        if (storedKey == 0) {
+            keys[index] = Key.of(key, staticEval, age);
+            values[index] = Value.of(score, move, flag, depth);
         }
 
-        // Store the new entry in the table at the chosen index.
-        if (replacedIndex != -1) {
-            keys[replacedIndex] = HashEntry.Key.of(key, staticEval, age);
-            values[replacedIndex] = HashEntry.Value.of(score, move, flag, depth);
+        boolean matches = Key.matches(storedKey, key);
+
+        if (!matches) {
+            keys[index] = Key.of(key, staticEval, age);
+            values[index] = Value.of(score, move, flag, depth);
         }
+
+        long storedValue = values[index];
+
+        Move storedMove = Value.getMove(storedValue);
+        if (move == null && storedMove != null) {
+            move = storedMove;
+        }
+
+        if (flag == HashFlag.EXACT || depth > Value.getDepth(values[index]) - 4) {
+            keys[index] = Key.of(key, staticEval, age);
+            values[index] = Value.of(score, move, flag, depth);
+        }
+
     }
 
     /**
@@ -197,7 +159,7 @@ public class TranspositionTable {
         long index = (key ^ (key >>> 32)) & 0x7FFFFFFF;
         // Modulo the result with the number of entries in the table, and align it with a multiple of 4,
         // ensuring the entries are always divided into 4-sized buckets.
-        return (int) (index % (size - (BUCKET_SIZE - 1))) & -BUCKET_SIZE;
+        return (int) index % size;
     }
 
     // On insertion, adjust the mate score to reflect the number of ply from the root position

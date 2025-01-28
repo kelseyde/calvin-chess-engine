@@ -28,4 +28,8 @@ public abstract class AbstractHistoryTable {
         return (short) (current + update - current * Math.abs(update) / scoreMax);
     }
 
+    private short clamp(int value, int min, int max) {
+        return (short) Math.min(Math.max(value, min), max);
+    }
+
 }

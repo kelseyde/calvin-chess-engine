@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -186,8 +187,11 @@ public class Searcher implements Search {
         // The root node is the first node in the search tree, and is thus also always a PV node.
         final boolean rootNode = ply == 0;
 
+        final long ourThreats = movegen.calculateThreats(board, board.isWhite());
+        final long theirThreats = movegen.calculateThreats(board, !board.isWhite());
+
         // Determine if we are currently in check.
-        final boolean inCheck = movegen.isCheck(board);
+        final boolean inCheck = Bits.contains(theirThreats, board.kingSquare(board.isWhite()));
 
         // If depth is reached, drop into quiescence search
         if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, ply);
@@ -274,7 +278,7 @@ public class Searcher implements Search {
 
             staticEval = ttMove != null ?
                     rawStaticEval :
-                    history.correctEvaluation(board, ss, ply, rawStaticEval);
+                    history.correctEvaluation(board, ourThreats, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
@@ -544,7 +548,7 @@ public class Searcher implements Search {
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
-            history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
+            history.updateCorrectionHistory(board, ss, ourThreats, ply, depth, bestScore, staticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.
@@ -593,7 +597,10 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
-        final boolean inCheck = movegen.isCheck(board);
+        final long ourThreats = movegen.calculateThreats(board, board.isWhite());
+        final long theirThreats = movegen.calculateThreats(board, !board.isWhite());
+
+        final boolean inCheck = Bits.contains(theirThreats, board.kingSquare(board.isWhite()));
 
         MoveFilter filter;
 
@@ -617,7 +624,7 @@ public class Searcher implements Search {
 
             staticEval = ttMove != null ?
                     rawStaticEval :
-                    history.correctEvaluation(board, ss, ply, rawStaticEval);
+                    history.correctEvaluation(board, ourThreats, ss, ply, rawStaticEval);
             if (ttHit &&
                     (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||

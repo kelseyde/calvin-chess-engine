@@ -27,7 +27,7 @@ public class SquareThreatCorrectionTable extends CorrectionHistoryTable {
             boolean threatened = Bits.contains(ourThreats, sq);
             total += get(white, sq, threatened);
         }
-        return total;
+        return total / 64;
     }
 
     public int get(boolean white, int square, boolean threatened) {

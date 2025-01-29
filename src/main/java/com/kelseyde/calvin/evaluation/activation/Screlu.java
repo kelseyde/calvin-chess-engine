@@ -28,10 +28,9 @@ public class Screlu {
     static final int QB = NETWORK.quantisations()[1];
     static final int QAB = QA * QB;
 
-    public static int forward(short[] us, short[] them) {
+    public static int forward(short[] us, short[] them, short[] weights, short bias) {
 
         final int scale = NETWORK.scale();
-        final short[] weights = NETWORK.outputWeights();
 
         int eval = 0;
 
@@ -76,7 +75,7 @@ public class Screlu {
         eval /= QA;
 
         // Add the output bias, scale the result to centipawn space, and divide by the quantisation factor.
-        eval += NETWORK.outputBias();
+        eval += bias;
         eval *= scale;
         eval /= QAB;
 

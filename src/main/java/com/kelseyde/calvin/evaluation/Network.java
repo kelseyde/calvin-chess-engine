@@ -20,12 +20,13 @@ public record Network(int inputSize,
                       Activation activation,
                       boolean horizontalMirror,
                       int[] inputBuckets,
+                      int outputBuckets,
                       int[] quantisations,
                       int scale,
                       short[][] inputWeights,
                       short[] inputBiases,
-                      short[] outputWeights,
-                      short outputBias) {
+                      short[][] outputWeights,
+                      short[] outputBias) {
 
     public static Builder builder() {
         return new Builder();
@@ -43,6 +44,7 @@ public record Network(int inputSize,
         private Activation activation;
         private boolean horizontalMirror;
         private int[] inputBuckets;
+        private int outputBuckets;
         private int[] quantisations;
         private int scale;
 
@@ -75,6 +77,11 @@ public record Network(int inputSize,
             this.inputBuckets = inputBuckets;
             return this;
         }
+        
+        public Builder outputBuckets(int outputBuckets) {
+            this.outputBuckets = outputBuckets;
+            return this;
+        }
 
         public Builder quantisations(int[] quantisations) {
             this.quantisations = quantisations;
@@ -86,7 +93,7 @@ public record Network(int inputSize,
             return this;
         }
 
-        public int bucketCount() {
+        public int inputBucketCount() {
             return inputBuckets != null ? (int) Arrays.stream(inputBuckets).distinct().count() : 1;
         }
 
@@ -109,13 +116,14 @@ public record Network(int inputSize,
                 int inputBiasesOffset = hiddenSize;
                 int outputWeightsOffset = hiddenSize * 2;
 
-                int buckets = bucketCount();
+                int inputBucketCount = inputBucketCount();
 
-                short[][] inputWeights = new short[buckets][];
+                short[][] inputWeights = new short[inputBucketCount][];
                 short[] inputBiases = new short[inputBiasesOffset];
-                short[] outputWeights = new short[outputWeightsOffset];
+                short[][] outputWeights = new short[outputBuckets][];
+                short[] outputBiases = new short[outputBuckets];
 
-                for (int bucket = 0; bucket < buckets; bucket++) {
+                for (int bucket = 0; bucket < inputBucketCount; bucket++) {
                     inputWeights[bucket] = new short[inputWeightsOffset];
                     for (int i = 0; i < inputWeightsOffset; i++) {
                         inputWeights[bucket][i] = buffer.getShort();
@@ -126,11 +134,16 @@ public record Network(int inputSize,
                     inputBiases[i] = buffer.getShort();
                 }
 
-                for (int i = 0; i < outputWeightsOffset; i++) {
-                    outputWeights[i] = buffer.getShort();
+                for (int bucket = 0; bucket < outputBuckets; bucket++) {
+                    outputWeights[bucket] = new short[outputWeightsOffset];
+                    for (int i = 0; i < outputWeightsOffset; i++) {
+                        outputWeights[bucket][i] = buffer.getShort();
+                    }
                 }
 
-                short outputBias = buffer.getShort();
+                for (int bucket = 0; bucket < outputBuckets; bucket++) {
+                    outputBiases[bucket] = buffer.getShort();
+                }
 
                 while (buffer.hasRemaining()) {
                     if (buffer.getShort() != 0) {
@@ -139,8 +152,8 @@ public record Network(int inputSize,
                 }
 
                 return new Network(
-                        inputSize, hiddenSize, activation, horizontalMirror, inputBuckets, quantisations, scale,
-                        inputWeights, inputBiases, outputWeights, outputBias
+                        inputSize, hiddenSize, activation, horizontalMirror, inputBuckets, outputBuckets, quantisations, scale,
+                        inputWeights, inputBiases, outputWeights, outputBiases
                 );
             } catch (IOException e) {
                 throw new RuntimeException("Failed to load NNUE network", e);
@@ -155,12 +168,12 @@ public record Network(int inputSize,
             int inputWeightsOffset = inputSize * hiddenSize;
             int inputBiasesOffset = hiddenSize;
             int outputWeightsOffset = hiddenSize * 2;
-            int buckets = inputBucketCount();
+            int inputBucketCount = inputBucketCount();
 
-            ByteBuffer buffer = ByteBuffer.allocate(((inputWeightsOffset * buckets) + inputBiasesOffset + outputWeightsOffset + 1) * 2)
+            ByteBuffer buffer = ByteBuffer.allocate(((inputWeightsOffset * inputBucketCount) + inputBiasesOffset + outputWeightsOffset + 1) * 2)
                     .order(ByteOrder.LITTLE_ENDIAN);
 
-            for (int bucket = 0; bucket < buckets; bucket++) {
+            for (int bucket = 0; bucket < inputBucketCount; bucket++) {
                 for (int i = 0; i < inputWeightsOffset; i++) {
                     buffer.putShort(inputWeights[bucket][i]);
                 }
@@ -170,11 +183,15 @@ public record Network(int inputSize,
                 buffer.putShort(inputBiases[i]);
             }
 
-            for (int i = 0; i < outputWeightsOffset; i++) {
-                buffer.putShort(outputWeights[i]);
+            for (int bucket = 0; bucket < outputBuckets; bucket++) {
+                for (int i = 0; i < outputWeightsOffset; i++) {
+                    buffer.putShort(outputWeights[bucket][i]);
+                }
             }
 
-            buffer.putShort(outputBias);
+            for (int i = 0; i < outputBuckets; i++) {
+                buffer.putShort(outputBias[i]);
+            }
 
             outputStream.write(buffer.array());
 

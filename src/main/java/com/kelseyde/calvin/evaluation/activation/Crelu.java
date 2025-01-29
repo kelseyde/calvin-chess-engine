@@ -22,15 +22,14 @@ public class Crelu {
     static final ShortVector FLOOR = ShortVector.broadcast(SPECIES, 0);
     static final ShortVector CEIL = ShortVector.broadcast(SPECIES, NETWORK.quantisations()[0]);
 
-    public static int forward(short[] us, short[] them) {
+    public static int forward(short[] us, short[] them, short[] weights, short bias) {
 
         final int qa = NETWORK.quantisations()[0];
         final int qb = NETWORK.quantisations()[1];
         final int qab = qa * qb;
         final int scale = NETWORK.scale();
-        final short[] weights = NETWORK.outputWeights();
 
-        int eval = NETWORK.outputBias();
+        int eval = bias;
 
         // Forward-pass through the network, using the clipped ReLU activation function.
         // Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.

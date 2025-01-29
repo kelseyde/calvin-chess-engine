@@ -15,12 +15,12 @@ public enum Activation {
         this.function = function;
     }
 
-    public int forward(short[] us, short[] them) {
-        return function.forward(us, them);
+    public int forward(short[] us, short[] them, short[] weights, short bias) {
+        return function.forward(us, them, weights, bias);
     }
 
     public interface ActivationFunction {
-        int forward(short[] us, short[] them);
+        int forward(short[] us, short[] them, short[] weights, short bias);
     }
 
 }

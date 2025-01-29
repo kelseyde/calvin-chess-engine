@@ -42,6 +42,7 @@ public class NNUE {
                     3, 3, 3, 3, 3, 3, 3, 3,
                     3, 3, 3, 3, 3, 3, 3, 3,
             })
+            .outputBuckets(1)
             .quantisations(new int[]{255, 64})
             .scale(400)
             .build();
@@ -76,8 +77,12 @@ public class NNUE {
         final short[] us = white ? acc.whiteFeatures : acc.blackFeatures;
         final short[] them = white ? acc.blackFeatures : acc.whiteFeatures;
 
+        final int outputBucket = (board.countPieces() - 2) / (32 / NETWORK.outputBuckets());
+        final short[] outputWeights = NETWORK.outputWeights()[outputBucket];
+        final short outputBias = NETWORK.outputBias()[outputBucket];
+
         // Pass the features through the network to get the evaluation.
-        int eval = NETWORK.activation().forward(us, them);
+        int eval = NETWORK.activation().forward(us, them, outputWeights, outputBias);
 
         // Scale the evaluation based on the material and proximity to 50-move rule draw.
         eval = scaleEvaluation(board, eval);

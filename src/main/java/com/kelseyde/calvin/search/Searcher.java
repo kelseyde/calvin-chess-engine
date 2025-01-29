@@ -443,7 +443,7 @@ public class Searcher implements Search {
                 // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
                 if (depth <= config.seeMaxDepth()
                         && movesSearched > 1
-                        && (scoredMove.isQuiet() || (scoredMove.isBadNoisy() && isCapture))
+                        && !scoredMove.isGoodNoisy()
                         && !Score.isMateScore(bestScore)) {
 
                     int threshold = scoredMove.isQuiet() ?

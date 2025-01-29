@@ -62,8 +62,8 @@ public class EngineConfig {
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 1024, 0, 2048, 150);
     private final Tunable lmrCutNode             = new Tunable("LmrPvNode", 0, 0, 2048, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 0, 0, 2048, 150);
-    private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 6144, 3072, 12288, 1000);
-    private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 6144, 3072, 12288, 1000);
+    private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 3072, 1536, 6144, 1000);
+    private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3072, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
     private final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);

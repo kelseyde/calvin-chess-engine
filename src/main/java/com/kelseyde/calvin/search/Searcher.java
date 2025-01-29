@@ -431,8 +431,7 @@ public class Searcher implements Search {
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
                 final int lmpCutoff = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
-                if (!inCheck
-                        && scoredMove.isQuiet()
+                if (scoredMove.isQuiet()
                         && depth <= config.lmpDepth()
                         && movesSearched >= lmpCutoff) {
                     movePicker.setSkipQuiets(true);

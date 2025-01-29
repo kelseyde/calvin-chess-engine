@@ -247,6 +247,8 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
+        final boolean ttPv = pvNode || (ttHit && ttEntry.pv());
+
         // Internal Iterative Deepening - https://www.chessprogramming.org/Internal_Iterative_Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
@@ -269,7 +271,7 @@ public class Searcher implements Search {
             uncorrectedStaticEval = rawStaticEval;
 
             if (!ttHit) {
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
             }
 
             staticEval = ttMove != null ?
@@ -391,7 +393,7 @@ public class Searcher implements Search {
             if (depth >= config.lmrDepth() && movesSearched >= lmrMinMoves) {
 
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][movesSearched] * 1024;
-                r -= pvNode ? config.lmrPvNode() : 0;
+                r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
                 r -= (2 * historyScore / config.quietHistMaxScore()) * 1024;
@@ -549,7 +551,7 @@ public class Searcher implements Search {
 
         // Store the best move and score in the transposition table for future reference.
         if (!hardLimitReached() && !ttPrune) {
-            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, ttPv);
         }
 
         return bestScore;
@@ -593,6 +595,8 @@ public class Searcher implements Search {
             ttMove = ttEntry.move();
         }
 
+        final boolean ttPv = pvNode || (ttHit && ttEntry.pv());
+
         final boolean inCheck = movegen.isCheck(board);
 
         MoveFilter filter;
@@ -612,7 +616,7 @@ public class Searcher implements Search {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
 
             if (!ttHit) {
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
             }
 
             staticEval = ttMove != null ?
@@ -704,7 +708,7 @@ public class Searcher implements Search {
         }
 
         if (!hardLimitReached()) {
-            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, ttPv);
         }
 
         return bestScore;

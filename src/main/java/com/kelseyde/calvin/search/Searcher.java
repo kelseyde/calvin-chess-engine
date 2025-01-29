@@ -482,7 +482,7 @@ public class Searcher implements Search {
                 int singularDepth = (depth - 1) / 2;
 
                 sse.excludedMove = move;
-                int score = -search(singularDepth, ply, -singularBeta - 1, -singularBeta, cutNode);
+                int score = search(singularDepth, ply, -singularBeta - 1, -singularBeta, cutNode);
                 sse.excludedMove = null;
 
                 if (score < singularBeta) {

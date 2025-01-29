@@ -375,6 +375,8 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final int historyScore = scoredMove.historyScore();
             final boolean isCapture = captured != null;
+            final int lmrDepth = depth >= config.lmrDepth()
+                    ? config.lmrReductions()[isCapture ? 1 : 0][depth][movesSearched] : depth;
 
             int extension = 0;
             int reduction = 0;
@@ -385,29 +387,13 @@ public class Searcher implements Search {
                 extension = 1;
             }
 
-            // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
-            // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
-            final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            if (depth >= config.lmrDepth() && movesSearched >= lmrMinMoves) {
-
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][movesSearched] * 1024;
-                r -= pvNode ? config.lmrPvNode() : 0;
-                r += cutNode ? config.lmrCutNode() : 0;
-                r += !improving ? config.lmrNotImproving() : 0;
-                r -= scoredMove.isQuiet()
-                        ? historyScore / config.lmrQuietHistoryDiv() * 1024
-                        : historyScore / config.lmrNoisyHistoryDiv() * 1024;
-
-                reduction = Math.max(0, r / 1024);
-            }
-
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
             if (!pvNode && !rootNode) {
 
                 // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
                 // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
                 // captures, promotions), then let's assume it will fail low and prune this node.
-                if (!inCheck && depth - reduction <= config.fpDepth() && scoredMove.isQuiet()) {
+                if (!inCheck && lmrDepth <= config.fpDepth() && scoredMove.isQuiet()) {
                     final int futilityMargin = config.fpMargin()
                             + (depth - reduction) * config.fpScale()
                             + (historyScore / config.fpHistDivisor());
@@ -421,7 +407,7 @@ public class Searcher implements Search {
                 // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
                 // that assumes that moves which have historically been bad are likely to be bad in the current position.
                 if (scoredMove.isQuiet()
-                        && depth - reduction <= config.hpMaxDepth()
+                        && lmrDepth <= config.hpMaxDepth()
                         && historyScore < config.hpMargin() * depth + config.hpOffset()) {
                     movePicker.setSkipQuiets(true);
                     continue;
@@ -478,6 +464,23 @@ public class Searcher implements Search {
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
                 score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
             } else {
+
+                // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
+                // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
+                final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
+                if (depth >= config.lmrDepth() && movesSearched >= lmrMinMoves) {
+
+                    int r = lmrDepth * 1024;
+                    r -= pvNode ? config.lmrPvNode() : 0;
+                    r += cutNode ? config.lmrCutNode() : 0;
+                    r += !improving ? config.lmrNotImproving() : 0;
+                    r -= scoredMove.isQuiet()
+                            ? historyScore / config.lmrQuietHistoryDiv() * 1024
+                            : historyScore / config.lmrNoisyHistoryDiv() * 1024;
+
+                    reduction = Math.max(0, r / 1024);
+                }
+
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
                 score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);

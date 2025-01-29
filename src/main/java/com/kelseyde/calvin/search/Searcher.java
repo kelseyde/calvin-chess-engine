@@ -398,7 +398,7 @@ public class Searcher implements Search {
                         ? historyScore / config.lmrQuietHistoryDiv() * 1024
                         : historyScore / config.lmrNoisyHistoryDiv() * 1024;
 
-                reduction = Math.max(0, r / 1024);
+                reduction = Math.max(1, r / 1024);
             }
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
@@ -407,7 +407,9 @@ public class Searcher implements Search {
                 // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
                 // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
                 // captures, promotions), then let's assume it will fail low and prune this node.
-                if (!inCheck && depth - reduction <= config.fpDepth() && scoredMove.isQuiet()) {
+                if (scoredMove.isQuiet()
+                        && !inCheck
+                        && depth - reduction <= config.fpDepth()) {
                     final int futilityMargin = config.fpMargin()
                             + (depth - reduction) * config.fpScale()
                             + (historyScore / config.fpHistDivisor());
@@ -431,8 +433,8 @@ public class Searcher implements Search {
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
                 final int lmpCutoff = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
-                if (!inCheck
-                        && scoredMove.isQuiet()
+                if (scoredMove.isQuiet()
+                        && !inCheck
                         && depth <= config.lmpDepth()
                         && movesSearched >= lmpCutoff) {
                     movePicker.setSkipQuiets(true);

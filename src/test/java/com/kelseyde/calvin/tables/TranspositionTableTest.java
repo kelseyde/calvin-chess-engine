@@ -325,6 +325,21 @@ public class TranspositionTableTest {
 
     }
 
+    @Test
+    public void testTTPV() {
+
+        long key = board.key();
+
+        table.put(key, HashFlag.EXACT, 0, 0, Move.fromUCI("e2e4"), 0, 0, true);
+        HashEntry entry = table.get(key, 0);
+        Assertions.assertTrue(entry.pv());
+
+        table.put(key, HashFlag.EXACT, 0, 0, Move.fromUCI("e2e4"), 0, 0, false);
+        entry = table.get(key, 0);
+        Assertions.assertFalse(entry.pv());
+
+    }
+
     private void assertEntry(long zobrist, int score, Move move, int flag, int depth, boolean pv) {
         long key = HashEntry.Key.of(zobrist, 0, 0);
         long value = HashEntry.Value.of(score, move, flag, depth, pv);

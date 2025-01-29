@@ -293,7 +293,6 @@ public class Searcher implements Search {
             }
         } else if (singularSearch) {
             staticEval = sse.staticEval;
-            // todo bencht hing
         }
 
         sse.staticEval = staticEval;

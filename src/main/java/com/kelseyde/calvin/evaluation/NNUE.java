@@ -270,8 +270,8 @@ public class NNUE {
 
         // Scale down the evaluation when there's not much material left on the board - this creates an incentive
         // to keep pieces on the board when we have winning chances, and trade them off when we're under pressure.
-        final int materialPhase = materialPhase(board);
-        eval = eval * (22400 + materialPhase) / 32768;
+//        final int materialPhase = materialPhase(board);
+//        eval = eval * (22400 + materialPhase) / 32768;
 
         // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
         // of when no progress is being made in the position.

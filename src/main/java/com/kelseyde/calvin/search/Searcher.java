@@ -394,7 +394,9 @@ public class Searcher implements Search {
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
-                r -= (2 * historyScore / config.quietHistMaxScore()) * 1024;
+                r -= scoredMove.isQuiet()
+                        ? historyScore / config.lmrQuietHistoryDiv() * 1024
+                        : historyScore / config.lmrNoisyHistoryDiv() * 1024;
 
                 reduction = Math.max(0, r / 1024);
             }
@@ -441,7 +443,7 @@ public class Searcher implements Search {
                 // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
                 if (depth <= config.seeMaxDepth()
                         && movesSearched > 1
-                        && (scoredMove.isQuiet() || (scoredMove.isBadNoisy() && isCapture))
+                        && !scoredMove.isGoodNoisy()
                         && !Score.isMateScore(bestScore)) {
 
                     int threshold = scoredMove.isQuiet() ?

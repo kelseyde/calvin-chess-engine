@@ -628,6 +628,9 @@ public class Searcher implements Search {
             }
 
             if (staticEval >= beta) {
+                if (!ttHit || ttEntry.flag() == HashFlag.NONE) {
+                    tt.put(board.key(), HashFlag.LOWER, 0, ply, null, rawStaticEval, staticEval);
+                }
                 return staticEval;
             }
             if (staticEval > alpha) {

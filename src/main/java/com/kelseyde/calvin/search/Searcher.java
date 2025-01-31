@@ -441,8 +441,7 @@ public class Searcher implements Search {
 
                 // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
-                if (depth <= config.seeMaxDepth()
-                        && movesSearched > 1
+                if (movesSearched > 1
                         && !scoredMove.isGoodNoisy()
                         && !Score.isMateScore(bestScore)) {
 

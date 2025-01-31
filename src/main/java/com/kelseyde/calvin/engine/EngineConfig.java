@@ -38,7 +38,6 @@ public class EngineConfig {
     private final Tunable fpScale                = new Tunable("FpScale", 83, 0, 100, 5);
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 137, 1, 1000, 25);
     private final Tunable fpBlend                = new Tunable("FpBlend", 4, 1, 10, 2);
-    private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
     private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
     private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
     private final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 15, -100, 200, 50);
@@ -117,7 +116,7 @@ public class EngineConfig {
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
-                nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
+                nodeTmScale, ttExtensionDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv
@@ -248,10 +247,6 @@ public class EngineConfig {
 
     public int fpBlend() {
         return fpBlend.value;
-    }
-
-    public int seeMaxDepth() {
-        return seeMaxDepth.value;
     }
 
     public int seeQuietMargin() {

@@ -646,6 +646,10 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = alpha;
+        if (ttHit && isWithinBounds(ttEntry, alpha, beta)) {
+            bestScore = ttEntry.score();
+        }
+
         final int futilityScore = bestScore + config.qsFpMargin();
         int flag = HashFlag.UPPER;
 

@@ -27,7 +27,7 @@ import java.util.Arrays;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("smolnet4.nnue")
+            .file("smolnet8.nnue")
             .inputSize(768)
             .hiddenSize(64)
             .activation(Activation.SCReLU)

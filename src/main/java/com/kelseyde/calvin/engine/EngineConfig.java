@@ -199,6 +199,7 @@ public class EngineConfig {
         public String toSPSA() {
             final float spsaStep = (float) Math.max(0.5, Math.round((float) (max - min) / 20));
             final float learningRate = 0.002f;
+
             return String.format("%s, int, %s, %s, %s, %s, %s", name, value, min, max, spsaStep, learningRate);
         }
 

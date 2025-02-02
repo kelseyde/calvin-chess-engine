@@ -27,20 +27,20 @@ import java.util.Arrays;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("calvin1024_4b.nnue")
+            .file("smolnet4.nnue")
             .inputSize(768)
-            .hiddenSize(1024)
+            .hiddenSize(64)
             .activation(Activation.SCReLU)
-            .horizontalMirror(true)
+            .horizontalMirror(false)
             .inputBuckets(new int[] {
-                    0, 0, 1, 1, 1, 1, 0, 0,
-                    2, 2, 2, 2, 2, 2, 2, 2,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0,
             })
             .quantisations(new int[]{255, 64})
             .scale(400)

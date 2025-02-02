@@ -358,6 +358,7 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = Score.MIN;
+        boolean bestMoveGivesCheck = false;
         int flag = HashFlag.UPPER;
         int movesSearched = 0;
         sse.searchedMoves = new ArrayList<>();
@@ -469,6 +470,7 @@ public class Searcher implements Search {
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
             sse.currentMove = playedMove;
             sse.searchedMoves.add(playedMove);
+            final boolean givesCheck = movegen.isCheck(board);
 
             int score;
 
@@ -509,6 +511,7 @@ public class Searcher implements Search {
                 // If the score is greater than alpha, then this is the best move we have examined so far.
                 bestMove = move;
                 alpha = score;
+                bestMoveGivesCheck = givesCheck;
                 flag = HashFlag.EXACT;
 
                 sse.bestMove = playedMove;
@@ -542,6 +545,8 @@ public class Searcher implements Search {
 
         if (!inCheck
             && Score.isDefinedScore(bestScore)
+            && (bestMove == null || board.isQuiet(bestMove))
+            && !bestMoveGivesCheck
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.

@@ -13,8 +13,10 @@ public class QuietHistoryTable extends AbstractHistoryTable {
     public QuietHistoryTable(EngineConfig config) {
         super((short) config.quietHistBonusMax(),
                 (short) config.quietHistBonusScale(),
+                (short) config.quietHistBonusOffset(),
                 (short) config.quietHistMalusMax(),
                 (short) config.quietHistMalusScale(),
+                (short) config.quietHistMalusOffset(),
                 (short) config.quietHistMaxScore());
     }
 

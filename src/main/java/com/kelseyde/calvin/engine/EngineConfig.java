@@ -74,20 +74,26 @@ public class EngineConfig {
     private final Tunable hpMargin               = new Tunable("HpMargin", -2197, -4000, -100, 50);
     private final Tunable hpOffset               = new Tunable("HpOffset", -1039, -3000, 0, 50);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
-    private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
-    private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
-    private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
-    private final Tunable quietHistMalusScale    = new Tunable("QuietHistMalusScale", 200, 50, 400, 25);
+    private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1288, 100, 2000, 100);
+    private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 140, 50, 400, 50);
+    private final Tunable quietHistBonusOffset   = new Tunable("QuietHistBonusOffset", 215, 0, 500, 100);
+    private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 650, 100, 1000, 100);
+    private final Tunable quietHistMalusScale    = new Tunable("QuietHistMalusScale", 170, 50, 400, 50);
+    private final Tunable quietHistMalusOffset   = new Tunable("QuietHistMalusOffset", 80, 0, 500, 100);
     private final Tunable quietHistMaxScore      = new Tunable("QuietHistMaxScore", 8192, 1000, 12000, 100);
-    private final Tunable captHistBonusMax       = new Tunable("CaptHistBonusMax", 1200, 100, 2000, 100);
-    private final Tunable captHistBonusScale     = new Tunable("CaptHistBonusScale", 200, 50, 400, 25);
-    private final Tunable captHistMalusMax       = new Tunable("CaptHistMalusMax", 1200, 100, 2000, 100);
-    private final Tunable captHistMalusScale     = new Tunable("CaptHistMalusScale", 200, 50, 400, 25);
+    private final Tunable captHistBonusMax       = new Tunable("CaptHistBonusMax", 1288, 100, 2000, 100);
+    private final Tunable captHistBonusScale     = new Tunable("CaptHistBonusScale", 140, 50, 400, 50);
+    private final Tunable captHistBonusOffset    = new Tunable("CaptHistBonusOffset", 215, 0, 500, 100);
+    private final Tunable captHistMalusMax       = new Tunable("CaptHistMalusMax", 650, 100, 1000, 100);
+    private final Tunable captHistMalusScale     = new Tunable("CaptHistMalusScale", 170, 50, 400, 50);
+    private final Tunable captHistMalusOffset    = new Tunable("CaptHistMalusOffset", 80, 0, 500, 100);
     private final Tunable captHistMaxScore       = new Tunable("CaptHistMaxScore", 8192, 1000, 12000, 100);
-    private final Tunable contHistBonusMax       = new Tunable("ContHistBonusMax", 1200, 100, 2000, 100);
-    private final Tunable contHistBonusScale     = new Tunable("ContHistBonusScale", 200, 50, 400, 25);
-    private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
-    private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
+    private final Tunable contHistBonusMax       = new Tunable("ContHistBonusMax", 1288, 100, 2000, 100);
+    private final Tunable contHistBonusScale     = new Tunable("ContHistBonusScale", 140, 50, 400, 50);
+    private final Tunable contHistBonusOffset    = new Tunable("ContHistBonusOffset", 215, 0, 500, 100);
+    private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 650, 100, 1000, 100);
+    private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 170, 50, 400, 50);
+    private final Tunable contHistMalusOffset    = new Tunable("ContHistMalusOffset", 80, 0, 500, 100);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 75, 50, 100, 5);
@@ -120,7 +126,8 @@ public class EngineConfig {
                 nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
-                seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv
+                seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, quietHistBonusOffset,
+                quietHistMalusOffset, captHistBonusOffset, captHistMalusOffset, contHistBonusOffset, contHistMalusOffset
         );
     }
 
@@ -402,12 +409,20 @@ public class EngineConfig {
         return quietHistBonusScale.value;
     }
 
+    public int quietHistBonusOffset() {
+        return quietHistBonusOffset.value;
+    }
+
     public int quietHistMalusMax() {
         return quietHistMalusMax.value;
     }
 
     public int quietHistMalusScale() {
         return quietHistMalusScale.value;
+    }
+
+    public int quietHistMalusOffset() {
+        return quietHistMalusOffset.value;
     }
 
     public int quietHistMaxScore() {
@@ -422,12 +437,20 @@ public class EngineConfig {
         return captHistBonusScale.value;
     }
 
+    public int captHistBonusOffset() {
+        return captHistBonusOffset.value;
+    }
+
     public int captHistMalusMax() {
         return captHistMalusMax.value;
     }
 
     public int captHistMalusScale() {
         return captHistMalusScale.value;
+    }
+
+    public int captHistMalusOffset() {
+        return captHistMalusOffset.value;
     }
 
     public int captHistMaxScore() {
@@ -442,12 +465,20 @@ public class EngineConfig {
         return contHistBonusScale.value;
     }
 
+    public int contHistBonusOffset() {
+        return contHistBonusOffset.value;
+    }
+
     public int contHistMalusMax() {
         return contHistMalusMax.value;
     }
 
     public int contHistMalusScale() {
         return contHistMalusScale.value;
+    }
+
+    public int contHistMalusOffset() {
+        return contHistMalusOffset.value;
     }
 
     public int contHistMaxScore() {

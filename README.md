@@ -2,14 +2,24 @@
 
 <div align="center">
 
-# Calvin
+<h2>Calvin</h2>
 
-[![release][release-badge]][release-link]
+A superhuman chess engine written in Java.
+  <br>
+ <br>
+  <strong>[Download Calvin](https://github.com/kelseyde/calvin-chess-engine/releases)</strong> <br>
+  <strong>[Report a Bug](https://github.com/kelseyde/calvin-chess-engine/issues)</strong>
+  <br>
+   <br>
+    [![release][release-badge]][release-link]
 [![lichess-badge]][lichess-link]
+
 
 </div>
 
-Calvin is a superhuman chess engine written in Java. 
+## Overview
+
+Calvin is a UCI-compatible chess engine written in Java. 
 
 It features an alpha-beta search algorithm paired with a neural-network-based evaluation function. 
 

@@ -7,8 +7,7 @@
 A superhuman chess engine written in Java.
   <br>
  <br>
-  <strong>[Download Calvin](https://github.com/kelseyde/calvin-chess-engine/releases)</strong> <br>
-  <strong>[Report a Bug](https://github.com/kelseyde/calvin-chess-engine/issues)</strong>
+  <strong>[Download Calvin](https://github.com/kelseyde/calvin-chess-engine/releases)</strong> | <strong>[Report a Bug](https://github.com/kelseyde/calvin-chess-engine/issues)</strong>
   <br>
    <br>
     [![release][release-badge]][release-link]

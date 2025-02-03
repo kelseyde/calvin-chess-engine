@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<h2>Calvin</h2>
+<h3>Calvin</h3>
 
 A superhuman chess engine written in Java.
   <br>

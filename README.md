@@ -24,7 +24,7 @@ It features an alpha-beta search algorithm paired with a neural-network-based ev
 
 Calvin can play standard chess, fischer random chess (FRC) and double fischer random chess (DFRC).
 
-My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). My secondary goal was to learn about chess programming. I have certainly learned a great deal, and I hope that my code is well-documented so that first-time readers can learn too. If you find some information is missing or poorly explained, don't hesitate to let me know!
+My aim with this project was to combine my passion (playing mediocre chess) with my profession (writing mediocre code). My secondary goal was to learn about chess programming. I hope that my code is well-documented so that first-time readers can learn too. If you find some information is missing or poorly explained, don't hesitate to let me know!
 
 ## How to Play 
 

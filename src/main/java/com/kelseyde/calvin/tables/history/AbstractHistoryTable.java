@@ -17,11 +17,13 @@ public abstract class AbstractHistoryTable {
     }
 
     protected short bonus(int depth) {
-        return (short) Math.min(bonusScale * depth, bonusMax);
+        // formula from Berserk
+        return (short) Math.min(1070, 4 * depth * depth + 100 * depth - 73);
     }
 
     protected short malus(int depth) {
-        return (short) -Math.min(malusScale * depth, malusMax);
+        // formula from Berserk
+        return (short) -Math.min(520, 3 * depth * depth + 120 * depth - 33);
     }
 
     protected short gravity(short current, short update) {

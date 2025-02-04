@@ -460,15 +460,11 @@ public class Searcher implements Search {
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
 
-            eval.makeMove(board, move);
-            board.makeMove(move);
+            PlayedMove playedMove = new PlayedMove(move, piece, captured);
+            makeMove(playedMove, sse);
 
             final int nodesBefore = td.nodes;
             td.nodes++;
-
-            PlayedMove playedMove = new PlayedMove(move, piece, captured);
-            sse.currentMove = playedMove;
-            sse.searchedMoves.add(playedMove);
 
             int score;
 
@@ -489,9 +485,7 @@ public class Searcher implements Search {
                 }
             }
 
-            eval.unmakeMove();
-            board.unmakeMove();
-            sse.currentMove = null;
+            unmakeMove(sse);
 
             if (rootNode) {
                 td.addNodes(move, td.nodes - nodesBefore);
@@ -642,6 +636,8 @@ public class Searcher implements Search {
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         movePicker.setFilter(filter);
 
+        SearchStackEntry sse = ss.get(ply);
+
         int movesSearched = 0;
 
         Move bestMove = null;
@@ -683,12 +679,13 @@ public class Searcher implements Search {
                 continue;
             }
 
-            eval.makeMove(board, move);
-            if (!board.makeMove(move)) continue;
+            PlayedMove playedMove = new PlayedMove(move, scoredMove.piece(), captured);
+            makeMove(playedMove, sse);
+
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
-            eval.unmakeMove();
-            board.unmakeMove();
+
+            unmakeMove(sse);
 
             if (score > bestScore) {
                 bestScore = score;
@@ -730,6 +727,19 @@ public class Searcher implements Search {
     @Override
     public void setThreadCount(int threadCount) {
         // do nothing as this implementation is single-threaded
+    }
+
+    private void makeMove(PlayedMove move, SearchStackEntry sse) {
+        eval.makeMove(board, move.move());
+        board.makeMove(move.move());
+        sse.currentMove = move;
+        sse.searchedMoves.add(move);
+    }
+
+    private void unmakeMove(SearchStackEntry sse) {
+        eval.unmakeMove();
+        board.unmakeMove();
+        sse.currentMove = null;
     }
 
     private boolean hardLimitReached() {

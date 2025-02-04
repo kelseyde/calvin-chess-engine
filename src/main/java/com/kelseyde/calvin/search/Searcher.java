@@ -644,6 +644,7 @@ public class Searcher implements Search {
         int bestScore = alpha;
         final int futilityScore = bestScore + config.qsFpMargin();
         int flag = HashFlag.UPPER;
+        sse.searchedMoves = new ArrayList<>();
 
         while (true) {
 
@@ -693,6 +694,7 @@ public class Searcher implements Search {
             if (score > alpha) {
                 flag = HashFlag.EXACT;
                 bestMove = move;
+                sse.bestMove = playedMove;
                 alpha = score;
                 if (score >= beta) {
                     flag = HashFlag.LOWER;
@@ -703,6 +705,10 @@ public class Searcher implements Search {
 
         if (movesSearched == 0 && inCheck) {
             return -Score.MATE + ply;
+        }
+
+        if (bestScore >= beta) {
+            history.updateHistory(sse.bestMove, board.isWhite(), 1, ply, ss);
         }
 
         if (!hardLimitReached()) {

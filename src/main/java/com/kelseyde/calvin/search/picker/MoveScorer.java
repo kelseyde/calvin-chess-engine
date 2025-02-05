@@ -79,7 +79,8 @@ public class MoveScorer {
         score += SEE.value(captured);
 
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
-        score += historyScore / 8;
+        final int rootScore = ply == 0 ? history.getRootHistoryTable().get(move, board.isWhite()) : 0;
+        score += historyScore + rootScore / 8;
 
         final int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
 
@@ -94,7 +95,8 @@ public class MoveScorer {
         // Quiet moves are scored using the quiet history and continuation history heuristics.
         final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite());
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
-        final int score = historyScore + contHistScore;
+        final int rootScore = ply == 0 ? history.getRootHistoryTable().get(move, board.isWhite()) : 0;
+        final int score = historyScore + contHistScore + rootScore;
 
         return new ScoredMove(move, piece, null, score, historyScore, MoveType.QUIET);
 

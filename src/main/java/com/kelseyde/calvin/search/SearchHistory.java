@@ -9,10 +9,7 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
 import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.history.*;
 
 import java.util.List;
 
@@ -25,6 +22,7 @@ public class SearchHistory {
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
     private final CaptureHistoryTable captureHistoryTable;
+    private final RootHistoryTable rootHistoryTable;
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
     private final PieceToCorrectionTable countermoveCorrHistTable;
@@ -38,6 +36,7 @@ public class SearchHistory {
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
+        this.rootHistoryTable = new RootHistoryTable(config);
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
@@ -63,6 +62,11 @@ public class SearchHistory {
                 // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
                 // best move was quiet or a capture, penalise all other captures.
                 updateCaptureHistory(playedMove, bestMove, white, depth);
+            }
+
+            if (ply == 0) {
+                boolean good = playedMove.move().equals(bestMove.move());
+                rootHistoryTable.update(playedMove.move(), depth, white, good);
             }
         }
 
@@ -153,9 +157,14 @@ public class SearchHistory {
         return captureHistoryTable;
     }
 
+    public RootHistoryTable getRootHistoryTable() {
+        return rootHistoryTable;
+    }
+
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
+        rootHistoryTable.clear();
     }
 
     public void clear() {
@@ -163,6 +172,7 @@ public class SearchHistory {
         quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();
+        rootHistoryTable.clear();
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();

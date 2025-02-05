@@ -294,12 +294,12 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
-        if (!pvNode && !inCheck) {
+        if (!pvNode && !inCheck && !Score.isMateScore(alpha)) {
 
             // Reverse Futility Pruning - https://www.chessprogramming.org/Reverse_Futility_Pruning
             // If the static evaluation + some significant margin is still above beta, then let's assume this position
             // is a cut-node and will fail-high, and not search any further.
-            if (depth <= config.rfpDepth() && !Score.isMateScore(alpha)) {
+            if (depth <= config.rfpDepth()) {
                 final int futilityMargin = depth * (improving ? config.rfpImpMargin() : config.rfpMargin())
                         + depth * config.rfpBlend();
                 if (staticEval - futilityMargin >= beta) {
@@ -402,7 +402,7 @@ public class Searcher implements Search {
             }
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
-            if (!pvNode && !rootNode) {
+            if (!pvNode && !rootNode && !Score.isMateScore(alpha)) {
 
                 // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
                 // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
@@ -443,8 +443,7 @@ public class Searcher implements Search {
                 // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
                 if (depth <= config.seeMaxDepth()
                         && movesSearched > 1
-                        && !scoredMove.isGoodNoisy()
-                        && !Score.isMateScore(bestScore)) {
+                        && !scoredMove.isGoodNoisy()) {
 
                     int threshold = scoredMove.isQuiet() ?
                             config.seeQuietMargin() * depth :

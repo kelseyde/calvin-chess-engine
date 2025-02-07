@@ -301,7 +301,8 @@ public class Searcher implements Search {
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth() && !Score.isMateScore(alpha)) {
                 final int futilityMargin = depth * (improving ? config.rfpImpMargin() : config.rfpMargin())
-                        + depth * config.rfpBlend();
+                        + depth * config.rfpBlend()
+                        + ss.get(ply - 1).historyScore / 564;
                 if (staticEval - futilityMargin >= beta) {
                     return beta + (staticEval - beta) / 3;
                 }
@@ -461,7 +462,7 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
 
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
-            makeMove(playedMove, sse);
+            makeMove(playedMove, sse, historyScore);
 
             final int nodesBefore = td.nodes;
             td.nodes++;
@@ -680,7 +681,7 @@ public class Searcher implements Search {
             }
 
             PlayedMove playedMove = new PlayedMove(move, scoredMove.piece(), captured);
-            makeMove(playedMove, sse);
+            makeMove(playedMove, sse, scoredMove.historyScore());
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
@@ -729,17 +730,19 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void makeMove(PlayedMove move, SearchStackEntry sse) {
+    private void makeMove(PlayedMove move, SearchStackEntry sse, int historyScore) {
         eval.makeMove(board, move.move());
         board.makeMove(move.move());
         sse.currentMove = move;
         sse.searchedMoves.add(move);
+        sse.historyScore = historyScore;
     }
 
     private void unmakeMove(SearchStackEntry sse) {
         eval.unmakeMove();
         board.unmakeMove();
         sse.currentMove = null;
+        sse.historyScore = 0;
     }
 
     private boolean hardLimitReached() {

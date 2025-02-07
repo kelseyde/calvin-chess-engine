@@ -28,6 +28,7 @@ public class SearchStack {
     public static class SearchStackEntry {
         public int staticEval;
         public PlayedMove currentMove;
+        public int historyScore;
         public PlayedMove bestMove;
         public boolean nullMoveAllowed = true;
         public List<PlayedMove> searchedMoves = new ArrayList<>();

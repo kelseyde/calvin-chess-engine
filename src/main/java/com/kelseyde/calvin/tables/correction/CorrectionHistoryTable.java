@@ -20,7 +20,7 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
 public abstract class CorrectionHistoryTable {
 
     public static final int SCALE = 256;
-    protected static final int MAX = SCALE * 64;
+    protected static final int MAX = SCALE * 16;
 
     /**
      * Compute the new correction based on a weighted sum of old value and the new delta of the score and static eval.

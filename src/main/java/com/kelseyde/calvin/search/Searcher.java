@@ -302,7 +302,7 @@ public class Searcher implements Search {
             if (depth <= config.rfpDepth() && !Score.isMateScore(alpha)) {
                 final int futilityMargin = depth * (improving ? config.rfpImpMargin() : config.rfpMargin())
                         + depth * config.rfpBlend()
-                        + ss.get(ply - 1).historyScore / 564;
+                        + ss.get(ply - 1).historyScore / 282;
                 if (staticEval - futilityMargin >= beta) {
                     return beta + (staticEval - beta) / 3;
                 }

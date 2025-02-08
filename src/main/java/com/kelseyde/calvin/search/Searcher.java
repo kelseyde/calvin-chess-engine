@@ -292,6 +292,8 @@ public class Searcher implements Search {
         // should be more cautious in our alpha pruning - where the eval is too low.
         final boolean improving = isImproving(ply, staticEval);
 
+        final int complexity = complexity(staticEval, rawStaticEval);
+
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck) {
@@ -394,6 +396,7 @@ public class Searcher implements Search {
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
+                r -= complexity > config.lmrComplexityMargin() ? config.lmrComplexity() : 0;
                 r -= scoredMove.isQuiet()
                         ? historyScore / config.lmrQuietHistoryDiv() * 1024
                         : historyScore / config.lmrNoisyHistoryDiv() * 1024;
@@ -780,6 +783,14 @@ public class Searcher implements Search {
             }
         }
         return lastEval < staticEval;
+    }
+
+    private int complexity(int staticEval, int rawEval) {
+        if (staticEval == Integer.MIN_VALUE || rawEval == Integer.MIN_VALUE)
+            return 0;
+        if (staticEval == 0 || rawEval == 0)
+            return 0;
+        return 100 * Math.abs(staticEval - rawEval) / Math.abs(staticEval);
     }
 
     private SearchResult handleOnlyOneLegalMove(List<Move> rootMoves) {

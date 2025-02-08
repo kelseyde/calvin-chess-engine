@@ -41,8 +41,8 @@ public class EngineConfig {
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
     private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
     private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -20, -250, -10, 25);
-    private final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 15, -100, 200, 50);
-    private final Tunable seeNoisyDivisor        = new Tunable("SeeNoisyDivisor", 4, 2, 6, 1);
+    private final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 30, -100, 200, 50);
+    private final Tunable seeNoisyDivisor        = new Tunable("SeeNoisyDivisor", 8, 2, 6, 1);
     private final Tunable seeQsNoisyOffset       = new Tunable("SeeQsNoisyOffset", 15, -100, 200, 50);
     private final Tunable seeQsNoisyDivisor      = new Tunable("SeeQsNoisyDivisor", 4, 2, 6, 1);
     private final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 500, 50, 1000, 25);

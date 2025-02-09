@@ -45,8 +45,7 @@ public class Searcher implements Search {
     final ThreadData td;
     final NNUE eval;
 
-    Move bestMoveCurrent;
-    int bestScoreCurrent;
+    Move bestMoveRoot;
 
     TimeControl tc;
     Board board;
@@ -80,89 +79,80 @@ public class Searcher implements Search {
         history.reset();
 
         // The best root move and root score is updated as the search progresses.
-        Move bestMoveRoot = null;
-        int bestScoreRoot = 0;
+        Move bestMove = null;
+        int bestScore = 0;
 
-        // The alpha-beta window is initialised to the maximum value, [Score.MIN, Score.MAX].
-        // After each iteration, the window is narrowed around the search score.
-        int alpha = Score.MIN;
-        int beta = Score.MAX;
-
-        int reduction = 0;
         int maxReduction = config.aspMaxReduction();
-        int window = config.aspMargin();
 
-        while (!softLimitReached() && td.depth < Search.MAX_DEPTH) {
-            // Reset variables for the current depth iteration
-            bestMoveCurrent = null;
-            bestScoreCurrent = 0;
+        for (int depth = 1; depth < Search.MAX_DEPTH; depth++) {
+
+            td.depth = depth;
             td.seldepth = 0;
+            bestMoveRoot = null;
 
-            final int searchDepth = td.depth - reduction;
+            int window = config.aspMargin();
 
-            // Perform alpha-beta search for the current depth
-            final int score = search(searchDepth, 0, alpha, beta, false);
-
-            // Update the best move and evaluation if a better move is found
-            if (bestMoveCurrent != null) {
-                history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
-                history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
-                bestMoveRoot = bestMoveCurrent;
-                bestScoreRoot = bestScoreCurrent;
-                if (td.isMainThread()) {
-                    // Write search info as UCI output. This is only done for the main thread.
-                    UCI.writeSearchInfo(SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc));
-                }
-            }
-
-            // Check if search is cancelled or a checkmate is found
-            if (hardLimitReached() || Score.isMateScore(score)) {
-                break;
-            }
+            // The alpha-beta window is initialised to the maximum value, [Score.MIN, Score.MAX].
+            // After each iteration, the window is narrowed around the search score.
+            int alpha = Score.MIN;
+            int beta = Score.MAX;
 
             // Aspiration windows - https://www.chessprogramming.org/Aspiration_Windows
             // Use the search score from the previous iteration to guess the score from the current iteration.
             // Based on this guess, we can narrow the alpha-beta window around the previous score, causing more cut-offs
             // and thus speeding up the search. If the true score is outside the window, a costly re-search is required.
             if (td.depth > config.aspMinDepth()) {
-
-                // Adjust the aspiration window in case the score fell outside the current window
-                if (score <= alpha) {
-                    // If score <= alpha, re-search with an expanded aspiration window
-                    beta = (alpha + beta) / 2;
-                    alpha -= window;
-                    window *= 2;
-                    reduction = 0;
-                    continue;
-                }
-                if (score >= beta) {
-                    // If score >= beta, re-search with an expanded aspiration window
-                    beta += window;
-                    window *= 2;
-                    reduction = Math.min(maxReduction, reduction + 1);
-                    continue;
-                }
-
-                // Center the aspiration window around the score from the current iteration, to be used next time.
-                window = config.aspMargin();
-                alpha = score - window;
-                beta = score + window;
+                alpha = Math.max(bestScore - window, Score.MIN);
+                beta = Math.min(bestScore + window, Score.MAX);
             }
 
-            // Increment depth and reset retry counter for next iteration
-            td.depth++;
+            int aspReduction = 0;
+
+            while (!hardLimitReached()) {
+
+                // Perform alpha-beta search for the current depth
+                final int searchDepth = Math.max(depth - aspReduction, 1);
+                final int score = search(searchDepth, 0, alpha, beta, false);
+
+                if ((score > alpha && score < beta) || hardLimitReached())
+                    break;
+
+                // Update the best move and evaluation if a better move is found
+                if (this.bestMoveRoot != null) {
+                    history.updateBestMoveStability(bestMove, this.bestMoveRoot);
+                    history.updateBestScoreStability(bestScore, score);
+                    bestMove = this.bestMoveRoot;
+                    bestScore = score;
+                    if (td.isMainThread()) {
+                        // Write search info as UCI output. This is only done for the main thread.
+                        UCI.writeSearchInfo(SearchResult.of(bestMove, bestScore, td, tc));
+                    }
+                }
+
+                if (score <= alpha) {
+                    aspReduction = 0;
+                    beta = (alpha + beta) / 2;
+                    alpha = Math.max(score - window, Score.MIN);
+                }
+                else {
+                    aspReduction = Math.min(aspReduction + 1, maxReduction);
+                    beta = Math.min(score + window, Score.MAX);
+                }
+
+                window += window * 17 / 16;
+            }
+
+            if (hardLimitReached() || softLimitReached())
+                break;
 
         }
 
-        // Clear move ordering cache and return the search result
-        history.getKillerTable().clear();
-
-        if (bestMoveRoot == null) {
+        if (bestMove == null) {
             // If time expired before a best move was found in search, pick the first legal move.
-            bestMoveRoot = rootMoves.get(0);
+            bestMove = rootMoves.get(0);
         }
 
-        return SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
+        return SearchResult.of(bestMove, bestScore, td, tc);
 
     }
 
@@ -507,8 +497,7 @@ public class Searcher implements Search {
 
                 sse.bestMove = playedMove;
                 if (rootNode) {
-                    bestMoveCurrent = move;
-                    bestScoreCurrent = score;
+                    bestMoveRoot = move;
                 }
 
                 if (score >= beta) {
@@ -756,7 +745,7 @@ public class Searcher implements Search {
             return false;
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
-        final int bestMoveNodes = td.getNodes(bestMoveCurrent);
+        final int bestMoveNodes = td.getNodes(bestMoveRoot);
         return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 

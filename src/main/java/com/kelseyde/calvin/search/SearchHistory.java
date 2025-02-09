@@ -156,6 +156,7 @@ public class SearchHistory {
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
+        killerTable.clear();
     }
 
     public void clear() {

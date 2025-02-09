@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.engine.EngineConfig.Tunable;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.Score;
@@ -193,6 +194,12 @@ public class UCI {
         MoveGenerator movegen = new MoveGenerator();
         long threats = movegen.calculateThreats(ENGINE.getBoard(), !ENGINE.getBoard().isWhite());
         Bits.print(threats);
+    }
+
+    public static void handleParams(UCICommand command) {
+        ENGINE.getConfig().getTunables().stream()
+                .map(Tunable::toSPSA)
+                .forEach(UCI::write);
     }
 
     public static void handleEval(UCICommand command) {

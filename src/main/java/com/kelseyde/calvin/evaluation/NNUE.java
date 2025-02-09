@@ -46,6 +46,7 @@ public class NNUE {
             .scale(400)
             .build();
 
+
     private Accumulator[] accumulatorStack;
     private InputBucketCache bucketCache;
     private int current;

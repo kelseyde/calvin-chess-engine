@@ -400,7 +400,7 @@ public class Searcher implements Search {
             // Check Extensions - https://www.chessprogramming.org/Check_Extensions
             // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
             if (inCheck) {
-                extension = 1;
+                extension++;
             }
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
@@ -476,23 +476,23 @@ public class Searcher implements Search {
             }
 
             if (!rootNode
-                    && !inCheck
-                    && depth >= 8
-                    && move.equals(ttMove)
                     && !excluded
-                    && ttEntry.depth() >= depth - 4
-                    && !Score.isMateScore(ttEntry.score())
-                    && ttEntry.flag() != HashFlag.UPPER) {
+                    && ttHit
+                    && move.equals(ttMove)
+                    && depth >= 6
+                    && ttEntry.depth() >= depth - 3
+                    && ttEntry.flag() != HashFlag.UPPER
+                    && !Score.isMateScore(ttEntry.score())) {
 
-                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * 2);
-                int sDepth = (depth - 1) / 2;
+            int singularBeta = ttEntry.score() - depth * 2;
+            int singularDepth = (depth - 1) / 2;
 
                 sse.excludedMove = move;
-                int score = search(sDepth, ply, sBeta - 1, sBeta, cutNode);
+                int singularScore = search(singularDepth, ply, singularBeta - 1, singularBeta, cutNode);
                 sse.excludedMove = null;
 
-                if (score < sBeta) {
-                    extension = 1;
+                if (singularScore < singularBeta) {
+                    extension++;
                 }
             }
 

@@ -545,7 +545,8 @@ public class Searcher implements Search {
 
         // Store the best move and score in the transposition table for future reference.
         if (!hardLimitReached() && !ttPrune) {
-            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+            final Move storedMove = bestMove == null ? ttMove : bestMove;
+            tt.put(board.key(), flag, depth, ply, storedMove, rawStaticEval, bestScore);
         }
 
         return bestScore;
@@ -623,7 +624,7 @@ public class Searcher implements Search {
 
             if (staticEval >= beta) {
                 if (!ttHit || ttEntry.flag() == HashFlag.NONE) {
-                    tt.put(board.key(), HashFlag.LOWER, 0, ply, null, rawStaticEval, staticEval);
+                    tt.put(board.key(), HashFlag.LOWER, 0, ply, ttMove, rawStaticEval, staticEval);
                 }
                 return staticEval;
             }
@@ -706,7 +707,8 @@ public class Searcher implements Search {
         }
 
         if (!hardLimitReached()) {
-            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
+            final Move storedMove = bestMove == null ? ttMove : bestMove;
+            tt.put(board.key(), flag, 0, ply, storedMove, rawStaticEval, bestScore);
         }
 
         return bestScore;

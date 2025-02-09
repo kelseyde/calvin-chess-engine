@@ -21,6 +21,10 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         return new HashEntry(move, score, staticEval, flag, depth);
     }
 
+    public static boolean signatureMatches(long signature1, long signature2) {
+        return Key.getZobristPart(signature1) == Key.getZobristPart(signature2);
+    }
+
     public static class Key {
 
         private static final long STATIC_EVAL_MASK    = 0xffff000000000000L;

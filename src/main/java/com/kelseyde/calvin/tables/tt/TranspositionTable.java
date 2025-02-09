@@ -20,6 +20,7 @@ public class TranspositionTable {
 
     private static final int BUCKET_SIZE = 4;
     private static final int ENTRY_SIZE_BYTES = 16;
+    private static final int MAX_AGE = 32;
 
     private long[] keys;
     private long[] values;
@@ -86,29 +87,22 @@ public class TranspositionTable {
         if (Score.isMateScore(score)) score = calculateMateScore(score, ply);
 
         int replacedIndex = -1;
-        int minDepth = Integer.MAX_VALUE;
-        boolean replacedByAge = false;
+        int bestScore = Integer.MIN_VALUE;
 
         // Iterate over the four items in the bucket
         for (int i = startIndex; i < startIndex + 4; i++) {
             long storedKey = keys[i];
 
-            // First, always prefer an empty slot if it is available.
-            if (storedKey == 0) {
-                replacedIndex = i;
-                break;
-            }
-
-            // Second, always prefer an exact score
-            if (flag == HashFlag.EXACT) {
+            // Prefer to replace an empty entry; always write an exact entry
+            if (storedKey == 0 || flag == HashFlag.EXACT) {
                 replacedIndex = i;
                 break;
             }
 
             long storedValue = values[i];
 
-            int storedFlag = HashEntry.Value.getFlag(storedValue);
-            if (storedFlag == HashFlag.NONE) {
+            // Always overwrite entries with no flag.
+            if (HashEntry.Value.getFlag(storedValue) == HashFlag.NONE) {
                 replacedIndex = i;
                 break;
             }
@@ -116,13 +110,8 @@ public class TranspositionTable {
             int storedDepth = HashEntry.Value.getDepth(values[i]);
             // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
             // If the depth is < the store depth, don't replace it and exit (although this should never happen).
-            if (HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
+            if (HashEntry.signatureMatches(key, storedKey)) {
                 if (depth >= storedDepth - 4) {
-                    // If the stored entry has a recorded best move but the new entry does not, use the stored one.
-                    Move storedMove = HashEntry.Value.getMove(storedValue);
-                    if (move == null && storedMove != null) {
-                        move = storedMove;
-                    }
                     replacedIndex = i;
                     break;
                 } else {
@@ -130,15 +119,9 @@ public class TranspositionTable {
                 }
             }
 
-            // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (age > HashEntry.Key.getAge(storedKey)) {
-                replacedByAge = true;
-                replacedIndex = i;
-            }
-
-            // Finally, just replace the entry with the shallowest search depth.
-            if (!replacedByAge && storedDepth < minDepth) {
-                minDepth = storedDepth;
+            int entryScore = entryScore(storedDepth, HashEntry.Key.getAge(storedKey));
+            if (entryScore > bestScore) {
+                bestScore = entryScore;
                 replacedIndex = i;
             }
 
@@ -162,10 +145,10 @@ public class TranspositionTable {
     }
 
     /**
-     * Increments the age counter for the transposition table.
+     * Increments the age counter for the transposition table. The counter wraps around to 0 when it reaches MAX_AGE.
      */
-    public void incrementAge() {
-        this.age++;
+    public void birthday() {
+        this.age = (this.age + 1) % MAX_AGE;
     }
 
     public void resize(int tableSizeMb) {
@@ -208,6 +191,14 @@ public class TranspositionTable {
     private int retrieveMateScore(int score, int plyFromRoot) {
         // On retrieval, adjust the mate score to reflect the number of ply from the root position
         return score > 0 ? score + plyFromRoot : score - plyFromRoot;
+    }
+
+    private int entryScore(int depth, int age) {
+        return depth - 8 * ageDelta(age);
+    }
+
+    private int ageDelta(int previousAge) {
+        return (MAX_AGE + age - previousAge) % MAX_AGE;
     }
 
 }

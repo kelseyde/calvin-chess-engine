@@ -45,7 +45,8 @@ public class Searcher implements Search {
     final ThreadData td;
     final NNUE eval;
 
-    Move bestMoveRoot;
+    Move bestMoveCurrent;
+    int bestScoreCurrent;
 
     TimeControl tc;
     Board board;
@@ -79,8 +80,8 @@ public class Searcher implements Search {
         history.reset();
 
         // The best root move and root score is updated as the search progresses.
-        Move bestMove = null;
-        int bestScore = 0;
+        Move bestMoveRoot = null;
+        int bestScoreRoot = 0;
 
         int maxReduction = config.aspMaxReduction();
 
@@ -102,8 +103,8 @@ public class Searcher implements Search {
             // Based on this guess, we can narrow the alpha-beta window around the previous score, causing more cut-offs
             // and thus speeding up the search. If the true score is outside the window, a costly re-search is required.
             if (td.depth > config.aspMinDepth()) {
-                alpha = Math.max(bestScore - window, Score.MIN);
-                beta = Math.min(bestScore + window, Score.MAX);
+                alpha = Math.max(bestScoreRoot - window, Score.MIN);
+                beta = Math.min(bestScoreRoot + window, Score.MAX);
             }
 
             int aspReduction = 0;
@@ -114,20 +115,20 @@ public class Searcher implements Search {
                 final int searchDepth = Math.max(depth - aspReduction, 1);
                 final int score = search(searchDepth, 0, alpha, beta, false);
 
-                if ((score > alpha && score < beta) || hardLimitReached())
-                    break;
-
                 // Update the best move and evaluation if a better move is found
-                if (this.bestMoveRoot != null) {
-                    history.updateBestMoveStability(bestMove, this.bestMoveRoot);
-                    history.updateBestScoreStability(bestScore, score);
-                    bestMove = this.bestMoveRoot;
-                    bestScore = score;
+                if (bestMoveCurrent != null) {
+                    history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
+                    history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
+                    bestMoveRoot = bestMoveCurrent;
+                    bestScoreRoot = bestScoreCurrent;
                     if (td.isMainThread()) {
                         // Write search info as UCI output. This is only done for the main thread.
-                        UCI.writeSearchInfo(SearchResult.of(bestMove, bestScore, td, tc));
+                        UCI.writeSearchInfo(SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc));
                     }
                 }
+
+                if ((score > alpha && score < beta) || hardLimitReached())
+                    break;
 
                 if (score <= alpha) {
                     aspReduction = 0;
@@ -147,12 +148,12 @@ public class Searcher implements Search {
 
         }
 
-        if (bestMove == null) {
+        if (bestMoveRoot == null) {
             // If time expired before a best move was found in search, pick the first legal move.
-            bestMove = rootMoves.get(0);
+            bestMoveRoot = rootMoves.get(0);
         }
 
-        return SearchResult.of(bestMove, bestScore, td, tc);
+        return SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
 
     }
 
@@ -497,7 +498,8 @@ public class Searcher implements Search {
 
                 sse.bestMove = playedMove;
                 if (rootNode) {
-                    bestMoveRoot = move;
+                    bestMoveCurrent = bestMove;
+                    bestScoreCurrent = bestScore;
                 }
 
                 if (score >= beta) {
@@ -745,7 +747,7 @@ public class Searcher implements Search {
             return false;
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
-        final int bestMoveNodes = td.getNodes(bestMoveRoot);
+        final int bestMoveNodes = td.getNodes(bestMoveCurrent);
         return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 

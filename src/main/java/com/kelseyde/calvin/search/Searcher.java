@@ -219,24 +219,20 @@ public class Searcher implements Search {
         //  a) we are not in a PV node,
         //  b) it was searched to a sufficient depth, and
         //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
-        HashEntry ttEntry = null;
-        boolean ttHit = false;
+        final HashEntry ttEntry = tt.get(board.key(), ply);
+        final boolean ttHit = ttEntry != null;
         boolean ttPrune = false;
 
-        if (!excluded) {
-            ttEntry = tt.get(board.key(), ply);
-            ttHit = ttEntry != null;
-
-            if (!rootNode
-                    && ttHit
-                    && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
-                    && (ttEntry.score() <= alpha || cutNode)) {
-                if (isWithinBounds(ttEntry, alpha, beta)) {
-                    ttPrune = true;
-                }
-                else if (depth <= config.ttExtensionDepth()) {
-                    depth++;
-                }
+        if (!rootNode
+                && !excluded
+                && ttHit
+                && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
+                && (ttEntry.score() <= alpha || cutNode)) {
+            if (isWithinBounds(ttEntry, alpha, beta)) {
+                ttPrune = true;
+            }
+            else if (depth <= config.ttExtensionDepth()) {
+                depth++;
             }
         }
 
@@ -286,8 +282,9 @@ public class Searcher implements Search {
             staticEval = ttMove != null ?
                     rawStaticEval :
                     history.correctEvaluation(board, ss, ply, rawStaticEval);
-            if (ttHit &&
-                    (ttEntry.flag() == HashFlag.EXACT ||
+            if (ttHit
+                    && !excluded
+                    && (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                     (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
                 staticEval = ttEntry.score();
@@ -474,10 +471,10 @@ public class Searcher implements Search {
 
             if (!rootNode
                     && !inCheck
-                    && depth >= 8
+                    && depth >= 7
                     && move.equals(ttMove)
                     && !excluded
-                    && ttEntry.depth() >= depth - 4
+                    && ttEntry.depth() >= depth - 3
                     && !Score.isMateScore(ttEntry.score())
                     && ttEntry.flag() != HashFlag.UPPER) {
 

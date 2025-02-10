@@ -346,12 +346,18 @@ public class MoveGenerator {
 
     private void generateChess960CastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
+        final long rookSquareBit = Bits.of(rookSquare); 
+        if ((pinMask & rookSquareBit) != 0) {
+            // can't castle if rook is pinned 
+        	return;
+        }
         final int kingDst = Castling.kingTo(kingside, white);
         final int rookDst = Castling.rookTo(kingside, white);
 
-        final long kingTravelSquares = (Ray.between(kingSquare, kingDst) | Bits.of(kingDst)) &~ Bits.of(rookSquare);
-        final long rookTravelSquares = (Ray.between(rookSquare, rookDst) | Bits.of(rookDst)) &~ Bits.of(kingSquare);
-        final long travelSquares = kingTravelSquares | rookTravelSquares;
+        final long kingTravelSquares = (Ray.between(kingSquare, kingDst) | Bits.of(kingDst));
+        final long rookTravelSquares = (Ray.between(rookSquare, rookDst) | Bits.of(rookDst));
+        // Warning : King and rook initial positions should be ignored when verifying if cells are free
+        final long travelSquares = (kingTravelSquares | rookTravelSquares) & ~ (rookSquareBit | Bits.of(kingSquare));
 
         final long blockedSquares = travelSquares & occupied;
         final long safeSquares = Bits.of(kingSquare) | Ray.between(kingSquare, kingDst) | Bits.of(kingDst);
@@ -667,8 +673,8 @@ public class MoveGenerator {
         Piece captured = board.pieceAt(to);
         if (captured != null) {
 
-            // Can't capture our own piece
-            if (Bits.contains(board.getPieces(white), to))
+            // Can't capture our own piece except in chess 960 castling
+            if (Bits.contains(board.getPieces(white), to) && !(move.isCastling() && UCI.Options.chess960))
                 return false;
 
             // Can't capture a king
@@ -688,9 +694,15 @@ public class MoveGenerator {
             if (!Bits.contains(rank, from) || !Bits.contains(rank, to))
                 return false;
 
-            // TODO incorrect for Chess960
-            int kingsideCastleSquare = white ? 6 : 62;
-            int queensideCastleSquare = white ? 2 : 58;
+            int kingsideCastleSquare;
+            int queensideCastleSquare;
+            if (UCI.Options.chess960) {
+            	kingsideCastleSquare = Castling.getRook(board.getState().rights, true, white);
+            	queensideCastleSquare = Castling.getRook(board.getState().rights, false, white);
+            } else {
+	            kingsideCastleSquare = white ? 6 : 62;
+	            queensideCastleSquare = white ? 2 : 58;
+            }
 
             // Must be valid castling squares
             if (to != kingsideCastleSquare && to != queensideCastleSquare)
@@ -705,13 +717,25 @@ public class MoveGenerator {
                 return false;
 
             boolean kingside = to == kingsideCastleSquare;
+            
+            final long travelSquares;
+            final long safeSquares;
+            if (UCI.Options.chess960) {
+	            int kingDst = Castling.kingTo(kingside, white);
+	            final int rookDst = Castling.rookTo(kingside, white);
+	            final long kingTravelSquares = (Ray.between(from, kingDst) | Bits.of(kingDst));
+	            final long rookTravelSquares = (Ray.between(to, rookDst) | Bits.of(rookDst));
+	            // Warning : King and rook initial positions should be ignored when verifying if cells are free
+	            travelSquares = (kingTravelSquares | rookTravelSquares) & ~ (Bits.of(to) | Bits.of(from));
+	            safeSquares = Bits.of(from) | Ray.between(from, kingDst) | Bits.of(kingDst);
+           } else {
+	            final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
+	            travelSquares = Ray.between(from, rookSquare);
+	            safeSquares = Castling.Standard.safeSquares(white, kingside);
+            }
 
-            final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
-            final long travelSquares = Ray.between(from, rookSquare);
             final long blockedSquares = travelSquares & occupied;
-            final long safeSquares = Bits.of(from) | travelSquares;
-
-            // Can't castle through check
+            // Can't castle through check or occupied cell
             return blockedSquares == 0 && !isAttacked(board, white, safeSquares);
 
         }

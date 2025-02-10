@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 @Disabled
 public class KiwipeteSPerftTest extends SPerftTest {
 
-    private final String fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
+    private static final String FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ";
 
-    private final String subFolder = "kiwipete";
+    private static final String SUB_FOLDER = "kiwipete";
 
     @Test
     public void testDepthFive() {
@@ -27,11 +27,11 @@ public class KiwipeteSPerftTest extends SPerftTest {
 
     @Override
     protected String getFen() {
-        return fen;
+        return FEN;
     }
 
     @Override
     protected String getSubFolder() {
-        return subFolder;
+        return SUB_FOLDER;
     }
 }

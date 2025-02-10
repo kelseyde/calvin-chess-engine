@@ -18,9 +18,7 @@ import java.time.Instant;
  */
 public record TimeControl(EngineConfig config, Instant start, Duration softTime, Duration hardTime, int softNodes, int hardNodes, int maxDepth) {
 
-    public static TimeControl init(EngineConfig config, Board board, GoCommand command) {
-
-        Instant start = Instant.now();
+    public static TimeControl init(EngineConfig config, Board board, Instant start, GoCommand command) {
 
         double time;
         double inc;
@@ -43,12 +41,12 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         if (time <= 0) time = 1000;
         if (inc < 0) inc = 0;
 
-        double timeFactor = config.timeFactor.value / 100.0;
-        double incrementFactor = config.incrementFactor.value / 100.0;
+        double timeFactor = config.timeFactor() / 100.0;
+        double incrementFactor = config.incrementFactor() / 100.0;
         double base = time * timeFactor + inc * incrementFactor;
 
-        double softFactor = config.softTimeFactor.value / 100.0;
-        double hardFactor = config.hardTimeFactor.value / 100.0;
+        double softFactor = config.softTimeFactor() / 100.0;
+        double hardFactor = config.hardTimeFactor() / 100.0;
 
         Duration softLimit = Duration.ofMillis((int) (base * softFactor));
         Duration hardLimit = Duration.ofMillis((int) (base * hardFactor));
@@ -65,22 +63,23 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         if (nodes % 4096 != 0) return false;
         if (hardNodes > 0 && nodes >= hardNodes) return true;
         if (maxDepth > 0 && depth >= maxDepth) return true;
-        Duration expired = Duration.between(start, Instant.now());
-        return expired.compareTo(hardTime) > 0;
+        final Duration expired = Duration.between(start, Instant.now());
+        final Duration overhead = Duration.ofMillis(config.uciOverhead());
+        return expired.compareTo(hardTime.minus(overhead)) > 0;
     }
 
     public boolean isSoftLimitReached(int depth, int nodes, int bestMoveNodes, int bestMoveStability, int evalStability) {
         if (maxDepth > 0 && depth >= maxDepth) return true;
         if (softNodes > 0 && nodes >= softNodes) return true;
-        Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
+        final Duration expired = Duration.between(start, Instant.now());
+        final Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 
     private Duration adjustSoftLimit(
             Duration softLimit, int nodes, int bestMoveNodes, int bestMoveStability, int scoreStability, int depth) {
 
-        int overhead = config.uciOverhead.value;
+        int overhead = config.uciOverhead();
         long hardLimit = hardTime.toMillis() - overhead;
 
         // Apply soft-limit scaling heuristics
@@ -102,42 +101,40 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
     // Scale the soft limit based on the stability of the best move. If the best move has remained stable for several
     // iterations, we can safely assume that we don't need to spend as much time searching further.
     private double bestMoveStabilityFactor(EngineConfig config, int depth, int bestMoveStability) {
-        if (depth < config.bmStabilityMinDepth.value) {
+        if (depth < config.bmStabilityMinDepth()) {
             return 1.0;
         }
-        bestMoveStability = Math.min(bestMoveStability, config.bmStabilityFactor.length - 1);
-        return config.bmStabilityFactor[bestMoveStability] / 100.0;
+        bestMoveStability = Math.min(bestMoveStability, config.bmStabilityFactor().length - 1);
+        return config.bmStabilityFactor()[bestMoveStability] / 100.0;
     }
 
     // Scale the soft limit based on the stability of the search score. If the evaluation has remained stable for
     // several iterations, we can safely assume that we don't need to spend as much time searching further.
     private double scoreStabilityFactor(EngineConfig config, int depth, int scoreStability) {
-        if (depth < config.scoreStabilityMinDepth.value) {
+        if (depth < config.scoreStabilityMinDepth()) {
             return 1.0;
         }
-        scoreStability = Math.min(scoreStability, config.scoreStabilityFactor.length - 1);
-        return config.scoreStabilityFactor[scoreStability] / 100.0;
+        scoreStability = Math.min(scoreStability, config.scoreStabilityFactor().length - 1);
+        return config.scoreStabilityFactor()[scoreStability] / 100.0;
     }
 
     // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
     // of the search has been spent on the best move, we can assume that the best move is more likely to be correct,
     // and therefore we can spend less time searching further.
     private double nodeTmFactor(EngineConfig config, int depth, int bestMoveNodes, int nodes) {
-        if (depth < config.nodeTmMinDepth.value) {
+        if (depth < config.nodeTmMinDepth()) {
             return 1.0;
         }
         double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
-        double nodeTmBase = (double) config.nodeTmBase.value / 100;
-        double nodeTmScale = (double) config.nodeTmScale.value / 100;
+        double nodeTmBase = (double) config.nodeTmBase() / 100;
+        double nodeTmScale = (double) config.nodeTmScale() / 100;
         return (nodeTmBase - bestMoveNodeFraction) * nodeTmScale;
     }
 
     private double clampScale(double scale) {
-        double scaleMin = config.softTimeScaleMin.value / 100.0;
-        double scaleMax = config.softTimeScaleMax.value / 100.0;
+        double scaleMin = config.softTimeScaleMin() / 100.0;
+        double scaleMax = config.softTimeScaleMax() / 100.0;
         return Math.min(Math.max(scale, scaleMin), scaleMax);
     }
-
-
 
 }

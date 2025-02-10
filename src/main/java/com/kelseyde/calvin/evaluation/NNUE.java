@@ -3,9 +3,13 @@ package com.kelseyde.calvin.evaluation;
 import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.evaluation.Accumulator.AccumulatorUpdate;
+import com.kelseyde.calvin.evaluation.InputBucketCache.BucketCacheEntry;
 import com.kelseyde.calvin.evaluation.activation.Activation;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.uci.UCI;
+
+import java.util.Arrays;
 
 /**
  * Calvin's evaluation function is an Efficiently Updatable Neural Network (NNUE).
@@ -16,23 +20,35 @@ import com.kelseyde.calvin.uci.UCI;
  * relevant pieces need to be re-calculated, not the features of the entire board; this is a significant speed boost.
  * <p>
  * The network was trained on positions taken from a dataset of Leela Chess Zero, which were then re-scored with
- * Calvin's own search and hand-crafted evaluation.
+ * Calvin's own search and evaluation.
  *
  * @see <a href="https://www.chessprogramming.org/NNUE">Chess Programming Wiki</a>
  */
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("calvin1024.nnue")
+            .file("calvin1024_4b.nnue")
             .inputSize(768)
             .hiddenSize(1024)
             .activation(Activation.SCReLU)
             .horizontalMirror(true)
+            .inputBuckets(new int[] {
+                    0, 0, 1, 1, 1, 1, 0, 0,
+                    2, 2, 2, 2, 2, 2, 2, 2,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+                    3, 3, 3, 3, 3, 3, 3, 3,
+            })
             .quantisations(new int[]{255, 64})
             .scale(400)
             .build();
 
+
     private Accumulator[] accumulatorStack;
+    private InputBucketCache bucketCache;
     private int current;
     private Board board;
 
@@ -40,6 +56,7 @@ public class NNUE {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
+        this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }
 
     public NNUE(Board board) {
@@ -47,7 +64,8 @@ public class NNUE {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
-        activateAll(board);
+        this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
+        fullRefresh(board);
     }
 
     public int evaluate() {
@@ -69,119 +87,169 @@ public class NNUE {
 
     }
 
-    private void activateAll(Board board) {
+    private void fullRefresh(Board board) {
+
+        // Fully refresh the accumulator from both perspectives with the features of all pieces on the board.
         final Accumulator acc = accumulatorStack[current];
-        fullRefresh(board, acc, true);
-        fullRefresh(board, acc, false);
+        final boolean whiteMirror = shouldMirror(board.kingSquare(true));
+        final boolean blackMirror = shouldMirror(board.kingSquare(false));
+        int whiteKingBucket = kingBucket(board.kingSquare(true), true);
+        int blackKingBucket = kingBucket(board.kingSquare(false), false);
+        fullRefresh(board, acc, true, whiteMirror, whiteKingBucket);
+        fullRefresh(board, acc, false, blackMirror, blackKingBucket);
+
     }
 
-    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective) {
-        final int kingSquare = board.kingSquare(whitePerspective);
-        final boolean mirror = NETWORK.horizontalMirror() && shouldMirror(kingSquare);
-        fullRefresh(board, acc, whitePerspective, mirror);
-    }
+    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror, int bucket) {
 
-    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror) {
-        acc.reset(whitePerspective);
-        long pieces = board.getOccupied();
-        while (pieces != 0) {
-            int square = Bits.next(pieces);
-            final Piece piece = board.pieceAt(square);
-            final boolean whitePiece = Bits.contains(board.getWhitePieces(), square);
-            final int index = featureIndex(piece, square, mirror, whitePiece, whitePerspective);
-            acc.add(index, whitePerspective);
-            pieces = Bits.pop(pieces);
+        // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
+        acc.mirrored[Colour.index(whitePerspective)] = mirror;
+
+        BucketCacheEntry cacheEntry = bucketCache.get(whitePerspective, mirror, bucket);
+        short[] cachedFeatures = cacheEntry.features;
+
+        if (cachedFeatures == null) {
+            // If there is no cached accumulator for this bucket, then we will need to
+            // reset every feature in the accumulator to the initial bias value.
+            cachedFeatures = Arrays.copyOf(NETWORK.inputBiases(), NETWORK.inputBiases().length);
         }
+        acc.copyFrom(cachedFeatures, whitePerspective);
+
+        final short[] weights = NETWORK.inputWeights()[bucket];
+
+        // Loop over each colour and piece type
+        for (int colourIndex = 0; colourIndex < 2; colourIndex++) {
+            final boolean white = colourIndex == 0;
+            for (int pieceIndex = 0; pieceIndex < Piece.COUNT; pieceIndex++) {
+
+                final Piece piece = Piece.values()[pieceIndex];
+                final long pieces = board.getPieces(piece, white);
+                final long cachedPieces = cacheEntry.bitboards[pieceIndex] & cacheEntry.bitboards[Piece.COUNT + colourIndex];
+
+                // Calculate which pieces need to be added and removed from the accumulator.
+                long added = pieces & ~cachedPieces;
+                while (added != 0) {
+                    final int square = Bits.next(added);
+                    Feature feature = new Feature(piece, square, white);
+                    acc.add(weights, feature, whitePerspective);
+                    added = Bits.pop(added);
+                }
+
+                long removed = cachedPieces & ~pieces;
+                while (removed != 0) {
+                    final int square = Bits.next(removed);
+                    Feature feature = new Feature(piece, square, white);
+                    acc.sub(weights, feature, whitePerspective);
+                    removed = Bits.pop(removed);
+                }
+
+            }
+        }
+
+        // Finally, update the cache entry with the new board state and accumulated features.
+        cacheEntry.bitboards = Arrays.copyOf(board.getBitboards(), Piece.COUNT + 2);
+        cacheEntry.features = Arrays.copyOf(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, NETWORK.hiddenSize());
+
     }
 
-    /**
-     * Efficiently update only the relevant features of the network after a move has been made.
-     */
+
     public void makeMove(Board board, Move move) {
 
+        // Efficiently update only the relevant features of the network after a move has been made.
         final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
         final boolean white = board.isWhite();
-        final int from = move.from();
-        final int to = move.to();
-        final Piece piece = board.pieceAt(from);
-        if (piece == null) return;
 
+        final Piece piece = board.pieceAt(move.from());
         final int whiteKingSquare = board.kingSquare(true);
         final int blackKingSquare = board.kingSquare(false);
-        boolean whiteMirror = NETWORK.horizontalMirror() && shouldMirror(whiteKingSquare);
-        boolean blackMirror = NETWORK.horizontalMirror() && shouldMirror(blackKingSquare);
 
-        if (mustRefresh(board, move, piece)) {
-            if (white) {
-                whiteMirror = !whiteMirror;
-            } else {
-                blackMirror = !blackMirror;
+        final int whiteKingBucket = board.isWhite() ?
+                calculateNewKingBucket(whiteKingSquare, move, piece, true) :
+                kingBucket(whiteKingSquare, true);
+
+        final int blackKingBucket = board.isWhite() ?
+                kingBucket(blackKingSquare, false) :
+                calculateNewKingBucket(blackKingSquare, move, piece, false);
+
+        final short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
+        final short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
+
+        // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
+        // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
+        final boolean mirrorChanged = mirrorChanged(board, move, piece);
+        final boolean bucketChanged = bucketChanged(board, move, piece, white);
+        if (mirrorChanged || bucketChanged) {
+            boolean mirror = shouldMirror(board.kingSquare(white));
+            if (mirrorChanged) {
+                mirror = !mirror;
             }
-            boolean mirror = white ? whiteMirror : blackMirror;
-            fullRefresh(board, acc, white, mirror);
+            final int bucket = white ? whiteKingBucket : blackKingBucket;
+            fullRefresh(board, acc, white, mirror, bucket);
         }
 
+        // Determine which features need to be updated based on the move type (standard, capture, or castle).
+        final AccumulatorUpdate update = switch (moveType(board, move)) {
+            case STANDARD -> handleStandardMove(board, move, white);
+            case CASTLE -> handleCastleMove(move, white);
+            case CAPTURE -> handleCapture(board, move, white);
+        };
+
+        // Apply the update to the accumulator.
+        acc.apply(update, whiteWeights, blackWeights);
+
+    }
+
+    private AccumulatorUpdate handleStandardMove(Board board, Move move, boolean white) {
+
+        // For standard moves we simply need to remove the piece from the 'from' square and add it to the 'to' square.
+        final Piece piece = board.pieceAt(move.from());
         final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
-        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
 
-        if (move.isCastling()) {
-            handleCastleMove(acc, move, whiteMirror, blackMirror, white);
-        }
-        else if (captured != null) {
-            handleCapture(acc, move, piece, newPiece, captured, whiteMirror, blackMirror, white);
-        }
-        else {
-            handleStandardMove(acc, move, piece, newPiece, whiteMirror, blackMirror, white);
-        }
+        AccumulatorUpdate update = new AccumulatorUpdate();
+        update.pushAdd(new Feature(newPiece, move.to(), white));
+        update.pushSub(new Feature(piece, move.from(), white));
+        return update;
 
     }
 
-    private void handleStandardMove(Accumulator acc, Move move, Piece piece, Piece newPiece, boolean whiteMirror, boolean blackMirror, boolean white) {
-        final int wSub = featureIndex(piece, move.from(), whiteMirror, white, true);
-        final int bSub = featureIndex(piece, move.from(), blackMirror, white, false);
+    private AccumulatorUpdate handleCastleMove(Move move, boolean white) {
 
-        final int wAdd = featureIndex(newPiece, move.to(), whiteMirror, white, true);
-        final int bAdd = featureIndex(newPiece, move.to(), blackMirror, white, false);
-
-        acc.addSub(wAdd, bAdd, wSub, bSub);
-    }
-
-    private void handleCastleMove(Accumulator acc, Move move, boolean whiteMirror, boolean blackMirror, boolean white) {
+        // For castling moves we need to move both the king and the rook, with some special handling for Chess960.
+        AccumulatorUpdate update = new AccumulatorUpdate();
         final boolean kingside = Castling.isKingside(move.from(), move.to());
 
         // In Chess960, castling is encoded as 'king captures rook'.
+        final int kingFrom = move.from();
         final int kingTo = UCI.Options.chess960 ? Castling.kingTo(kingside, white) : move.to();
         final int rookFrom = UCI.Options.chess960 ? move.to() : Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
 
-        final int wSub1 = featureIndex(Piece.KING, move.from(), whiteMirror, white, true);
-        final int bSub1 = featureIndex(Piece.KING, move.from(), blackMirror, white, false);
-        final int wAdd1 = featureIndex(Piece.KING, kingTo, whiteMirror, white, true);
-        final int bAdd1 = featureIndex(Piece.KING, kingTo, blackMirror, white, false);
+        update.pushSub(new Feature(Piece.KING, kingFrom, white));
+        update.pushSub(new Feature(Piece.ROOK, rookFrom, white));
+        update.pushAdd(new Feature(Piece.KING, kingTo, white));
+        update.pushAdd(new Feature(Piece.ROOK, rookTo, white));
 
-        final int wSub2 = featureIndex(Piece.ROOK, rookFrom, whiteMirror, white, true);
-        final int bSub2 = featureIndex(Piece.ROOK, rookFrom, blackMirror, white, false);
-        final int wAdd2 = featureIndex(Piece.ROOK, rookTo, whiteMirror, white, true);
-        final int bAdd2 = featureIndex(Piece.ROOK, rookTo, blackMirror, white, false);
+        return update;
 
-        acc.addAddSubSub(wAdd1, bAdd1, wAdd2, bAdd2, wSub1, bSub1, wSub2, bSub2);
     }
 
-    private void handleCapture(
-            Accumulator acc, Move move, Piece piece, Piece newPiece, Piece captured, boolean whiteMirror, boolean blackMirror, boolean white) {
-        final int wSub1 = featureIndex(piece, move.from(), whiteMirror, white, true);
-        final int bSub1 = featureIndex(piece, move.from(), blackMirror, white, false);
+    private AccumulatorUpdate handleCapture(Board board, Move move, boolean white) {
 
-        final int wAdd1 = featureIndex(newPiece, move.to(), whiteMirror, white, true);
-        final int bAdd1 = featureIndex(newPiece, move.to(), blackMirror, white, false);
+        // For captures, we need to remove the captured piece as well as updating the capturing piece.
+        final Piece piece = board.pieceAt(move.from());
+        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
+        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
 
+        AccumulatorUpdate update = new AccumulatorUpdate();
         int captureSquare = move.to();
-        if (move.isEnPassant()) captureSquare = white ? move.to() - 8 : move.to() + 8;
+        if (move.isEnPassant()) {
+            captureSquare = white ? move.to() - 8 : move.to() + 8;
+        }
+        update.pushSub(new Feature(piece, move.from(), white));
+        update.pushAdd(new Feature(newPiece, move.to(), white));
+        update.pushSub(new Feature(captured, captureSquare, !white));
+        return update;
 
-        final int wSub2 = featureIndex(captured, captureSquare, whiteMirror, !white, true);
-        final int bSub2 = featureIndex(captured, captureSquare, blackMirror, !white, false);
-
-        acc.addSubSub(wAdd1, bAdd1, wSub1, bSub1, wSub2, bSub2);
     }
 
     public void unmakeMove() {
@@ -191,7 +259,7 @@ public class NNUE {
     public void setPosition(Board board) {
         clearHistory();
         this.board = board;
-        activateAll(board);
+        fullRefresh(board);
     }
 
     private int scaleEvaluation(Board board, int eval) {
@@ -217,9 +285,10 @@ public class NNUE {
         return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
-    private boolean mustRefresh(Board board, Move move, Piece piece) {
-        if (!NETWORK.horizontalMirror()) return false;
-        if (piece != Piece.KING) return false;
+    private boolean mirrorChanged(Board board, Move move, Piece piece) {
+        if (!NETWORK.horizontalMirror() || piece != Piece.KING) {
+            return false;
+        }
         int prevKingSquare = move.from();
         int currKingSquare = move.to();
         if (move.isCastling() && UCI.Options.chess960) {
@@ -229,28 +298,62 @@ public class NNUE {
         return shouldMirror(prevKingSquare) != shouldMirror(currKingSquare);
     }
 
-    private boolean shouldMirror(int kingSquare) {
-        return File.of(kingSquare) > 3;
+    private boolean bucketChanged(Board board, Move move, Piece piece, boolean white) {
+        if (piece != Piece.KING) {
+            return false;
+        }
+        int prevKingSquare = move.from();
+        int currKingSquare = move.to();
+        if (move.isCastling() && UCI.Options.chess960) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            currKingSquare = Castling.kingTo(kingside, board.isWhite());
+        }
+        return kingBucket(prevKingSquare, white) != kingBucket(currKingSquare, white);
     }
 
-    /**
-     * Compute the index of the feature vector for a given piece, colour and square. Features from black's perspective
-     * are mirrored (the square index is vertically flipped) in order to preserve symmetry.
-     */
-    private static int featureIndex(Piece piece, int square, boolean mirror, boolean whitePiece, boolean whitePerspective) {
-        int squareIndex = whitePerspective ? square : Square.flipRank(square);
-        if (mirror) squareIndex = Square.flipFile(squareIndex);
-        final int pieceIndex = piece.index();
-        final int pieceOffset = pieceIndex * Square.COUNT;
-        final boolean ourPiece = whitePiece == whitePerspective;
-        final int colourOffset = ourPiece ? 0 : (Square.COUNT * Piece.COUNT);
-        return colourOffset + pieceOffset + squareIndex;
+    private boolean shouldMirror(int kingSquare) {
+        return NETWORK.horizontalMirror() && File.of(kingSquare) > 3;
+    }
+
+    private int calculateNewKingBucket(int kingSquare, Move move, Piece piece, boolean white) {
+        if (move == null) return kingBucket(kingSquare, white);
+        if (piece != Piece.KING) return kingBucket(kingSquare, white);
+        int to = move.to();
+        if (move.isCastling()) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            to = UCI.Options.chess960 ? Castling.kingTo(kingside, board.isWhite()) : move.to();
+        }
+        return kingBucket(to, white);
+    }
+
+    private int kingBucket(int kingSquare, boolean white) {
+        if (!white) {
+            kingSquare = Square.flipRank(kingSquare);
+        }
+        return NETWORK.inputBuckets()[kingSquare];
+    }
+
+    private MoveType moveType(Board board, Move move) {
+        if (move.isCastling()) {
+            return MoveType.CASTLE;
+        } else if (move.isEnPassant() || board.pieceAt(move.to()) != null) {
+            return MoveType.CAPTURE;
+        } else {
+            return MoveType.STANDARD;
+        }
     }
 
     public void clearHistory() {
         this.current = 0;
         this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
         this.accumulatorStack[0] = new Accumulator(NETWORK.hiddenSize());
+        this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
+    }
+
+    private enum MoveType {
+        STANDARD,
+        CAPTURE,
+        CASTLE
     }
 
 }

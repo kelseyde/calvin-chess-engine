@@ -1,5 +1,8 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.search.SearchHistory.PlayedMove;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class SearchStack {
@@ -27,7 +30,7 @@ public class SearchStack {
         public PlayedMove currentMove;
         public PlayedMove bestMove;
         public boolean nullMoveAllowed = true;
-        public List<PlayedMove> searchedMoves;
+        public List<PlayedMove> searchedMoves = new ArrayList<>();
     }
 
 }

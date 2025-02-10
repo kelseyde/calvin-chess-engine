@@ -353,6 +353,18 @@ public class Searcher implements Search {
 
         }
 
+        // SF probcut idea
+        int probCutBeta = beta + 413;
+        if (ttHit
+                && ttEntry.flag() == HashFlag.LOWER
+                && ttEntry.depth() >= depth - 4
+                && ttEntry.score() >= probCutBeta
+                && !Score.isMateScore(beta)
+                && Score.isDefinedScore(ttEntry.score())
+                && !Score.isMateScore(ttEntry.score())) {
+            return probCutBeta;
+        }
+
         // We have decided that the current node should not be pruned and is worth examining further.
         // Now we begin iterating through the legal moves in the position and searching deeper in the tree.
 

@@ -79,7 +79,7 @@ public class MoveScorer {
         score += SEE.value(captured);
 
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
-        score += historyScore / 8;
+        score += historyScore / 4;
 
         final int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
 

@@ -4,6 +4,11 @@ import com.kelseyde.calvin.uci.Pretty;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Reports the progress of a data generation session.
  */
@@ -31,8 +36,25 @@ public class DatagenReporter {
         }
     }
 
-    public void reportDatagenProgress() {
-        // TODO
+    public void reportDatagenProgress(DatagenCommand command, Instant start, int current) {
+        Duration duration = Duration.between(start, Instant.now()).truncatedTo(ChronoUnit.SECONDS);
+        int total = command.positions();
+        int remaining = total - current;
+        double rate = (double) current / duration.getSeconds();
+        String rateFormatted = String.format("%.0f", rate);
+        Duration estimate = Duration.ofSeconds((long) (remaining / rate)).truncatedTo(ChronoUnit.SECONDS);
+
+        if (UCI.Options.pretty) {
+            System.out.printf("generated %s%d/%d positions %s, time %s%s%s, pos/s %s%s%s, remaining pos %s%s%s remaining time %s%s%s\n",
+                    Pretty.CYAN, current, total, Pretty.RESET,
+                    Pretty.CYAN, duration, Pretty.RESET,
+                    Pretty.CYAN, rateFormatted, Pretty.RESET,
+                    Pretty.CYAN, remaining, Pretty.RESET,
+                    Pretty.CYAN, estimate, Pretty.RESET);
+        } else {
+            System.out.printf("info string generated %d/%d positions, time %s, pos/s %s, remaining pos %s remaining time %s\n",
+                    current, total, duration, rateFormatted, remaining, estimate);
+        }
     }
 
 }

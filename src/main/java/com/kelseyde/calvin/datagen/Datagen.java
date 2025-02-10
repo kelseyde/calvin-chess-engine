@@ -2,7 +2,8 @@ package com.kelseyde.calvin.datagen;
 
 import com.kelseyde.calvin.datagen.dataformat.DataFormat;
 import com.kelseyde.calvin.datagen.dataformat.DataFormat.DataPoint;
-import com.kelseyde.calvin.datagen.dataformat.MarlinFormat;
+import com.kelseyde.calvin.datagen.dataformat.PlainFormat;
+import com.kelseyde.calvin.uci.UCI;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,39 +24,45 @@ public class Datagen {
     private final DatagenReporter reporter;
 
     public Datagen() {
-        this.formatter = new MarlinFormat();
+        this.formatter = new PlainFormat();
         this.reporter = new DatagenReporter();
     }
 
-    public void generate(DatagenCommand command) throws IOException {
+    public void generate(DatagenCommand command) {
 
         reporter.reportDatagenInfo(command);
 
-        // Initialise the output file, creating a new file if it doesn't exist.
-        Path outputPath = Paths.get(command.file());
-        if (!Files.exists(outputPath)) {
-            Files.createFile(outputPath);
-        }
+        try {
 
-        Instant start = Instant.now();
-        int positions = 0;
+            // Initialise the output file, creating a new file if it doesn't exist.
+            Path outputPath = Paths.get(command.file());
+            if (!Files.exists(outputPath)) {
+                Files.createFile(outputPath);
+            }
 
-        // Initialise the threads which will generate the data.
-        List<CompletableFuture<List<DataPoint>>> threads = initThreads(command);
+            Instant start = Instant.now();
+            int positions = 0;
 
-        while (positions < command.positions()) {
+            // Initialise the threads which will generate the data.
+            List<CompletableFuture<List<DataPoint>>> threads = initThreads(command);
 
-            // Call the datagen threads to generate a batch of data
-            List<DataPoint> result = threads.stream().map(CompletableFuture::join).flatMap(List::stream).toList();
-            positions += result.size();
+            while (positions < command.positions()) {
 
-            // Convert the data to the chosen data format and write it to the output file
-            String formatted = formatter.serialize(result);
-            Files.writeString(outputPath, formatted, java.nio.file.StandardOpenOption.APPEND);
+                // Call the datagen threads to generate a batch of data
+                List<DataPoint> result = threads.stream().map(CompletableFuture::join).flatMap(List::stream).toList();
+                positions += result.size();
 
-            // Report the progress of the data generation.
-            reporter.reportDatagenProgress();
+                // Convert the data to the chosen data format and write it to the output file
+                String formatted = formatter.serialize(result);
+                Files.writeString(outputPath, formatted, java.nio.file.StandardOpenOption.APPEND);
 
+                // Report the progress of the data generation.
+                reporter.reportDatagenProgress(command, start, positions);
+
+            }
+
+        } catch (IOException e) {
+            UCI.writeError("Error during datagen!", e);
         }
 
     }

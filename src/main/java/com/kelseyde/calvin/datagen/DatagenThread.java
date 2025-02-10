@@ -12,6 +12,7 @@ import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.search.ThreadData;
 import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
+import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.time.Duration;
@@ -42,7 +43,7 @@ public class DatagenThread {
     public DatagenThread(DatagenCommand command) {
         this.searcher = new Searcher(Engine.getInstance().getConfig(), new TranspositionTable(16), new ThreadData(false));
         this.movegen = new MoveGenerator();
-        this.adjudicator = new Adjudicator(command, movegen);
+        this.adjudicator = new Adjudicator(command);
         this.tc = initTimeControl(command);
         this.random = new Random();
         this.batchSize = command.batchSize();
@@ -61,46 +62,61 @@ public class DatagenThread {
     }
 
     private List<DataPoint> runGame() {
-        searcher.clearHistory();
-        adjudicator.reset();
-        String[] fens = new String[maxGameLength];
-        Integer[] scores = new Integer[maxGameLength];
-        List<DataPoint> data;
-        Board board = randomBoard();
-        searcher.setPosition(board);
-        int initialScore = searcher.search(tc).eval();
-        if (Math.abs(initialScore) > initialScoreThreshold) {
-            return runGame();
-        }
 
-        int positionCount = 0;
-
-        while (true) {
+        try {
+            searcher.clearHistory();
+            adjudicator.reset();
+            String[] fens = new String[maxGameLength];
+            Integer[] scores = new Integer[maxGameLength];
+            List<DataPoint> data;
+            Board board = randomBoard();
             searcher.setPosition(board);
-            SearchResult searchResult = searcher.search(tc);
-
-            Move move = searchResult.move();
-            int score = searchResult.eval();
-
-            boolean isCheck = movegen.isCheck(board, board.isWhite());
-            boolean isCapture = board.pieceAt(move.to()) != null || move.isEnPassant();
-
-            Optional<GameResult> gameResult = adjudicator.adjudicate(board, move, score, isCheck);
-            if (gameResult.isPresent()) {
-                data = convertGame(fens, scores, gameResult.get());
-                break;
+            int initialScore = searcher.search(tc).eval();
+            if (Math.abs(initialScore) > initialScoreThreshold) {
+                return runGame();
             }
 
-            if (!isCheck && !isCapture) {
-                fens[positionCount] = FEN.toFEN(board);
-                scores[positionCount] = board.isWhite() ? score : -score;
-                positionCount++;
+            int positionCount = 0;
+
+            while (true) {
+
+                searcher.setPosition(board);
+                SearchResult searchResult = searcher.search(tc);
+
+                Move move = searchResult.move();
+                boolean isCheck = movegen.isCheck(board, board.isWhite());
+
+                if (move == null) {
+                    GameResult result = adjudicator.finalResult(board, isCheck);
+                    data = convertGame(fens, scores, result);
+                    break;
+                }
+
+                int score = searchResult.eval();
+                boolean isCapture = board.pieceAt(move.to()) != null || move.isEnPassant();
+
+                Optional<GameResult> gameResult = adjudicator.adjudicate(board, move, score);
+                if (gameResult.isPresent()) {
+                    data = convertGame(fens, scores, gameResult.get());
+                    break;
+                }
+
+                if (!isCheck && !isCapture) {
+                    fens[positionCount] = FEN.toFEN(board);
+                    scores[positionCount] = board.isWhite() ? score : -score;
+                    positionCount++;
+                }
+
+                board.makeMove(move);
+
             }
 
-            board.makeMove(move);
-
+            return data;
+        } catch (Exception e) {
+            UCI.writeError("Error during datagen!", e);
+            return new ArrayList<>();
         }
-        return data;
+
     }
 
     private List<DataPoint> convertGame(String[] fens, Integer[] scores, GameResult result) {

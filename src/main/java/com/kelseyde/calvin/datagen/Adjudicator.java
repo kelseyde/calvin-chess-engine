@@ -26,8 +26,6 @@ public class Adjudicator {
         }
     }
 
-    private final MoveGenerator movegen;
-
     private final int winThreshold;
     private final int winPliesThreshold;
     private final int drawThreshold;
@@ -37,23 +35,14 @@ public class Adjudicator {
     private int lossPlies;
     private int drawPlies;
 
-    public Adjudicator(DatagenCommand command, MoveGenerator movegen) {
-        this.movegen = movegen;
+    public Adjudicator(DatagenCommand command) {
         this.winThreshold = command.winThreshold();
         this.winPliesThreshold = command.winPliesThreshold();
         this.drawThreshold = command.drawThreshold();
         this.drawPliesThreshold = command.drawPliesThreshold();
     }
 
-    public Optional<GameResult> adjudicate(Board board, Move move, int score, boolean isCheck) {
-        List<Move> moves = legalMoves(board, move);
-        if (moves.isEmpty()) {
-            if (isCheck) {
-                return Optional.of(board.isWhite() ? GameResult.WHITE_WIN : GameResult.BLACK_WIN);
-            } else {
-                return Optional.of(GameResult.DRAW);
-            }
-        }
+    public Optional<GameResult> adjudicate(Board board, Move move, int score) {
         int whiteScore = board.isWhite() ? score : -score;
         if (whiteScore >= winThreshold) {
             winPlies++;
@@ -87,17 +76,17 @@ public class Adjudicator {
         return Optional.empty();
     }
 
+    public GameResult finalResult(Board board, boolean isCheck) {
+        if (isCheck) {
+            return board.isWhite() ? GameResult.BLACK_WIN : GameResult.WHITE_WIN;
+        }
+        return GameResult.DRAW;
+    }
+
     public void reset() {
         winPlies = 0;
         lossPlies = 0;
         drawPlies = 0;
-    }
-
-    private List<Move> legalMoves(Board board, Move move) {
-        board.makeMove(move);
-        List<Move> legalMoves = movegen.generateMoves(board);
-        board.unmakeMove();
-        return legalMoves;
     }
 
 }

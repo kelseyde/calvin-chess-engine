@@ -22,6 +22,7 @@ enum UCICommandType {
     THREATS      ("threats",     UCI::handleThreats),
     PARAMS       ("params",      UCI::handleParams),
     BENCH        ("bench",       UCI::handleBench),
+    DATAGEN      ("datagen",     UCI::handleDatagen),
     SCORE_DATA   ("scoredata",   UCI::handleScoreData),
     STOP         ("stop",        UCI::handleStop),
     QUIT         ("quit",        UCI::handleQuit),

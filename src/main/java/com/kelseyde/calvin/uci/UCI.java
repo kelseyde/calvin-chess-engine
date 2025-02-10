@@ -2,6 +2,8 @@ package com.kelseyde.calvin.uci;
 
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.datagen.Datagen;
+import com.kelseyde.calvin.datagen.DatagenCommand;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.engine.EngineConfig.Tunable;
@@ -127,6 +129,12 @@ public class UCI {
             case "UCI_Chess960":  handleChess960(command); break;
             default:              ENGINE.getConfig().setTunable(command); break;
         }
+    }
+
+    public static void handleDatagen(UCICommand command) {
+        Datagen datagen = new Datagen();
+        DatagenCommand datagenCommand = DatagenCommand.parse(command);
+        datagen.generate(datagenCommand);
     }
 
     public static void handleScoreData(UCICommand command) {

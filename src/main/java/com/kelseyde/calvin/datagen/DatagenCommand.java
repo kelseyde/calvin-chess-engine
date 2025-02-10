@@ -23,7 +23,7 @@ public record DatagenCommand(String file,
         int threads                 = command.getInt("threads", 1, false);
         int batchSize               = command.getInt("batchSize", 16384, false);
         int softNodes               = command.getInt("softNodes", 5000, false);
-        int hardNodes               = command.getInt("hardNodes", 100000, false);
+        int hardNodes               = command.getInt("hardNodes", 1000000, false);
         int minPlies                = command.getInt("minPlies", 8, false);
         int maxPlies                = command.getInt("maxPlies", 9, false);
         int maxGameLength           = command.getInt("maxGameLength", 100, false);

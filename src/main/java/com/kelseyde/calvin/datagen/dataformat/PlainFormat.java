@@ -3,7 +3,7 @@ package com.kelseyde.calvin.datagen.dataformat;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MarlinFormat implements DataFormat<String> {
+public class PlainFormat implements DataFormat<String> {
 
     @Override
     public String serialize(DataPoint dataPoint) {

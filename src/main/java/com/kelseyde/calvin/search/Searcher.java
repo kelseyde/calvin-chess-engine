@@ -625,6 +625,9 @@ public class Searcher implements Search {
                 if (!ttHit || ttEntry.flag() == HashFlag.NONE) {
                     tt.put(board.key(), HashFlag.LOWER, 0, ply, null, rawStaticEval, staticEval);
                 }
+                if (!Score.isMateScore(staticEval)) {
+                    staticEval = ((4 * staticEval + beta) / 5);
+                }
                 return staticEval;
             }
             if (staticEval > alpha) {
@@ -696,6 +699,9 @@ public class Searcher implements Search {
                 alpha = score;
                 if (score >= beta) {
                     flag = HashFlag.LOWER;
+                    if (!Score.isMateScore(bestScore)) {
+                        bestScore = ((4 * bestScore + beta) / 5);
+                    }
                     break;
                 }
             }

@@ -707,7 +707,8 @@ public class Searcher implements Search {
         }
 
         if (!hardLimitReached()) {
-            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
+            final int ttDepth = ttHit ? ttEntry.depth() : 0;
+            tt.put(board.key(), flag, ttDepth, ply, bestMove, rawStaticEval, bestScore);
         }
 
         return bestScore;

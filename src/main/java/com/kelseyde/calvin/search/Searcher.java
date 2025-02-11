@@ -698,6 +698,7 @@ public class Searcher implements Search {
                     flag = HashFlag.LOWER;
                     break;
                 }
+
             }
         }
 

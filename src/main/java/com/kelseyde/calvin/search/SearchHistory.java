@@ -43,33 +43,33 @@ public class SearchHistory {
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
     }
 
-    public void updateHistory(PlayedMove bestMove, boolean white, int depth, int ply, SearchStack ss) {
+    public void updateHistory(
+            PlayedMove bestMove, PlayedMove[] quiets, PlayedMove[] captures, boolean white, int depth, int ply, SearchStack ss) {
 
         // When the best move causes a beta cut-off, we want to update the various history tables to reward the best move
         // and punish the other moves that were searched. Doing so will hopefully improve move ordering in future searches.
 
-        List<PlayedMove> playedMoves = ss.get(ply).searchedMoves;
-
         if (bestMove.captured() == null) {
             killerTable.add(ply, bestMove.move());
+
+            for (PlayedMove quiet : quiets) {
+                // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
+                updateQuietHistory(quiet, bestMove, ss, white, depth, ply);
+            }
         }
 
-        for (PlayedMove playedMove : playedMoves) {
-            if (bestMove.captured() == null && playedMove.captured() == null) {
-                // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
-                updateQuietHistory(playedMove, bestMove, ss, white, depth, ply);
-            }
-            else if (playedMove.captured() != null) {
-                // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
-                // best move was quiet or a capture, penalise all other captures.
-                updateCaptureHistory(playedMove, bestMove, white, depth);
-            }
+        for (PlayedMove capture : captures) {
+            // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
+            // best move was quiet or a capture, penalise all other captures.
+            updateCaptureHistory(capture, bestMove, white, depth);
         }
 
     }
 
     private void updateQuietHistory(PlayedMove quietMove, PlayedMove bestMove, SearchStack ss, boolean white, int depth, int ply) {
         // For quiet moves we update both the standard quiet and continuation history tables
+        if (quietMove == null)
+            return;
         boolean good = quietMove.move().equals(bestMove.move());
         quietHistoryTable.update(quietMove.move(), quietMove.piece(), depth, white, good);
         for (int prevPly : config.contHistPlies()) {
@@ -82,6 +82,8 @@ public class SearchHistory {
     }
 
     private void updateCaptureHistory(PlayedMove captureMove, PlayedMove bestMove, boolean white, int depth) {
+        if (captureMove == null)
+            return;
         boolean good = captureMove.move().equals(bestMove.move());
         captureHistoryTable.update(captureMove.piece(), captureMove.move().to(), captureMove.captured(), depth, white, good);
     }

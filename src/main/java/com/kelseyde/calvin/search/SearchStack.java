@@ -30,7 +30,6 @@ public class SearchStack {
         public PlayedMove currentMove;
         public PlayedMove bestMove;
         public boolean nullMoveAllowed = true;
-        public List<PlayedMove> searchedMoves = new ArrayList<>();
     }
 
 }

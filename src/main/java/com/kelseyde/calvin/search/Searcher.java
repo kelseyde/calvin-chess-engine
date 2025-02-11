@@ -359,8 +359,9 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
-        int movesSearched = 0;
-        sse.searchedMoves = new ArrayList<>();
+
+        int legalMoves = 0, quietMoves = 0, captureMoves = 0;
+        Move[] quietsSearched = new Move[16], capturesSearched = new Move[16];
 
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -369,12 +370,16 @@ public class Searcher implements Search {
             final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) break;
             final Move move = scoredMove.move();
-            movesSearched++;
+            legalMoves++;
 
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final int historyScore = scoredMove.historyScore();
             final boolean isCapture = captured != null;
+
+            if (isCapture) {
+
+            }
 
             int extension = 0;
             int reduction = 0;

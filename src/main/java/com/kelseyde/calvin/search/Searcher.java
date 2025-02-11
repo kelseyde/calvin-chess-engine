@@ -376,6 +376,9 @@ public class Searcher implements Search {
             final int historyScore = scoredMove.historyScore();
             final boolean isCapture = captured != null;
 
+            PlayedMove playedMove = new PlayedMove(move, piece, captured);
+            sse.searchedMoves.add(playedMove);
+
             int extension = 0;
             int reduction = 0;
 
@@ -460,7 +463,6 @@ public class Searcher implements Search {
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
 
-            PlayedMove playedMove = new PlayedMove(move, piece, captured);
             makeMove(playedMove, sse);
 
             final int nodesBefore = td.nodes;
@@ -734,7 +736,6 @@ public class Searcher implements Search {
         eval.makeMove(board, move.move());
         board.makeMove(move.move());
         sse.currentMove = move;
-        sse.searchedMoves.add(move);
     }
 
     private void unmakeMove(SearchStackEntry sse) {

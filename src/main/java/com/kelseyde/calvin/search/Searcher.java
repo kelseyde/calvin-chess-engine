@@ -706,7 +706,8 @@ public class Searcher implements Search {
             return -Score.MATE + ply;
         }
 
-        if (!hardLimitReached()) {
+        if (!hardLimitReached()
+            && (!ttHit || ttEntry.depth() == 0 || ttEntry.flag() == HashFlag.NONE)) {
             tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
         }
 

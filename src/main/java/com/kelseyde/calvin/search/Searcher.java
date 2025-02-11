@@ -257,6 +257,19 @@ public class Searcher implements Search {
             --depth;
         }
 
+        SearchStackEntry curr = ss.get(ply);
+        SearchStackEntry parent = ss.get(ply - 1);
+
+        // Torch fail-low extension thing
+        if (!rootNode
+                && !inCheck
+                && parent.reduction > 0
+                && !parent.noisy
+                && parent.staticEval != Integer.MIN_VALUE
+                && curr.staticEval < -parent.staticEval
+                && curr.staticEval <= alpha)
+            ++depth;
+
         // Static Evaluation - https://www.chessprogramming.org/Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
         // In non-leaf nodes, this is used as a guide for several heuristics, such as extensions, reductions and pruning.
@@ -284,8 +297,7 @@ public class Searcher implements Search {
             }
         }
 
-        SearchStackEntry sse = ss.get(ply);
-        sse.staticEval = staticEval;
+        curr.staticEval = staticEval;
 
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
@@ -322,7 +334,7 @@ public class Searcher implements Search {
             // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
             // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
             // not search any further.
-            if (sse.nullMoveAllowed
+            if (curr.nullMoveAllowed
                 && depth >= config.nmpDepth()
                 && staticEval >= beta
                 && (!ttHit || cutNode || ttEntry.score() >= beta)
@@ -360,7 +372,7 @@ public class Searcher implements Search {
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
         int movesSearched = 0;
-        sse.searchedMoves = new ArrayList<>();
+        curr.searchedMoves = new ArrayList<>();
 
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -375,6 +387,7 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final int historyScore = scoredMove.historyScore();
             final boolean isCapture = captured != null;
+            curr.noisy = scoredMove.isNoisy();
 
             int extension = 0;
             int reduction = 0;
@@ -461,7 +474,7 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
 
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
-            makeMove(playedMove, sse);
+            makeMove(playedMove, curr);
 
             final int nodesBefore = td.nodes;
             td.nodes++;
@@ -476,16 +489,18 @@ public class Searcher implements Search {
             } else {
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
+                curr.reduction = reduction;
                 score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
+                    curr.reduction = 0;
                     score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
                 }
             }
 
-            unmakeMove(sse);
+            unmakeMove(curr);
 
             if (rootNode) {
                 td.addNodes(move, td.nodes - nodesBefore);
@@ -505,7 +520,7 @@ public class Searcher implements Search {
                 alpha = score;
                 flag = HashFlag.EXACT;
 
-                sse.bestMove = playedMove;
+                curr.bestMove = playedMove;
                 if (rootNode) {
                     bestMoveCurrent = move;
                     bestScoreCurrent = score;
@@ -527,7 +542,7 @@ public class Searcher implements Search {
 
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
-            final PlayedMove best = sse.bestMove;
+            final PlayedMove best = curr.bestMove;
             final int historyDepth = depth
                     + (staticEval <= alpha ? 1 : 0)
                     + (bestScore > beta + 50 ? 1 : 0);

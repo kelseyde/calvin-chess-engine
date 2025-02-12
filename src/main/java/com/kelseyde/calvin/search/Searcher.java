@@ -360,10 +360,8 @@ public class Searcher implements Search {
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
 
-        int legalMoves = 0, searchedMoves = 0;
-        int quietMoves = 0, captureMoves = 0;
-        PlayedMove[] quiets = new PlayedMove[16];
-        PlayedMove[] captures = new PlayedMove[16];
+        int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
+        Move[] quiets = new Move[16], captures = new Move[16];
 
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -372,7 +370,7 @@ public class Searcher implements Search {
             final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) break;
             final Move move = scoredMove.move();
-            legalMoves++;
+            searchedMoves++;
 
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
@@ -391,9 +389,9 @@ public class Searcher implements Search {
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            if (depth >= config.lmrDepth() && legalMoves >= lmrMinMoves) {
+            if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves) {
 
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][legalMoves] * 1024;
+                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
@@ -437,7 +435,7 @@ public class Searcher implements Search {
                 if (!inCheck
                         && scoredMove.isQuiet()
                         && depth <= config.lmpDepth()
-                        && legalMoves >= lmpCutoff) {
+                        && searchedMoves >= lmpCutoff) {
                     movePicker.setSkipQuiets(true);
                     continue;
                 }
@@ -445,7 +443,7 @@ public class Searcher implements Search {
                 // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
                 if (depth <= config.seeMaxDepth()
-                        && legalMoves > 1
+                        && searchedMoves > 1
                         && !scoredMove.isGoodNoisy()
                         && !Score.isMateScore(bestScore)) {
 
@@ -463,15 +461,7 @@ public class Searcher implements Search {
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
 
-            PlayedMove playedMove = new PlayedMove(move, piece, captured);
-            makeMove(playedMove, sse);
-            searchedMoves++;
-
-            if (isCapture && captureMoves < 16)
-                captures[captureMoves++] = playedMove;
-            else if (quietMoves < 16)
-                quiets[quietMoves++] = playedMove;
-
+            makeMove(move, piece, sse);
 
             final int nodesBefore = td.nodes;
             td.nodes++;
@@ -516,7 +506,7 @@ public class Searcher implements Search {
                 alpha = score;
                 flag = HashFlag.EXACT;
 
-                sse.bestMove = playedMove;
+                sse.bestMove = move;
                 if (rootNode) {
                     bestMoveCurrent = move;
                     bestScoreCurrent = score;
@@ -529,20 +519,28 @@ public class Searcher implements Search {
                     break;
                 }
             }
+
+            if (!move.equals(bestMove)) {
+                if (isCapture && captureMoves < 16) {
+                    captures[captureMoves++] = move;
+                }
+                else if (quietMoves < 16) {
+                    quiets[quietMoves++] = move;
+                }
+            }
         }
 
-        if (legalMoves == 0) {
+        if (searchedMoves == 0) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
-            final PlayedMove best = sse.bestMove;
             final int historyDepth = depth
                     + (staticEval <= alpha ? 1 : 0)
                     + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(best, quiets, captures, board.isWhite(), historyDepth, ply, ss);
+            history.updateHistory(board, bestMove, quiets, captures, board.isWhite(), historyDepth, ply, ss);
         }
 
         if (!inCheck
@@ -661,6 +659,7 @@ public class Searcher implements Search {
             final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) break;
             final Move move = scoredMove.move();
+            final Piece piece = scoredMove.piece();
             movesSearched++;
 
             // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
@@ -690,8 +689,7 @@ public class Searcher implements Search {
                 continue;
             }
 
-            PlayedMove playedMove = new PlayedMove(move, scoredMove.piece(), captured);
-            makeMove(playedMove, sse);
+            makeMove(move, piece, sse);
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
@@ -741,16 +739,18 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void makeMove(PlayedMove move, SearchStackEntry sse) {
-        eval.makeMove(board, move.move());
-        board.makeMove(move.move());
+    private void makeMove(Move move, Piece piece, SearchStackEntry sse) {
+        eval.makeMove(board, move);
+        board.makeMove(move);
         sse.currentMove = move;
+        sse.currentPiece = piece;
     }
 
     private void unmakeMove(SearchStackEntry sse) {
         eval.unmakeMove();
         board.unmakeMove();
         sse.currentMove = null;
+        sse.currentPiece = null;
     }
 
     private boolean hardLimitReached() {

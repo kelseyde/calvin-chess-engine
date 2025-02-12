@@ -639,6 +639,7 @@ public class Searcher implements Search {
         SearchStackEntry sse = ss.get(ply);
 
         int movesSearched = 0;
+        sse.searchedMoves = new ArrayList<>();
 
         Move bestMove = null;
         int bestScore = alpha;
@@ -693,6 +694,7 @@ public class Searcher implements Search {
             if (score > alpha) {
                 flag = HashFlag.EXACT;
                 bestMove = move;
+                sse.bestMove = playedMove;
                 alpha = score;
                 if (score >= beta) {
                     flag = HashFlag.LOWER;
@@ -700,6 +702,10 @@ public class Searcher implements Search {
                 }
 
             }
+        }
+
+        if (bestMove != null) {
+            history.updateHistory(sse.bestMove, board.isWhite(), 1, ply, ss);
         }
 
         if (movesSearched == 0 && inCheck) {

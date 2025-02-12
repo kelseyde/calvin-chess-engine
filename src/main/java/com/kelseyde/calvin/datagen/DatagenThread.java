@@ -56,6 +56,10 @@ public class DatagenThread {
     public List<DataPoint> run() {
 
         List<DataPoint> data = new ArrayList<>();
+        System.out.println("Starting datagen thread...");
+
+        int searches = 0;
+        Instant start = Instant.now();
 
         try {
             while (data.size() < batchSize) {
@@ -67,6 +71,7 @@ public class DatagenThread {
                 Board board = randomBoard();
                 searcher.setPosition(board);
                 int initialScore = searcher.search(initTimeControl()).score();
+                searches++;
                 if (Math.abs(initialScore) > maxInitialScore) {
                     continue;
                 }
@@ -78,6 +83,7 @@ public class DatagenThread {
 
                     searcher.setPosition(board);
                     SearchResult searchResult = searcher.search(initTimeControl());
+                    searches++;
                     Move bestMove = searchResult.move();
                     int bestScore = searchResult.score() * (board.isWhite() ? 1 : -1);
 
@@ -118,6 +124,10 @@ public class DatagenThread {
         } catch (Exception e) {
             UCI.writeError("Error in datagen thread!", e);
         }
+
+        Instant end = Instant.now();
+        Duration duration = Duration.between(start, end);
+        System.out.println("Searches/second: " + searches / duration.getSeconds());
 
         return data;
     }

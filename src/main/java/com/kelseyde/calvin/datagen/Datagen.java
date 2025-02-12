@@ -25,13 +25,15 @@ public class Datagen {
     private final DataFormat<String> formatter;
     private final DatagenReporter reporter;
     private final ExecutorService executorService;
+    private final List<DatagenThread> datagenThreads;
 
-    private List<DatagenThread> datagenThreads;
-
-    public Datagen() {
+    public Datagen(DatagenCommand command) {
         this.formatter = new PlainFormat();
         this.reporter = new DatagenReporter();
-        this.executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.datagenThreads = IntStream.range(0, command.threads())
+                .mapToObj(i -> new DatagenThread(command))
+                .toList();
+        this.executorService = Executors.newFixedThreadPool(command.threads());
     }
 
     public void generate(DatagenCommand command) {
@@ -39,9 +41,6 @@ public class Datagen {
         UCI.Options.output = false;
 
         reporter.reportDatagenInfo(command);
-        datagenThreads = IntStream.range(0, command.threads())
-                .mapToObj(i -> new DatagenThread(command))
-                .toList();
 
         try {
 

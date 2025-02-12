@@ -132,8 +132,8 @@ public class UCI {
     }
 
     public static void handleDatagen(UCICommand command) {
-        Datagen datagen = new Datagen();
         DatagenCommand datagenCommand = DatagenCommand.parse(command);
+        Datagen datagen = new Datagen(datagenCommand);
         datagen.generate(datagenCommand);
     }
 

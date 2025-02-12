@@ -650,6 +650,7 @@ public class Searcher implements Search {
             final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) break;
             final Move move = scoredMove.move();
+            final int historyScore = scoredMove.historyScore();
             movesSearched++;
 
             // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
@@ -675,7 +676,8 @@ public class Searcher implements Search {
             // SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
             // Evaluate the possible captures + recaptures on the target square, in order to filter out losing capture
             // chains, such as capturing with the queen a pawn defended by another pawn.
-            if (!inCheck && !SEE.see(board, move, config.qsSeeThreshold())) {
+            final int threshold = config.qsSeeThreshold() - historyScore / config.seeHistoryDivisor();
+            if (!inCheck && !SEE.see(board, move, threshold)) {
                 continue;
             }
 

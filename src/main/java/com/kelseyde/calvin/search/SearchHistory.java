@@ -18,8 +18,6 @@ import java.util.List;
 
 public class SearchHistory {
 
-    public record PlayedMove(Move move, Piece piece, Piece captured) {}
-
     private final EngineConfig config;
     private final KillerTable killerTable;
     private final QuietHistoryTable quietHistoryTable;

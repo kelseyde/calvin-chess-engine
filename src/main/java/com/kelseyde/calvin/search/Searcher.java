@@ -7,7 +7,6 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
-import com.kelseyde.calvin.search.SearchHistory.PlayedMove;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
@@ -17,7 +16,6 @@ import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -361,7 +359,8 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
 
         int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
-        Move[] quiets = new Move[16], captures = new Move[16];
+        sse.quiets = new Move[16];
+        sse.captures = new Move[16];
 
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -463,12 +462,18 @@ public class Searcher implements Search {
 
             makeMove(move, piece, sse);
 
+            if (isCapture && captureMoves < 16) {
+                sse.captures[captureMoves++] = move;
+            }
+            else if (quietMoves < 16) {
+                sse.quiets[quietMoves++] = move;
+            }
+
             final int nodesBefore = td.nodes;
             td.nodes++;
 
             int score;
 
-            // TODO searchedMoves -> legalMoves?
             if (pvNode && searchedMoves == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
@@ -520,14 +525,6 @@ public class Searcher implements Search {
                 }
             }
 
-            if (!move.equals(bestMove)) {
-                if (isCapture && captureMoves < 16) {
-                    captures[captureMoves++] = move;
-                }
-                else if (quietMoves < 16) {
-                    quiets[quietMoves++] = move;
-                }
-            }
         }
 
         if (searchedMoves == 0) {
@@ -540,7 +537,7 @@ public class Searcher implements Search {
             final int historyDepth = depth
                     + (staticEval <= alpha ? 1 : 0)
                     + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(board, bestMove, quiets, captures, board.isWhite(), historyDepth, ply, ss);
+            history.updateHistory(board, bestMove, sse.quiets, sse.captures, board.isWhite(), historyDepth, ply, ss);
         }
 
         if (!inCheck

@@ -29,11 +29,14 @@ public class Score {
     }
 
     public static boolean isThreefoldRepetition(Board board) {
-
         int repetitionCount = 0;
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
-        for (int i = board.getPly() - 1; i >= 0; i--) {
+        // No need to check the positions after the last half move clock reset as they are not reproducible
+        // Warning, ply may be less than half move clock if initialized with a FEN different from the start one
+        int lastReproduciblePly = Math.max(board.getPly() - board.getState().getHalfMoveClock(), 0);
+        for (int i = board.getPly() - 2; i >= lastReproduciblePly; i -= 2) {
+            // decrement i by 2 as we can skip the positions where the player to move is not the current one
             if (states[i].getKey() == zobrist) {
                 repetitionCount += 1;
             }
@@ -41,22 +44,22 @@ public class Score {
                 return true;
             }
         }
-
         return false;
-
     }
 
     public static boolean isDoubleRepetition(Board board) {
-
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
-        for (int i = board.getPly() - 1; i >= 0; i--) {
+        // No need to check the positions after the last half move clock reset as they are not reproducible
+        // Warning, ply may be less than half move clock if initialized with a FEN different from the start one
+        int lastReproduciblePly = Math.max(board.getPly() - board.getState().getHalfMoveClock(), 0);
+        for (int i = board.getPly() - 2; i >= lastReproduciblePly; i -= 2) {
+            // decrement i by 2 as we can skip the positions where the player to move is not the current one
             if (states[i].getKey() == zobrist) {
                 return true;
             }
         }
         return false;
-
     }
 
     public static boolean isInsufficientMaterial(Board board) {

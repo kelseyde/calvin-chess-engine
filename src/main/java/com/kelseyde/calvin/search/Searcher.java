@@ -385,12 +385,15 @@ public class Searcher implements Search {
                 extension = 1;
             }
 
+            final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
+            final boolean doLmr = depth >= config.lmrDepth() && movesSearched >= lmrMinMoves;
+            final int baseLmr = doLmr ? config.lmrReductions()[isCapture ? 1 : 0][depth][movesSearched] : 0;
+            final int lmrDepth = depth - baseLmr;
+
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
-            final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            if (depth >= config.lmrDepth() && movesSearched >= lmrMinMoves) {
-
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][movesSearched] * 1024;
+            if (doLmr) {
+                int r = baseLmr * 1024;
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
@@ -407,9 +410,9 @@ public class Searcher implements Search {
                 // Futility Pruning - https://www.chessprogramming.org/Futility_Pruning
                 // If the static evaluation + some margin is still < alpha, and the current move is not interesting (checks,
                 // captures, promotions), then let's assume it will fail low and prune this node.
-                if (!inCheck && depth - reduction <= config.fpDepth() && scoredMove.isQuiet()) {
+                if (!inCheck && depth - lmrDepth <= config.fpDepth() && scoredMove.isQuiet()) {
                     final int futilityMargin = config.fpMargin()
-                            + (depth - reduction) * config.fpScale()
+                            + (depth - lmrDepth) * config.fpScale()
                             + (historyScore / config.fpHistDivisor());
                     if (staticEval + futilityMargin <= alpha) {
                         movePicker.setSkipQuiets(true);
@@ -421,7 +424,7 @@ public class Searcher implements Search {
                 // Quiet moves which have a bad history score are pruned at the leaf nodes. This is a simple heuristic
                 // that assumes that moves which have historically been bad are likely to be bad in the current position.
                 if (scoredMove.isQuiet()
-                        && depth - reduction <= config.hpMaxDepth()
+                        && depth - lmrDepth <= config.hpMaxDepth()
                         && historyScore < config.hpMargin() * depth + config.hpOffset()) {
                     movePicker.setSkipQuiets(true);
                     continue;

@@ -398,7 +398,7 @@ public class Searcher implements Search {
                         ? historyScore / config.lmrQuietHistoryDiv() * 1024
                         : historyScore / config.lmrNoisyHistoryDiv() * 1024;
 
-                reduction = Math.max(0, r / 1024);
+                reduction = clamp(r / 1024, 1, depth + extension);
             }
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
@@ -814,6 +814,10 @@ public class Searcher implements Search {
         tt.clear();
         eval.clearHistory();
         history.clear();
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 
 

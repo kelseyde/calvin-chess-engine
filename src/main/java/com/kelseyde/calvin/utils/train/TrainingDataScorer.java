@@ -190,9 +190,6 @@ public class TrainingDataScorer {
             return "";
         }
         if (!board.isWhite()) newScore = -newScore;
-        if (newScore > score + 100 || newScore < score - 100) {
-            System.out.printf("info line %s, old score %d, new score %d, result %s\n", line, score, newScore, result);
-        }
         return String.format("%s | %s | %s", fen, newScore, result);
     }
 

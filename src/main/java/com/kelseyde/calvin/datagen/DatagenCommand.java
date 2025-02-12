@@ -23,7 +23,7 @@ public record DatagenCommand(String file,
         int minPlies                = command.getInt("minPlies", 8, false);
         int maxPlies                = command.getInt("maxPlies", 9, false);
         int maxInitialScore         = command.getInt("maxInitialScore", 1200, false);
-        int maxScore                = command.getInt("maxScore", 6000, false);
+        int maxScore                = command.getInt("maxScore", 16000, false);
         int adjudicateScore         = command.getInt("adjudicateScore", 2500, false);
         int adjudicateMoves         = command.getInt("adjudicateMoves", 5, false);
 

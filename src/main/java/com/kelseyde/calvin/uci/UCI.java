@@ -174,7 +174,7 @@ public class UCI {
         write("stop           -- stop searching and return the best move");
         write("display / d    -- display the current board state");
         write("fen            -- print the FEN string for the current position");
-        write("eval           -- evaluate the current position");
+        write("score           -- evaluate the current position");
         write("pretty         -- toggle pretty console output");
         write("scoredata      -- score a data file with the engine, to train a neural network");
         write("                   args:");
@@ -297,7 +297,7 @@ public class UCI {
     public static void writeSearchInfo(SearchResult searchResult) {
         int depth = searchResult.depth();
         int seldepth = searchResult.seldepth();
-        int score = searchResult.eval();
+        int score = searchResult.score();
         long time = searchResult.time();
         int nodes = searchResult.nodes();
         long nps = searchResult.nps();

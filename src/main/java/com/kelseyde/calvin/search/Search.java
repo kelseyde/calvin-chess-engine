@@ -29,7 +29,7 @@ public interface Search {
     /**
      * Search the current position for the best move.
      * @param timeControl How long to search for
-     * @return a {@link SearchResult} containing the best move and the current eval.
+     * @return a {@link SearchResult} containing the best move and the current score.
      */
     SearchResult search(TimeControl timeControl);
 

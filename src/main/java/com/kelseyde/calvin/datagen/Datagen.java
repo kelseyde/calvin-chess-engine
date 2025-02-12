@@ -12,6 +12,8 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 /**
@@ -22,15 +24,24 @@ public class Datagen {
 
     private final DataFormat<String> formatter;
     private final DatagenReporter reporter;
+    private final ExecutorService executorService;
+
+    private List<DatagenThread> datagenThreads;
 
     public Datagen() {
         this.formatter = new PlainFormat();
         this.reporter = new DatagenReporter();
+        this.executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
     public void generate(DatagenCommand command) {
 
+        UCI.Options.output = false;
+
         reporter.reportDatagenInfo(command);
+        datagenThreads = IntStream.range(0, command.threads())
+                .mapToObj(i -> new DatagenThread(command))
+                .toList();
 
         try {
 
@@ -43,12 +54,12 @@ public class Datagen {
             Instant start = Instant.now();
             int positions = 0;
 
-            // Initialise the threads which will generate the data.
-            List<CompletableFuture<List<DataPoint>>> threads = initThreads(command);
-
             while (positions < command.positions()) {
 
                 // Call the datagen threads to generate a batch of data
+                List<CompletableFuture<List<DataPoint>>> threads = datagenThreads.stream()
+                        .map(thread -> CompletableFuture.supplyAsync(thread::run, executorService))
+                        .toList();
                 List<DataPoint> result = threads.stream().map(CompletableFuture::join).flatMap(List::stream).toList();
                 positions += result.size();
 
@@ -65,13 +76,9 @@ public class Datagen {
             UCI.writeError("Error during datagen!", e);
         }
 
+        UCI.Options.output = true;
+
     }
 
-    private List<CompletableFuture<List<DataPoint>>> initThreads(DatagenCommand command) {
-        return IntStream.range(0, command.threads())
-                .mapToObj(i -> new DatagenThread(command))
-                .map(thread -> CompletableFuture.supplyAsync(thread::run))
-                .toList();
-    }
 
 }

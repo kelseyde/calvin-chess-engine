@@ -177,20 +177,23 @@ public class TrainingDataScorer {
             // Filter out positions where the best move is a capture
             return "";
         }
-        score = searchResult.eval();
-        if (Score.isMateScore(score)) {
+        int newScore = searchResult.score();
+        if (Score.isMateScore(newScore)) {
             // Filter out positions where there is forced mate
             return "";
         }
-        isTooHigh = Math.abs(score) >= 10000;
-        isBadResult = (score >= 1000 && result.equalsIgnoreCase("0.0"))
-                || (score <= -1000 && result.equalsIgnoreCase("1.0"));
+        isTooHigh = Math.abs(newScore) >= 10000;
+        isBadResult = (newScore >= 1000 && result.equalsIgnoreCase("0.0"))
+                || (newScore <= -1000 && result.equalsIgnoreCase("1.0"));
 
         if (isTooHigh || isBadResult) {
             return "";
         }
-        if (!board.isWhite()) score = -score;
-        return String.format("%s | %s | %s", fen, score, result);
+        if (!board.isWhite()) newScore = -newScore;
+        if (newScore > score + 100 || newScore < score - 100) {
+            System.out.printf("info line %s, old score %d, new score %d, result %s\n", line, score, newScore, result);
+        }
+        return String.format("%s | %s | %s", fen, newScore, result);
     }
 
     private Searcher initSearcher(int i) {

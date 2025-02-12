@@ -64,7 +64,7 @@ public class Searcher implements Search {
     /**
      * Search the current position, increasing the depth each iteration, to find the best move within the given time limit.
      * @param timeControl the maximum duration to search
-     * @return a {@link SearchResult} containing the best move, the eval, and other search info.
+     * @return a {@link SearchResult} containing the best move, the score, and other search info.
      */
     @Override
     public SearchResult search(TimeControl timeControl) {
@@ -264,7 +264,7 @@ public class Searcher implements Search {
         int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
         if (!inCheck) {
-            // Re-use cached static eval if available. Don't compute static eval while in check.
+            // Re-use cached static score if available. Don't compute static score while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedStaticEval = rawStaticEval;
 
@@ -287,12 +287,12 @@ public class Searcher implements Search {
         SearchStackEntry sse = ss.get(ply);
         sse.staticEval = staticEval;
 
-        // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
-        // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
-        // should be more cautious in our alpha pruning - where the eval is too low.
+        // We are 'improving' if the static score of the current position is greater than it was on our previous turn.
+        // If our position is improving we can be more aggressive in our beta pruning - where the score is too high - but
+        // should be more cautious in our alpha pruning - where the score is too low.
         final boolean improving = isImproving(ply, staticEval);
 
-        // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
+        // Pre-move-loop pruning: If the static score indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck) {
 
@@ -593,7 +593,7 @@ public class Searcher implements Search {
 
         MoveFilter filter;
 
-        // Re-use cached static eval if available. Don't compute static eval while in check.
+        // Re-use cached static score if available. Don't compute static score while in check.
         int rawStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
 
@@ -665,7 +665,7 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // The same heuristic as used in the main search, but applied to the quiescence. Skip captures that don't
-            // win material when the static eval plus some margin is sufficiently below alpha.
+            // win material when the static score plus some margin is sufficiently below alpha.
             if (captured != null
                 && futilityScore <= alpha
                 && !SEE.see(board, move, 1)) {

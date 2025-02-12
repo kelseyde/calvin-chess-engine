@@ -5,7 +5,7 @@ import com.kelseyde.calvin.board.Move;
 import java.time.Duration;
 import java.time.Instant;
 
-public record SearchResult(int eval, Move move, int depth, int seldepth, long time, int nodes, long nps) {
+public record SearchResult(int score, Move move, int depth, int seldepth, long time, int nodes, long nps) {
 
     public static SearchResult of(Move move) {
         return new SearchResult(0, move, 0, 0, 0, 0, 0);

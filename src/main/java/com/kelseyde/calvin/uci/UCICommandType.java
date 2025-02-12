@@ -14,7 +14,7 @@ enum UCICommandType {
     GO           ("go",          UCI::handleGo),
     PONDERHIT    ("ponderhit",   UCI::handlePonderHit),
     FEN          ("fen",         UCI::handleFen),
-    EVAL         ("eval",        UCI::handleEval),
+    EVAL         ("score",        UCI::handleEval),
     DISPLAY      ("display",     UCI::handleDisplay),
     D            ("d",           UCI::handleDisplay),
     PRETTY       ("pretty",      UCI::handlePretty),

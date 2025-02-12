@@ -8,6 +8,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DataDebugger {
@@ -20,53 +22,50 @@ public class DataDebugger {
 
     public void score() throws IOException {
 
-        Path inputPath = Paths.get("/Users/kelseyde/git/dan/calvin/data/calvindata_12.txt");
-        Path outputPath = Paths.get("/Users/kelseyde/git/dan/calvin/data/calvindata_12_filtered.txt");
-        if (!Files.exists(outputPath)) {
-            Files.createFile(outputPath);
-        }
+        Path inputPath = Paths.get("/Users/kelseyde/git/dan/calvin/data/test.txt");
+//        Path outputPath = Paths.get("/Users/kelseyde/git/dan/calvin/data/calvindata_12_filtered.txt");
+//        if (!Files.exists(outputPath)) {
+//            Files.createFile(outputPath);
+//        }
 
         try (Stream<String> lines = Files.lines(inputPath)) {
 
-            Iterator<String> iterator = lines.iterator();
-            while (iterator.hasNext()) {
+            List<String> linesList = lines.toList();
+            Set<String> uniqueFens = linesList.stream()
+                    .map(line -> line.split("\\|")[0].trim())
+                    .collect(Collectors.toSet());
 
-                count++;
-                if (count % 1000000 == 0) {
-                    System.out.printf("count: %d, filtered: %d\n", count, filtered);
-                }
+            System.out.println("total positions: " + linesList.size());
+            System.out.println("unique positions: " + uniqueFens.size());
 
-                String line = iterator.next();
-                String[] parts = line.split("\\|");
-                String fen = parts[0].trim();
-                int score = Integer.parseInt(parts[1].trim());
-                String result = parts[2].trim();
-
-                boolean isTooHigh = Math.abs(score) >= 10000;
-                boolean isBadResult = (score >= 1000 && result.equalsIgnoreCase("0.0"))
-                        || (score <= -1000 && result.equalsIgnoreCase("1.0"));
-
-                if (isTooHigh || isBadResult) {
-                    filtered++;
-                    continue;
-                }
-
-                batch.add(line);
-
-                if (batch.size() == BATCH_SIZE) {
-                    Files.write(outputPath, batch, StandardOpenOption.APPEND);
-                    batch.clear();
-                }
-
-
-            }
+//            Iterator<String> iterator = lines.iterator();
+//            while (iterator.hasNext()) {
+//
+//                count++;
+//                if (count % 1000000 == 0) {
+//                    System.out.printf("count: %d, filtered: %d\n", count, filtered);
+//                }
+//
+//                String line = iterator.next();
+//                String[] parts = line.split("\\|");
+//                String fen = parts[0].trim();
+//                int score = Integer.parseInt(parts[1].trim());
+//                String result = parts[2].trim();
+//
+//                boolean isTooHigh = Math.abs(score) >= 10000;
+//                boolean isBadResult = (score >= 1000 && result.equalsIgnoreCase("0.0"))
+//                        || (score <= -1000 && result.equalsIgnoreCase("1.0"));
+//
+//                if (isTooHigh || isBadResult) {
+//                    filtered++;
+//                    continue;
+//                }
+//
+//                batch.add(line);
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to read input file", e);
         }
-
-        System.out.println("total positions: " + count);
-        System.out.printf("filtered positions: %d\n", filtered);
 
     }
 

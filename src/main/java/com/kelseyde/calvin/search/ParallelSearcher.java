@@ -140,7 +140,7 @@ public class ParallelSearcher implements Search {
         for (CompletableFuture<SearchResult> thread : threads) {
             collector = collector.thenCombine(thread, (thread1, thread2) -> {
                 SearchResult best = thread1.depth() > thread2.depth() ? thread1 : thread2;
-                int bestEval = best.eval();
+                int bestEval = best.score();
                 Move bestMove = best.move();
                 return new SearchResult(bestEval, bestMove, best.depth(), best.seldepth(), best.time(), thread1.nodes() + thread2.nodes(), best.nps());
             });

@@ -600,7 +600,7 @@ public class BlunderTest {
         engine.setThreadCount(1);
         engine.setPosition(new PositionCommand(fen, Collections.emptyList()));
 
-        int eval = think(1000).eval();
+        int eval = think(1000).score();
         Assertions.assertEquals(0, eval);
 
     }

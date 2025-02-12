@@ -433,7 +433,6 @@ public class Searcher implements Search {
                 final int lmpThreshold = (int) ((0.5 + depth * depth) / (3 - (improving ? 1 : 0)));
                 if (!inCheck
                         && scoredMove.isQuiet()
-                        && depth <= config.lmpDepth()
                         && movesSearched >= lmpThreshold) {
                     movePicker.setSkipQuiets(true);
                     continue;

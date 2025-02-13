@@ -20,20 +20,17 @@ public class MoveScorer {
     private final EngineConfig config;
     private final SearchHistory history;
     private final SearchStack ss;
-    private final boolean inCheck;
     private int seeNoisyDivisor;
     private int seeNoisyOffset;
 
     public MoveScorer(EngineConfig config,
                       SearchHistory history,
                       SearchStack ss,
-                      boolean inCheck,
                       int seeNoisyDivisor,
                       int seeNoisyOffset) {
         this.config = config;
         this.history = history;
         this.ss = ss;
-        this.inCheck = inCheck;
         this.seeNoisyDivisor = seeNoisyDivisor;
         this.seeNoisyOffset = seeNoisyOffset;
     }
@@ -45,7 +42,7 @@ public class MoveScorer {
 
         final boolean capture = captured != null;
         final boolean promotion = move.isPromotion();
-        final boolean quietCheck = stage == Stage.GEN_NOISY && !inCheck && !promotion && !capture;
+        final boolean quietCheck = stage == Stage.GEN_NOISY && !promotion && !capture;
 
         // Noisy moves are captures, promotions, and quiet checks (meaning checks that are not captures or promotions).
         final boolean noisy = quietCheck || capture || promotion;

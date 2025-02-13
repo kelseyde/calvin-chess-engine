@@ -60,7 +60,7 @@ public class MovePicker {
     public MovePicker(EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history,
                       Board board, int ply, Move ttMove, boolean inCheck) {
         this.movegen = movegen;
-        this.scorer = new MoveScorer(config, history, ss, inCheck, config.seeNoisyDivisor(), config.seeNoisyOffset());
+        this.scorer = new MoveScorer(config, history, ss, config.seeNoisyDivisor(), config.seeNoisyOffset());
         this.history = history;
         this.board = board;
         this.ply = ply;

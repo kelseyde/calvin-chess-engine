@@ -4,11 +4,13 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker.Stage;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 /**
  * Assigns a score to a move to determine the order in which moves are tried during search. The score is based on several
@@ -74,7 +76,7 @@ public class MoveScorer {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
             final MoveType type = inCheck
                     ? MoveType.BAD_NOISY
-                    : SEE.see(board, move, 0) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+                    : SEE.see(board, move, 0) ? MoveType.QUIET : MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;

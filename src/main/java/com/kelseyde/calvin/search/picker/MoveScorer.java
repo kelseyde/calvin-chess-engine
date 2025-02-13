@@ -69,7 +69,7 @@ public class MoveScorer {
 
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
-            final MoveType type = MoveType.BAD_NOISY;
+            final MoveType type = SEE.see(board, move, 0) ? MoveType.QUIET : MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;

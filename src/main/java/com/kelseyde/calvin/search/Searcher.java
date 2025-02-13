@@ -477,7 +477,7 @@ public class Searcher implements Search {
                     && !Score.isMateScore(ttEntry.score())
                     && ttEntry.flag() != HashFlag.UPPER) {
 
-                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * 2);
+                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * 14 / 16);
                 int sDepth = (depth - 1) / 2;
 
                 sse.excludedMove = move;

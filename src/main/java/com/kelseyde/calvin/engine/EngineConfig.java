@@ -106,6 +106,7 @@ public class EngineConfig {
     private final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
     private final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
     private final int[] contHistPlies = { 1, 2 };
+    private final int[] reverseContHistPlies = { 2 };
 
     public Set<Tunable> getTunables() {
         return Set.of(
@@ -523,6 +524,10 @@ public class EngineConfig {
 
     public int[] contHistPlies() {
         return contHistPlies;
+    }
+
+    public int[] reverseContHistPlies() {
+        return reverseContHistPlies;
     }
 
 }

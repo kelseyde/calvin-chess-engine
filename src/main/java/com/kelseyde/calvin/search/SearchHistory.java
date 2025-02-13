@@ -80,6 +80,15 @@ public class SearchHistory {
                 contHistTable.update(prevMove, prevPiece, quietMove, piece, depth, white, good);
             }
         }
+
+        for (int prevPly : config.reverseContHistPlies()) {
+            SearchStackEntry prevEntry = ss.get(ply - prevPly);
+            if (prevEntry != null && prevEntry.currentMove != null) {
+                Move prevMove = prevEntry.currentMove;
+                Piece prevPiece = prevEntry.currentPiece;
+                quietHistoryTable.update(prevMove, prevPiece, depth / 2, white, good);
+            }
+        }
     }
 
     private void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth) {

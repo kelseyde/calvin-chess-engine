@@ -34,6 +34,36 @@ public class NNUETest {
     }
 
     @Test
+    public void testSimpleMove() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        Move move = Move.fromUCI("e2e3");
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+    }
+
+    @Test
+    public void testCapture() {
+
+        String fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+        Board board = FEN.toBoard(fen);
+        NNUE nnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        Move move = Move.fromUCI("e4d5");
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+        board.unmakeMove();
+        nnue.unmakeMove();
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+    }
+
+    @Test
     public void testWhiteKingsideCastling() {
 
         String fen = "r1bqk1nr/ppppbppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
@@ -164,23 +194,6 @@ public class NNUETest {
         Move move = Move.fromUCI("f3e2");
         nnue.makeMove(board, move);
         board.makeMove(move);
-        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-
-    }
-
-    @Test
-    public void testCapture() {
-
-        String fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
-        Board board = FEN.toBoard(fen);
-        NNUE nnue = new NNUE(board);
-        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        Move move = Move.fromUCI("e4d5");
-        nnue.makeMove(board, move);
-        board.makeMove(move);
-        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-        board.unmakeMove();
-        nnue.unmakeMove();
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
 
     }

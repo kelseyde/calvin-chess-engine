@@ -80,135 +80,93 @@ public class Accumulator {
         }
     }
 
-    public void apply(AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
+    public void apply(AccumulatorUpdate update, short[] weights, boolean white) {
         // Accumulator updates are 'fused' together, so that multiple feature updates can be applied in a single pass.
         switch (update.getUpdateType()) {
-            case ADD -> add(update, whiteWeights, blackWeights);
-            case ADD_SUB -> addSub(update, whiteWeights, blackWeights);
-            case ADD_SUB_SUB -> addSubSub(update, whiteWeights, blackWeights);
-            case ADD_ADD_SUB_SUB -> addAddSubSub(update, whiteWeights, blackWeights);
+            case ADD -> add(update, weights, white);
+            case ADD_SUB -> addSub(update, weights, white);
+            case ADD_SUB_SUB -> addSubSub(update, weights, white);
+            case ADD_ADD_SUB_SUB -> addAddSubSub(update, weights, white);
         }
     }
 
-    public void add(AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
+    public void add(AccumulatorUpdate update, short[] weights, boolean white) {
 
         final Feature add1 = update.adds[0];
 
-        final boolean whiteMirror = mirrored[Colour.WHITE];
-        final boolean blackMirror = mirrored[Colour.BLACK];
-
-        final int wOffset = add1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset = add1.index(false, blackMirror) * HIDDEN_SIZE;
+        final boolean mirror = update.mirrored[Colour.index(white)];
+        final int offset = add1.index(white, mirror) * HIDDEN_SIZE;
+        final short[] features = white ? whiteFeatures : blackFeatures;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
-
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset))
-                    .intoArray(whiteFeatures, i);
-
-            ShortVector.fromArray(SPECIES, blackFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset))
-                    .intoArray(blackFeatures, i);
-
+            ShortVector.fromArray(SPECIES, features, i)
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset))
+                    .intoArray(features, i);
         }
     }
 
-    public void addSub(AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
+    public void addSub(AccumulatorUpdate update, short[] weights, boolean white) {
 
         final Feature add1 = update.adds[0];
         final Feature sub1 = update.subs[0];
 
-        final boolean whiteMirror = mirrored[Colour.WHITE];
-        final boolean blackMirror = mirrored[Colour.BLACK];
-
-        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset2 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset2 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
+        final boolean mirror = update.mirrored[Colour.index(white)];
+        final int offset1 = add1.index(white, mirror) * HIDDEN_SIZE;
+        final int offset2 = sub1.index(white, mirror) * HIDDEN_SIZE;
+        final short[] features = white ? whiteFeatures : blackFeatures;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
-
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset1))
-                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset2))
-                    .intoArray(whiteFeatures, i);
-
-            ShortVector.fromArray(SPECIES, blackFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset1))
-                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset2))
-                    .intoArray(blackFeatures, i);
-
+            ShortVector.fromArray(SPECIES, features, i)
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset1))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset2))
+                    .intoArray(features, i);
         }
     }
 
-    public void addSubSub(AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
+    public void addSubSub(AccumulatorUpdate update, short[] weights, boolean white) {
 
         final Feature add1 = update.adds[0];
         final Feature sub1 = update.subs[0];
         final Feature sub2 = update.subs[1];
 
-        final boolean whiteMirror = mirrored[Colour.WHITE];
-        final boolean blackMirror = mirrored[Colour.BLACK];
-
-        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset2 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset2 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset3 = sub2.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset3 = sub2.index(false, blackMirror) * HIDDEN_SIZE;
+        final boolean mirror = update.mirrored[Colour.index(white)];
+        final int offset1 = add1.index(white, mirror) * HIDDEN_SIZE;
+        final int offset2 = sub1.index(white, mirror) * HIDDEN_SIZE;
+        final int offset3 = sub2.index(white, mirror) * HIDDEN_SIZE;
+        final short[] features = white ? whiteFeatures : blackFeatures;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
-
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset1))
-                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset2))
-                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset3))
-                    .intoArray(whiteFeatures, i);
-
-            ShortVector.fromArray(SPECIES, blackFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset1))
-                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset2))
-                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset3))
-                    .intoArray(blackFeatures, i);
-
+            ShortVector.fromArray(SPECIES, features, i)
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset1))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset2))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset3))
+                    .intoArray(features, i);
         }
     }
 
-    public void addAddSubSub(AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
+    public void addAddSubSub(AccumulatorUpdate update, short[] weights, boolean white) {
 
         final Feature add1 = update.adds[0];
         final Feature add2 = update.adds[1];
         final Feature sub1 = update.subs[0];
         final Feature sub2 = update.subs[1];
 
-        final boolean whiteMirror = mirrored[Colour.WHITE];
-        final boolean blackMirror = mirrored[Colour.BLACK];
+        final boolean mirror = update.mirrored[Colour.index(white)];
 
-        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset2 = add2.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset2 = add2.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset3 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset3 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset4 = sub2.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset4 = sub2.index(false, blackMirror) * HIDDEN_SIZE;
+        final int offset1 = add1.index(white, mirror) * HIDDEN_SIZE;
+        final int offset2 = add2.index(white, mirror) * HIDDEN_SIZE;
+        final int offset3 = sub1.index(white, mirror) * HIDDEN_SIZE;
+        final int offset4 = sub2.index(white, mirror) * HIDDEN_SIZE;
+
+        final short[] features = white ? whiteFeatures : blackFeatures;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
-
-            ShortVector.fromArray(SPECIES, whiteFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset1))
-                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset2))
-                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset3))
-                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset4))
-                    .intoArray(whiteFeatures, i);
-
-            ShortVector.fromArray(SPECIES, blackFeatures, i)
-                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset1))
-                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset2))
-                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset3))
-                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset4))
-                    .intoArray(blackFeatures, i);
-
+            ShortVector.fromArray(SPECIES, features, i)
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset1))
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset2))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset3))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset4))
+                    .intoArray(features, i);
         }
     }
 
@@ -234,6 +192,8 @@ public class Accumulator {
 
         public final Feature[] adds = new Feature[2];
         public final Feature[] subs = new Feature[2];
+        public final boolean[] mirrored = new boolean[2];
+        public final int[] kingBucket = new int[2];
 
         public int addCount = 0;
         public int subCount = 0;

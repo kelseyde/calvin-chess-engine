@@ -70,6 +70,8 @@ public class NNUE {
 
     public int evaluate() {
 
+        applyLazyUpdates();
+
         final boolean white = board.isWhite();
         final Accumulator acc = accumulatorStack[current];
 
@@ -164,8 +166,15 @@ public class NNUE {
         final boolean white = board.isWhite();
 
         final Piece piece = board.pieceAt(move.from());
+
         final int whiteKingSquare = board.kingSquare(true);
         final int blackKingSquare = board.kingSquare(false);
+
+        final int whiteKingBucket = calculateNewKingBucket(board, whiteKingSquare, move, piece, true);
+        final int blackKingBucket = calculateNewKingBucket(board, blackKingSquare, move, piece, false);
+
+        final boolean whiteMirror = calculateNewMirror(board, whiteKingSquare, move, piece, true);
+        final boolean blackMirror = calculateNewMirror(board, blackKingSquare, move, piece, false);
 
         // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
         // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
@@ -173,29 +182,22 @@ public class NNUE {
         final boolean bucketChanged = bucketChanged(board, move, piece, white);
         if (mirrorChanged || bucketChanged) {
             acc.needsRefresh[Colour.index(white)] = true;
-            // TODO update only 'their' perspective if we require a full refresh
-            boolean mirror = shouldMirror(board.kingSquare(white));
-            if (mirrorChanged) {
-                mirror = !mirror;
-            }
-            final int whiteKingBucket = board.isWhite() ?
-                    calculateNewKingBucket(whiteKingSquare, move, piece, true) :
-                    kingBucket(whiteKingSquare, true);
-
-            final int blackKingBucket = board.isWhite() ?
-                    kingBucket(blackKingSquare, false) :
-                    calculateNewKingBucket(blackKingSquare, move, piece, false);
-            final int bucket = white ? whiteKingBucket : blackKingBucket;
-            fullRefresh(board, acc, white, mirror, bucket);
         }
 
         // Determine which features need to be updated based on the move type (standard, capture, or castle).
         // Queue the update to be applied lazily next time evaluate() is called.
-        acc.update = switch (moveType(board, move)) {
+        AccumulatorUpdate update = switch (moveType(board, move)) {
             case STANDARD -> handleStandardMove(board, move, white);
             case CASTLE -> handleCastleMove(move, white);
             case CAPTURE -> handleCapture(board, move, white);
         };
+
+        update.kingBucket[Colour.WHITE] = whiteKingBucket;
+        update.kingBucket[Colour.BLACK] = blackKingBucket;
+        update.mirrored[Colour.WHITE] = whiteMirror;
+        update.mirrored[Colour.BLACK] = blackMirror;
+
+        acc.update = update;
 
     }
 
@@ -262,6 +264,63 @@ public class NNUE {
         fullRefresh(board);
     }
 
+    private void applyLazyUpdates() {
+
+        final Accumulator acc = accumulatorStack[current];
+
+        for (int whitePerspective = 0; whitePerspective < 2; whitePerspective++) {
+
+            final boolean white = whitePerspective == Colour.WHITE;
+
+            // If the current state if already correct for our perspective, no action is required.
+            if (acc.computed[whitePerspective])
+                continue;
+
+            if (acc.needsRefresh[whitePerspective]) {
+                final boolean mirror = acc.update.mirrored[whitePerspective];
+                final int bucket = acc.update.kingBucket[whitePerspective];
+                fullRefresh(board, acc, white, mirror, bucket);
+                continue;
+            }
+
+            int index = current - 1;
+            Accumulator curr = accumulatorStack[index];
+
+            while (index > 0
+                    && !curr.computed[whitePerspective]
+                    && !curr.needsRefresh[whitePerspective])
+                index--;
+
+            if (curr.needsRefresh[whitePerspective]) {
+                //  The most recent accumulator would need to be refreshed,
+                //  so don't bother and refresh the current one instead
+                final boolean mirror = acc.update.mirrored[whitePerspective];
+                final int bucket = acc.update.kingBucket[whitePerspective];
+                fullRefresh(board, acc, white, mirror, bucket);
+            }
+            else {
+
+                // Apply the updates from the previous state to the current state
+                while (index < current) {
+                    Accumulator prev = curr;
+                    curr = accumulatorStack[++index];
+
+
+                    int bucket = curr.update.kingBucket[whitePerspective];
+                    final short[] weights = NETWORK.inputWeights()[bucket];
+                    final short[] features = white ? prev.whiteFeatures : prev.blackFeatures;
+
+                    curr.copyFrom(features, white);
+                    curr.apply(curr.update, weights, white);
+                    curr.computed[whitePerspective] = true;
+                }
+            }
+
+
+        }
+
+    }
+
     private int scaleEvaluation(Board board, int eval) {
 
         // Scale down the evaluation when there's not much material left on the board - this creates an incentive
@@ -311,13 +370,26 @@ public class NNUE {
         return kingBucket(prevKingSquare, white) != kingBucket(currKingSquare, white);
     }
 
+    private boolean calculateNewMirror(Board board, int kingSquare, Move move, Piece piece, boolean white) {
+        if (board.isWhite() != white || move == null || piece != Piece.KING) {
+            return shouldMirror(kingSquare);
+        }
+        int to = move.to();
+        if (move.isCastling()) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            to = UCI.Options.chess960 ? Castling.kingTo(kingside, board.isWhite()) : move.to();
+        }
+        return shouldMirror(to);
+    }
+
     private boolean shouldMirror(int kingSquare) {
         return NETWORK.horizontalMirror() && File.of(kingSquare) > 3;
     }
 
-    private int calculateNewKingBucket(int kingSquare, Move move, Piece piece, boolean white) {
-        if (move == null) return kingBucket(kingSquare, white);
-        if (piece != Piece.KING) return kingBucket(kingSquare, white);
+    private int calculateNewKingBucket(Board board, int kingSquare, Move move, Piece piece, boolean white) {
+        if (board.isWhite() != white || move == null || piece != Piece.KING) {
+            return kingBucket(kingSquare, white);
+        }
         int to = move.to();
         if (move.isCastling()) {
             final boolean kingside = Castling.isKingside(move.from(), move.to());

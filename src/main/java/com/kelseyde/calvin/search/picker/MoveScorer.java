@@ -20,17 +20,20 @@ public class MoveScorer {
     private final EngineConfig config;
     private final SearchHistory history;
     private final SearchStack ss;
+    private final boolean inCheck;
     private int seeNoisyDivisor;
     private int seeNoisyOffset;
 
     public MoveScorer(EngineConfig config,
                       SearchHistory history,
                       SearchStack ss,
+                      boolean inCheck,
                       int seeNoisyDivisor,
                       int seeNoisyOffset) {
         this.config = config;
         this.history = history;
         this.ss = ss;
+        this.inCheck = inCheck;
         this.seeNoisyDivisor = seeNoisyDivisor;
         this.seeNoisyOffset = seeNoisyOffset;
     }
@@ -69,7 +72,9 @@ public class MoveScorer {
 
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
-            final MoveType type = MoveType.BAD_NOISY;
+            final MoveType type = inCheck
+                    ? MoveType.BAD_NOISY
+                    : SEE.see(board, move, 0) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;

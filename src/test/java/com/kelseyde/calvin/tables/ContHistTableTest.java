@@ -2,7 +2,6 @@ package com.kelseyde.calvin.tables;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 import com.kelseyde.calvin.utils.TestUtils;
@@ -54,12 +53,13 @@ public class ContHistTableTest {
         SearchStack ss = new SearchStack();
         Move prevMove = Move.fromUCI("e2e4");
         Piece prevPiece = Piece.PAWN;
-        ss.get(0).currentMove = new SearchHistory.PlayedMove(prevMove, prevPiece, null);
+        ss.get(0).currentMove = prevMove;
+        ss.get(0).currentPiece = prevPiece;
         int depth = 8;
         Move currMove = Move.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
-        contHistTable.update(ss.get(0).currentMove.move(), ss.get(0).currentMove.piece(), currMove, currPiece, depth, true, true);
-        assertEquals(1200, contHistTable.get(ss.get(0).currentMove.move(), ss.get(0).currentMove.piece(), currMove, currPiece, true));
+        contHistTable.update(ss.get(0).currentMove, ss.get(0).currentPiece, currMove, currPiece, depth, true, true);
+        assertEquals(1200, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 
     @Test

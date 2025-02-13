@@ -287,6 +287,25 @@ public class NNUETest {
         }
     }
 
+    @Test
+    public void testDebug() {
+
+        Board board = Board.from("r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/PP2P3/3N1PPP/R2QK2R b KQkq - 0 1");
+        NNUE nnue = new NNUE(board);
+
+        Move move = Move.fromUCI("g7g6");;
+        nnue.makeMove(board, move);
+        board.makeMove(move);
+
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+        nnue.unmakeMove();
+        board.unmakeMove();
+
+        Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
+    }
+
     @AfterAll
     public static void tearDown() {
         UCI.Options.chess960 = false;

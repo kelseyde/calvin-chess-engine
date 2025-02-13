@@ -16,6 +16,7 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -462,6 +463,12 @@ public class Searcher implements Search {
 
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
             makeMove(playedMove, sse);
+//
+//            if (eval.evaluate() != new NNUE(board).evaluate()) {
+//                board.unmakeMove();
+//                System.out.println(FEN.toFEN(board) + " , " + Move.toUCI(move));
+//                board.makeMove(move);
+//            }
 
             final int nodesBefore = td.nodes;
             td.nodes++;

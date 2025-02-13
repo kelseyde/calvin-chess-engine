@@ -104,8 +104,6 @@ public class NNUE {
 
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror, int bucket) {
 
-        // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
-        acc.mirrored[Colour.index(whitePerspective)] = mirror;
 
         BucketCacheEntry cacheEntry = bucketCache.get(whitePerspective, mirror, bucket);
         short[] cachedFeatures = cacheEntry.features;
@@ -133,7 +131,7 @@ public class NNUE {
                 while (added != 0) {
                     final int square = Bits.next(added);
                     Feature feature = new Feature(piece, square, white);
-                    acc.add(weights, feature, whitePerspective);
+                    acc.add(weights, feature, whitePerspective, mirror);
                     added = Bits.pop(added);
                 }
 
@@ -141,7 +139,7 @@ public class NNUE {
                 while (removed != 0) {
                     final int square = Bits.next(removed);
                     Feature feature = new Feature(piece, square, white);
-                    acc.sub(weights, feature, whitePerspective);
+                    acc.sub(weights, feature, whitePerspective, mirror);
                     removed = Bits.pop(removed);
                 }
 
@@ -305,6 +303,17 @@ public class NNUE {
                     Accumulator prev = curr;
                     curr = accumulatorStack[++index];
 
+                    if (prev.update == null) {
+                        System.out.println("index: " + index);
+                    }
+
+//                    if (prev.update.kingBucket[whitePerspective] != curr.update.kingBucket[whitePerspective]) {
+//                        System.out.println("King bucket mismatch");
+//                    }
+//
+//                    if (prev.update.mirrored[whitePerspective] != curr.update.mirrored[whitePerspective]) {
+//                        System.out.println("Mirror mismatch");
+//                    }
 
                     int bucket = curr.update.kingBucket[whitePerspective];
                     final short[] weights = NETWORK.inputWeights()[bucket];

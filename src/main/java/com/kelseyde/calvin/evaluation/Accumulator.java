@@ -23,7 +23,6 @@ public class Accumulator {
 
     public short[] whiteFeatures;
     public short[] blackFeatures;
-    public final boolean[] mirrored;
     public final boolean[] needsRefresh;
     public final boolean[] computed;
     public AccumulatorUpdate update;
@@ -31,15 +30,13 @@ public class Accumulator {
     public Accumulator(int featureCount) {
         this.whiteFeatures = new short[featureCount];
         this.blackFeatures = new short[featureCount];
-        this.mirrored = new boolean[] {false, false};
         this.needsRefresh = new boolean[] {true, true};
         this.computed = new boolean[] {false, false};
     }
 
-    public Accumulator(short[] whiteFeatures, short[] blackFeatures, boolean[] mirrored, boolean[] needsRefresh, boolean[] computed) {
+    public Accumulator(short[] whiteFeatures, short[] blackFeatures, boolean[] needsRefresh, boolean[] computed) {
         this.whiteFeatures = whiteFeatures;
         this.blackFeatures = blackFeatures;
-        this.mirrored = mirrored;
         this.needsRefresh = needsRefresh;
         this.computed = computed;
     }
@@ -50,9 +47,8 @@ public class Accumulator {
         System.arraycopy(BIASES, 0, features, 0, NNUE.NETWORK.hiddenSize());
     }
 
-    public void add(short[] weights, Feature feature, boolean whitePerspective) {
+    public void add(short[] weights, Feature feature, boolean whitePerspective, boolean mirror) {
         // Add a single feature to the accumulator.
-        final boolean mirror = mirrored[Colour.index(whitePerspective)];
         final int offset = feature.index(whitePerspective, mirror) * HIDDEN_SIZE;
         final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
 
@@ -65,9 +61,8 @@ public class Accumulator {
         }
     }
 
-    public void sub(short[] weights, Feature feature, boolean whitePerspective) {
+    public void sub(short[] weights, Feature feature, boolean whitePerspective, boolean mirror) {
         // Subtract a single feature from the accumulator.
-        final boolean mirror = mirrored[Colour.index(whitePerspective)];
         final int offset = feature.index(whitePerspective, mirror) * HIDDEN_SIZE;
         final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
 
@@ -174,7 +169,6 @@ public class Accumulator {
         return new Accumulator(
                 Arrays.copyOf(whiteFeatures, whiteFeatures.length),
                 Arrays.copyOf(blackFeatures, blackFeatures.length),
-                Arrays.copyOf(mirrored, mirrored.length),
                 Arrays.copyOf(needsRefresh, needsRefresh.length),
                 Arrays.copyOf(computed, computed.length)
         );

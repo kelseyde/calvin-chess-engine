@@ -86,6 +86,8 @@ public class MoveScorer {
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
         final MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
+        score += history.getQuietHistoryTable().get(move, piece, white) / 2;
+
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }
 

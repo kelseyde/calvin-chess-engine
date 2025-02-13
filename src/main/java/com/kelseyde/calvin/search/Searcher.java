@@ -487,6 +487,7 @@ public class Searcher implements Search {
                 if (score < sBeta) {
                     extension = 1;
                 }
+
             }
 
             // We have decided that the current move should not be pruned and is worth searching further.

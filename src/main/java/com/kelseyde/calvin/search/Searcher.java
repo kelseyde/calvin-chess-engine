@@ -537,7 +537,7 @@ public class Searcher implements Search {
             final int historyDepth = depth
                     + (staticEval <= alpha ? 1 : 0)
                     + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(board, bestMove, sse.quiets, sse.captures, board.isWhite(), historyDepth, ply, ss);
+            history.updateHistory(board, bestMove, sse.quiets, sse.captures, quietMoves, captureMoves, board.isWhite(), historyDepth, ply, ss);
         }
 
         if (!inCheck

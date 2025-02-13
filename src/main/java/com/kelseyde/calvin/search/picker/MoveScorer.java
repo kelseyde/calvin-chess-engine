@@ -20,6 +20,7 @@ public class MoveScorer {
     private final EngineConfig config;
     private final SearchHistory history;
     private final SearchStack ss;
+    private final long threats;
     private int seeNoisyDivisor;
     private int seeNoisyOffset;
 
@@ -27,10 +28,12 @@ public class MoveScorer {
                       SearchHistory history,
                       SearchStack ss,
                       int seeNoisyDivisor,
-                      int seeNoisyOffset) {
+                      int seeNoisyOffset,
+                      long threats) {
         this.config = config;
         this.history = history;
         this.ss = ss;
+        this.threats = threats;
         this.seeNoisyDivisor = seeNoisyDivisor;
         this.seeNoisyOffset = seeNoisyOffset;
     }
@@ -70,7 +73,7 @@ public class MoveScorer {
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
             final MoveType type = MoveType.BAD_NOISY;
-            final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+            final int historyScore = history.getQuietHistoryTable().get(move, white, threats);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;
             return new ScoredMove(move, piece, captured, score, historyScore, type);
@@ -92,7 +95,7 @@ public class MoveScorer {
     private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
 
         // Quiet moves are scored using the quiet history and continuation history heuristics.
-        final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite());
+        final int historyScore = history.getQuietHistoryTable().get(move, board.isWhite(), threats);
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
 

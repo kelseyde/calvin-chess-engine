@@ -7,7 +7,6 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
-import com.kelseyde.calvin.search.SearchHistory.PlayedMove;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
@@ -17,7 +16,6 @@ import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -359,8 +357,10 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
-        int movesSearched = 0;
-        sse.searchedMoves = new ArrayList<>();
+
+        int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
+        sse.quiets = new Move[16];
+        sse.captures = new Move[16];
 
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -369,7 +369,7 @@ public class Searcher implements Search {
             final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) break;
             final Move move = scoredMove.move();
-            movesSearched++;
+            searchedMoves++;
 
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
@@ -388,9 +388,9 @@ public class Searcher implements Search {
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            if (depth >= config.lmrDepth() && movesSearched >= lmrMinMoves) {
+            if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves) {
 
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][movesSearched] * 1024;
+                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
@@ -434,7 +434,7 @@ public class Searcher implements Search {
                 if (!inCheck
                         && scoredMove.isQuiet()
                         && depth <= config.lmpDepth()
-                        && movesSearched >= lmpCutoff) {
+                        && searchedMoves >= lmpCutoff) {
                     movePicker.setSkipQuiets(true);
                     continue;
                 }
@@ -442,7 +442,7 @@ public class Searcher implements Search {
                 // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation
                 // Prune moves that lose material beyond a certain threshold, once all the pieces have been exchanged.
                 if (depth <= config.seeMaxDepth()
-                        && movesSearched > 1
+                        && searchedMoves > 1
                         && !scoredMove.isGoodNoisy()
                         && !Score.isMateScore(bestScore)) {
 
@@ -460,15 +460,21 @@ public class Searcher implements Search {
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
 
-            PlayedMove playedMove = new PlayedMove(move, piece, captured);
-            makeMove(playedMove, sse);
+            makeMove(move, piece, sse);
+
+            if (isCapture && captureMoves < 16) {
+                sse.captures[captureMoves++] = move;
+            }
+            else if (quietMoves < 16) {
+                sse.quiets[quietMoves++] = move;
+            }
 
             final int nodesBefore = td.nodes;
             td.nodes++;
 
             int score;
 
-            if (pvNode && movesSearched == 1) {
+            if (pvNode && searchedMoves == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
@@ -505,7 +511,7 @@ public class Searcher implements Search {
                 alpha = score;
                 flag = HashFlag.EXACT;
 
-                sse.bestMove = playedMove;
+                sse.bestMove = move;
                 if (rootNode) {
                     bestMoveCurrent = move;
                     bestScoreCurrent = score;
@@ -518,20 +524,20 @@ public class Searcher implements Search {
                     break;
                 }
             }
+
         }
 
-        if (movesSearched == 0) {
+        if (searchedMoves == 0) {
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
             return inCheck ? -Score.MATE + ply : Score.DRAW;
         }
 
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
-            final PlayedMove best = sse.bestMove;
             final int historyDepth = depth
                     + (staticEval <= alpha ? 1 : 0)
                     + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(best, board.isWhite(), historyDepth, ply, ss);
+            history.updateHistory(board, bestMove, sse.quiets, sse.captures, board.isWhite(), historyDepth, ply, ss);
         }
 
         if (!inCheck
@@ -650,6 +656,7 @@ public class Searcher implements Search {
             final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null) break;
             final Move move = scoredMove.move();
+            final Piece piece = scoredMove.piece();
             movesSearched++;
 
             // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
@@ -679,8 +686,7 @@ public class Searcher implements Search {
                 continue;
             }
 
-            PlayedMove playedMove = new PlayedMove(move, scoredMove.piece(), captured);
-            makeMove(playedMove, sse);
+            makeMove(move, piece, sse);
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
@@ -730,17 +736,18 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void makeMove(PlayedMove move, SearchStackEntry sse) {
-        eval.makeMove(board, move.move());
-        board.makeMove(move.move());
+    private void makeMove(Move move, Piece piece, SearchStackEntry sse) {
+        eval.makeMove(board, move);
+        board.makeMove(move);
         sse.currentMove = move;
-        sse.searchedMoves.add(move);
+        sse.currentPiece = piece;
     }
 
     private void unmakeMove(SearchStackEntry sse) {
         eval.unmakeMove();
         board.unmakeMove();
         sse.currentMove = null;
+        sse.currentPiece = null;
     }
 
     private boolean hardLimitReached() {

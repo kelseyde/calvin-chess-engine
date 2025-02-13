@@ -303,9 +303,9 @@ public class NNUE {
                     Accumulator prev = curr;
                     curr = accumulatorStack[++index];
 
-                    if (prev.update == null) {
-                        System.out.println("index: " + index);
-                    }
+//                    if (prev.update == null) {
+//                        System.out.println("index: " + index);
+//                    }
 
 //                    if (prev.update.kingBucket[whitePerspective] != curr.update.kingBucket[whitePerspective]) {
 //                        System.out.println("King bucket mismatch");

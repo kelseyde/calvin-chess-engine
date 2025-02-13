@@ -19,7 +19,9 @@ import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Classical alpha-beta search with iterative deepening. This is the main search algorithm used by the engine.
@@ -319,38 +321,38 @@ public class Searcher implements Search {
                 }
             }
 
-            // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning
-            // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
-            // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
-            // not search any further.
-            if (sse.nullMoveAllowed
-                && depth >= config.nmpDepth()
-                && staticEval >= beta
-                && (!ttHit || cutNode || ttEntry.score() >= beta)
-                && board.hasPiecesRemaining(board.isWhite())) {
-
-                ss.get(ply + 1).nullMoveAllowed = false;
-                board.makeNullMove();
-                td.nodes++;
-
-                final int base = config.nmpBase();
-                final int divisor = config.nmpDivisor();
-                final int evalScale = config.nmpEvalScale();
-                final int evalMaxReduction = config.nmpEvalMaxReduction();
-                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
-                final int r = base
-                        + depth / divisor
-                        + evalReduction;
-
-                final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
-
-                board.unmakeNullMove();
-                ss.get(ply + 1).nullMoveAllowed = true;
-
-                if (score >= beta) {
-                    return Score.isMateScore(score) ? beta : score;
-                }
-            }
+//            // Null Move Pruning - https://www.chessprogramming.org/Null_Move_Pruning
+//            // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
+//            // in a row (making a 'null' move), then let's assume this position is a cut-node and will fail-high, and
+//            // not search any further.
+//            if (sse.nullMoveAllowed
+//                && depth >= config.nmpDepth()
+//                && staticEval >= beta
+//                && (!ttHit || cutNode || ttEntry.score() >= beta)
+//                && board.hasPiecesRemaining(board.isWhite())) {
+//
+//                ss.get(ply + 1).nullMoveAllowed = false;
+//                board.makeNullMove();
+//                td.nodes++;
+//
+//                final int base = config.nmpBase();
+//                final int divisor = config.nmpDivisor();
+//                final int evalScale = config.nmpEvalScale();
+//                final int evalMaxReduction = config.nmpEvalMaxReduction();
+//                final int evalReduction = Math.min((staticEval - beta) / evalScale, evalMaxReduction);
+//                final int r = base
+//                        + depth / divisor
+//                        + evalReduction;
+//
+//                final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
+//
+//                board.unmakeNullMove();
+//                ss.get(ply + 1).nullMoveAllowed = true;
+//
+//                if (score >= beta) {
+//                    return Score.isMateScore(score) ? beta : score;
+//                }
+//            }
 
         }
 
@@ -463,12 +465,13 @@ public class Searcher implements Search {
 
             PlayedMove playedMove = new PlayedMove(move, piece, captured);
             makeMove(playedMove, sse);
-//
-//            if (eval.evaluate() != new NNUE(board).evaluate()) {
-//                board.unmakeMove();
-//                System.out.println(FEN.toFEN(board) + " , " + Move.toUCI(move));
-//                board.makeMove(move);
-//            }
+
+            if (eval.evaluate() != new NNUE(board).evaluate()) {
+                board.unmakeMove();
+                System.out.println(FEN.toFEN(board) + " , " + Move.toUCI(move));
+                System.out.println(Arrays.stream(board.getMoves()).filter(Objects::nonNull).map(Move::toUCI).toList());
+                board.makeMove(move);
+            }
 
             final int nodesBefore = td.nodes;
             td.nodes++;

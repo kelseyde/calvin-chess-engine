@@ -69,15 +69,14 @@ public class SearchHistory {
         if (quietMove == null)
             return;
         boolean good = quietMove.equals(bestMove);
-        int bonusMultiplier = good ? moveIndex : quietCount - moveIndex;
         Piece piece = board.pieceAt(quietMove.from());
-        quietHistoryTable.update(quietMove, piece, bonusMultiplier, white, good);
+        quietHistoryTable.update(quietMove, piece, moveIndex, white, good);
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.currentMove != null) {
                 Move prevMove = prevEntry.currentMove;
                 Piece prevPiece = prevEntry.currentPiece;
-                contHistTable.update(prevMove, prevPiece, quietMove, piece, bonusMultiplier, white, good);
+                contHistTable.update(prevMove, prevPiece, quietMove, piece, moveIndex, white, good);
             }
         }
     }
@@ -88,8 +87,7 @@ public class SearchHistory {
         boolean good = captureMove.equals(bestMove);
         Piece piece = board.pieceAt(captureMove.from());
         Piece captured = captureMove.isEnPassant() ? Piece.PAWN : board.pieceAt(captureMove.to());
-        int bonusMultiplier = good ? moveIndex : captureCount - moveIndex;
-        captureHistoryTable.update(piece, captureMove.to(), captured, bonusMultiplier, white, good);
+        captureHistoryTable.update(piece, captureMove.to(), captured, moveIndex, white, good);
     }
 
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {

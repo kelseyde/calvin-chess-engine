@@ -403,6 +403,10 @@ public class Searcher implements Search {
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
 
+                int reverseFutilityMargin = depth * (improving ? config.rfpImpMargin() : config.rfpMargin())
+                        + depth * config.rfpBlend();
+                r += staticEval - reverseFutilityMargin >= beta ? config.lmrRevFutile() : 0;
+
                 reduction = Math.max(0, r / 1024);
             }
 

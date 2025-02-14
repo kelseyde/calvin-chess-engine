@@ -401,7 +401,7 @@ public class Searcher implements Search {
                 int futilityMargin = config.fpMargin()
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
-                r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r += !inCheck && staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }

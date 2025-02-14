@@ -15,6 +15,10 @@ public class Score {
         return isDefinedScore(score) && Math.abs(score) >= Score.MATE - Search.MAX_DEPTH;
     }
 
+    public static boolean isMatedScore(int score) {
+        return isDefinedScore(score) && score <= -Score.MATE + Search.MAX_DEPTH;
+    }
+
     public static boolean isDefinedScore(int score) {
         return Math.abs(score) != Score.MAX;
     }

@@ -664,6 +664,13 @@ public class Searcher implements Search {
             final Piece piece = scoredMove.piece();
             movesSearched++;
 
+            // In check, we skip all remaining quiets once we've found a single non-mated move
+            if (inCheck
+                && !Score.isMateScore(bestScore)
+                && scoredMove.isQuiet()) {
+                continue;
+            }
+
             // Delta Pruning - https://www.chessprogramming.org/Delta_Pruning
             // If the captured piece + a margin still has no potential of raising alpha, let's assume this position
             // is bad for us no matter what we do, and not bother searching any further
@@ -709,7 +716,6 @@ public class Searcher implements Search {
                     flag = HashFlag.LOWER;
                     break;
                 }
-
             }
         }
 

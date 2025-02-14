@@ -420,6 +420,10 @@ public class Searcher implements Search {
                         movePicker.setSkipQuiets(true);
                         continue;
                     }
+                    else if (staticEval - futilityMargin >= beta) {
+                        movePicker.setSkipQuiets(true);
+                        continue;
+                    }
                 }
 
                 // History pruning - https://www.chessprogramming.org/History_Leaf_Pruning

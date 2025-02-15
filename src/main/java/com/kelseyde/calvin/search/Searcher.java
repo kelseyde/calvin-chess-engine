@@ -515,6 +515,7 @@ public class Searcher implements Search {
                 bestMove = move;
                 alpha = score;
                 flag = HashFlag.EXACT;
+                sse.bestMoveQuiet = scoredMove.isQuiet();
 
                 sse.bestMove = move;
                 if (rootNode) {
@@ -547,7 +548,7 @@ public class Searcher implements Search {
 
         if (!inCheck
             && Score.isDefinedScore(bestScore)
-            && (bestMove == null || board.isQuiet(bestMove))
+            && (bestMove == null || sse.bestMoveQuiet)
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.

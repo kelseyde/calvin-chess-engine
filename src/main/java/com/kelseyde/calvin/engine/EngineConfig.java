@@ -98,8 +98,8 @@ public class EngineConfig {
     private final Tunable softTimeScaleMax       = new Tunable("SoftTimeScaleMax", 244, 100, 250, 50);
     private final Tunable uciOverhead            = new Tunable("UciOverhead", 50, 0, 1000, 50);
     private final Tunable nodeTmMinDepth         = new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
-    private final Tunable nodeTmBase             = new Tunable("NodeTmBase", 158, 100, 200, 10);
-    private final Tunable nodeTmScale            = new Tunable("NodeTmScale", 140, 100, 200, 10);
+    private final Tunable nodeTmBase             = new Tunable("NodeTmBase", 234, 100, 200, 10);
+    private final Tunable nodeTmScale            = new Tunable("NodeTmScale", 170, 100, 200, 10);
     private final Tunable bmStabilityMinDepth    = new Tunable("BmStabilityMinDepth", 0, 0, 10, 1);
     private final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
 

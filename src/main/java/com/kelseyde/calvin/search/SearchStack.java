@@ -28,9 +28,19 @@ public class SearchStack {
         public Move currentMove;
         public Piece currentPiece;
         public Move bestMove;
-        public Move[] quiets;
-        public Move[] captures;
+        public SearchedMove[] quiets;
+        public SearchedMove[] captures;
         public boolean nullMoveAllowed = true;
+    }
+
+    public static class SearchedMove {
+        public Move move;
+        public int depth;
+
+        public SearchedMove(Move move, int depth) {
+            this.move = move;
+            this.depth = depth;
+        }
     }
 
 }

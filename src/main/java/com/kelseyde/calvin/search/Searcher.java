@@ -8,6 +8,7 @@ import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
+import com.kelseyde.calvin.search.SearchStack.SearchedMove;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.picker.ScoredMove;
@@ -359,8 +360,8 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
 
         int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
-        sse.quiets = new Move[16];
-        sse.captures = new Move[16];
+        sse.quiets = new SearchedMove[16];
+        sse.captures = new SearchedMove[16];
 
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -467,36 +468,41 @@ public class Searcher implements Search {
 
             makeMove(move, piece, sse);
 
-            if (isCapture && captureMoves < 16) {
-                sse.captures[captureMoves++] = move;
-            }
-            else if (quietMoves < 16) {
-                sse.quiets[quietMoves++] = move;
-            }
-
             final int nodesBefore = td.nodes;
             td.nodes++;
 
             int score;
 
+            int searchDepth;
+
             if (pvNode && searchedMoves == 1) {
                 // Principal Variation Search - https://www.chessprogramming.org/Principal_Variation_Search
                 // The first move must be searched with the full alpha-beta window. If our move ordering is any good
                 // then we expect this to be the best move, and so we need to retrieve the exact score.
-                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                searchDepth = depth - 1 + extension;
+                score = -search(searchDepth, ply + 1, -beta, -alpha, false);
             } else {
                 // For all other moves apart from the principal variation, search with a null window (-alpha - 1, -alpha),
                 // to try and prove the move will fail low while saving the time spent on a full search.
-                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
+                searchDepth = depth - 1 - reduction + extension;
+                score = -search(searchDepth, ply + 1, -alpha - 1, -alpha, true);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If we reduced the depth and/or used a null window, and the score beat alpha, we need to do a
                     // re-search with the full window and depth. This is costly, but hopefully doesn't happen too often.
-                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                    searchDepth = depth - 1 + extension;
+                    score = -search(searchDepth, ply + 1, -beta, -alpha, false);
                 }
             }
 
             unmakeMove(sse);
+
+            if (isCapture && captureMoves < 16) {
+                sse.captures[captureMoves++] = new SearchedMove(move, searchDepth);
+            }
+            else if (quietMoves < 16) {
+                sse.quiets[quietMoves++] = new SearchedMove(move, searchDepth);
+            }
 
             if (rootNode) {
                 td.addNodes(move, td.nodes - nodesBefore);
@@ -539,10 +545,8 @@ public class Searcher implements Search {
 
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
-            final int historyDepth = depth
-                    + (staticEval <= alpha ? 1 : 0)
-                    + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(board, bestMove, sse.quiets, sse.captures, board.isWhite(), historyDepth, ply, ss);
+            final int depthBonus = (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
+            history.updateHistory(board, bestMove, sse.quiets, sse.captures, board.isWhite(), depthBonus, ply, ss);
         }
 
         if (!inCheck

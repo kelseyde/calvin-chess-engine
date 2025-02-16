@@ -299,7 +299,7 @@ public class Searcher implements Search {
             // is a cut-node and will fail-high, and not search any further.
             if (depth <= config.rfpDepth() && !Score.isMateScore(alpha)) {
                 final int futilityMargin = depth * (improving ? config.rfpImpMargin() : config.rfpMargin())
-                        + depth * config.rfpBlend();
+                        + depth * config.rfpBlend() - (cutNode ? 50 : 0);
                 if (staticEval - futilityMargin >= beta) {
                     return beta + (staticEval - beta) / 3;
                 }

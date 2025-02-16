@@ -62,6 +62,7 @@ public class EngineConfig {
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 915, 0, 2048, 150);
     private final Tunable lmrCutNode             = new Tunable("LmrPvNode", 0, 0, 2048, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 5, 0, 2048, 150);
+    private final Tunable lmrFutile              = new Tunable("LmrFutile", 1024, 0, 2048, 150);
     private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 2993, 1536, 6144, 1000);
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3154, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
@@ -113,7 +114,7 @@ public class EngineConfig {
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
                 qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, rfpBlend, razorDepth, razorMargin,
-                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, quietHistBonusMax,
+                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
@@ -351,6 +352,10 @@ public class EngineConfig {
 
     public int lmrNotImproving() {
         return lmrNotImproving.value;
+    }
+
+    public int lmrFutile() {
+        return lmrFutile.value;
     }
 
     public int lmrQuietHistoryDiv() {

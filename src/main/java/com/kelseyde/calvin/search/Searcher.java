@@ -409,6 +409,11 @@ public class Searcher implements Search {
                         ? historyScore / config.lmrQuietHistoryDiv() * 1024
                         : historyScore / config.lmrNoisyHistoryDiv() * 1024;
 
+                int futilityMargin = config.fpMargin()
+                        + (depth) * config.fpScale()
+                        + (historyScore / config.fpHistDivisor());
+                r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+
                 reduction = Math.max(0, r / 1024);
             }
 

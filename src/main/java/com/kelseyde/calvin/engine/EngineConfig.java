@@ -26,7 +26,8 @@ public class EngineConfig {
     public boolean searchCancelled = false;
 
     private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
-    private final Tunable aspMargin              = new Tunable("AspMargin", 18, 0, 250, 25);
+    private final Tunable aspWindow              = new Tunable("AspWindow", 18, 0, 250, 25);
+    private final Tunable aspWideningFactor      = new Tunable("AspWideningFactor", 125, 110, 250, 20);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
     private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
@@ -110,9 +111,9 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth, fpBlend,
-                fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
-                lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
+                aspMinDepth, aspWindow, aspWideningFactor, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction,
+                fpDepth, fpBlend, fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor,
+                lmrMinMoves, lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
                 qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, rfpBlend, razorDepth, razorMargin,
                 hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
@@ -210,8 +211,12 @@ public class EngineConfig {
         return aspMinDepth.value;
     }
 
-    public int aspMargin() {
-        return aspMargin.value;
+    public int aspWindow() {
+        return aspWindow.value;
+    }
+
+    public int aspWideningFactor() {
+        return aspWideningFactor.value;
     }
 
     public int aspMaxReduction() {

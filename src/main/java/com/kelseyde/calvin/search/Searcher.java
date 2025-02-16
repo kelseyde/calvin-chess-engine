@@ -381,7 +381,7 @@ public class Searcher implements Search {
 
             // Check Extensions - https://www.chessprogramming.org/Check_Extensions
             // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
-            if (inCheck) {
+            if (inCheck && (pvNode || !cutNode)) {
                 extension = 1;
             }
 

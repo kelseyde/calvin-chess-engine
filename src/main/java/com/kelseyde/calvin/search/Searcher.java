@@ -390,7 +390,7 @@ public class Searcher implements Search {
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
             if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves) {
 
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
+                int r = config.lmrTable()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
@@ -435,13 +435,12 @@ public class Searcher implements Search {
                 // Late Move Pruning - https://www.chessprogramming.org/Futility_Pruning#Move_Count_Based_Pruning
                 // If the move is ordered very late in the list, and isn't a 'noisy' move like a check, capture or
                 // promotion, let's assume it's less likely to be good, and fully skip searching that move.
-                final int lmpCutoff = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
-                if (!inCheck
-                        && scoredMove.isQuiet()
-                        && depth <= config.lmpDepth()
-                        && searchedMoves >= lmpCutoff) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
+                if (!inCheck && scoredMove.isQuiet() && depth <= config.lmpDepth()) {
+                    final int minMoves = config.lmpTable()[Math.min(depth, config.lmpTable().length - 1)][improving ? 1 : 0];
+                    if (searchedMoves > minMoves) {
+                        movePicker.setSkipQuiets(true);
+                        continue;
+                    }
                 }
 
                 // PVS SEE Pruning - https://www.chessprogramming.org/Static_Exchange_Evaluation

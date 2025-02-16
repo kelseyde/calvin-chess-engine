@@ -103,7 +103,8 @@ public class EngineConfig {
     private final Tunable bmStabilityMinDepth    = new Tunable("BmStabilityMinDepth", 0, 0, 10, 1);
     private final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
 
-    private int[][][] lmrReductions;
+    private int[][][] lmrTable;
+    private int[][] lmpTable;
     private final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
     private final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
     private final int[] contHistPlies = { 1, 2 };
@@ -148,32 +149,43 @@ public class EngineConfig {
         option.value = value;
         if (name.equals("LmrBase") || name.equals("LmrDivisor")
                 || name.equals("LmrCapBase") || name.equals("LmrCapDivisor")) {
-            calculateLmrTable();
+            initLmrTable();
         }
 
         UCI.write("info string " + name + " " + value);
     }
 
     public void postInitialise() {
-        calculateLmrTable();
+        initLmrTable();
+        initLmpTable();
     }
 
-    private void calculateLmrTable() {
+    private void initLmrTable() {
         float quietBase = (float) lmrBase.value / 100;
         float quietDivisor = (float) lmrDivisor.value / 100;
         float capBase = (float) lmrCapBase.value / 100;
         float capDivisor = (float) lmrCapDivisor.value / 100;
-        lmrReductions = new int[2][][];
+        lmrTable = new int[2][][];
 
         for (int quiet = 0; quiet < 2; quiet++) {
-            lmrReductions[quiet] = new int[Search.MAX_DEPTH][];
+            lmrTable[quiet] = new int[Search.MAX_DEPTH][];
             for (int depth = 1; depth < Search.MAX_DEPTH; ++depth) {
-                lmrReductions[quiet][depth] = new int[250];
+                lmrTable[quiet][depth] = new int[250];
                 float base = quiet == 0 ? quietBase : capBase;
                 float divisor = quiet == 0 ? quietDivisor : capDivisor;
                 for (int movesSearched = 1; movesSearched < 250; ++movesSearched) {
-                    lmrReductions[quiet][depth][movesSearched] = (int) Math.round(base + (Math.log(movesSearched) * Math.log(depth) / divisor));
+                    lmrTable[quiet][depth][movesSearched] = (int) Math.round(base + (Math.log(movesSearched) * Math.log(depth) / divisor));
                 }
+            }
+        }
+    }
+
+    private void initLmpTable() {
+        lmpTable = new int[128][2];
+        for (int depth = 0; depth < 128; depth++) {
+            for (int improving = 0; improving < 2; improving++) {
+                lmpTable[depth][0] = (int) (1.62 + 0.52 * depth * depth);
+                lmpTable[depth][1] = (int) (2.95 + 0.97 * depth * depth);
             }
         }
     }
@@ -514,8 +526,12 @@ public class EngineConfig {
         return scoreStabilityMinDepth.value;
     }
 
-    public int[][][] lmrReductions() {
-        return lmrReductions;
+    public int[][][] lmrTable() {
+        return lmrTable;
+    }
+
+    public int[][] lmpTable() {
+        return lmpTable;
     }
 
     public int[] bmStabilityFactor() {

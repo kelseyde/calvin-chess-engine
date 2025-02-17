@@ -270,7 +270,7 @@ public class Searcher implements Search {
         int rawStaticEval = Integer.MIN_VALUE;
         int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
-        // No need to recompute staticEval in singular search - we already have it on the SearchStack
+
         if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
@@ -283,8 +283,8 @@ public class Searcher implements Search {
             staticEval = ttMove != null ?
                     rawStaticEval :
                     history.correctEvaluation(board, ss, ply, rawStaticEval);
-            if (ttHit
-                    && (ttEntry.flag() == HashFlag.EXACT ||
+            if (ttHit &&
+                    (ttEntry.flag() == HashFlag.EXACT ||
                     (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                     (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval))) {
                 staticEval = ttEntry.score();
@@ -596,7 +596,6 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        // Don't write to the TT in SE search
         if (!hardLimitReached() && !singularSearch && !ttPrune) {
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
         }

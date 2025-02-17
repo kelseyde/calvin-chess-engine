@@ -476,15 +476,19 @@ public class Searcher implements Search {
 
             }
 
+            // Singular Extensions - https://www.chessprogramming.org/Singular_Extensions
+            // Do a reduced-depth search with the TT move excluded. If the result of that search plus some margin
+            // doesn't beat the TT score, we assume the TT move is 'singular' (i.e. the only good move), and extend
+            // the search depth.
             if (!rootNode
-                    && depth >= 8
+                    && depth >= config.seDepth()
                     && move.equals(ttMove)
                     && !singularSearch
-                    && ttEntry.depth() >= depth - 3
+                    && ttEntry.depth() >= depth - config.seTtDepthMargin()
                     && ttEntry.flag() != HashFlag.UPPER) {
 
-                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * 2);
-                int sDepth = (depth - 1) / 2;
+                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * config.seBetaMargin() / 16);
+                int sDepth = (depth - config.seReductionOffset()) / config.seReductionDivisor();
 
                 sse.excludedMove = move;
                 int score = search(sDepth, ply, sBeta - 1, sBeta, cutNode);

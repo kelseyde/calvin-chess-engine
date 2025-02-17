@@ -74,6 +74,11 @@ public class EngineConfig {
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     private final Tunable hpMargin               = new Tunable("HpMargin", -2167, -4000, -100, 50);
     private final Tunable hpOffset               = new Tunable("HpOffset", -1100, -3000, 0, 50);
+    private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
+    private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
+    private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
+    private final Tunable seReductionOffset      = new Tunable("SeReductionOffset", 1, 0, 3, 1);
+    private final Tunable seReductionDivisor     = new Tunable("SeReductionDivisor", 2, 1, 4, 1);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
@@ -121,7 +126,8 @@ public class EngineConfig {
                 nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
-                seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv
+                seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
+                seBetaMargin, seReductionOffset, seReductionDivisor
         );
     }
 
@@ -400,6 +406,26 @@ public class EngineConfig {
 
     public int hpOffset() {
         return hpOffset.value;
+    }
+
+    public int seDepth() {
+        return seDepth.value;
+    }
+
+    public int seTtDepthMargin() {
+        return seTtDepthMargin.value;
+    }
+
+    public int seBetaMargin() {
+        return seBetaMargin.value;
+    }
+
+    public int seReductionOffset() {
+        return seReductionOffset.value;
+    }
+
+    public int seReductionDivisor() {
+        return seReductionDivisor.value;
     }
 
     public int ttExtensionDepth() {

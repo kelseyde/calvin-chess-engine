@@ -495,7 +495,10 @@ public class Searcher implements Search {
                 sse.excludedMove = null;
 
                 if (score < sBeta) {
-                    extension = 1;
+                    if (!pvNode && score < sBeta - config.seDoubleExtMargin())
+                        extension = 2;
+                    else
+                        extension = 1;
                 }
 
             }

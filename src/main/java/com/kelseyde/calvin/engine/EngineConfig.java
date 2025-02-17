@@ -79,6 +79,7 @@ public class EngineConfig {
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
     private final Tunable seReductionOffset      = new Tunable("SeReductionOffset", 1, 0, 3, 1);
     private final Tunable seReductionDivisor     = new Tunable("SeReductionDivisor", 2, 1, 4, 1);
+    private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 20, 0, 32, 5);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
@@ -127,7 +128,7 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
         );
     }
 
@@ -426,6 +427,10 @@ public class EngineConfig {
 
     public int seReductionDivisor() {
         return seReductionDivisor.value;
+    }
+
+    public int seDoubleExtMargin() {
+        return seDoubleExtMargin.value;
     }
 
     public int ttExtensionDepth() {

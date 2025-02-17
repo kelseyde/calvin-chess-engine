@@ -481,11 +481,11 @@ public class Searcher implements Search {
             // doesn't beat the TT score, we assume the TT move is 'singular' (i.e. the only good move), and extend
             // the search depth.
             if (!rootNode
-                    && depth >= config.seDepth()
-                    && move.equals(ttMove)
                     && !singularSearch
-                    && ttEntry.depth() >= depth - config.seTtDepthMargin()
-                    && ttEntry.flag() != HashFlag.UPPER) {
+                    && move.equals(ttMove)
+                    && depth >= config.seDepth()
+                    && ttEntry.flag() != HashFlag.UPPER
+                    && ttEntry.depth() >= depth - config.seTtDepthMargin()) {
 
                 int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * config.seBetaMargin() / 16);
                 int sDepth = (depth - config.seReductionOffset()) / config.seReductionDivisor();

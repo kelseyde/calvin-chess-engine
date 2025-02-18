@@ -396,7 +396,7 @@ public class Searcher implements Search {
             // Check Extensions - https://www.chessprogramming.org/Check_Extensions
             // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
             if (inCheck) {
-                extension = 1;
+                extension++;
             }
 
             // Late Move Reductions - https://www.chessprogramming.org/Late_Move_Reductions
@@ -495,13 +495,12 @@ public class Searcher implements Search {
                 sse.excludedMove = null;
 
                 if (score < sBeta) {
+                    extension++;
                     if (!pvNode && score < sBeta - config.seDoubleExtMargin())
-                        extension = 2;
-                    else
-                        extension = 1;
+                        extension++;
                 }
                 else if (ttEntry.score() >= beta) {
-                    extension = -1;
+                    extension--;
                 }
 
             }

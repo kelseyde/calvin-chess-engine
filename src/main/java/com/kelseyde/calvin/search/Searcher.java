@@ -500,9 +500,10 @@ public class Searcher implements Search {
                     else
                         extension = 1;
                 }
-                else if (ttEntry.score() >= beta) {
+                else if (ttEntry.score() >= beta)
+                    extension = -2 + (pvNode ? 1 : 0);
+                else if (ttEntry.score() <= alpha && cutNode)
                     extension = -1;
-                }
 
             }
 

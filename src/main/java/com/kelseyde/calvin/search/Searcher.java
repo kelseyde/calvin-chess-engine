@@ -501,7 +501,7 @@ public class Searcher implements Search {
                         extension = 1;
                 }
                 else if (ttEntry.score() >= beta) {
-                    extension = -1;
+                    extension = -1 - (!pvNode ? 1 : 0);
                 }
 
             }

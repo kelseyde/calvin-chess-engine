@@ -495,12 +495,20 @@ public class Searcher implements Search {
                 sse.excludedMove = null;
 
                 if (score < sBeta) {
-                    if (!pvNode && score < sBeta - config.seDoubleExtMargin())
-                        extension = 2;
-                    else
-                        extension = 1;
+                    extension = 1;
+
+                    // Double extensions
+                    if (!pvNode && score < sBeta - config.seDoubleExtMargin()) {
+                        extension++;
+
+                        // Triple extensions
+                        if (!board.isNoisy(move) && score < sBeta - config.seTripleExtMargin()) {
+                            extension++;
+                        }
+                    }
                 }
                 else if (ttEntry.score() >= beta) {
+                    // Negative extensions
                     extension = -1;
                 }
 

@@ -26,6 +26,7 @@ import java.util.Arrays;
  */
 public class NNUE {
 
+
     public static final Network NETWORK = Network.builder()
             .file("calvin1280_4b.nnue")
             .inputSize(768)

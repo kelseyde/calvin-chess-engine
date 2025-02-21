@@ -505,8 +505,8 @@ public class Searcher implements Search {
                     else
                         extension = 1;
                 }
-                else if (ttEntry.score() >= beta) {
-                    extension = -1;
+                else if (cutNode || ttEntry.score() >= beta) {
+                    extension = -2;
                 }
 
             }

@@ -317,6 +317,7 @@ public class Searcher implements Search {
                 }
             }
 
+
             // Razoring - https://www.chessprogramming.org/Razoring
             // At low depths, if the static evaluation + some significant margin is still below alpha, then let's perform
             // a quick quiescence search to see if the position is really that bad. If it is, we can prune the node.

@@ -880,5 +880,4 @@ public class Searcher implements Search {
         history.clear();
     }
 
-
 }

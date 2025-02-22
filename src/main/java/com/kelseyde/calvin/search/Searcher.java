@@ -704,7 +704,7 @@ public class Searcher implements Search {
         int movesSearched = 0;
 
         Move bestMove = null;
-        int bestScore = staticEval;
+        int bestScore = alpha;
         final int futilityScore = staticEval + config.qsFpMargin();
         int flag = HashFlag.UPPER;
 

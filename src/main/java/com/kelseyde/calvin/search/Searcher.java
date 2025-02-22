@@ -271,7 +271,11 @@ public class Searcher implements Search {
         int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
 
-        if (!inCheck) {
+        if (singularSearch) {
+            // In singular search, since we are in the same node, we can re-use the static eval on the stack.
+            staticEval = sse.staticEval;
+        }
+        else if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedStaticEval = rawStaticEval;
@@ -312,6 +316,7 @@ public class Searcher implements Search {
                     return beta + (staticEval - beta) / 3;
                 }
             }
+
 
             // Razoring - https://www.chessprogramming.org/Razoring
             // At low depths, if the static evaluation + some significant margin is still below alpha, then let's perform
@@ -874,6 +879,5 @@ public class Searcher implements Search {
         eval.clearHistory();
         history.clear();
     }
-
 
 }

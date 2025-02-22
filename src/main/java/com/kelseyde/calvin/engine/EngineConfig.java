@@ -67,7 +67,7 @@ public class EngineConfig {
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3154, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
-    private final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);
+    private final Tunable iirDepth               = new Tunable("IirDepth", 3, 0, 8, 1);
     private final Tunable dpMargin               = new Tunable("DpMargin", 102, 0, 250, 10);
     private final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
     private final Tunable razorMargin            = new Tunable("RazorMargin", 478, 0, 600, 10);

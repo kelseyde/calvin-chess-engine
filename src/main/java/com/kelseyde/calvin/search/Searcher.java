@@ -708,6 +708,7 @@ public class Searcher implements Search {
         final int futilityScore = staticEval + config.qsFpMargin();
         int flag = HashFlag.UPPER;
 
+
         while (true) {
 
             final ScoredMove scoredMove = movePicker.next();

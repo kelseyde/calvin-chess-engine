@@ -206,9 +206,9 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
-        SearchStackEntry sse = ss.get(ply);
-        Move excludedMove = sse.excludedMove;
-        boolean singularSearch = excludedMove != null;
+        final SearchStackEntry sse = ss.get(ply);
+        final Move excludedMove = sse.excludedMove;
+        final boolean singularSearch = excludedMove != null;
 
         history.getKillerTable().clear(ply + 1);
 
@@ -217,10 +217,12 @@ public class Searcher implements Search {
         // previous search. In any case we can re-use information from the previous search in the current search.
         HashEntry ttEntry = null;
         boolean ttHit = false, ttPrune = false;
+        Move ttMove = null;
 
         if (!singularSearch) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
+            ttMove = ttHit ? ttEntry.move() : null;
 
             if (canUseTTEntry(rootNode, pvNode, cutNode, ttHit, ttEntry, depth, alpha)) {
                 if (isWithinBounds(ttEntry, alpha, beta))
@@ -238,10 +240,6 @@ public class Searcher implements Search {
             else
                 return ttEntry.score();
         }
-
-        Move ttMove = null;
-        if (ttHit && ttEntry.move() != null)
-            ttMove = ttEntry.move();
 
         // Internal Iterative Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
@@ -289,14 +287,12 @@ public class Searcher implements Search {
         if (!pvNode && !inCheck && !singularSearch) {
 
             // Reverse Futility Pruning
-            // If the static evaluation + some margin is above beta, then let's assume this position is a cut-node and
-            // will fail-high, and not search any further.
+            // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             if (doReverseFutilityPruning(depth, staticEval, alpha, beta, improving))
                 return beta + (staticEval - beta) / 3;
 
             // Razoring
-            // If the static evaluation + some significant margin is still below alpha, do a quick quiescence search to
-            // see if the position is really that bad. If it is, we can prune the node.
+            // Skip nodes where a quiescence search confirms that the position is bad and will likely result in a fail-low.
             if (doRazoring(depth, staticEval, alpha)) {
                 final int score = quiescenceSearch(alpha, alpha + 1, ply);
                 if (score < alpha) {
@@ -305,19 +301,9 @@ public class Searcher implements Search {
             }
 
             // Null Move Pruning
-            // If the static evaluation + some significant margin is still above beta after giving the opponent two moves
-            // in a row (making a 'null' move), then let's assume this node will fail-high, and not search any further.
-            if (doNullMoveSearch(depth, staticEval, beta, ttHit, cutNode, sse, ttEntry)) {
-                ss.get(ply + 1).nullMoveAllowed = false;
-                board.makeNullMove();
-                td.nodes++;
-
-                final int reduction = nmpReduction(depth, staticEval, beta);
-                final int score = -search(depth - reduction, ply + 1, -beta, -beta + 1, !cutNode);
-
-                board.unmakeNullMove();
-                ss.get(ply + 1).nullMoveAllowed = true;
-
+            // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
+            if (doNullMovePruning(depth, staticEval, beta, ttHit, cutNode, sse, ttEntry)) {
+                final int score = nullMoveSearch(depth, ply, alpha, beta, staticEval, cutNode);
                 if (score >= beta) {
                     return Score.isMateScore(score) ? beta : score;
                 }
@@ -768,13 +754,26 @@ public class Searcher implements Search {
                 && staticEval - futilityMargin >= beta;
     }
 
-    private boolean doNullMoveSearch(
+    private boolean doNullMovePruning(
             int depth, int staticEval, int beta, boolean ttHit, boolean cutNode, SearchStackEntry sse, HashEntry ttEntry) {
         return sse.nullMoveAllowed
                 && depth >= config.nmpDepth()
                 && staticEval >= beta
                 && (!ttHit || cutNode || ttEntry.score() >= beta)
                 && board.hasPiecesRemaining(board.isWhite());
+    }
+
+    private int nullMoveSearch(int depth, int ply, int alpha, int beta, int staticEval, boolean cutNode) {
+        ss.get(ply + 1).nullMoveAllowed = false;
+        board.makeNullMove();
+        td.nodes++;
+
+        final int reduction = nmpReduction(depth, staticEval, beta);
+        final int score = -search(depth - reduction, ply + 1, -beta, -beta + 1, !cutNode);
+
+        board.unmakeNullMove();
+        ss.get(ply + 1).nullMoveAllowed = true;
+        return score;
     }
 
     private boolean doRazoring(int depth, int staticEval, int alpha) {

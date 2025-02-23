@@ -433,7 +433,7 @@ public class Searcher implements Search {
 
                 // Late Move Pruning
                 // Skip quiet moves ordered very late in the list.
-                final int lmpThreshold = depth * config.lmpMultiplier() / (improving ? 2 : 1);
+                final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
                 if (isQuiet
                         && !inCheck
                         && depth <= config.lmpDepth()
@@ -677,7 +677,7 @@ public class Searcher implements Search {
 
                 // Futility Pruning
                 // Skip captures that don't win material when the static eval is far below alpha.
-                if (futilityScore <= alpha && !SEE.see(board, move, 1))
+                if (captured != null && futilityScore <= alpha && !SEE.see(board, move, 1))
                     continue;
 
                 // SEE Pruning

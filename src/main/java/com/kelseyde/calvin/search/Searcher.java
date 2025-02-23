@@ -357,14 +357,12 @@ public class Searcher implements Search {
         while (true) {
 
             final ScoredMove scoredMove = movePicker.next();
-            if (scoredMove == null) {
+            if (scoredMove == null)
                 break;
-            }
 
             final Move move = scoredMove.move();
-            if (move.equals(excludedMove)) {
+            if (move.equals(excludedMove))
                 continue;
-            }
             searchedMoves++;
 
             final Piece piece = scoredMove.piece();
@@ -522,6 +520,10 @@ public class Searcher implements Search {
                 td.addNodes(move, td.nodes - nodesBefore);
             }
 
+            if (hardLimitReached()) {
+                return alpha;
+            }
+
             if (score > bestScore) {
                 bestScore = score;
             }
@@ -662,13 +664,15 @@ public class Searcher implements Search {
         while (true) {
 
             final ScoredMove scoredMove = movePicker.next();
-            if (scoredMove == null) break;
+            if (scoredMove == null)
+                break;
+            movesSearched++;
+
             final Move move = scoredMove.move();
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
-            movesSearched++;
 
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.

@@ -212,11 +212,9 @@ public class Searcher implements Search {
 
         history.getKillerTable().clear(ply + 1);
 
-        // Probe the transposition table in case this node has been searched before. If so, we can potentially re-use the
-        // result of the previous search and save some time, only if the following conditions are met:
-        //  a) we are not in a PV node,
-        //  b) it was searched to a sufficient depth, and
-        //  c) the score is either exact, or outside the bounds of the current alpha-beta window.
+        // Transposition table
+        // Check if this node has already been searched before. If so, we can potentially re-use the result of the
+        // previous search. In any case we can re-use information from the previous search in the current search.
         HashEntry ttEntry = null;
         boolean ttHit = false, ttPrune = false;
 
@@ -242,17 +240,14 @@ public class Searcher implements Search {
         }
 
         Move ttMove = null;
-        if (ttHit && ttEntry.move() != null) {
-            // Even if we can't re-use the entire tt entry, we can still use the stored move to improve move ordering.
+        if (ttHit && ttEntry.move() != null)
             ttMove = ttEntry.move();
-        }
 
         // Internal Iterative Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.
-        if (doIIR(rootNode, pvNode, cutNode, ttHit, ttEntry, depth)) {
+        if (doIIR(rootNode, pvNode, cutNode, ttHit, ttEntry, depth))
             --depth;
-        }
 
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
@@ -296,9 +291,8 @@ public class Searcher implements Search {
             // Reverse Futility Pruning
             // If the static evaluation + some margin is above beta, then let's assume this position is a cut-node and
             // will fail-high, and not search any further.
-            if (doReverseFutilityPruning(depth, staticEval, alpha, beta, improving)) {
+            if (doReverseFutilityPruning(depth, staticEval, alpha, beta, improving))
                 return beta + (staticEval - beta) / 3;
-            }
 
             // Razoring
             // If the static evaluation + some significant margin is still below alpha, do a quick quiescence search to
@@ -347,14 +341,13 @@ public class Searcher implements Search {
         while (true) {
 
             final ScoredMove scoredMove = movePicker.next();
-            if (scoredMove == null) {
+            if (scoredMove == null)
                 break;
-            }
 
             final Move move = scoredMove.move();
-            if (move.equals(excludedMove)) {
+            if (move.equals(excludedMove))
                 continue;
-            }
+
             searchedMoves++;
 
             final Piece piece = scoredMove.piece();

@@ -236,7 +236,7 @@ public class MovePicker {
         moves[j] = temp;
     }
 
-    public void setSkipQuiets(boolean skipQuiets) {
+    public void skipQuiets(boolean skipQuiets) {
         this.skipQuiets = skipQuiets;
     }
 

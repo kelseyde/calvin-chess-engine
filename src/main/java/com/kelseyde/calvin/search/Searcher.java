@@ -666,18 +666,20 @@ public class Searcher implements Search {
             final Move move = scoredMove.move();
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
+            final boolean capture = captured != null;
+            final boolean promotion = move.isPromotion();
             movesSearched++;
 
             if (!inCheck) {
 
                 // Delta Pruning
                 // Skip captures where the value of the captured piece plus a margin is still below alpha.
-                if (captured != null && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
+                if (capture && !promotion && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
                     continue;
 
                 // Futility Pruning
                 // Skip captures that don't win material when the static eval is far below alpha.
-                if (captured != null && futilityScore <= alpha && !SEE.see(board, move, 1))
+                if (capture && !promotion && futilityScore <= alpha && !SEE.see(board, move, 1))
                     continue;
 
                 // SEE Pruning

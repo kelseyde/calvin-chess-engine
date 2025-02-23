@@ -847,4 +847,5 @@ public class Searcher implements Search {
                 (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval));
     }
 
+
 }

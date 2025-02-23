@@ -15,6 +15,7 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 
@@ -670,16 +671,16 @@ public class Searcher implements Search {
             final boolean promotion = move.isPromotion();
             movesSearched++;
 
-            if (!inCheck) {
+            if (!inCheck && capture && !promotion) {
 
                 // Delta Pruning
                 // Skip captures where the value of the captured piece plus a margin is still below alpha.
-                if (capture && !promotion && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
+                if (staticEval + SEE.value(captured) + config.dpMargin() < alpha)
                     continue;
 
                 // Futility Pruning
                 // Skip captures that don't win material when the static eval is far below alpha.
-                if (capture && !promotion && futilityScore <= alpha && !SEE.see(board, move, 1))
+                if (futilityScore <= alpha && !SEE.see(board, move, 1))
                     continue;
 
                 // SEE Pruning

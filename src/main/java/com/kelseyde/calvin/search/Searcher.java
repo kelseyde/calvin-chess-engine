@@ -15,7 +15,6 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 

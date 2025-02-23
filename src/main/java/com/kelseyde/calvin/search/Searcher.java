@@ -444,7 +444,7 @@ public class Searcher implements Search {
 
                 // PVS SEE Pruning
                 // Skip moves that lose material once all the pieces have been exchanged.
-                final int seeThreshold = seeThreshold(reducedDepth, historyScore, isQuiet);
+                final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
                 if (depth <= config.seeMaxDepth()
                         && searchedMoves > 1
                         && !isGoodNoisy

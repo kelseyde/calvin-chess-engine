@@ -295,18 +295,16 @@ public class Searcher implements Search {
             // Skip nodes where a quiescence search confirms that the position is bad and will likely result in a fail-low.
             if (doRazoring(depth, staticEval, alpha)) {
                 final int score = quiescenceSearch(alpha, alpha + 1, ply);
-                if (score < alpha) {
+                if (score < alpha)
                     return score;
-                }
             }
 
             // Null Move Pruning
             // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
             if (doNullMovePruning(depth, staticEval, beta, ttHit, cutNode, sse, ttEntry)) {
                 final int score = nullMoveSearch(depth, ply, alpha, beta, staticEval, cutNode);
-                if (score >= beta) {
+                if (score >= beta)
                     return Score.isMateScore(score) ? beta : score;
-                }
             }
 
         }

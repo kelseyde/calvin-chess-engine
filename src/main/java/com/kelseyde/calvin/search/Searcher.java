@@ -671,6 +671,7 @@ public class Searcher implements Search {
             final Move move = scoredMove.move();
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
+            final int historyScore = scoredMove.historyScore();
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
 
@@ -686,7 +687,7 @@ public class Searcher implements Search {
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.
-            if (!inCheck && !SEE.see(board, move, config.qsSeeThreshold()))
+            if (!inCheck && !SEE.see(board, move, qsSeeThreshold(historyScore)))
                 continue;
 
             makeMove(move, piece, sse);
@@ -838,6 +839,10 @@ public class Searcher implements Search {
                 config.seeNoisyMargin() * depth * depth;
         threshold -= historyScore / config.seeHistoryDivisor();
         return threshold;
+    }
+
+    private int qsSeeThreshold(int historyScore) {
+        return config.qsSeeThreshold() - historyScore / config.seeHistoryDivisor();
     }
 
     private boolean canUseTTScore(HashEntry ttEntry, int rawStaticEval) {

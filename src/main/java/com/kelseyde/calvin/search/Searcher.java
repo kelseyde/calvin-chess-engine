@@ -303,16 +303,6 @@ public class Searcher implements Search {
                 return beta + (staticEval - beta) / 3;
             }
 
-            // Razoring
-            // Skip nodes where a quiescence search confirms that the position is bad and will likely result in a fail-low.
-            if (depth <= config.razorDepth()
-                && staticEval + config.razorMargin() * depth < alpha) {
-                final int score = quiescenceSearch(alpha, alpha + 1, ply);
-                if (score < alpha) {
-                    return score;
-                }
-            }
-
             // Null Move Pruning
             // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
             if (sse.nullMoveAllowed

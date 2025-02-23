@@ -191,9 +191,7 @@ public class MovePicker {
             }
         }
 
-        moveIndex = 0;
-        stage = nextStage;
-        return null;
+        return nextStage(nextStage);
     }
 
     /**

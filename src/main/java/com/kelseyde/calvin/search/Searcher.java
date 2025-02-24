@@ -482,7 +482,6 @@ public class Searcher implements Search {
                 else if (ttEntry.score() >= beta)
                     extension = -1;
 
-
             }
 
             // We have decided that the current move should not be pruned and is worth searching further.

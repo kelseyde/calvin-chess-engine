@@ -251,7 +251,7 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && (pvNode || cutNode)
-                && (!ttHit || ttEntry.move() == null)
+                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
                 && depth >= config.iirDepth()) {
             --depth;
         }

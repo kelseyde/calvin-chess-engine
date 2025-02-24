@@ -675,6 +675,10 @@ public class Searcher implements Search {
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
 
+            // Move Count Pruning
+            if (!inCheck && movesSearched > (ttMove != null && !board.isCapture(ttMove) ? 3 : 2))
+                break;
+
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.
             if (!inCheck && capture && !promotion && staticEval + SEE.value(captured) + config.dpMargin() < alpha)

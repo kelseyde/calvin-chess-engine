@@ -500,13 +500,13 @@ public class Searcher implements Search {
             int score;
 
             // Principal Variation Search
-            if (pvNode && searchedMoves == 1) {
+            if (searchedMoves == 1) {
                 // Since we expect the first move to be the best, we search it with a full window.
-                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, !pvNode && !cutNode);
             }
             else {
                 // For all other moves, search with a null window.
-                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
+                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.

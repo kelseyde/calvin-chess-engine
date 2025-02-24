@@ -484,6 +484,8 @@ public class Searcher implements Search {
 
             }
 
+            cutNode = cutNode || extension < 0;
+
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(move, piece, sse);

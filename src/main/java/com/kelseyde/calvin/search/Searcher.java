@@ -400,6 +400,8 @@ public class Searcher implements Search {
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
 
+                r += bestScore < alpha ? searchedMoves * config.lmrNoGoodMoves() : 0;
+
                 reduction = Math.max(0, r / 1024);
             }
 

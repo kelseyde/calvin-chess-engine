@@ -246,16 +246,6 @@ public class Searcher implements Search {
                 return ttEntry.score();
         }
 
-        // Internal Iterative Deepening
-        // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
-        // reduced depth expecting to record a move that we can use later for a full-depth search.
-        if (!rootNode
-                && (pvNode || cutNode)
-                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
-                && depth >= config.iirDepth()) {
-            --depth;
-        }
-
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
         // In non-leaf nodes, this is used as a guide for several heuristics, such as extensions, reductions and pruning.
@@ -289,6 +279,16 @@ public class Searcher implements Search {
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
         final boolean improving = isImproving(ply, staticEval);
+
+        // Internal Iterative Deepening
+        // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
+        // reduced depth expecting to record a move that we can use later for a full-depth search.
+        if (!rootNode
+                && (pvNode || cutNode || !improving)
+                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
+                && depth >= config.iirDepth()) {
+            --depth;
+        }
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.

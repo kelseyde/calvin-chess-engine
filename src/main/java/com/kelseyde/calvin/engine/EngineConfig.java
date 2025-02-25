@@ -68,6 +68,7 @@ public class EngineConfig {
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
     private final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);
+    private final Tunable iirTTDepthOffset       = new Tunable("IirTTDepthOffset", 3, 0, 8, 1);
     private final Tunable dpMargin               = new Tunable("DpMargin", 102, 0, 250, 10);
     private final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
     private final Tunable razorMargin            = new Tunable("RazorMargin", 478, 0, 600, 10);
@@ -128,7 +129,7 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, iirTTDepthOffset
         );
     }
 
@@ -383,6 +384,10 @@ public class EngineConfig {
 
     public int iirDepth() {
         return iirDepth.value;
+    }
+
+    public int iirTTDepthOffset() {
+        return iirTTDepthOffset.value;
     }
 
     public int dpMargin() {

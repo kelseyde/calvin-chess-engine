@@ -292,7 +292,7 @@ public class Searcher implements Search {
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
-        if (!pvNode && !inCheck && !singularSearch) {
+        if (!inCheck && !singularSearch) {
 
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
@@ -300,12 +300,16 @@ public class Searcher implements Search {
             if (depth <= config.rfpDepth()
                     && !Score.isMateScore(alpha)
                     && staticEval - futilityMargin >= beta) {
-                return beta + (staticEval - beta) / 3;
+                if (pvNode)
+                    --depth;
+                else
+                    return beta + (staticEval - beta) / 3;
             }
 
             // Razoring
             // Skip nodes where a quiescence search confirms that the position is bad and will likely result in a fail-low.
-            if (depth <= config.razorDepth()
+            if (!pvNode
+                && depth <= config.razorDepth()
                 && staticEval + config.razorMargin() * depth < alpha) {
                 final int score = quiescenceSearch(alpha, alpha + 1, ply);
                 if (score < alpha) {
@@ -315,7 +319,8 @@ public class Searcher implements Search {
 
             // Null Move Pruning
             // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
-            if (sse.nullMoveAllowed
+            if (!pvNode
+                && sse.nullMoveAllowed
                 && depth >= config.nmpDepth()
                 && staticEval >= beta
                 && (!ttHit || cutNode || ttEntry.score() >= beta)

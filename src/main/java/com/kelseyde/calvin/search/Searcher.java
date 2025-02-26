@@ -9,6 +9,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.MovePicker.Stage;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.picker.ScoredMove;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -370,6 +371,7 @@ public class Searcher implements Search {
             final int historyScore = scoredMove.historyScore();
             final boolean isGoodNoisy = scoredMove.isGoodNoisy();
             final boolean isQuiet = scoredMove.isQuiet();
+            final boolean isKiller = movePicker.getStage() == Stage.KILLER;
             final boolean isCapture = captured != null;
             final boolean isMateScore = Score.isMateScore(bestScore);
 
@@ -412,6 +414,7 @@ public class Searcher implements Search {
                 // Skip quiet moves when the static evaluation + some margin is still below alpha.
                 final int futilityMargin = futilityMargin(reducedDepth, historyScore);
                 if (isQuiet
+                        && !isKiller
                         && !inCheck
                         && reducedDepth <= config.fpDepth()
                         && staticEval + futilityMargin <= alpha) {
@@ -433,6 +436,7 @@ public class Searcher implements Search {
                 // Skip quiet moves ordered very late in the list.
                 final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
                 if (isQuiet
+                        && !isKiller
                         && !inCheck
                         && depth <= config.lmpDepth()
                         && searchedMoves >= lmpThreshold) {

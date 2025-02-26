@@ -240,6 +240,10 @@ public class MovePicker {
         this.skipQuiets = skipQuiets;
     }
 
+    public Stage getStage() {
+        return stage;
+    }
+
     private boolean isSpecial(Move move) {
         if (move.equals(ttMove)) {
             return true;

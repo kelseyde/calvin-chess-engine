@@ -477,9 +477,13 @@ public class Searcher implements Search {
                     else
                         extension = 1;
                 }
+                else if (sBeta >= beta)
+                    return sBeta;
+                else if (ttEntry.score() >= beta)
+                    extension = -2 + (pvNode ? 1 : 0);
                 else if (cutNode)
                     extension = -2;
-                else if (ttEntry.score() >= beta)
+                else if (ttEntry.score() <= alpha)
                     extension = -1;
 
             }

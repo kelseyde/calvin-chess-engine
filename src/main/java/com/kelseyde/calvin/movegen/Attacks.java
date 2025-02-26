@@ -292,6 +292,7 @@ public class Attacks {
         return blockerBitboards;
     }
 
+
     public static long initMovementMask(int from, boolean isOrthogonal) {
         long movementMask = 0L;
         Set<Integer> vectors = isOrthogonal ? ORTHOGONAL_MOVE_VECTORS : DIAGONAL_MOVE_VECTORS;

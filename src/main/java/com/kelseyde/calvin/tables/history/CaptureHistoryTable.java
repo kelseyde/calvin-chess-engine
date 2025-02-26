@@ -7,23 +7,23 @@ import com.kelseyde.calvin.engine.EngineConfig;
 
 public class CaptureHistoryTable extends AbstractHistoryTable {
 
-    int[][][][] table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT];
+    short[][][][] table = new short[2][Piece.COUNT][Square.COUNT][Piece.COUNT];
 
     public CaptureHistoryTable(EngineConfig config) {
-        super(config.captHistBonusMax.value,
-                config.captHistBonusScale.value,
-                config.captHistMalusMax.value,
-                config.captHistMalusScale.value,
-                config.captHistMaxScore.value);
+        super((short) config.captHistBonusMax(),
+                (short) config.captHistBonusScale(),
+                (short) config.captHistMalusMax(),
+                (short) config.captHistMalusScale(),
+                (short) config.captHistMaxScore());
     }
 
     public void update(Piece piece, int to, Piece captured, int depth, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
         int pieceIndex = piece.index();
         int capturedIndex = captured.index();
-        int current = table[colourIndex][pieceIndex][to][capturedIndex];
-        int bonus = good ? bonus(depth) : malus(depth);
-        int update = gravity(current, bonus);
+        short current = table[colourIndex][pieceIndex][to][capturedIndex];
+        short bonus = good ? bonus(depth) : malus(depth);
+        short update = gravity(current, bonus);
         table[colourIndex][pieceIndex][to][capturedIndex] = update;
     }
 
@@ -35,7 +35,7 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
     }
 
     public void clear() {
-        table = new int[2][Piece.COUNT][Square.COUNT][Piece.COUNT];
+        table = new short[2][Piece.COUNT][Square.COUNT][Piece.COUNT];
     }
 
 }

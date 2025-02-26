@@ -20,11 +20,19 @@ public class MoveScorer {
     private final EngineConfig config;
     private final SearchHistory history;
     private final SearchStack ss;
+    private int seeNoisyDivisor;
+    private int seeNoisyOffset;
 
-    public MoveScorer(EngineConfig config, SearchHistory history, SearchStack ss) {
+    public MoveScorer(EngineConfig config,
+                      SearchHistory history,
+                      SearchStack ss,
+                      int seeNoisyDivisor,
+                      int seeNoisyOffset) {
         this.config = config;
         this.history = history;
         this.ss = ss;
+        this.seeNoisyDivisor = seeNoisyDivisor;
+        this.seeNoisyOffset = seeNoisyOffset;
     }
 
     public ScoredMove score(Board board, Move move, int ply, Stage stage) {
@@ -71,9 +79,9 @@ public class MoveScorer {
         score += SEE.value(captured);
 
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
-        score += historyScore / 8;
+        score += historyScore / 4;
 
-        final int threshold = -score / 4 + config.seeNoisyOffset.value;
+        final int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
 
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
         final MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
@@ -96,15 +104,24 @@ public class MoveScorer {
 
         // Continuation history is based on the history score indexed by the current move and the move played x plies ago.
         int contHistScore = 0;
-        for (int contHistPly : config.contHistPlies) {
+        for (int contHistPly : config.contHistPlies()) {
             SearchStackEntry entry = ss.get(ply - contHistPly);
             if (entry != null && entry.currentMove != null) {
-                SearchHistory.PlayedMove prevMove = entry.currentMove;
-                contHistScore += history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
+                Move prevMove = entry.currentMove;
+                Piece prevPiece = entry.currentPiece;
+                contHistScore += history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
             }
         }
         return contHistScore;
 
+    }
+
+    public void setSeeNoisyDivisor(int seeNoisyDivisor) {
+        this.seeNoisyDivisor = seeNoisyDivisor;
+    }
+
+    public void setSeeNoisyOffset(int seeNoisyOffset) {
+        this.seeNoisyOffset = seeNoisyOffset;
     }
 
 }

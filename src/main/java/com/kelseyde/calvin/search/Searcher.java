@@ -251,7 +251,7 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && (pvNode || cutNode)
-                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
+                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth() || ttEntry.flag() == HashFlag.UPPER)
                 && depth >= config.iirDepth()) {
             --depth;
         }
@@ -535,7 +535,6 @@ public class Searcher implements Search {
                 alpha = score;
                 flag = HashFlag.EXACT;
 
-                sse.bestMove = move;
                 if (rootNode) {
                     bestMoveCurrent = move;
                     bestScoreCurrent = score;

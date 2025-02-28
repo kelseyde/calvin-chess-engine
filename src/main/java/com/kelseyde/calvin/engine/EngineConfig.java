@@ -74,7 +74,7 @@ public class EngineConfig {
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     private final Tunable hpMargin               = new Tunable("HpMargin", -2167, -4000, -100, 50);
     private final Tunable hpOffset               = new Tunable("HpOffset", -1100, -3000, 0, 50);
-    private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
+    private final Tunable seDepth                = new Tunable("SeDepth", 5, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
     private final Tunable seReductionOffset      = new Tunable("SeReductionOffset", 1, 0, 3, 1);

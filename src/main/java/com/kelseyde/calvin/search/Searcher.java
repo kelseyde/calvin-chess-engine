@@ -399,9 +399,12 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
 
-                if (staticEval <= alpha) {
-                    int futilityDelta = Math.max(0, alpha - (staticEval + futilityMargin));
-                    r += (config.lmrFutile() * futilityDelta) / Math.max(1, futilityMargin);
+                if (staticEval < alpha) {
+                    // Calculate how deep into the futility margin we are
+                    int futilityDepth = Math.min(futilityMargin, alpha - staticEval);
+                    // Scale from 1 to config.lmrFutile() based on depth into margin
+                    int futilityReduction = 1024 + (config.lmrFutile() - 1024) * futilityDepth / futilityMargin;
+                    r += futilityReduction;
                 }
 
                 reduction = Math.max(0, r / 1024);

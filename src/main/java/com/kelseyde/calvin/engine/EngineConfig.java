@@ -71,9 +71,12 @@ public class EngineConfig {
     private final Tunable dpMargin               = new Tunable("DpMargin", 102, 0, 250, 10);
     private final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
     private final Tunable razorMargin            = new Tunable("RazorMargin", 478, 0, 600, 10);
-    private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
-    private final Tunable hpMargin               = new Tunable("HpMargin", -2167, -4000, -100, 50);
-    private final Tunable hpOffset               = new Tunable("HpOffset", -1100, -3000, 0, 50);
+    private final Tunable hpQuietMaxDepth        = new Tunable("HpQuietMaxDepth", 5, 0, 10, 1);
+    private final Tunable hpNoisyMaxDepth        = new Tunable("HpNoisyMaxDepth", 4, 0, 10, 1);
+    private final Tunable hpQuietMargin          = new Tunable("HpQuietMargin", -2167, -4000, -100, 50);
+    private final Tunable hpNoisyMargin          = new Tunable("HpNoisyMargin", -2167, -4000, -100, 50);
+    private final Tunable hpQuietOffset          = new Tunable("HpQuietOffset", -1100, -3000, 0, 50);
+    private final Tunable hpNoisyOffset          = new Tunable("HpNoisyOffset", -1100, -3000, 0, 50);
     private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
@@ -120,7 +123,7 @@ public class EngineConfig {
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
                 qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, rfpBlend, razorDepth, razorMargin,
-                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
+                hpQuietMaxDepth, hpQuietMargin, hpQuietOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
@@ -128,7 +131,8 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, hpNoisyMaxDepth, hpNoisyMargin,
+                hpNoisyOffset
         );
     }
 
@@ -397,16 +401,28 @@ public class EngineConfig {
         return razorMargin.value;
     }
 
-    public int hpMaxDepth() {
-        return hpMaxDepth.value;
+    public int hpQuietMaxDepth() {
+        return hpQuietMaxDepth.value;
     }
 
-    public int hpMargin() {
-        return hpMargin.value;
+    public int hpQuietMargin() {
+        return hpQuietMargin.value;
     }
 
-    public int hpOffset() {
-        return hpOffset.value;
+    public int hpQuietOffset() {
+        return hpQuietOffset.value;
+    }
+
+    public int hpNoisyMaxDepth() {
+        return hpNoisyMaxDepth.value;
+    }
+
+    public int hpNoisyMargin() {
+        return hpNoisyMargin.value;
+    }
+
+    public int hpNoisyOffset() {
+        return hpNoisyOffset.value;
     }
 
     public int seDepth() {

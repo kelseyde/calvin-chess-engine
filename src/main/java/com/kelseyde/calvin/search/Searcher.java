@@ -385,7 +385,7 @@ public class Searcher implements Search {
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves) {
+            if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
 
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= pvNode ? config.lmrPvNode() : 0;

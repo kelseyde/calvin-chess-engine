@@ -435,7 +435,8 @@ public class Searcher implements Search {
                 if (isQuiet
                         && !inCheck
                         && depth <= config.lmpDepth()
-                        && searchedMoves >= lmpThreshold) {
+                        && searchedMoves >= lmpThreshold
+                        && historyScore < config.lmpHistoryGuard()) {
                     movePicker.setSkipQuiets(true);
                     continue;
                 }

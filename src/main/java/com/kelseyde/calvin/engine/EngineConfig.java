@@ -49,8 +49,7 @@ public class EngineConfig {
     private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 112, 0, 250, 10);
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 18, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
-    private final Tunable rfpMargin              = new Tunable("RfpMargin", 85, 0, 250, 25);
-    private final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 45, 0, 250, 25);
+    private final Tunable rfpMargin              = new Tunable("RfpMargin", 71, 0, 150, 25);
     private final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
@@ -119,8 +118,8 @@ public class EngineConfig {
                 aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth, fpBlend,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
-                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, rfpBlend, razorDepth, razorMargin,
-                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
+                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpBlend, razorDepth, razorMargin, hpMaxDepth,
+                hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
@@ -311,10 +310,6 @@ public class EngineConfig {
 
     public int rfpMargin() {
         return rfpMargin.value;
-    }
-
-    public int rfpImpMargin() {
-        return rfpImpMargin.value;
     }
 
     public int rfpBlend() {

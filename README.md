@@ -35,25 +35,26 @@ Calvin communicates via the [Universal Chess Interface](https://www.chessprogram
 3. Start Calvin from the command line:
 
    ```bash
-   java --add-modules jdk.incubator.vector -jar calvin-chess-engine-5.1.0.jar
+   java --add-modules jdk.incubator.vector -jar calvin-chess-engine-6.0.0.jar
 4. Type "help" or refer to [UCI](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html) documentation for further information on available commands.
 
 ## Strength 
 
-| Version | Release Date | 🎯 Elo  | CCRL Blitz | CCRL Rapid | CEGT Rapid |
-|:-------:|:------------:|:------:|:---------------:|:--------------:| :--------------:|
-| [5.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.1.0) | 2025-01-16 | **3500** | 3501          | 3394           | 3344  |
-| [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) | 2024-11-16 | **3400** | 3403          | 3312           | 3225  |
-| [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) | 2024-10-05 | **3300** | 3332          | 3277           |   -   |
-| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.2.0) | 2024-09-19 | **3230** | -             | 3224           |   -   |
-| [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) | 2024-09-04 | **3150** | 3171          | 3161           |   -   |
-| [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) | 2024-07-30 | **3000** | 3011          | 3029           |   -   |
-| [3.4.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) | 2024-05-19 | **2500** | -             | 2492           |   -   |
-| [3.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.3.0) | 2024-05-10 | **2450** | 2453          | -              |   -   |
-| [3.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.2.0) | 2023-12-09 | **2250** | 2233          | -              |   -   |
-| [3.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.1.0) | 2023-12-05 | **2220** | -             | -              |   -   |
-| [3.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.0.0) | 2023-12-02 | **2200** | -             | -              |   -   |
-| [2.6.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/2.6.2) | 2023-11-12 | **2175** | 2173          | -              |   -   |
+|                                   Version                                   | Release Date |  🎯 Elo  | CCRL Blitz | CCRL Rapid | CEGT Rapid |
+|:---------------------------------------------------------------------------:|:------------:|:--------:|:----------:|:----------:|:----------:|
+| [6.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/6.0.0) |  2025-03-02  | **3600** |            |            |            |
+| [5.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.1.0) |  2025-01-16  | **3500** |    3501    |    3394    |    3344    |
+| [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) |  2024-11-16  | **3400** |    3403    |    3312    |    3225    |
+| [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) |  2024-10-05  | **3300** |    3332    |    3277    |     -      |
+| [4.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.2.0) |  2024-09-19  | **3230** |     -      |    3224    |     -      |
+| [4.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.1.0) |  2024-09-04  | **3150** |    3171    |    3161    |     -      |
+| [4.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.0.0) |  2024-07-30  | **3000** |    3011    |    3029    |     -      |
+| [3.4.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.4.0) |  2024-05-19  | **2500** |     -      |    2492    |     -      |
+| [3.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.3.0) |  2024-05-10  | **2450** |    2453    |     -      |     -      |
+| [3.2.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.2.0) |  2023-12-09  | **2250** |    2233    |     -      |     -      |
+| [3.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.1.0) |  2023-12-05  | **2220** |     -      |     -      |     -      |
+| [3.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/3.0.0) |  2023-12-02  | **2200** |     -      |     -      |     -      |
+| [2.6.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/2.6.2) |  2023-11-12  | **2175** |    2173    |     -      |     -      |
 
 ## Features
 

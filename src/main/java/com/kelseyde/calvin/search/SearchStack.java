@@ -5,20 +5,22 @@ import com.kelseyde.calvin.board.Piece;
 
 public class SearchStack {
 
-    private final SearchStackEntry[] stack = new SearchStackEntry[Search.MAX_DEPTH];
+    private static final int SIZE = Search.MAX_DEPTH + 6;
+
+    private final SearchStackEntry[] stack = new SearchStackEntry[SIZE];
 
     public SearchStack() {
-        for (int i = 0; i < Search.MAX_DEPTH; i++) {
+        for (int i = 0; i < SIZE; i++) {
             stack[i] = new SearchStackEntry();
         }
     }
 
     public SearchStackEntry get(int ply) {
-        return ply >= 0 && ply < Search.MAX_DEPTH ? stack[ply] : null;
+        return ply >= 0 && ply < SIZE ? stack[ply] : null;
     }
 
     public void clear() {
-        for (int i = 0; i < Search.MAX_DEPTH; i++) {
+        for (int i = 0; i < SIZE; i++) {
             stack[i] = new SearchStackEntry();
         }
     }
@@ -32,6 +34,7 @@ public class SearchStack {
         public Move[] quiets;
         public Move[] captures;
         public boolean nullMoveAllowed = true;
+        public int cutoffCount;
     }
 
 }

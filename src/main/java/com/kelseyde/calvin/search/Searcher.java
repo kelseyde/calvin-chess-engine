@@ -211,7 +211,6 @@ public class Searcher implements Search {
         final boolean singularSearch = excludedMove != null;
 
         history.getKillerTable().clear(ply + 1);
-        ss.get(ply + 2).cutoffCount = 0;
 
         // Transposition table
         // Check if this node has already been searched before. If so, we can potentially re-use the result of the
@@ -352,6 +351,7 @@ public class Searcher implements Search {
         int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
         sse.quiets = new Move[16];
         sse.captures = new Move[16];
+        ss.get(ply + 1).cutoffCount = 0;
 
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 

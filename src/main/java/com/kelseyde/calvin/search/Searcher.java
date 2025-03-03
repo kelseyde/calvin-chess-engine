@@ -400,7 +400,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
-                r += sse.cutoffCount > 3 ? config.lmrTooManyCutoffs() : 0;
+                r += ss.get(ply + 1).cutoffCount > 3 ? config.lmrTooManyCutoffs() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }

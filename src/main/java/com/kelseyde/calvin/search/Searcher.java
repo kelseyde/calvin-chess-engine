@@ -410,7 +410,7 @@ public class Searcher implements Search {
 
                 // Futility Pruning
                 // Skip quiet moves when the static evaluation + some margin is still below alpha.
-                final int futilityMargin = futilityMargin(reducedDepth, historyScore);
+                final int futilityMargin = futilityMargin(reducedDepth, historyScore, improving);
                 if (isQuiet
                         && !inCheck
                         && reducedDepth <= config.fpDepth()
@@ -827,9 +827,9 @@ public class Searcher implements Search {
         history.clear();
     }
 
-    private int futilityMargin(int depth, int historyScore) {
+    private int futilityMargin(int depth, int historyScore, boolean improving) {
         return config.fpMargin()
-                + depth * config.fpScale()
+                + (depth + (improving ? 1 : 0)) * config.fpScale()
                 + (historyScore / config.fpHistDivisor());
     }
 

@@ -260,7 +260,6 @@ public class Searcher implements Search {
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
         // In non-leaf nodes, this is used as a guide for several heuristics, such as extensions, reductions and pruning.
         int rawStaticEval = Integer.MIN_VALUE;
-        int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
 
         if (singularSearch) {
@@ -271,7 +270,6 @@ public class Searcher implements Search {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             staticEval = ttMove != null ? rawStaticEval : history.correctEvaluation(board, ss, ply, rawStaticEval);
-            uncorrectedStaticEval = rawStaticEval;
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
             if (!ttHit)
@@ -280,7 +278,6 @@ public class Searcher implements Search {
             // If the TT score is within the bounds of the current window, we can use it as a more accurate static eval.
             if (canUseTTScore(ttEntry, rawStaticEval)) {
                 staticEval = ttEntry.score();
-                uncorrectedStaticEval = staticEval;
             }
         }
         sse.staticEval = staticEval;
@@ -567,8 +564,8 @@ public class Searcher implements Search {
             && !singularSearch
             && Score.isDefinedScore(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
-            && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
-            && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
+            && !(flag == HashFlag.LOWER && rawStaticEval >= bestScore)
+            && !(flag == HashFlag.UPPER && rawStaticEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
             history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
         }

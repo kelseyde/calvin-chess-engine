@@ -83,7 +83,7 @@ public class Pretty {
         }
 
         String paddedScore;
-        if (Score.isMateScore(score)) {
+        if (Score.isMate(score)) {
             int moves = Math.max((Score.MATE - Math.abs(score)) / 2, 1);
             if (score < 0) moves = -moves;
             String mateString =  "M" + moves;

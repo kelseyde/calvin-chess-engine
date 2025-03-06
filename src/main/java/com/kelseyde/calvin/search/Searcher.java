@@ -114,7 +114,7 @@ public class Searcher implements Search {
             }
 
             // Check if search is cancelled or a checkmate is found
-            if (hardLimitReached() || Score.isMateScore(score)) {
+            if (hardLimitReached() || Score.isMate(score)) {
                 break;
             }
 
@@ -298,7 +298,7 @@ public class Searcher implements Search {
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             final int futilityMargin = Math.max(depth - (improving ? 1 : 0), 0) * config.rfpMargin();
             if (depth <= config.rfpDepth()
-                    && !Score.isMateScore(alpha)
+                    && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
                 return beta + (staticEval - beta) / 3;
             }
@@ -335,7 +335,7 @@ public class Searcher implements Search {
                 ss.get(ply + 1).nullMoveAllowed = true;
 
                 if (score >= beta) {
-                    return Score.isMateScore(score) ? beta : score;
+                    return Score.isMate(score) ? beta : score;
                 }
             }
 
@@ -371,7 +371,7 @@ public class Searcher implements Search {
             final boolean isGoodNoisy = scoredMove.isGoodNoisy();
             final boolean isQuiet = scoredMove.isQuiet();
             final boolean isCapture = captured != null;
-            final boolean isMateScore = Score.isMateScore(bestScore);
+            final boolean isMateScore = Score.isMate(bestScore);
 
             int extension = 0;
             int reduction = 0;
@@ -565,7 +565,7 @@ public class Searcher implements Search {
 
         if (!inCheck
             && !singularSearch
-            && Score.isDefinedScore(bestScore)
+            && Score.isDefined(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
@@ -806,7 +806,7 @@ public class Searcher implements Search {
 
     public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
         return entry.flag() == HashFlag.EXACT ||
-                (Score.isDefinedScore(entry.score()) &&
+                (Score.isDefined(entry.score()) &&
                         (entry.flag() == HashFlag.UPPER && entry.score() <= alpha ||
                                 entry.flag() == HashFlag.LOWER && entry.score() >= beta));
     }

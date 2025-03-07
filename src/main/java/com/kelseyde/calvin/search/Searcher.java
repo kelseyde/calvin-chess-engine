@@ -227,7 +227,7 @@ public class Searcher implements Search {
 
             if (!rootNode
                     && ttHit
-                    && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
+                    && isSufficientDepth(ttEntry, depth + (pvNode ? 1 : 0))
                     && (ttEntry.score() <= alpha || cutNode)) {
 
                 if (isWithinBounds(ttEntry, alpha, beta))

@@ -11,6 +11,8 @@ public class BoardState {
     public long key;
     public long pawnKey;
     public long[] nonPawnKeys;
+    public long majorKey;
+    public long minorKey;
     public int enPassantFile;
     public int rights;
     public int halfMoveClock;
@@ -20,16 +22,21 @@ public class BoardState {
         this.key = 0L;
         this.pawnKey = 0L;
         this.nonPawnKeys = new long[2];
+        this.majorKey = 0L;
+        this.minorKey = 0L;
         this.captured = null;
         this.enPassantFile = -1;
         this.rights = Castling.startpos();
         this.halfMoveClock = 0;
     }
 
-    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
+    public BoardState(long key, long pawnKey, long[] nonPawnKeys, long majorKey, long minorKey,
+                      Piece captured, int enPassantFile, int rights, int halfMoveClock) {
         this.key = key;
         this.pawnKey = pawnKey;
         this.nonPawnKeys = nonPawnKeys;
+        this.majorKey = majorKey;
+        this.minorKey = minorKey;
         this.captured = captured;
         this.enPassantFile = enPassantFile;
         this.rights = rights;
@@ -42,6 +49,14 @@ public class BoardState {
 
     public long getPawnKey() {
         return pawnKey;
+    }
+
+    public long getMajorKey() {
+        return majorKey;
+    }
+
+    public long getMinorKey() {
+        return minorKey;
     }
 
     public Piece getCaptured() {
@@ -72,6 +87,14 @@ public class BoardState {
         this.nonPawnKeys = nonPawnKeys;
     }
 
+    public void setMajorKey(long majorKey) {
+        this.majorKey = majorKey;
+    }
+
+    public void setMinorKey(long minorKey) {
+        this.minorKey = minorKey;
+    }
+
     public void setEnPassantFile(int enPassantFile) {
         this.enPassantFile = enPassantFile;
     }
@@ -86,7 +109,7 @@ public class BoardState {
 
     public BoardState copy() {
         long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
-        return new BoardState(key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock);
+        return new BoardState(key, pawnKey, nonPawnKeysCopy, majorKey, minorKey, captured, enPassantFile, rights, halfMoveClock);
     }
 
     @Override

@@ -128,6 +128,62 @@ public class Key {
         return keys;
     }
 
+    public static long generateMajorKey(Board board) {
+
+        long key = 0L;
+
+        long[][] majorPieces = {
+                { board.getRooks(true), board.getRooks(false) },
+                { board.getQueens(true), board.getQueens(false) },
+                { board.getKing(true), board.getKing(false) }
+        };
+
+        int[] pieceIndices = {
+                Piece.ROOK.index(), Piece.QUEEN.index(), Piece.KING.index()
+        };
+
+        for (int square = 0; square < 64; square++) {
+            for (int i = 0; i < majorPieces.length; i++) {
+                if (((majorPieces[i][WHITE] >>> square) & 1) == 1) {
+                    key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndices[i]];
+                } else if (((majorPieces[i][BLACK] >>> square) & 1) == 1) {
+                    key ^= PIECE_SQUARE_HASH[square][BLACK][pieceIndices[i]];
+                }
+            }
+        }
+
+        return key;
+
+    }
+
+    public static long generateMinorKey(Board board) {
+
+        long key = 0L;
+
+        long[][] minorPieces = {
+                { board.getKnights(true), board.getKnights(false) },
+                { board.getBishops(true), board.getBishops(false) },
+                { board.getKing(true), board.getKing(false) }
+        };
+
+        int[] pieceIndices = {
+                Piece.KNIGHT.index(), Piece.BISHOP.index(), Piece.KING.index()
+        };
+
+        for (int square = 0; square < 64; square++) {
+            for (int i = 0; i < minorPieces.length; i++) {
+                if (((minorPieces[i][WHITE] >>> square) & 1) == 1) {
+                    key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndices[i]];
+                } else if (((minorPieces[i][BLACK] >>> square) & 1) == 1) {
+                    key ^= PIECE_SQUARE_HASH[square][BLACK][pieceIndices[i]];
+                }
+            }
+        }
+
+        return key;
+
+    }
+
     private static long updateKeyForPiece(long key, long whiteBitboard, long blackBitboard, int square, int pieceIndex) {
         if (((whiteBitboard >>> square) & 1) == 1) {
             key ^= PIECE_SQUARE_HASH[square][WHITE][pieceIndex];

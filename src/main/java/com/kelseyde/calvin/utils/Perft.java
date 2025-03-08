@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.utils;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Key;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.uci.UCI;

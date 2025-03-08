@@ -98,6 +98,8 @@ public class FEN {
             board.getState().setKey(Key.generateKey(board));
             board.getState().setPawnKey(Key.generatePawnKey(board));
             board.getState().setNonPawnKeys(Key.generateNonPawnKeys(board));
+            board.getState().setMajorKey(Key.generateMajorKey(board));
+            board.getState().setMinorKey(Key.generateMinorKey(board));
 
             return board;
 

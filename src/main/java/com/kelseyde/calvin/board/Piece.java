@@ -39,6 +39,16 @@ public enum Piece {
         return this == BISHOP || this == ROOK || this == QUEEN;
     }
 
+    public boolean isMajor() {
+        // From the perspective of major corrhist, kings are grouped with the major pieces
+        return this == ROOK || this == QUEEN || this == KING;
+    }
+
+    public boolean isMinor() {
+        // From the perspective of minor corrhist, kings are grouped with the major pieces
+        return this == BISHOP || this == KNIGHT || this == KING;
+    }
+
     public static short promoFlag(Piece piece) {
         if (piece == null) {
             return NO_FLAG;

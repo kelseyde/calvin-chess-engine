@@ -390,7 +390,7 @@ public class Searcher implements Search {
             if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
 
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
-                r -= pvNode ? config.lmrPvNode() : 0;
+                r -= ttPv ? config.lmrTtWasPv() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
                 r -= isQuiet

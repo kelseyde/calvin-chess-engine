@@ -11,11 +11,11 @@ public class Score {
     public static final int MATE = 32766;
     public static final int DRAW = 0;
 
-    public static boolean isMateScore(int score) {
-        return isDefinedScore(score) && Math.abs(score) >= Score.MATE - Search.MAX_DEPTH;
+    public static boolean isMate(int score) {
+        return isDefined(score) && Math.abs(score) >= Score.MATE - Search.MAX_DEPTH;
     }
 
-    public static boolean isDefinedScore(int score) {
+    public static boolean isDefined(int score) {
         return Math.abs(score) != Score.MAX;
     }
 

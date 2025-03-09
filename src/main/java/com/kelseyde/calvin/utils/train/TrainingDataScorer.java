@@ -178,7 +178,7 @@ public class TrainingDataScorer {
             return "";
         }
         score = searchResult.eval();
-        if (Score.isMateScore(score)) {
+        if (Score.isMate(score)) {
             // Filter out positions where there is forced mate
             return "";
         }

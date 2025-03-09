@@ -275,7 +275,7 @@ public class Searcher implements Search {
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
             if (!ttHit)
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, uncorrectedStaticEval, 0);
 
             // If the TT score is within the bounds of the current window, we can use it as a more accurate static eval.
             if (canUseTTScore(ttEntry, rawStaticEval)) {
@@ -575,7 +575,7 @@ public class Searcher implements Search {
 
         // Store the best move and score in the transposition table for future reference.
         if (!hardLimitReached() && !singularSearch && !ttPrune) {
-            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, depth, ply, bestMove, uncorrectedStaticEval, bestScore);
         }
 
         return bestScore;

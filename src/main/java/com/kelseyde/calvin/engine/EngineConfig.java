@@ -49,8 +49,7 @@ public class EngineConfig {
     private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 112, 0, 250, 10);
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 18, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
-    private final Tunable rfpMargin              = new Tunable("RfpMargin", 85, 0, 250, 25);
-    private final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 45, 0, 250, 25);
+    private final Tunable rfpMargin              = new Tunable("RfpMargin", 71, 0, 150, 25);
     private final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
@@ -60,11 +59,11 @@ public class EngineConfig {
     private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 915, 0, 2048, 150);
-    private final Tunable lmrCutNode             = new Tunable("LmrPvNode", 0, 0, 2048, 150);
+    private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2048, 0, 3072, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 5, 0, 2048, 150);
     private final Tunable lmrFutile              = new Tunable("LmrFutile", 1024, 0, 2048, 150);
     private final Tunable lmrComplexity          = new Tunable("LmrComplexity", 1024, 0, 2048, 150);
-    private final Tunable lmrComplexityMargin    = new Tunable("LmrComplexityMargin", 50, 0, 100, 25);
+    private final Tunable lmrComplexityMargin    = new Tunable("LmrComplexityMargin", 75, 0, 100, 25);
     private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 2993, 1536, 6144, 1000);
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3154, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
@@ -76,6 +75,12 @@ public class EngineConfig {
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     private final Tunable hpMargin               = new Tunable("HpMargin", -2167, -4000, -100, 50);
     private final Tunable hpOffset               = new Tunable("HpOffset", -1100, -3000, 0, 50);
+    private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
+    private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
+    private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
+    private final Tunable seReductionOffset      = new Tunable("SeReductionOffset", 1, 0, 3, 1);
+    private final Tunable seReductionDivisor     = new Tunable("SeReductionDivisor", 2, 1, 4, 1);
+    private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 20, 0, 32, 5);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
@@ -115,15 +120,16 @@ public class EngineConfig {
                 aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth, fpBlend,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
-                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, rfpBlend, razorDepth, razorMargin,
-                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
+                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpBlend, razorDepth, razorMargin, hpMaxDepth,
+                hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
                 nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
-                seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, lmrComplexity, lmrComplexityMargin
+                seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, lmrComplexity, lmrComplexityMargin
         );
     }
 
@@ -308,10 +314,6 @@ public class EngineConfig {
         return rfpMargin.value;
     }
 
-    public int rfpImpMargin() {
-        return rfpImpMargin.value;
-    }
-
     public int rfpBlend() {
         return rfpBlend.value;
     }
@@ -410,6 +412,30 @@ public class EngineConfig {
 
     public int hpOffset() {
         return hpOffset.value;
+    }
+
+    public int seDepth() {
+        return seDepth.value;
+    }
+
+    public int seTtDepthMargin() {
+        return seTtDepthMargin.value;
+    }
+
+    public int seBetaMargin() {
+        return seBetaMargin.value;
+    }
+
+    public int seReductionOffset() {
+        return seReductionOffset.value;
+    }
+
+    public int seReductionDivisor() {
+        return seReductionDivisor.value;
+    }
+
+    public int seDoubleExtMargin() {
+        return seDoubleExtMargin.value;
     }
 
     public int ttExtensionDepth() {

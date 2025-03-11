@@ -14,8 +14,6 @@ import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
 import com.kelseyde.calvin.tables.history.QuietHistoryTable;
 
-import java.util.List;
-
 public class SearchHistory {
 
     private final EngineConfig config;

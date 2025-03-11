@@ -2,8 +2,8 @@
 
 ### General
 
-- [ ] OpenBench
-- [ ] Cloud-hosted OB solution (with pythonanywhere?)
+- [x] OpenBench
+- [x] Cloud-hosted OB solution (with pythonanywhere?)
 - [x] FRC/DFRC support
 - [ ] Improve javadoc
 - [ ] Review all code comments
@@ -21,19 +21,18 @@
 - [x] Use int16 for history scores
 - [x] SPRT SPSA tune branch
 - [x] LTC 1024 net
-- [ ] Threefold repetition ( CCRL bug ? )
-- [ ] TT cut after RFP if depth - quietReduction <= ttDepth?
+- [x] Threefold repetition ( CCRL bug ? )
 - [ ] Fractional depth
 - [ ] Improving rate
 - [ ] PV table
 - [x] Exponentially widening aspiration window
 - [x] Write to TT during QS stand-pat cutoff
-- [ ] Singular extensions ( tried )
-- [ ] Double extensions
+- [x] Singular extensions 
+- [x] Double extensions
 - [ ] Triple extensions
-- [ ] Negative extensions
-- [ ] MultiCut ( tried )
-- [ ] ProbCut ( tried )
+- [x] Negative extensions
+- [ ] MultiCut 
+- [ ] ProbCut 
 - [ ] Use improving in NMP
 - [x] Pawn corrhist
 - [x] Non-pawn corrhist
@@ -74,9 +73,7 @@
 - [ ] Threat quiet history ( tried )
 - [ ] Threat capture history 
 - [x] Increase history bonus/penalty when alpha > beta + 50
-- [ ] Score-based history bonuses
-- [ ] PSQT-based move ordering bonus
-- [ ] Add Killers, History etc. stages to `MovePicker`. ( tried )
+- [x] Add Killers, History etc. stages to `MovePicker`. ( tried )
 - [ ] Other magic bitboard impls? PEXT/Black Magic/Kindergarten/whatever?
 - [ ] Add checkers bitboard to `Board`?
 - [ ] Check if move is check before makeMove

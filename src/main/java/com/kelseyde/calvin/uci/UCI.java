@@ -305,7 +305,7 @@ public class UCI {
     }
 
     private static String formatScore(int eval) {
-        if (Score.isMateScore(eval)) {
+        if (Score.isMate(eval)) {
             int moves = Math.max((Score.MATE - Math.abs(eval)) / 2, 1);
             if (eval < 0) moves = -moves;
             return "mate " + moves;

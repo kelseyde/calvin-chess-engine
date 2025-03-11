@@ -54,7 +54,7 @@ public class TranspositionTable {
                 keys[index + i] = storedKey;
                 long storedValue = values[index + i];
                 int score = HashEntry.Value.getScore(storedValue);
-                if (Score.isMateScore(score)) {
+                if (Score.isMate(score)) {
                     score = retrieveMateScore(score, ply);
                     storedValue = HashEntry.Value.setScore(storedValue, score);
                 }
@@ -83,7 +83,7 @@ public class TranspositionTable {
         final int startIndex = index(key);
 
         // If the eval is checkmate, adjust the score to reflect the number of ply from the root position
-        if (Score.isMateScore(score)) score = calculateMateScore(score, ply);
+        if (Score.isMate(score)) score = calculateMateScore(score, ply);
 
         int replacedIndex = -1;
         int minDepth = Integer.MAX_VALUE;

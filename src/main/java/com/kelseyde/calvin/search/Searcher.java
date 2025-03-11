@@ -378,9 +378,9 @@ public class Searcher implements Search {
 
             // Check Extensions
             // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
-            if (inCheck) {
-                extension = 1;
-            }
+//            if (inCheck) {
+//                extension = 1;
+//            }
 
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
@@ -390,6 +390,7 @@ public class Searcher implements Search {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
+                r -= inCheck ? 1024 : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
                 r -= isQuiet
                         ? historyScore / config.lmrQuietHistoryDiv() * 1024

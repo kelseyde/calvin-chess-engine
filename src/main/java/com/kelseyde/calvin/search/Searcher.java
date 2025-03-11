@@ -292,7 +292,7 @@ public class Searcher implements Search {
 
         // Complexity represents the difference between the static evaluation and the raw static evaluation. If the
         // position is complex, then the static evaluation is less reliable, and we should be more cautious in pruning.
-        final int complexity = complexity(staticEval, rawStaticEval, inCheck);
+        final int complexity = Math.abs(staticEval - rawStaticEval);
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
@@ -404,7 +404,7 @@ public class Searcher implements Search {
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
 
-                r -= Math.abs(staticEval - rawStaticEval) > config.lmrComplexityMargin() ? config.lmrComplexity() : 0;
+                r -= complexity > config.lmrComplexityMargin() ? config.lmrComplexity() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }
@@ -798,14 +798,6 @@ public class Searcher implements Search {
             }
         }
         return lastEval < staticEval;
-    }
-
-    private int complexity(int staticEval, int rawStaticEval, boolean inCheck) {
-        if (inCheck)
-            return 0;
-        if (staticEval == 0 || rawStaticEval == 0)
-            return 0;
-        return 100 * Math.abs(staticEval - rawStaticEval) / Math.abs(staticEval);
     }
 
     private SearchResult handleOnlyOneLegalMove(List<Move> rootMoves) {

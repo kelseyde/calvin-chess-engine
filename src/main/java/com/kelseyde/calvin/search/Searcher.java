@@ -384,10 +384,12 @@ public class Searcher implements Search {
 
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
+            int baseLmrReduction = 0;
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
             if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
 
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
+                baseLmrReduction = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves];
+                int r = baseLmrReduction * 1024;
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
@@ -403,17 +405,17 @@ public class Searcher implements Search {
                 reduction = Math.max(0, r / 1024);
             }
 
-            int reducedDepth = depth - reduction;
+            int lmrDepth = depth - baseLmrReduction;
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
             if (!pvNode && !rootNode) {
 
                 // Futility Pruning
                 // Skip quiet moves when the static evaluation + some margin is still below alpha.
-                final int futilityMargin = futilityMargin(reducedDepth, historyScore);
+                final int futilityMargin = futilityMargin(lmrDepth, historyScore);
                 if (isQuiet
                         && !inCheck
-                        && reducedDepth <= config.fpDepth()
+                        && lmrDepth <= config.fpDepth()
                         && staticEval + futilityMargin <= alpha) {
                     movePicker.setSkipQuiets(true);
                     continue;
@@ -423,7 +425,7 @@ public class Searcher implements Search {
                 // Skip quiet moves that have a bad history score.
                 final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
                 if (isQuiet
-                        && reducedDepth <= config.hpMaxDepth()
+                        && lmrDepth <= config.hpMaxDepth()
                         && historyScore < historyThreshold) {
                     movePicker.setSkipQuiets(true);
                     continue;

@@ -609,7 +609,9 @@ public class Searcher implements Search {
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
-        final Move ttMove = ttHit ? ttEntry.move() : null;
+
+        // In quiescence search we do not search quiet TT moves.
+        final Move ttMove = ttHit && ttEntry.move() != null && board.isQuiet(ttEntry.move()) ? ttEntry.move() : null;
 
         if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();

@@ -5,13 +5,15 @@
 <h3>Calvin</h3>
 
 A superhuman chess engine written in Java.
-  <br>
+<br>
  <br>
   <strong>[Download Calvin](https://github.com/kelseyde/calvin-chess-engine/releases)</strong> | <strong>[Report a Bug](https://github.com/kelseyde/calvin-chess-engine/issues)</strong>
-  <br>
-   <br>
-    [![release][release-badge]][release-link]
+ <br>
+<br>
+
+[![release][release-badge]][release-link]
 [![lichess-badge]][lichess-link]
+[![build-badge]][build-link]
 
 
 </div>
@@ -124,6 +126,8 @@ I am hugely grateful to the many people who have shared their knowledge and reso
 
 If you would like to contribute to Calvin, or just talk about chess/chess programming, get in touch!
 
+[build-badge]: https://github.com/kelseyde/calvin-chess-engine/actions/workflows/build.yml/badge.svg
+[build-link]: https://github.com/kelseyde/calvin-chess-engine/actions/workflows/build.yml
 
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=FF5757
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest

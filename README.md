@@ -14,8 +14,6 @@ A superhuman chess engine written in Java.
 [![release][release-badge]][release-link]
 [![lichess-badge]][lichess-link]
 
-[![build-badge]][build-link]
-
 </div>
 
 ## Overview

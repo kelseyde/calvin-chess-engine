@@ -11,10 +11,10 @@ A superhuman chess engine written in Java.
  <br>
 <br>
 
-[![build-badge]][build-link]
 [![release][release-badge]][release-link]
 [![lichess-badge]][lichess-link]
 
+[![build-badge]][build-link]
 
 </div>
 
@@ -126,7 +126,7 @@ I am hugely grateful to the many people who have shared their knowledge and reso
 
 If you would like to contribute to Calvin, or just talk about chess/chess programming, get in touch!
 
-[build-badge]: https://img.shields.io/github/actions/workflow/status/kelseyde/calvin-chess-engine/build.yml?branch=master&style=for-the-badge&label=build&logo=github
+[build-badge]: https://github.com/kelseyde/calvin-chess-engine/actions/workflows/build.yml/badge.svg
 [build-link]: https://github.com/kelseyde/calvin-chess-engine/actions/workflows/build.yml
 
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=FF5757

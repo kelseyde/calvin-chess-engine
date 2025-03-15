@@ -9,10 +9,7 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
 import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.history.*;
 
 public class SearchHistory {
 
@@ -21,6 +18,7 @@ public class SearchHistory {
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
     private final CaptureHistoryTable captureHistoryTable;
+    private final PlyHistoryTable plyHistoryTable;
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
     private final PieceToCorrectionTable countermoveCorrHistTable;
@@ -34,6 +32,7 @@ public class SearchHistory {
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
+        this.plyHistoryTable = new PlyHistoryTable(config);
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
@@ -70,6 +69,7 @@ public class SearchHistory {
         boolean good = quietMove.equals(bestMove);
         Piece piece = board.pieceAt(quietMove.from());
         quietHistoryTable.update(quietMove, piece, depth, white, good);
+        plyHistoryTable.update(ply, quietMove.from(), quietMove.to(), depth, good);
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.currentMove != null) {
@@ -154,6 +154,10 @@ public class SearchHistory {
 
     public CaptureHistoryTable getCaptureHistoryTable() {
         return captureHistoryTable;
+    }
+
+    public PlyHistoryTable getPlyHistoryTable() {
+        return plyHistoryTable;
     }
 
     public void reset() {

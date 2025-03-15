@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.movegen.MoveList;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
@@ -40,7 +41,7 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            Board board, Move bestMove, Move[] quiets, Move[] captures, boolean white, int depth, int ply, SearchStack ss) {
+            Board board, Move bestMove, MoveList quiets, MoveList captures, boolean white, int depth, int ply, SearchStack ss) {
 
         // When the best move causes a beta cut-off, we want to update the various history tables to reward the best move
         // and punish the other moves that were searched. Doing so will hopefully improve move ordering in future searches.
@@ -49,13 +50,15 @@ public class SearchHistory {
         if (!bestMoveCapture) {
             killerTable.add(ply, bestMove);
 
-            for (Move quiet : quiets) {
+            for (int i = 0; i < quiets.size(); i++) {
+                final Move quiet = quiets.get(i);
                 // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
                 updateQuietHistory(board, quiet, bestMove, ss, white, depth, ply);
             }
         }
 
-        for (Move capture : captures) {
+        for (int i = 0; i < captures.size(); i++) {
+            final Move capture = captures.get(i);
             // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
             // best move was quiet or a capture, penalise all other captures.
             updateCaptureHistory(board, capture, bestMove, white, depth);

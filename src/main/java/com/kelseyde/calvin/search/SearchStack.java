@@ -2,6 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.movegen.MoveList;
 
 public class SearchStack {
 
@@ -29,8 +30,8 @@ public class SearchStack {
         public Piece currentPiece;
         public Move bestMove;
         public Move excludedMove;
-        public Move[] quiets;
-        public Move[] captures;
+        public MoveList quiets = new MoveList(16, false);
+        public MoveList captures = new MoveList(16, false);
         public boolean nullMoveAllowed = true;
     }
 

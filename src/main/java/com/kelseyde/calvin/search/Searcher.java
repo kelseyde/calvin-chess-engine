@@ -349,8 +349,8 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
 
         int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
-        sse.quiets = new Move[16];
-        sse.captures = new Move[16];
+        sse.quiets.clear();
+        sse.captures.clear();
 
         final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -488,12 +488,10 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(move, piece, sse);
 
-            if (isCapture && captureMoves < 16) {
-                sse.captures[captureMoves++] = move;
-            }
-            else if (quietMoves < 16) {
-                sse.quiets[quietMoves++] = move;
-            }
+            if (isCapture)
+                sse.captures.add(move);
+            else
+                sse.quiets.add(move);
 
             final int nodesBefore = td.nodes;
             td.nodes++;

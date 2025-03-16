@@ -42,7 +42,7 @@ Calvin communicates via the [Universal Chess Interface](https://www.chessprogram
 
 |                                   Version                                   | Release Date |  🎯 Elo  | CCRL Blitz | CCRL Rapid | CEGT Rapid |
 |:---------------------------------------------------------------------------:|:------------:|:--------:|:----------:|:----------:|:----------:|
-| [6.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/6.0.0) |  2025-03-02  | **3600** |            |    3493    |            |
+| [6.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/6.0.0) |  2025-03-02  | **3600** |    3572    |    3493    |            |
 | [5.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.1.0) |  2025-01-16  | **3500** |    3501    |    3394    |    3344    |
 | [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) |  2024-11-16  | **3400** |    3403    |    3312    |    3225    |
 | [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) |  2024-10-05  | **3300** |    3332    |    3277    |     -      |

@@ -96,7 +96,7 @@ public class MoveScorer {
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
 
-        return new ScoredMove(move, piece, null, score, historyScore, MoveType.QUIET);
+        return new ScoredMove(move, piece, null, score, score, MoveType.QUIET);
 
     }
 

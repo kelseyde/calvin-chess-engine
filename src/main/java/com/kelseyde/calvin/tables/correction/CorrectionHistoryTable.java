@@ -31,7 +31,7 @@ public abstract class CorrectionHistoryTable {
         int newValue = (score - staticEval) * SCALE;
 
         // Weight the new value based on the search depth, and the old value based on the remaining weight
-        int newWeight = Math.min(depth + 1, 16);
+        int newWeight = 2 * Math.min(depth + 1, 16);
         int oldWeight = SCALE - newWeight;
 
         // Compute the weighted sum of the old and new values, and clamp the result.

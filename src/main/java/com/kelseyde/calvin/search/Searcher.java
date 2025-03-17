@@ -298,7 +298,7 @@ public class Searcher implements Search {
             && !prev.inCheck
             && prev.currentMove != null
             && !prev.isCapture) {
-            final int bonus = 2 * Math.min(100, Math.max(-50, prev.staticEval - staticEval));
+            final int bonus = 2 * Math.min(100, Math.max(-50, -5 * (prev.staticEval - staticEval)));
             history.getQuietHistoryTable().add(prev.currentMove, prev.currentPiece, !board.isWhite(), (short) bonus);
         }
 

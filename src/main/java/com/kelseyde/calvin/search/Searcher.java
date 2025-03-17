@@ -295,6 +295,7 @@ public class Searcher implements Search {
 
         // Use the difference between the current and previous static eval to improve quiet move ordering (credit to Horsie)
         if (!rootNode
+            && !inCheck
             && !prev.inCheck
             && prev.currentMove != null
             && !prev.isCapture) {

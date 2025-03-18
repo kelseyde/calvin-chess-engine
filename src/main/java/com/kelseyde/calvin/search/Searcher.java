@@ -422,9 +422,10 @@ public class Searcher implements Search {
 
             // History pruning
             // Skip quiet moves that have a bad history score.
-            final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
+            final int historyThreshold = isQuiet
+                    ? config.hpMargin() * depth + config.hpOffset()
+                    : config.noisyHpMargin() * depth + config.noisyHpOffset();
             if (!rootNode
-                    && isQuiet
                     && reducedDepth <= config.hpMaxDepth()
                     && historyScore < historyThreshold) {
                 movePicker.setSkipQuiets(true);

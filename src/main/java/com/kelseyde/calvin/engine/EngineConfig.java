@@ -73,6 +73,8 @@ public class EngineConfig {
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     private final Tunable hpMargin               = new Tunable("HpMargin", -2167, -4000, -100, 50);
     private final Tunable hpOffset               = new Tunable("HpOffset", -1100, -3000, 0, 50);
+    private final Tunable noisyHpMargin          = new Tunable("NoisyHpMargin", -4000, -4000, -100, 50);
+    private final Tunable noisyHpOffset          = new Tunable("NoisyHpOffset", -2000, -3000, 0, 50);
     private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
@@ -127,7 +129,7 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, noisyHpMargin, noisyHpOffset
         );
     }
 
@@ -402,6 +404,14 @@ public class EngineConfig {
 
     public int hpOffset() {
         return hpOffset.value;
+    }
+
+    public int noisyHpMargin() {
+        return noisyHpMargin.value;
+    }
+
+    public int noisyHpOffset() {
+        return noisyHpOffset.value;
     }
 
     public int seDepth() {

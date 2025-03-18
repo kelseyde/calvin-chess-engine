@@ -406,51 +406,55 @@ public class Searcher implements Search {
             int reducedDepth = depth - reduction;
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
-            if (!pvNode && !rootNode) {
 
-                // Futility Pruning
-                // Skip quiet moves when the static evaluation + some margin is still below alpha.
-                final int futilityMargin = futilityMargin(reducedDepth, historyScore);
-                if (isQuiet
-                        && !inCheck
-                        && reducedDepth <= config.fpDepth()
-                        && staticEval + futilityMargin <= alpha) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
+            // Futility Pruning
+            // Skip quiet moves when the static evaluation + some margin is still below alpha.
+            final int futilityMargin = futilityMargin(reducedDepth, historyScore);
+            if (!pvNode
+                    && !rootNode
+                    && isQuiet
+                    && !inCheck
+                    && reducedDepth <= config.fpDepth()
+                    && staticEval + futilityMargin <= alpha) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
 
-                // History pruning
-                // Skip quiet moves that have a bad history score.
-                final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
-                if (isQuiet
-                        && reducedDepth <= config.hpMaxDepth()
-                        && historyScore < historyThreshold) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
+            // History pruning
+            // Skip quiet moves that have a bad history score.
+            final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
+            if (!rootNode
+                    && isQuiet
+                    && reducedDepth <= config.hpMaxDepth()
+                    && historyScore < historyThreshold) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
 
-                // Late Move Pruning
-                // Skip quiet moves ordered very late in the list.
-                final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
-                if (isQuiet
-                        && !inCheck
-                        && depth <= config.lmpDepth()
-                        && searchedMoves >= lmpThreshold) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
+            // Late Move Pruning
+            // Skip quiet moves ordered very late in the list.
+            final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
+            if (!pvNode
+                    && !rootNode
+                    && isQuiet
+                    && !inCheck
+                    && depth <= config.lmpDepth()
+                    && searchedMoves >= lmpThreshold) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
 
-                // PVS SEE Pruning
-                // Skip moves that lose material once all the pieces have been exchanged.
-                final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
-                if (depth <= config.seeMaxDepth()
-                        && searchedMoves > 1
-                        && !isGoodNoisy
-                        && !isMateScore
-                        && !SEE.see(board, move, seeThreshold)) {
-                    continue;
-                }
-
+            // PVS SEE Pruning
+            // Skip moves that lose material once all the pieces have been exchanged.
+            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
+            if (!pvNode
+                    && !rootNode
+                    && depth <= config.seeMaxDepth()
+                    && searchedMoves > 1
+                    && !isGoodNoisy
+                    && !isMateScore
+                    && !SEE.see(board, move, seeThreshold)) {
+                continue;
             }
 
             // Singular Extensions

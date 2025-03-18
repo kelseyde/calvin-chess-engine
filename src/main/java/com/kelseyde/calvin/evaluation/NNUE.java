@@ -356,4 +356,5 @@ public class NNUE {
         CASTLE
     }
 
+
 }

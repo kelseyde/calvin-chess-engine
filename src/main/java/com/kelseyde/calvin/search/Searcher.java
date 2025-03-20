@@ -679,19 +679,22 @@ public class Searcher implements Search {
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
 
+            final Move prevMove = ss.get(ply - 1).currentMove;
+            final boolean recapture = prevMove != null && prevMove.to() == move.to();
+
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.
-            if (!inCheck && capture && !promotion && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
+            if (!inCheck && capture && !promotion && !recapture && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
                 continue;
 
             // Futility Pruning
             // Skip captures that don't win material when the static eval is far below alpha.
-            if (capture && futilityScore <= alpha && !SEE.see(board, move, 1))
+            if (capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1))
                 continue;
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.
-            if (!inCheck && !SEE.see(board, move, config.qsSeeThreshold()))
+            if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
             makeMove(move, piece, sse);

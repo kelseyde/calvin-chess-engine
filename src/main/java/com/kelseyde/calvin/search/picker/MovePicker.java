@@ -130,15 +130,12 @@ public class MovePicker {
 
         Move killer = killers[killerIndex++];
 
-        // Skip the killer if it's also the TT move - it will be tried first
-        if (killer == null || killer.equals(ttMove)) {
+        // Skip the killer if it's null, the same as the TT move, noisy, or illegal
+        if (killer == null
+                || killer.equals(ttMove)
+                || board.isNoisy(killer)
+                || !movegen.isLegal(board, killer))
             return pickKiller(nextStage);
-        }
-
-        // Skip illegal killers
-        if (!movegen.isLegal(board, killer)) {
-            return pickKiller(nextStage);
-        }
 
         return scorer.score(board, killer, ply, stage);
     }
@@ -245,7 +242,7 @@ public class MovePicker {
             return true;
         }
         for (Move killer : history.getKillerTable().getKillers(ply)) {
-            if (move.equals(killer)) {
+            if (move.equals(killer) && !board.isNoisy(killer)) {
                 return true;
             }
         }

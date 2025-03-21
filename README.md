@@ -14,6 +14,8 @@ A superhuman chess engine written in Java.
 [![release][release-badge]][release-link]
 [![lichess-badge]][lichess-link]
 
+[![License][license-badge]][license-link]
+
 </div>
 
 ## Overview
@@ -123,6 +125,9 @@ I am hugely grateful to the many people who have shared their knowledge and reso
 - Other engines - I have drawn inspiration from countless others' engines, including but not limited to: [Chess Coding Adventure](https://github.com/SebLague/Chess-Coding-Adventure) (whose Youtube video inspired me to write my own engine); [Stockfish](https://github.com/official-stockfish/Stockfish) (the queen of all engines); [Leorik](https://github.com/lithander/Leorik) (whose author keeps an excellent devlog on the TalkChess forum); [Lynx](https://github.com/lynx-chess/Lynx); [Simbelyne](https://github.com/sroelants/simbelmyne); [Stormphrax](https://github.com/Ciekce/Stormphrax); [Viridithas](https://github.com/cosmobobak/viridithas), and many more.
 
 If you would like to contribute to Calvin, or just talk about chess/chess programming, get in touch!
+
+[license-badge]: https://img.shields.io/github/license/kelseyde/calvin-chess-engine?style=for-the-badge&color=A8DEFF
+[license-link]: https://github.com/kelseyde/calvin-chess-engine/blob/main/LICENSE
 
 [build-badge]: https://github.com/kelseyde/calvin-chess-engine/actions/workflows/build.yml/badge.svg
 [build-link]: https://github.com/kelseyde/calvin-chess-engine/actions/workflows/build.yml

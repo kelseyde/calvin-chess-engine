@@ -72,8 +72,8 @@ public class SearchHistory {
         quietHistoryTable.update(quietMove, piece, depth, white, good);
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
-            if (prevEntry != null && prevEntry.currentMove != null) {
-                Move prevMove = prevEntry.currentMove;
+            if (prevEntry != null && prevEntry.move != null) {
+                Move prevMove = prevEntry.move;
                 Piece prevPiece = prevEntry.currentPiece;
                 contHistTable.update(prevMove, prevPiece, quietMove, piece, depth, white, good);
             }
@@ -118,18 +118,18 @@ public class SearchHistory {
 
     private int getContCorrHistEntry(SearchStack ss, int ply, boolean white) {
         SearchStackEntry sse = ss.get(ply - 1);
-        if (sse == null || sse.currentMove == null) {
+        if (sse == null || sse.move == null) {
             return 0;
         }
-        return countermoveCorrHistTable.get(white, sse.currentMove, sse.currentPiece);
+        return countermoveCorrHistTable.get(white, sse.move, sse.currentPiece);
     }
 
     private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
         SearchStackEntry sse = ss.get(ply - 1);
-        if (sse == null || sse.currentMove == null) {
+        if (sse == null || sse.move == null) {
             return;
         }
-        countermoveCorrHistTable.update(sse.currentMove, sse.currentPiece, white, staticEval, score, depth);
+        countermoveCorrHistTable.update(sse.move, sse.currentPiece, white, staticEval, score, depth);
     }
 
     public int getBestMoveStability() {

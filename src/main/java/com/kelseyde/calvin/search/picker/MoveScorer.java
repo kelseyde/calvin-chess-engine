@@ -106,8 +106,8 @@ public class MoveScorer {
         int contHistScore = 0;
         for (int contHistPly : config.contHistPlies()) {
             SearchStackEntry entry = ss.get(ply - contHistPly);
-            if (entry != null && entry.currentMove != null) {
-                Move prevMove = entry.currentMove;
+            if (entry != null && entry.move != null) {
+                Move prevMove = entry.move;
                 Piece prevPiece = entry.currentPiece;
                 contHistScore += history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
             }

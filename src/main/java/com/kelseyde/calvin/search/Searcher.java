@@ -692,8 +692,10 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip captures that don't win material when the static eval is far below alpha.
-            if (capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1))
+            if (!inCheck && capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1)) {
+                bestScore = Math.max(bestScore, futilityScore);
                 continue;
+            }
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.

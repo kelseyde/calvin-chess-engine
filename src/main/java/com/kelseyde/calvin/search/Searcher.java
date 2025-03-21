@@ -68,11 +68,14 @@ public class Searcher implements Search {
     public SearchResult search(TimeControl timeControl) {
 
         final List<Move> rootMoves = movegen.generateMoves(board);
-        if (rootMoves.size() == 1) {
-            return handleOnlyOneLegalMove(rootMoves);
-        }
-
         tc = timeControl;
+
+        if (rootMoves.isEmpty())
+            return handleNoLegalMoves();
+
+        if (rootMoves.size() == 1)
+            return handleOneLegalMove(rootMoves);
+
         ss.clear();
         td.reset();
         history.reset();
@@ -801,7 +804,14 @@ public class Searcher implements Search {
         return lastEval < staticEval;
     }
 
-    private SearchResult handleOnlyOneLegalMove(List<Move> rootMoves) {
+    private SearchResult handleNoLegalMoves() {
+        if (td.isMainThread()) {
+            UCI.write("info error no legal moves");
+        }
+        return SearchResult.of(null, 0, td, tc);
+    }
+
+    private SearchResult handleOneLegalMove(List<Move> rootMoves) {
         // If there is only one legal move, play it immediately
         final Move move = rootMoves.get(0);
         final int eval = this.eval.evaluate();

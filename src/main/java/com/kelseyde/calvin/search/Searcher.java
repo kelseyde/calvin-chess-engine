@@ -319,18 +319,19 @@ public class Searcher implements Search {
             // Null Move Pruning
             // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
             if (sse.nullMoveAllowed
+                && ply >= td.nmpPly
                 && depth >= config.nmpDepth()
                 && staticEval >= beta
                 && (!ttHit || cutNode || ttEntry.score() >= beta)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
-                ss.get(ply + 1).nullMoveAllowed = false;
-                board.makeNullMove();
-                td.nodes++;
-
                 int r = config.nmpBase()
                         + depth / config.nmpDivisor()
                         + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
+
+                ss.get(ply + 1).nullMoveAllowed = false;
+                board.makeNullMove();
+                td.nodes++;
 
                 final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
 
@@ -338,7 +339,19 @@ public class Searcher implements Search {
                 ss.get(ply + 1).nullMoveAllowed = true;
 
                 if (score >= beta) {
-                    return Score.isMate(score) ? beta : score;
+
+                    // At low depths, we can directly return the result of the null move search.
+                    if (td.nmpPly > 0 || depth <= 14)
+                        return Score.isMate(score) ? beta : score;
+
+                    // At high depths, let's do a normal search to verify the null move result.
+                    td.nmpPly = (3 * (depth - r) / 4) + ply;
+                    int verifScore = search(depth - r, ply, beta - 1, beta, true);
+                    td.nmpPly = 0;
+
+                    if (verifScore >= beta)
+                        return score;
+
                 }
             }
 

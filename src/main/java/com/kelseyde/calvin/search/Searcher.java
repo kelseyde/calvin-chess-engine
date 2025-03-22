@@ -249,6 +249,14 @@ public class Searcher implements Search {
                 return ttEntry.score();
         }
 
+        if (ttHit
+                && !pvNode
+                && ttEntry.flag() == HashFlag.UPPER
+                && isWithinBounds(ttEntry, alpha, beta)
+                && !isSufficientDepth(ttEntry, depth - 2)) {
+            --depth;
+        }
+
         // Internal Iterative Deepening
         // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
         // reduced depth expecting to record a move that we can use later for a full-depth search.

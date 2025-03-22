@@ -46,6 +46,7 @@ public class NNUE {
             .scale(400)
             .build();
 
+    private static final int STACK_SIZE = Search.MAX_DEPTH + 1;
 
     private Accumulator[] accumulatorStack;
     private InputBucketCache bucketCache;
@@ -54,7 +55,7 @@ public class NNUE {
 
     public NNUE() {
         this.current = 0;
-        this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
+        this.accumulatorStack = new Accumulator[STACK_SIZE];
         this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }
@@ -62,7 +63,7 @@ public class NNUE {
     public NNUE(Board board) {
         this.board = board;
         this.current = 0;
-        this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
+        this.accumulatorStack = new Accumulator[STACK_SIZE];
         this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
         fullRefresh(board);
@@ -345,7 +346,7 @@ public class NNUE {
 
     public void clearHistory() {
         this.current = 0;
-        this.accumulatorStack = new Accumulator[Search.MAX_DEPTH];
+        this.accumulatorStack = new Accumulator[STACK_SIZE];
         this.accumulatorStack[0] = new Accumulator(NETWORK.hiddenSize());
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }

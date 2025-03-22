@@ -499,7 +499,7 @@ public class Searcher implements Search {
                 }
                 else if (cutNode)
                     extension = -2;
-                else if (ttEntry.score() >= beta)
+                else if (ttEntry.score() >= beta || ttEntry.score() <= alpha)
                     extension = -1;
 
             }

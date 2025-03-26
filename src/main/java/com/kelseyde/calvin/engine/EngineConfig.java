@@ -37,7 +37,6 @@ public class EngineConfig {
     private final Tunable fpMargin               = new Tunable("FpMargin", 157, 0, 500, 25);
     private final Tunable fpScale                = new Tunable("FpScale", 81, 0, 100, 5);
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 141, 1, 1000, 25);
-    private final Tunable fpBlend                = new Tunable("FpBlend", 4, 1, 10, 2);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
     private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -36, -250, -10, 25);
     private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -29, -250, -10, 25);
@@ -50,7 +49,6 @@ public class EngineConfig {
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 18, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 71, 0, 150, 25);
-    private final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 304, 200, 400, 10);
@@ -115,10 +113,10 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth, fpBlend,
+                aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
-                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpBlend, razorDepth, razorMargin, hpMaxDepth,
+                qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
                 hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
@@ -260,10 +258,6 @@ public class EngineConfig {
         return fpHistDivisor.value;
     }
 
-    public int fpBlend() {
-        return fpBlend.value;
-    }
-
     public int seeMaxDepth() {
         return seeMaxDepth.value;
     }
@@ -310,10 +304,6 @@ public class EngineConfig {
 
     public int rfpMargin() {
         return rfpMargin.value;
-    }
-
-    public int rfpBlend() {
-        return rfpBlend.value;
     }
 
     public int lmrDepth() {

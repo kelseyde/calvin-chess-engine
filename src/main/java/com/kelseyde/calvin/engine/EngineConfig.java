@@ -129,6 +129,7 @@ public class EngineConfig {
         );
     }
 
+
     public void setTunable(UCICommand command) {
         String name = command.getString("name", "", false);
         if (name.isBlank()) {

@@ -66,7 +66,6 @@ public class UCI {
             writeError("error processing command", e);
         }
 
-
     }
 
     public static void handleUCI(UCICommand command) {
@@ -77,6 +76,8 @@ public class UCI {
                 config.defaultHashSizeMb, config.minHashSizeMb, config.maxHashSizeMb));
         write(String.format("option name Threads type spin default %s min %s max %s",
                 config.defaultThreads, config.minThreads, config.maxThreads));
+        write(String.format("option name MultiPV type spin default %s min %s max %s",
+                config.defaultMultiPv, config.minMultiPv, config.maxMultiPv));
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
         write("option name UCI_Chess960 type check default false");
         write("option name Pretty type check default false");
@@ -122,6 +123,7 @@ public class UCI {
         switch (name) {
             case "Hash":          setHashSize(command); break;
             case "Threads":       setThreads(command); break;
+            case "MultiPV":       setMultiPv(command); break;
             case "Ponder":        setPonder(command); break;
             case "Pretty":        setPretty(command); break;
             case "UCI_Chess960":  handleChess960(command); break;
@@ -246,6 +248,18 @@ public class UCI {
             write("info string Threads " + threadCount);
         } else {
             write(String.format("thread count %s not in valid range %s - %s", threadCount, minThreadCount, maxThreadCount));
+        }
+    }
+
+    private static void setMultiPv(UCICommand command) {
+        int multiPv = command.getInt("value", -1, true);
+        int minMultiPv = ENGINE.getConfig().minMultiPv;
+        int maxMultiPv = ENGINE.getConfig().maxMultiPv;
+        if (multiPv >= minMultiPv && multiPv <= maxMultiPv) {
+            ENGINE.setMultiPv(multiPv);
+            write("info string MultiPV " + multiPv);
+        } else {
+            write(String.format("multi pv %s not in valid range %s - %s", multiPv, minMultiPv, maxMultiPv));
         }
     }
 

@@ -21,6 +21,11 @@ public class EngineConfig {
     public final int maxHashSizeMb = 1024;
     public final int defaultHashSizeMb = 256;
 
+    public final int minMultiPv = 1;
+    public final int maxMultiPv = 256;
+    public final int defaultMultiPv = 1;
+    public int currentMultiPv = defaultMultiPv;
+
     public boolean ponderEnabled = false;
     public boolean pondering = false;
     public boolean searchCancelled = false;

@@ -113,6 +113,10 @@ public class Engine {
         this.searcher.setThreadCount(threadCount);
     }
 
+    public void setMultiPv(int multiPv) {
+        this.config.currentMultiPv = multiPv;
+    }
+
     public void setPonderEnabled(boolean ponderEnabled) {
         this.config.ponderEnabled = ponderEnabled;
     }

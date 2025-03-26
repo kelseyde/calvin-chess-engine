@@ -92,6 +92,7 @@ public class Searcher implements Search {
         int reduction = 0;
         int maxReduction = config.aspMaxReduction();
         int window = config.aspMargin();
+        int multiPv = Math.min(config.currentMultiPv, rootMoves.size());
 
         while (!softLimitReached() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration

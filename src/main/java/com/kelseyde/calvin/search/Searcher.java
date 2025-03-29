@@ -491,7 +491,9 @@ public class Searcher implements Search {
                 int score = search(sDepth, ply, sBeta - 1, sBeta, cutNode);
                 sse.excludedMove = null;
 
-                if (score < sBeta) {
+                if (score >= sBeta && sBeta >= beta)
+                    return sBeta;
+                else if (score < sBeta) {
                     if (!pvNode && score < sBeta - config.seDoubleExtMargin())
                         extension = 2;
                     else

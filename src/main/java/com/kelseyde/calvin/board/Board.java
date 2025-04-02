@@ -398,6 +398,10 @@ public class Board {
         return move.isEnPassant() || pieceAt(move.to()) != null;
     }
 
+    public boolean isNoisy(Move move) {
+        return move.isPromotion() || isCapture(move);
+    }
+
     public boolean isQuiet(Move move) {
         return !move.isPromotion() && !isCapture(move);
     }

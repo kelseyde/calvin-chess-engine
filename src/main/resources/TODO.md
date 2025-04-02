@@ -2,8 +2,8 @@
 
 ### General
 
-- [ ] OpenBench
-- [ ] Cloud-hosted OB solution (with pythonanywhere?)
+- [x] OpenBench
+- [x] Cloud-hosted OB solution (with pythonanywhere?)
 - [x] FRC/DFRC support
 - [ ] Improve javadoc
 - [ ] Review all code comments
@@ -18,29 +18,28 @@
 
 ### Search
 
-- [ ] Use int16 for history scores
-- [ ] SPRT SPSA tune branch
-- [ ] LTC 1024 net
-- [ ] Threefold repetition ( CCRL bug ? )
-- [ ] TT cut after RFP if depth - quietReduction <= ttDepth?
+- [x] Use int16 for history scores
+- [x] SPRT SPSA tune branch
+- [x] LTC 1024 net
+- [x] Threefold repetition ( CCRL bug ? )
 - [ ] Fractional depth
 - [ ] Improving rate
 - [ ] PV table
-- [ ] Exponentially widening aspiration window
-- [ ] Write to TT during QS stand-pat cutoff
-- [ ] Singular extensions ( tried )
-- [ ] Double extensions
+- [x] Exponentially widening aspiration window
+- [x] Write to TT during QS stand-pat cutoff
+- [x] Singular extensions 
+- [x] Double extensions
 - [ ] Triple extensions
-- [ ] Negative extensions
-- [ ] MultiCut ( tried )
-- [ ] ProbCut ( tried )
+- [x] Negative extensions
+- [ ] MultiCut 
+- [ ] ProbCut 
 - [ ] Use improving in NMP
 - [x] Pawn corrhist
 - [x] Non-pawn corrhist
 - [ ] Material corrhist
 - [ ] Major corrhist ( tried )
 - [ ] Minor corrhist ( tried )
-- [ ] Contcorrhist
+- [x] Contcorrhist
 - [ ] Threat corrhist ( tried )
 - [ ] Countermove corrhist?
 - [ ] Follow-up move corrhist?
@@ -61,10 +60,10 @@
 
 ### Move generation / Move ordering
 
-- [ ] Pseudo-legal movegen ( tried, didn't work, possible skill issue )
+- [ ] Pseudo-legal movegen 
 - [ ] Implement isLegal(move) re-using pin/checker info from movegen
 - [x] The Great `MovePicker` Rewrite`™`
-- [ ] Try copy/make rather than make/unmake
+- [ ] Copy/make
 - [x] 1-ply Conthist
 - [x] 2-ply Conthist
 - [ ] 4-ply Conthist
@@ -73,10 +72,8 @@
 - [ ] Countermoves ( tried )
 - [ ] Threat quiet history ( tried )
 - [ ] Threat capture history 
-- [ ] Increase history bonus/penalty when alpha > beta + 50
-- [ ] Score-based history bonuses
-- [ ] PSQT-based move ordering bonus
-- [ ] Add Killers, History etc. stages to `MovePicker`. ( tried )
+- [x] Increase history bonus/penalty when alpha > beta + 50
+- [x] Add Killers, History etc. stages to `MovePicker`. ( tried )
 - [ ] Other magic bitboard impls? PEXT/Black Magic/Kindergarten/whatever?
 - [ ] Add checkers bitboard to `Board`?
 - [ ] Check if move is check before makeMove
@@ -87,10 +84,10 @@
 - [x] New net, bigger HL size
 - [x] Screlu
 - [ ] Output buckets ( tried, material scaling seems stronger )
-- [ ] Horizontal mirroring
+- [x] Horizontal mirroring
 - [ ] Datagen
-- [ ] Input (king) buckets
-- [ ] Finny tables
+- [x] Input (king) buckets
+- [x] Finny tables
 
 ### Transposition Table
 
@@ -116,7 +113,7 @@
 - [x] Add engine author/version
 - [x] Add perft to UCI options
 - [x] Implement display command
-- [ ] Improve display visuals + add info
+- [x] Improve display visuals + add info
 - [ ] Implement perft divide
 - [ ] Standardise 'help' info
 - [x] Add seldepth to info

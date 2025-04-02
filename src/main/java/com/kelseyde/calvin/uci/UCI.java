@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.engine.EngineConfig.Tunable;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.Score;
@@ -195,6 +196,12 @@ public class UCI {
         Bits.print(threats);
     }
 
+    public static void handleParams(UCICommand command) {
+        ENGINE.getConfig().getTunables().stream()
+                .map(Tunable::toSPSA)
+                .forEach(UCI::write);
+    }
+
     public static void handleEval(UCICommand command) {
         NNUE nnue = new NNUE(ENGINE.getBoard());
         write(String.valueOf(nnue.evaluate()));
@@ -298,7 +305,7 @@ public class UCI {
     }
 
     private static String formatScore(int eval) {
-        if (Score.isMateScore(eval)) {
+        if (Score.isMate(eval)) {
             int moves = Math.max((Score.MATE - Math.abs(eval)) / 2, 1);
             if (eval < 0) moves = -moves;
             return "mate " + moves;

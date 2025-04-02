@@ -2,8 +2,6 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Piece;
 
-import java.util.Objects;
-
 /**
  * Whenever the king changes bucket, a costly full refresh of the accumulator is required. This service implements a
  * technique to improve the performance of this refresh known as 'Finny tables'.

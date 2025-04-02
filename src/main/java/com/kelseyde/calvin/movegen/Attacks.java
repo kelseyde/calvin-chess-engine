@@ -3,6 +3,7 @@ package com.kelseyde.calvin.movegen;
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.board.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,6 +132,17 @@ public class Attacks {
         return white ?
                 (Bits.northWest(pawns) &~ File.H) | (Bits.northEast(pawns) &~ File.A) :
                 (Bits.southWest(pawns) &~ File.H) | (Bits.southEast(pawns) &~ File.A);
+    }
+
+    public static long attacks(int square, Piece piece, boolean white, long blockers) {
+        return switch (piece) {
+            case PAWN -> pawnAttacks(blockers, white);
+            case KNIGHT -> knightAttacks(square);
+            case BISHOP -> bishopAttacks(square, blockers);
+            case ROOK -> rookAttacks(square, blockers);
+            case QUEEN -> queenAttacks(square, blockers);
+            case KING -> kingAttacks(square);
+        };
     }
 
     public static long kingAttacks(int square) {

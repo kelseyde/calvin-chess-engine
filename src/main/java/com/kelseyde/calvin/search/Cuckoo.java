@@ -5,12 +5,20 @@ import com.kelseyde.calvin.movegen.Attacks;
 
 public class Cuckoo {
 
-    private static long[] keyDiffs;
-    private static Move[] moves;
+    private static final long[] keys;
+    private static final Move[] moves;
+
+    public static int h1(long h) {
+        return ((int) (h >> 32)) & 0x1FFF;
+    }
+
+    public static int h2(long h) {
+        return ((int) (h >> 48)) & 0x1FFF;
+    }
 
     static {
 
-        keyDiffs = new long[8192];
+        keys = new long[8192];
         moves = new Move[8192];
         int count = 0;
 
@@ -18,36 +26,24 @@ public class Cuckoo {
         final int[] colours = { Colour.WHITE, Colour.BLACK };
 
         for (Piece piece : pieces) {
-
             for (int colour : colours) {
-
-                for (int from = 0; from < 63; from++) {
-
+                for (int from = 0; from < 64; from++) {
                     for (int to = from + 1; to < 64; to++) {
 
-                        long attacks = switch (piece) {
-                            case KNIGHT -> Attacks.knightAttacks(from);
-                            case BISHOP -> Attacks.bishopAttacks(from, 0L);
-                            case ROOK ->   Attacks.rookAttacks(from, 0L);
-                            case QUEEN ->  Attacks.queenAttacks(from, 0L);
-                            case KING ->   Attacks.kingAttacks(from);
-                            default -> 0L;
-                        };
+                        final boolean white = colour == Colour.WHITE;
+                        final long attacks = Attacks.attacks(from, piece, white, 0L);
 
-                        if (!Bits.contains(attacks, to)) {
+                        if (!Bits.contains(attacks, to))
                             continue;
-                        }
 
                         Move move = new Move(from, to);
-
-                        long keyDiff = Key.moveKey(move, piece, colour == 0);
-
+                        long keyDiff = Key.moveKey(move, piece, white);
                         int slot = (int) h1(keyDiff);
 
                         while (true) {
 
-                            long keyDiffTemp = keyDiffs[slot];
-                            keyDiffs[slot] = keyDiff;
+                            long keyDiffTemp = keys[slot];
+                            keys[slot] = keyDiff;
                             keyDiff = keyDiffTemp;
 
                             Move moveTemp = moves[slot];
@@ -63,26 +59,23 @@ public class Cuckoo {
                         }
 
                         count++;
-
                     }
-
                 }
-
             }
-
         }
 
-        System.out.println(count);
-        assert count == 3668;
+        if (count != 3668) {
+            throw new IllegalStateException("Failed to initialise cuckoo tables");
+        }
 
     }
 
-    private static long h1(long keyDiff) {
-        return keyDiff % 8192;
+    public static long[] keys() {
+        return keys;
     }
 
-    private static long h2(long keyDiff) {
-        return (keyDiff >> 16) % 8192;
+    public static Move[] moves() {
+        return moves;
     }
 
 }

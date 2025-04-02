@@ -209,6 +209,13 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
+        // Cuckoo upcoming repetition detection
+        if (!rootNode && alpha < 0 && board.hasUpcomingRepetition(ply)) {
+            alpha = Score.DRAW;
+            if (alpha >= beta)
+                return alpha;
+        }
+
         final SearchStackEntry sse = ss.get(ply);
         final Move excludedMove = sse.excludedMove;
         final boolean singularSearch = excludedMove != null;
@@ -613,6 +620,13 @@ public class Searcher implements Search {
 
         if (hardLimitReached()) {
             return alpha;
+        }
+
+        // Cuckoo upcoming repetition detection
+        if (ply > 0 && alpha < 0 && board.hasUpcomingRepetition(ply)) {
+            alpha = Score.DRAW;
+            if (alpha >= beta)
+                return alpha;
         }
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.

@@ -29,6 +29,10 @@ public class Bits {
         return (bb & of(sq)) != 0;
     }
 
+    public static boolean empty(long bb) {
+        return bb == 0L;
+    }
+
     public static long north(long board) {
         return board << 8;
     }

@@ -1,7 +1,9 @@
 package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.Bits.File;
+import com.kelseyde.calvin.board.Bits.Ray;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.search.Cuckoo;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -604,16 +606,65 @@ public class Board {
         return FEN.toBoard(fen);
     }
 
-    public boolean hasUpcomingRepetition(int searchPly) {
+    public boolean hasUpcomingRepetition(int ply) {
 
-        int maxDst = Math.min(state.halfMoveClock / 2, ply);
-        if (maxDst < 3) {
+        final int hm = state.halfMoveClock;
+        final int lastMove = this.ply - 1;
+        if (hm < 3)
             return false;
+
+        final long occ = getOccupied();
+        long currKey = previousKey(0);
+        long other = ~(currKey ^ previousKey(1));
+
+        for (int i = 3; i < hm && i < lastMove; i += 2) {
+
+            long prevKey = previousKey(i);
+            other ^= ~(prevKey ^ previousKey(i - 1));
+            if (other != 0)
+                continue;
+
+            long diff = currKey ^ prevKey;
+
+            int slot = Cuckoo.h1(diff);
+            if (diff != Cuckoo.keys()[slot])
+                slot = Cuckoo.h2(diff);
+
+            if (diff != Cuckoo.keys()[slot])
+                continue;
+
+            Move move = Cuckoo.moves()[slot];
+
+            if (!Bits.empty(occ & Ray.between(move.from(), move.to())))
+                continue;
+
+            if (ply > i)
+                return true;
+
+            int targetSquare = move.from();
+            Piece piece = pieceAt(targetSquare);
+            if (piece == null) {
+                targetSquare = move.to();
+                piece = pieceAt(targetSquare);
+            }
+            assert piece != null;
+
+            long us = getPieces(white);
+
+            return Bits.contains(us, targetSquare);
+
         }
 
+        return false;
 
+    }
 
-
+    private long previousKey(int s) {
+        if (s == 0)
+            return state.key;
+        if (ply - s < 0 || states[ply - s] == null)
+            return 0;
+        return states[ply - s].key;
     }
 
     private void checkMaxPly() {

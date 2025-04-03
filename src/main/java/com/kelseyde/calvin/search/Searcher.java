@@ -733,6 +733,11 @@ public class Searcher implements Search {
                 }
 
             }
+
+            // Qs evasion pruning
+            if (inCheck && board.isQuiet(move) && !Score.isMate(bestScore))
+                break;
+
         }
 
         if (movesSearched == 0 && inCheck) {

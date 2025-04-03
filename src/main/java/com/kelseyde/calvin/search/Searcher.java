@@ -662,7 +662,7 @@ public class Searcher implements Search {
             if (staticEval >= beta) {
                 if (!ttHit || ttEntry.flag() == HashFlag.NONE)
                     tt.put(board.key(), HashFlag.LOWER, 0, ply, null, rawStaticEval, staticEval);
-                return staticEval;
+                return (staticEval + beta) / 2;
             }
             if (staticEval > alpha) {
                 alpha = staticEval;

@@ -20,32 +20,23 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
 public abstract class CorrectionHistoryTable {
 
     public static final int SCALE = 64;
-    protected static final int MAX = SCALE * 32;
 
-    /**
-     * Compute the new correction based on a weighted sum of old value and the new delta of the score and static eval.
-     */
+    protected static final int LIMIT = 1024;
+    protected static final int MAX_BONUS = LIMIT / 4;
+
     public int correction(int oldValue, int staticEval, int score, int depth) {
-
-        // Compute the new correction value, and retrieve the old value
-        int newValue = (score - staticEval) * SCALE;
-
-        // Weight the new value based on the search depth, and the old value based on the remaining weight
-        int newWeight = Math.min(depth + 1, 16);
-        int oldWeight = SCALE - newWeight;
-
-        // Compute the weighted sum of the old and new values, and clamp the result.
-        int update = (oldValue * oldWeight + newValue * newWeight) / SCALE;
-        update = clamp(update);
-
-        return update;
-
+        final int bonus = clamp((score - staticEval) * depth / 8);
+        return update(oldValue, bonus);
     }
 
     protected abstract void clear();
 
+    private int update(int value, int bonus) {
+        return value + bonus - value * Math.abs(bonus) / LIMIT;
+    }
+
     private int clamp(int value) {
-        return Math.max(-MAX, Math.min(MAX, value));
+        return Math.max(-MAX_BONUS, Math.min(MAX_BONUS, value));
     }
 
 }

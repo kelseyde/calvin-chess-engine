@@ -194,8 +194,6 @@ public class Searcher implements Search {
         if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, ply);
         if (depth < 0) depth = 0;
 
-        td.nodes++;
-
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW;
 
@@ -333,6 +331,7 @@ public class Searcher implements Search {
 
                 ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();
+                td.nodes++;
 
                 final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
 
@@ -517,7 +516,7 @@ public class Searcher implements Search {
             }
 
             final int nodesBefore = td.nodes;
-
+            td.nodes++;
 
             int score;
 
@@ -611,8 +610,6 @@ public class Searcher implements Search {
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
     int quiescenceSearch(int alpha, int beta, int ply) {
-
-        td.nodes++;
 
         if (hardLimitReached()) {
             return alpha;
@@ -717,7 +714,10 @@ public class Searcher implements Search {
                 continue;
 
             makeMove(move, piece, sse);
+
+            td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
+
             unmakeMove(sse);
 
             if (score > bestScore) {

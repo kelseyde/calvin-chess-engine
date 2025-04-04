@@ -399,7 +399,7 @@ public class Searcher implements Search {
             // Check Extensions
             // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
             if (inCheck) {
-                extension = 1;
+                extension = config.checkExtension();
             }
 
             // Late Move Reductions
@@ -407,20 +407,20 @@ public class Searcher implements Search {
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
             if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
 
-                int r = config.lmrReductions()[isCapture ? 1 : 0][Depth.toInt(depth)][searchedMoves] * 1024;
-                r -= pvNode ? config.lmrPvNode() : 0;
-                r += cutNode ? config.lmrCutNode() : 0;
-                r += !improving ? config.lmrNotImproving() : 0;
-                r -= isQuiet
+                reduction = config.lmrReductions()[isCapture ? 1 : 0][Depth.toInt(depth)][searchedMoves] * 1024;
+                reduction -= pvNode ? config.lmrPvNode() : 0;
+                reduction += cutNode ? config.lmrCutNode() : 0;
+                reduction += !improving ? config.lmrNotImproving() : 0;
+                reduction -= isQuiet
                         ? historyScore / config.lmrQuietHistoryDiv() * 1024
                         : historyScore / config.lmrNoisyHistoryDiv() * 1024;
 
                 int futilityMargin = config.fpMargin()
                         + Depth.toInt(depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
-                r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                reduction += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
 
-                reduction = Math.max(0, r / 1024) * 1024;
+                reduction = Math.max(reduction / 1024, 0) * 1024;
             }
 
             int reducedDepth = depth - Depth.toFractional(reduction / 1024);
@@ -434,7 +434,7 @@ public class Searcher implements Search {
                     && !rootNode
                     && isQuiet
                     && !inCheck
-                    && reducedDepth <= Depth.toFractional(config.fpDepth())
+                    && reducedDepth <= config.fpDepth()
                     && staticEval + futilityMargin <= alpha) {
                 movePicker.setSkipQuiets(true);
                 continue;
@@ -445,7 +445,7 @@ public class Searcher implements Search {
             final int historyThreshold = config.hpMargin() * Depth.toInt(depth) + config.hpOffset();
             if (!rootNode
                     && isQuiet
-                    && reducedDepth <= Depth.toFractional(config.hpMaxDepth())
+                    && reducedDepth <= config.hpMaxDepth()
                     && historyScore < historyThreshold) {
                 movePicker.setSkipQuiets(true);
                 continue;
@@ -458,7 +458,7 @@ public class Searcher implements Search {
                     && !rootNode
                     && isQuiet
                     && !inCheck
-                    && depth <= Depth.toFractional(config.lmpDepth())
+                    && depth <= config.lmpDepth()
                     && searchedMoves >= lmpThreshold) {
                 movePicker.setSkipQuiets(true);
                 continue;
@@ -469,7 +469,7 @@ public class Searcher implements Search {
             final int seeThreshold = seeThreshold(Depth.toInt(depth), historyScore, isQuiet);
             if (!pvNode
                     && !rootNode
-                    && depth <= Depth.toFractional(config.seeMaxDepth())
+                    && depth <= config.seeMaxDepth()
                     && searchedMoves > 1
                     && !isGoodNoisy
                     && !isMateScore
@@ -484,9 +484,9 @@ public class Searcher implements Search {
             if (!rootNode
                     && !singularSearch
                     && move.equals(ttMove)
-                    && depth >= Depth.toFractional(config.seDepth())
+                    && depth >= config.seDepth()
                     && ttEntry.flag() != HashFlag.UPPER
-                    && ttDepth >= depth - Depth.toFractional(config.seTtDepthMargin())) {
+                    && ttDepth >= depth - config.seTtDepthMargin()) {
 
                 int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - Depth.toInt(depth) * config.seBetaMargin() / 16);
                 int sDepth = (Depth.toInt(depth) - config.seReductionOffset()) / config.seReductionDivisor();
@@ -497,14 +497,14 @@ public class Searcher implements Search {
 
                 if (score < sBeta) {
                     if (!pvNode && score < sBeta - config.seDoubleExtMargin())
-                        extension = 2;
+                        extension = config.doubleExtension();
                     else
-                        extension = 1;
+                        extension = config.singularExtension();
                 }
                 else if (cutNode)
-                    extension = -2;
+                    extension = config.negativeExtension();
                 else if (ttEntry.score() >= beta)
-                    extension = -1;
+                    extension = config.doubleNegativeExtension();
 
             }
 
@@ -527,17 +527,17 @@ public class Searcher implements Search {
             // Principal Variation Search
             if (searchedMoves == 1) {
                 // Since we expect the first move to be the best, we search it with a full window.
-                int newDepth = depth - Depth.ONE_PLY + Depth.toFractional(extension);
+                int newDepth = depth - Depth.ONE_PLY + extension;
                 score = -search(newDepth, ply + 1, -beta, -alpha, !pvNode && !cutNode);
             }
             else {
                 // For all other moves, search with a null window.
-                int newDepth = depth - Depth.ONE_PLY - Depth.toFractional(reduction / 1024) + Depth.toFractional(extension);
+                int newDepth = depth - Depth.ONE_PLY - reduction + extension;
                 score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
 
-                if (score > alpha && (score < beta || reduction / 1024 > 0)) {
+                if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.
-                    newDepth = depth - Depth.ONE_PLY + Depth.toFractional(extension);
+                    newDepth = depth - Depth.ONE_PLY + extension;
                     score = -search(newDepth, ply + 1, -beta, -alpha, false);
                 }
             }

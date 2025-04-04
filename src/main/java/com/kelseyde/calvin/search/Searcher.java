@@ -99,7 +99,7 @@ public class Searcher implements Search {
             bestScoreCurrent = 0;
             td.seldepth = 0;
 
-            final int searchDepth = td.depth - reduction;
+            final int searchDepth = Depth.toFractional(td.depth - reduction);
 
             // Perform alpha-beta search for the current depth
             final int score = search(searchDepth, 0, alpha, beta, false);
@@ -222,21 +222,23 @@ public class Searcher implements Search {
         boolean ttHit = false;
         boolean ttPrune = false;
         Move ttMove = null;
+        int ttDepth = 0;
 
         if (!singularSearch) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
+            ttDepth = ttHit ? Depth.toFractional(ttEntry.depth()) : 0;
 
             if (!rootNode
                     && ttHit
-                    && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
+                    && isSufficientDepth(ttEntry, Depth.toInt(depth) + 2 * (pvNode ? 1 : 0))
                     && (ttEntry.score() <= alpha || cutNode)) {
 
                 if (isWithinBounds(ttEntry, alpha, beta))
                     ttPrune = true;
-                else if (depth <= config.ttExtensionDepth())
-                    depth++;
+                else if (depth <= Depth.toFractional(config.ttExtensionDepth()))
+                    depth += Depth.ONE_PLY;
             }
         }
 
@@ -244,7 +246,7 @@ public class Searcher implements Search {
             // In non-PV nodes with an eligible TT hit, we fully prune the node.
             // In PV nodes, rather than pruning we reduce search depth.
             if (pvNode)
-                depth--;
+                depth -= Depth.ONE_PLY;
             else
                 return ttEntry.score();
         }
@@ -254,10 +256,12 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && (pvNode || cutNode)
-                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
-                && depth >= config.iirDepth()) {
-            --depth;
+                && (!ttHit || ttMove == null || ttDepth < depth - Depth.toFractional(config.iirDepth()))
+                && depth >= Depth.toFractional(config.iirDepth())) {
+            depth -= Depth.ONE_PLY;
         }
+
+        depth /= Depth.ONE_PLY;
 
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
@@ -488,7 +492,7 @@ public class Searcher implements Search {
                 int sDepth = (depth - config.seReductionOffset()) / config.seReductionDivisor();
 
                 sse.excludedMove = move;
-                int score = search(sDepth, ply, sBeta - 1, sBeta, cutNode);
+                int score = search(Depth.toFractional(sDepth), ply, sBeta - 1, sBeta, cutNode);
                 sse.excludedMove = null;
 
                 if (score < sBeta) {
@@ -523,15 +527,15 @@ public class Searcher implements Search {
             // Principal Variation Search
             if (searchedMoves == 1) {
                 // Since we expect the first move to be the best, we search it with a full window.
-                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, !pvNode && !cutNode);
+                score = -search(Depth.toFractional(depth - 1 + extension), ply + 1, -beta, -alpha, !pvNode && !cutNode);
             }
             else {
                 // For all other moves, search with a null window.
-                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                score = -search(Depth.toFractional(depth - 1 - reduction + extension), ply + 1, -alpha - 1, -alpha, !cutNode);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.
-                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                    score = -search(Depth.toFractional(depth - 1 + extension), ply + 1, -beta, -alpha, false);
                 }
             }
 

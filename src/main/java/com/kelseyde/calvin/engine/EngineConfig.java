@@ -28,7 +28,7 @@ public class EngineConfig {
     private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
     private final Tunable aspMargin              = new Tunable("AspMargin", 15, 0, 250, 25);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
-    private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
+    private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6 * 1024, 1024);
     private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
     private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 190, 0, 400, 25);
@@ -47,9 +47,9 @@ public class EngineConfig {
     private final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 128, 50, 250, 25);
     private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 116, 0, 250, 10);
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -6, -300, 300, 100);
-    private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
+    private final Tunable rfpDepth               = new Tunable("RfpDepth", 9 * 1024, 0, 12 * 1024, 1024);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 69, 0, 150, 25);
-    private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
+    private final Tunable lmrDepth               = new Tunable("LmrDepth", 2 * 1024, 0, 8 * 1024, 1024);
     private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 308, 200, 400, 10);
     private final Tunable lmrCapBase             = new Tunable("LmrCapBase", 93, 50, 100, 5);
@@ -64,10 +64,10 @@ public class EngineConfig {
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3122, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
-    private final Tunable iirMinDepth            = new Tunable("IirMinDepth", 4, 0, 8, 1);
-    private final Tunable iirReduction           = new Tunable("IirReduction", 1, 0, 3, 1);
+    private final Tunable iirMinDepth            = new Tunable("IirMinDepth", 4 * 1024, 0, 8 * 1024, 1024);
+    private final Tunable iirReduction           = new Tunable("IirReduction", 1024, 0, 3 * 1024, 1024);
     private final Tunable dpMargin               = new Tunable("DpMargin", 98, 0, 250, 10);
-    private final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
+    private final Tunable razorDepth             = new Tunable("RazorDepth", 4 * 1024, 0, 8 * 1024, 1024);
     private final Tunable razorMargin            = new Tunable("RazorMargin", 470, 0, 600, 10);
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     private final Tunable hpMargin               = new Tunable("HpMargin", -2271, -4000, -100, 50);
@@ -78,9 +78,9 @@ public class EngineConfig {
     private final Tunable seReductionOffset      = new Tunable("SeReductionOffset", 1, 0, 3, 1);
     private final Tunable seReductionDivisor     = new Tunable("SeReductionDivisor", 2, 1, 4, 1);
     private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 20, 0, 32, 5);
-    private final Tunable ttExtensionMaxDepth    = new Tunable("TtExtensionMaxDepth", 6, 0, 12, 1);
-    private final Tunable ttExtension            = new Tunable("TtExtension", 1, 0, 3, 1);
-    private final Tunable ttCutoffPvReduction    = new Tunable("TtCutoffPvReduction", 1, 0, 3, 1);
+    private final Tunable ttExtensionMaxDepth    = new Tunable("TtExtensionMaxDepth", 6 * 1024, 0, 12 * 1024, 1024);
+    private final Tunable ttExtension            = new Tunable("TtExtension", 1024, 0, 3 * 1024, 1024);
+    private final Tunable ttCutoffPvReduction    = new Tunable("TtCutoffPvReduction", 1024, 0, 3 * 1024, 1024);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);

@@ -1,1 +1,24 @@
-g
+LmrDepth, int, 2048, 0, 8192, 256.0, 0.002
+TtExtensionMaxDepth, int, 6144, 0, 256, 614.0, 0.002
+TtExtension, int, 1024, 0, 3072, 256.0, 0.002
+LmrFutile, int, 1012, 0, 2048, 256.0, 0.002
+LmrNotImproving, int, 94, 0, 2048, 256.0, 0.002
+CheckExtension, int, 1024, 0, 2048, 256.0, 0.002
+SingularExtension, int, 1024, 0, 2048, 256.0, 0.002
+SeDepth, int, 8192, 0, 10240, 256.0, 0.002
+LmrCutNode, int, 2106, 0, 3072, 256.0, 0.002
+HpMaxDepth, int, 5120, 0, 10240, 256.0, 0.002
+TtCutoffPvReduction, int, 1024, 0, 3072, 256.0, 0.002
+IirPvNodeReduction, int, 1024, 0, 3072, 256.0, 0.002
+FpDepth, int, 8192, 0, 8192, 256.0, 0.002
+LmpDepth, int, 8192, 0, 16384, 256.0, 0.002
+LmrPvNode, int, 963, 0, 2048, 256.0, 0.002
+NegativeExtension, int, -1024, 2048, 0, 256.0, 0.002
+RazorDepth, int, 4096, 0, 8192, 256.0, 0.002
+RfpDepth, int, 9216, 0, 12288, 256.0, 0.002
+IirMinDepth, int, 4096, 0, 8192, 256.0, 0.002
+SeTtDepthMargin, int, 3072, 2048, 6144, 256.0, 0.002
+NmpDepth, int, 0, 0, 6144, 256.0, 0.002
+IirCutNodeReduction, int, 1024, 0, 3072, 256.0, 0.002
+SeeMaxDepth, int, 10240, 6144, 12288, 256.0, 0.002
+DoubleExtension, int, 2048, 1024, 3072, 256.0, 0.002

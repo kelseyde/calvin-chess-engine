@@ -85,7 +85,7 @@ public class EngineConfig {
     private final Tunable checkExtension          = new Tunable("CheckExtension", 1024, 0, 2048, 256, true);
     private final Tunable singularExtension       = new Tunable("SingularExtension", 1024, 0, 2048, 256, true);
     private final Tunable doubleExtension         = new Tunable("DoubleExtension", 2048, 1024, 3072, 256, true);
-    private final Tunable negativeExtension       = new Tunable("NegativeExtension", -1024, 2048, 0, 256, true);
+    private final Tunable negativeExtension       = new Tunable("NegativeExtension", -1024, -2048, 0, 256, true);
     private final Tunable doubleNegativeExtension = new Tunable("DoubleNegativeExtension", -2048, -3072, 0, 256);
     private final Tunable ttExtensionMaxDepth     = new Tunable("TtExtensionMaxDepth", 6 * 1024, 0, 12 * 1024, 1024, true);
     private final Tunable ttExtension             = new Tunable("TtExtension", 1024, 0, 3 * 1024, 1024, true);

@@ -237,8 +237,8 @@ public class Searcher implements Search {
 
                 if (isWithinBounds(ttEntry, alpha, beta))
                     ttPrune = true;
-                else if (depth <= Depth.toFractional(config.ttExtensionDepth()))
-                    depth += Depth.ONE_PLY;
+                else if (depth <= Depth.toFractional(config.ttExtensionMaxDepth()))
+                    depth += Depth.toFractional(config.ttExtension());
             }
         }
 
@@ -246,7 +246,7 @@ public class Searcher implements Search {
             // In non-PV nodes with an eligible TT hit, we fully prune the node.
             // In PV nodes, rather than pruning we reduce search depth.
             if (pvNode)
-                depth -= Depth.ONE_PLY;
+                depth -= Depth.toFractional(config.ttCutoffPvReduction());
             else
                 return ttEntry.score();
         }
@@ -256,12 +256,10 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && (pvNode || cutNode)
-                && (!ttHit || ttMove == null || ttDepth < depth - Depth.toFractional(config.iirDepth()))
-                && depth >= Depth.toFractional(config.iirDepth())) {
-            depth -= Depth.ONE_PLY;
+                && (!ttHit || ttMove == null || ttDepth < depth - Depth.toFractional(config.iirMinDepth()))
+                && depth >= Depth.toFractional(config.iirMinDepth())) {
+            depth -= Depth.toFractional(config.iirReduction());
         }
-
-        depth /= Depth.ONE_PLY;
 
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
@@ -303,8 +301,8 @@ public class Searcher implements Search {
 
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
-            final int futilityMargin = Math.max(depth - (improving ? 1 : 0), 0) * config.rfpMargin();
-            if (depth <= config.rfpDepth()
+            final int futilityMargin = Math.max(Depth.toInt(depth) - (improving ? 1 : 0), 0) * config.rfpMargin();
+            if (depth <= Depth.toFractional(config.rfpDepth())
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
                 return beta + (staticEval - beta) / 3;
@@ -312,8 +310,8 @@ public class Searcher implements Search {
 
             // Razoring
             // Skip nodes where a quiescence search confirms that the position is bad and will likely result in a fail-low.
-            if (depth <= config.razorDepth()
-                && staticEval + config.razorMargin() * depth < alpha) {
+            if (depth <= Depth.toFractional(config.razorDepth())
+                && staticEval + config.razorMargin() * Depth.toInt(depth) < alpha) {
                 final int score = quiescenceSearch(alpha, alpha + 1, ply);
                 if (score < alpha) {
                     return score;
@@ -324,14 +322,15 @@ public class Searcher implements Search {
             // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
             if (sse.nullMoveAllowed
                 && ply >= td.nmpPly
-                && depth >= config.nmpDepth()
+                && depth >= Depth.toFractional(config.nmpDepth())
                 && staticEval >= beta
                 && (!ttHit || cutNode || ttEntry.score() >= beta)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
-                int r = config.nmpBase()
-                        + depth / config.nmpDivisor()
-                        + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
+                int r = (config.nmpBase()
+                        + Depth.toInt(depth) / config.nmpDivisor()
+                        + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction()))
+                        * Depth.ONE_PLY;
 
                 ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();
@@ -345,11 +344,11 @@ public class Searcher implements Search {
                 if (score >= beta) {
 
                     // At low depths, we can directly return the result of the null move search.
-                    if (td.nmpPly > 0 || depth <= 14)
+                    if (td.nmpPly > 0 || Depth.toInt(depth) <= 14)
                         return Score.isMate(score) ? beta : score;
 
                     // At high depths, let's do a normal search to verify the null move result.
-                    td.nmpPly = (3 * (depth - r) / 4) + ply;
+                    td.nmpPly = (3 * Depth.toInt(depth - r) / 4) + ply;
                     int verifScore = search(depth - r, ply, beta - 1, beta, true);
                     td.nmpPly = 0;
 
@@ -360,6 +359,7 @@ public class Searcher implements Search {
             }
 
         }
+
 
         // We have decided that the current node should not be pruned and is worth examining further.
         // Now we begin iterating through the legal moves in the position and searching deeper in the tree.
@@ -405,9 +405,9 @@ public class Searcher implements Search {
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
+            if (depth >= Depth.toFractional(config.lmrDepth()) && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
 
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
+                int r = config.lmrReductions()[isCapture ? 1 : 0][Depth.toInt(depth)][searchedMoves] * 1024;
                 r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
@@ -416,25 +416,25 @@ public class Searcher implements Search {
                         : historyScore / config.lmrNoisyHistoryDiv() * 1024;
 
                 int futilityMargin = config.fpMargin()
-                        + (depth) * config.fpScale()
+                        + Depth.toInt(depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }
 
-            int reducedDepth = depth - reduction;
+            int reducedDepth = depth - Depth.toFractional(reduction);
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
 
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
-            final int futilityMargin = futilityMargin(reducedDepth, historyScore);
+            final int futilityMargin = futilityMargin(Depth.toInt(reducedDepth), historyScore);
             if (!pvNode
                     && !rootNode
                     && isQuiet
                     && !inCheck
-                    && reducedDepth <= config.fpDepth()
+                    && reducedDepth <= Depth.toFractional(config.fpDepth())
                     && staticEval + futilityMargin <= alpha) {
                 movePicker.setSkipQuiets(true);
                 continue;
@@ -442,10 +442,10 @@ public class Searcher implements Search {
 
             // History pruning
             // Skip quiet moves that have a bad history score.
-            final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
+            final int historyThreshold = config.hpMargin() * Depth.toInt(depth) + config.hpOffset();
             if (!rootNode
                     && isQuiet
-                    && reducedDepth <= config.hpMaxDepth()
+                    && reducedDepth <= Depth.toFractional(config.hpMaxDepth())
                     && historyScore < historyThreshold) {
                 movePicker.setSkipQuiets(true);
                 continue;
@@ -453,12 +453,12 @@ public class Searcher implements Search {
 
             // Late Move Pruning
             // Skip quiet moves ordered very late in the list.
-            final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
+            final int lmpThreshold = (Depth.toInt(depth) * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
             if (!pvNode
                     && !rootNode
                     && isQuiet
                     && !inCheck
-                    && depth <= config.lmpDepth()
+                    && depth <= Depth.toFractional(config.lmpDepth())
                     && searchedMoves >= lmpThreshold) {
                 movePicker.setSkipQuiets(true);
                 continue;
@@ -466,10 +466,10 @@ public class Searcher implements Search {
 
             // PVS SEE Pruning
             // Skip moves that lose material once all the pieces have been exchanged.
-            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
+            final int seeThreshold = seeThreshold(Depth.toInt(depth), historyScore, isQuiet);
             if (!pvNode
                     && !rootNode
-                    && depth <= config.seeMaxDepth()
+                    && depth <= Depth.toFractional(config.seeMaxDepth())
                     && searchedMoves > 1
                     && !isGoodNoisy
                     && !isMateScore
@@ -484,12 +484,12 @@ public class Searcher implements Search {
             if (!rootNode
                     && !singularSearch
                     && move.equals(ttMove)
-                    && depth >= config.seDepth()
+                    && depth >= Depth.toFractional(config.seDepth())
                     && ttEntry.flag() != HashFlag.UPPER
-                    && ttEntry.depth() >= depth - config.seTtDepthMargin()) {
+                    && ttDepth >= depth - Depth.toFractional(config.seTtDepthMargin())) {
 
-                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * config.seBetaMargin() / 16);
-                int sDepth = (depth - config.seReductionOffset()) / config.seReductionDivisor();
+                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - Depth.toInt(depth) * config.seBetaMargin() / 16);
+                int sDepth = (Depth.toInt(depth) - config.seReductionOffset()) / config.seReductionDivisor();
 
                 sse.excludedMove = move;
                 int score = search(Depth.toFractional(sDepth), ply, sBeta - 1, sBeta, cutNode);
@@ -527,15 +527,18 @@ public class Searcher implements Search {
             // Principal Variation Search
             if (searchedMoves == 1) {
                 // Since we expect the first move to be the best, we search it with a full window.
-                score = -search(Depth.toFractional(depth - 1 + extension), ply + 1, -beta, -alpha, !pvNode && !cutNode);
+                int newDepth = depth - Depth.ONE_PLY + Depth.toFractional(extension);
+                score = -search(newDepth, ply + 1, -beta, -alpha, !pvNode && !cutNode);
             }
             else {
                 // For all other moves, search with a null window.
-                score = -search(Depth.toFractional(depth - 1 - reduction + extension), ply + 1, -alpha - 1, -alpha, !cutNode);
+                int newDepth = depth - Depth.ONE_PLY - Depth.toFractional(reduction) + Depth.toFractional(extension);
+                score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.
-                    score = -search(Depth.toFractional(depth - 1 + extension), ply + 1, -beta, -alpha, false);
+                    newDepth = depth - Depth.ONE_PLY + Depth.toFractional(extension);
+                    score = -search(newDepth, ply + 1, -beta, -alpha, false);
                 }
             }
 
@@ -583,7 +586,7 @@ public class Searcher implements Search {
 
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
-            final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
+            final int historyDepth = Depth.toInt(depth) + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
             history.updateHistory(board, bestMove, sse.quiets, sse.captures, board.isWhite(), historyDepth, ply, ss);
         }
 
@@ -594,12 +597,12 @@ public class Searcher implements Search {
             && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
-            history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
+            history.updateCorrectionHistory(board, ss, ply, Depth.toInt(depth), bestScore, staticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.
         if (!hardLimitReached() && !singularSearch && !ttPrune) {
-            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, Depth.toInt(depth), ply, bestMove, rawStaticEval, bestScore);
         }
 
         return bestScore;

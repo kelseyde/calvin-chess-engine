@@ -64,7 +64,8 @@ public class EngineConfig {
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3122, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
-    private final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);
+    private final Tunable iirMinDepth            = new Tunable("IirMinDepth", 4, 0, 8, 1);
+    private final Tunable iirReduction           = new Tunable("IirReduction", 1, 0, 3, 1);
     private final Tunable dpMargin               = new Tunable("DpMargin", 98, 0, 250, 10);
     private final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
     private final Tunable razorMargin            = new Tunable("RazorMargin", 470, 0, 600, 10);
@@ -77,7 +78,9 @@ public class EngineConfig {
     private final Tunable seReductionOffset      = new Tunable("SeReductionOffset", 1, 0, 3, 1);
     private final Tunable seReductionDivisor     = new Tunable("SeReductionDivisor", 2, 1, 4, 1);
     private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 20, 0, 32, 5);
-    private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
+    private final Tunable ttExtensionMaxDepth    = new Tunable("TtExtensionMaxDepth", 6, 0, 12, 1);
+    private final Tunable ttExtension            = new Tunable("TtExtension", 1, 0, 3, 1);
+    private final Tunable ttCutoffPvReduction    = new Tunable("TtCutoffPvReduction", 1, 0, 3, 1);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
@@ -115,14 +118,14 @@ public class EngineConfig {
         return Set.of(
                 aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
-                lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
-                qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
+                lmrMinPvMoves, lmpDepth, lmpMultiplier, iirMinDepth, iirReduction, nmpBase, nmpDivisor, dpMargin,
+                qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
                 hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
-                nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
-                seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
+                nodeTmScale, ttExtensionMaxDepth, ttExtension, ttCutoffPvReduction, seeMaxDepth, seeQuietMargin, seeNoisyMargin,
+                seeNoisyOffset, seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
@@ -367,8 +370,12 @@ public class EngineConfig {
         return lmpMultiplier.value;
     }
 
-    public int iirDepth() {
-        return iirDepth.value;
+    public int iirMinDepth() {
+        return iirMinDepth.value;
+    }
+
+    public int iirReduction() {
+        return iirReduction.value;
     }
 
     public int dpMargin() {
@@ -419,8 +426,16 @@ public class EngineConfig {
         return seDoubleExtMargin.value;
     }
 
-    public int ttExtensionDepth() {
-        return ttExtensionDepth.value;
+    public int ttExtensionMaxDepth() {
+        return ttExtensionMaxDepth.value;
+    }
+
+    public int ttExtension() {
+        return ttExtension.value;
+    }
+
+    public int ttCutoffPvReduction() {
+        return ttCutoffPvReduction.value;
     }
 
     public int quietHistBonusMax() {

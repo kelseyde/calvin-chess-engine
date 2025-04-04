@@ -258,7 +258,10 @@ public class Searcher implements Search {
                 && (pvNode || cutNode)
                 && (!ttHit || ttMove == null || ttDepth < depth - config.iirMinDepth())
                 && depth >= config.iirMinDepth()) {
-            depth -= config.iirReduction();
+            if (pvNode)
+                depth -= config.iirPvNodeReduction();
+            else if (cutNode)
+                depth -= config.iirCutNodeReduction();
         }
 
         // Static Evaluation
@@ -359,7 +362,6 @@ public class Searcher implements Search {
             }
 
         }
-
 
         // We have decided that the current node should not be pruned and is worth examining further.
         // Now we begin iterating through the legal moves in the position and searching deeper in the tree.
@@ -502,9 +504,9 @@ public class Searcher implements Search {
                         extension = config.singularExtension();
                 }
                 else if (cutNode)
-                    extension = config.negativeExtension();
-                else if (ttEntry.score() >= beta)
                     extension = config.doubleNegativeExtension();
+                else if (ttEntry.score() >= beta)
+                    extension = config.negativeExtension();
 
             }
 

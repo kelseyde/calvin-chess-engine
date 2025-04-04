@@ -202,6 +202,12 @@ public class UCI {
                 .forEach(UCI::write);
     }
 
+    public static void handleDepthParams(UCICommand command) {
+        ENGINE.getConfig().getDepthTunables().stream()
+                .map(Tunable::toSPSA)
+                .forEach(UCI::write);
+    }
+
     public static void handleEval(UCICommand command) {
         NNUE nnue = new NNUE(ENGINE.getBoard());
         write(String.valueOf(nnue.evaluate()));

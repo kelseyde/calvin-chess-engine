@@ -21,6 +21,7 @@ enum UCICommandType {
     HASHFULL     ("hashfull",    UCI::handleHashfull),
     THREATS      ("threats",     UCI::handleThreats),
     PARAMS       ("params",      UCI::handleParams),
+    DEPTH_PARAMS ("depthparams", UCI::handleDepthParams),
     BENCH        ("bench",       UCI::handleBench),
     SCORE_DATA   ("scoredata",   UCI::handleScoreData),
     STOP         ("stop",        UCI::handleStop),

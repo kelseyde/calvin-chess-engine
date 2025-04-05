@@ -1,9 +1,6 @@
 package com.kelseyde.calvin.evaluation.activation;
 
-import jdk.incubator.vector.ShortVector;
-import jdk.incubator.vector.Vector;
-import jdk.incubator.vector.VectorOperators;
-import jdk.incubator.vector.VectorSpecies;
+import jdk.incubator.vector.*;
 
 import static com.kelseyde.calvin.evaluation.NNUE.NETWORK;
 import static jdk.incubator.vector.VectorOperators.S2I;
@@ -33,10 +30,11 @@ public class Screlu {
         final int scale = NETWORK.scale();
         final short[] weights = NETWORK.outputWeights();
 
-        int eval = 0;
-
         // Forward-pass through the network, using the squared clipped ReLU activation function.
         // Implementation uses the Java Vector API to perform SIMD operations on multiple features at once.
+
+        IntVector sum = IntVector.zero(IntVector.SPECIES_PREFERRED);
+
         for (int i = 0; i < UPPER_BOUND; i += LOOP_LENGTH) {
 
             ShortVector usInputs     = ShortVector.fromArray(SPECIES, us, i);
@@ -64,13 +62,14 @@ public class Screlu {
             final Vector<Integer> themTermsHi    = themTerms.convert(S2I, 1);
 
             // Multiply the inputs by the weighted terms, and add the results to the running sum.
-            eval += (int) usInputsLo.mul(usTermsLo)
+            sum = sum.add(usInputsLo.mul(usTermsLo)
                     .add(usInputsHi.mul(usTermsHi))
                     .add(themInputsLo.mul(themTermsLo))
-                    .add(themInputsHi.mul(themTermsHi))
-                    .reduceLanesToLong(VectorOperators.ADD);
+                    .add(themInputsHi.mul(themTermsHi)));
 
         }
+
+        int eval = (int) sum.reduceLanesToLong(VectorOperators.ADD);
 
         // Since squaring the inputs also squares quantisation, we need to divide that out.
         eval /= QA;

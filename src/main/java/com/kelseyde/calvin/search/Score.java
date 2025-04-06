@@ -29,11 +29,14 @@ public class Score {
     }
 
     public static boolean isThreefoldRepetition(Board board) {
-
         int repetitionCount = 0;
-        long zobrist = board.getState().getKey();
+        final long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
-        for (int i = board.getPly() - 1; i >= 0; i--) {
+
+        final int halfMoveClock = board.getState().halfMoveClock;
+        final int minPly = Math.max(0, board.getPly() - halfMoveClock);
+
+        for (int i = board.getPly() - 2; i >= minPly; i -= 2) {
             if (states[i].getKey() == zobrist) {
                 repetitionCount += 1;
             }
@@ -43,20 +46,21 @@ public class Score {
         }
 
         return false;
-
     }
 
     public static boolean isDoubleRepetition(Board board) {
-
-        long zobrist = board.getState().getKey();
+        final long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
-        for (int i = board.getPly() - 1; i >= 0; i--) {
+
+        final int halfMoveClock = board.getState().halfMoveClock;
+        final int minPly = Math.max(0, board.getPly() - halfMoveClock);
+
+        for (int i = board.getPly() - 2; i >= minPly; i -= 2) {
             if (states[i].getKey() == zobrist) {
                 return true;
             }
         }
         return false;
-
     }
 
     public static boolean isInsufficientMaterial(Board board) {

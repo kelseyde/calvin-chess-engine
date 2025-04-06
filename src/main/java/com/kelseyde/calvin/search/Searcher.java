@@ -520,9 +520,10 @@ public class Searcher implements Search {
 
             int score;
 
+            final boolean expectedFailHigh = !inCheck && ttHit && ttEntry.flag() != HashFlag.UPPER;
+
             // Principal Variation Search
-            if (searchedMoves == 1) {
-                // Since we expect the first move to be the best, we search it with a full window.
+            if (searchedMoves == 1 && !expectedFailHigh) {
                 score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, !pvNode && !cutNode);
             }
             else {

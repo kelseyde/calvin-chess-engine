@@ -222,11 +222,13 @@ public class Searcher implements Search {
         boolean ttHit = false;
         boolean ttPrune = false;
         Move ttMove = null;
+        boolean ttCapture = false;
 
         if (!singularSearch) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
+            ttCapture = ttHit && ttMove != null && board.isCapture(ttMove);
 
             if (!rootNode
                     && ttHit
@@ -415,6 +417,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r += ttCapture && isQuiet ? 1024 : 0;
 
                 reduction = Math.max(0, r / 1024);
             }

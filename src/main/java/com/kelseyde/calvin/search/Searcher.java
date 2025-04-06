@@ -220,6 +220,7 @@ public class Searcher implements Search {
         // previous search. In any case we can re-use information from the previous search in the current search.
         HashEntry ttEntry = null;
         boolean ttHit = false;
+        boolean ttCapture = false;
         boolean ttPrune = false;
         Move ttMove = null;
 
@@ -227,6 +228,7 @@ public class Searcher implements Search {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
+            ttCapture = ttMove != null && board.isCapture(ttMove);
 
             if (!rootNode
                     && ttHit
@@ -415,6 +417,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r -= (ttHit && ttCapture && ttEntry.flag() == HashFlag.LOWER) ? config.lmrTtNoCutoff() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }

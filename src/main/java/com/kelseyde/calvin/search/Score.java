@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.BoardState;
+import com.kelseyde.calvin.board.Piece;
 
 public class Score {
 
@@ -34,14 +35,17 @@ public class Score {
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
         for (int i = board.getPly() - 2; i >= 0; i-= 2) {
-            if (states[i].getKey() == zobrist) {
-                repetitionCount += 1;
-            }
-            if (repetitionCount >= 2) {
-                return true;
-            }
-        }
+            final BoardState state = states[i];
 
+            if (state.getKey() == zobrist)
+                repetitionCount += 1;
+
+            if (repetitionCount >= 2)
+                return true;
+
+            if (state.captured != null || Piece.PAWN == state.moved)
+                break;
+        }
         return false;
 
     }
@@ -51,9 +55,13 @@ public class Score {
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
         for (int i = board.getPly() - 2; i >= 0; i-= 2) {
-            if (states[i].getKey() == zobrist) {
+            final BoardState state = states[i];
+
+            if (state.key == zobrist)
                 return true;
-            }
+
+            if (state.captured != null || Piece.PAWN == state.moved)
+                break;
         }
         return false;
 

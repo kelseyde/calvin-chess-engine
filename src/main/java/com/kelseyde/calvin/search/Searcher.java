@@ -9,6 +9,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.MovePicker.Stage;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.picker.ScoredMove;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -415,6 +416,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r -= movePicker.getStage() == Stage.KILLER ? 1024 : 0;
 
                 reduction = Math.max(0, r / 1024);
             }

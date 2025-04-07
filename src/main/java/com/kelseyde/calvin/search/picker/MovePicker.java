@@ -233,6 +233,10 @@ public class MovePicker {
         moves[j] = temp;
     }
 
+    public Stage getStage() {
+        return stage;
+    }
+
     public void setSkipQuiets(boolean skipQuiets) {
         this.skipQuiets = skipQuiets;
     }

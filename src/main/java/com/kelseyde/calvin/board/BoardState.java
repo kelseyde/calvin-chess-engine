@@ -14,6 +14,7 @@ public class BoardState {
     public int enPassantFile;
     public int rights;
     public int halfMoveClock;
+    public Piece moved;
     public Piece captured;
 
     public BoardState() {
@@ -26,10 +27,11 @@ public class BoardState {
         this.halfMoveClock = 0;
     }
 
-    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
+    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece moved, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
         this.key = key;
         this.pawnKey = pawnKey;
         this.nonPawnKeys = nonPawnKeys;
+        this.moved = moved;
         this.captured = captured;
         this.enPassantFile = enPassantFile;
         this.rights = rights;
@@ -86,7 +88,7 @@ public class BoardState {
 
     public BoardState copy() {
         long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
-        return new BoardState(key, pawnKey, nonPawnKeysCopy, captured, enPassantFile, rights, halfMoveClock);
+        return new BoardState(key, pawnKey, nonPawnKeysCopy, moved, captured, enPassantFile, rights, halfMoveClock);
     }
 
     @Override
@@ -99,6 +101,7 @@ public class BoardState {
                 && enPassantFile == boardState.enPassantFile
                 && rights == boardState.rights
                 && halfMoveClock == boardState.halfMoveClock
+                && moved == boardState.moved
                 && captured == boardState.captured;
     }
 

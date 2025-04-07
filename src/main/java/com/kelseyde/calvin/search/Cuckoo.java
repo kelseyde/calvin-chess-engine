@@ -54,7 +54,6 @@ public class Cuckoo {
                                 break;
 
                             slot = slot == h1(keyDiff) ? h2(keyDiff) : h1(keyDiff);
-
                         }
                         count++;
                     }

@@ -616,12 +616,12 @@ public class Board {
 
         final long occ = getOccupied();
         long currKey = previousKey(0);
-        long other = ~(currKey ^ previousKey(1));
+        long other = currKey ^ previousKey(1) ^ Key.sideToMove();
 
         for (int i = 3; i < hm && i < lastMove; i += 2) {
 
             long prevKey = previousKey(i);
-            other ^= ~(prevKey ^ previousKey(i - 1));
+            other ^= prevKey ^ previousKey(i - 1) ^ Key.sideToMove();
             if (other != 0)
                 continue;
 

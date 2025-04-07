@@ -68,11 +68,14 @@ public class Searcher implements Search {
     public SearchResult search(TimeControl timeControl) {
 
         final List<Move> rootMoves = movegen.generateMoves(board);
-        if (rootMoves.size() == 1) {
-            return handleOnlyOneLegalMove(rootMoves);
-        }
-
         tc = timeControl;
+
+        if (rootMoves.isEmpty())
+            return handleNoLegalMoves();
+
+        if (rootMoves.size() == 1)
+            return handleOneLegalMove(rootMoves);
+
         ss.clear();
         td.reset();
         history.reset();
@@ -318,18 +321,19 @@ public class Searcher implements Search {
             // Null Move Pruning
             // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
             if (sse.nullMoveAllowed
+                && ply >= td.nmpPly
                 && depth >= config.nmpDepth()
                 && staticEval >= beta
                 && (!ttHit || cutNode || ttEntry.score() >= beta)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
-                ss.get(ply + 1).nullMoveAllowed = false;
-                board.makeNullMove();
-                td.nodes++;
-
                 int r = config.nmpBase()
                         + depth / config.nmpDivisor()
                         + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
+
+                ss.get(ply + 1).nullMoveAllowed = false;
+                board.makeNullMove();
+                td.nodes++;
 
                 final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
 
@@ -337,7 +341,19 @@ public class Searcher implements Search {
                 ss.get(ply + 1).nullMoveAllowed = true;
 
                 if (score >= beta) {
-                    return Score.isMate(score) ? beta : score;
+
+                    // At low depths, we can directly return the result of the null move search.
+                    if (td.nmpPly > 0 || depth <= 14)
+                        return Score.isMate(score) ? beta : score;
+
+                    // At high depths, let's do a normal search to verify the null move result.
+                    td.nmpPly = (3 * (depth - r) / 4) + ply;
+                    int verifScore = search(depth - r, ply, beta - 1, beta, true);
+                    td.nmpPly = 0;
+
+                    if (verifScore >= beta)
+                        return score;
+
                 }
             }
 
@@ -390,8 +406,7 @@ public class Searcher implements Search {
             if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
 
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
-                r += !pvNode ? config.lmrNotPvNode() : 0;
-                r -= ttPv ? config.lmrTtWasPv() : 0;
+                r -= pvNode ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
                 r -= isQuiet
@@ -409,51 +424,55 @@ public class Searcher implements Search {
             int reducedDepth = depth - reduction;
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
-            if (!pvNode && !rootNode) {
 
-                // Futility Pruning
-                // Skip quiet moves when the static evaluation + some margin is still below alpha.
-                final int futilityMargin = futilityMargin(reducedDepth, historyScore);
-                if (isQuiet
-                        && !inCheck
-                        && reducedDepth <= config.fpDepth()
-                        && staticEval + futilityMargin <= alpha) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
+            // Futility Pruning
+            // Skip quiet moves when the static evaluation + some margin is still below alpha.
+            final int futilityMargin = futilityMargin(reducedDepth, historyScore);
+            if (!pvNode
+                    && !rootNode
+                    && isQuiet
+                    && !inCheck
+                    && reducedDepth <= config.fpDepth()
+                    && staticEval + futilityMargin <= alpha) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
 
-                // History pruning
-                // Skip quiet moves that have a bad history score.
-                final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
-                if (isQuiet
-                        && reducedDepth <= config.hpMaxDepth()
-                        && historyScore < historyThreshold) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
+            // History pruning
+            // Skip quiet moves that have a bad history score.
+            final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
+            if (!rootNode
+                    && isQuiet
+                    && reducedDepth <= config.hpMaxDepth()
+                    && historyScore < historyThreshold) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
 
-                // Late Move Pruning
-                // Skip quiet moves ordered very late in the list.
-                final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
-                if (isQuiet
-                        && !inCheck
-                        && depth <= config.lmpDepth()
-                        && searchedMoves >= lmpThreshold) {
-                    movePicker.setSkipQuiets(true);
-                    continue;
-                }
+            // Late Move Pruning
+            // Skip quiet moves ordered very late in the list.
+            final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
+            if (!pvNode
+                    && !rootNode
+                    && isQuiet
+                    && !inCheck
+                    && depth <= config.lmpDepth()
+                    && searchedMoves >= lmpThreshold) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
 
-                // PVS SEE Pruning
-                // Skip moves that lose material once all the pieces have been exchanged.
-                final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
-                if (depth <= config.seeMaxDepth()
-                        && searchedMoves > 1
-                        && !isGoodNoisy
-                        && !isMateScore
-                        && !SEE.see(board, move, seeThreshold)) {
-                    continue;
-                }
-
+            // PVS SEE Pruning
+            // Skip moves that lose material once all the pieces have been exchanged.
+            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
+            if (!pvNode
+                    && !rootNode
+                    && depth <= config.seeMaxDepth()
+                    && searchedMoves > 1
+                    && !isGoodNoisy
+                    && !isMateScore
+                    && !SEE.see(board, move, seeThreshold)) {
+                continue;
             }
 
             // Singular Extensions
@@ -679,19 +698,22 @@ public class Searcher implements Search {
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
 
+            final Move prevMove = ss.get(ply - 1).currentMove;
+            final boolean recapture = prevMove != null && prevMove.to() == move.to();
+
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.
-            if (!inCheck && capture && !promotion && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
+            if (!inCheck && capture && !promotion && !recapture && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
                 continue;
 
             // Futility Pruning
             // Skip captures that don't win material when the static eval is far below alpha.
-            if (capture && futilityScore <= alpha && !SEE.see(board, move, 1))
+            if (capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1))
                 continue;
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.
-            if (!inCheck && !SEE.see(board, move, config.qsSeeThreshold()))
+            if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
             makeMove(move, piece, sse);
@@ -798,7 +820,14 @@ public class Searcher implements Search {
         return lastEval < staticEval;
     }
 
-    private SearchResult handleOnlyOneLegalMove(List<Move> rootMoves) {
+    private SearchResult handleNoLegalMoves() {
+        if (td.isMainThread()) {
+            UCI.write("info error no legal moves");
+        }
+        return SearchResult.of(null, 0, td, tc);
+    }
+
+    private SearchResult handleOneLegalMove(List<Move> rootMoves) {
         // If there is only one legal move, play it immediately
         final Move move = rootMoves.get(0);
         final int eval = this.eval.evaluate();

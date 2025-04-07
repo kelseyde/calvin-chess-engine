@@ -26,54 +26,51 @@ public class EngineConfig {
     public boolean searchCancelled = false;
 
     private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
-    private final Tunable aspMargin              = new Tunable("AspMargin", 18, 0, 250, 25);
+    private final Tunable aspMargin              = new Tunable("AspMargin", 15, 0, 250, 25);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
     private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
-    private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 203, 0, 400, 25);
+    private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 190, 0, 400, 25);
     private final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
     private final Tunable fpDepth                = new Tunable("FpDepth", 8, 0, 8, 1);
-    private final Tunable fpMargin               = new Tunable("FpMargin", 157, 0, 500, 25);
-    private final Tunable fpScale                = new Tunable("FpScale", 81, 0, 100, 5);
-    private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 141, 1, 1000, 25);
-    private final Tunable fpBlend                = new Tunable("FpBlend", 4, 1, 10, 2);
+    private final Tunable fpMargin               = new Tunable("FpMargin", 137, 0, 500, 25);
+    private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 5);
+    private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 103, 1, 1000, 25);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
-    private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -36, -250, -10, 25);
-    private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -29, -250, -10, 25);
-    private final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", 5, -100, 200, 50);
+    private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
+    private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -24, -250, -10, 25);
+    private final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", -4, -100, 200, 50);
     private final Tunable seeNoisyDivisor        = new Tunable("SeeNoisyDivisor", 4, 2, 6, 1);
-    private final Tunable seeQsNoisyOffset       = new Tunable("SeeQsNoisyOffset", 15, -100, 200, 50);
+    private final Tunable seeQsNoisyOffset       = new Tunable("SeeQsNoisyOffset", 21, -100, 200, 50);
     private final Tunable seeQsNoisyDivisor      = new Tunable("SeeQsNoisyDivisor", 4, 2, 6, 1);
     private final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 128, 50, 250, 25);
-    private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 112, 0, 250, 10);
-    private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 18, -300, 300, 100);
+    private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 116, 0, 250, 10);
+    private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -6, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
-    private final Tunable rfpMargin              = new Tunable("RfpMargin", 71, 0, 150, 25);
-    private final Tunable rfpBlend               = new Tunable("RfpBlend", 4, 1, 10, 2);
+    private final Tunable rfpMargin              = new Tunable("RfpMargin", 69, 0, 150, 25);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
-    private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 304, 200, 400, 10);
-    private final Tunable lmrCapBase             = new Tunable("LmrCapBase", 92, 50, 100, 5);
+    private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 308, 200, 400, 10);
+    private final Tunable lmrCapBase             = new Tunable("LmrCapBase", 93, 50, 100, 5);
     private final Tunable lmrCapDivisor          = new Tunable("LmrCapDivisor", 303, 200, 400, 10);
     private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
-    private final Tunable lmrTtWasPv             = new Tunable("LmrTtWasPv", 1024, 0, 2048, 150);
-    private final Tunable lmrNotPvNode           = new Tunable("LmrNotPvNode", 1024, 0, 2048, 150);
-    private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2048, 0, 3072, 150);
-    private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 5, 0, 2048, 150);
-    private final Tunable lmrFutile              = new Tunable("LmrFutile", 1024, 0, 2048, 150);
-    private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 2993, 1536, 6144, 1000);
-    private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3154, 1536, 6144, 1000);
+    private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 963, 0, 2048, 150);
+    private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2106, 0, 3072, 150);
+    private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 94, 0, 2048, 150);
+    private final Tunable lmrFutile              = new Tunable("LmrFutile", 1012, 0, 2048, 150);
+    private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 3037, 1536, 6144, 1000);
+    private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3122, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
     private final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);
-    private final Tunable dpMargin               = new Tunable("DpMargin", 102, 0, 250, 10);
+    private final Tunable dpMargin               = new Tunable("DpMargin", 98, 0, 250, 10);
     private final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
-    private final Tunable razorMargin            = new Tunable("RazorMargin", 478, 0, 600, 10);
+    private final Tunable razorMargin            = new Tunable("RazorMargin", 470, 0, 600, 10);
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
-    private final Tunable hpMargin               = new Tunable("HpMargin", -2167, -4000, -100, 50);
-    private final Tunable hpOffset               = new Tunable("HpOffset", -1100, -3000, 0, 50);
+    private final Tunable hpMargin               = new Tunable("HpMargin", -2271, -4000, -100, 50);
+    private final Tunable hpOffset               = new Tunable("HpOffset", -1157, -3000, 0, 50);
     private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
@@ -116,11 +113,11 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth, fpBlend,
+                aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
-                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpBlend, razorDepth, razorMargin, hpMaxDepth,
-                hpMargin, hpOffset, lmrNotPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
+                qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
+                hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
@@ -128,9 +125,10 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, lmrTtWasPv
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
         );
     }
+
 
     public void setTunable(UCICommand command) {
         String name = command.getString("name", "", false);
@@ -261,10 +259,6 @@ public class EngineConfig {
         return fpHistDivisor.value;
     }
 
-    public int fpBlend() {
-        return fpBlend.value;
-    }
-
     public int seeMaxDepth() {
         return seeMaxDepth.value;
     }
@@ -313,10 +307,6 @@ public class EngineConfig {
         return rfpMargin.value;
     }
 
-    public int rfpBlend() {
-        return rfpBlend.value;
-    }
-
     public int lmrDepth() {
         return lmrDepth.value;
     }
@@ -345,12 +335,8 @@ public class EngineConfig {
         return lmrMinPvMoves.value;
     }
 
-    public int lmrNotPvNode() {
-        return lmrNotPvNode.value;
-    }
-
-    public int lmrTtWasPv() {
-        return lmrTtWasPv.value;
+    public int lmrPvNode() {
+        return lmrPvNode.value;
     }
 
     public int lmrCutNode() {

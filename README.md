@@ -5,14 +5,16 @@
 <h3>Calvin</h3>
 
 A superhuman chess engine written in Java.
-  <br>
+<br>
  <br>
   <strong>[Download Calvin](https://github.com/kelseyde/calvin-chess-engine/releases)</strong> | <strong>[Report a Bug](https://github.com/kelseyde/calvin-chess-engine/issues)</strong>
-  <br>
-   <br>
-    [![release][release-badge]][release-link]
+ <br>
+<br>
+
+[![release][release-badge]][release-link]
 [![lichess-badge]][lichess-link]
 
+[![License][license-badge]][license-link]
 
 </div>
 
@@ -42,7 +44,7 @@ Calvin communicates via the [Universal Chess Interface](https://www.chessprogram
 
 |                                   Version                                   | Release Date |  🎯 Elo  | CCRL Blitz | CCRL Rapid | CEGT Rapid |
 |:---------------------------------------------------------------------------:|:------------:|:--------:|:----------:|:----------:|:----------:|
-| [6.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/6.0.0) |  2025-03-02  | **3600** |            |            |            |
+| [6.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/6.0.0) |  2025-03-02  | **3600** |    3572    |    3493    |    3424    |
 | [5.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.1.0) |  2025-01-16  | **3500** |    3501    |    3394    |    3344    |
 | [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) |  2024-11-16  | **3400** |    3403    |    3312    |    3225    |
 | [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) |  2024-10-05  | **3300** |    3332    |    3277    |     -      |
@@ -124,6 +126,11 @@ I am hugely grateful to the many people who have shared their knowledge and reso
 
 If you would like to contribute to Calvin, or just talk about chess/chess programming, get in touch!
 
+[license-badge]: https://img.shields.io/github/license/kelseyde/calvin-chess-engine?style=for-the-badge&color=A8DEFF
+[license-link]: https://github.com/kelseyde/calvin-chess-engine/blob/main/LICENSE
+
+[build-badge]: https://github.com/kelseyde/calvin-chess-engine/actions/workflows/build.yml/badge.svg
+[build-link]: https://github.com/kelseyde/calvin-chess-engine/actions/workflows/build.yml
 
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=FF5757
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest

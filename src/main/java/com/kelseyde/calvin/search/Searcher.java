@@ -187,6 +187,13 @@ public class Searcher implements Search {
         // The root node is the first node in the search tree, and is thus also always a PV node.
         final boolean rootNode = ply == 0;
 
+        // Cuckoo upcoming repetition detection
+        if (!rootNode && alpha < 0 && board.hasUpcomingRepetition(ply)) {
+            alpha = Score.DRAW;
+            if (alpha >= beta)
+                return alpha;
+        }
+
         // Determine if we are currently in check.
         final boolean inCheck = movegen.isCheck(board);
 
@@ -195,7 +202,7 @@ public class Searcher implements Search {
         if (depth < 0) depth = 0;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
-        if (ply > 0 && isDraw()) return Score.DRAW;
+        if (!rootNode && isDraw()) return Score.DRAW;
 
         // Update the selective search depth
         if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
@@ -208,13 +215,6 @@ public class Searcher implements Search {
         alpha = Math.max(alpha, -Score.MATE + ply);
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
-
-        // Cuckoo upcoming repetition detection
-        if (!rootNode && alpha < 0 && board.hasUpcomingRepetition(ply)) {
-            alpha = Score.DRAW;
-            if (alpha >= beta)
-                return alpha;
-        }
 
         final SearchStackEntry sse = ss.get(ply);
         final Move excludedMove = sse.excludedMove;
@@ -620,13 +620,6 @@ public class Searcher implements Search {
 
         if (hardLimitReached()) {
             return alpha;
-        }
-
-        // Cuckoo upcoming repetition detection
-        if (ply > 0 && alpha < 0 && board.hasUpcomingRepetition(ply)) {
-            alpha = Score.DRAW;
-            if (alpha >= beta)
-                return alpha;
         }
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.

@@ -38,7 +38,7 @@ public class Cuckoo {
 
                         Move move = new Move(from, to);
                         long keyDiff = Key.moveKey(move, piece, white);
-                        int slot = (int) h1(keyDiff);
+                        int slot = h1(keyDiff);
 
                         while (true) {
 
@@ -50,23 +50,20 @@ public class Cuckoo {
                             moves[slot] = move;
                             move = moveTemp;
 
-                            if (move == null) {
+                            if (move == null)
                                 break;
-                            }
 
-                            slot = slot == h1(keyDiff) ? (int) h2(keyDiff) : (int) h1(keyDiff);
+                            slot = slot == h1(keyDiff) ? h2(keyDiff) : h1(keyDiff);
 
                         }
-
                         count++;
                     }
                 }
             }
         }
 
-        if (count != 3668) {
+        if (count != 3668)
             throw new IllegalStateException("Failed to initialise cuckoo tables");
-        }
 
     }
 

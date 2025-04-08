@@ -229,11 +229,13 @@ public class Searcher implements Search {
         boolean ttHit = false;
         boolean ttPrune = false;
         Move ttMove = null;
+        boolean ttPv = pvNode;
 
         if (!singularSearch) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
+            ttPv = ttPv || (ttHit && ttEntry.pv());
 
             if (!rootNode
                     && ttHit
@@ -285,7 +287,7 @@ public class Searcher implements Search {
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
             if (!ttHit)
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
 
             // If the TT score is within the bounds of the current window, we can use it as a more accurate static eval.
             if (canUseTTScore(ttEntry, rawStaticEval)) {
@@ -411,7 +413,7 @@ public class Searcher implements Search {
             if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
 
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
-                r -= pvNode ? config.lmrPvNode() : 0;
+                r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
                 r -= isQuiet
@@ -602,7 +604,7 @@ public class Searcher implements Search {
 
         // Store the best move and score in the transposition table for future reference.
         if (!hardLimitReached() && !singularSearch && !ttPrune) {
-            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, ttPv);
         }
 
         return bestScore;
@@ -637,6 +639,7 @@ public class Searcher implements Search {
         final HashEntry ttEntry = tt.get(board.key(), ply);
         final boolean ttHit = ttEntry != null;
         final Move ttMove = ttHit ? ttEntry.move() : null;
+        boolean ttPv = pvNode || (ttHit && ttEntry.pv());
 
         if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta)) {
             return ttEntry.score();
@@ -661,14 +664,14 @@ public class Searcher implements Search {
             staticEval = ttMove != null ? rawStaticEval : history.correctEvaluation(board, ss, ply, rawStaticEval);
 
             if (!ttHit)
-                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0);
+                tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
 
             if (canUseTTScore(ttEntry, rawStaticEval))
                 staticEval = ttEntry.score();
 
             if (staticEval >= beta) {
                 if (!ttHit || ttEntry.flag() == HashFlag.NONE)
-                    tt.put(board.key(), HashFlag.LOWER, 0, ply, null, rawStaticEval, staticEval);
+                    tt.put(board.key(), HashFlag.LOWER, 0, ply, null, rawStaticEval, staticEval, ttPv);
                 return staticEval;
             }
             if (staticEval > alpha) {
@@ -747,7 +750,7 @@ public class Searcher implements Search {
         }
 
         if (!hardLimitReached()) {
-            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore);
+            tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, ttPv);
         }
 
         return bestScore;

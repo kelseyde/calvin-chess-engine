@@ -3,6 +3,13 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.movegen.Attacks;
 
+/**
+ * Uses cuckoo hashing to detect upcoming repetitions in the search tree, one ply before they are reached. This allows
+ * us to raise alpha to zero in those nodes, and cut-off if alpha >= beta.
+ * Implementation based on Sirius: <a href="https://github.com/mcthouacbb/Sirius/blob/main/Sirius/src/cuckoo.cpp"></a>
+ * And the original paper: <a href="https://web.archive.org/web/20201107002606/https://marcelk.net/2013-04-06/paper/upcoming-rep-v2.pdf"></a>
+ *
+ */
 public class Cuckoo {
 
     private static final long[] keys;

@@ -417,6 +417,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r += (ttPv && ttHit && ttEntry.score() <= alpha) ? 1024 : 0;
 
                 reduction = Math.max(0, r / 1024);
             }

@@ -223,12 +223,14 @@ public class Searcher implements Search {
         boolean ttPrune = false;
         Move ttMove = null;
         boolean ttPv = pvNode;
+        boolean ttCapture = false;
 
         if (!singularSearch) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
             ttPv = ttPv || (ttHit && ttEntry.pv());
+            ttCapture = ttMove != null && board.isCapture(ttMove);
 
             if (!rootNode
                     && ttHit
@@ -329,7 +331,8 @@ public class Searcher implements Search {
 
                 int r = config.nmpBase()
                         + depth / config.nmpDivisor()
-                        + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
+                        + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction())
+                        + (ttCapture ? 1 : 0);
 
                 ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();

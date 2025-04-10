@@ -871,7 +871,7 @@ public class Searcher implements Search {
                 config.seeQuietMargin() * depth :
                 config.seeNoisyMargin() * depth * depth;
         threshold -= historyScore / config.seeHistoryDivisor();
-        return threshold;
+        return isQuiet ? Math.min(threshold, 0) : threshold;
     }
 
     private boolean canUseTTScore(HashEntry ttEntry, int rawStaticEval) {

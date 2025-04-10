@@ -365,6 +365,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
+        int failHighCount = 0;
 
         int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
         sse.quiets = new Move[16];
@@ -526,14 +527,20 @@ public class Searcher implements Search {
             if (searchedMoves == 1) {
                 // Since we expect the first move to be the best, we search it with a full window.
                 score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, !pvNode && !cutNode);
+                if (score > beta)
+                    failHighCount++;
             }
             else {
                 // For all other moves, search with a null window.
                 score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                if (score > alpha)
+                    failHighCount++;
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.
                     score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                    if (score > alpha)
+                        failHighCount++;
                 }
             }
 
@@ -581,8 +588,11 @@ public class Searcher implements Search {
 
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
-            final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(board, bestMove, sse.quiets, sse.captures, board.isWhite(), historyDepth, ply, ss);
+            final int historyMultiplier = (depth
+                    + (staticEval <= alpha ? 1 : 0)
+                    + (bestScore > beta + 50 ? 1 : 0))
+                    * failHighCount;
+            history.updateHistory(board, bestMove, sse.quiets, sse.captures, board.isWhite(), historyMultiplier, ply, ss);
         }
 
         if (!inCheck

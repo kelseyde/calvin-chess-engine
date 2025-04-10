@@ -229,6 +229,7 @@ public class Searcher implements Search {
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
             ttPv = ttPv || (ttHit && ttEntry.pv());
+            cutNode |= ttHit && ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= beta;
 
             if (!rootNode
                     && ttHit

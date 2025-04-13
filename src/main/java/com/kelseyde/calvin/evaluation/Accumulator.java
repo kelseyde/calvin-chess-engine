@@ -23,7 +23,7 @@ public class Accumulator {
 
     public short[] whiteFeatures;
     public short[] blackFeatures;
-    public boolean[] mirrored;
+    public final boolean[] mirrored;
 
     public Accumulator(int featureCount) {
         this.whiteFeatures = new short[featureCount];

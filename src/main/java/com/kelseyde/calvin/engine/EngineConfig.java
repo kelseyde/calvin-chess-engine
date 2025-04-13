@@ -57,6 +57,7 @@ public class EngineConfig {
     private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 963, 0, 2048, 150);
+    private final Tunable lmrPvRootDelta         = new Tunable("LmrRootDelta", 963, 0, 2048, 150);
     private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2106, 0, 3072, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 94, 0, 2048, 150);
     private final Tunable lmrFutile              = new Tunable("LmrFutile", 1012, 0, 2048, 150);
@@ -125,7 +126,7 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, lmrPvRootDelta
         );
     }
 
@@ -349,6 +350,10 @@ public class EngineConfig {
 
     public int lmrFutile() {
         return lmrFutile.value;
+    }
+
+    public int lmrPvRootDelta() {
+        return lmrPvRootDelta.value;
     }
 
     public int lmrQuietHistoryDiv() {

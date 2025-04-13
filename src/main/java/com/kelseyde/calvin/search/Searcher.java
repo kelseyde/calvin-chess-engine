@@ -98,6 +98,7 @@ public class Searcher implements Search {
             bestMoveCurrent = null;
             bestScoreCurrent = 0;
             td.seldepth = 0;
+            td.rootDelta = beta - alpha;
 
             final int searchDepth = td.depth - reduction;
 
@@ -407,6 +408,7 @@ public class Searcher implements Search {
 
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
+                r -= ttPv && beta - alpha > td.rootDelta / 4 ? config.lmrPvRootDelta() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
                 r -= isQuiet

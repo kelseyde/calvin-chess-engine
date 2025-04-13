@@ -697,9 +697,14 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
+            final boolean isNotMate = !Score.isMate(bestScore);
 
             final Move prevMove = ss.get(ply - 1).currentMove;
             final boolean recapture = prevMove != null && prevMove.to() == move.to();
+
+            // Late Move Pruning
+            if (!isNotMate && !recapture && movesSearched >= 3)
+                break;
 
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.

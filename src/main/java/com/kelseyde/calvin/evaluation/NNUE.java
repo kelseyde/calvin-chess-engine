@@ -157,7 +157,8 @@ public class NNUE {
     public void makeMove(Board board, Move move) {
 
         // Efficiently update only the relevant features of the network after a move has been made.
-        final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
+        final Accumulator prev = accumulatorStack[current];
+        final Accumulator curr = accumulatorStack[++current] = prev.copy();
         final boolean white = board.isWhite();
 
         final Piece piece = board.pieceAt(move.from());
@@ -175,6 +176,13 @@ public class NNUE {
         final short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
         final short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
 
+        // Determine which features need to be updated based on the move type (standard, capture, or castle).
+        final AccumulatorUpdate update = switch (moveType(board, move)) {
+            case STANDARD -> handleStandardMove(board, move, white);
+            case CASTLE -> handleCastleMove(move, white);
+            case CAPTURE -> handleCapture(board, move, white);
+        };
+
         // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
         // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
         final boolean mirrorChanged = mirrorChanged(board, move, piece);
@@ -185,18 +193,12 @@ public class NNUE {
                 mirror = !mirror;
             }
             final int bucket = white ? whiteKingBucket : blackKingBucket;
-            fullRefresh(board, acc, white, mirror, bucket);
+            fullRefresh(board, curr, white, mirror, bucket);
+            curr.apply(curr, update, whiteWeights, blackWeights);
+        } else {
+            // Apply the update to the accumulator.
+            curr.apply(prev, update, whiteWeights, blackWeights);
         }
-
-        // Determine which features need to be updated based on the move type (standard, capture, or castle).
-        final AccumulatorUpdate update = switch (moveType(board, move)) {
-            case STANDARD -> handleStandardMove(board, move, white);
-            case CASTLE -> handleCastleMove(move, white);
-            case CAPTURE -> handleCapture(board, move, white);
-        };
-
-        // Apply the update to the accumulator.
-        acc.apply(update, whiteWeights, blackWeights);
 
     }
 

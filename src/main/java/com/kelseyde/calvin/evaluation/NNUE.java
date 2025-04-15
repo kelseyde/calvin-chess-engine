@@ -56,7 +56,9 @@ public class NNUE {
     public NNUE() {
         this.current = 0;
         this.accumulatorStack = new Accumulator[STACK_SIZE];
-        this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
+        for (int i = 0; i < STACK_SIZE; i++) {
+            this.accumulatorStack[i] = new Accumulator(NETWORK.hiddenSize());
+        }
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }
 
@@ -64,7 +66,9 @@ public class NNUE {
         this.board = board;
         this.current = 0;
         this.accumulatorStack = new Accumulator[STACK_SIZE];
-        this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
+        for (int i = 0; i < STACK_SIZE; i++) {
+            this.accumulatorStack[i] = new Accumulator(NETWORK.hiddenSize());
+        }
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
         fullRefresh(board);
     }
@@ -149,7 +153,9 @@ public class NNUE {
 
         // Finally, update the cache entry with the new board state and accumulated features.
         cacheEntry.bitboards = Arrays.copyOf(board.getBitboards(), Piece.COUNT + 2);
-        cacheEntry.features = Arrays.copyOf(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, NETWORK.hiddenSize());
+        if (cacheEntry.features == null)
+            cacheEntry.features = new short[NETWORK.hiddenSize()];
+        Accumulator.vectorCopy(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, cacheEntry.features, NETWORK.hiddenSize());
 
     }
 
@@ -157,7 +163,10 @@ public class NNUE {
     public void makeMove(Board board, Move move) {
 
         // Efficiently update only the relevant features of the network after a move has been made.
-        final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
+        final Accumulator prev = accumulatorStack[current];
+        final Accumulator curr = accumulatorStack[++current];
+        curr.copyFrom(prev);
+
         final boolean white = board.isWhite();
 
         final Piece piece = board.pieceAt(move.from());
@@ -175,19 +184,6 @@ public class NNUE {
         final short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
         final short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
 
-        // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
-        // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
-        final boolean mirrorChanged = mirrorChanged(board, move, piece);
-        final boolean bucketChanged = bucketChanged(board, move, piece, white);
-        if (mirrorChanged || bucketChanged) {
-            boolean mirror = shouldMirror(board.kingSquare(white));
-            if (mirrorChanged) {
-                mirror = !mirror;
-            }
-            final int bucket = white ? whiteKingBucket : blackKingBucket;
-            fullRefresh(board, acc, white, mirror, bucket);
-        }
-
         // Determine which features need to be updated based on the move type (standard, capture, or castle).
         final AccumulatorUpdate update = switch (moveType(board, move)) {
             case STANDARD -> handleStandardMove(board, move, white);
@@ -195,8 +191,23 @@ public class NNUE {
             case CAPTURE -> handleCapture(board, move, white);
         };
 
-        // Apply the update to the accumulator.
-        acc.apply(update, whiteWeights, blackWeights);
+        // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
+        // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
+        final boolean mirrorChanged = mirrorChanged(board, move, piece);
+        final boolean bucketChanged = bucketChanged(board, move, piece, white);
+        final boolean refreshRequired = mirrorChanged || bucketChanged;
+
+        if (refreshRequired) {
+            boolean mirror = shouldMirror(board.kingSquare(white));
+            if (mirrorChanged) {
+                mirror = !mirror;
+            }
+            final int bucket = white ? whiteKingBucket : blackKingBucket;
+            fullRefresh(board, curr, white, mirror, bucket);
+            curr.apply(curr, update, whiteWeights, blackWeights);
+        } else {
+            curr.apply(prev, update, whiteWeights, blackWeights);
+        }
 
     }
 
@@ -347,7 +358,9 @@ public class NNUE {
     public void clearHistory() {
         this.current = 0;
         this.accumulatorStack = new Accumulator[STACK_SIZE];
-        this.accumulatorStack[0] = new Accumulator(NETWORK.hiddenSize());
+        for (int i = 0; i < STACK_SIZE; i++) {
+            this.accumulatorStack[i] = new Accumulator(NETWORK.hiddenSize());
+        }
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }
 

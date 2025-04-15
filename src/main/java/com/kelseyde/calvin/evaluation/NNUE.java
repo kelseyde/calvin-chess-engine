@@ -92,10 +92,15 @@ public class NNUE {
 
         // Fully refresh the accumulator from both perspectives with the features of all pieces on the board.
         final Accumulator acc = accumulatorStack[current];
+
         final boolean whiteMirror = shouldMirror(board.kingSquare(true));
         final boolean blackMirror = shouldMirror(board.kingSquare(false));
+        acc.mirrored[Colour.WHITE] = whiteMirror;
+        acc.mirrored[Colour.BLACK] = blackMirror;
+
         int whiteKingBucket = kingBucket(board.kingSquare(true), true);
         int blackKingBucket = kingBucket(board.kingSquare(false), false);
+
         fullRefresh(board, acc, true, whiteMirror, whiteKingBucket);
         fullRefresh(board, acc, false, blackMirror, blackKingBucket);
 
@@ -104,10 +109,11 @@ public class NNUE {
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror, int bucket) {
 
         // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
-        acc.mirrored[Colour.index(whitePerspective)] = mirror;
+        acc.needsRefresh[Colour.index(whitePerspective)] = false;
 
         BucketCacheEntry cacheEntry = bucketCache.get(whitePerspective, mirror, bucket);
         short[] cachedFeatures = cacheEntry.features;
+        long[] cachedBitboards = cacheEntry.bitboards;
 
         if (cachedFeatures == null) {
             // If there is no cached accumulator for this bucket, then we will need to
@@ -125,7 +131,7 @@ public class NNUE {
 
                 final Piece piece = Piece.values()[pieceIndex];
                 final long pieces = board.getPieces(piece, white);
-                final long cachedPieces = cacheEntry.bitboards[pieceIndex] & cacheEntry.bitboards[Piece.COUNT + colourIndex];
+                final long cachedPieces = cachedBitboards[pieceIndex] & cachedBitboards[Piece.COUNT + colourIndex];
 
                 // Calculate which pieces need to be added and removed from the accumulator.
                 long added = pieces & ~cachedPieces;
@@ -187,10 +193,13 @@ public class NNUE {
         // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
         final boolean mirrorChanged = mirrorChanged(board, move, piece);
         final boolean bucketChanged = bucketChanged(board, move, piece, white);
-        if (mirrorChanged || bucketChanged) {
+        final boolean refreshRequired = mirrorChanged || bucketChanged;
+        if (refreshRequired) {
+            curr.needsRefresh[Colour.index(white)] = true;
             boolean mirror = shouldMirror(board.kingSquare(white));
             if (mirrorChanged) {
                 mirror = !mirror;
+                curr.mirrored[Colour.index(white)] = mirror;
             }
             final int bucket = white ? whiteKingBucket : blackKingBucket;
             fullRefresh(board, curr, white, mirror, bucket);
@@ -199,6 +208,8 @@ public class NNUE {
             // Apply the update to the accumulator.
             curr.apply(prev, update, whiteWeights, blackWeights);
         }
+
+        curr.update = update;
 
     }
 

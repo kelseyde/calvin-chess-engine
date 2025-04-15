@@ -17,36 +17,27 @@ import java.util.Arrays;
 public class Accumulator {
 
     private static final int HIDDEN_SIZE = NNUE.NETWORK.hiddenSize();
-    private static final short[] BIASES = NNUE.NETWORK.inputBiases();
     private static final VectorSpecies<Short> SPECIES = ShortVector.SPECIES_PREFERRED;
     private static final int LOOP_LENGTH = SPECIES.loopBound(HIDDEN_SIZE);
 
     public short[] whiteFeatures;
     public short[] blackFeatures;
-    public final boolean[] mirrored;
+    public boolean[] mirrored;
+    public boolean[] needsRefresh;
+    public AccumulatorUpdate update;
 
     public Accumulator(int featureCount) {
         this.whiteFeatures = new short[featureCount];
         this.blackFeatures = new short[featureCount];
         this.mirrored = new boolean[2];
-    }
-
-    public Accumulator(int featureCount, boolean[] mirrored) {
-        this.whiteFeatures = new short[featureCount];
-        this.blackFeatures = new short[featureCount];
-        this.mirrored = mirrored;
+        this.needsRefresh = new boolean[2];
     }
 
     public Accumulator(short[] whiteFeatures, short[] blackFeatures, boolean[] mirrored) {
         this.whiteFeatures = whiteFeatures;
         this.blackFeatures = blackFeatures;
         this.mirrored = mirrored;
-    }
-
-    public void reset(boolean whitePerspective) {
-        // Reset the features of the accumulator to the initial bias values.
-        short[] features = whitePerspective ? whiteFeatures : blackFeatures;
-        System.arraycopy(BIASES, 0, features, 0, NNUE.NETWORK.hiddenSize());
+        this.needsRefresh = new boolean[2];
     }
 
     public void add(short[] weights, Feature feature, boolean whitePerspective) {

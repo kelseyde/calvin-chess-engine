@@ -261,6 +261,9 @@ public class Searcher implements Search {
             --depth;
         }
 
+        if (depth <= 0 && !inCheck)
+            return quiescenceSearch(alpha, beta, ply);
+
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
         // In non-leaf nodes, this is used as a guide for several heuristics, such as extensions, reductions and pruning.

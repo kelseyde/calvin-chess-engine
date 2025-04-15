@@ -135,7 +135,7 @@ public class NNUE {
                 long added = pieces & ~cachedPieces;
                 while (added != 0) {
                     final int square = Bits.next(added);
-                    Feature feature = new Feature(piece, square, white);
+                    short feature = Feature.encode(piece, square, white);
                     acc.add(weights, feature, whitePerspective);
                     added = Bits.pop(added);
                 }
@@ -143,7 +143,7 @@ public class NNUE {
                 long removed = cachedPieces & ~pieces;
                 while (removed != 0) {
                     final int square = Bits.next(removed);
-                    Feature feature = new Feature(piece, square, white);
+                    short feature = Feature.encode(piece, square, white);
                     acc.sub(weights, feature, whitePerspective);
                     removed = Bits.pop(removed);
                 }
@@ -218,8 +218,8 @@ public class NNUE {
         final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
 
         AccumulatorUpdate update = new AccumulatorUpdate();
-        update.pushAdd(new Feature(newPiece, move.to(), white));
-        update.pushSub(new Feature(piece, move.from(), white));
+        update.pushAdd(Feature.encode(newPiece, move.to(), white));
+        update.pushSub(Feature.encode(piece, move.from(), white));
         return update;
 
     }
@@ -236,10 +236,10 @@ public class NNUE {
         final int rookFrom = UCI.Options.chess960 ? move.to() : Castling.rookFrom(kingside, white);
         final int rookTo = Castling.rookTo(kingside, white);
 
-        update.pushSub(new Feature(Piece.KING, kingFrom, white));
-        update.pushSub(new Feature(Piece.ROOK, rookFrom, white));
-        update.pushAdd(new Feature(Piece.KING, kingTo, white));
-        update.pushAdd(new Feature(Piece.ROOK, rookTo, white));
+        update.pushSub(Feature.encode(Piece.KING, kingFrom, white));
+        update.pushSub(Feature.encode(Piece.ROOK, rookFrom, white));
+        update.pushAdd(Feature.encode(Piece.KING, kingTo, white));
+        update.pushAdd(Feature.encode(Piece.ROOK, rookTo, white));
 
         return update;
 
@@ -257,9 +257,9 @@ public class NNUE {
         if (move.isEnPassant()) {
             captureSquare = white ? move.to() - 8 : move.to() + 8;
         }
-        update.pushSub(new Feature(piece, move.from(), white));
-        update.pushAdd(new Feature(newPiece, move.to(), white));
-        update.pushSub(new Feature(captured, captureSquare, !white));
+        update.pushSub(Feature.encode(piece, move.from(), white));
+        update.pushAdd(Feature.encode(newPiece, move.to(), white));
+        update.pushSub(Feature.encode(captured, captureSquare, !white));
         return update;
 
     }

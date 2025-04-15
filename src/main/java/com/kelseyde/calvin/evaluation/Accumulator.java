@@ -43,10 +43,10 @@ public class Accumulator {
         System.arraycopy(BIASES, 0, features, 0, NNUE.NETWORK.hiddenSize());
     }
 
-    public void add(short[] weights, Feature feature, boolean whitePerspective) {
+    public void add(short[] weights, short feature, boolean whitePerspective) {
         // Add a single feature to the accumulator.
         final boolean mirror = mirrored[Colour.index(whitePerspective)];
-        final int offset = feature.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final int offset = Feature.index(feature, whitePerspective, mirror) * HIDDEN_SIZE;
         final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
@@ -58,10 +58,10 @@ public class Accumulator {
         }
     }
 
-    public void sub(short[] weights, Feature feature, boolean whitePerspective) {
+    public void sub(short[] weights, short feature, boolean whitePerspective) {
         // Subtract a single feature from the accumulator.
         final boolean mirror = mirrored[Colour.index(whitePerspective)];
-        final int offset = feature.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final int offset = Feature.index(feature, whitePerspective, mirror) * HIDDEN_SIZE;
         final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
@@ -85,13 +85,13 @@ public class Accumulator {
 
     public void add(Accumulator prev, AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
 
-        final Feature add1 = update.adds[0];
+        final short add1 = update.adds[0];
 
         final boolean whiteMirror = mirrored[Colour.WHITE];
         final boolean blackMirror = mirrored[Colour.BLACK];
 
-        final int wOffset = add1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset = add1.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset = Feature.index(add1, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset = Feature.index(add1, false, blackMirror) * HIDDEN_SIZE;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
 
@@ -108,16 +108,16 @@ public class Accumulator {
 
     public void addSub(Accumulator prev, AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
 
-        final Feature add1 = update.adds[0];
-        final Feature sub1 = update.subs[0];
+        final short add1 = update.adds[0];
+        final short sub1 = update.subs[0];
 
         final boolean whiteMirror = mirrored[Colour.WHITE];
         final boolean blackMirror = mirrored[Colour.BLACK];
 
-        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset2 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset2 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset1 = Feature.index(add1, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset1 = Feature.index(add1, false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset2 = Feature.index(sub1, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset2 = Feature.index(sub1, false, blackMirror) * HIDDEN_SIZE;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
 
@@ -136,19 +136,19 @@ public class Accumulator {
 
     public void addSubSub(Accumulator prev, AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
 
-        final Feature add1 = update.adds[0];
-        final Feature sub1 = update.subs[0];
-        final Feature sub2 = update.subs[1];
+        final short add1 = update.adds[0];
+        final short sub1 = update.subs[0];
+        final short sub2 = update.subs[1];
 
         final boolean whiteMirror = mirrored[Colour.WHITE];
         final boolean blackMirror = mirrored[Colour.BLACK];
 
-        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset2 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset2 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset3 = sub2.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset3 = sub2.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset1 = Feature.index(add1, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset1 = Feature.index(add1, false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset2 = Feature.index(sub1, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset2 = Feature.index(sub1, false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset3 = Feature.index(sub2, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset3 = Feature.index(sub2, false, blackMirror) * HIDDEN_SIZE;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
 
@@ -169,22 +169,22 @@ public class Accumulator {
 
     public void addAddSubSub(Accumulator prev, AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
 
-        final Feature add1 = update.adds[0];
-        final Feature add2 = update.adds[1];
-        final Feature sub1 = update.subs[0];
-        final Feature sub2 = update.subs[1];
+        final short add1 = update.adds[0];
+        final short add2 = update.adds[1];
+        final short sub1 = update.subs[0];
+        final short sub2 = update.subs[1];
 
         final boolean whiteMirror = mirrored[Colour.WHITE];
         final boolean blackMirror = mirrored[Colour.BLACK];
 
-        final int wOffset1 = add1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset1 = add1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset2 = add2.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset2 = add2.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset3 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset3 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
-        final int wOffset4 = sub2.index(true, whiteMirror) * HIDDEN_SIZE;
-        final int bOffset4 = sub2.index(false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset1 = Feature.index(add1, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset1 = Feature.index(add1, false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset2 = Feature.index(add2, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset2 = Feature.index(add2, false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset3 = Feature.index(sub1, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset3 = Feature.index(sub1, false, blackMirror) * HIDDEN_SIZE;
+        final int wOffset4 = Feature.index(sub2, true, whiteMirror) * HIDDEN_SIZE;
+        final int bOffset4 = Feature.index(sub2, false, blackMirror) * HIDDEN_SIZE;
 
         for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
 
@@ -227,17 +227,17 @@ public class Accumulator {
 
     public static class AccumulatorUpdate {
 
-        public final Feature[] adds = new Feature[2];
-        public final Feature[] subs = new Feature[2];
+        public final short[] adds = new short[2];
+        public final short[] subs = new short[2];
 
         public int addCount = 0;
         public int subCount = 0;
 
-        public void pushAdd(Feature add) {
+        public void pushAdd(short add) {
             adds[addCount++] = add;
         }
 
-        public void pushSub(Feature sub) {
+        public void pushSub(short sub) {
             subs[subCount++] = sub;
         }
 

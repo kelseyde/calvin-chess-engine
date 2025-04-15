@@ -287,6 +287,9 @@ public class NNUE {
 
     private void applyLazyUpdates() {
 
+        // Implementation based on Lizard:
+        // https://github.com/liamt19/Lizard/blob/main/Logic/NN/Bucketed768.cs#L769
+
         Accumulator curr = accumulatorStack[current];
 
         for (int whitePerspective = 0; whitePerspective < 2; whitePerspective++) {

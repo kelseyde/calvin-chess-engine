@@ -93,8 +93,8 @@ public class Accumulator {
         final int wOffset = add1.index(true, whiteMirror) * HIDDEN_SIZE;
         final int bOffset = add1.index(false, blackMirror) * HIDDEN_SIZE;
 
-        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
-
+        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length() * 4) {
+            // Unroll 1
             ShortVector.fromArray(SPECIES, whiteFeatures, i)
                     .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset))
                     .intoArray(whiteFeatures, i);
@@ -103,6 +103,32 @@ public class Accumulator {
                     .add(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset))
                     .intoArray(blackFeatures, i);
 
+            // Unroll 2
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length())
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset))
+                    .intoArray(whiteFeatures, i + SPECIES.length());
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length())
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset))
+                    .intoArray(blackFeatures, i + SPECIES.length());
+
+            // Unroll 3
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length() * 2)
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset))
+                    .intoArray(whiteFeatures, i + SPECIES.length() * 2);
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length() * 2)
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset))
+                    .intoArray(blackFeatures, i + SPECIES.length() * 2);
+
+            // Unroll 4
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length() * 3)
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset))
+                    .intoArray(whiteFeatures, i + SPECIES.length() * 3);
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length() * 3)
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset))
+                    .intoArray(blackFeatures, i + SPECIES.length() * 3);
         }
     }
 
@@ -119,8 +145,8 @@ public class Accumulator {
         final int wOffset2 = sub1.index(true, whiteMirror) * HIDDEN_SIZE;
         final int bOffset2 = sub1.index(false, blackMirror) * HIDDEN_SIZE;
 
-        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
-
+        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length() * 4) {
+            // Unroll 1
             ShortVector.fromArray(SPECIES, whiteFeatures, i)
                     .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset1))
                     .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset2))
@@ -131,6 +157,38 @@ public class Accumulator {
                     .sub(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset2))
                     .intoArray(blackFeatures, i);
 
+            // Unroll 2
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length())
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset2))
+                    .intoArray(whiteFeatures, i + SPECIES.length());
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length())
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset2))
+                    .intoArray(blackFeatures, i + SPECIES.length());
+
+            // Unroll 3
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length() * 2)
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset2))
+                    .intoArray(whiteFeatures, i + SPECIES.length() * 2);
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length() * 2)
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset2))
+                    .intoArray(blackFeatures, i + SPECIES.length() * 2);
+
+            // Unroll 4
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length() * 3)
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset2))
+                    .intoArray(whiteFeatures, i + SPECIES.length() * 3);
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length() * 3)
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset2))
+                    .intoArray(blackFeatures, i + SPECIES.length() * 3);
         }
     }
 
@@ -150,8 +208,8 @@ public class Accumulator {
         final int wOffset3 = sub2.index(true, whiteMirror) * HIDDEN_SIZE;
         final int bOffset3 = sub2.index(false, blackMirror) * HIDDEN_SIZE;
 
-        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
-
+        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length() * 4) {
+            // Unroll 1
             ShortVector.fromArray(SPECIES, whiteFeatures, i)
                     .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset1))
                     .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset2))
@@ -164,6 +222,44 @@ public class Accumulator {
                     .sub(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset3))
                     .intoArray(blackFeatures, i);
 
+            // Unroll 2
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length())
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset3))
+                    .intoArray(whiteFeatures, i + SPECIES.length());
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length())
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset3))
+                    .intoArray(blackFeatures, i + SPECIES.length());
+
+            // Unroll 3
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length() * 2)
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset3))
+                    .intoArray(whiteFeatures, i + SPECIES.length() * 2);
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length() * 2)
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset3))
+                    .intoArray(blackFeatures, i + SPECIES.length() * 2);
+
+            // Unroll 4
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length() * 3)
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset3))
+                    .intoArray(whiteFeatures, i + SPECIES.length() * 3);
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length() * 3)
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset1))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset3))
+                    .intoArray(blackFeatures, i + SPECIES.length() * 3);
         }
     }
 
@@ -186,8 +282,8 @@ public class Accumulator {
         final int wOffset4 = sub2.index(true, whiteMirror) * HIDDEN_SIZE;
         final int bOffset4 = sub2.index(false, blackMirror) * HIDDEN_SIZE;
 
-        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
-
+        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length() * 4) {
+            // Unroll 1
             ShortVector.fromArray(SPECIES, whiteFeatures, i)
                     .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset1))
                     .add(ShortVector.fromArray(SPECIES, whiteWeights, i + wOffset2))
@@ -202,6 +298,50 @@ public class Accumulator {
                     .sub(ShortVector.fromArray(SPECIES, blackWeights, i + bOffset4))
                     .intoArray(blackFeatures, i);
 
+            // Unroll 2
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length())
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset1))
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset3))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() + wOffset4))
+                    .intoArray(whiteFeatures, i + SPECIES.length());
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length())
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset1))
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset3))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() + bOffset4))
+                    .intoArray(blackFeatures, i + SPECIES.length());
+
+            // Unroll 3
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length() * 2)
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset1))
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset3))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 2 + wOffset4))
+                    .intoArray(whiteFeatures, i + SPECIES.length() * 2);
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length() * 2)
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset1))
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset3))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 2 + bOffset4))
+                    .intoArray(blackFeatures, i + SPECIES.length() * 2);
+
+            // Unroll 4
+            ShortVector.fromArray(SPECIES, whiteFeatures, i + SPECIES.length() * 3)
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset1))
+                    .add(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset3))
+                    .sub(ShortVector.fromArray(SPECIES, whiteWeights, i + SPECIES.length() * 3 + wOffset4))
+                    .intoArray(whiteFeatures, i + SPECIES.length() * 3);
+
+            ShortVector.fromArray(SPECIES, blackFeatures, i + SPECIES.length() * 3)
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset1))
+                    .add(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset2))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset3))
+                    .sub(ShortVector.fromArray(SPECIES, blackWeights, i + SPECIES.length() * 3 + bOffset4))
+                    .intoArray(blackFeatures, i + SPECIES.length() * 3);
         }
     }
 

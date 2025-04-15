@@ -71,6 +71,8 @@ public class NNUE {
 
     public int evaluate() {
 
+        applyLazyUpdates();
+
         final boolean white = board.isWhite();
         final Accumulator acc = accumulatorStack[current];
 
@@ -100,10 +102,21 @@ public class NNUE {
 
         int whiteKingBucket = kingBucket(board.kingSquare(true), true);
         int blackKingBucket = kingBucket(board.kingSquare(false), false);
+        acc.bucket[Colour.WHITE] = whiteKingBucket;
+        acc.bucket[Colour.BLACK] = blackKingBucket;
 
         fullRefresh(board, acc, true, whiteMirror, whiteKingBucket);
         fullRefresh(board, acc, false, blackMirror, blackKingBucket);
 
+    }
+
+    private void fullRefreshCurrent(Board board, boolean white) {
+        // Fully refresh the accumulator from the perspective of the side to move with the features of all pieces on the board.
+        final Accumulator acc = accumulatorStack[current];
+        final boolean whiteMirror = shouldMirror(board.kingSquare(white));
+        final int kingBucket = kingBucket(board.kingSquare(white), white);
+        fullRefresh(board, acc, white, whiteMirror, kingBucket);
+        acc.needsRefresh[Colour.index(white)] = false;
     }
 
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror, int bucket) {
@@ -166,50 +179,36 @@ public class NNUE {
         final Accumulator prev = accumulatorStack[current];
         final Accumulator curr = accumulatorStack[++current] = prev.copy();
         final boolean white = board.isWhite();
-
         final Piece piece = board.pieceAt(move.from());
-        final int whiteKingSquare = board.kingSquare(true);
-        final int blackKingSquare = board.kingSquare(false);
-
-        final int whiteKingBucket = board.isWhite() ?
-                calculateNewKingBucket(whiteKingSquare, move, piece, true) :
-                kingBucket(whiteKingSquare, true);
-
-        final int blackKingBucket = board.isWhite() ?
-                kingBucket(blackKingSquare, false) :
-                calculateNewKingBucket(blackKingSquare, move, piece, false);
-
-        final short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
-        final short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
-
-        // Determine which features need to be updated based on the move type (standard, capture, or castle).
-        final AccumulatorUpdate update = switch (moveType(board, move)) {
-            case STANDARD -> handleStandardMove(board, move, white);
-            case CASTLE -> handleCastleMove(move, white);
-            case CAPTURE -> handleCapture(board, move, white);
-        };
 
         // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
         // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
         final boolean mirrorChanged = mirrorChanged(board, move, piece);
         final boolean bucketChanged = bucketChanged(board, move, piece, white);
         final boolean refreshRequired = mirrorChanged || bucketChanged;
+
         if (refreshRequired) {
             curr.needsRefresh[Colour.index(white)] = true;
             boolean mirror = shouldMirror(board.kingSquare(white));
+
             if (mirrorChanged) {
                 mirror = !mirror;
                 curr.mirrored[Colour.index(white)] = mirror;
             }
-            final int bucket = white ? whiteKingBucket : blackKingBucket;
-            fullRefresh(board, curr, white, mirror, bucket);
-            curr.apply(curr, update, whiteWeights, blackWeights);
-        } else {
-            // Apply the update to the accumulator.
-            curr.apply(prev, update, whiteWeights, blackWeights);
+
+            if (bucketChanged) {
+                int kingSquare = board.kingSquare(board.isWhite());
+                int newBucket = calculateNewKingBucket(kingSquare, move, piece, white);
+                curr.bucket[Colour.index(white)] = newBucket;
+            }
         }
 
-        curr.update = update;
+        // Determine which features need to be updated based on the move type (standard, capture, or castle).
+        curr.update = switch (moveType(board, move)) {
+            case STANDARD -> handleStandardMove(board, move, white);
+            case CASTLE -> handleCastleMove(move, white);
+            case CAPTURE -> handleCapture(board, move, white);
+        };
 
     }
 
@@ -288,6 +287,43 @@ public class NNUE {
         eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
 
         return eval;
+
+    }
+
+    private void applyLazyUpdates() {
+
+        Accumulator curr = accumulatorStack[current];
+
+        for (int whitePerspective = 0; whitePerspective < 2; whitePerspective++) {
+
+            boolean white = whitePerspective == Colour.WHITE;
+
+            // If the accumulator has not been computed yet, we need to compute it.
+            if (curr.needsRefresh[whitePerspective]) {
+                fullRefreshCurrent(board, white);
+                continue;
+            }
+
+            if (curr.update == null) {
+                continue;
+            }
+
+            int currIndex = current;
+            while (currIndex > 0 && !accumulatorStack[currIndex].needsRefresh[whitePerspective])
+                currIndex--;
+
+            if (accumulatorStack[currIndex].needsRefresh[whitePerspective]) {
+                fullRefreshCurrent(board, white);
+            }
+            else {
+                while (currIndex != current) {
+                    final Accumulator prev = accumulatorStack[currIndex];
+                    final Accumulator next = accumulatorStack[++currIndex];
+                    next.apply(prev, white);
+                }
+            }
+
+        }
 
     }
 

@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 public class NNUETest {
 
     @Test
@@ -31,6 +35,18 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         System.out.printf("%s %s nnue %s%n", name, fen, nnue.evaluate());
+    }
+
+    @Test
+    public void testSimpleMakeMove() {
+
+         Board board = Board.from(FEN.STARTPOS);
+         NNUE nnue = new NNUE(board);
+         Move move = Move.fromUCI("e2e4");
+         nnue.makeMove(board, move);
+         board.makeMove(move);
+         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
+
     }
 
     @Test
@@ -273,6 +289,112 @@ public class NNUETest {
             nnue.unmakeMove();
         }
     }
+
+    @Test
+    public void testLazyUpdatesAreNotReapplied() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        NNUE nnue = new NNUE(board);
+
+        Move m1 = Move.fromUCI("e2e4", Move.PAWN_DOUBLE_MOVE_FLAG);
+        nnue.makeMove(board, m1);
+        board.makeMove(m1);
+
+        Move m2 = Move.fromUCI("e7e5", Move.PAWN_DOUBLE_MOVE_FLAG);
+        nnue.makeMove(board, m2);
+        board.makeMove(m2);
+
+        Move m3 = Move.fromUCI("g1f3");
+        nnue.makeMove(board, m3);
+        board.makeMove(m3);
+
+        Move m4 = Move.fromUCI("b8c6");
+        nnue.makeMove(board, m4);
+        board.makeMove(m4);
+
+        Move m5 = Move.fromUCI("f1c4");
+        nnue.makeMove(board, m5);
+        board.makeMove(m5);
+
+        Move m6 = Move.fromUCI("g8f6");
+        nnue.makeMove(board, m6);
+        board.makeMove(m6);
+
+        NNUE newNnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(), newNnue.evaluate());
+        // apply the lazy updates again
+        Assertions.assertEquals(nnue.evaluate(), newNnue.evaluate());
+
+    }
+
+    @Test
+    public void testDebugLazyUpdates() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        NNUE nnue = new NNUE(board);
+
+        // moves: [g2g4, g8f6, e2e3, a7a6, e1e2, f6g8]
+        List<Move> moves = List.of(
+                Move.fromUCI("g2g4"),
+                Move.fromUCI("g8f6"),
+                Move.fromUCI("e2e3"),
+                Move.fromUCI("a7a6"),
+                Move.fromUCI("e1e2"),
+                Move.fromUCI("f6g8")
+        );
+
+        for (Move move : moves) {
+            nnue.makeMove(board, move);
+            board.makeMove(move);
+        }
+
+        NNUE newNnue = new NNUE(board);
+        Assertions.assertEquals(nnue.evaluate(), newNnue.evaluate());
+
+    }
+
+    @Test
+    public void testFindBugs() {
+
+        Board board = Board.from(FEN.STARTPOS);
+        NNUE nnue = new NNUE(board);
+
+        int tries = 0;
+        int ply = 0;
+
+        List<Move> moveHistory = new ArrayList<>();
+
+//        while (tries < 1000000) {
+        while (ply < 100) {
+
+            List<Move> moves = new MoveGenerator().generateMoves(board);
+            if (moves.isEmpty()) {
+                System.out.println("No moves available");
+                break;
+            }
+
+            Move move = moves.get(new Random().nextInt(moves.size()));
+            System.out.println("Move: " + Move.toUCI(move) + " " + ply);
+            nnue.makeMove(board, move);
+            board.makeMove(move);
+            moveHistory.add(move);
+
+            int evaluation = nnue.evaluate();
+            int newEvaluation = new NNUE(board).evaluate();
+            if (evaluation != newEvaluation) {
+                System.out.println(moveHistory.stream().map(Move::toUCI).toList());
+                System.out.println("Evaluation: " + evaluation);
+                System.out.println("New Evaluation: " + newEvaluation);
+                Assertions.fail("NNUE evaluation mismatch");
+            }
+            ply++;
+
+        }
+            tries++;
+//        }
+
+    }
+
 
     @AfterAll
     public static void tearDown() {

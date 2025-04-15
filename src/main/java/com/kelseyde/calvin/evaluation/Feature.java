@@ -13,61 +13,40 @@ public class Feature {
 
     private Feature() {}
 
-    // Bit positions
-    private static final int PIECE_BITS = 3;  // 3 bits can encode up to 8 piece types
-    private static final int SQUARE_BITS = 6; // 6 bits needed for 64 squares
-    private static final int COLOR_BITS = 1;  // 1 bit for color
+    private static final int PIECE_BITS = 3;
+    private static final int SQUARE_BITS = 6;
 
-    // Bit masks
     private static final int PIECE_MASK = (1 << PIECE_BITS) - 1;
     private static final int SQUARE_MASK = (1 << SQUARE_BITS) - 1;
     private static final int COLOR_MASK = 1;
 
-    // Bit shifts
     private static final int PIECE_SHIFT = 0;
     private static final int SQUARE_SHIFT = PIECE_BITS;
     private static final int COLOR_SHIFT = PIECE_BITS + SQUARE_BITS;
 
-    /**
-     * Encodes a feature (piece, square, color) into a compact 16-bit representation.
-     */
     public static short encode(Piece piece, int square, boolean white) {
-        int encoded = 0;
-        encoded |= (piece.index() & PIECE_MASK) << PIECE_SHIFT;
-        encoded |= (square & SQUARE_MASK) << SQUARE_SHIFT;
-        encoded |= ((white ? 1 : 0) & COLOR_MASK) << COLOR_SHIFT;
-        return (short) encoded;
+        return (short) ((piece.index() & PIECE_MASK) << PIECE_SHIFT
+         | (square & SQUARE_MASK) << SQUARE_SHIFT
+         | ((white ? 1 : 0) & COLOR_MASK) << COLOR_SHIFT);
     }
 
-    /**
-     * Decodes the piece from an encoded feature.
-     */
     public static Piece decodePiece(short encoded) {
-        int index = (encoded >> PIECE_SHIFT) & PIECE_MASK;
+        final int index = (encoded >> PIECE_SHIFT) & PIECE_MASK;
         return Piece.values()[index];
     }
 
-    /**
-     * Decodes the square from an encoded feature.
-     */
     public static int decodeSquare(short encoded) {
         return (encoded >> SQUARE_SHIFT) & SQUARE_MASK;
     }
 
-    /**
-     * Decodes the color from an encoded feature.
-     */
     public static boolean decodeColor(short encoded) {
         return (((encoded >> COLOR_SHIFT) & COLOR_MASK) == 1);
     }
 
-    /**
-     * Calculates the feature index for neural network lookup, equivalent to the original Feature.index method.
-     */
     public static int index(short encoded, boolean whitePerspective, boolean mirror) {
-        Piece piece = decodePiece(encoded);
-        int square = decodeSquare(encoded);
-        boolean white = decodeColor(encoded);
+        final Piece piece = decodePiece(encoded);
+        final int square = decodeSquare(encoded);
+        final boolean white = decodeColor(encoded);
 
         // Calculate the square index with perspective and mirror
         int squareIndex = whitePerspective ? square : Square.flipRank(square);

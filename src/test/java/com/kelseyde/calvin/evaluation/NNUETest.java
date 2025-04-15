@@ -333,19 +333,27 @@ public class NNUETest {
         Board board = Board.from(FEN.STARTPOS);
         NNUE nnue = new NNUE(board);
 
-        // moves: [g2g4, g8f6, e2e3, a7a6, e1e2, f6g8]
+        // moves: [g1f3, g7g5, b2b3, f8g7, c1b2, g7d4, f3h4, f7f6, c2c4, d4f2, e1f2, h7h6]
         List<Move> moves = List.of(
-                Move.fromUCI("g2g4"),
-                Move.fromUCI("g8f6"),
-                Move.fromUCI("e2e3"),
-                Move.fromUCI("a7a6"),
-                Move.fromUCI("e1e2"),
-                Move.fromUCI("f6g8")
+                Move.fromUCI("g1f3"),
+                Move.fromUCI("g7g5", Move.PAWN_DOUBLE_MOVE_FLAG),
+                Move.fromUCI("b2b3"),
+                Move.fromUCI("f8g7"),
+                Move.fromUCI("c1b2"),
+                Move.fromUCI("g7d4"),
+                Move.fromUCI("f3h4"),
+                Move.fromUCI("f7f6"),
+                Move.fromUCI("c2c4"),
+                Move.fromUCI("d4f2"),
+                Move.fromUCI("e1f2"),
+                Move.fromUCI("h7h6")
         );
 
         for (Move move : moves) {
             nnue.makeMove(board, move);
             board.makeMove(move);
+            NNUE newNnue = new NNUE(board);
+            Assertions.assertEquals(nnue.evaluate(), newNnue.evaluate());
         }
 
         NNUE newNnue = new NNUE(board);
@@ -356,42 +364,41 @@ public class NNUETest {
     @Test
     public void testFindBugs() {
 
-        Board board = Board.from(FEN.STARTPOS);
-        NNUE nnue = new NNUE(board);
-
         int tries = 0;
         int ply = 0;
 
-        List<Move> moveHistory = new ArrayList<>();
+        while (tries < 1000000) {
+            Board board = Board.from(FEN.STARTPOS);
+            NNUE nnue = new NNUE(board);
+            List<Move> moveHistory = new ArrayList<>();
+            while (ply < 256) {
 
-//        while (tries < 1000000) {
-        while (ply < 100) {
+                List<Move> moves = new MoveGenerator().generateMoves(board);
+                if (moves.isEmpty()) {
+                    System.out.println("No moves available");
+                    break;
+                }
 
-            List<Move> moves = new MoveGenerator().generateMoves(board);
-            if (moves.isEmpty()) {
-                System.out.println("No moves available");
-                break;
+                Move move = moves.get(new Random().nextInt(moves.size()));
+                nnue.makeMove(board, move);
+                board.makeMove(move);
+                moveHistory.add(move);
+
+                int evaluation = nnue.evaluate();
+                int newEvaluation = new NNUE(board).evaluate();
+                if (evaluation != newEvaluation) {
+                    System.out.println(moveHistory.stream().map(Move::toUCI).toList());
+                    System.out.println("try: " + tries);
+                    System.out.println("ply: " + ply);
+                    System.out.println("Evaluation: " + evaluation);
+                    System.out.println("New Evaluation: " + newEvaluation);
+                    Assertions.fail("NNUE evaluation mismatch");
+                }
+                ply++;
+
             }
-
-            Move move = moves.get(new Random().nextInt(moves.size()));
-            System.out.println("Move: " + Move.toUCI(move) + " " + ply);
-            nnue.makeMove(board, move);
-            board.makeMove(move);
-            moveHistory.add(move);
-
-            int evaluation = nnue.evaluate();
-            int newEvaluation = new NNUE(board).evaluate();
-            if (evaluation != newEvaluation) {
-                System.out.println(moveHistory.stream().map(Move::toUCI).toList());
-                System.out.println("Evaluation: " + evaluation);
-                System.out.println("New Evaluation: " + newEvaluation);
-                Assertions.fail("NNUE evaluation mismatch");
-            }
-            ply++;
-
-        }
             tries++;
-//        }
+        }
 
     }
 

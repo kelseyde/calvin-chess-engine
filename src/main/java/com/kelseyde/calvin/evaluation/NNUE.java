@@ -288,7 +288,7 @@ public class NNUE {
     private void applyLazyUpdates() {
 
         // Implementation based on Lizard:
-        // https://github.com/liamt19/Lizard/blob/main/Logic/NN/Bucketed768.cs#L769
+        // https://github.com/liamt19/Lizard/blob/main/Logic/NN/Bucketed768.cs#L735
 
         Accumulator curr = accumulatorStack[current];
 

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -330,30 +331,33 @@ public class NNUETest {
     @Test
     public void testDebugLazyUpdates() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = Board.from("rnbqk1nr/ppppp2p/5p2/6p1/2P4N/1P6/PB1PPbPP/RN1QKB1R w KQkq - 0 6");
         NNUE nnue = new NNUE(board);
 
-        // moves: [g1f3, g7g5, b2b3, f8g7, c1b2, g7d4, f3h4, f7f6, c2c4, d4f2, e1f2, h7h6]
         List<Move> moves = List.of(
-                Move.fromUCI("g1f3"),
-                Move.fromUCI("g7g5", Move.PAWN_DOUBLE_MOVE_FLAG),
-                Move.fromUCI("b2b3"),
-                Move.fromUCI("f8g7"),
-                Move.fromUCI("c1b2"),
-                Move.fromUCI("g7d4"),
-                Move.fromUCI("f3h4"),
-                Move.fromUCI("f7f6"),
-                Move.fromUCI("c2c4"),
-                Move.fromUCI("d4f2"),
                 Move.fromUCI("e1f2"),
                 Move.fromUCI("h7h6")
         );
 
         for (Move move : moves) {
+            String moveUci = Move.toUCI(move);
+            System.out.println("Move: " + moveUci);
+            System.out.println("White equals before: " + Arrays.equals(nnue.accumulatorStack[nnue.current].whiteFeatures, new NNUE(board).accumulatorStack[0].whiteFeatures));
+            System.out.println("Black equals before: " + Arrays.equals(nnue.accumulatorStack[nnue.current].blackFeatures, new NNUE(board).accumulatorStack[0].blackFeatures));
+            System.out.println("Evaluation before equals: " + (nnue.evaluate() == new NNUE(board).evaluate()));
             nnue.makeMove(board, move);
             board.makeMove(move);
+            System.out.println("White equals after: " + Arrays.equals(nnue.accumulatorStack[nnue.current].whiteFeatures, new NNUE(board).accumulatorStack[0].whiteFeatures));
+            System.out.println("Black equals after: " + Arrays.equals(nnue.accumulatorStack[nnue.current].blackFeatures, new NNUE(board).accumulatorStack[0].blackFeatures));
+            System.out.println("Evaluation after equals: " + (nnue.evaluate() == new NNUE(board).evaluate()));
             NNUE newNnue = new NNUE(board);
-            Assertions.assertEquals(nnue.evaluate(), newNnue.evaluate());
+            int evaluation = nnue.evaluate();
+            int newEvaluation = newNnue.evaluate();
+            if (evaluation != newEvaluation) {
+                System.out.println("Evaluation: " + evaluation);
+                System.out.println("New Evaluation: " + newEvaluation);
+            }
+            Assertions.assertEquals(evaluation, newEvaluation);
         }
 
         NNUE newNnue = new NNUE(board);

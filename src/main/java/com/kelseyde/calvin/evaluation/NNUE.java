@@ -48,9 +48,9 @@ public class NNUE {
 
     private static final int STACK_SIZE = Search.MAX_DEPTH + 1;
 
-    private Accumulator[] accumulatorStack;
-    private InputBucketCache bucketCache;
-    private int current;
+    public Accumulator[] accumulatorStack;
+    public InputBucketCache bucketCache;
+    public int current;
     private Board board;
 
     public NNUE() {

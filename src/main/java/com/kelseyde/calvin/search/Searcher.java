@@ -16,9 +16,7 @@ import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Classical alpha-beta search with iterative deepening. This is the main search algorithm used by the engine.
@@ -515,16 +513,6 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(move, piece, sse);
 
-//            if (new NNUE(board).evaluate() != eval.evaluate()) {
-//                System.out.println("ply: " + ply);
-//                System.out.println("move: " + Move.toUCI(move));
-//                System.out.println(Arrays.stream(board.getMoves())
-//                        .filter(Objects::nonNull)
-//                        .map(Move::toUCI)
-//                        .toList()
-//                );
-//            }
-
             if (isCapture && captureMoves < 16) {
                 sse.captures[captureMoves++] = move;
             }
@@ -732,10 +720,6 @@ public class Searcher implements Search {
                 continue;
 
             makeMove(move, piece, sse);
-
-//            if (new NNUE(board).evaluate() != eval.evaluate()) {
-//                System.out.println("ply: " + ply);
-//            }
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);

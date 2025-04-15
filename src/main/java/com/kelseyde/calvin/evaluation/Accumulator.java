@@ -25,6 +25,7 @@ public class Accumulator {
 
     public int[] bucket;
     public boolean[] mirrored;
+    public boolean[] computed;
     public boolean[] needsRefresh;
     public AccumulatorUpdate update;
 
@@ -33,15 +34,17 @@ public class Accumulator {
         this.blackFeatures = new short[featureCount];
         this.bucket = new int[2];
         this.mirrored = new boolean[2];
+        this.computed = new boolean[2];
         this.needsRefresh = new boolean[2];
     }
 
-    public Accumulator(short[] whiteFeatures, short[] blackFeatures, int[] bucket, boolean[] mirrored) {
+    public Accumulator(short[] whiteFeatures, short[] blackFeatures, int[] bucket, boolean[] mirrored, boolean[] needsRefresh) {
         this.whiteFeatures = whiteFeatures;
         this.blackFeatures = blackFeatures;
         this.bucket = bucket;
         this.mirrored = mirrored;
-        this.needsRefresh = new boolean[2];
+        this.needsRefresh = needsRefresh;
+        this.computed = new boolean[2];
     }
 
     public void add(short[] weights, Feature feature, boolean whitePerspective) {
@@ -183,7 +186,9 @@ public class Accumulator {
                 Arrays.copyOf(whiteFeatures, whiteFeatures.length),
                 Arrays.copyOf(blackFeatures, blackFeatures.length),
                 Arrays.copyOf(bucket, bucket.length),
-                Arrays.copyOf(mirrored, mirrored.length));
+                Arrays.copyOf(mirrored, mirrored.length),
+                Arrays.copyOf(needsRefresh, needsRefresh.length)
+        );
     }
 
     public void copyFrom(short[] features, boolean whitePerspective) {

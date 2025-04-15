@@ -48,9 +48,9 @@ public class NNUE {
 
     private static final int STACK_SIZE = Search.MAX_DEPTH + 1;
 
-    public Accumulator[] accumulatorStack;
-    public InputBucketCache bucketCache;
-    public int current;
+    private Accumulator[] accumulatorStack;
+    private InputBucketCache bucketCache;
+    private int current;
     private Board board;
 
     public NNUE() {
@@ -92,7 +92,7 @@ public class NNUE {
 
     private void fullRefresh(Board board) {
 
-        // Fully refresh the accumulator from both perspectives with the features of all pieces on the board.
+        // Fully refresh the current accumulator from both perspectives with the features of all pieces on the board.
         final Accumulator acc = accumulatorStack[current];
 
         final boolean whiteMirror = shouldMirror(board.kingSquare(true));
@@ -105,24 +105,21 @@ public class NNUE {
         acc.bucket[Colour.WHITE] = whiteKingBucket;
         acc.bucket[Colour.BLACK] = blackKingBucket;
 
-        fullRefresh(board, acc, true, whiteMirror, whiteKingBucket);
-        fullRefresh(board, acc, false, blackMirror, blackKingBucket);
+        fullRefresh(board, true);
+        fullRefresh(board, false);
 
     }
 
-    private void fullRefreshCurrent(Board board, boolean white) {
-        // Fully refresh the accumulator from the perspective of the side to move with the features of all pieces on the board.
-        final Accumulator acc = accumulatorStack[current];
-        final boolean whiteMirror = shouldMirror(board.kingSquare(white));
-        final int kingBucket = kingBucket(board.kingSquare(white), white);
-        fullRefresh(board, acc, white, whiteMirror, kingBucket);
-        acc.needsRefresh[Colour.index(white)] = false;
-    }
-
-    private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror, int bucket) {
+    private void fullRefresh(Board board, boolean whitePerspective) {
 
         // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
+
+        final Accumulator acc = accumulatorStack[current];
+        final boolean mirror = shouldMirror(board.kingSquare(whitePerspective));
+        final int bucket = kingBucket(board.kingSquare(whitePerspective), whitePerspective);
+
         acc.needsRefresh[Colour.index(whitePerspective)] = false;
+        acc.computed[Colour.index(whitePerspective)] = true;
 
         BucketCacheEntry cacheEntry = bucketCache.get(whitePerspective, mirror, bucket);
         short[] cachedFeatures = cacheEntry.features;
@@ -171,7 +168,6 @@ public class NNUE {
         cacheEntry.features = Arrays.copyOf(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, NETWORK.hiddenSize());
 
     }
-
 
     public void makeMove(Board board, Move move) {
 
@@ -298,9 +294,13 @@ public class NNUE {
 
             boolean white = whitePerspective == Colour.WHITE;
 
-            // If the accumulator has not been computed yet, we need to compute it.
+            // If the accumulator is already updated, we can skip this perspective
+            if (curr.computed[whitePerspective])
+                continue;
+
+            // If a full refresh is required, skip lazy updates and do a full refresh
             if (curr.needsRefresh[whitePerspective]) {
-                fullRefreshCurrent(board, white);
+                fullRefresh(board, white);
                 continue;
             }
 
@@ -309,17 +309,20 @@ public class NNUE {
             }
 
             int currIndex = current;
-            while (currIndex > 0 && !accumulatorStack[currIndex].needsRefresh[whitePerspective])
+            while (currIndex > 0
+                    && !accumulatorStack[currIndex].needsRefresh[whitePerspective]
+                    && !accumulatorStack[currIndex].computed[whitePerspective])
                 currIndex--;
 
             if (accumulatorStack[currIndex].needsRefresh[whitePerspective]) {
-                fullRefreshCurrent(board, white);
+                fullRefresh(board, white);
             }
             else {
                 while (currIndex != current) {
                     final Accumulator prev = accumulatorStack[currIndex];
                     final Accumulator next = accumulatorStack[++currIndex];
                     next.apply(prev, white);
+                    next.computed[whitePerspective] = true;
                 }
             }
 

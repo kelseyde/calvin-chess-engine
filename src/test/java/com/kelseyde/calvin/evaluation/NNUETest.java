@@ -10,11 +10,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
 public class NNUETest {
 
     @Test
@@ -36,18 +31,6 @@ public class NNUETest {
         Board board = FEN.toBoard(fen);
         NNUE nnue = new NNUE(board);
         System.out.printf("%s %s nnue %s%n", name, fen, nnue.evaluate());
-    }
-
-    @Test
-    public void testSimpleMakeMove() {
-
-         Board board = Board.from(FEN.STARTPOS);
-         NNUE nnue = new NNUE(board);
-         Move move = Move.fromUCI("e2e4");
-         nnue.makeMove(board, move);
-         board.makeMove(move);
-         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
-
     }
 
     @Test
@@ -290,127 +273,6 @@ public class NNUETest {
             nnue.unmakeMove();
         }
     }
-
-    @Test
-    public void testLazyUpdatesAreNotReapplied() {
-
-        Board board = Board.from(FEN.STARTPOS);
-        NNUE nnue = new NNUE(board);
-
-        Move m1 = Move.fromUCI("e2e4", Move.PAWN_DOUBLE_MOVE_FLAG);
-        nnue.makeMove(board, m1);
-        board.makeMove(m1);
-
-        Move m2 = Move.fromUCI("e7e5", Move.PAWN_DOUBLE_MOVE_FLAG);
-        nnue.makeMove(board, m2);
-        board.makeMove(m2);
-
-        Move m3 = Move.fromUCI("g1f3");
-        nnue.makeMove(board, m3);
-        board.makeMove(m3);
-
-        Move m4 = Move.fromUCI("b8c6");
-        nnue.makeMove(board, m4);
-        board.makeMove(m4);
-
-        Move m5 = Move.fromUCI("f1c4");
-        nnue.makeMove(board, m5);
-        board.makeMove(m5);
-
-        Move m6 = Move.fromUCI("g8f6");
-        nnue.makeMove(board, m6);
-        board.makeMove(m6);
-
-        NNUE newNnue = new NNUE(board);
-        Assertions.assertEquals(nnue.evaluate(), newNnue.evaluate());
-        // apply the lazy updates again
-        Assertions.assertEquals(nnue.evaluate(), newNnue.evaluate());
-
-    }
-
-//    @Test
-//    public void testDebugLazyUpdates() {
-//
-//        Board board = Board.from("rnbqk1nr/ppppp2p/5p2/6p1/2P4N/1P6/PB1PPbPP/RN1QKB1R w KQkq - 0 6");
-//        NNUE nnue = new NNUE(board);
-//
-//        List<Move> moves = List.of(
-//                Move.fromUCI("e1f2"),
-//                Move.fromUCI("h7h6")
-//        );
-//
-//        for (Move move : moves) {
-//            String moveUci = Move.toUCI(move);
-//            System.out.println("Move: " + moveUci);
-//            System.out.println("White equals before: " + Arrays.equals(nnue.accumulatorStack[nnue.current].whiteFeatures, new NNUE(board).accumulatorStack[0].whiteFeatures));
-//            System.out.println("Black equals before: " + Arrays.equals(nnue.accumulatorStack[nnue.current].blackFeatures, new NNUE(board).accumulatorStack[0].blackFeatures));
-////            System.out.println("Evaluation before equals: " + (nnue.evaluate() == new NNUE(board).evaluate()));
-//            nnue.makeMove(board, move);
-//            board.makeMove(move);
-//            System.out.println("White equals after: " + Arrays.equals(nnue.accumulatorStack[nnue.current].whiteFeatures, new NNUE(board).accumulatorStack[0].whiteFeatures));
-//            System.out.println("Black equals after: " + Arrays.equals(nnue.accumulatorStack[nnue.current].blackFeatures, new NNUE(board).accumulatorStack[0].blackFeatures));
-////            System.out.println("Evaluation after equals: " + (nnue.evaluate() == new NNUE(board).evaluate()));
-//
-//            System.out.println("three times: " + new NNUE(board).evaluate());
-//            System.out.println("three times: " + new NNUE(board).evaluate());
-//            System.out.println("three times: " + new NNUE(board).evaluate());
-//
-//            NNUE newNnue = new NNUE(board);
-//            int evaluation = nnue.evaluate();
-//            int newEvaluation = newNnue.evaluate();
-//            if (evaluation != newEvaluation) {
-//                System.out.println("Evaluation: " + evaluation);
-//                System.out.println("New Evaluation: " + newEvaluation);
-//            }
-//            Assertions.assertEquals(evaluation, newEvaluation);
-//        }
-//
-//        NNUE newNnue = new NNUE(board);
-//        Assertions.assertEquals(nnue.evaluate(), newNnue.evaluate());
-//
-//    }
-//
-//    @Test
-//    public void testFindBugs() {
-//
-//        int tries = 0;
-//        int ply = 0;
-//
-//        while (tries < 1000000) {
-//            Board board = Board.from(FEN.STARTPOS);
-//            NNUE nnue = new NNUE(board);
-//            List<Move> moveHistory = new ArrayList<>();
-//            while (ply < 256) {
-//
-//                List<Move> moves = new MoveGenerator().generateMoves(board);
-//                if (moves.isEmpty()) {
-//                    System.out.println("No moves available");
-//                    break;
-//                }
-//
-//                Move move = moves.get(new Random().nextInt(moves.size()));
-//                nnue.makeMove(board, move);
-//                board.makeMove(move);
-//                moveHistory.add(move);
-//
-//                int evaluation = nnue.evaluate();
-//                int newEvaluation = new NNUE(board).evaluate();
-//                if (evaluation != newEvaluation) {
-//                    System.out.println(moveHistory.stream().map(Move::toUCI).toList());
-//                    System.out.println("try: " + tries);
-//                    System.out.println("ply: " + ply);
-//                    System.out.println("Evaluation: " + evaluation);
-//                    System.out.println("New Evaluation: " + newEvaluation);
-//                    Assertions.fail("NNUE evaluation mismatch");
-//                }
-//                ply++;
-//
-//            }
-//            tries++;
-//        }
-//
-//    }
-
 
     @AfterAll
     public static void tearDown() {

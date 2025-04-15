@@ -158,7 +158,7 @@ public class MovePicker {
             badNoisies = new ScoredMove[stagedMoves.size()];
             for (Move move : stagedMoves) {
                 ScoredMove scoredMove = scorer.score(board, move, ply, stage);
-                if (scoredMove.moveType() == MoveType.GOOD_NOISY) {
+                if (scoredMove.isGoodNoisy()) {
                     goodNoisies[goodIndex++] = scoredMove;
                 } else {
                     badNoisies[badIndex++] = scoredMove;
@@ -170,8 +170,7 @@ public class MovePicker {
             int quietIndex = 0;
             quiets = new ScoredMove[stagedMoves.size()];
             for (Move move : stagedMoves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
-                quiets[quietIndex++] = scoredMove;
+                quiets[quietIndex++] = scorer.score(board, move, ply, stage);
             }
         }
         else if (stage == Stage.QSEARCH_GEN_NOISY) {

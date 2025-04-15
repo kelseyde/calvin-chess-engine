@@ -437,6 +437,9 @@ public class Searcher implements Search {
                     && !inCheck
                     && reducedDepth <= config.fpDepth()
                     && staticEval + futilityMargin <= alpha) {
+                if (move.equals(ttMove)) {
+                    System.out.println("hello");
+                }
                 movePicker.setSkipQuiets(true);
                 continue;
             }

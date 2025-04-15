@@ -185,10 +185,9 @@ public class NNUE {
 
         if (refreshRequired) {
             curr.needsRefresh[Colour.index(white)] = true;
-            boolean mirror = shouldMirror(board.kingSquare(white));
 
             if (mirrorChanged) {
-                mirror = !mirror;
+                boolean mirror = !shouldMirror(board.kingSquare(white));
                 curr.mirrored[Colour.index(white)] = mirror;
             }
 
@@ -304,20 +303,20 @@ public class NNUE {
                 continue;
             }
 
-            if (curr.update == null) {
-                continue;
-            }
-
             int currIndex = current;
+
+            // Find the last accumulator that is fully updated, or needs a refresh
             while (currIndex > 0
                     && !accumulatorStack[currIndex].needsRefresh[whitePerspective]
                     && !accumulatorStack[currIndex].computed[whitePerspective])
                 currIndex--;
 
             if (accumulatorStack[currIndex].needsRefresh[whitePerspective]) {
+                // If the last accumulator needs a refresh, we skip lazy updates and refresh this perspective
                 fullRefresh(board, white);
             }
             else {
+                // Otherwise, we loop through the stack and apply the lazy updates
                 while (currIndex != current) {
                     final Accumulator prev = accumulatorStack[currIndex];
                     final Accumulator next = accumulatorStack[++currIndex];

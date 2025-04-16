@@ -26,13 +26,6 @@ public class QuietHistoryTable extends AbstractHistoryTable {
         table[colourIndex][piece.index()][move.to()] = update;
     }
 
-    public void update(Move move, Piece piece, boolean white, int bonus) {
-        int colourIndex = Colour.index(white);
-        short current = table[colourIndex][piece.index()][move.to()];
-        short update = gravity(current, (short) bonus);
-        table[colourIndex][piece.index()][move.to()] = update;
-    }
-
     public short get(Move move, Piece piece, boolean white) {
         int colourIndex = Colour.index(white);
         return table[colourIndex][piece.index()][move.to()];

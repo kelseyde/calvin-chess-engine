@@ -270,6 +270,7 @@ public class Searcher implements Search {
         int rawStaticEval = Integer.MIN_VALUE;
         int uncorrectedStaticEval = Integer.MIN_VALUE;
         int staticEval = Integer.MIN_VALUE;
+        int corrplexity = 0;
 
         if (singularSearch) {
             // In singular search, since we are in the same node, we can re-use the static eval on the stack.
@@ -279,6 +280,7 @@ public class Searcher implements Search {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             staticEval = ttMove != null ? rawStaticEval : history.correctEvaluation(board, ss, ply, rawStaticEval);
+            corrplexity = Math.abs(staticEval - rawStaticEval);
             uncorrectedStaticEval = rawStaticEval;
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
@@ -304,7 +306,9 @@ public class Searcher implements Search {
 
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
-            final int futilityMargin = Math.max(depth - (improving ? 1 : 0), 0) * config.rfpMargin();
+            final int futilityMargin = depth * config.rfpMargin()
+                    - (improving ? 1 : 0) * config.rfpImpMargin()
+                    + (corrplexity / config.rfpComplexityDiv());
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {

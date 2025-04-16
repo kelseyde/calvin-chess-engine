@@ -294,17 +294,6 @@ public class Searcher implements Search {
         }
         curr.staticEval = staticEval;
 
-        if (!inCheck
-                && !singularSearch
-                && ply >= 1
-                && prev.move != null
-                && prev.captured == null
-                && Score.isDefined(prev.staticEval)) {
-            int value = 6 * -(staticEval + prev.staticEval);
-            int bonus = Math.max(-64, Math.min(128, value));
-            history.getQuietHistoryTable().update(prev.move, prev.piece, !board.isWhite(), bonus);
-        }
-
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
@@ -598,6 +587,14 @@ public class Searcher implements Search {
             // Update the search history with the information from the current search, to improve future move ordering.
             final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
             history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, ss);
+        }
+
+        if (flag == HashFlag.UPPER
+                && ply > 0
+                && prev.move != null
+                && prev.captured == null
+                && !prev.move.isPromotion()) {
+            history.getQuietHistoryTable().update(prev.move, prev.piece, depth, !board.isWhite(), true);
         }
 
         if (!inCheck

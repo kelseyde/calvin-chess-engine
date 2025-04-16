@@ -611,7 +611,7 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        if (!hardLimitReached() && !singularSearch && !ttPrune) {
+        if (!hardLimitReached() && !rootNode && !singularSearch && !ttPrune) {
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, ttPv);
         }
 

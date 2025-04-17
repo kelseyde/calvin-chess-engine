@@ -45,14 +45,17 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         double incrementFactor = config.incrementFactor() / 100.0;
         double base = time * timeFactor + inc * incrementFactor;
 
-        double softFactor = config.softTimeFactor() / 100.0;
-        double hardFactor = config.hardTimeFactor() / 100.0;
+        // Get the full move number from the board
+        int fullMoveNumber = board.getPly();
+
+        // Calculate dynamic soft and hard factors based on move number
+        double softFactor = 0.025 + 0.05 * (1.0 - Math.exp(-0.034 * (double) fullMoveNumber));
+        double hardFactor = 0.135 + 0.21 * (1.0 - Math.exp(-0.030 * (double) fullMoveNumber));
 
         Duration softLimit = Duration.ofMillis((int) (base * softFactor));
         Duration hardLimit = Duration.ofMillis((int) (base * hardFactor));
 
         return new TimeControl(config, start, softLimit, hardLimit, command.nodes(), -1, command.depth());
-
     }
 
     public boolean isHardLimitReached(int depth, int nodes) {

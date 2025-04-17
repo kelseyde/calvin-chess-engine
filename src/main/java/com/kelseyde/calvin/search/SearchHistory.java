@@ -89,14 +89,19 @@ public class SearchHistory {
         captureHistoryTable.update(piece, captureMove.to(), captured, depth, white, good);
     }
 
-    public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {
+    public void updateRootHistory(Move bestMovePrevious, Move bestMoveCurrent, int scorePrevious, int scoreCurrent) {
+        updateBestMoveStability(bestMovePrevious, bestMoveCurrent);
+        updateBestScoreStability(scorePrevious, scoreCurrent);
+    }
+
+    private void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {
         if (bestMovePrevious == null || bestMoveCurrent == null) {
             return;
         }
         bestMoveStability = bestMovePrevious.equals(bestMoveCurrent) ? bestMoveStability + 1 : 0;
     }
 
-    public void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
+    private void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 

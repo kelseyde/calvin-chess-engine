@@ -132,14 +132,14 @@ public class Searcher implements Search {
                     // If score <= alpha, re-search with an expanded aspiration window
                     beta = (alpha + beta) / 2;
                     alpha -= window;
-                    window *= 2;
+                    window *= 1.3;
                     reduction = 0;
                     continue;
                 }
                 if (score >= beta) {
                     // If score >= beta, re-search with an expanded aspiration window
                     beta += window;
-                    window *= 2;
+                    window *= 1.3;
                     reduction = Math.min(maxReduction, reduction + 1);
                     continue;
                 }

@@ -49,6 +49,8 @@ public class EngineConfig {
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -6, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 69, 0, 150, 25);
+    private final Tunable rfpImpMargin           = new Tunable("RfpImpMargin", 69, 0, 150, 25);
+    private final Tunable rfpTtPvMargin          = new Tunable("RfpTtPvMargin", 69, 0, 150, 25);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 308, 200, 400, 10);
@@ -116,7 +118,7 @@ public class EngineConfig {
                 aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
-                qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
+                qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImpMargin, razorDepth, razorMargin, hpMaxDepth,
                 hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
@@ -125,7 +127,7 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, rfpTtPvMargin
         );
     }
 
@@ -305,6 +307,14 @@ public class EngineConfig {
 
     public int rfpMargin() {
         return rfpMargin.value;
+    }
+
+    public int rfpImpMargin() {
+        return rfpImpMargin.value;
+    }
+
+    public int rfpTtPvMargin() {
+        return rfpTtPvMargin.value;
     }
 
     public int lmrDepth() {

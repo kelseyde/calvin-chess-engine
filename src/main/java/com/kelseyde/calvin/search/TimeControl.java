@@ -52,6 +52,10 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         double softFactor = 0.025 + 0.05 * (1.0 - Math.exp(-0.034 * (double) fullMoveNumber));
         double hardFactor = 0.135 + 0.21 * (1.0 - Math.exp(-0.030 * (double) fullMoveNumber));
 
+        // Optionally scale these factors by the config values
+        softFactor *= config.softTimeFactor() / 100.0;
+        hardFactor *= config.hardTimeFactor() / 100.0;
+
         Duration softLimit = Duration.ofMillis((int) (base * softFactor));
         Duration hardLimit = Duration.ofMillis((int) (base * hardFactor));
 

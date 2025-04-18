@@ -92,6 +92,7 @@ public class Searcher implements Search {
         int reduction = 0;
         int maxReduction = config.aspMaxReduction();
         int window = config.aspDelta();
+        int average = Score.MIN;
 
         while (!softLimitReached() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
@@ -145,9 +146,10 @@ public class Searcher implements Search {
                 }
 
                 // Center the aspiration window around the score from the current iteration, to be used next time.
-                window = config.aspDelta();
-                alpha = score - window;
-                beta = score + window;
+                average = Score.isDefined(score) ? (average + score) / 2 : score;
+                window = config.aspDelta() + average * average / 16384;
+                alpha = Math.max(Score.MIN, score - window);
+                beta = Math.min(Score.MAX, score + window);
             }
 
             // Increment depth and reset retry counter for next iteration

@@ -305,7 +305,11 @@ public class Searcher implements Search {
 
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
-            final int futilityMargin = Math.max(depth - (improving ? 1 : 0), 0) * config.rfpMargin();
+            final int futilityMargin = depth * config.rfpMargin()
+                    - (improving ? 1 : 0) * config.rfpImprovingMargin()
+                    + (prev.captured == null ?
+                        prev.historyScore / config.rfpHistoryQuietDiv() :
+                        prev.historyScore / config.rfpHistoryNoisyDiv());
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
@@ -330,7 +334,6 @@ public class Searcher implements Search {
                 && staticEval >= beta
                 && (!ttHit || cutNode || ttEntry.score() >= beta)
                 && board.hasPiecesRemaining(board.isWhite())) {
-
                 int r = config.nmpBase()
                         + depth / config.nmpDivisor()
                         + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
@@ -512,7 +515,7 @@ public class Searcher implements Search {
 
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
-            makeMove(move, piece, captured, curr);
+            makeMove(move, piece, captured, historyScore, curr);
 
             if (isCapture && captureMoves < 16) {
                 curr.captures[captureMoves++] = move;
@@ -712,6 +715,7 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
+            final int historyScore = scoredMove.historyScore();
 
             final Move prevMove = ss.get(ply - 1).move;
             final boolean recapture = prevMove != null && prevMove.to() == move.to();
@@ -731,7 +735,7 @@ public class Searcher implements Search {
             if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
-            makeMove(move, piece, captured, sse);
+            makeMove(move, piece, captured, historyScore, sse);
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
@@ -781,12 +785,13 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void makeMove(Move move, Piece piece, Piece captured, SearchStackEntry sse) {
+    private void makeMove(Move move, Piece piece, Piece captured, int historyScore, SearchStackEntry sse) {
         eval.makeMove(board, move);
         board.makeMove(move);
         sse.move = move;
         sse.piece = piece;
         sse.captured = captured;
+        sse.historyScore = historyScore;
     }
 
     private void unmakeMove(SearchStackEntry sse) {
@@ -795,6 +800,7 @@ public class Searcher implements Search {
         sse.move = null;
         sse.piece = null;
         sse.captured = null;
+        sse.historyScore = 0;
     }
 
     private boolean hardLimitReached() {

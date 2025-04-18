@@ -537,7 +537,7 @@ public class Searcher implements Search {
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.
-                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, score >= beta);
                 }
             }
 

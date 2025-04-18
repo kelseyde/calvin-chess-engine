@@ -51,10 +51,10 @@ public class EngineConfig {
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 69, 0, 150, 25);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
-    private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
-    private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 308, 200, 400, 10);
-    private final Tunable lmrCapBase             = new Tunable("LmrCapBase", 93, 50, 100, 5);
-    private final Tunable lmrCapDivisor          = new Tunable("LmrCapDivisor", 303, 200, 400, 10);
+    private final Tunable lmrBase                = new Tunable("LmrBase", 84, 50, 100, 5);
+    private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 200, 200, 400, 10);
+    private final Tunable lmrCapBase             = new Tunable("LmrCapBase", -25, -100, 100, 5);
+    private final Tunable lmrCapDivisor          = new Tunable("LmrCapDivisor", 280, 200, 400, 10);
     private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 963, 0, 2048, 150);

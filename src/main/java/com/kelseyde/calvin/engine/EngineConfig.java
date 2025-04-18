@@ -26,7 +26,8 @@ public class EngineConfig {
     public boolean searchCancelled = false;
 
     private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
-    private final Tunable aspMargin              = new Tunable("AspMargin", 15, 0, 250, 25);
+    private final Tunable aspDelta               = new Tunable("AspDelta", 15, 0, 250, 25);
+    private final Tunable aspWideningFactor      = new Tunable("AspWideningFactor", 130, 110, 200, 10);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
     private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
@@ -113,7 +114,7 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMinDepth, aspMargin, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
+                aspMinDepth, aspDelta, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
                 qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
@@ -125,7 +126,7 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor
         );
     }
 
@@ -215,8 +216,12 @@ public class EngineConfig {
         return aspMinDepth.value;
     }
 
-    public int aspMargin() {
-        return aspMargin.value;
+    public int aspDelta() {
+        return aspDelta.value;
+    }
+
+    public int aspWideningFactor() {
+        return aspWideningFactor.value;
     }
 
     public int aspMaxReduction() {

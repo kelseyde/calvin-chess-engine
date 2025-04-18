@@ -73,7 +73,7 @@ public class MoveScorer {
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;
-            return new ScoredMove(move, piece, captured, score, historyScore, type);
+            return new ScoredMove(move, piece, captured, score, historyScore / 2, type);
         }
 
         score += SEE.value(captured);
@@ -86,7 +86,7 @@ public class MoveScorer {
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
         final MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
-        return new ScoredMove(move, piece, captured, score, historyScore, type);
+        return new ScoredMove(move, piece, captured, score, historyScore / 2, type);
     }
 
     private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
@@ -96,7 +96,7 @@ public class MoveScorer {
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
 
-        return new ScoredMove(move, piece, null, score, score, MoveType.QUIET);
+        return new ScoredMove(move, piece, null, score, score / 2, MoveType.QUIET);
 
     }
 

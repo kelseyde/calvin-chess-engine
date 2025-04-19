@@ -17,7 +17,9 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         final int score      = Value.getScore(value);
         final int flag       = Key.getFlag(key);
         final int depth      = Key.getDepth(key);
-        final int staticEval = Key.getStaticEval(key);
+        int staticEval       = Key.getStaticEval(key);
+        if (staticEval == Short.MIN_VALUE)
+            staticEval = Integer.MIN_VALUE;
         final boolean pv     = Key.isPv(key);
         return new HashEntry(move, score, staticEval, flag, depth, pv);
     }
@@ -51,6 +53,8 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
 
         public static long of(long zobristKey, int depth, int staticEval, int flag, boolean pv) {
+            if (staticEval == Integer.MIN_VALUE)
+                staticEval = Short.MIN_VALUE;
             depth = Math.min(depth, 255);
             long pvBit = pv ? 1L : 0L;
             return (zobristKey & ZOBRIST_PART_MASK) |

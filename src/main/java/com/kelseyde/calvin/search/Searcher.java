@@ -268,9 +268,9 @@ public class Searcher implements Search {
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
         // In non-leaf nodes, this is used as a guide for several heuristics, such as extensions, reductions and pruning.
-        int rawStaticEval = Integer.MIN_VALUE;
-        int uncorrectedStaticEval = Integer.MIN_VALUE;
-        int staticEval = Integer.MIN_VALUE;
+        int rawStaticEval = Score.MIN;
+        int uncorrectedStaticEval = Score.MIN;
+        int staticEval = Score.MIN;
 
         if (singularSearch) {
             // In singular search, since we are in the same node, we can re-use the static eval on the stack.
@@ -658,8 +658,8 @@ public class Searcher implements Search {
         MoveFilter filter;
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
-        int rawStaticEval = Integer.MIN_VALUE;
-        int staticEval = Integer.MIN_VALUE;
+        int rawStaticEval = Score.MIN;
+        int staticEval = Score.MIN;
 
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
@@ -824,13 +824,13 @@ public class Searcher implements Search {
      * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
      */
     private boolean isImproving(int ply, int staticEval) {
-        if (staticEval == Integer.MIN_VALUE) return false;
+        if (staticEval == Score.MIN) return false;
         if (ply < 2) return false;
         int lastEval = ss.get(ply - 2).staticEval;
-        if (lastEval == Integer.MIN_VALUE) {
+        if (lastEval == Score.MIN) {
             if (ply < 4) return false;
             lastEval = ss.get(ply - 4).staticEval;
-            if (lastEval == Integer.MIN_VALUE) {
+            if (lastEval == Score.MIN) {
                 return true;
             }
         }

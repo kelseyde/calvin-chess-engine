@@ -19,12 +19,11 @@ import java.util.stream.IntStream;
 public class TranspositionTable {
 
     private static final int BUCKET_SIZE = 4;
-    private static final int ENTRY_SIZE_BYTES = 16;
+    private static final int ENTRY_SIZE_BYTES = 12;
 
     private long[] keys;
-    private long[] values;
+    private int[] values;
     private int size;
-    private int age;
     private int tries;
     private int hits;
 
@@ -34,10 +33,9 @@ public class TranspositionTable {
     public TranspositionTable(int tableSizeMb) {
         this.size = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         this.keys = new long[size];
-        this.values = new long[size];
+        this.values = new int[size];
         this.tries = 0;
         this.hits = 0;
-        this.age = 0;
     }
 
     /**
@@ -50,9 +48,8 @@ public class TranspositionTable {
             long storedKey = keys[index + i];
             if (storedKey != 0 && HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
                 hits++;
-                storedKey = HashEntry.Key.setAge(storedKey, age);
                 keys[index + i] = storedKey;
-                long storedValue = values[index + i];
+                int storedValue = values[index + i];
                 int score = HashEntry.Value.getScore(storedValue);
                 if (Score.isMate(score)) {
                     score = retrieveMateScore(score, ply);
@@ -105,20 +102,19 @@ public class TranspositionTable {
                 break;
             }
 
-            long storedValue = values[i];
+            int storedValue = values[i];
 
-            int storedFlag = HashEntry.Value.getFlag(storedValue);
+            int storedFlag = HashEntry.Key.getFlag(storedKey);
             if (storedFlag == HashFlag.NONE) {
                 replacedIndex = i;
                 break;
             }
 
-            int storedDepth = HashEntry.Value.getDepth(values[i]);
-            boolean storedPv = HashEntry.Value.isPv(storedValue);
+            int storedDepth = HashEntry.Key.getDepth(storedKey);
             // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
             // If the depth is < the store depth, don't replace it and exit (although this should never happen).
             if (HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
-                if (depth + (pv && !storedPv ? 2 : 0) >= storedDepth - 4) {
+                if (depth >= storedDepth - 4) {
                     // If the stored entry has a recorded best move but the new entry does not, use the stored one.
                     Move storedMove = HashEntry.Value.getMove(storedValue);
                     if (move == null && storedMove != null) {
@@ -131,12 +127,6 @@ public class TranspositionTable {
                 }
             }
 
-            // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (age > HashEntry.Key.getAge(storedKey)) {
-                replacedByAge = true;
-                replacedIndex = i;
-            }
-
             // Finally, just replace the entry with the shallowest search depth.
             if (!replacedByAge && storedDepth < minDepth) {
                 minDepth = storedDepth;
@@ -147,8 +137,8 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            keys[replacedIndex] = HashEntry.Key.of(key, staticEval, age);
-            values[replacedIndex] = HashEntry.Value.of(score, move, flag, depth, pv);
+            keys[replacedIndex] = HashEntry.Key.of(key, depth, staticEval, flag, pv);
+            values[replacedIndex] = HashEntry.Value.of(score, move);
         }
     }
 
@@ -162,20 +152,12 @@ public class TranspositionTable {
                 .count();
     }
 
-    /**
-     * Increments the age counter for the transposition table.
-     */
-    public void incrementAge() {
-        this.age++;
-    }
-
     public void resize(int tableSizeMb) {
         this.size = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         this.keys = new long[size];
-        this.values = new long[size];
+        this.values = new int[size];
         this.tries = 0;
         this.hits = 0;
-        this.age = 0;
     }
 
     /**
@@ -184,9 +166,8 @@ public class TranspositionTable {
     public void clear() {
         this.tries = 0;
         this.hits = 0;
-        this.age = 0;
         this.keys = new long[size];
-        this.values = new long[size];
+        this.values = new int[size];
     }
 
     /**

@@ -881,7 +881,7 @@ public class Searcher implements Search {
         return config.fpMargin()
                 + depth * config.fpScale()
                 + (historyScore / config.fpHistDivisor())
-                - searchedMoves * 4;
+                - searchedMoves * config.fpMoveMultiplier();
     }
 
     private int seeThreshold(int depth, int historyScore, boolean isQuiet) {

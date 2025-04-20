@@ -43,6 +43,7 @@ public class TranspositionTable {
      */
     public void get(HashEntry entry, long key, int ply) {
         int index = index(key);
+        entry.exists = false;
         tries++;
         for (int i = 0; i < BUCKET_SIZE; i++) {
             long storedKey = keys[index + i];
@@ -59,7 +60,6 @@ public class TranspositionTable {
                 return;
             }
         }
-        entry.exists = false;
     }
 
     /**

@@ -220,7 +220,6 @@ public class Searcher implements Search {
         // Check if this node has already been searched before. If so, we can potentially re-use the result of the
         // previous search. In any case we can re-use information from the previous search in the current search.
         HashEntry ttEntry = curr.ttEntry;
-        ttEntry.exists = false;
         boolean ttHit = false;
         boolean ttPrune = false;
         Move ttMove = null;
@@ -648,7 +647,6 @@ public class Searcher implements Search {
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
         final HashEntry ttEntry = curr.ttEntry;
-        ttEntry.exists = false;
         tt.get(ttEntry, board.key(), ply);
 
         final boolean ttHit = ttEntry.exists;
@@ -896,7 +894,7 @@ public class Searcher implements Search {
     }
 
     private boolean canUseTTScore(HashEntry ttEntry, int rawStaticEval) {
-        return ttEntry != null &&
+        return ttEntry.exists &&
                 (ttEntry.flag() == HashFlag.EXACT ||
                 (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                 (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval));

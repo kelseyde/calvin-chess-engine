@@ -47,6 +47,7 @@ public class EngineConfig {
     private final Tunable seeQsNoisyOffset       = new Tunable("SeeQsNoisyOffset", 21, -100, 200, 50);
     private final Tunable seeQsNoisyDivisor      = new Tunable("SeeQsNoisyDivisor", 4, 2, 6, 1);
     private final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 128, 50, 250, 25);
+    private final Tunable seeMoveMultiplier      = new Tunable("SeeMoveMultiplier", 10, 0, 20, 2);
     private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 116, 0, 250, 10);
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -6, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
@@ -127,7 +128,8 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
+                seeMoveMultiplier
         );
     }
 
@@ -299,6 +301,10 @@ public class EngineConfig {
 
     public int seeHistoryDivisor() {
         return seeHistoryDivisor.value;
+    }
+
+    public int seeMoveMultiplier() {
+        return seeMoveMultiplier.value;
     }
 
     public int qsFpMargin() {

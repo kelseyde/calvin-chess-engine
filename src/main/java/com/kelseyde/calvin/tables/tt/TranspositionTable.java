@@ -41,7 +41,7 @@ public class TranspositionTable {
     /**
      * Retrieves an entry from the transposition table using the given zobrist key.
      */
-    public HashEntry get(long key, int ply) {
+    public void get(HashEntry entry, long key, int ply) {
         int index = index(key);
         tries++;
         for (int i = 0; i < BUCKET_SIZE; i++) {
@@ -55,10 +55,11 @@ public class TranspositionTable {
                     score = retrieveMateScore(score, ply);
                     storedValue = HashEntry.Value.setScore(storedValue, score);
                 }
-                return HashEntry.of(storedKey, storedValue);
+                entry.init(storedKey, storedValue);
+                return;
             }
         }
-        return null;
+        entry.exists = false;
     }
 
     /**

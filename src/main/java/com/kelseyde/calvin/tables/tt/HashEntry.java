@@ -2,6 +2,8 @@ package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
 
+import java.util.Objects;
+
 /**
  * Entry in the {@link TranspositionTable}.
  * </p>
@@ -10,27 +12,37 @@ import com.kelseyde.calvin.board.Move;
  * - Key: 0-31 (zobrist key), 32-39 (depth), 40-55 (static eval), 56-57 (flag), 58 (pv), 59-63 (unused)
  * - Value: 0-15 (score), 16-31 (move)
  */
-public record HashEntry(Move move, int score, int staticEval, int flag, int depth, boolean pv) {
+public class HashEntry {
 
-    public static HashEntry of(long key, int value) {
-        final Move move      = Value.getMove(value);
-        final int score      = Value.getScore(value);
-        final int flag       = Key.getFlag(key);
-        final int depth      = Key.getDepth(key);
-        int staticEval       = Key.getStaticEval(key);
-        if (staticEval == Short.MIN_VALUE)
-            staticEval = Integer.MIN_VALUE;
-        final boolean pv     = Key.isPv(key);
-        return new HashEntry(move, score, staticEval, flag, depth, pv);
+    public Move move;
+    public int score;
+    public int staticEval;
+    public int flag;
+    public int depth;
+    public boolean pv;
+    public boolean exists;
+
+    public HashEntry() {}
+
+    public void init(long key, int value) {
+        this.move = Value.getMove(value);
+        this.score = Value.getScore(value);
+        this.staticEval = Key.getStaticEval(key);
+        if (this.staticEval == Short.MIN_VALUE)
+            this.staticEval = Integer.MIN_VALUE;
+        this.flag = Key.getFlag(key);
+        this.depth = Key.getDepth(key);
+        this.pv = Key.isPv(key);
+        this.exists = true;
     }
 
     public static class Key {
 
-        private static final long ZOBRIST_PART_MASK   = 0x00000000ffffffffL;
-        private static final long DEPTH_MASK          = 0x000000ff00000000L;
-        private static final long STATIC_EVAL_MASK    = 0x00ffff0000000000L;
-        private static final long FLAG_MASK           = 0x0300000000000000L;
-        private static final long PV_MASK             = 0x0400000000000000L;
+        private static final long ZOBRIST_PART_MASK = 0x00000000ffffffffL;
+        private static final long DEPTH_MASK = 0x000000ff00000000L;
+        private static final long STATIC_EVAL_MASK = 0x00ffff0000000000L;
+        private static final long FLAG_MASK = 0x0300000000000000L;
+        private static final long PV_MASK = 0x0400000000000000L;
 
         public static long getZobristPart(long key) {
             return key & ZOBRIST_PART_MASK;
@@ -68,7 +80,7 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
     public static class Value {
 
         private static final int SCORE_MASK = 0x0000ffff;
-        private static final int MOVE_MASK  = 0xffff0000;
+        private static final int MOVE_MASK = 0xffff0000;
 
         public static int getScore(int value) {
             return (short) (value & SCORE_MASK);
@@ -94,4 +106,58 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
             throw new IllegalArgumentException("Value out of range: " + value);
         }
     }
+
+    public Move move() {
+        return move;
+    }
+
+    public int score() {
+        return score;
+    }
+
+    public int staticEval() {
+        return staticEval;
+    }
+
+    public int flag() {
+        return flag;
+    }
+
+    public int depth() {
+        return depth;
+    }
+
+    public boolean pv() {
+        return pv;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (HashEntry) obj;
+        return Objects.equals(this.move, that.move) &&
+                this.score == that.score &&
+                this.staticEval == that.staticEval &&
+                this.flag == that.flag &&
+                this.depth == that.depth &&
+                this.pv == that.pv;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(move, score, staticEval, flag, depth, pv);
+    }
+
+    @Override
+    public String toString() {
+        return "HashEntry[" +
+                "move=" + move + ", " +
+                "score=" + score + ", " +
+                "staticEval=" + staticEval + ", " +
+                "flag=" + flag + ", " +
+                "depth=" + depth + ", " +
+                "pv=" + pv + ']';
+    }
+
 }

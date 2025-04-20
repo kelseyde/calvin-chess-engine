@@ -2,6 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.tables.tt.HashEntry;
 
 public class SearchStack {
 
@@ -24,6 +25,7 @@ public class SearchStack {
     }
 
     public static class SearchStackEntry {
+        public HashEntry ttEntry = new HashEntry();
         public int staticEval;
         public Move move;
         public Piece piece;

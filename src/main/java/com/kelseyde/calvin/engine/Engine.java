@@ -17,6 +17,7 @@ import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
@@ -129,9 +130,10 @@ public class Engine {
         TranspositionTable tt = searcher.getTranspositionTable();
         board.makeMove(bestMove);
         long key = board.key();
-        HashEntry entry = tt.get(key, 0);
+        HashEntry entry = new HashEntry();
+        tt.get(entry, key, 0);
         board.unmakeMove();
-        return entry != null ? entry.move() : null;
+        return entry.exists ? entry.move() : null;
     }
 
     public List<Move> extractPrincipalVariation() {
@@ -140,8 +142,9 @@ public class Engine {
         int moves = 0;
         while (moves < 24) {
             long key = board.key();
-            HashEntry entry = tt.get(key, 0);
-            if (entry == null || entry.move() == null) {
+            HashEntry entry = new HashEntry();
+            tt.get(entry, key, 0);
+            if (!entry.exists || entry.move() == null) {
                 break;
             }
             pv.add(entry.move());

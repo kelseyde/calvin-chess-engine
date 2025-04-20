@@ -219,15 +219,16 @@ public class Searcher implements Search {
         // Transposition table
         // Check if this node has already been searched before. If so, we can potentially re-use the result of the
         // previous search. In any case we can re-use information from the previous search in the current search.
-        HashEntry ttEntry = null;
+        HashEntry ttEntry = curr.ttEntry;
+        ttEntry.exists = false;
         boolean ttHit = false;
         boolean ttPrune = false;
         Move ttMove = null;
         boolean ttPv = pvNode;
 
         if (!singularSearch) {
-            ttEntry = tt.get(board.key(), ply);
-            ttHit = ttEntry != null;
+            tt.get(ttEntry, board.key(), ply);
+            ttHit = ttEntry.exists;
             ttMove = ttHit ? ttEntry.move() : null;
             ttPv = ttPv || (ttHit && ttEntry.pv());
 
@@ -643,9 +644,14 @@ public class Searcher implements Search {
 
         final boolean pvNode = beta - alpha > 1;
 
+        SearchStackEntry curr = ss.get(ply);
+
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        final HashEntry ttEntry = tt.get(board.key(), ply);
-        final boolean ttHit = ttEntry != null;
+        final HashEntry ttEntry = curr.ttEntry;
+        ttEntry.exists = false;
+        tt.get(ttEntry, board.key(), ply);
+
+        final boolean ttHit = ttEntry.exists;
         final Move ttMove = ttHit ? ttEntry.move() : null;
         boolean ttPv = pvNode || (ttHit && ttEntry.pv());
 
@@ -691,8 +697,6 @@ public class Searcher implements Search {
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         movePicker.setFilter(filter);
 
-        SearchStackEntry sse = ss.get(ply);
-
         int movesSearched = 0;
 
         Move bestMove = null;
@@ -731,12 +735,12 @@ public class Searcher implements Search {
             if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
-            makeMove(move, piece, captured, sse);
+            makeMove(move, piece, captured, curr);
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
 
-            unmakeMove(sse);
+            unmakeMove(curr);
 
             if (score > bestScore) {
                 bestScore = score;

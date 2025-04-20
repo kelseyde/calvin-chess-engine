@@ -19,10 +19,13 @@ public class TranspositionTableTest {
 
     private Board board;
 
+    private HashEntry entry;
+
     @BeforeEach
     public void beforeEach() {
         board = Board.from(FEN.STARTPOS);
         table = new TranspositionTable(TestUtils.CONFIG.defaultHashSizeMb);
+        entry = new HashEntry();
     }
 
     @Test
@@ -108,7 +111,7 @@ public class TranspositionTableTest {
 
         // Do some more searching, return to this position
 
-        HashEntry entry = table.get(board.getState().getKey(), ply);
+        table.get(entry, board.getState().getKey(), ply);
 
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(flag, entry.flag());
@@ -123,7 +126,7 @@ public class TranspositionTableTest {
         depth = 255;
         table.put(board.getState().getKey(), flag, depth, ply + 1, bestMove, 0,  eval, true);
 
-        entry = table.get(board.getState().getKey(), ply);
+        table.get(entry, board.getState().getKey(), ply);
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(flag, entry.flag());
         Assertions.assertEquals(bestMove, entry.move());
@@ -136,7 +139,7 @@ public class TranspositionTableTest {
         depth = 10;
         table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  eval, true);
 
-        entry = table.get(board.getState().getKey(), ply);
+        table.get(entry, board.getState().getKey(), ply);
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(flag, entry.flag());
         Assertions.assertNull(entry.move());
@@ -164,16 +167,16 @@ public class TranspositionTableTest {
 
         // Do some more searching, return to this position
 
-        HashEntry entry = table.get(board.getState().getKey(), ply);
-        Assertions.assertNull(entry);
+        table.get(entry, board.getState().getKey(), ply);
+        Assertions.assertFalse(entry.exists);
 
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
-        entry = table.get(board.getState().getKey(), ply);
-        Assertions.assertNull(entry);
+        table.get(entry, board.getState().getKey(), ply);
+        Assertions.assertFalse(entry.exists);
 
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
-        entry = table.get(board.getState().getKey(), ply);
-        Assertions.assertNotNull(entry);
+        table.get(entry, board.getState().getKey(), ply);
+        Assertions.assertTrue(entry.exists);
 
     }
 
@@ -190,7 +193,7 @@ public class TranspositionTableTest {
 
         // Do some more searching, return to this position
 
-        HashEntry entry = table.get(board.getState().getKey(), ply);
+        table.get(entry, board.getState().getKey(), ply);
 
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(flag, entry.flag());
@@ -212,11 +215,13 @@ public class TranspositionTableTest {
 
         table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0, Score.MATE, true);
 
-        Assertions.assertEquals(Score.MATE, table.get(board.getState().getKey(), 0).score());
+        table.get(entry, board.getState().getKey(), 0);
+        Assertions.assertEquals(Score.MATE, entry.score());
 
         table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0, -Score.MATE, false);
 
-        Assertions.assertEquals(-Score.MATE, table.get(board.getState().getKey(), 0).score());
+        table.get(entry, board.getState().getKey(), 0);
+        Assertions.assertEquals(-Score.MATE, entry.score());
 
     }
 
@@ -230,11 +235,13 @@ public class TranspositionTableTest {
 
         table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  Score.MATE, true);
 
-        Assertions.assertEquals(Score.MATE - 1, table.get(board.getState().getKey(), 0).score());
+        table.get(entry, board.getState().getKey(), 0);
+        Assertions.assertEquals(Score.MATE - 1, entry.score());
 
         table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -Score.MATE, false);
 
-        Assertions.assertEquals(-Score.MATE + 1, table.get(board.getState().getKey(), 0).score());
+        table.get(entry, board.getState().getKey(), 0);
+        Assertions.assertEquals(-Score.MATE + 1, entry.score());
 
     }
 
@@ -250,12 +257,23 @@ public class TranspositionTableTest {
 
         table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  score, true);
 
-        Assertions.assertEquals(Score.MATE, table.get(zobrist, 5).score());
-        Assertions.assertEquals(Score.MATE - 1, table.get(zobrist, 4).score());
-        Assertions.assertEquals(Score.MATE - 2, table.get(zobrist, 3).score());
-        Assertions.assertEquals(Score.MATE - 3, table.get(zobrist, 2).score());
-        Assertions.assertEquals(Score.MATE - 4, table.get(zobrist, 1).score());
-        Assertions.assertEquals(Score.MATE - 5, table.get(zobrist, 0).score());
+        table.get(entry, zobrist, 5);
+        Assertions.assertEquals(Score.MATE, entry.score());
+
+        table.get(entry, zobrist, 4);
+        Assertions.assertEquals(Score.MATE - 1, entry.score());
+
+        table.get(entry, zobrist, 3);
+        Assertions.assertEquals(Score.MATE - 2, entry.score());
+
+        table.get(entry, zobrist, 2);
+        Assertions.assertEquals(Score.MATE - 3, entry.score());
+
+        table.get(entry, zobrist, 1);
+        Assertions.assertEquals(Score.MATE - 4, entry.score());
+
+        table.get(entry, zobrist, 0);
+        Assertions.assertEquals(Score.MATE - 5, entry.score());
     }
 
     @Test
@@ -314,15 +332,15 @@ public class TranspositionTableTest {
 
         table.put(key, flag, depth, ply, null, eval, score, true);
 
-        HashEntry ttEntry = table.get(key, ply);
+        table.get(entry, key, ply);
 
-        Assertions.assertNotNull(ttEntry);
-        Assertions.assertEquals(HashFlag.NONE, ttEntry.flag());
-        Assertions.assertNull(ttEntry.move());
-        Assertions.assertEquals(126, ttEntry.staticEval());
-        Assertions.assertEquals(0, ttEntry.score());
-        Assertions.assertEquals(0, ttEntry.depth());
-        Assertions.assertTrue(ttEntry.pv());
+        Assertions.assertNotNull(entry);
+        Assertions.assertEquals(HashFlag.NONE, entry.flag());
+        Assertions.assertNull(entry.move());
+        Assertions.assertEquals(126, entry.staticEval());
+        Assertions.assertEquals(0, entry.score());
+        Assertions.assertEquals(0, entry.depth());
+        Assertions.assertTrue(entry.pv());
 
     }
 
@@ -332,11 +350,11 @@ public class TranspositionTableTest {
         long key = board.key();
 
         table.put(key, HashFlag.EXACT, 0, 0, Move.fromUCI("e2e4"), 0, 0, true);
-        HashEntry entry = table.get(key, 0);
+        table.get(entry, key, 0);
         Assertions.assertTrue(entry.pv());
 
         table.put(key, HashFlag.EXACT, 0, 0, Move.fromUCI("e2e4"), 0, 0, false);
-        entry = table.get(key, 0);
+        table.get(entry, key, 0);
         Assertions.assertFalse(entry.pv());
 
     }
@@ -344,7 +362,8 @@ public class TranspositionTableTest {
     private void assertEntry(long zobrist, int score, Move move, int flag, int depth, boolean pv) {
         long key = HashEntry.Key.of(zobrist, depth, 0, flag, pv);
         int value = HashEntry.Value.of(score, move);
-        HashEntry entry = HashEntry.of(key, value);
+        HashEntry entry = new HashEntry();
+        entry.init(key, value);
         Assertions.assertEquals(depth, entry.depth());
         Assertions.assertEquals(score, entry.score());
         Assertions.assertEquals(flag, entry.flag());

@@ -757,6 +757,10 @@ public class Searcher implements Search {
             return -Score.MATE + ply;
         }
 
+        if (bestScore >= beta && !Score.isMate(bestScore) && !Score.isMate(beta)) {
+            bestScore = (bestScore + beta) / 2;
+        }
+
         if (!hardLimitReached()) {
             tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, ttPv);
         }

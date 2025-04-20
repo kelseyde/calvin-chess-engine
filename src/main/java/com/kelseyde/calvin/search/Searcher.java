@@ -442,6 +442,18 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Reverse Futility Pruning
+            // Skip quiet moves when the static evaluation - some margin is still above beta.
+            if (!pvNode
+                    && !rootNode
+                    && isQuiet
+                    && !inCheck
+                    && reducedDepth <= config.fpDepth()
+                    && staticEval - futilityMargin >= beta) {
+                movePicker.setSkipQuiets(true);
+                continue;
+            }
+
             // History pruning
             // Skip quiet moves that have a bad history score.
             final int historyThreshold = config.hpMargin() * depth + config.hpOffset();

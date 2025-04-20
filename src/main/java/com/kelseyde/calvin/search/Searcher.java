@@ -610,6 +610,13 @@ public class Searcher implements Search {
             history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
         }
 
+        if (ttHit
+            && ttEntry.depth() > depth
+            && bestScore > ttEntry.score()
+            && ttEntry.flag() == HashFlag.UPPER) {
+            bestScore = (bestScore + ttEntry.score()) / 2;
+        }
+
         // Store the best move and score in the transposition table for future reference.
         if (!hardLimitReached() && !singularSearch && !ttPrune) {
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, ttPv);

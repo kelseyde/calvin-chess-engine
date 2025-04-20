@@ -521,6 +521,10 @@ public class Searcher implements Search {
                 curr.quiets[quietMoves++] = move;
             }
 
+            if (reduction > 0 && movegen.isCheck(board, board.isWhite())) {
+                reduction--;
+            }
+
             final int nodesBefore = td.nodes;
             td.nodes++;
 

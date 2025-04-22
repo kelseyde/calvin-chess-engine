@@ -48,7 +48,7 @@ public class EngineConfig {
     private final Tunable seeQsNoisyDivisor      = new Tunable("SeeQsNoisyDivisor", 4, 2, 6, 1);
     private final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 128, 50, 250, 25);
     private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 116, 0, 250, 10);
-    private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -6, -300, 300, 100);
+    private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", 1, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 69, 0, 150, 25);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);

@@ -1,4 +1,7 @@
 EXE = calvin-chess-engine
+JAR_NAME = calvin-chess-engine-6.1.0-SNAPSHOT.jar
+JAR_DEST = calvin-chess-engine.jar
+
 ifndef MAVEN_EXE
 	MAVEN_EXE = mvn
 endif
@@ -9,6 +12,6 @@ ifdef JAVA_HOME
 else
 	$(MAVEN_EXE) -f ./pom.xml package
 endif
-	cat header.sh ./target/calvin-chess-engine-6.1.0-SNAPSHOT.jar > $(EXE)
+	cp header.sh $(EXE)
 	chmod +x $(EXE)
-	cp ./target/calvin-chess-engine-6.1.0-SNAPSHOT.jar calvin-chess-engine.jar
+	cp ./target/$(JAR_NAME) $(JAR_DEST)

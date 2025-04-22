@@ -1,4 +1,3 @@
 #!/bin/sh
-exec java --add-modules=jdk.incubator.vector -XX:+UseParallelGC -cp "$0" com.kelseyde.calvin.Application "$@"
-
-exit 1
+DIR=$(dirname "$0")
+exec java --add-modules=jdk.incubator.vector -XX:+UseParallelGC -jar "$DIR/calvin-chess-engine.jar" "$@"

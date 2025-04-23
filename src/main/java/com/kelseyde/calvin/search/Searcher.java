@@ -15,6 +15,7 @@ import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
+import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 
@@ -393,6 +394,7 @@ public class Searcher implements Search {
             final boolean isGoodNoisy = scoredMove.isGoodNoisy();
             final boolean isQuiet = scoredMove.isQuiet();
             final boolean isCapture = captured != null;
+            final boolean givesCheck = movegen.attacksKing(board, move);
             final boolean isMateScore = Score.isMate(bestScore);
 
             int extension = 0;
@@ -468,7 +470,7 @@ public class Searcher implements Search {
 
             // PVS SEE Pruning
             // Skip moves that lose material once all the pieces have been exchanged.
-            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
+            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet, givesCheck);
             if (!pvNode
                     && !rootNode
                     && depth <= config.seeMaxDepth()
@@ -888,8 +890,8 @@ public class Searcher implements Search {
                 - searchedMoves * config.fpMoveMultiplier();
     }
 
-    private int seeThreshold(int depth, int historyScore, boolean isQuiet) {
-        int threshold = isQuiet ?
+    private int seeThreshold(int depth, int historyScore, boolean isQuiet, boolean givesCheck) {
+        int threshold = isQuiet && !givesCheck ?
                 config.seeQuietMargin() * depth :
                 config.seeNoisyMargin() * depth * depth;
         threshold -= historyScore / config.seeHistoryDivisor();

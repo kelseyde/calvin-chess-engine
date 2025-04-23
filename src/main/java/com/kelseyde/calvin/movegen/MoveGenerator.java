@@ -651,6 +651,29 @@ public class MoveGenerator {
 
     }
 
+    public boolean attacksKing(Board board, Move move) {
+
+        // Doesn't take into account pins
+        final int from = move.from();
+        final int to = move.to();
+        final long toBitboard = Bits.of(to);
+        final Piece piece = board.pieceAt(from);
+
+        final long occ = board.getOccupied();
+        final long theirKing = board.getKing(!board.isWhite());
+        final int theirKingSquare = Bits.next(theirKing);
+
+        return switch (piece) {
+            case PAWN -> Bits.contains(Attacks.pawnAttacks(theirKing, !board.isWhite()), to);
+            case KNIGHT -> Bits.contains(Attacks.knightAttacks(theirKingSquare), to);
+            case BISHOP -> Bits.contains(Attacks.bishopAttacks(theirKingSquare, occ), to);
+            case ROOK -> Bits.contains(Attacks.rookAttacks(theirKingSquare, occ), to);
+            case QUEEN -> Bits.contains(Attacks.queenAttacks(theirKingSquare, occ), to);
+            case KING -> Bits.contains(Attacks.kingAttacks(theirKingSquare), to);
+        };
+
+    }
+
     public boolean isPseudoLegal(Board board, Move move) {
 
         if (move == null)

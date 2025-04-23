@@ -24,7 +24,7 @@ public class SearchStack {
     }
 
     public static class SearchStackEntry {
-        public int staticEval;
+        public int staticEval = Integer.MIN_VALUE;
         public Move move;
         public Piece piece;
         public Piece captured;
@@ -32,6 +32,7 @@ public class SearchStack {
         public Move excludedMove;
         public Move[] quiets;
         public Move[] captures;
+        public int reduction;
         public boolean nullMoveAllowed = true;
     }
 

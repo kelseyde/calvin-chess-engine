@@ -299,6 +299,15 @@ public class Searcher implements Search {
         // should be more cautious in our alpha pruning - where the eval is too low.
         final boolean improving = isImproving(ply, staticEval);
 
+        if (!inCheck
+                && !rootNode
+                && depth >= 2
+                && prev.reduction > 0
+                && prev.staticEval != Integer.MIN_VALUE
+                && staticEval + prev.staticEval > 96) {
+            depth--;
+        }
+
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck && !singularSearch) {
@@ -512,7 +521,7 @@ public class Searcher implements Search {
 
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
-            makeMove(move, piece, captured, curr);
+            makeMove(move, piece, captured, reduction, curr);
 
             if (isCapture && captureMoves < 16) {
                 curr.captures[captureMoves++] = move;
@@ -731,7 +740,7 @@ public class Searcher implements Search {
             if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
-            makeMove(move, piece, captured, sse);
+            makeMove(move, piece, captured, 0, sse);
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
@@ -785,12 +794,13 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void makeMove(Move move, Piece piece, Piece captured, SearchStackEntry sse) {
+    private void makeMove(Move move, Piece piece, Piece captured, int reduction, SearchStackEntry sse) {
         eval.makeMove(board, move);
         board.makeMove(move);
         sse.move = move;
         sse.piece = piece;
         sse.captured = captured;
+        sse.reduction = reduction;
     }
 
     private void unmakeMove(SearchStackEntry sse) {
@@ -799,6 +809,7 @@ public class Searcher implements Search {
         sse.move = null;
         sse.piece = null;
         sse.captured = null;
+        sse.reduction = 0;
     }
 
     private boolean hardLimitReached() {

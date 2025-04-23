@@ -394,7 +394,6 @@ public class Searcher implements Search {
             final boolean isGoodNoisy = scoredMove.isGoodNoisy();
             final boolean isQuiet = scoredMove.isQuiet();
             final boolean isCapture = captured != null;
-            final boolean givesCheck = movegen.attacksKing(board, move);
             final boolean isMateScore = Score.isMate(bestScore);
 
             int extension = 0;
@@ -470,7 +469,7 @@ public class Searcher implements Search {
 
             // PVS SEE Pruning
             // Skip moves that lose material once all the pieces have been exchanged.
-            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet, givesCheck);
+            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
             if (!pvNode
                     && !rootNode
                     && depth <= config.seeMaxDepth()
@@ -714,24 +713,29 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
+            final boolean givesCheck = movegen.attacksKing(board, move);
 
             final Move prevMove = ss.get(ply - 1).move;
             final boolean recapture = prevMove != null && prevMove.to() == move.to();
 
-            // Delta Pruning
-            // Skip captures where the value of the captured piece plus a margin is still below alpha.
-            if (!inCheck && capture && !promotion && !recapture && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
-                continue;
+            if (!recapture && !givesCheck) {
 
-            // Futility Pruning
-            // Skip captures that don't win material when the static eval is far below alpha.
-            if (capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1))
-                continue;
+                // Delta Pruning
+                // Skip captures where the value of the captured piece plus a margin is still below alpha.
+                if (!inCheck && capture && !promotion && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
+                    continue;
 
-            // SEE Pruning
-            // Skip moves which lose material once all the pieces are swapped off.
-            if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
-                continue;
+                // Futility Pruning
+                // Skip captures that don't win material when the static eval is far below alpha.
+                if (capture && futilityScore <= alpha && !SEE.see(board, move, 1))
+                    continue;
+
+                // SEE Pruning
+                // Skip moves which lose material once all the pieces are swapped off.
+                if (!inCheck && !SEE.see(board, move, config.qsSeeThreshold()))
+                    continue;
+
+            }
 
             makeMove(move, piece, captured, sse);
 
@@ -890,8 +894,8 @@ public class Searcher implements Search {
                 - searchedMoves * config.fpMoveMultiplier();
     }
 
-    private int seeThreshold(int depth, int historyScore, boolean isQuiet, boolean givesCheck) {
-        int threshold = isQuiet && !givesCheck ?
+    private int seeThreshold(int depth, int historyScore, boolean isQuiet) {
+        int threshold = isQuiet ?
                 config.seeQuietMargin() * depth :
                 config.seeNoisyMargin() * depth * depth;
         threshold -= historyScore / config.seeHistoryDivisor();

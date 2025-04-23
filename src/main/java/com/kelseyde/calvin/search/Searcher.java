@@ -327,7 +327,7 @@ public class Searcher implements Search {
             if (curr.nullMoveAllowed
                 && ply >= td.nmpPly
                 && depth >= config.nmpDepth()
-                && staticEval >= beta
+                && staticEval >= beta - history.getNullMoveHistoryTable().get(prev.move.from(), prev.move.to(), !board.isWhite()) / 16
                 && (!ttHit || cutNode || ttEntry.score() >= beta)
                 && board.hasPiecesRemaining(board.isWhite())) {
 
@@ -343,6 +343,8 @@ public class Searcher implements Search {
 
                 board.unmakeNullMove();
                 ss.get(ply + 1).nullMoveAllowed = true;
+
+                history.getNullMoveHistoryTable().update(prev.move.from(), prev.move.to(), depth, !board.isWhite(), score >= beta);
 
                 if (score >= beta) {
 

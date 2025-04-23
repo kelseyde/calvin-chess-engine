@@ -9,10 +9,7 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
 import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.history.*;
 
 public class SearchHistory {
 
@@ -24,6 +21,7 @@ public class SearchHistory {
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
     private final PieceToCorrectionTable countermoveCorrHistTable;
+    private final NullMoveHistoryTable nullMoveHistoryTable;
 
     private int bestMoveStability = 0;
     private int bestScoreStability = 0;
@@ -37,6 +35,7 @@ public class SearchHistory {
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
+        this.nullMoveHistoryTable = new NullMoveHistoryTable(config);
     }
 
     public void updateHistory(
@@ -156,6 +155,10 @@ public class SearchHistory {
         return captureHistoryTable;
     }
 
+    public NullMoveHistoryTable getNullMoveHistoryTable() {
+        return nullMoveHistoryTable;
+    }
+
     public void reset() {
         bestMoveStability = 0;
         bestScoreStability = 0;
@@ -170,6 +173,7 @@ public class SearchHistory {
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
         countermoveCorrHistTable.clear();
+        nullMoveHistoryTable.clear();
     }
 
 }

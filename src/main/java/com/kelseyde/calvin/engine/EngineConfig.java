@@ -95,6 +95,11 @@ public class EngineConfig {
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable nullMoveHistBonusMax   = new Tunable("NullMoveHistBonusMax", 1200, 100, 2000, 100);
+    private final Tunable nullMoveHistBonusScale = new Tunable("NullMoveHistBonusScale", 200, 50, 400, 25);
+    private final Tunable nullMoveHistMalusMax   = new Tunable("NullMoveHistMalusMax", 1200, 100, 2000, 100);
+    private final Tunable nullMoveHistMalusScale = new Tunable("NullMoveHistMalusScale", 200, 50, 400, 25);
+    private final Tunable nullMoveHistMaxScore   = new Tunable("NullMoveHistMaxScore", 8192, 1000, 12000, 100);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 77, 50, 100, 5);
     private final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
@@ -127,7 +132,8 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
+                nullMoveHistBonusMax, nullMoveHistBonusScale, nullMoveHistMalusMax, nullMoveHistMalusScale
         );
     }
 
@@ -491,6 +497,26 @@ public class EngineConfig {
 
     public int contHistMaxScore() {
         return contHistMaxScore.value;
+    }
+
+    public int nullMoveHistBonusMax() {
+        return nullMoveHistBonusMax.value;
+    }
+
+    public int nullMoveHistBonusScale() {
+        return nullMoveHistBonusScale.value;
+    }
+
+    public int nullMoveHistMalusMax() {
+        return nullMoveHistMalusMax.value;
+    }
+
+    public int nullMoveHistMalusScale() {
+        return nullMoveHistMalusScale.value;
+    }
+
+    public int nullMoveHistMaxScore() {
+        return nullMoveHistMaxScore.value;
     }
 
     public int timeFactor() {

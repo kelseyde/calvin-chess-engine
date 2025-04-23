@@ -425,7 +425,7 @@ public class Searcher implements Search {
                 reduction = Math.max(0, r / 1024);
             }
 
-            int reducedDepth = depth - reduction;
+            int reducedDepth = Math.max(1, depth - reduction);
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
 
@@ -533,7 +533,7 @@ public class Searcher implements Search {
             }
             else {
                 // For all other moves, search with a null window.
-                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                score = -search(reducedDepth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.

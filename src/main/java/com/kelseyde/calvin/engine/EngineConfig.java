@@ -95,11 +95,11 @@ public class EngineConfig {
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
-    private final Tunable nullMoveHistBonusMax   = new Tunable("NullMoveHistBonusMax", 1200, 100, 2000, 100);
-    private final Tunable nullMoveHistBonusScale = new Tunable("NullMoveHistBonusScale", 200, 50, 400, 25);
-    private final Tunable nullMoveHistMalusMax   = new Tunable("NullMoveHistMalusMax", 1200, 100, 2000, 100);
-    private final Tunable nullMoveHistMalusScale = new Tunable("NullMoveHistMalusScale", 200, 50, 400, 25);
-    private final Tunable nullMoveHistMaxScore   = new Tunable("NullMoveHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable nullMoveHistBonusMax   = new Tunable("NullMoveHistBonusMax", 1024, 100, 2000, 100);
+    private final Tunable nullMoveHistBonusScale = new Tunable("NullMoveHistBonusScale", 128, 50, 400, 25);
+    private final Tunable nullMoveHistMalusMax   = new Tunable("NullMoveHistMalusMax", 1024, 100, 2000, 100);
+    private final Tunable nullMoveHistMalusScale = new Tunable("NullMoveHistMalusScale", 128, 50, 400, 25);
+    private final Tunable nullMoveHistMaxScore   = new Tunable("NullMoveHistMaxScore", 1024, 1000, 12000, 100);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 77, 50, 100, 5);
     private final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);

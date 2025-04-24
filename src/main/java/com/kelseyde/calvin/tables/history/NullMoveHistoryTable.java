@@ -6,8 +6,6 @@ import com.kelseyde.calvin.engine.EngineConfig;
 
 public class NullMoveHistoryTable extends AbstractHistoryTable {
 
-    private static final int MAX_HISTORY = 1024;
-
     private short[][][] table;
 
     public NullMoveHistoryTable(EngineConfig config) {

@@ -597,7 +597,8 @@ public class Searcher implements Search {
             // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
             // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
             // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
-            history.getQuietHistoryTable().update(prev.move, prev.piece, depth, !board.isWhite(), true);
+            final int historyDepth = depth + (pvNode || cutNode ? 1 : 0);
+            history.getQuietHistoryTable().update(prev.move, prev.piece, historyDepth, !board.isWhite(), true);
         }
 
         if (!inCheck

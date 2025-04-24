@@ -132,11 +132,11 @@ public record Network(int inputSize,
 
                 short outputBias = buffer.getShort();
 
-                while (buffer.hasRemaining()) {
-                    if (buffer.getShort() != 0) {
-                        throw new RuntimeException("Failed to load NNUE network: invalid file format");
-                    }
-                }
+//                while (buffer.hasRemaining()) {
+//                    if (buffer.getShort() != 0) {
+//                        throw new RuntimeException("Failed to load NNUE network: invalid file format");
+//                    }
+//                }
 
                 return new Network(
                         inputSize, hiddenSize, activation, horizontalMirror, inputBuckets, quantisations, scale,

@@ -758,7 +758,7 @@ public class Searcher implements Search {
         }
 
         if (bestScore >= beta && !Score.isMate(bestScore) && !Score.isMate(beta)) {
-            bestScore = (bestScore + beta) / 2;
+            bestScore = beta + (bestScore - beta) / 3;
         }
 
         if (!hardLimitReached()) {

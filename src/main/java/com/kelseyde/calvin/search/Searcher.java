@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -188,7 +189,8 @@ public class Searcher implements Search {
         final boolean rootNode = ply == 0;
 
         // Determine if we are currently in check.
-        final boolean inCheck = movegen.isCheck(board);
+        final long threats = movegen.calculateThreats(board, !board.isWhite());
+        final boolean inCheck = Bits.contains(threats, board.kingSquare(board.isWhite()));
 
         // If depth is reached, drop into quiescence search
         if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, ply);
@@ -416,6 +418,9 @@ public class Searcher implements Search {
                 r -= isQuiet
                         ? historyScore / config.lmrQuietHistoryDiv() * 1024
                         : historyScore / config.lmrNoisyHistoryDiv() * 1024;
+
+                boolean threatened = Bits.contains(threats, move.to());
+                r -= threatened ? config.lmrThreatened() : 0;
 
                 int futilityMargin = config.fpMargin()
                         + (depth) * config.fpScale()
@@ -653,7 +658,8 @@ public class Searcher implements Search {
             return ttEntry.score();
         }
 
-        final boolean inCheck = movegen.isCheck(board);
+        final long threats = movegen.calculateThreats(board, !board.isWhite());
+        final boolean inCheck = Bits.contains(threats, board.kingSquare(board.isWhite()));
 
         MoveFilter filter;
 

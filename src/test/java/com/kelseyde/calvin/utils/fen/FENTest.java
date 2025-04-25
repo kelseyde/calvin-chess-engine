@@ -13,8 +13,9 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-@Disabled
 public class FENTest {
+
+
 
     @Test
     public void testStartingPosition() {

@@ -307,5 +307,11 @@ public class FEN {
 
     }
 
+    public static class FENParseException extends RuntimeException {
+        public FENParseException(String message) {
+            super("Invalid FEN: " + message);
+        }
+    }
+
 
 }

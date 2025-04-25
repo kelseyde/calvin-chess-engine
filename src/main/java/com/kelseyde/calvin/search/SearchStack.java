@@ -25,8 +25,9 @@ public class SearchStack {
 
     public static class SearchStackEntry {
         public int staticEval;
-        public Move currentMove;
-        public Piece currentPiece;
+        public Move move;
+        public Piece piece;
+        public Piece captured;
         public Move bestMove;
         public Move excludedMove;
         public Move[] quiets;

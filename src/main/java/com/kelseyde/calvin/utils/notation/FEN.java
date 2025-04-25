@@ -5,10 +5,7 @@ import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.uci.UCI;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -16,6 +13,45 @@ import java.util.stream.Stream;
 public class FEN {
 
     public static final String STARTPOS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    public static Board parse(String fen) throws InvalidFenException {
+
+        if (fen == null || fen.isEmpty())
+            throw new InvalidFenException("FEN string is null or empty");
+
+        String[] fenParts = fen.split(" ");
+
+        if (fenParts.length < 4 || fenParts.length > 6)
+            throw new InvalidFenException("FEN string has an invalid number of parts");
+
+        String[] ranks = fenParts[0].split("/");
+
+        if (ranks.length != 8)
+            throw new InvalidFenException("FEN string has an invalid number of ranks");
+
+        long[] bitboards = new long[Piece.COUNT + 2];
+
+        List<List<String>> rankFileHash = Arrays.stream(ranks)
+                .map(file -> Arrays.stream(file.split(""))
+                        .flatMap(FEN::parseSquare)
+                        .toList())
+                .toList()
+                .reversed();
+
+        for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
+            List<String> rank = rankFileHash.get(rankIndex);
+            for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
+                int square = Square.of(rankIndex, fileIndex);
+                String squareValue = rank.get(fileIndex);
+                parsePiece(squareValue).ifPresent(piece -> {
+                    boolean white = Character.isUpperCase(squareValue.charAt(0));
+                    updateBitboards(bitboards, square, piece, white);
+                });
+            }
+        }
+
+
+    }
 
     public static Board toBoard(String fen) {
 
@@ -39,8 +75,8 @@ public class FEN {
                     .map(file -> Arrays.stream(file.split(""))
                             .flatMap(FEN::parseSquare)
                             .toList())
-                    .collect(Collectors.toList());
-            Collections.reverse(rankFileHash);
+                    .toList()
+                    .reversed();
 
             for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
                 List<String> rank = rankFileHash.get(rankIndex);
@@ -159,7 +195,7 @@ public class FEN {
         return switch (sideToMove) {
             case "w" -> true;
             case "b" -> false;
-            default -> throw new IllegalArgumentException("Invalid side to move! " + sideToMove);
+            default -> throw new InvalidFenException("Invalid side to move! " + sideToMove);
         };
     }
 
@@ -203,7 +239,7 @@ public class FEN {
                     // No castling rights, so return empty rights directly
                     return Castling.empty();
                 }
-                default -> throw new IllegalArgumentException("Invalid castling right! " + right);
+                default -> throw new InvalidFenException("Invalid castling right! " + right);
             }
         }
         return rights;
@@ -262,9 +298,9 @@ public class FEN {
     }
 
     private static Stream<String> parseSquare(String square) {
-        if (square.length() != 1) {
-            throw new IllegalArgumentException("Illegal square char! " + square);
-        }
+        if (square.length() != 1)
+            throw new InvalidFenException("Illegal square char! " + square);
+
         boolean isLetter = Character.isLetter(square.charAt(0));
         return isLetter ? Stream.of(square) : IntStream.range(0, Integer.parseInt(square)).mapToObj(i -> "x");
     }
@@ -290,13 +326,11 @@ public class FEN {
         long firstRank = white ? Bits.Rank.FIRST : Bits.Rank.EIGHTH;
         long firstRankRooks = rooks & firstRank;
 
-        if (Bits.count(firstRankRooks) == 0) {
-            throw new IllegalArgumentException("Illegal FEN: castling rights with no rooks on the first rank!");
-        }
+        if (Bits.count(firstRankRooks) == 0)
+            throw new InvalidFenException("Castling rights with no rooks on the first rank!");
 
-        if (Bits.count(firstRankRooks) == 1) {
+        if (Bits.count(firstRankRooks) == 1)
             return Bits.next(firstRankRooks);
-        }
 
         List<Integer> squares = Arrays.stream(Bits.collect(firstRankRooks))
                 .boxed()
@@ -307,8 +341,28 @@ public class FEN {
 
     }
 
-    public static class FENParseException extends RuntimeException {
-        public FENParseException(String message) {
+    private static Optional<Piece> parsePiece(String code) {
+        code = code.toLowerCase();
+        return switch (code) {
+            case "p" -> Optional.of(Piece.PAWN);
+            case "n" -> Optional.of(Piece.KNIGHT);
+            case "b" -> Optional.of(Piece.BISHOP);
+            case "r" -> Optional.of(Piece.ROOK);
+            case "q" -> Optional.of(Piece.QUEEN);
+            case "k" -> Optional.of(Piece.KING);
+            default -> Optional.empty();
+        };
+    }
+
+    private static void updateBitboards(long[] bbs, int square, Piece piece, boolean white) {
+        int pieceIndex = piece.index();
+        int colourIndex = Piece.COUNT + Colour.index(white);
+        bbs[pieceIndex] |= Bits.of(square);
+        bbs[colourIndex] |= Bits.of(square);
+    }
+
+    public static class InvalidFenException extends RuntimeException {
+        public InvalidFenException(String message) {
             super("Invalid FEN: " + message);
         }
     }

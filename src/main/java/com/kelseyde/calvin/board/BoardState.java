@@ -14,6 +14,7 @@ public class BoardState {
     public int enPassantFile;
     public int rights;
     public int halfMoveClock;
+    public int fullMoveNumber;
     public Piece moved;
     public Piece captured;
 
@@ -25,6 +26,7 @@ public class BoardState {
         this.enPassantFile = -1;
         this.rights = Castling.startpos();
         this.halfMoveClock = 0;
+        this.fullMoveNumber = 0;
     }
 
     public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece moved, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
@@ -84,6 +86,10 @@ public class BoardState {
 
     public void setHalfMoveClock(int halfMoveClock) {
         this.halfMoveClock = halfMoveClock;
+    }
+
+    public void setFullMoveNumber(int fullMoveNumber) {
+        this.fullMoveNumber = fullMoveNumber;
     }
 
     public BoardState copy() {

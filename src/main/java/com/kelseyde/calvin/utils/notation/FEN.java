@@ -10,11 +10,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class FEN {
+public record FEN(String value) {
 
     public static final String STARTPOS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    public static Board parse(String fen) throws InvalidFenException {
+    public static Board startpos() {
+        return toBoard(STARTPOS);
+    }
+
+    public static FEN parse(String fen) throws InvalidFenException {
 
         if (fen == null || fen.isEmpty())
             throw new InvalidFenException("FEN string is null or empty");
@@ -29,28 +33,9 @@ public class FEN {
         if (ranks.length != 8)
             throw new InvalidFenException("FEN string has an invalid number of ranks");
 
-        long[] bitboards = new long[Piece.COUNT + 2];
-
-        List<List<String>> rankFileHash = Arrays.stream(ranks)
-                .map(file -> Arrays.stream(file.split(""))
-                        .flatMap(FEN::parseSquare)
-                        .toList())
-                .toList()
-                .reversed();
-
-        for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
-            List<String> rank = rankFileHash.get(rankIndex);
-            for (int fileIndex = 0; fileIndex < rank.size(); fileIndex++) {
-                int square = Square.of(rankIndex, fileIndex);
-                String squareValue = rank.get(fileIndex);
-                parsePiece(squareValue).ifPresent(piece -> {
-                    boolean white = Character.isUpperCase(squareValue.charAt(0));
-                    updateBitboards(bitboards, square, piece, white);
-                });
-            }
-        }
 
 
+        return null;
     }
 
     public static Board toBoard(String fen) {
@@ -75,8 +60,8 @@ public class FEN {
                     .map(file -> Arrays.stream(file.split(""))
                             .flatMap(FEN::parseSquare)
                             .toList())
-                    .toList()
-                    .reversed();
+                    .toList();
+            Collections.reverse(rankFileHash);
 
             for (int rankIndex = 0; rankIndex < rankFileHash.size(); rankIndex++) {
                 List<String> rank = rankFileHash.get(rankIndex);

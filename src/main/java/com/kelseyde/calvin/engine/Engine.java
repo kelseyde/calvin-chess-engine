@@ -48,7 +48,7 @@ public class Engine {
 
     private Engine() {
         this.config = new EngineConfig();
-        this.board = Board.from(FEN.STARTPOS);
+        this.board = FEN.startpos();
         this.movegen = new MoveGenerator();
         this.perft = new Perft();
         this.searcher = new ParallelSearcher(config, movegen, new TranspositionTable(config.defaultHashSizeMb));

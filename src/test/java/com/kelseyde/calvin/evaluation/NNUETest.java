@@ -28,7 +28,7 @@ public class NNUETest {
     }
 
     private void benchmark(String name, String fen) {
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         System.out.printf("%s %s nnue %s%n", name, fen, nnue.evaluate());
     }
@@ -36,7 +36,7 @@ public class NNUETest {
     @Test
     public void testSimpleMakeMove() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         NNUE nnue = new NNUE(board);
 
         Move move = Move.fromUCI("e2e4");
@@ -51,7 +51,7 @@ public class NNUETest {
     public void testWhiteKingsideCastling() {
 
         String fen = "r1bqk1nr/ppppbppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
         Move move = Move.fromUCI("e1g1", Move.CASTLE_FLAG);
@@ -68,7 +68,7 @@ public class NNUETest {
     public void testWhiteQueensideCastling() {
 
         String fen = "rnbq1rk1/pp3pbp/2pp1np1/3Pp3/4P3/2N1BP2/PPPQ2PP/R3KBNR w KQ - 0 8";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
         Move move = Move.fromUCI("e1c1", Move.CASTLE_FLAG);
@@ -86,7 +86,7 @@ public class NNUETest {
 
         UCI.Options.chess960 = true;
         String fen = "rnbq1rk1/pp3pbp/2pp1np1/3Pp3/4P3/2N1BP2/PPPQ2PP/R3KBNR w KQ - 0 8";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
         Move move = Move.fromUCI("e1a1", Move.CASTLE_FLAG);
@@ -104,7 +104,7 @@ public class NNUETest {
     public void testBlackKingsideCastling() {
 
         String fen = "rnbqk2r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 4";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
         Move move = Move.fromUCI("e8g8", Move.CASTLE_FLAG);
@@ -121,7 +121,7 @@ public class NNUETest {
     public void testBlackQueensideCastling() {
 
         String fen = "r3kbnr/pppq1ppp/2np4/4p3/4P3/2N1BN2/PPPQ1PPP/R3KB1R b KQkq - 0 8";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
         Move move = Move.fromUCI("e8c8", Move.CASTLE_FLAG);
@@ -186,7 +186,7 @@ public class NNUETest {
     public void testCapture() {
 
         String fen = "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
         Move move = Move.fromUCI("e4d5");
@@ -203,7 +203,7 @@ public class NNUETest {
     public void testEnPassant() {
 
         String fen = "rnbqkbnr/ppp2ppp/4p3/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
         Move move = Move.fromUCI("e5d6", Move.EN_PASSANT_FLAG);
@@ -220,7 +220,7 @@ public class NNUETest {
     public void testPromotion() {
 
         String fen = "rnbqkb1r/pP3ppp/4pn2/8/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 5";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         Assertions.assertEquals(nnue.evaluate(), new NNUE(board).evaluate());
         Move move = Move.fromUCI("b7a8", Move.PROMOTE_TO_QUEEN_FLAG);
@@ -239,8 +239,8 @@ public class NNUETest {
         String fen1 = "r1bqkb1r/1ppp1ppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 3 5";
         String fen2 = "rnbq1rk1/pppp1ppp/5n2/b3p3/4P3/P1N2N2/1PPP1PPP/R1BQKB1R w KQ - 3 5";
 
-        Board board1 = FEN.toBoard(fen1);
-        Board board2 = FEN.toBoard(fen2);
+        Board board1 = FEN.parse(fen1).toBoard();
+        Board board2 = FEN.parse(fen2).toBoard();
         NNUE nnue1 = new NNUE(board1);
         NNUE nnue2 = new NNUE(board2);
         Assertions.assertEquals(nnue1.evaluate(), nnue2.evaluate());
@@ -251,7 +251,7 @@ public class NNUETest {
     public void testMakeUnmakeNullMove() {
 
         String fen = "r2q1rk1/pp3pp1/2pp1n1p/2bNp2b/2BnP2B/2PP1N1P/PP3PP1/R2Q1RK1 w - - 0 12";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
         int eval1 = nnue.evaluate();
 
@@ -275,7 +275,7 @@ public class NNUETest {
     @Test
     public void testIncrementalEvaluationConsistency() {
         String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         NNUE nnue = new NNUE(board);
 
         for (int i = 0; i < 10; i++) {

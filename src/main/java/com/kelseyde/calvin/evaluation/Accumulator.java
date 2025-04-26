@@ -4,8 +4,6 @@ import com.kelseyde.calvin.board.Colour;
 import jdk.incubator.vector.ShortVector;
 import jdk.incubator.vector.VectorSpecies;
 
-import java.util.Arrays;
-
 /**
  * The accumulator keeps track of the activations of the hidden layer of the neural network. It is incrementally updated
  * during search to avoid recomputing the entire network each time evaluation is called. The activations are accumulated

@@ -34,7 +34,7 @@ public class EndgameTest {
     public void testQueenMateInOneBetterThanMateInTwo() {
 
         String fen = "k7/8/2K5/8/8/8/1Q6/8 w - - 1 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         searcher.setPosition(board);
 
         TimeControl tc = new TimeControl(new EngineConfig(), Instant.now(), Duration.ofMillis(300), Duration.ofMillis(300), -1, 0, -1);
@@ -49,7 +49,7 @@ public class EndgameTest {
     public void testRookVsTwoConnectedPawns() {
 
         String fen = "8/8/2k5/6KP/6P1/8/3r4/8 b - - 1 46";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         searcher.setPosition(board);
         TimeControl tc = new TimeControl(new EngineConfig(), Instant.now(), Duration.ofMillis(300), Duration.ofMillis(300), -1, 0, -1);
         Move move = searcher.search(tc).move();

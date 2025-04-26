@@ -13,7 +13,7 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKing() {
 
         String fen = "8/8/4k3/8/3qK3/8/8/8 w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         Assertions.assertFalse(Score.isEffectiveDraw(board));
 
@@ -28,7 +28,7 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingBishop() {
 
         String fen = "8/8/3qk3/8/1B2K3/8/8/8 w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         Assertions.assertFalse(Score.isEffectiveDraw(board));
 
@@ -43,7 +43,7 @@ public class DrawByInsufficientMaterialTest {
     public void testKingVersusKingKnight() {
 
         String fen = "8/8/3qk3/8/2N1K3/8/8/8 w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         Assertions.assertFalse(Score.isEffectiveDraw(board));
 
@@ -58,7 +58,7 @@ public class DrawByInsufficientMaterialTest {
     public void testKingBishopVersusKingBishop() {
 
         String fen = "8/5b2/3qk3/8/1B2K3/8/8/8 w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         Assertions.assertFalse(Score.isEffectiveDraw(board));
 
@@ -73,7 +73,7 @@ public class DrawByInsufficientMaterialTest {
     public void testKingKnightKnightVersusKingKnightIsNotInsufficientMaterial() {
 
         String fen = "8/5nn1/3qk3/8/2N1K3/8/8/8 w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         Assertions.assertFalse(Score.isEffectiveDraw(board));
 

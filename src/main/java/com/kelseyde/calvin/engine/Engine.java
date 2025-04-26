@@ -48,7 +48,7 @@ public class Engine {
 
     private Engine() {
         this.config = new EngineConfig();
-        this.board = FEN.startpos();
+        this.board = FEN.startpos().toBoard();
         this.movegen = new MoveGenerator();
         this.perft = new Perft();
         this.searcher = new ParallelSearcher(config, movegen, new TranspositionTable(config.defaultHashSizeMb));
@@ -57,12 +57,12 @@ public class Engine {
 
     public void newGame() {
         searcher.clearHistory();
-        board = Board.from(FEN.STARTPOS);
+        board = FEN.startpos().toBoard();
         searcher.setPosition(board);
     }
 
     public void setPosition(PositionCommand command) {
-        board = FEN.toBoard(command.fen());
+        board = FEN.parse(command.fen()).toBoard();
         for (Move move : command.moves()) {
             Move legalMove = move(move);
             board.makeMove(legalMove);

@@ -180,7 +180,7 @@ public class UCI {
 
     public static void handleFen(UCICommand command) {
         if (ENGINE.getBoard() != null) {
-            write(FEN.toFEN(ENGINE.getBoard()));
+            write(FEN.fromBoard(ENGINE.getBoard()).toString());
         } else {
             write("info error no position specified, please use the 'position' command first");
         }

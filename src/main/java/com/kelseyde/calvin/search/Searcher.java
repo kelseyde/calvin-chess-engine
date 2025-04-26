@@ -442,6 +442,16 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Bad Noisy Pruning (Reckless idea)
+            if (!pvNode
+                    && !rootNode
+                    && !inCheck
+                    && depth < 6
+                    && scoredMove.isBadNoisy()
+                    && staticEval + 128 * depth <= alpha) {
+                break;
+            }
+
             // History pruning
             // Skip quiet moves that have a bad history score.
             final int historyThreshold = config.hpMargin() * depth + config.hpOffset();

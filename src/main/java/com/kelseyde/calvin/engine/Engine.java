@@ -14,6 +14,7 @@ import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.utils.Perft;
 import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.FEN.InvalidFenException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -62,7 +63,12 @@ public class Engine {
     }
 
     public void setPosition(PositionCommand command) {
-        board = FEN.parse(command.fen()).toBoard();
+        try {
+            board = FEN.parse(command.fen()).toBoard();
+        } catch (InvalidFenException e) {
+            UCI.write(e.getMessage());
+            return;
+        }
         for (Move move : command.moves()) {
             Move legalMove = move(move);
             board.makeMove(legalMove);

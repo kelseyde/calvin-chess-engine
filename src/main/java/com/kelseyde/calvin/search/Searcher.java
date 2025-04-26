@@ -422,6 +422,9 @@ public class Searcher implements Search {
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
 
+                boolean recapture = !rootNode && prev.move != null && prev.move.to() == move.to();
+                r -= recapture ? 512 : 0;
+
                 reduction = Math.max(0, r / 1024);
             }
 

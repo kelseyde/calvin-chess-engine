@@ -420,7 +420,7 @@ public class Searcher implements Search {
                         : historyScore / config.lmrNoisyHistoryDiv() * 1024;
 
                 boolean threatened = Bits.contains(threats, move.to());
-                r -= threatened ? config.lmrThreatened() : 0;
+                r += !threatened ? config.lmrNotThreatened() : 0;
 
                 int futilityMargin = config.fpMargin()
                         + (depth) * config.fpScale()

@@ -207,11 +207,11 @@ public class FEN2Test {
         List<String> lines = Files.readAllLines(Paths.get("src/test/resources/perft_suite.epd"));
         lines.forEach(line -> {
             String[] parts = line.split(";");
-            String fen1 = parts[0];
+            String fen1 = parts[0].trim();
             Board board = FEN2.parse(fen1).toBoard();
             assertNotNull(board);
             String fen2 = FEN2.fromBoard(board).toString();
-            assertEquals(fen1, fen2, "FEN strings do not match: " + fen1 + " != " + fen2);
+            assertEquals(fen1, fen2, "FEN strings do not match!");
         });
 
     }

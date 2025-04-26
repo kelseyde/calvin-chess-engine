@@ -11,7 +11,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public record FEN2(String value, long[] bitboards, int enPassantFile, boolean whiteToMove, int castleRights, int halfMoveClock, int fullMoveNumber) {
+public record FEN2(String value,
+                   long[] bitboards,
+                   Piece[] pieces,
+                   int enPassantFile,
+                   boolean whiteToMove,
+                   int castleRights,
+                   int halfMoveClock,
+                   int fullMoveClock) {
 
     public static final String STARTPOS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -91,23 +98,26 @@ public record FEN2(String value, long[] bitboards, int enPassantFile, boolean wh
         if (!FenPatterns.FULL_MOVE.matcher(fullMove).matches())
             throw new InvalidFenException("Invalid full move number: " + fullMove, fen);
 
-        long[] bitboards = parseBitboards(board);
+        long[] bitboards = new long[Piece.COUNT + 2];
+        Piece[] pieces = new Piece[Square.COUNT];
+        calculatePiecePositions(board, bitboards, pieces);
         int enPassantFile = parseEnPassantFile(enPassant);
         boolean whiteToMove = turn.equals("w");
         int castleRights = parseCastlingRights(castle, bitboards);
         int halfMoveClock = Integer.parseInt(halfMove);
         int fullMoveNumber = Integer.parseInt(fullMove);
 
-        return new FEN2(fen, bitboards, enPassantFile, whiteToMove, castleRights, halfMoveClock, fullMoveNumber);
+        return new FEN2(fen, bitboards, pieces, enPassantFile, whiteToMove, castleRights, halfMoveClock, fullMoveNumber);
     }
 
     public Board toBoard() {
         Board board = new Board();
         board.setBitboards(bitboards);
+        board.setPieces(pieces);
         board.setWhite(whiteToMove);
         board.getState().setRights(castleRights);
         board.getState().setHalfMoveClock(halfMoveClock);
-        board.getState().setFullMoveNumber(fullMoveNumber);
+        board.getState().setFullMoveNumber(fullMoveClock);
         board.getState().setEnPassantFile(enPassantFile);
         board.getState().setKey(Key.generateKey(board));
         board.getState().setPawnKey(Key.generatePawnKey(board));
@@ -172,8 +182,7 @@ public record FEN2(String value, long[] bitboards, int enPassantFile, boolean wh
         return value;
     }
 
-    private static long[] parseBitboards(String boardString) {
-        long[] bitboards = new long[Piece.COUNT + 2];
+    private static void calculatePiecePositions(String boardString, long[] bitboards, Piece[] pieces) {
 
         String[] files = boardString.split("/");
         List<List<String>> rankFileHash = Arrays.stream(files)
@@ -190,11 +199,10 @@ public record FEN2(String value, long[] bitboards, int enPassantFile, boolean wh
                 String squareValue = rank.get(fileIndex);
                 parsePiece(squareValue).ifPresent(piece -> {
                     boolean isWhite = Character.isUpperCase(squareValue.charAt(0));
-                    updateBitboards(bitboards, square, piece, isWhite);
+                    updatePiecePosition(bitboards, pieces, square, piece, isWhite);
                 });
             }
         }
-        return bitboards;
 
     }
 
@@ -289,11 +297,12 @@ public record FEN2(String value, long[] bitboards, int enPassantFile, boolean wh
                 .findAny();
     }
 
-    private static void updateBitboards(long[] bbs, int square, Piece piece, boolean white) {
+    private static void updatePiecePosition(long[] bbs, Piece[] pcs, int square, Piece piece, boolean white) {
         int pieceIndex = piece.index();
         int colourIndex = Piece.COUNT + Colour.index(white);
         bbs[pieceIndex] |= Bits.of(square);
         bbs[colourIndex] |= Bits.of(square);
+        pcs[square] = piece;
     }
 
     private static String toCastlingRights(int rights) {

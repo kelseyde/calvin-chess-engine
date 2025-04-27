@@ -308,7 +308,7 @@ public class Searcher implements Search {
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             final int futilityMargin = depth * config.rfpMargin()
                     - (improving ? config.rfpImprovingMargin() : 0)
-                    + (prev.pvNode ? config.rfpPrevPvNode() : config.rfpPrevNotPvNode());
+                    - (prev.pvNode ? config.rfpPrevPvNode() : config.rfpPrevNotPvNode());
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {

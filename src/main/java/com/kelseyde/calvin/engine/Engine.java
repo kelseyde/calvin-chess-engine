@@ -14,6 +14,7 @@ import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.uci.UCICommand.PositionCommand;
 import com.kelseyde.calvin.utils.Perft;
 import com.kelseyde.calvin.utils.notation.FEN;
+import com.kelseyde.calvin.utils.notation.FEN.InvalidFenException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class Engine {
 
     private Engine() {
         this.config = new EngineConfig();
-        this.board = Board.from(FEN.STARTPOS);
+        this.board = FEN.startpos().toBoard();
         this.movegen = new MoveGenerator();
         this.perft = new Perft();
         this.searcher = new ParallelSearcher(config, movegen, new TranspositionTable(config.defaultHashSizeMb));
@@ -57,12 +58,17 @@ public class Engine {
 
     public void newGame() {
         searcher.clearHistory();
-        board = Board.from(FEN.STARTPOS);
+        board = FEN.startpos().toBoard();
         searcher.setPosition(board);
     }
 
     public void setPosition(PositionCommand command) {
-        board = FEN.toBoard(command.fen());
+        try {
+            board = FEN.parse(command.fen()).toBoard();
+        } catch (InvalidFenException e) {
+            UCI.write(e.getMessage());
+            return;
+        }
         for (Move move : command.moves()) {
             Move legalMove = move(move);
             board.makeMove(legalMove);
@@ -178,5 +184,6 @@ public class Engine {
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("Illegal move " + Move.toUCI(move)));
     }
+
 
 }

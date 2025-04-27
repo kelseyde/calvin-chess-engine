@@ -185,6 +185,7 @@ public class Board {
     }
 
     private void updateState(int from, int to, Piece piece, Piece captured, Move move) {
+        state.moved = piece;
         state.captured = captured;
         final boolean resetClock = captured != null || Piece.PAWN.equals(piece);
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
@@ -281,7 +282,7 @@ public class Board {
         white = !white;
         final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, -1, state.getRights(), 0);
+        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.getRights(), 0);
         states[ply++] = state;
         state = newState;
     }
@@ -396,6 +397,10 @@ public class Board {
 
     public boolean isCapture(Move move) {
         return move.isEnPassant() || pieceAt(move.to()) != null;
+    }
+
+    public boolean isNoisy(Move move) {
+        return move.isPromotion() || isCapture(move);
     }
 
     public boolean isQuiet(Move move) {
@@ -597,7 +602,7 @@ public class Board {
     }
 
     public static Board from(String fen) {
-        return FEN.toBoard(fen);
+        return FEN.parse(fen).toBoard();
     }
 
     private void checkMaxPly() {

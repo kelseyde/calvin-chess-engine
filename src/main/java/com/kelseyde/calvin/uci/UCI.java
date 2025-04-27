@@ -188,7 +188,7 @@ public class UCI {
 
     public static void handleFen(UCICommand command) {
         if (ENGINE.getBoard() != null) {
-            write(FEN.toFEN(ENGINE.getBoard()));
+            write(FEN.fromBoard(ENGINE.getBoard()).toString());
         } else {
             write("info error no position specified, please use the 'position' command first");
         }
@@ -313,7 +313,7 @@ public class UCI {
     }
 
     private static String formatScore(int eval) {
-        if (Score.isMateScore(eval)) {
+        if (Score.isMate(eval)) {
             int moves = Math.max((Score.MATE - Math.abs(eval)) / 2, 1);
             if (eval < 0) moves = -moves;
             return "mate " + moves;

@@ -10,6 +10,7 @@ public class ThreadData {
     public int[][] nodesPerMove;
     public int depth;
     public int seldepth;
+    public int nmpPly;
 
     public ThreadData(boolean mainThread) {
         this.mainThread = mainThread;
@@ -17,6 +18,7 @@ public class ThreadData {
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
         this.depth = 1;
         this.seldepth = 0;
+        this.nmpPly = 0;
     }
 
     public void addNodes(Move move, int nodes) {
@@ -36,6 +38,8 @@ public class ThreadData {
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
         this.depth = 1;
+        this.seldepth = 0;
+        this.nmpPly = 0;
     }
 
 }

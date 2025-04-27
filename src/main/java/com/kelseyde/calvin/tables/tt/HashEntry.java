@@ -10,7 +10,7 @@ import com.kelseyde.calvin.board.Move;
  * - Key: 0-31 (zobrist key), 32-47 (age), 48-63 (static score)
  * - Value: 0-11 (depth), 12-15 (flag), 16-31 (move), 32-63 (score)
  */
-public record HashEntry(Move move, int score, int staticEval, int flag, int depth) {
+public record HashEntry(Move move, int score, int staticEval, int flag, int depth, boolean pv) {
 
     public static HashEntry of(long key, long value) {
         final Move move       = Value.getMove(value);
@@ -18,7 +18,8 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         final int depth       = Value.getDepth(value);
         final int score       = Value.getScore(value);
         final int staticEval  = Key.getStaticEval(key);
-        return new HashEntry(move, score, staticEval, flag, depth);
+        final boolean pv      = Value.isPv(value);
+        return new HashEntry(move, score, staticEval, flag, depth, pv);
     }
 
     public static class Key {
@@ -54,7 +55,8 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         private static final long SCORE_MASK    = 0xffffffff00000000L;
         private static final long MOVE_MASK     = 0x00000000ffff0000L;
         private static final long FLAG_MASK     = 0x000000000000f000L;
-        private static final long DEPTH_MASK    = 0x0000000000000fffL;
+        private static final long PV_MASK       = 0x0000000000000f00L;
+        private static final long DEPTH_MASK    = 0x00000000000000ffL;
 
         public static int getScore(long value) {
             return (int) ((value & SCORE_MASK) >>> 32);
@@ -77,9 +79,15 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
             return (int) (value & DEPTH_MASK);
         }
 
-        public static long of(int score, Move move, int flag, int depth) {
+        public static boolean isPv(long value) {
+            return (value & PV_MASK) >>> 8 == 1;
+        }
+
+        public static long of(int score, Move move, int flag, int depth, boolean pv) {
+            depth = Math.min(depth, 255);
+            long pvFlag = pv ? 1 : 0;
             long moveValue = move != null ? move.value() : 0;
-            return (long) score << 32 | moveValue << 16 | (long) flag << 12 | depth;
+            return (long) score << 32 | moveValue << 16 | (long) flag << 12 | pvFlag << 8 | depth;
         }
 
     }

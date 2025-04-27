@@ -79,7 +79,7 @@ public class MoveScorer {
         score += SEE.value(captured);
 
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
-        score += historyScore / 8;
+        score += historyScore / 4;
 
         final int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
 
@@ -96,7 +96,7 @@ public class MoveScorer {
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
 
-        return new ScoredMove(move, piece, null, score, historyScore, MoveType.QUIET);
+        return new ScoredMove(move, piece, null, score, score, MoveType.QUIET);
 
     }
 
@@ -106,9 +106,10 @@ public class MoveScorer {
         int contHistScore = 0;
         for (int contHistPly : config.contHistPlies()) {
             SearchStackEntry entry = ss.get(ply - contHistPly);
-            if (entry != null && entry.currentMove != null) {
-                SearchHistory.PlayedMove prevMove = entry.currentMove;
-                contHistScore += history.getContHistTable().get(prevMove.move(), prevMove.piece(), move, piece, white);
+            if (entry != null && entry.move != null) {
+                Move prevMove = entry.move;
+                Piece prevPiece = entry.piece;
+                contHistScore += history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
             }
         }
         return contHistScore;

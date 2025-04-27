@@ -3,6 +3,7 @@ package com.kelseyde.calvin.search;
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.BoardState;
+import com.kelseyde.calvin.board.Piece;
 
 public class Score {
 
@@ -11,11 +12,11 @@ public class Score {
     public static final int MATE = 32766;
     public static final int DRAW = 0;
 
-    public static boolean isMateScore(int score) {
-        return isDefinedScore(score) && Math.abs(score) >= Score.MATE - Search.MAX_DEPTH;
+    public static boolean isMate(int score) {
+        return isDefined(score) && Math.abs(score) >= Score.MATE - Search.MAX_DEPTH;
     }
 
-    public static boolean isDefinedScore(int score) {
+    public static boolean isDefined(int score) {
         return Math.abs(score) != Score.MAX;
     }
 
@@ -33,15 +34,18 @@ public class Score {
         int repetitionCount = 0;
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
-        for (int i = board.getPly() - 1; i >= 0; i--) {
-            if (states[i].getKey() == zobrist) {
-                repetitionCount += 1;
-            }
-            if (repetitionCount >= 2) {
-                return true;
-            }
-        }
+        for (int i = board.getPly() - 2; i >= 0; i-= 2) {
+            final BoardState state = states[i];
 
+            if (state.getKey() == zobrist)
+                repetitionCount += 1;
+
+            if (repetitionCount >= 2)
+                return true;
+
+            if (state.captured != null || Piece.PAWN == state.moved)
+                break;
+        }
         return false;
 
     }
@@ -50,10 +54,14 @@ public class Score {
 
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
-        for (int i = board.getPly() - 1; i >= 0; i--) {
-            if (states[i].getKey() == zobrist) {
+        for (int i = board.getPly() - 2; i >= 0; i-= 2) {
+            final BoardState state = states[i];
+
+            if (state.key == zobrist)
                 return true;
-            }
+
+            if (state.captured != null || Piece.PAWN == state.moved)
+                break;
         }
         return false;
 

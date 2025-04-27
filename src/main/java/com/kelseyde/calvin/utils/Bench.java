@@ -68,7 +68,7 @@ public class Bench {
             "2r2b2/5p2/5k2/p1r1pP2/P2pB3/1P3P2/K1P3R1/7R w - - 23 93"
     );
 
-    private static final int BENCH_DEPTH = 15;
+    private static final int BENCH_DEPTH = 14;
 
     public static void run(Engine engine, boolean exit) {
 
@@ -83,7 +83,7 @@ public class Bench {
 
         for (String fen : FENS) {
             search.clearHistory();
-            search.setPosition(FEN.toBoard(fen));
+            search.setPosition(FEN.parse(fen).toBoard());
             Instant now = Instant.now();
             SearchResult result = search.search(tc);
             nodes += result.nodes();

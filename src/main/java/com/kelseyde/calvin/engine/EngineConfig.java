@@ -52,16 +52,18 @@ public class EngineConfig {
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 69, 0, 150, 25);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
-    private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
-    private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 308, 200, 400, 10);
-    private final Tunable lmrCapBase             = new Tunable("LmrCapBase", 93, 50, 100, 5);
-    private final Tunable lmrCapDivisor          = new Tunable("LmrCapDivisor", 303, 200, 400, 10);
+    private final Tunable lmrQuietBase           = new Tunable("LmrQuietBase", 91, 50, 100, 5);
+    private final Tunable lmrQuietDivisor        = new Tunable("LmrQuietDivisor", 308, 200, 400, 10);
+    private final Tunable lmrNoisyBase           = new Tunable("LmrCapBase", -10, -50, 100, 5);
+    private final Tunable lmrNoisyDivisor        = new Tunable("LmrCapDivisor", 250, 200, 400, 10);
     private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 963, 0, 2048, 150);
     private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2106, 0, 3072, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 94, 0, 2048, 150);
     private final Tunable lmrFutile              = new Tunable("LmrFutile", 1012, 0, 2048, 150);
+    private final Tunable lmrRecapture           = new Tunable("LmrRecapture", 512, 0, 1024, 150);
+    private final Tunable lmrTtCapture           = new Tunable("LmrTtCapture", 512, 0, 1024, 150);
     private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 3037, 1536, 6144, 1000);
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3122, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
@@ -116,7 +118,7 @@ public class EngineConfig {
     public Set<Tunable> getTunables() {
         return Set.of(
                 aspMinDepth, aspDelta, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
-                fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
+                fpHistDivisor, rfpDepth, lmrDepth, lmrQuietBase, lmrQuietDivisor, lmrNoisyBase, lmrNoisyDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
                 qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
                 hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
@@ -127,7 +129,8 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
+                lmrRecapture, lmrTtCapture
         );
     }
 
@@ -166,18 +169,18 @@ public class EngineConfig {
     }
 
     private void calculateLmrTable() {
-        float quietBase = (float) lmrBase.value / 100;
-        float quietDivisor = (float) lmrDivisor.value / 100;
-        float capBase = (float) lmrCapBase.value / 100;
-        float capDivisor = (float) lmrCapDivisor.value / 100;
+        float quietBase = (float) lmrQuietBase.value / 100;
+        float quietDivisor = (float) lmrQuietDivisor.value / 100;
+        float noisyBase = (float) lmrNoisyBase.value / 100;
+        float noisyDivisor = (float) lmrNoisyDivisor.value / 100;
         lmrReductions = new int[2][][];
 
         for (int quiet = 0; quiet < 2; quiet++) {
             lmrReductions[quiet] = new int[Search.MAX_DEPTH][];
             for (int depth = 1; depth < Search.MAX_DEPTH; ++depth) {
                 lmrReductions[quiet][depth] = new int[250];
-                float base = quiet == 0 ? quietBase : capBase;
-                float divisor = quiet == 0 ? quietDivisor : capDivisor;
+                float base = quiet == 0 ? quietBase : noisyBase;
+                float divisor = quiet == 0 ? quietDivisor : noisyDivisor;
                 for (int movesSearched = 1; movesSearched < 250; ++movesSearched) {
                     lmrReductions[quiet][depth][movesSearched] = (int) Math.round(base + (Math.log(movesSearched) * Math.log(depth) / divisor));
                 }
@@ -322,19 +325,19 @@ public class EngineConfig {
     }
 
     public int lmrBase() {
-        return lmrBase.value;
+        return lmrQuietBase.value;
     }
 
     public int lmrDivisor() {
-        return lmrDivisor.value;
+        return lmrQuietDivisor.value;
     }
 
     public int lmrCapBase() {
-        return lmrCapBase.value;
+        return lmrNoisyBase.value;
     }
 
     public int lmrCapDivisor() {
-        return lmrCapDivisor.value;
+        return lmrNoisyDivisor.value;
     }
 
     public int lmrMinMoves() {
@@ -359,6 +362,14 @@ public class EngineConfig {
 
     public int lmrFutile() {
         return lmrFutile.value;
+    }
+
+    public int lmrRecapture() {
+        return lmrRecapture.value;
+    }
+
+    public int lmrTtCapture() {
+        return lmrTtCapture.value;
     }
 
     public int lmrQuietHistoryDiv() {

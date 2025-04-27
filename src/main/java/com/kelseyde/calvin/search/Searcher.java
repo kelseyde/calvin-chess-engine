@@ -222,6 +222,7 @@ public class Searcher implements Search {
         HashEntry ttEntry = null;
         boolean ttHit = false;
         boolean ttPrune = false;
+        boolean ttCapture = false;
         Move ttMove = null;
         boolean ttPv = pvNode;
 
@@ -229,6 +230,7 @@ public class Searcher implements Search {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
+            ttCapture = ttMove != null && board.isCapture(ttMove);
             ttPv = ttPv || (ttHit && ttEntry.pv());
 
             if (!rootNode
@@ -390,10 +392,12 @@ public class Searcher implements Search {
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final int historyScore = scoredMove.historyScore();
+            final boolean isNoisy = scoredMove.isNoisy();
             final boolean isGoodNoisy = scoredMove.isGoodNoisy();
             final boolean isQuiet = scoredMove.isQuiet();
             final boolean isCapture = captured != null;
             final boolean isMateScore = Score.isMate(bestScore);
+            final boolean isRecapture = !rootNode && prev.move != null && prev.move.to() == move.to();
 
             int extension = 0;
             int reduction = 0;
@@ -409,17 +413,15 @@ public class Searcher implements Search {
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
             if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
 
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
+                int r = config.lmrReductions()[isNoisy ? 1 : 0][depth][searchedMoves] * 1024;
+                final int futilityMargin = futilityMargin(depth, historyScore, searchedMoves);
+
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
+                r -= isRecapture ? config.lmrRecapture() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
-                r -= isQuiet
-                        ? historyScore / config.lmrQuietHistoryDiv() * 1024
-                        : historyScore / config.lmrNoisyHistoryDiv() * 1024;
-
-                int futilityMargin = config.fpMargin()
-                        + (depth) * config.fpScale()
-                        + (historyScore / config.fpHistDivisor());
+                r -= historyScore / historyDivisor(isQuiet) * 1024;
+                r += ttCapture && isQuiet ? config.lmrTtCapture() : 0;
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
 
                 reduction = Math.max(0, r / 1024);
@@ -886,6 +888,10 @@ public class Searcher implements Search {
                 + depth * config.fpScale()
                 + (historyScore / config.fpHistDivisor())
                 - searchedMoves * config.fpMoveMultiplier();
+    }
+
+    private int historyDivisor(boolean isQuiet) {
+        return isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv();
     }
 
     private int seeThreshold(int depth, int historyScore, boolean isQuiet) {

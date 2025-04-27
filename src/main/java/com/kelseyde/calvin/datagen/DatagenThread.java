@@ -101,7 +101,7 @@ public class DatagenThread {
                     boolean isBadScore = Math.abs(bestScore) > maxScore;
 
                     if (!isCheck && !isCapture && !isBadScore) {
-                        fens.add(FEN.toFEN(board));
+                        fens.add(FEN.fromBoard(board).toString());
                         scores.add(bestScore);
                     }
 

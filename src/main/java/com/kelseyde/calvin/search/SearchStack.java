@@ -32,6 +32,7 @@ public class SearchStack {
         public Move excludedMove;
         public Move[] quiets;
         public Move[] captures;
+        public boolean pvNode;
         public boolean nullMoveAllowed = true;
     }
 

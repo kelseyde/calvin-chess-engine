@@ -24,7 +24,7 @@ public abstract class PerftTest {
 
     protected void perft(int depth, long expectedTotalMoves) {
         UCI.Options.chess960 = true;
-        Board board = FEN.toBoard(getFen());
+        Board board = FEN.parse(getFen()).toBoard();
         Instant start = Instant.now();
         long totalMoveCount = PERFT.perft(board, depth);
         long totalNodeCount = PERFT.nodesSearched;

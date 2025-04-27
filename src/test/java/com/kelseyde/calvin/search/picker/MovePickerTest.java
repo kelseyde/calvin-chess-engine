@@ -31,7 +31,7 @@ public class MovePickerTest {
         List<String> fens = Bench.FENS;
         for (String fen : fens) {
             System.out.println(fen);
-            Board board = FEN.toBoard(fen);
+            Board board = FEN.parse(fen).toBoard();
             SearchStack ss = new SearchStack();
             List<Move> legalMoves = moveGenerator.generateMoves(board);
 
@@ -76,7 +76,7 @@ public class MovePickerTest {
         SearchHistory history = new SearchHistory(new EngineConfig());
 
         String fen = "8/8/1p2k1p1/3p3p/1p1P1P1P/1P2PK2/8/8 w - - 3 54";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         Move ttMove = Move.fromUCI("f3e2");
         Move killer1 = Move.fromUCI("f4f5");
@@ -118,7 +118,7 @@ public class MovePickerTest {
     public void testMovegenFilters() {
 
         for (String fen : Bench.FENS) {
-            Board board = FEN.toBoard(fen);
+            Board board = FEN.parse(fen).toBoard();
             Assertions.assertEquals(moveGenerator.generateMoves(board).size(),
                     moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.NOISY).size() +
                     moveGenerator.generateMoves(board, MoveGenerator.MoveFilter.QUIET).size());
@@ -130,7 +130,7 @@ public class MovePickerTest {
     public void testInCheckDoesNotGenerateMovesTwice() {
 
         String fen = "rnbqkbnr/1p2pppp/p2p4/1Bp5/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         MovePicker picker = new MovePicker(TestUtils.CONFIG, moveGenerator, new SearchStack(), new SearchHistory(new EngineConfig()), board, 0, null, true);
 

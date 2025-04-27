@@ -193,9 +193,21 @@ public class Accumulator {
 
     public void copyFrom(short[] features, boolean whitePerspective) {
         if (whitePerspective) {
-            whiteFeatures = Arrays.copyOf(features, features.length);
+            vectorCopy(features, whiteFeatures, features.length);
         } else {
-            blackFeatures = Arrays.copyOf(features, features.length);
+            vectorCopy(features, blackFeatures, features.length);
+        }
+    }
+
+    public void copyFrom(Accumulator accumulator) {
+        vectorCopy(accumulator.whiteFeatures, whiteFeatures, whiteFeatures.length);
+        vectorCopy(accumulator.blackFeatures, blackFeatures, blackFeatures.length);
+        System.arraycopy(accumulator.mirrored, 0, mirrored, 0, mirrored.length);
+    }
+
+    public static void vectorCopy(short[] src, short[] dest, int length) {
+        for (int i = 0; i <= length - SPECIES.length(); i += SPECIES.length()) {
+            ShortVector.fromArray(SPECIES, src, i).intoArray(dest, i);
         }
     }
 

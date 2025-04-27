@@ -20,14 +20,14 @@ public class TranspositionTableTest {
 
     @BeforeEach
     public void beforeEach() {
-        board = Board.from(FEN.STARTPOS);
+        board = FEN.startpos().toBoard();
         table = new TranspositionTable(TestUtils.CONFIG.defaultHashSizeMb);
     }
 
     @Test
     public void testBasicEntry() {
 
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 17;
         int score = 548;
@@ -39,7 +39,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testNullMoveEntry() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = 1;
@@ -49,7 +49,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testCheckmateEntry() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = 1000000;
@@ -60,7 +60,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testNegativeCheckmateEntry() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = -1000000;
@@ -71,7 +71,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testMaxDepth() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 255;
         int score = -789;
@@ -81,7 +81,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testPromotionFlag() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 255;
         int score = -789;

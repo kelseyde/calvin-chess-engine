@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -188,7 +189,8 @@ public class Searcher implements Search {
         final boolean rootNode = ply == 0;
 
         // Determine if we are currently in check.
-        final boolean inCheck = movegen.isCheck(board);
+        final long threats = movegen.calculateThreats(board, !board.isWhite());
+        final boolean inCheck = Bits.contains(threats, board.kingSquare(board.isWhite()));
 
         // If depth is reached, drop into quiescence search
         if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, ply);
@@ -374,7 +376,7 @@ public class Searcher implements Search {
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
 
-        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, threats, inCheck);
 
         while (true) {
 
@@ -586,7 +588,7 @@ public class Searcher implements Search {
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
             final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, ss);
+            history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, ss, threats);
         }
 
         if (flag == HashFlag.UPPER
@@ -597,7 +599,7 @@ public class Searcher implements Search {
             // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
             // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
             // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
-            history.getQuietHistoryTable().update(prev.move, prev.piece, depth, !board.isWhite(), true);
+            history.getQuietHistoryTable().update(prev.move, prev.piece, threats, depth, !board.isWhite(), true);
         }
 
         if (!inCheck
@@ -653,7 +655,8 @@ public class Searcher implements Search {
             return ttEntry.score();
         }
 
-        final boolean inCheck = movegen.isCheck(board);
+        final long threats = movegen.calculateThreats(board, !board.isWhite());
+        final boolean inCheck = Bits.contains(threats, board.kingSquare(board.isWhite()));
 
         MoveFilter filter;
 
@@ -688,7 +691,7 @@ public class Searcher implements Search {
             filter = MoveFilter.CAPTURES_ONLY;
         }
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, threats, inCheck);
         movePicker.setFilter(filter);
 
         SearchStackEntry sse = ss.get(ply);

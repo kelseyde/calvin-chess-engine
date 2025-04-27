@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.tables.history;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
@@ -8,7 +9,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 
 public class QuietHistoryTable extends AbstractHistoryTable {
 
-    short[][][] table = new short[2][Piece.COUNT][Square.COUNT];
+    short[][][][][] table = new short[2][Piece.COUNT][Square.COUNT][2][2];
 
     public QuietHistoryTable(EngineConfig config) {
         super((short) config.quietHistBonusMax(),
@@ -18,21 +19,29 @@ public class QuietHistoryTable extends AbstractHistoryTable {
                 (short) config.quietHistMaxScore());
     }
 
-    public void update(Move move, Piece piece, int depth, boolean white, boolean good) {
+    public void update(Move move, Piece piece, long threats, int depth, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
-        short current = table[colourIndex][piece.index()][move.to()];
+        int fromThreatened = threatIndex(threats, move.from());
+        int toThreatened = threatIndex(threats, move.to());
+        short current = table[colourIndex][piece.index()][move.to()][fromThreatened][toThreatened];
         short bonus = good ? bonus(depth) : malus(depth);
         short update = gravity(current, bonus);
-        table[colourIndex][piece.index()][move.to()] = update;
+        table[colourIndex][piece.index()][move.to()][fromThreatened][toThreatened] = update;
     }
 
-    public short get(Move move, Piece piece, boolean white) {
+    public short get(Move move, Piece piece, long threats, boolean white) {
         int colourIndex = Colour.index(white);
-        return table[colourIndex][piece.index()][move.to()];
+        int fromThreatened = threatIndex(threats, move.from());
+        int toThreatened = threatIndex(threats, move.to());
+        return table[colourIndex][piece.index()][move.to()][fromThreatened][toThreatened];
     }
 
     public void clear() {
-        table = new short[2][Piece.COUNT][Square.COUNT];
+        table = new short[2][Piece.COUNT][Square.COUNT][2][2];
+    }
+
+    private int threatIndex(long threats, int square) {
+        return Bits.contains(threats, square) ? 1 : 0;
     }
 
 }

@@ -13,8 +13,8 @@ public class QuiescentMovePicker extends MovePicker {
     private MoveFilter filter;
 
     public QuiescentMovePicker(
-            EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
-        super(config, movegen, ss, history, board, ply, ttMove, inCheck);
+            EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, long threats, boolean inCheck) {
+        super(config, movegen, ss, history, board, ply, ttMove, threats, inCheck);
         this.scorer.setSeeNoisyDivisor(config.seeQsNoisyDivisor());
         this.scorer.setSeeNoisyOffset(config.seeQsNoisyOffset());
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.QSEARCH_GEN_NOISY;

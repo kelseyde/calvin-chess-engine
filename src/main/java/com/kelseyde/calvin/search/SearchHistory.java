@@ -40,7 +40,7 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            Board board, Move bestMove, Move[] quiets, Move[] captures, boolean white, int depth, int ply, SearchStack ss) {
+            Board board, Move bestMove, Move[] quiets, Move[] captures, boolean white, int depth, int ply, SearchStack ss, long threats) {
 
         // When the best move causes a beta cut-off, we want to update the various history tables to reward the best move
         // and punish the other moves that were searched. Doing so will hopefully improve move ordering in future searches.
@@ -51,7 +51,7 @@ public class SearchHistory {
 
             for (Move quiet : quiets) {
                 // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
-                updateQuietHistory(board, quiet, bestMove, ss, white, depth, ply);
+                updateQuietHistory(board, quiet, bestMove, ss, white, depth, ply, threats);
             }
         }
 
@@ -63,13 +63,14 @@ public class SearchHistory {
 
     }
 
-    private void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply) {
+    private void updateQuietHistory(
+            Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply, long threats) {
         // For quiet moves we update both the standard quiet and continuation history tables
         if (quietMove == null)
             return;
         boolean good = quietMove.equals(bestMove);
         Piece piece = board.pieceAt(quietMove.from());
-        quietHistoryTable.update(quietMove, piece, depth, white, good);
+        quietHistoryTable.update(quietMove, piece, threats, depth, white, good);
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.move != null) {

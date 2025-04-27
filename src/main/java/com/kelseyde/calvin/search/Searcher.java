@@ -213,6 +213,7 @@ public class Searcher implements Search {
         final SearchStackEntry prev = ss.get(ply - 1);
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
+        curr.pvNode = pvNode;
 
         history.getKillerTable().clear(ply + 1);
 
@@ -421,6 +422,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r -= prev != null && prev.pvNode && searchedMoves <= 6 ? config.lmrPrevPvNode() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }
@@ -691,7 +693,8 @@ public class Searcher implements Search {
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         movePicker.setFilter(filter);
 
-        SearchStackEntry sse = ss.get(ply);
+        SearchStackEntry curr = ss.get(ply);
+        curr.pvNode = pvNode;
 
         int movesSearched = 0;
 
@@ -731,12 +734,12 @@ public class Searcher implements Search {
             if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
-            makeMove(move, piece, captured, sse);
+            makeMove(move, piece, captured, curr);
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
 
-            unmakeMove(sse);
+            unmakeMove(curr);
 
             if (score > bestScore) {
                 bestScore = score;

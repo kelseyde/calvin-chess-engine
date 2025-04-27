@@ -203,6 +203,9 @@ public class Accumulator {
         vectorCopy(accumulator.whiteFeatures, whiteFeatures, whiteFeatures.length);
         vectorCopy(accumulator.blackFeatures, blackFeatures, blackFeatures.length);
         System.arraycopy(accumulator.mirrored, 0, mirrored, 0, mirrored.length);
+        System.arraycopy(accumulator.bucket, 0, bucket, 0, bucket.length);
+        System.arraycopy(accumulator.needsRefresh, 0, needsRefresh, 0, needsRefresh.length);
+        accumulator.computed[0] = accumulator.computed[1] = false;
     }
 
     public static void vectorCopy(short[] src, short[] dest, int length) {

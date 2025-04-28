@@ -109,6 +109,7 @@ public class EngineConfig {
     private final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
 
     private int[][][] lmrReductions;
+    private int[][] lmpThresholds;
     private final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
     private final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
     private final int[] contHistPlies = { 1, 2 };
@@ -163,6 +164,7 @@ public class EngineConfig {
 
     public void postInitialise() {
         calculateLmrTable();
+        calculateLmpTable();
     }
 
     private void calculateLmrTable() {
@@ -182,6 +184,14 @@ public class EngineConfig {
                     lmrReductions[quiet][depth][movesSearched] = (int) Math.round(base + (Math.log(movesSearched) * Math.log(depth) / divisor));
                 }
             }
+        }
+    }
+
+    private void calculateLmpTable() {
+        lmpThresholds = new int[12][2];
+        for (int depth = 1; depth < 12; depth++) {
+            lmpThresholds[depth][0] = (int) (2.5f + 2.0f * (float) depth / 4.5f);
+            lmpThresholds[depth][1] = (int) (4.0f + 4.0f * (float) depth / 4.5f);
         }
     }
 
@@ -543,6 +553,10 @@ public class EngineConfig {
 
     public int[][][] lmrReductions() {
         return lmrReductions;
+    }
+
+    public int[][] lmpThresholds() {
+        return lmpThresholds;
     }
 
     public int[] bmStabilityFactor() {

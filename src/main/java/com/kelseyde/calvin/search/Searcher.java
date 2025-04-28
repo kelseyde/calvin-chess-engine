@@ -455,13 +455,12 @@ public class Searcher implements Search {
 
             // Late Move Pruning
             // Skip quiet moves ordered very late in the list.
-            final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
             if (!pvNode
                     && !rootNode
                     && isQuiet
                     && !inCheck
                     && depth <= config.lmpDepth()
-                    && searchedMoves >= lmpThreshold) {
+                    && searchedMoves >= (3 + depth * depth) / (2 - (improving ? 1 : 0))) {
                 movePicker.setSkipQuiets(true);
                 continue;
             }

@@ -65,7 +65,10 @@ public class EngineConfig {
     private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 3037, 1536, 6144, 1000);
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3122, 1536, 6144, 1000);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
-    private final Tunable lmpMultiplier          = new Tunable("LmpMultiplier", 8, 1, 20, 1);
+    private final Tunable lmpBase                = new Tunable("LmpBase", 2, 1, 5, 1);
+    private final Tunable lmpScale               = new Tunable("LmpMultiplier", 3, 1, 10, 1);
+    private final Tunable lmpImpBase             = new Tunable("LmpImprovingBase", 3, 1, 5, 1);
+    private final Tunable lmpImpScale            = new Tunable("LmpImprovingMultiplier", 5, 1, 10, 1);
     private final Tunable iirDepth               = new Tunable("IirDepth", 4, 0, 8, 1);
     private final Tunable dpMargin               = new Tunable("DpMargin", 98, 0, 250, 10);
     private final Tunable razorDepth             = new Tunable("RazorDepth", 4, 0, 8, 1);
@@ -117,8 +120,8 @@ public class EngineConfig {
         return Set.of(
                 aspMinDepth, aspDelta, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
-                lmrMinPvMoves, lmpDepth, lmpMultiplier, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
-                qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
+                lmrMinPvMoves, lmpDepth, lmpBase, lmpScale, iirDepth, nmpBase, nmpDivisor, dpMargin,
+                qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
                 hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
@@ -127,7 +130,8 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
+                lmpImpBase, lmpImpScale
         );
     }
 
@@ -373,8 +377,20 @@ public class EngineConfig {
         return lmpDepth.value;
     }
 
-    public int lmpMultiplier() {
-        return lmpMultiplier.value;
+    public int lmpBase() {
+        return lmpBase.value;
+    }
+
+    public int lmpScale() {
+        return lmpScale.value;
+    }
+
+    public int lmpImpBase() {
+        return lmpImpBase.value;
+    }
+
+    public int lmpImpScale() {
+        return lmpImpScale.value;
     }
 
     public int iirDepth() {

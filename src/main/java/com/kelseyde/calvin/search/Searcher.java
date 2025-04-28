@@ -462,7 +462,6 @@ public class Searcher implements Search {
                     && depth <= config.lmpDepth()
                     && searchedMoves >= (3 + depth * depth) / (2 - (improving ? 1 : 0))) {
                 movePicker.setSkipQuiets(true);
-                continue;
             }
 
             // PVS SEE Pruning

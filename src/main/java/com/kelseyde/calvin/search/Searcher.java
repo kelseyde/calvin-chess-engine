@@ -305,7 +305,9 @@ public class Searcher implements Search {
 
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
-            final int futilityMargin = Math.max(depth - (improving ? 1 : 0), 0) * config.rfpMargin();
+            final int futilityMargin = depth * config.rfpMargin()
+                    - (improving ? config.rfpImprovingMargin() : 0)
+                    - (!ttHit && cutNode ? config.rfpCutNodeMargin() : 0);
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {

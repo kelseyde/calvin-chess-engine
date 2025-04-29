@@ -422,7 +422,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
-                r += !rootNode && prev.failHighCount > config.lmrFailHighCountLimit() ? failHighCountReduction(prev) : 0;
+                r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }
@@ -903,13 +903,6 @@ public class Searcher implements Search {
                 config.seeNoisyMargin() * depth * depth;
         threshold -= historyScore / config.seeHistoryDivisor();
         return threshold;
-    }
-
-    private int failHighCountReduction(SearchStackEntry prev) {
-        final int base = config.lmrFailHighCountBase();
-        final int scale = config.lmrFailHighCountScale();
-        final int count = prev.failHighCount;
-        return base + scale * Math.max(count, 8);
     }
 
     private boolean canUseTTScore(HashEntry ttEntry, int rawStaticEval) {

@@ -27,9 +27,9 @@ import java.util.Arrays;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("calvin1024_8b.nnue")
+            .file("calvin1152_8bhmf.nnue")
             .inputSize(768)
-            .hiddenSize(1024)
+            .hiddenSize(1152)
             .activation(Activation.SCReLU)
             .horizontalMirror(true)
             .inputBuckets(new int[] {

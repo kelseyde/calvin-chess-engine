@@ -42,6 +42,7 @@ public class Searcher implements Search {
     final SearchStack ss;
     final ThreadData td;
     final NNUE eval;
+    final SEE see;
 
     Move bestMoveCurrent;
     int bestScoreCurrent;
@@ -57,6 +58,7 @@ public class Searcher implements Search {
         this.movegen = new MoveGenerator();
         this.ss = new SearchStack();
         this.eval = new NNUE();
+        this.see = new SEE(config);
     }
 
     /**
@@ -475,7 +477,7 @@ public class Searcher implements Search {
                     && searchedMoves > 1
                     && !isGoodNoisy
                     && !isMateScore
-                    && !SEE.see(board, move, seeThreshold)) {
+                    && !see.see(board, move, seeThreshold)) {
                 continue;
             }
 
@@ -718,17 +720,17 @@ public class Searcher implements Search {
 
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.
-            if (!inCheck && capture && !promotion && !recapture && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
+            if (!inCheck && capture && !promotion && !recapture && staticEval + see.valueOf(captured) + config.dpMargin() < alpha)
                 continue;
 
             // Futility Pruning
             // Skip captures that don't win material when the static eval is far below alpha.
-            if (capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1))
+            if (capture && !recapture && futilityScore <= alpha && !see.see(board, move, 1))
                 continue;
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.
-            if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
+            if (!inCheck && !recapture && !see.see(board, move, config.qsSeeThreshold()))
                 continue;
 
             makeMove(move, piece, captured, sse);

@@ -20,6 +20,7 @@ public class MoveScorer {
     private final EngineConfig config;
     private final SearchHistory history;
     private final SearchStack ss;
+    private final SEE see;
     private int seeNoisyDivisor;
     private int seeNoisyOffset;
 
@@ -31,6 +32,7 @@ public class MoveScorer {
         this.config = config;
         this.history = history;
         this.ss = ss;
+        this.see = new SEE(config);
         this.seeNoisyDivisor = seeNoisyDivisor;
         this.seeNoisyOffset = seeNoisyOffset;
     }
@@ -63,7 +65,7 @@ public class MoveScorer {
         if (promotion) {
             // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-            score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
+            score += see.valueOf(move.promoPiece()) - see.valueOf(Piece.PAWN);
             return new ScoredMove(move, piece, captured, score, 0, type);
         }
 
@@ -76,7 +78,7 @@ public class MoveScorer {
             return new ScoredMove(move, piece, captured, score, historyScore, type);
         }
 
-        score += SEE.value(captured);
+        score += see.valueOf(captured);
 
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
         score += historyScore / 4;
@@ -84,7 +86,7 @@ public class MoveScorer {
         final int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
 
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
-        final MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        final MoveType type = see.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }

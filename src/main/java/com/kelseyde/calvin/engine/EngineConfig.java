@@ -39,6 +39,11 @@ public class EngineConfig {
     private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 5);
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 103, 1, 1000, 25);
     private final Tunable fpMoveMultiplier       = new Tunable("FpMoveMultiplier", 4, 0, 10, 1);
+    private final Tunable seeValuePawn           = new Tunable("SeeValuePawn", 100, 50, 200, 10);
+    private final Tunable seeValueKnight         = new Tunable("SeeValueKnight", 450, 300, 700, 25);
+    private final Tunable seeValueBishop         = new Tunable("SeeValueBishop", 450, 300, 700, 25);
+    private final Tunable seeValueRook           = new Tunable("SeeValueRook", 650, 400, 1000, 40);
+    private final Tunable seeValueQueen          = new Tunable("SeeValueQueen", 1250, 800, 1600, 50);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
     private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
     private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -24, -250, -10, 25);
@@ -131,7 +136,7 @@ public class EngineConfig {
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
-                lmpImpBase, lmpImpScale
+                lmpImpBase, lmpImpScale, seeValuePawn, seeValueKnight, seeValueBishop, seeValueRook, seeValueQueen
         );
     }
 
@@ -271,6 +276,26 @@ public class EngineConfig {
 
     public int fpMoveMultiplier() {
         return fpMoveMultiplier.value;
+    }
+
+    public int seeValuePawn() {
+        return seeValuePawn.value;
+    }
+
+    public int seeValueKnight() {
+        return seeValueKnight.value;
+    }
+
+    public int seeValueBishop() {
+        return seeValueBishop.value;
+    }
+
+    public int seeValueRook() {
+        return seeValueRook.value;
+    }
+
+    public int seeValueQueen() {
+        return seeValueQueen.value;
     }
 
     public int seeMaxDepth() {

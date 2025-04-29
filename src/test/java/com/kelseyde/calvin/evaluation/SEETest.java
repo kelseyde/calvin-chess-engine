@@ -2,6 +2,7 @@ package com.kelseyde.calvin.evaluation;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SEE;
 import org.junit.jupiter.api.Assertions;
@@ -17,14 +18,16 @@ public class SEETest {
 
     private static final MoveGenerator MOVEGEN = new MoveGenerator();
 
+    private static final SEE see = new SEE(new EngineConfig());
+
     private int passed = 0;
 
     @Test
     @Disabled
     public void testSeeSuite() throws IOException {
 
-        int[] initialValues = SEE.SEE_PIECE_VALUES;
-        SEE.SEE_PIECE_VALUES = new int[] {100, 300, 300, 500, 900, 0};
+        int[] initialValues = see.getPieceValues();
+        see.setPieceValues(new int[] {100, 300, 300, 500, 900, 0});
 
         Path path = Path.of("src/test/resources/see_suite.epd");
         List<String> lines = Files.readAllLines(path);
@@ -35,7 +38,7 @@ public class SEETest {
             Assertions.fail("Passed " + passed + "/" + lines.size());
         }
 
-        SEE.SEE_PIECE_VALUES = initialValues;
+        see.setPieceValues(initialValues);
 
     }
 
@@ -43,13 +46,13 @@ public class SEETest {
     @Disabled
     public void debugSingle() {
 
-        int[] initialValues = SEE.SEE_PIECE_VALUES;
-        SEE.SEE_PIECE_VALUES = new int[] {100, 300, 300, 500, 900, 0};
+        int[] initialValues = see.getPieceValues();
+        see.setPieceValues(new int[] {100, 300, 300, 500, 900, 0});
 
         String line = "rn2k2r/1bq2ppp/p2bpn2/1p1p4/3N4/1BN1P3/PPP2PPP/R1BQR1K1 b kq - | d6h2 | 100 | P";
         runTest(line);
 
-        SEE.SEE_PIECE_VALUES = initialValues;
+        see.setPieceValues(initialValues);
 
     }
 
@@ -59,8 +62,8 @@ public class SEETest {
         Board board = Board.from(fen);
         Move move = legalMove(board, Move.fromUCI(parts[1].trim()));
         int threshold = Integer.parseInt(parts[2].trim());
-        if (SEE.see(board, move, threshold)
-                && !SEE.see(board, move, threshold + 1)) {
+        if (see.see(board, move, threshold)
+                && !see.see(board, move, threshold + 1)) {
             passed++;
         } else {
             int actualThreshold = findThreshold(board, move);
@@ -77,7 +80,7 @@ public class SEETest {
 
     private int findThreshold(Board board, Move move) {
         for (int i = 5000; i > -5000; i-= 10) {
-            if (SEE.see(board, move, i)) {
+            if (see.see(board, move, i)) {
                 return i;
             }
         }

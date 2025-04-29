@@ -1,9 +1,11 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.Attacks;
 
 /**
@@ -19,13 +21,20 @@ import com.kelseyde.calvin.movegen.Attacks;
  */
 public class SEE {
 
-    public static int[] SEE_PIECE_VALUES = { 100, 320, 330, 500, 900, 0 };
+    private int[] pieceValues;
 
-    public static int value(Piece piece) {
-        return SEE_PIECE_VALUES[piece.index()];
+    public SEE(EngineConfig config) {
+        this.pieceValues = new int[] {
+                config.seeValuePawn(),
+                config.seeValueKnight(),
+                config.seeValueBishop(),
+                config.seeValueRook(),
+                config.seeValueQueen(),
+                0
+        };
     }
 
-    public static boolean see(Board board, Move move, int threshold) {
+    public boolean see(Board board, Move move, int threshold) {
 
         boolean white = board.isWhite();
         final int from = move.from();
@@ -33,16 +42,16 @@ public class SEE {
 
         int score = -threshold;
         Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
-        score += captured != null ? SEE_PIECE_VALUES[captured.index()] : 0;
+        score += captured != null ? pieceValues[captured.index()] : 0;
 
         if (move.promoPiece() != null) {
-            score += value(move.promoPiece()) - value(Piece.PAWN);
+            score += valueOf(move.promoPiece()) - valueOf(Piece.PAWN);
         }
 
         if (score < 0) return false;
 
         Piece nextVictim = move.promoPiece() != null ? move.promoPiece() : board.pieceAt(from);
-        score -= value(nextVictim);
+        score -= valueOf(nextVictim);
 
         if (score >= 0) return true;
 
@@ -81,7 +90,7 @@ public class SEE {
             }
 
             attackers &= occ;
-            score = -score - 1 - value(nextVictim);
+            score = -score - 1 - valueOf(nextVictim);
             white = !white;
 
             if (score >= 0) {
@@ -126,7 +135,19 @@ public class SEE {
         if (enPassantFile == -1) {
             return -1;
         }
-        return Bits.Square.of(rank, enPassantFile);
+        return Square.of(rank, enPassantFile);
+    }
+
+    public int valueOf(Piece piece) {
+        return pieceValues[piece.index()];
+    }
+
+    public int[] getPieceValues() {
+        return pieceValues;
+    }
+
+    public void setPieceValues(int[] pieceValues) {
+        this.pieceValues = pieceValues;
     }
 
 }

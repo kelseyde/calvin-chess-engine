@@ -891,7 +891,7 @@ public class Searcher implements Search {
     private int lateMoveThreshold(int depth, boolean improving) {
         final int base = improving ? config.lmpImpBase() : config.lmpBase();
         final int scale = improving ? config.lmpImpScale() : config.lmpScale();
-        return base + depth * scale;
+        return (base + depth * scale) / 10;
     }
 
     private int seeThreshold(int depth, int historyScore, boolean isQuiet) {

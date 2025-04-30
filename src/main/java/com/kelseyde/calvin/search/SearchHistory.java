@@ -100,13 +100,13 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int correctEvaluation(Board board, SearchStack ss, int ply, int staticEval) {
+    public int evalCorrection(Board board, SearchStack ss, int ply, int staticEval) {
         int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int counter = getContCorrHistEntry(ss, ply, board.isWhite());
         int correction = pawn + white + black + counter;
-        return staticEval + correction / CorrectionHistoryTable.SCALE;
+        return correction / CorrectionHistoryTable.SCALE;
     }
 
     public void updateCorrectionHistory(Board board, SearchStack ss, int ply, int depth, int score, int staticEval) {

@@ -1,9 +1,12 @@
 package com.kelseyde.calvin.movegen;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 public class PinCalculatorTest {
 
@@ -280,6 +283,20 @@ public class PinCalculatorTest {
 
         Assertions.assertEquals(expectedWhitePinMask, board.pinned(true));
         Assertions.assertEquals(expectedBlackPinMask, board.pinned(false));
+
+    }
+
+    @Test
+    public void testKiwipeteWeirdPinThing() {
+
+        String fen = "r3k2r/p2p1pb1/bn1qpnp1/2pPN3/1p2P3/2N2Q1p/PPPBBPPP/1R1K3R w kq c6 0 3";
+        Board board = FEN.parse(fen).toBoard();
+
+        Assertions.assertEquals(0L, board.pinned(true));
+        Assertions.assertEquals(0L, board.pinned(false));
+
+        List<Move> moves = new MoveGenerator().generateMoves(board);
+        Assertions.assertEquals(44, moves.size());
 
     }
 

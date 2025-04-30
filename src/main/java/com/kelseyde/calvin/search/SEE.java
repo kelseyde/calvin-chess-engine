@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Bits;
+import com.kelseyde.calvin.board.Bits.Ray;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -54,7 +55,15 @@ public class SEE {
             occ &= ~(1L << epSquare);
         }
 
-        long attackers = (getAttackers(board, to, occ, white) | getAttackers(board, to, occ, !white)) & occ;
+        long whitePinned = board.pinned(true);
+        long blackPinned = board.pinned(false);
+
+        long whiteKingRay = Ray.intersecting(board.kingSquare(true), to);
+        long blackKingRay = Ray.intersecting(board.kingSquare(false), to);
+
+        long allowed = ~(blackPinned | whitePinned) | (blackPinned & blackKingRay) | (whitePinned & whiteKingRay);
+
+        long attackers = (getAttackers(board, to, occ, white) | getAttackers(board, to, occ, !white)) & occ & allowed;
         long diagonalAttackers = board.getBishops(white) | board.getQueens(white)
                 | board.getBishops(!white) | board.getQueens(!white);
         long orthogonalAttackers = board.getRooks(white) | board.getQueens(white)

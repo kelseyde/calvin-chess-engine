@@ -46,6 +46,12 @@ public record UCICommand(UCICommandType type, String[] args) {
         return Arrays.asList(args).subList(valueIndex, args.length);
     }
 
+    public List<String> getStrings(String label, String endLabel, boolean panic) {
+        List<String> values = getStrings(label, panic);
+        int endLabelIndex = values.indexOf(endLabel);
+        return endLabelIndex == -1 ? values : values.subList(0, endLabelIndex);
+    }
+
     public int getInt(String label, int defaultValue, boolean panic) {
         String valueString = getString(label, String.valueOf(defaultValue), panic);
         try {
@@ -105,7 +111,7 @@ public record UCICommand(UCICommandType type, String[] args) {
             if (command.contains("startpos")) {
                 fen = FEN.STARTPOS;
             } else if (command.contains("fen")) {
-                fen = String.join(" ", command.getStrings("fen", true));
+                fen = String.join(" ", command.getStrings("fen", "moves", true));
             } else {
                 UCI.write("info error invalid position command; expecting 'startpos' or 'fen'.");
                 fen = FEN.STARTPOS;

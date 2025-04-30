@@ -1,6 +1,8 @@
 package com.kelseyde.calvin.board;
 
 
+import java.util.Arrays;
+
 /**
  * Stores the metadata for a given chess position - that is, the castling rights, en passant rights, the fifty-move counter
  * (the number of half-moves since the last capture or pawn move), and the last captured piece.
@@ -101,7 +103,9 @@ public class BoardState {
 
     public BoardState copy() {
         long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
-        return new BoardState(key, pawnKey, nonPawnKeysCopy, moved, captured, enPassantFile, rights, halfMoveClock, pinned, pinRays);
+        long[] pinnedCopy = new long[]{pinned[0], pinned[1]};
+        long[][] pinRaysCopy = new long[][]{Arrays.copyOf(pinRays[0], pinRays[0].length), Arrays.copyOf(pinRays[1], pinRays[1].length)};
+        return new BoardState(key, pawnKey, nonPawnKeysCopy, moved, captured, enPassantFile, rights, halfMoveClock, pinnedCopy, pinRaysCopy);
     }
 
     @Override

@@ -187,22 +187,15 @@ public class Bits {
 
     public static class Ray {
 
-        /**
-         * Calculates the ray (bitboard) between two squares on the chessboard.
-         */
+        private static final long[][] BETWEEN = initRaysBetween();
+        private static final long[][] INTERSECTING = initRaysIntersecting();
+
         public static long between(int from, int to) {
-            if (!Square.isValid(from) || !Square.isValid(to) || (from == to)) {
-                return 0L;
-            }
-            int offset = direction(from, to);
-            if (offset == 0) return 0L;
-            long ray = 0L;
-            int sq = from + offset;
-            while (Square.isValid(sq) && sq != to) {
-                ray |= Bits.of(sq);
-                sq += offset;
-            }
-            return ray;
+            return BETWEEN[from][to];
+        }
+
+        public static long intersecting(int from, int to) {
+            return INTERSECTING[from][to];
         }
 
         /**
@@ -226,6 +219,68 @@ public class Bits {
                 return from > to ? -9 : 9;
             }
             return 0;
+        }
+
+        private static long[][] initRaysBetween() {
+            long[][] rays = new long[Square.COUNT][Square.COUNT];
+            for (int from = 0; from < Square.COUNT; ++from) {
+                for (int to = 0; to < Square.COUNT; ++to) {
+                    if (!Square.isValid(from) || !Square.isValid(to) || (from == to)) {
+                        continue;
+                    }
+                    int offset = direction(from, to);
+                    if (offset == 0) {
+                        rays[from][to] = Square.NONE;
+                    }
+                    long ray = 0L;
+                    int sq = from + offset;
+                    while (Square.isValid(sq) && sq != to) {
+                        ray |= Bits.of(sq);
+                        sq += offset;
+                    }
+                    rays[from][to] |= ray;
+                }
+            }
+            return rays;
+        }
+
+        private static long[][] initRaysIntersecting() {
+            long[][] rays = new long[Square.COUNT][Square.COUNT];
+            for (int from = 0; from < Square.COUNT; ++from) {
+                for (int to = 0; to < Square.COUNT; ++to) {
+                    if (!Square.isValid(from) || !Square.isValid(to) || (from == to)) {
+                        continue;
+                    }
+                    int offset = direction(from, to);
+                    if (offset == 0) {
+                        rays[from][to] = Square.NONE;
+                        continue;
+                    }
+
+                    long ray = Bits.of(from) | Bits.of(to);
+
+                    int sq = from + offset;
+                    while (Square.isValid(sq) && sq != to) {
+                        ray |= Bits.of(sq);
+                        sq += offset;
+                    }
+
+                    sq = to + offset;
+                    while (Square.isValid(sq)) {
+                        ray |= Bits.of(sq);
+                        sq += offset;
+                    }
+
+                    sq = from - offset;
+                    while (Square.isValid(sq)) {
+                        ray |= Bits.of(sq);
+                        sq -= offset;
+                    }
+
+                    rays[from][to] = ray;
+                }
+            }
+            return rays;
         }
 
     }

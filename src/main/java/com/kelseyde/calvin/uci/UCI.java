@@ -166,6 +166,7 @@ public class UCI {
         write("stop           -- stop searching and return the best move");
         write("display / d    -- display the current board state");
         write("fen            -- print the FEN string for the current position");
+        write("moves          -- print the legal moves for the current position");
         write("eval           -- evaluate the current position");
         write("pretty         -- toggle pretty console output");
         write("scoredata      -- score a data file with the engine, to train a neural network");
@@ -181,6 +182,19 @@ public class UCI {
     public static void handleFen(UCICommand command) {
         if (ENGINE.getBoard() != null) {
             write(FEN.fromBoard(ENGINE.getBoard()).toString());
+        } else {
+            write("info error no position specified, please use the 'position' command first");
+        }
+    }
+
+    public static void handleMoves(UCICommand command) {
+        if (ENGINE.getBoard() != null) {
+            List<Move> moves = ENGINE.getMovegen().generateMoves(ENGINE.getBoard());
+            write("Total: " + moves.size());
+            String moveString = moves.stream()
+                    .map(Move::toUCI)
+                    .collect(Collectors.joining("\n"));
+            write(moveString);
         } else {
             write("info error no position specified, please use the 'position' command first");
         }

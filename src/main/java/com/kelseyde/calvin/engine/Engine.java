@@ -174,6 +174,10 @@ public class Engine {
         return board;
     }
 
+    public MoveGenerator getMovegen() {
+        return movegen;
+    }
+
     /**
      * For moves parsed from UCI, read from the opening book, or probed from the endgame tablebase, generate the
      * corresponding 'legal' move which includes any special move flag (promotion, en passant, castling etc.)

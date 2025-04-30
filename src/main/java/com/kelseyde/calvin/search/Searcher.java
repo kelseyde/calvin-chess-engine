@@ -215,6 +215,7 @@ public class Searcher implements Search {
         final boolean singularSearch = excludedMove != null;
 
         history.getKillerTable().clear(ply + 1);
+        ss.get(ply + 2).failHighCount = 0;
 
         // Transposition table
         // Check if this node has already been searched before. If so, we can potentially re-use the result of the
@@ -421,6 +422,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }
@@ -571,6 +573,7 @@ public class Searcher implements Search {
                     // If the score is greater than beta, then this position is 'too good' - our opponent won't let us
                     // get here assuming perfect play, and so there's no point searching further.
                     flag = HashFlag.LOWER;
+                    curr.failHighCount++;
                     break;
                 }
             }

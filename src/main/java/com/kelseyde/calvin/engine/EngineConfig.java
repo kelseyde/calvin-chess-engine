@@ -51,6 +51,7 @@ public class EngineConfig {
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -6, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 69, 0, 150, 25);
+    private final Tunable rfpImprovingMargin     = new Tunable("RfpImprovingMargin", 69, 0, 150, 25);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 308, 200, 400, 10);
@@ -122,8 +123,8 @@ public class EngineConfig {
                 aspMinDepth, aspDelta, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpBase, lmpScale, iirDepth, nmpBase, nmpDivisor, dpMargin,
-                qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, razorDepth, razorMargin, hpMaxDepth,
-                hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
+                qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImprovingMargin, razorDepth, razorMargin,
+                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
                 contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
@@ -320,6 +321,10 @@ public class EngineConfig {
 
     public int rfpMargin() {
         return rfpMargin.value;
+    }
+
+    public int rfpImprovingMargin() {
+        return rfpImprovingMargin.value;
     }
 
     public int lmrDepth() {

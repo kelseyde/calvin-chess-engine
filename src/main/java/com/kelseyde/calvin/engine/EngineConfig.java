@@ -34,7 +34,7 @@ public class EngineConfig {
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
     private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 190, 0, 400, 25);
     private final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
-    private final Tunable pcBetaMargin           = new Tunable("ProbcutBetaMargin", 200, 50, 25, 300);
+    private final Tunable pcBetaMargin           = new Tunable("ProbcutBetaMargin", 200, 50, 300, 25);
     private final Tunable pcMinDepth             = new Tunable("ProbcutMinDepth", 7, 1, 10, 1);
     private final Tunable pcReduction            = new Tunable("ProbcutReduction", 3, 2, 8, 1);
     private final Tunable pcTtDepthMargin        = new Tunable("ProbcutTtDepthMargin", 3, 1, 5, 1);

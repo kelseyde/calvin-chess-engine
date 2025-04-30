@@ -34,6 +34,10 @@ public class EngineConfig {
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
     private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 190, 0, 400, 25);
     private final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
+    private final Tunable pcBetaMargin           = new Tunable("ProbcutBetaMargin", 200, 50, 25, 300);
+    private final Tunable pcMinDepth             = new Tunable("ProbcutMinDepth", 5, 1, 10, 1);
+    private final Tunable pcReduction            = new Tunable("ProbcutReduction", 4, 2, 8, 1);
+    private final Tunable pcTtDepthMargin        = new Tunable("ProbcutTtDepthMargin", 3, 1, 5, 1);
     private final Tunable fpDepth                = new Tunable("FpDepth", 8, 0, 8, 1);
     private final Tunable fpMargin               = new Tunable("FpMargin", 137, 0, 500, 25);
     private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 5);
@@ -132,7 +136,7 @@ public class EngineConfig {
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
-                lmpImpBase, lmpImpScale, lmrFailHighCount
+                lmpImpBase, lmpImpScale, lmrFailHighCount, pcBetaMargin, pcMinDepth, pcReduction, pcTtDepthMargin
         );
     }
 
@@ -252,6 +256,22 @@ public class EngineConfig {
 
     public int nmpEvalMaxReduction() {
         return nmpEvalMaxReduction.value;
+    }
+
+    public int pcBetaMargin() {
+        return pcBetaMargin.value;
+    }
+
+    public int pcMinDepth() {
+        return pcMinDepth.value;
+    }
+
+    public int pcReduction() {
+        return pcReduction.value;
+    }
+
+    public int pcTtDepthMargin() {
+        return pcTtDepthMargin.value;
     }
 
     public int fpDepth() {

@@ -362,6 +362,52 @@ public class Searcher implements Search {
                 }
             }
 
+            // Probcut
+            // Skip nodes where the static eval and a shallow quiescent-like search indicate the node will fail-high.
+            int probcutBeta = beta + config.pcBetaMargin();
+            if (depth >= config.pcMinDepth()
+                    && !Score.isMate(beta)
+                    && (!ttHit || ttEntry.score() >= probcutBeta || ttEntry.depth() + config.pcTtDepthMargin() < depth)) {
+
+                QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+                movePicker.setFilter(MoveFilter.CAPTURES_ONLY);
+
+                int seeThreshold = probcutBeta - staticEval;
+                int probcutDepth = depth - config.pcReduction();
+
+                while (true) {
+
+                    final ScoredMove scoredMove = movePicker.next();
+                    if (scoredMove == null)
+                        break;
+
+                    final Move move = scoredMove.move();
+                    if (!SEE.see(board, move, seeThreshold))
+                        continue;
+
+                    final Piece piece = scoredMove.piece();
+                    final Piece captured = scoredMove.captured();
+
+                    makeMove(move, piece, captured, curr);
+
+                    int score = -quiescenceSearch(-probcutBeta, probcutBeta + 1, ply + 1);
+                    if (score >= probcutBeta && probcutDepth >= 0)
+                        score = -search(probcutDepth, ply + 1, -probcutBeta, -probcutBeta + 1, !cutNode);
+
+                    unmakeMove(curr);
+
+                    if (hardLimitReached())
+                        return alpha;
+
+                    if (score >= probcutBeta) {
+                        tt.put(board.key(), HashFlag.LOWER, probcutDepth + 1, ply, move, staticEval, score, ttPv);
+                        return score;
+                    }
+
+                }
+
+            }
+
         }
 
         // We have decided that the current node should not be pruned and is worth examining further.

@@ -226,11 +226,13 @@ public class Bits {
             for (int from = 0; from < Square.COUNT; ++from) {
                 for (int to = 0; to < Square.COUNT; ++to) {
                     if (!Square.isValid(from) || !Square.isValid(to) || (from == to)) {
+                        rays[from][to] = Square.NONE;
                         continue;
                     }
                     int offset = direction(from, to);
                     if (offset == 0) {
                         rays[from][to] = Square.NONE;
+                        continue;
                     }
                     long ray = 0L;
                     int sq = from + offset;

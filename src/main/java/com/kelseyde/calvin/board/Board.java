@@ -285,7 +285,12 @@ public class Board {
         white = !white;
         final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.rights, 0, state.pinned, state.pinRays);
+        long[] pinnedCopy = new long[]{state.pinned[0], state.pinned[1]};
+        long[][] pinRaysCopy = new long[][]{
+                Arrays.copyOf(state.pinRays[0], state.pinRays[0].length),
+                Arrays.copyOf(state.pinRays[1], state.pinRays[1].length)
+        };
+        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.rights, 0, pinnedCopy, pinRaysCopy);
         states[ply++] = state;
         state = newState;
     }

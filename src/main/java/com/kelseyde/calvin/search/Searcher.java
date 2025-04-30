@@ -269,9 +269,10 @@ public class Searcher implements Search {
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
         // In non-leaf nodes, this is used as a guide for several heuristics, such as extensions, reductions and pruning.
-        int rawStaticEval = Integer.MIN_VALUE;
-        int uncorrectedStaticEval = Integer.MIN_VALUE;
-        int staticEval = Integer.MIN_VALUE;
+        int rawStaticEval   = Integer.MIN_VALUE;
+        int uncorrectedEval = Integer.MIN_VALUE;
+        int staticEval      = Integer.MIN_VALUE;
+        int correction      = Integer.MIN_VALUE;
 
         if (singularSearch) {
             // In singular search, since we are in the same node, we can re-use the static eval on the stack.
@@ -280,9 +281,8 @@ public class Searcher implements Search {
         else if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            uncorrectedStaticEval = rawStaticEval;
-
-            int correction = history.evalCorrection(board, ss, ply, rawStaticEval);
+            correction = history.evalCorrection(board, ss, ply, rawStaticEval);
+            uncorrectedEval = rawStaticEval;
             staticEval = rawStaticEval + correction;
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
@@ -292,7 +292,7 @@ public class Searcher implements Search {
             // If the TT score is within the bounds of the current window, we can use it as a more accurate static eval.
             if (canUseTTScore(ttEntry, rawStaticEval)) {
                 staticEval = ttEntry.score();
-                uncorrectedStaticEval = staticEval;
+                uncorrectedEval = staticEval;
             }
         }
         curr.staticEval = staticEval;
@@ -309,7 +309,8 @@ public class Searcher implements Search {
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             final int futilityMargin = depth * config.rfpMargin()
-                    - (improving ? config.rfpImprovingMargin() : 0);
+                    - (improving ? config.rfpImprovingMargin() : 0)
+                    + Math.abs(correction) / 2 - config.rfpCorrplexityMargin();
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
@@ -610,8 +611,8 @@ public class Searcher implements Search {
             && !singularSearch
             && Score.isDefined(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
-            && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
-            && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
+            && !(flag == HashFlag.LOWER && uncorrectedEval >= bestScore)
+            && !(flag == HashFlag.UPPER && uncorrectedEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
             history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
         }
@@ -665,7 +666,7 @@ public class Searcher implements Search {
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Integer.MIN_VALUE;
-        int staticEval = Integer.MIN_VALUE;
+        int staticEval    = Integer.MIN_VALUE;
 
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,

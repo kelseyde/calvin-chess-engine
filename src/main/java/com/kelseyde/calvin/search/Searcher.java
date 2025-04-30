@@ -365,15 +365,16 @@ public class Searcher implements Search {
             // Probcut
             // Skip nodes where the static eval and a shallow quiescent-like search indicate the node will fail-high.
             int probcutBeta = beta + config.pcBetaMargin();
+            int probcutDepth = Math.max(depth - config.pcReduction(), 1);
+
             if (depth >= config.pcMinDepth()
                     && !Score.isMate(beta)
-                    && (!ttHit || ttEntry.score() >= probcutBeta || ttEntry.depth() + config.pcTtDepthMargin() < depth)) {
+                    && !(ttHit && ttEntry.depth() >= probcutDepth && ttEntry.score() < probcutBeta)) {
 
                 QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
                 movePicker.setFilter(MoveFilter.CAPTURES_ONLY);
 
-                int seeThreshold = probcutBeta - staticEval;
-                int probcutDepth = depth - config.pcReduction();
+                int seeThreshold = (probcutBeta - staticEval) * config.pcSeeScale() / 16;
 
                 while (true) {
 
@@ -382,16 +383,17 @@ public class Searcher implements Search {
                         break;
 
                     final Move move = scoredMove.move();
-                    if (!SEE.see(board, move, seeThreshold))
-                        continue;
-
                     final Piece piece = scoredMove.piece();
                     final Piece captured = scoredMove.captured();
 
+                    if (!SEE.see(board, move, seeThreshold))
+                        continue;
+
                     makeMove(move, piece, captured, curr);
+                    td.nodes++;
 
                     int score = -quiescenceSearch(-probcutBeta, probcutBeta + 1, ply + 1);
-                    if (score >= probcutBeta && probcutDepth >= 0)
+                    if (score >= probcutBeta)
                         score = -search(probcutDepth, ply + 1, -probcutBeta, -probcutBeta + 1, !cutNode);
 
                     unmakeMove(curr);

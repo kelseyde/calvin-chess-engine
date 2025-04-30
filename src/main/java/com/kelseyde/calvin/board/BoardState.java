@@ -17,6 +17,8 @@ public class BoardState {
     public int fullMoveNumber;
     public Piece moved;
     public Piece captured;
+    public long[] pinned;
+    public long[][] pinRays;
 
     public BoardState() {
         this.key = 0L;
@@ -27,9 +29,11 @@ public class BoardState {
         this.rights = Castling.startpos();
         this.halfMoveClock = 0;
         this.fullMoveNumber = 0;
+        this.pinned = new long[2];
+        this.pinRays = new long[2][64];
     }
 
-    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece moved, Piece captured, int enPassantFile, int rights, int halfMoveClock) {
+    public BoardState(long key, long pawnKey, long[] nonPawnKeys, Piece moved, Piece captured, int enPassantFile, int rights, int halfMoveClock, long[] pinned, long[][] pinRays) {
         this.key = key;
         this.pawnKey = pawnKey;
         this.nonPawnKeys = nonPawnKeys;
@@ -38,6 +42,9 @@ public class BoardState {
         this.enPassantFile = enPassantFile;
         this.rights = rights;
         this.halfMoveClock = halfMoveClock;
+        this.fullMoveNumber = 0;
+        this.pinned = pinned;
+        this.pinRays = pinRays;
     }
 
     public long getKey() {
@@ -94,7 +101,7 @@ public class BoardState {
 
     public BoardState copy() {
         long[] nonPawnKeysCopy = new long[]{nonPawnKeys[0], nonPawnKeys[1]};
-        return new BoardState(key, pawnKey, nonPawnKeysCopy, moved, captured, enPassantFile, rights, halfMoveClock);
+        return new BoardState(key, pawnKey, nonPawnKeysCopy, moved, captured, enPassantFile, rights, halfMoveClock, pinned, pinRays);
     }
 
     @Override

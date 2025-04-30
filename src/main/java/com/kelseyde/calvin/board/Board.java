@@ -2,6 +2,7 @@ package com.kelseyde.calvin.board;
 
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.movegen.Attacks;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -199,6 +200,8 @@ public class Board {
         state.enPassantFile = enPassantFile;
 
         state.key ^= Key.sideToMove();
+
+        calculatePins();
     }
 
     private void unmakeCastlingMove(int from, int to) {
@@ -282,7 +285,7 @@ public class Board {
         white = !white;
         final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.getRights(), 0);
+        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.rights, 0, state.pinned, state.pinRays);
         states[ply++] = state;
         state = newState;
     }
@@ -594,6 +597,13 @@ public class Board {
         return bitboards[pieceIndex] & bitboards[Piece.COUNT + colourIndex];
     }
 
+    public long pinned(boolean white) {
+        return state.pinned[Colour.index(white)];
+    }
+
+    public long[] pinRays(boolean white) {
+        return state.pinRays[Colour.index(white)];
+    }
 
     public boolean hasPiecesRemaining(boolean white) {
         return white ?
@@ -616,6 +626,55 @@ public class Board {
             states = newStates;
             moves = newMoves;
         }
+    }
+
+    public void calculatePins() {
+        calculatePins(true);
+        calculatePins(false);
+    }
+
+    public void calculatePins(boolean white) {
+        state.pinned[Colour.index(white)] = Square.NONE;
+
+        final int kingSquare = Bits.next(getKing(white));
+        final long friendlies = getPieces(white);
+        final long opponents = getPieces(!white);
+
+        long possiblePinners = Square.NONE;
+
+        // Calculate possible orthogonal pins
+        final long orthogonalSliders = getRooks(!white) | getQueens(!white);
+        if (orthogonalSliders != 0) {
+            possiblePinners |= Attacks.rookAttacks(kingSquare, 0) & orthogonalSliders;
+        }
+
+        // Calculate possible diagonal pins
+        final long diagonalSliders = getBishops(!white) | getQueens(!white);
+        if (diagonalSliders != 0) {
+            possiblePinners |= Attacks.bishopAttacks(kingSquare, 0) & diagonalSliders;
+        }
+
+        while (possiblePinners != 0) {
+            final int possiblePinner = Bits.next(possiblePinners);
+            final long ray = Bits.Ray.between(kingSquare, possiblePinner);
+
+            // Skip if there are opponents between the king and the possible pinner
+            if ((ray & opponents) != 0) {
+                possiblePinners = Bits.pop(possiblePinners);
+                continue;
+            }
+
+            final long friendliesBetween = ray & friendlies;
+            // If there is exactly one friendly piece between the king and the pinner, it's pinned
+            if (Bits.count(friendliesBetween) == 1) {
+                int friendlySquare = Bits.next(friendliesBetween);
+                state.pinned[Colour.index(white)] |= friendliesBetween;
+                state.pinRays[Colour.index(white)][friendlySquare] = ray | (Bits.of(possiblePinner));
+            }
+
+            possiblePinners = Bits.pop(possiblePinners);
+        }
+
     }
 
     public Board copy() {

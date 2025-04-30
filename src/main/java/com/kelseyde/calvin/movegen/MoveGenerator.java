@@ -20,8 +20,6 @@ public class MoveGenerator {
 
     private int checkersCount;
     private long checkersMask;
-    private long pinMask;
-    private final long[] pinRayMasks = new long[64];
     private long captureMask;
     private long pushMask;
     private MoveFilter filter;
@@ -54,8 +52,7 @@ public class MoveGenerator {
         captureMask = Square.ALL;
         pushMask = Square.ALL;
 
-        // Calculate pins and checks
-        calculatePins(board, white);
+        // Calculate checkers
         checkersMask = calculateCheckers(board, kingSquare);
         checkersCount = Bits.count(checkersMask);
 
@@ -130,18 +127,18 @@ public class MoveGenerator {
 
         // Single and double pawn pushes
         if (filter != MoveFilter.CAPTURES_ONLY) {
-            generatePawnPushes(occupied, filterMask);
+            generatePawnPushes(board, occupied, filterMask);
         }
 
         // Pawn captures, en passant, and promotions
         if (filter != MoveFilter.QUIET) {
-            generatePawnCaptures(opponents, filterMask);
-            generatePromotions(opponents, occupied);
+            generatePawnCaptures(board, opponents, filterMask);
+            generatePromotions(board, opponents, occupied);
             generateEnPassant(board);
         }
     }
 
-    private void generatePawnPushes(long occupied, long filterMask) {
+    private void generatePawnPushes(Board board, long occupied, long filterMask) {
         // Single and double pawn pushes combined
         long singleMoves = Attacks.pawnSingleMoves(pawns, occupied, white) & pushMask & filterMask;
         long doubleMoves = Attacks.pawnDoubleMoves(pawns, occupied, white) & pushMask & filterMask;
@@ -149,7 +146,7 @@ public class MoveGenerator {
         while (singleMoves != 0) {
             final int to = Bits.next(singleMoves);
             final int from = white ? to - 8 : to + 8;
-            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+            if (!isPinned(board, from) || isMovingAlongPinRay(board, from, to)) {
                 legalMoves.add(new Move(from, to));
             }
             singleMoves = Bits.pop(singleMoves);
@@ -158,21 +155,21 @@ public class MoveGenerator {
         while (doubleMoves != 0) {
             final int to = Bits.next(doubleMoves);
             final int from = white ? to - 16 : to + 16;
-            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+            if (!isPinned(board, from) || isMovingAlongPinRay(board, from, to)) {
                 legalMoves.add(new Move(from, to, Move.PAWN_DOUBLE_MOVE_FLAG));
             }
             doubleMoves = Bits.pop(doubleMoves);
         }
     }
 
-    private void generatePawnCaptures(long opponents, long filterMask) {
+    private void generatePawnCaptures(Board board, long opponents, long filterMask) {
         long leftCaptures = Attacks.pawnLeftCaptures(pawns, opponents, white) & captureMask & filterMask;
         long rightCaptures = Attacks.pawnRightCaptures(pawns, opponents, white) & captureMask & filterMask;
 
         while (leftCaptures != 0) {
             final int to = Bits.next(leftCaptures);
             final int from = white ? to - 7 : to + 9;
-            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+            if (!isPinned(board, from) || isMovingAlongPinRay(board, from, to)) {
                 legalMoves.add(new Move(from, to));
             }
             leftCaptures = Bits.pop(leftCaptures);
@@ -181,28 +178,28 @@ public class MoveGenerator {
         while (rightCaptures != 0) {
             final int to = Bits.next(rightCaptures);
             final int from = white ? to - 9 : to + 7;
-            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+            if (!isPinned(board, from) || isMovingAlongPinRay(board, from, to)) {
                 legalMoves.add(new Move(from, to));
             }
             rightCaptures = Bits.pop(rightCaptures);
         }
     }
 
-    private void generatePromotions(long opponents, long occupied) {
+    private void generatePromotions(Board board, long opponents, long occupied) {
         final long pushPromotions = Attacks.pawnPushPromotions(pawns, occupied, white) & pushMask;
         final long leftCapturePromotions = Attacks.pawnLeftCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
         final long rightCapturePromotions = Attacks.pawnRightCapturePromotions(pawns, opponents, white) & (captureMask | pushMask);
 
-        generatePromotionMoves(pushPromotions, 8, 8);
-        generatePromotionMoves(leftCapturePromotions, 7, 9);
-        generatePromotionMoves(rightCapturePromotions, 9, 7);
+        generatePromotionMoves(board, pushPromotions, 8, 8);
+        generatePromotionMoves(board, leftCapturePromotions, 7, 9);
+        generatePromotionMoves(board, rightCapturePromotions, 9, 7);
     }
 
-    private void generatePromotionMoves(long promotionMask, int offsetWhite, int offsetBlack) {
+    private void generatePromotionMoves(Board board, long promotionMask, int offsetWhite, int offsetBlack) {
         while (promotionMask != 0) {
             final int to = Bits.next(promotionMask);
             final int from = white ? to - offsetWhite : to + offsetBlack;
-            if (!isPinned(from) || isMovingAlongPinRay(from, to)) {
+            if (!isPinned(board, from) || isMovingAlongPinRay(board, from, to)) {
                 legalMoves.addAll(getPromotionMoves(from, to));
             }
             promotionMask = Bits.pop(promotionMask);
@@ -258,7 +255,7 @@ public class MoveGenerator {
         }
 
         // Exclude pinned knights from generating moves
-        long unpinnedKnights = knights & ~pinMask;
+        long unpinnedKnights = knights & ~board.pinned(white);
 
         // Generate legal knight moves
         while (unpinnedKnights != 0) {
@@ -347,7 +344,7 @@ public class MoveGenerator {
     private void generateChess960CastlingMove(Board board, boolean white, boolean kingside, int kingSquare, long occupied) {
         final int rookSquare = Castling.getRook(board.getState().rights, kingside, white);
         final long rookSquareBit = Bits.of(rookSquare); 
-        if ((pinMask & rookSquareBit) != 0) {
+        if ((board.pinned(white) & rookSquareBit) != 0) {
             // can't castle if rook is pinned 
         	return;
         }
@@ -404,8 +401,8 @@ public class MoveGenerator {
             attackMask &= filterMask;
 
             // Handle pinned pieces
-            if (isPinned(from)) {
-                attackMask &= pinRayMasks[from];
+            if (isPinned(board, from)) {
+                attackMask &= board.pinRays(white)[from];
             }
 
             sliders = Bits.pop(sliders);
@@ -568,50 +565,6 @@ public class MoveGenerator {
             squareMask = Bits.pop(squareMask);
         }
         return false;
-    }
-
-    public void calculatePins(Board board, boolean white) {
-        this.pinMask = 0L;
-
-        final int kingSquare = Bits.next(board.getKing(white));
-        final long friendlies = board.getPieces(white);
-        final long opponents = board.getPieces(!white);
-
-        long possiblePinners = 0L;
-
-        // Calculate possible orthogonal pins
-        final long orthogonalSliders = board.getRooks(!white) | board.getQueens(!white);
-        if (orthogonalSliders != 0) {
-            possiblePinners |= Attacks.rookAttacks(kingSquare, 0) & orthogonalSliders;
-        }
-
-        // Calculate possible diagonal pins
-        final long diagonalSliders = board.getBishops(!white) | board.getQueens(!white);
-        if (diagonalSliders != 0) {
-            possiblePinners |= Attacks.bishopAttacks(kingSquare, 0) & diagonalSliders;
-        }
-
-        while (possiblePinners != 0) {
-            final int possiblePinner = Bits.next(possiblePinners);
-            final long ray = Ray.between(kingSquare, possiblePinner);
-
-            // Skip if there are opponents between the king and the possible pinner
-            if ((ray & opponents) != 0) {
-                possiblePinners = Bits.pop(possiblePinners);
-                continue;
-            }
-
-            final long friendliesBetween = ray & friendlies;
-            // If there is exactly one friendly piece between the king and the pinner, it's pinned
-            if (Bits.count(friendliesBetween) == 1) {
-                int friendlySquare = Bits.next(friendliesBetween);
-                this.pinMask |= friendliesBetween;
-                this.pinRayMasks[friendlySquare] = ray | (Bits.of(possiblePinner));
-            }
-
-            possiblePinners = Bits.pop(possiblePinners);
-        }
-
     }
 
     public long calculateThreats(Board board, boolean white) {
@@ -851,12 +804,12 @@ public class MoveGenerator {
         return isAttacked;
     }
 
-    private boolean isPinned(int from) {
-        return (Bits.of(from) & pinMask) != 0;
+    private boolean isPinned(Board board, int from) {
+        return (Bits.of(from) & board.pinned(white)) != 0;
     }
 
-    private boolean isMovingAlongPinRay(int from, int to) {
-        final long pinRay = pinRayMasks[from];
+    private boolean isMovingAlongPinRay(Board board, int from, int to) {
+        final long pinRay = board.pinRays(white)[from];
         return (Bits.of(to) & pinRay) != 0;
     }
 
@@ -872,10 +825,6 @@ public class MoveGenerator {
                 return white ? 2 : 58;
             }
         }
-    }
-
-    public long getPinMask() {
-        return pinMask;
     }
 
     /**

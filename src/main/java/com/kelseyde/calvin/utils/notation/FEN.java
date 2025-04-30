@@ -137,6 +137,7 @@ public record FEN(String value,
         board.getState().setKey(Key.generateKey(board));
         board.getState().setPawnKey(Key.generatePawnKey(board));
         board.getState().setNonPawnKeys(Key.generateNonPawnKeys(board));
+        board.calculatePins();
         return board;
     }
 

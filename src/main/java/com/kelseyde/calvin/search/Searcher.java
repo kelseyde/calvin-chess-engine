@@ -295,10 +295,12 @@ public class Searcher implements Search {
         }
         curr.staticEval = staticEval;
 
-        // Decrease LMR reduction in hindsight if the static evaluation gets better (credit to Reckless)
+        // Hindsight extension
+        // If we reduced search depth in the parent node, but now the static eval indicates the position is improving,
+        // we reduce the parent node's reduction 'in hindsight' by extending search depth in the current node.
         if (!inCheck
                 && !rootNode
-                && prev.reduction >= 3
+                && prev.reduction >= config.hindsightExtLimit()
                 && staticEval + prev.staticEval < 0) {
             depth++;
         }

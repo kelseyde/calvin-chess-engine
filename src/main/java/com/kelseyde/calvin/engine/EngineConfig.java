@@ -85,6 +85,7 @@ public class EngineConfig {
     private final Tunable seReductionDivisor     = new Tunable("SeReductionDivisor", 2, 1, 4, 1);
     private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 20, 0, 32, 5);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
+    private final Tunable hindsightExtLimit      = new Tunable("HindsightExtensionLimit", 3, 2, 5, 1);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
@@ -133,7 +134,7 @@ public class EngineConfig {
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
-                lmpImpBase, lmpImpScale, lmrFailHighCount
+                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit
         );
     }
 
@@ -457,6 +458,10 @@ public class EngineConfig {
 
     public int ttExtensionDepth() {
         return ttExtensionDepth.value;
+    }
+
+    public int hindsightExtLimit() {
+        return hindsightExtLimit.value;
     }
 
     public int quietHistBonusMax() {

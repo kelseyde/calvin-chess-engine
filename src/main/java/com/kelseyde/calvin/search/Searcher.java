@@ -213,7 +213,6 @@ public class Searcher implements Search {
         final SearchStackEntry prev = ss.get(ply - 1);
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
-        final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
 
         history.getKillerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
@@ -299,7 +298,7 @@ public class Searcher implements Search {
         // Decrease LMR reduction in hindsight if the static evaluation gets better (credit to Reckless)
         if (!inCheck
                 && !rootNode
-                && priorReduction >= 3
+                && prev.reduction >= 3
                 && staticEval + prev.staticEval < 0) {
             depth++;
         }

@@ -305,6 +305,18 @@ public class Searcher implements Search {
             depth++;
         }
 
+        // Hindsight reduction
+        // If we reduced search depth in the parent node, and now the static eval indicates the position is worsening,
+        // we increase the parent node's reduction 'in hindsight' by reducing even further in the current node.
+        if (!inCheck
+                && !rootNode
+                && depth >= 2
+                && prev.reduction >= 1
+                && prev.staticEval != Integer.MIN_VALUE
+                && staticEval + prev.staticEval > 96) {
+            depth--;
+        }
+
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.

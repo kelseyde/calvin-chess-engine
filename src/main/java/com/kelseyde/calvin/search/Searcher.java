@@ -295,14 +295,12 @@ public class Searcher implements Search {
         }
         curr.staticEval = staticEval;
 
-        // Increase LMR reduction in hindsight if the static evaluation gets worse (credit to Reckless)
+        // Decrease LMR reduction in hindsight if the static evaluation gets better (credit to Reckless)
         if (!inCheck
-                && depth >= 2
                 && !rootNode
-                && prev.reduction >= 1
-                && prev.staticEval != Integer.MIN_VALUE
-                && staticEval + prev.staticEval > 96) {
-            depth -= 1;
+                && prev.reduction >= 3
+                && staticEval + prev.staticEval < 0) {
+            depth++;
         }
 
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.

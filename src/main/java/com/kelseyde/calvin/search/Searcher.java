@@ -295,6 +295,16 @@ public class Searcher implements Search {
         }
         curr.staticEval = staticEval;
 
+        // Increase LMR reduction in hindsight if the static evaluation gets worse (credit to Reckless)
+        if (!inCheck
+                && depth >= 2
+                && !rootNode
+                && prev.reduction >= 1
+                && prev.staticEval != Integer.MIN_VALUE
+                && staticEval + prev.staticEval > 96) {
+            depth -= 1;
+        }
+
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
@@ -536,7 +546,9 @@ public class Searcher implements Search {
             }
             else {
                 // For all other moves, search with a null window.
+                curr.reduction = reduction;
                 score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                curr.reduction = 0;
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.

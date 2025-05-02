@@ -272,6 +272,7 @@ public class Searcher implements Search {
         int rawStaticEval   = Score.MIN;
         int uncorrectedEval = Score.MIN;
         int staticEval      = Score.MIN;
+        int correction;
 
         if (singularSearch) {
             // In singular search, since we are in the same node, we can re-use the static eval on the stack.
@@ -280,8 +281,8 @@ public class Searcher implements Search {
         else if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = ttMove != null ? rawStaticEval : history.correctEvaluation(board, ss, ply, rawStaticEval);
             uncorrectedEval = rawStaticEval;
+            correction = history.evalCorrection(board, ss, ply);
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
             if (!ttHit)
@@ -289,8 +290,10 @@ public class Searcher implements Search {
 
             // If the TT score is within the bounds of the current window, we can use it as a more accurate static eval.
             if (canUseTTScore(ttEntry, rawStaticEval)) {
-                staticEval = ttEntry.score();
-                uncorrectedEval = staticEval;
+                staticEval = ttEntry.score() + correction;
+                uncorrectedEval = ttEntry.score();
+            } else {
+                staticEval = rawStaticEval + correction;
             }
         }
         curr.staticEval = staticEval;
@@ -676,6 +679,7 @@ public class Searcher implements Search {
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Score.MIN;
         int staticEval    = Score.MIN;
+        int correction;
 
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
@@ -685,13 +689,13 @@ public class Searcher implements Search {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = ttMove != null ? rawStaticEval : history.correctEvaluation(board, ss, ply, rawStaticEval);
+            correction = history.evalCorrection(board, ss, ply);
+            staticEval = canUseTTScore(ttEntry, rawStaticEval)
+                ? ttEntry.score() + correction
+                : rawStaticEval + correction;
 
             if (!ttHit)
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
-
-            if (canUseTTScore(ttEntry, rawStaticEval))
-                staticEval = ttEntry.score();
 
             if (staticEval >= beta) {
                 if (!ttHit || ttEntry.flag() == HashFlag.NONE)

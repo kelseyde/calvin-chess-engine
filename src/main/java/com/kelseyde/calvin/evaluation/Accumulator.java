@@ -71,6 +71,48 @@ public class Accumulator {
         }
     }
 
+    public void addAddAddAdd(short[] weights, Feature feat1, Feature feat2, Feature feat3, Feature feat4, boolean whitePerspective) {
+        // Add a quartet of features to the accumulator.
+        final boolean mirror = mirrored[Colour.index(whitePerspective)];
+        final int offset1 = feat1.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final int offset2 = feat2.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final int offset3 = feat3.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final int offset4 = feat4.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
+
+        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
+
+            ShortVector.fromArray(SPECIES, features, i)
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset1))
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset2))
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset3))
+                    .add(ShortVector.fromArray(SPECIES, weights, i + offset4))
+                    .intoArray(features, i);
+
+        }
+    }
+
+    public void subSubSubSub(short[] weights, Feature feat1, Feature feat2, Feature feat3, Feature feat4, boolean whitePerspective) {
+        // Subtract a quartet of features from the accumulator.
+        final boolean mirror = mirrored[Colour.index(whitePerspective)];
+        final int offset1 = feat1.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final int offset2 = feat2.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final int offset3 = feat3.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final int offset4 = feat4.index(whitePerspective, mirror) * HIDDEN_SIZE;
+        final short[] features = whitePerspective ? whiteFeatures : blackFeatures;
+
+        for (int i = 0; i < LOOP_LENGTH; i += SPECIES.length()) {
+
+            ShortVector.fromArray(SPECIES, features, i)
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset1))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset2))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset3))
+                    .sub(ShortVector.fromArray(SPECIES, weights, i + offset4))
+                    .intoArray(features, i);
+
+        }
+    }
+
     public void apply(Accumulator prev, AccumulatorUpdate update, short[] whiteWeights, short[] blackWeights) {
         // Accumulator updates are 'fused' together, so that multiple feature updates can be applied in a single pass.
         switch (update.getUpdateType()) {

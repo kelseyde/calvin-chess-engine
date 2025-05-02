@@ -310,17 +310,18 @@ public class Searcher implements Search {
         // should be more cautious in our alpha pruning - where the eval is too low.
         final boolean improving = isImproving(ply, staticEval);
 
+        final int reverseFutilityMargin = depth * config.rfpMargin()
+                - (improving ? config.rfpImprovingMargin() : 0);
+
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck && !singularSearch) {
 
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
-            final int futilityMargin = depth * config.rfpMargin()
-                    - (improving ? config.rfpImprovingMargin() : 0);
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
-                    && staticEval - futilityMargin >= beta) {
+                    && staticEval - reverseFutilityMargin >= beta) {
                 return beta + (staticEval - beta) / 3;
             }
 
@@ -433,7 +434,9 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
+                r += isQuiet ? lmrBetaReduction(staticEval, beta, reverseFutilityMargin) : 0;
 
                 reduction = Math.max(0, r / 1024);
             }
@@ -916,6 +919,15 @@ public class Searcher implements Search {
                 config.seeNoisyMargin() * depth * depth;
         threshold -= historyScore / config.seeHistoryDivisor();
         return threshold;
+    }
+
+    private int lmrBetaReduction(int staticEval, int beta, int reverseFutilityMargin) {
+        final int margin = staticEval - reverseFutilityMargin;
+        final int distance = beta - margin;
+        final int maxDistance = config.lmrBetaMargin();
+        final int maxReduction = config.lmrBetaMaxReduction();
+        final int reduction = maxReduction * (maxDistance - distance) / maxDistance;
+        return Math.max(0, Math.min(maxReduction, reduction));
     }
 
     private boolean canUseTTScore(HashEntry ttEntry, int rawStaticEval) {

@@ -101,6 +101,10 @@ public class EngineConfig {
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable materialBase           = new Tunable("MaterialScalingBase", 22400, 20000, 28000, 1000);
+    private final Tunable materialScale          = new Tunable("MaterialScalingScale", 32768, 30000, 36000, 1000);
+    private final Tunable fiftyMoveRuleBase      = new Tunable("FiftyMoveRuleBase", 200, 150, 250, 10);
+    private final Tunable fiftyMoveRuleScale     = new Tunable("FiftyMoveRuleScale", 200, 150, 250, 10);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 77, 50, 100, 5);
     private final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
@@ -134,7 +138,8 @@ public class EngineConfig {
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
-                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit
+                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, materialBase, materialScale,
+                fiftyMoveRuleBase, fiftyMoveRuleScale
         );
     }
 
@@ -522,6 +527,22 @@ public class EngineConfig {
 
     public int contHistMaxScore() {
         return contHistMaxScore.value;
+    }
+
+    public int materialBase() {
+        return materialBase.value;
+    }
+
+    public int materialScale() {
+        return materialScale.value;
+    }
+
+    public int fiftyMoveRuleBase() {
+        return fiftyMoveRuleBase.value;
+    }
+
+    public int fiftyMoveRuleScale() {
+        return fiftyMoveRuleScale.value;
     }
 
     public int timeFactor() {

@@ -1,9 +1,6 @@
 package com.kelseyde.calvin.search;
 
-import com.kelseyde.calvin.board.Board;
-import com.kelseyde.calvin.board.Colour;
-import com.kelseyde.calvin.board.Move;
-import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.board.*;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
@@ -100,13 +97,33 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int correctEvaluation(Board board, SearchStack ss, int ply, int staticEval) {
+    public int evalCorrection(Board board, SearchStack ss, int ply) {
         int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int counter = getContCorrHistEntry(ss, ply, board.isWhite());
         int correction = pawn + white + black + counter;
-        return staticEval + correction / CorrectionHistoryTable.SCALE;
+        return correction / CorrectionHistoryTable.SCALE;
+    }
+
+    public int scaleEval(Board board, int staticEval) {
+
+        // Scale down the evaluation when there's not much material left on the board - this creates an incentive
+        // to keep pieces on the board when we have winning chances, and trade them off when we're under pressure.
+        final int materialPhase = materialPhase(board);
+        final int materialBase = config.materialBase();
+        final int materialScale = config.materialScale();
+        staticEval = staticEval * (materialBase + materialPhase) / materialScale;
+
+        // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
+        // of when no progress is being made in the position.
+        final int halfMoveClock = board.getState().getHalfMoveClock();
+        final int fiftyMoveBase = config.fiftyMoveRuleBase();
+        final int fiftyMoveScale = config.fiftyMoveRuleScale();
+        staticEval = staticEval * (fiftyMoveBase - halfMoveClock) / fiftyMoveScale;
+
+        return staticEval;
+
     }
 
     public void updateCorrectionHistory(Board board, SearchStack ss, int ply, int depth, int score, int staticEval) {
@@ -171,5 +188,14 @@ public class SearchHistory {
         nonPawnCorrHistTables[Colour.BLACK].clear();
         countermoveCorrHistTable.clear();
     }
+
+    private int materialPhase(Board board) {
+        final int knights = Bits.count(board.getKnights());
+        final int bishops = Bits.count(board.getBishops());
+        final int rooks = Bits.count(board.getRooks());
+        final int queens = Bits.count(board.getQueens());
+        return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
+    }
+
 
 }

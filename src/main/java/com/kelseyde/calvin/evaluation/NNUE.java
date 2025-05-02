@@ -83,12 +83,7 @@ public class NNUE {
         final short[] them = white ? acc.blackFeatures : acc.whiteFeatures;
 
         // Pass the features through the network to get the evaluation.
-        int eval = NETWORK.activation().forward(us, them);
-
-        // Scale the evaluation based on the material and proximity to 50-move rule draw.
-        eval = scaleEvaluation(board, eval);
-
-        return eval;
+        return NETWORK.activation().forward(us, them);
 
     }
 
@@ -286,29 +281,6 @@ public class NNUE {
         clearHistory();
         this.board = board;
         fullRefresh(board);
-    }
-
-    private int scaleEvaluation(Board board, int eval) {
-
-        // Scale down the evaluation when there's not much material left on the board - this creates an incentive
-        // to keep pieces on the board when we have winning chances, and trade them off when we're under pressure.
-        final int materialPhase = materialPhase(board);
-        eval = eval * (22400 + materialPhase) / 32768;
-
-        // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
-        // of when no progress is being made in the position.
-        eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
-
-        return eval;
-
-    }
-
-    private int materialPhase(Board board) {
-        final int knights = Bits.count(board.getKnights());
-        final int bishops = Bits.count(board.getBishops());
-        final int rooks = Bits.count(board.getRooks());
-        final int queens = Bits.count(board.getQueens());
-        return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
     private boolean mirrorChanged(Board board, Move move, Piece piece) {

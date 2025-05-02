@@ -224,12 +224,14 @@ public class Searcher implements Search {
         boolean ttHit = false;
         boolean ttPrune = false;
         Move ttMove = null;
+        boolean ttMoveNoisy = false;
         boolean ttPv = pvNode;
 
         if (!singularSearch) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
+            ttMoveNoisy = ttMove != null && board.isNoisy(ttMove);
             ttPv = ttPv || (ttHit && ttEntry.pv());
 
             if (!rootNode
@@ -317,7 +319,8 @@ public class Searcher implements Search {
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             final int futilityMargin = depth * config.rfpMargin()
-                    - (improving ? config.rfpImprovingMargin() : 0);
+                    - (improving ? config.rfpImprovingMargin() : 0)
+                    - (ttMoveNoisy ? config.rfpNoisyMoveMargin() : 0);
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {

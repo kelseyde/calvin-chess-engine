@@ -52,6 +52,7 @@ public class EngineConfig {
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 69, 0, 150, 25);
     private final Tunable rfpImprovingMargin     = new Tunable("RfpImprovingMargin", 69, 0, 150, 25);
+    private final Tunable rfpNoisyMoveMargin     = new Tunable("RfpNoisyMoveMargin", 30, 0, 50, 10);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 91, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 308, 200, 400, 10);
@@ -134,7 +135,7 @@ public class EngineConfig {
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
-                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit
+                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, rfpNoisyMoveMargin
         );
     }
 
@@ -326,6 +327,10 @@ public class EngineConfig {
 
     public int rfpImprovingMargin() {
         return rfpImprovingMargin.value;
+    }
+
+    public int rfpNoisyMoveMargin() {
+        return rfpNoisyMoveMargin.value;
     }
 
     public int lmrDepth() {

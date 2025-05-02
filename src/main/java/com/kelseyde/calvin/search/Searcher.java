@@ -310,6 +310,8 @@ public class Searcher implements Search {
         // should be more cautious in our alpha pruning - where the eval is too low.
         final boolean improving = isImproving(ply, staticEval);
 
+        int futilityReduction = 0;
+
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck && !singularSearch) {
@@ -319,9 +321,16 @@ public class Searcher implements Search {
             final int futilityMargin = depth * config.rfpMargin()
                     - (improving ? config.rfpImprovingMargin() : 0);
             if (depth <= config.rfpDepth()
-                    && !Score.isMate(alpha)
-                    && staticEval - futilityMargin >= beta) {
-                return beta + (staticEval - beta) / 3;
+                    && !Score.isMate(alpha)) {
+                if (staticEval - futilityMargin >= beta) {
+                    return beta + (staticEval - beta) / 3;
+                }
+                else if (staticEval - futilityMargin + 50 >= beta) {
+                    int margin = staticEval - futilityMargin;
+                    int distance = beta - margin;
+                    futilityReduction = 2048 * (50 - distance) / 50;
+                    futilityReduction = Math.max(0, Math.min(2048, futilityReduction));
+                }
             }
 
             // Razoring
@@ -434,6 +443,7 @@ public class Searcher implements Search {
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
+                r += isQuiet ? futilityReduction : 0;
 
                 reduction = Math.max(0, r / 1024);
             }

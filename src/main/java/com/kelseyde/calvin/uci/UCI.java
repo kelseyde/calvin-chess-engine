@@ -199,6 +199,7 @@ public class UCI {
 
     public static void handleParams(UCICommand command) {
         ENGINE.getConfig().getTunables().stream()
+                .sorted(Comparator.comparing(tunable -> tunable.name))
                 .map(Tunable::toSPSA)
                 .forEach(UCI::write);
     }

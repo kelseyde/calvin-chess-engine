@@ -302,7 +302,7 @@ public class Searcher implements Search {
         if (!inCheck
                 && !rootNode
                 && priorReduction >= config.hindsightExtLimit()
-                && prev.staticEval != Integer.MIN_VALUE
+                && Score.isDefined(prev.staticEval)
                 && staticEval + prev.staticEval < 0) {
             depth++;
         }

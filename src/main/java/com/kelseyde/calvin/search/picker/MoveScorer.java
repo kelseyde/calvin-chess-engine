@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
@@ -20,40 +21,41 @@ public class MoveScorer {
     private final EngineConfig config;
     private final SearchHistory history;
     private final SearchStack ss;
+    private final MoveGenerator movegen;
     private int seeNoisyDivisor;
     private int seeNoisyOffset;
 
     public MoveScorer(EngineConfig config,
                       SearchHistory history,
                       SearchStack ss,
+                      MoveGenerator movegen,
                       int seeNoisyDivisor,
                       int seeNoisyOffset) {
         this.config = config;
         this.history = history;
         this.ss = ss;
+        this.movegen = movegen;
         this.seeNoisyDivisor = seeNoisyDivisor;
         this.seeNoisyOffset = seeNoisyOffset;
     }
 
-    public ScoredMove score(Board board, Move move, int ply, Stage stage) {
+    public ScoredMove score(Board board, Move move, int ply) {
 
         final Piece piece = board.pieceAt(move.from());
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
 
         final boolean capture = captured != null;
         final boolean promotion = move.isPromotion();
-        final boolean quietCheck = stage == Stage.GEN_NOISY && !promotion && !capture;
-
-        // Noisy moves are captures, promotions, and quiet checks (meaning checks that are not captures or promotions).
-        final boolean noisy = quietCheck || capture || promotion;
+        final boolean givesCheck = movegen.givesCheck(board, move);
+        final boolean noisy = capture || promotion;
 
         return noisy ?
-                scoreNoisy(board, move, piece, captured, quietCheck, ply) :
-                scoreQuiet(board, move, piece, ply);
+                scoreNoisy(board, move, piece, captured, givesCheck, ply) :
+                scoreQuiet(board, move, piece, givesCheck, ply);
 
     }
 
-    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck, int ply) {
+    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean givesCheck, int ply) {
 
         final boolean white = board.isWhite();
 
@@ -64,16 +66,7 @@ public class MoveScorer {
             // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
             score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
-            return new ScoredMove(move, piece, captured, score, 0, type);
-        }
-
-        if (quietCheck) {
-            // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
-            final MoveType type = MoveType.BAD_NOISY;
-            final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
-            final int contHistScore = continuationHistoryScore(move, piece, white, ply);
-            score = historyScore + contHistScore;
-            return new ScoredMove(move, piece, captured, score, historyScore, type);
+            return new ScoredMove(move, piece, captured, score, 0, givesCheck, type);
         }
 
         score += SEE.value(captured);
@@ -86,17 +79,17 @@ public class MoveScorer {
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
         final MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
 
-        return new ScoredMove(move, piece, captured, score, historyScore, type);
+        return new ScoredMove(move, piece, captured, score, historyScore, givesCheck, type);
     }
 
-    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
+    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, boolean givesCheck, int ply) {
 
         // Quiet moves are scored using the quiet history and continuation history heuristics.
         final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite());
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
 
-        return new ScoredMove(move, piece, null, score, score, MoveType.QUIET);
+        return new ScoredMove(move, piece, null, score, score, givesCheck, MoveType.QUIET);
 
     }
 

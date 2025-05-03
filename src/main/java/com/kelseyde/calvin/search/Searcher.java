@@ -483,14 +483,13 @@ public class Searcher implements Search {
 
             // PVS SEE Pruning
             // Skip moves that lose material once all the pieces have been exchanged.
-            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
             if (!pvNode
                     && !rootNode
                     && depth <= config.seeMaxDepth()
                     && searchedMoves > 1
                     && !isGoodNoisy
                     && !isMateScore
-                    && !SEE.see(board, move, seeThreshold)) {
+                    && !SEE.see(board, move, seeThreshold(depth, historyScore, isQuiet, move))) {
                 continue;
             }
 
@@ -914,8 +913,9 @@ public class Searcher implements Search {
         return (base + depth * scale) / 10;
     }
 
-    private int seeThreshold(int depth, int historyScore, boolean isQuiet) {
-        int threshold = isQuiet ?
+    private int seeThreshold(int depth, int historyScore, boolean isQuiet, Move move) {
+        final boolean givesCheck = movegen.givesCheck(board, move);
+        int threshold = isQuiet && !givesCheck ?
                 config.seeQuietMargin() * depth :
                 config.seeNoisyMargin() * depth * depth;
         threshold -= historyScore / config.seeHistoryDivisor();

@@ -408,6 +408,7 @@ public class Searcher implements Search {
             final boolean isQuiet = scoredMove.isQuiet();
             final boolean isCapture = captured != null;
             final boolean isMateScore = Score.isMate(bestScore);
+            final boolean givesCheck = movegen.givesCheck(board, move);
 
             int extension = 0;
             int reduction = 0;
@@ -426,6 +427,7 @@ public class Searcher implements Search {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
+                r -= givesCheck ? config.lmrGivesCheck() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
                 r -= isQuiet
                         ? historyScore / config.lmrQuietHistoryDiv() * 1024

@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.board;
 
+import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.utils.IllegalMoveException;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -7,6 +8,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class CheckTest {
+
+    private final MoveGenerator movegen = new MoveGenerator();
 
     @Test
     public void checkBlocksOtherMoves() {
@@ -327,6 +330,15 @@ public class CheckTest {
 
         Assertions.assertThrows(IllegalMoveException.class, () ->
                 TestUtils.getLegalMove(board, Move.fromUCI("g8h8")));
+
+    }
+
+    @Test
+    public void testGivesCheckEnPassant() {
+
+        Board board = FEN.parse("r2qkb1r/2p2pp1/p3pn1p/npPp1b2/Q2P4/P4N2/1P1NPPPP/R1B1KB1R w KQkq b3 0 10").toBoard();
+        Move move = Move.fromUCI("c5b6", Move.EN_PASSANT_FLAG);
+        Assertions.assertTrue(movegen.givesCheck(board, move));
 
     }
 

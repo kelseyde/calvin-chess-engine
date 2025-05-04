@@ -298,6 +298,7 @@ public class Searcher implements Search {
         }
         curr.staticEval = staticEval;
 
+        // Use the difference between the static eval in the current node and parent node to improve move ordering.
         if (!inCheck
                 && !singularSearch
                 && !rootNode

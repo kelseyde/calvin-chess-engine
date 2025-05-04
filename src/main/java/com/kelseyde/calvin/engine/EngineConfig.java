@@ -87,7 +87,7 @@ public class EngineConfig {
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
     private final Tunable hindsightExtLimit      = new Tunable("HindsightExtensionLimit", 3, 2, 5, 1);
     private final Tunable quietOrderingMult      = new Tunable("QuietOrderingMult", 5, 0, 20, 2);
-    private final Tunable quietOrderingMin       = new Tunable("QuietOrderingMult", -50, -100, 0, 25);
+    private final Tunable quietOrderingMin       = new Tunable("QuietOrderingMin", -50, -100, 0, 25);
     private final Tunable quietOrderingMax       = new Tunable("QuietOrderingMax", 100, 75, 200, 25);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);

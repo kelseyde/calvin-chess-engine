@@ -213,6 +213,7 @@ public class Searcher implements Search {
         final SearchStackEntry prev = ss.get(ply - 1);
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
+        curr.inCheck = inCheck;
 
         history.getKillerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
@@ -296,6 +297,17 @@ public class Searcher implements Search {
             }
         }
         curr.staticEval = staticEval;
+
+        if (!inCheck
+                && !singularSearch
+                && !rootNode
+                && prev.move != null
+                && prev.quiet
+                && Score.isDefined(prev.staticEval)) {
+            int value = config.quietOrderingMult() * -(staticEval + prev.staticEval);
+            int bonus = clamp(value, config.quietOrderingMin(), config.quietOrderingMax());
+            history.getQuietHistoryTable().add(prev.move, prev.piece, !board.isWhite(), bonus);
+        }
 
         // Hindsight extension
         // If we reduced search depth in the parent node, but now the static eval indicates the position is improving,
@@ -527,7 +539,7 @@ public class Searcher implements Search {
 
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
-            makeMove(move, piece, captured, curr);
+            makeMove(scoredMove, piece, captured, curr);
 
             if (isCapture && captureMoves < 16) {
                 curr.captures[captureMoves++] = move;
@@ -673,6 +685,9 @@ public class Searcher implements Search {
 
         final boolean inCheck = movegen.isCheck(board);
 
+        SearchStackEntry curr = ss.get(ply);
+        curr.inCheck = inCheck;
+
         MoveFilter filter;
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
@@ -710,8 +725,6 @@ public class Searcher implements Search {
 
         final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
         movePicker.setFilter(filter);
-
-        SearchStackEntry sse = ss.get(ply);
 
         int movesSearched = 0;
 
@@ -751,12 +764,12 @@ public class Searcher implements Search {
             if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
-            makeMove(move, piece, captured, sse);
+            makeMove(scoredMove, piece, captured, curr);
 
             td.nodes++;
             final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
 
-            unmakeMove(sse);
+            unmakeMove(curr);
 
             if (score > bestScore) {
                 bestScore = score;
@@ -805,10 +818,11 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
-    private void makeMove(Move move, Piece piece, Piece captured, SearchStackEntry sse) {
-        eval.makeMove(board, move);
-        board.makeMove(move);
-        sse.move = move;
+    private void makeMove(ScoredMove move, Piece piece, Piece captured, SearchStackEntry sse) {
+        eval.makeMove(board, move.move());
+        board.makeMove(move.move());
+        sse.move = move.move();
+        sse.quiet = move.isQuiet();
         sse.piece = piece;
         sse.captured = captured;
     }
@@ -927,6 +941,10 @@ public class Searcher implements Search {
                 (ttEntry.flag() == HashFlag.EXACT ||
                 (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                 (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval));
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 
 }

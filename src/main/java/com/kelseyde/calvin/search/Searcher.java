@@ -338,7 +338,8 @@ public class Searcher implements Search {
 
             // Null Move Pruning
             // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
-            if (curr.nullMoveAllowed
+            if (cutNode
+                && curr.nullMoveAllowed
                 && ply >= td.nmpPly
                 && depth >= config.nmpDepth()
                 && staticEval >= beta

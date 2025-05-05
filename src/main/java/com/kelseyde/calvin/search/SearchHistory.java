@@ -100,13 +100,23 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int evalCorrection(Board board, SearchStack ss, int ply) {
+    public EvalCorrection evalCorrection(Board board, SearchStack ss, int ply) {
         int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int counter = getContCorrHistEntry(ss, ply, board.isWhite());
         int correction = pawn + white + black + counter;
-        return correction / CorrectionHistoryTable.SCALE;
+        int scaledCorrection = correction / CorrectionHistoryTable.SCALE;
+        int squaredCorrections = (pawn * pawn) + (white * white) + (black * black) + (counter * counter);
+        return new EvalCorrection(scaledCorrection, squaredCorrections);
+    }
+
+    public int squaredCorrections(Board board, SearchStack ss, int ply) {
+        int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
+        int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
+        int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
+        int counter = getContCorrHistEntry(ss, ply, board.isWhite());
+        return ((pawn * pawn) + (white * white) + (black * black) + (counter * counter)) >> 18;
     }
 
     public void updateCorrectionHistory(Board board, SearchStack ss, int ply, int depth, int score, int staticEval) {
@@ -170,6 +180,14 @@ public class SearchHistory {
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
         countermoveCorrHistTable.clear();
+    }
+
+    public record EvalCorrection(int correction, int squaredCorrections) {
+
+        public static EvalCorrection zero() {
+            return new EvalCorrection(0, 0);
+        }
+
     }
 
 }

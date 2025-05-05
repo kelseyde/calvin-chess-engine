@@ -98,6 +98,7 @@ public class Searcher implements Search {
             bestMoveCurrent = null;
             bestScoreCurrent = 0;
             td.seldepth = 0;
+            boolean bestMoveSame = false;
 
             final int searchDepth = td.depth - reduction;
 
@@ -108,6 +109,7 @@ public class Searcher implements Search {
             if (bestMoveCurrent != null) {
                 history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
                 history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
+                bestMoveSame = bestMoveCurrent.equals(bestMoveRoot);
                 bestMoveRoot = bestMoveCurrent;
                 bestScoreRoot = bestScoreCurrent;
                 if (td.isMainThread()) {
@@ -137,6 +139,9 @@ public class Searcher implements Search {
                     continue;
                 }
                 if (score >= beta) {
+                    if (bestMoveSame && softLimitReached()) {
+                        break;
+                    }
                     // If score >= beta, re-search with an expanded aspiration window
                     beta += window;
                     window = window * config.aspWideningFactor() / 100;

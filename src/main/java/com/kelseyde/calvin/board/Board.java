@@ -395,8 +395,12 @@ public class Board {
         return pieces[square];
     }
 
+    public Piece captured(Move move) {
+        return move.isEnPassant() ? Piece.PAWN : pieceAt(move.to());
+    }
+
     public boolean isCapture(Move move) {
-        return move.isEnPassant() || pieceAt(move.to()) != null;
+        return captured(move) != null;
     }
 
     public boolean isNoisy(Move move) {

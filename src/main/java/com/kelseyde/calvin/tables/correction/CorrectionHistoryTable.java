@@ -19,7 +19,7 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
  */
 public abstract class CorrectionHistoryTable {
 
-    public static final int SCALE = 64;
+    public static final int SCALE = 64 * 4;
     protected static final int MAX = SCALE * 32;
 
     /**
@@ -31,7 +31,7 @@ public abstract class CorrectionHistoryTable {
         int newValue = (score - staticEval) * SCALE;
 
         // Weight the new value based on the search depth, and the old value based on the remaining weight
-        int newWeight = Math.min(depth + 1, 16);
+        int newWeight = Math.min(depth + 1, 16) * 4;
         int oldWeight = SCALE - newWeight;
 
         // Compute the weighted sum of the old and new values, and clamp the result.

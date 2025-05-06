@@ -272,7 +272,13 @@ public class Searcher implements Search {
         int rawStaticEval   = Score.MIN;
         int uncorrectedEval = Score.MIN;
         int staticEval      = Score.MIN;
-        int correction;
+
+        // Correction History
+        // The static eval is corrected based on the historical difference between the static eval and the search score
+        // of similar positions. The complexity is the sum of each correction term squared - if the correction is large,
+        // then the position is likely complex, and we should be wary of reducing/pruning the search.
+        int correction = 0;
+        int complexity = 0;
 
         if (singularSearch) {
             // In singular search, since we are in the same node, we can re-use the static eval on the stack.
@@ -283,6 +289,7 @@ public class Searcher implements Search {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedEval = rawStaticEval;
             correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
+            complexity = history.squaredCorrectionTerms(board, ss, ply);
             staticEval = rawStaticEval + correction;
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
@@ -436,6 +443,7 @@ public class Searcher implements Search {
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
+                r -= complexity / config.lmrComplexityDivisor();
 
                 reduction = Math.max(0, r / 1024);
             }

@@ -191,6 +191,8 @@ public class Board {
         state.captured = captured;
         final boolean resetClock = captured != null || Piece.PAWN.equals(piece);
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
+        state.fullMoveNumber++;
+        state.pliesFromNull++;
 
         final int castleRights = updateCastleRights(from, to, piece);
         state.key ^= Key.rights(state.rights, castleRights);
@@ -284,7 +286,8 @@ public class Board {
         white = !white;
         final long key = state.key ^ Key.nullMove(state.enPassantFile);
         final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.getRights(), 0);
+        final int pliesFromNull = 0;
+        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.getRights(), 0, state.fullMoveNumber, pliesFromNull);
         states[ply++] = state;
         state = newState;
     }
@@ -609,16 +612,16 @@ public class Board {
 
     public boolean hasUpcomingRepetition(int ply) {
 
-        final int hm = state.halfMoveClock;
         final int lastMove = this.ply - 1;
-        if (hm < 3)
+        final int dist = Math.min(state.halfMoveClock, state.pliesFromNull);
+        if (dist < 3)
             return false;
 
         final long occ = getOccupied();
         long currKey = previousKey(0);
         long other = currKey ^ previousKey(1) ^ Key.sideToMove();
 
-        for (int i = 3; i < hm && i < lastMove; i += 2) {
+        for (int i = 3; i < dist && i < lastMove; i += 2) {
 
             long prevKey = previousKey(i);
             other ^= prevKey ^ previousKey(i - 1) ^ Key.sideToMove();

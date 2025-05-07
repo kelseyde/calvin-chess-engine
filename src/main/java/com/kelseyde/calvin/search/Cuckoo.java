@@ -38,7 +38,7 @@ public class Cuckoo {
                     for (int to = from + 1; to < 64; to++) {
 
                         final boolean white = colour == Colour.WHITE;
-                        final long attacks = Attacks.attacks(from, piece, white, 0L);
+                        final long attacks = Attacks.attacks(from, piece, 0L, white);
 
                         if (!Bits.contains(attacks, to))
                             continue;

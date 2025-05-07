@@ -612,7 +612,6 @@ public class Board {
 
     public boolean hasUpcomingRepetition(int ply) {
 
-        final int lastMove = this.ply - 1;
         final int dist = Math.min(state.halfMoveClock, state.pliesFromNull);
         if (dist < 3)
             return false;
@@ -621,7 +620,7 @@ public class Board {
         long currKey = previousKey(0);
         long other = currKey ^ previousKey(1) ^ Key.sideToMove();
 
-        for (int i = 3; i < dist && i < lastMove; i += 2) {
+        for (int i = 3; i < dist; i += 2) {
 
             long prevKey = previousKey(i);
             other ^= prevKey ^ previousKey(i - 1) ^ Key.sideToMove();

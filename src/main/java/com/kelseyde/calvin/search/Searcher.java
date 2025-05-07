@@ -87,7 +87,7 @@ public class Searcher implements Search {
         // The alpha-beta window is initialised to the maximum value, [Score.MIN, Score.MAX].
         // After each iteration, the window is narrowed around the search score.
         int alpha = Score.MIN;
-        int beta = Score.MAX;
+        int beta  = Score.MAX;
 
         int reduction = 0;
         int maxReduction = config.aspMaxReduction();
@@ -222,6 +222,7 @@ public class Searcher implements Search {
         final boolean singularSearch = excludedMove != null;
 
         history.getKillerTable().clear(ply + 1);
+        ss.get(ply + 2).failHighCount = 0;
 
         // Transposition table
         // Check if this node has already been searched before. If so, we can potentially re-use the result of the
@@ -275,9 +276,10 @@ public class Searcher implements Search {
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
         // In non-leaf nodes, this is used as a guide for several heuristics, such as extensions, reductions and pruning.
-        int rawStaticEval = Integer.MIN_VALUE;
-        int uncorrectedStaticEval = Integer.MIN_VALUE;
-        int staticEval = Integer.MIN_VALUE;
+        int rawStaticEval   = Score.MIN;
+        int uncorrectedEval = Score.MIN;
+        int staticEval      = Score.MIN;
+        int correction;
 
         if (singularSearch) {
             // In singular search, since we are in the same node, we can re-use the static eval on the stack.
@@ -286,8 +288,9 @@ public class Searcher implements Search {
         else if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = ttMove != null ? rawStaticEval : history.correctEvaluation(board, ss, ply, rawStaticEval);
-            uncorrectedStaticEval = rawStaticEval;
+            uncorrectedEval = rawStaticEval;
+            correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
+            staticEval = rawStaticEval + correction;
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
             if (!ttHit)
@@ -296,10 +299,20 @@ public class Searcher implements Search {
             // If the TT score is within the bounds of the current window, we can use it as a more accurate static eval.
             if (canUseTTScore(ttEntry, rawStaticEval)) {
                 staticEval = ttEntry.score();
-                uncorrectedStaticEval = staticEval;
+                uncorrectedEval = staticEval;
             }
         }
         curr.staticEval = staticEval;
+
+        // Hindsight extension
+        // If we reduced search depth in the parent node, but now the static eval indicates the position is improving,
+        // we reduce the parent node's reduction 'in hindsight' by extending search depth in the current node.
+        if (!inCheck
+                && !rootNode
+                && prev.reduction >= config.hindsightExtLimit()
+                && staticEval + prev.staticEval < 0) {
+            depth++;
+        }
 
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
@@ -312,7 +325,8 @@ public class Searcher implements Search {
 
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
-            final int futilityMargin = Math.max(depth - (improving ? 1 : 0), 0) * config.rfpMargin();
+            final int futilityMargin = depth * config.rfpMargin()
+                    - (improving ? config.rfpImprovingMargin() : 0);
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
@@ -428,6 +442,7 @@ public class Searcher implements Search {
                         + (depth) * config.fpScale()
                         + (historyScore / config.fpHistDivisor());
                 r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
 
                 reduction = Math.max(0, r / 1024);
             }
@@ -462,13 +477,13 @@ public class Searcher implements Search {
 
             // Late Move Pruning
             // Skip quiet moves ordered very late in the list.
-            final int lmpThreshold = (depth * config.lmpMultiplier()) / (1 + (improving ? 0 : 1));
+            final int lateMoveThreshold = lateMoveThreshold(depth, improving);
             if (!pvNode
                     && !rootNode
                     && isQuiet
                     && !inCheck
                     && depth <= config.lmpDepth()
-                    && searchedMoves >= lmpThreshold) {
+                    && searchedMoves >= lateMoveThreshold) {
                 movePicker.setSkipQuiets(true);
                 continue;
             }
@@ -540,7 +555,9 @@ public class Searcher implements Search {
             }
             else {
                 // For all other moves, search with a null window.
+                curr.reduction = reduction;
                 score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                curr.reduction = 0;
 
                 if (score > alpha && (score < beta || reduction > 0)) {
                     // If the score beats alpha, we need to do a re-search with the full window and depth.
@@ -578,6 +595,7 @@ public class Searcher implements Search {
                     // If the score is greater than beta, then this position is 'too good' - our opponent won't let us
                     // get here assuming perfect play, and so there's no point searching further.
                     flag = HashFlag.LOWER;
+                    curr.failHighCount++;
                     break;
                 }
             }
@@ -611,8 +629,8 @@ public class Searcher implements Search {
             && !singularSearch
             && Score.isDefined(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
-            && !(flag == HashFlag.LOWER && uncorrectedStaticEval >= bestScore)
-            && !(flag == HashFlag.UPPER && uncorrectedStaticEval <= bestScore)) {
+            && !(flag == HashFlag.LOWER && uncorrectedEval >= bestScore)
+            && !(flag == HashFlag.UPPER && uncorrectedEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
             history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
         }
@@ -665,8 +683,9 @@ public class Searcher implements Search {
         MoveFilter filter;
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
-        int rawStaticEval = Integer.MIN_VALUE;
-        int staticEval = Integer.MIN_VALUE;
+        int rawStaticEval = Score.MIN;
+        int staticEval    = Score.MIN;
+        int correction;
 
         if (inCheck) {
             // If we are in check, we need to generate 'all' legal moves that evade check, not just captures. Otherwise,
@@ -676,7 +695,8 @@ public class Searcher implements Search {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            staticEval = ttMove != null ? rawStaticEval : history.correctEvaluation(board, ss, ply, rawStaticEval);
+            correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
+            staticEval = rawStaticEval + correction;
 
             if (!ttHit)
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
@@ -835,13 +855,13 @@ public class Searcher implements Search {
      * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
      */
     private boolean isImproving(int ply, int staticEval) {
-        if (staticEval == Integer.MIN_VALUE) return false;
+        if (!Score.isDefined(staticEval)) return false;
         if (ply < 2) return false;
         int lastEval = ss.get(ply - 2).staticEval;
-        if (lastEval == Integer.MIN_VALUE) {
+        if (!Score.isDefined(lastEval)) {
             if (ply < 4) return false;
             lastEval = ss.get(ply - 4).staticEval;
-            if (lastEval == Integer.MIN_VALUE) {
+            if (Score.isDefined(lastEval)) {
                 return true;
             }
         }
@@ -895,6 +915,12 @@ public class Searcher implements Search {
                 - searchedMoves * config.fpMoveMultiplier();
     }
 
+    private int lateMoveThreshold(int depth, boolean improving) {
+        final int base = improving ? config.lmpImpBase() : config.lmpBase();
+        final int scale = improving ? config.lmpImpScale() : config.lmpScale();
+        return (base + depth * scale) / 10;
+    }
+
     private int seeThreshold(int depth, int historyScore, boolean isQuiet) {
         int threshold = isQuiet ?
                 config.seeQuietMargin() * depth :
@@ -909,6 +935,5 @@ public class Searcher implements Search {
                 (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                 (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval));
     }
-
 
 }

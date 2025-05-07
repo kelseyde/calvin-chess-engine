@@ -128,21 +128,21 @@ public class Attacks {
     public static final MagicLookup[] ROOK_MAGIC_LOOKUP = initMagicLookups(ROOK_ATTACKS, ROOK_MASKS, ROOK_MAGICS, ROOK_SHIFTS);
     public static final MagicLookup[] BISHOP_MAGIC_LOOKUP = initMagicLookups(BISHOP_ATTACKS, BISHOP_MASKS, BISHOP_MAGICS, BISHOP_SHIFTS);
 
+    public static long attacks(int square, Piece piece, long blockers, boolean white) {
+        return switch (piece) {
+            case PAWN   -> pawnAttacks(Bits.of(square), white);
+            case KNIGHT -> knightAttacks(square);
+            case KING   -> kingAttacks(square);
+            case ROOK   -> rookAttacks(square, blockers);
+            case BISHOP -> bishopAttacks(square, blockers);
+            case QUEEN  -> queenAttacks(square, blockers);
+        };
+    }
+
     public static long pawnAttacks(long pawns, boolean white) {
         return white ?
                 (Bits.northWest(pawns) &~ File.H) | (Bits.northEast(pawns) &~ File.A) :
                 (Bits.southWest(pawns) &~ File.H) | (Bits.southEast(pawns) &~ File.A);
-    }
-
-    public static long attacks(int square, Piece piece, boolean white, long blockers) {
-        return switch (piece) {
-            case PAWN -> pawnAttacks(blockers, white);
-            case KNIGHT -> knightAttacks(square);
-            case BISHOP -> bishopAttacks(square, blockers);
-            case ROOK -> rookAttacks(square, blockers);
-            case QUEEN -> queenAttacks(square, blockers);
-            case KING -> kingAttacks(square);
-        };
     }
 
     public static long kingAttacks(int square) {
@@ -162,7 +162,7 @@ public class Attacks {
     }
 
     public static long queenAttacks(int square, long blockers) {
-        return rookAttacks(square, blockers) | bishopAttacks(square, blockers);
+        return bishopAttacks(square, blockers) | rookAttacks(square, blockers);
     }
 
     /**

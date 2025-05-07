@@ -835,6 +835,53 @@ public class MoveGenerator {
         return legal;
     }
 
+    /**
+     * Checks if a move gives check, *before* the move is made on the board.
+     */
+    public boolean givesCheck(Board board, Move move) {
+
+        final Piece piece = board.pieceAt(move.from());
+        final long occ = board.getOccupied();
+        final long king = board.getKing(!board.isWhite());
+        final int kingSquare = Bits.next(king);
+
+        final long destinationAttacks = Attacks.attacks(move.to(), piece, occ, board.isWhite());
+
+        if (Bits.contains(destinationAttacks, kingSquare))
+            return true;
+
+        long newOcc = occ ^ Bits.of(move.from()) | Bits.of(move.to());
+        if (move.isEnPassant())
+            newOcc ^= Bits.of(move.to() + (board.isWhite() ? -8 : 8));
+
+        final long newBishopAttacks = Attacks.bishopAttacks(kingSquare, newOcc);
+        final long newRookAttacks = Attacks.rookAttacks(kingSquare, newOcc);
+
+        final long bishops = board.getBishops(board.isWhite());
+        final long rooks = board.getRooks(board.isWhite());
+        final long queens = board.getQueens(board.isWhite());
+        final long diagonals = bishops | queens;
+        final long orthogonals = rooks | queens;
+
+        if (!Bits.empty(orthogonals & newRookAttacks)
+                || !Bits.empty(diagonals & newBishopAttacks))
+            return true;
+
+        if (move.isPromotion()) {
+            final long promoAttacks = Attacks.attacks(move.to(), move.promoPiece(), newOcc, board.isWhite());
+            return Bits.contains(promoAttacks, kingSquare);
+        }
+
+        if (move.isCastling()) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            final int rookTo = Castling.rookTo(kingside, board.isWhite());
+            return Bits.contains(newRookAttacks, rookTo);
+        }
+
+        return false;
+
+    }
+
     private List<Move> getPromotionMoves(int from, int to) {
         return List.of(new Move(from, to, Move.PROMOTE_TO_QUEEN_FLAG),
                         new Move(from, to, Move.PROMOTE_TO_ROOK_FLAG),

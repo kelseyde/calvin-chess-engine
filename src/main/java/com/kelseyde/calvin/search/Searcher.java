@@ -732,6 +732,7 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
+            final boolean goodNoisy = scoredMove.isGoodNoisy();
 
             final Move prevMove = ss.get(ply - 1).move;
             final boolean recapture = prevMove != null && prevMove.to() == move.to();
@@ -748,7 +749,7 @@ public class Searcher implements Search {
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.
-            if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
+            if (!inCheck && !recapture && !goodNoisy && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
             makeMove(move, piece, captured, sse);

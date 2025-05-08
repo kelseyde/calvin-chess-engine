@@ -213,6 +213,7 @@ public class Searcher implements Search {
         final SearchStackEntry prev = ss.get(ply - 1);
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
+        final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
 
         history.getKillerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
@@ -302,7 +303,8 @@ public class Searcher implements Search {
         // we reduce the parent node's reduction 'in hindsight' by extending search depth in the current node.
         if (!inCheck
                 && !rootNode
-                && prev.reduction >= config.hindsightExtLimit()
+                && priorReduction >= config.hindsightExtLimit()
+                && Score.isDefined(prev.staticEval)
                 && staticEval + prev.staticEval < 0) {
             depth++;
         }

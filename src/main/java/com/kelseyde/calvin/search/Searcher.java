@@ -401,6 +401,14 @@ public class Searcher implements Search {
                 continue;
             searchedMoves++;
 
+            // If there are NO good noisy moves, then let's assume this is a very quiet position and reduce search depth
+            if (!pvNode
+                && !inCheck
+                && (staticEval + 50 < alpha ||  staticEval - 50 >= beta)
+                && movesSearched == 1 && scoredMove.isQuiet()) {
+                quietReduction++;
+            }
+
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
             final int historyScore = scoredMove.historyScore();

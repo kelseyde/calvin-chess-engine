@@ -66,6 +66,9 @@ public class EngineConfig {
     private final Tunable lmrFailHighCount       = new Tunable("LmrCutoffCount", 1035, 0, 2048, 150);
     private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 3258, 1536, 6144, 1000);
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3155, 1536, 6144, 1000);
+    private final Tunable lmrFutileMargin        = new Tunable("LmrFutileMargin", 108, 0, 500, 25);
+    private final Tunable lmrFutileScale         = new Tunable("LmrFutileScale", 82, 0, 100, 5);
+    private final Tunable lmrFutileHistDivisor   = new Tunable("LmrFutileHistDivisor", 98, 1, 1000, 25);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpBase                = new Tunable("LmpBase", 3, 0, 50, 10);
     private final Tunable lmpScale               = new Tunable("LmpScale", 38, 10, 80, 10);
@@ -134,7 +137,7 @@ public class EngineConfig {
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
-                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit
+                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor
         );
     }
 
@@ -382,6 +385,18 @@ public class EngineConfig {
 
     public int lmrNoisyHistoryDiv() {
         return lmrNoisyHistoryDiv.value;
+    }
+
+    public int lmrFutileMargin() {
+        return lmrFutileMargin.value;
+    }
+
+    public int lmrFutileScale() {
+        return lmrFutileScale.value;
+    }
+
+    public int lmrFutileHistDivisor() {
+        return lmrFutileHistDivisor.value;
     }
 
     public int lmpDepth() {

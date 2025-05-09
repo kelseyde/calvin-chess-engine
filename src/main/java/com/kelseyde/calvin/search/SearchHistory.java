@@ -63,7 +63,7 @@ public class SearchHistory {
 
     }
 
-    private void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply) {
+    public void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply) {
         // For quiet moves we update both the standard quiet and continuation history tables
         if (quietMove == null)
             return;
@@ -80,7 +80,7 @@ public class SearchHistory {
         }
     }
 
-    private void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth) {
+    public void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth) {
         if (captureMove == null)
             return;
         boolean good = captureMove.equals(bestMove);

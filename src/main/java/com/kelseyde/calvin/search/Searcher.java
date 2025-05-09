@@ -238,8 +238,15 @@ public class Searcher implements Search {
                     && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
                     && (ttEntry.score() <= alpha || cutNode)) {
 
-                if (isWithinBounds(ttEntry, alpha, beta))
+                if (isWithinBounds(ttEntry, alpha, beta)) {
+                    if (ttEntry.score() >= beta
+                            && ttEntry.move() != null
+                            && board.isQuiet(ttEntry.move())
+                            && movegen.isPseudoLegal(board, ttEntry.move())) {
+                        history.updateQuietHistory(board, ttEntry.move(), ttEntry.move(), ss, board.isWhite(), depth, ply);
+                    }
                     ttPrune = true;
+                }
                 else if (depth <= config.ttExtensionDepth())
                     depth++;
             }

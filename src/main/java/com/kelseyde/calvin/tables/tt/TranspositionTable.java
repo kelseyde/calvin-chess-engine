@@ -24,30 +24,18 @@ public class TranspositionTable {
     private long[] keys;
     private int[] values;
     private int size;
-    private int tries;
-    private int hits;
 
-    /**
-     * Constructs a transposition table of the given size in megabytes.
-     */
     public TranspositionTable(int tableSizeMb) {
         this.size = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         this.keys = new long[size];
         this.values = new int[size];
-        this.tries = 0;
-        this.hits = 0;
     }
 
-    /**
-     * Retrieves an entry from the transposition table using the given zobrist key.
-     */
     public HashEntry get(long key, int ply) {
         int index = index(key);
-        tries++;
         for (int i = 0; i < BUCKET_SIZE; i++) {
             long storedKey = keys[index + i];
             if (storedKey != 0 && HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
-                hits++;
                 keys[index + i] = storedKey;
                 int storedValue = values[index + i];
                 int score = HashEntry.Value.getScore(storedValue);
@@ -61,19 +49,6 @@ public class TranspositionTable {
         return null;
     }
 
-    /**
-     * Puts an entry into the transposition table.
-     * </p>
-     * The transposition table is separated into buckets of 4 entries each. This method uses a replacement scheme that
-     * prefers to replace the least-valuable entry among the 4 candidates in the bucket. The order of preference
-     * for replacement is:
-     * <ol>
-     * <li>An empty entry.</li>
-     * <li>An entry with the same zobrist key and a depth less than or equal to the new entry.</li>
-     * <li>The oldest entry in the bucket, stored further back in the game and so less likely to be relevant.</li>
-     * <li>The entry with the lowest depth.</li>
-     * </ol>
-     */
     public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score, boolean pv) {
 
         // Get the start index of the 4-item bucket.
@@ -142,10 +117,6 @@ public class TranspositionTable {
         }
     }
 
-    /**
-     * Calculate how full the transposition table currently is.
-     * @return the number of entries out of 1000 that are currently not-null.
-     */
     public int fill() {
         return (int) IntStream.range(0, 1000)
                 .filter(i -> keys[i] != 0)
@@ -156,16 +127,9 @@ public class TranspositionTable {
         this.size = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         this.keys = new long[size];
         this.values = new int[size];
-        this.tries = 0;
-        this.hits = 0;
     }
 
-    /**
-     * Clears the transposition table, resetting all entries and statistics.
-     */
     public void clear() {
-        this.tries = 0;
-        this.hits = 0;
         this.keys = new long[size];
         this.values = new int[size];
     }
@@ -182,8 +146,8 @@ public class TranspositionTable {
         return (int) (index % (size - (BUCKET_SIZE - 1))) & -BUCKET_SIZE;
     }
 
-    // On insertion, adjust the mate score to reflect the number of ply from the root position
     private int calculateMateScore(int score, int plyFromRoot) {
+        // On insertion, adjust the mate score to reflect the number of ply from the root position
         return score > 0 ? score - plyFromRoot : score + plyFromRoot;
     }
 

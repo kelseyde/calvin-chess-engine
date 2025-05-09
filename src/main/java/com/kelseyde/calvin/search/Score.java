@@ -17,7 +17,7 @@ public class Score {
     }
 
     public static boolean isDefined(int score) {
-        return Math.abs(score) != Score.MAX;
+        return score >= -Score.MATE && score <= Score.MATE;
     }
 
     /**

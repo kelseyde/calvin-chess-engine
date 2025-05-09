@@ -83,7 +83,7 @@ public class Bench {
 
         for (String fen : FENS) {
             search.clearHistory();
-            search.setPosition(FEN.toBoard(fen));
+            search.setPosition(FEN.parse(fen).toBoard());
             Instant now = Instant.now();
             SearchResult result = search.search(tc);
             nodes += result.nodes();

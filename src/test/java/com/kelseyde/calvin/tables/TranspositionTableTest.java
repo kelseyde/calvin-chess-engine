@@ -21,14 +21,14 @@ public class TranspositionTableTest {
 
     @BeforeEach
     public void beforeEach() {
-        board = Board.from(FEN.STARTPOS);
+        board = FEN.startpos().toBoard();
         table = new TranspositionTable(TestUtils.CONFIG.defaultHashSizeMb);
     }
 
     @Test
     public void testBasicEntry() {
 
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 17;
         int score = 548;
@@ -40,7 +40,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testNullMoveEntry() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = 1;
@@ -50,7 +50,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testCheckmateEntry() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = Score.MATE;
@@ -61,7 +61,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testNegativeCheckmateEntry() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 1;
         int score = -Score.MATE;
@@ -72,7 +72,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testMaxDepth() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 255;
         int score = -789;
@@ -82,7 +82,7 @@ public class TranspositionTableTest {
 
     @Test
     public void testPromotionFlag() {
-        Board board = FEN.toBoard("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23");
+        Board board = FEN.parse("3r1r1k/pQ1b2pp/4p1q1/2p1b3/2B2p2/2N1B2P/PPP2PP1/3R1RK1 w - - 0 23").toBoard();
         long zobristKey = board.getState().getKey();
         int depth = 255;
         int score = -789;
@@ -132,15 +132,15 @@ public class TranspositionTableTest {
 
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
         flag = HashFlag.LOWER;
-        eval = -Score.MATE;
+        eval = Score.MATE;
         depth = 10;
         table.put(board.getState().getKey(), flag, depth, ply + 2, null, 0,  eval, true);
 
         entry = table.get(board.getState().getKey(), ply);
         Assertions.assertNotNull(entry);
         Assertions.assertEquals(flag, entry.flag());
-        Assertions.assertNull(entry.move());
-        Assertions.assertEquals(eval + 2, entry.score());
+        Assertions.assertEquals(null, entry.move());
+        Assertions.assertEquals(eval - 2, entry.score());
         Assertions.assertEquals(depth, entry.depth());
     }
 
@@ -214,7 +214,7 @@ public class TranspositionTableTest {
 
         Assertions.assertEquals(Score.MATE, table.get(board.getState().getKey(), 0).score());
 
-        table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0, -Score.MATE, false);
+        table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -Score.MATE, false);
 
         Assertions.assertEquals(-Score.MATE, table.get(board.getState().getKey(), 0).score());
 
@@ -228,11 +228,11 @@ public class TranspositionTableTest {
         int plyRemaining = 10;
         int plyFromRoot = 1;
 
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  Score.MATE, true);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0, Score.MATE, true);
 
         Assertions.assertEquals(Score.MATE - 1, table.get(board.getState().getKey(), 0).score());
 
-        table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0,  -Score.MATE, false);
+        table.put(board.getState().getKey(), flag, plyRemaining + 1, plyFromRoot, bestMove, 0, -Score.MATE, false);
 
         Assertions.assertEquals(-Score.MATE + 1, table.get(board.getState().getKey(), 0).score());
 
@@ -244,11 +244,11 @@ public class TranspositionTableTest {
         long zobrist = board.getState().getKey();
         int flag = HashFlag.EXACT;
         Move bestMove = Move.fromUCI("e7e8b");
-        int score = Score.MATE;
+        int eval = Score.MATE;
         int plyRemaining = 10;
         int plyFromRoot = 5;
 
-        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  score, true);
+        table.put(board.getState().getKey(), flag, plyRemaining, plyFromRoot, bestMove, 0,  eval, true);
 
         Assertions.assertEquals(Score.MATE, table.get(zobrist, 5).score());
         Assertions.assertEquals(Score.MATE - 1, table.get(zobrist, 4).score());
@@ -342,8 +342,8 @@ public class TranspositionTableTest {
     }
 
     private void assertEntry(long zobrist, int score, Move move, int flag, int depth, boolean pv) {
-        long key = HashEntry.Key.of(zobrist, depth, 0, flag, pv);
-        int value = HashEntry.Value.of(score, move);
+        long key = HashEntry.Key.of(zobrist, 0, 0);
+        long value = HashEntry.Value.of(score, move, flag, depth, pv);
         HashEntry entry = HashEntry.of(key, value);
         Assertions.assertEquals(depth, entry.depth());
         Assertions.assertEquals(score, entry.score());

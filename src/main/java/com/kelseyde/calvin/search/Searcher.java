@@ -356,7 +356,8 @@ public class Searcher implements Search {
 
                 int r = config.nmpBase()
                         + depth / config.nmpDivisor()
-                        + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
+                        + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction())
+                        - Math.min(complexity / config.nmpComplexityDiv(), config.nmpComplexityLimit());
 
                 ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();

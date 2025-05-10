@@ -30,10 +30,12 @@ public class EngineConfig {
     private final Tunable aspWideningFactor      = new Tunable("AspWideningFactor", 135, 110, 200, 10);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
-    private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
+    private final Tunable nmpBase                = new Tunable("NmpBase", 5, 0, 6, 1);
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
     private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 191, 0, 400, 25);
     private final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
+    private final Tunable nmpComplexityDiv       = new Tunable("NmpComplexityDiv", 131072, 32768, 262144, 16384);
+    private final Tunable nmpComplexityLimit     = new Tunable("NmpComplexityLimit", 3, 0, 5, 1);
     private final Tunable fpDepth                = new Tunable("FpDepth", 8, 0, 8, 1);
     private final Tunable fpMargin               = new Tunable("FpMargin", 108, 0, 500, 25);
     private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 5);
@@ -139,7 +141,7 @@ public class EngineConfig {
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
-                lmrComplexityDivisor
+                lmrComplexityDivisor, nmpComplexityDiv, nmpComplexityLimit
         );
     }
 
@@ -259,6 +261,14 @@ public class EngineConfig {
 
     public int nmpEvalMaxReduction() {
         return nmpEvalMaxReduction.value;
+    }
+
+    public int nmpComplexityDiv() {
+        return nmpComplexityDiv.value;
+    }
+
+    public int nmpComplexityLimit() {
+        return nmpComplexityLimit.value;
     }
 
     public int fpDepth() {

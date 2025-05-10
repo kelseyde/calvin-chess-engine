@@ -607,7 +607,8 @@ public class Searcher implements Search {
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
             final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, ss);
+            final int scoreDiff = bestScore - beta;
+            history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, scoreDiff, ss);
         }
 
         if (flag == HashFlag.UPPER
@@ -618,7 +619,8 @@ public class Searcher implements Search {
             // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
             // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
             // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
-            history.getQuietHistoryTable().update(prev.move, prev.piece, depth, !board.isWhite(), true);
+            final int scoreDiff = (alpha - bestScore) / 2;
+            history.getQuietHistoryTable().update(prev.move, prev.piece, depth, scoreDiff, !board.isWhite(), true);
         }
 
         if (!inCheck

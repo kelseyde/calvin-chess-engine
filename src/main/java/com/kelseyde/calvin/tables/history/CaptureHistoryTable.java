@@ -17,12 +17,12 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
                 (short) config.captHistMaxScore());
     }
 
-    public void update(Piece piece, int to, Piece captured, int depth, boolean white, boolean good) {
+    public void update(Piece piece, int to, Piece captured, int depth, int scoreDiff, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
         int pieceIndex = piece.index();
         int capturedIndex = captured.index();
         short current = table[colourIndex][pieceIndex][to][capturedIndex];
-        short bonus = good ? bonus(depth) : malus(depth);
+        short bonus = good ? bonus(depth, scoreDiff) : malus(depth, scoreDiff);
         short update = gravity(current, bonus);
         table[colourIndex][pieceIndex][to][capturedIndex] = update;
     }

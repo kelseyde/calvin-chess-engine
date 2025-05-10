@@ -31,7 +31,7 @@ public class ContHistTableTest {
         int depth = 8;
         Move currMove = Move.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
-        contHistTable.update(prevMove, prevPiece, currMove, currPiece, depth, true, true);
+        contHistTable.update(prevMove, prevPiece, currMove, currPiece, depth, 0, true, true);
         assertEquals(1200, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 
@@ -43,7 +43,7 @@ public class ContHistTableTest {
         int depth = 8;
         Move currMove = Move.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
-        contHistTable.update(prevMove, prevPiece, currMove, currPiece, depth, true, false);
+        contHistTable.update(prevMove, prevPiece, currMove, currPiece, depth, 0, true, false);
         assertEquals(-1200, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 
@@ -58,7 +58,7 @@ public class ContHistTableTest {
         int depth = 8;
         Move currMove = Move.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
-        contHistTable.update(ss.get(0).move, ss.get(0).piece, currMove, currPiece, depth, true, true);
+        contHistTable.update(ss.get(0).move, ss.get(0).piece, currMove, currPiece, depth, 0, true, true);
         assertEquals(1200, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 
@@ -70,8 +70,8 @@ public class ContHistTableTest {
         int depth = 8;
         Move currMove = Move.fromUCI("d5e4");
         Piece currPiece = Piece.PAWN;
-        contHistTable.update(prevMove, prevPiece, currMove, currPiece, depth, true, true);
-        contHistTable.update(prevMove, prevPiece, currMove, currPiece, depth, true, true);
+        contHistTable.update(prevMove, prevPiece, currMove, currPiece, depth, 0, true, true);
+        contHistTable.update(prevMove, prevPiece, currMove, currPiece, depth, 0, true, true);
         assertEquals(2225, contHistTable.get(prevMove, prevPiece, currMove, currPiece, true));
     }
 

@@ -18,9 +18,9 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
                 (short) config.contHistMaxScore());
     }
 
-    public void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white, boolean good) {
+    public void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, int scoreDiff, boolean white, boolean good) {
         short current = get(prevMove, prevPiece, currMove, currPiece, white);
-        short bonus = good ? bonus(depth) : malus(depth);
+        short bonus = good ? bonus(depth, scoreDiff) : malus(depth, scoreDiff);
         short update = gravity(current, bonus);
         set(prevMove, prevPiece, currMove, currPiece, update, white);
     }

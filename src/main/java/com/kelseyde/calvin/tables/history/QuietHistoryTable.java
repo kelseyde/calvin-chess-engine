@@ -18,10 +18,10 @@ public class QuietHistoryTable extends AbstractHistoryTable {
                 (short) config.quietHistMaxScore());
     }
 
-    public void update(Move move, Piece piece, int depth, boolean white, boolean good) {
+    public void update(Move move, Piece piece, int depth, int scoreDiff, boolean white, boolean good) {
         int colourIndex = Colour.index(white);
         short current = table[colourIndex][piece.index()][move.to()];
-        short bonus = good ? bonus(depth) : malus(depth);
+        short bonus = good ? bonus(depth, scoreDiff) : malus(depth, scoreDiff);
         short update = gravity(current, bonus);
         table[colourIndex][piece.index()][move.to()] = update;
     }

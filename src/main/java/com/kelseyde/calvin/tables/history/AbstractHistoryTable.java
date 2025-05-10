@@ -16,16 +16,24 @@ public abstract class AbstractHistoryTable {
         this.scoreMax = scoreMax;
     }
 
-    protected short bonus(int depth) {
-        return (short) Math.min(bonusScale * depth, bonusMax);
+    protected short bonus(int depth, int scoreDiff) {
+        final short depthBonus = (short) (depth * bonusScale);
+        final short scoreDiffBonus = (short) (scoreDiff * 16);
+        return (short) Math.min(depthBonus + scoreDiffBonus, bonusMax);
     }
 
-    protected short malus(int depth) {
-        return (short) -Math.min(malusScale * depth, malusMax);
+    protected short malus(int depth, int scoreDiff) {
+        final short depthMalus = (short) (depth * malusScale);
+        final short scoreDiffMalus = (short) (scoreDiff * 16);
+        return (short) -Math.min(depthMalus + scoreDiffMalus, malusMax);
     }
 
     protected short gravity(short current, short update) {
         return (short) (current + update - current * Math.abs(update) / scoreMax);
+    }
+
+    public static int ilog2(int value) {
+        return value <= 0 ? 0 : Integer.SIZE - Integer.numberOfLeadingZeros(value) - 1;
     }
 
 }

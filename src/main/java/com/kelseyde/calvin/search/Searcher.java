@@ -440,7 +440,7 @@ public class Searcher implements Search {
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();
 
-                reduction = Math.max(0, r / 1024);
+                reduction = Math.max(r / 1024, pvNode || cutNode ? -1 : 0);
             }
 
             int reducedDepth = depth - reduction;

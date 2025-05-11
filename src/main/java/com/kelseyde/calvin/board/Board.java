@@ -602,7 +602,7 @@ public class Board {
     }
 
     public static Board from(String fen) {
-        return FEN.toBoard(fen);
+        return FEN.parse(fen).toBoard();
     }
 
     private void checkMaxPly() {

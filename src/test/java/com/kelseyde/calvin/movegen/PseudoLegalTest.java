@@ -46,7 +46,7 @@ public class PseudoLegalTest {
         long totalMoveCount = 0;
         for (Move move : moves) {
             if (!movegen.isPseudoLegal(board, move)) {
-                Assertions.fail(FEN.toFEN(board) + " " + Move.toUCI(move));
+                Assertions.fail(FEN.fromBoard(board) + " " + Move.toUCI(move));
             }
             board.makeMove(move);
             totalMoveCount += pseudoLegalPerft(board, depth - 1);

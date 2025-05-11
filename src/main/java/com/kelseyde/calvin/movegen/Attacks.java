@@ -3,6 +3,7 @@ package com.kelseyde.calvin.movegen;
 import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Bits.File;
 import com.kelseyde.calvin.board.Bits.Square;
+import com.kelseyde.calvin.board.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,6 +128,17 @@ public class Attacks {
     public static final MagicLookup[] ROOK_MAGIC_LOOKUP = initMagicLookups(ROOK_ATTACKS, ROOK_MASKS, ROOK_MAGICS, ROOK_SHIFTS);
     public static final MagicLookup[] BISHOP_MAGIC_LOOKUP = initMagicLookups(BISHOP_ATTACKS, BISHOP_MASKS, BISHOP_MAGICS, BISHOP_SHIFTS);
 
+    public static long attacks(int square, Piece piece, long blockers, boolean white) {
+        return switch (piece) {
+            case PAWN   -> pawnAttacks(Bits.of(square), white);
+            case KNIGHT -> knightAttacks(square);
+            case KING   -> kingAttacks(square);
+            case ROOK   -> rookAttacks(square, blockers);
+            case BISHOP -> bishopAttacks(square, blockers);
+            case QUEEN  -> queenAttacks(square, blockers);
+        };
+    }
+
     public static long pawnAttacks(long pawns, boolean white) {
         return white ?
                 (Bits.northWest(pawns) &~ File.H) | (Bits.northEast(pawns) &~ File.A) :
@@ -147,6 +159,10 @@ public class Attacks {
 
     public static long bishopAttacks(int square, long blockers) {
         return sliderAttacks(square, blockers, BISHOP_MAGIC_LOOKUP);
+    }
+
+    public static long queenAttacks(int square, long blockers) {
+        return bishopAttacks(square, blockers) | rookAttacks(square, blockers);
     }
 
     /**

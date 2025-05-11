@@ -16,7 +16,7 @@ public class BoardTest {
 
     @Test
     public void testSimpleMakeMove() {
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(Move.fromUCI("e2e4"));
         Assertions.assertNull(board.pieceAt(Square.fromNotation("e2")));
         Assertions.assertEquals(Piece.PAWN, board.pieceAt(Square.fromNotation("e4")));
@@ -24,7 +24,7 @@ public class BoardTest {
 
     @Test
     public void testBoardHistoryPreservedMultipleMoves() {
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -47,7 +47,7 @@ public class BoardTest {
     @Test
     public void testBoardHistoryPreservesCastlingRights() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         Assertions.assertTrue(Castling.kingsideAllowed(board.getState().rights, true));
         Assertions.assertTrue(Castling.queensideAllowed(board.getState().rights, true));
         Assertions.assertTrue(Castling.kingsideAllowed(board.getState().rights, false));
@@ -90,7 +90,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveRestoresCapturedPieces() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(new Move(12, 28));
         board.makeMove(new Move(51, 35));
         board.makeMove(new Move(28, 35));
@@ -114,7 +114,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveHandlesTurnSwitching() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         Assertions.assertTrue(board.isWhite());
 
         board.makeMove(new Move(12, 28));
@@ -134,7 +134,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveHandlesCastling() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(new Move(12, 28));
         board.makeMove(new Move(52, 44));
         board.makeMove(new Move(6, 21));
@@ -162,7 +162,7 @@ public class BoardTest {
     public void testRookCannotJumpToOtherSide() {
 
         String fen = "r1b1k2r/1p3p2/8/8/1n6/2Q5/4P2p/5KNR w kq - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "c3", "b4"));
         Move queenPromotion = Move.fromUCI("h2g1q");
         board.makeMove(TestUtils.getLegalMove(board, queenPromotion));
@@ -176,12 +176,12 @@ public class BoardTest {
     @Test
     public void testMakeNullMoveChangesSideToMove() {
 
-        Board board = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R w KQkq - 1 6");
+        Board board = FEN.parse("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R w KQkq - 1 6").toBoard();
         long initialZobrist = board.getState().getKey();
         Assertions.assertTrue(board.isWhite());
         board.makeNullMove();
         Assertions.assertFalse(board.isWhite());
-        Board board2 = FEN.toBoard("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R b KQkq - 1 6");
+        Board board2 = FEN.parse("rn1qkb1r/ppp2ppp/3p1n2/8/2BPPpb1/5N2/PPP3PP/RNBQK2R b KQkq - 1 6").toBoard();
         Assertions.assertEquals(board.getState().getKey(), board2.getState().getKey());
         board.unmakeNullMove();
         Assertions.assertTrue(board.isWhite());
@@ -192,7 +192,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveResetsEnPassantFile() {
 
-        Board board = FEN.toBoard("r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3");
+        Board board = FEN.parse("r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3").toBoard();
         long initialZobrist = board.getState().getKey();
         Assertions.assertEquals(3, board.getState().getEnPassantFile());
         board.makeNullMove();
@@ -206,7 +206,7 @@ public class BoardTest {
     @Test
     public void testUnmakeMoveResetsFiftyMoveCounter() {
 
-        Board board = FEN.toBoard("8/4n3/2kn4/8/3B4/5K2/8/8 w - - 4 3");
+        Board board = FEN.parse("8/4n3/2kn4/8/3B4/5K2/8/8 w - - 4 3").toBoard();
         long initialZobrist = board.getState().getKey();
         Assertions.assertEquals(4, board.getState().getHalfMoveClock());
         board.makeNullMove();
@@ -221,7 +221,7 @@ public class BoardTest {
     public void testPromotionWithFilters() {
 
         String fen = "8/k5P1/8/8/8/8/5rr1/7K w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         MoveGenerator moveGenerator = new MoveGenerator();
 
@@ -233,7 +233,7 @@ public class BoardTest {
     @Test
     public void testUnmakeCastling() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(Move.fromUCI("e2e4"));
         board.makeMove(Move.fromUCI("d7d5"));
         board.makeMove(Move.fromUCI("g1f3"));
@@ -245,7 +245,7 @@ public class BoardTest {
         board.makeMove(Move.fromUCI("f1e1"));
         board.makeMove(Move.fromUCI("e8c8", Move.CASTLE_FLAG));
 
-        Board board2 = FEN.toBoard("2kr1bnr/pppqpppp/2n5/1B1p4/4P1b1/5N2/PPPP1PPP/RNBQR1K1 w - - 8 6");
+        Board board2 = FEN.parse("2kr1bnr/pppqpppp/2n5/1B1p4/4P1b1/5N2/PPPP1PPP/RNBQR1K1 w - - 8 6").toBoard();
         Assertions.assertEquals(board.getWhitePieces(), board2.getWhitePieces());
         Assertions.assertEquals(board.getBlackPieces(), board2.getBlackPieces());
         Assertions.assertEquals(board.getRooks(), board2.getRooks());
@@ -261,7 +261,7 @@ public class BoardTest {
         board.unmakeMove();
         board.unmakeMove();
 
-        Board board3 = Board.from(FEN.STARTPOS);
+        Board board3 = FEN.startpos().toBoard();
         Assertions.assertEquals(board.getWhitePieces(), board3.getWhitePieces());
         Assertions.assertEquals(board.getBlackPieces(), board3.getBlackPieces());
         Assertions.assertEquals(board.getRooks(), board3.getRooks());
@@ -292,7 +292,7 @@ public class BoardTest {
 
     @Test
     public void testMakeTooManyMoves() {
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         for (int i = 0; i < 65; i++) {
             board.makeMove(Move.fromUCI("g1f3"));
             board.makeMove(Move.fromUCI("g8f6"));

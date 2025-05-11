@@ -40,13 +40,14 @@ public class EngineConfig {
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 98, 1, 1000, 25);
     private final Tunable fpMoveMultiplier       = new Tunable("FpMoveMultiplier", 4, 0, 10, 1);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
-    private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -44, -250, -10, 25);
-    private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -17, -250, -10, 25);
+    private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -40, -250, -10, 25);
+    private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -15, -250, -10, 25);
     private final Tunable seeNoisyOffset         = new Tunable("SeeNoisyOffset", -8, -100, 200, 50);
     private final Tunable seeNoisyDivisor        = new Tunable("SeeNoisyDivisor", 4, 2, 6, 1);
     private final Tunable seeQsNoisyOffset       = new Tunable("SeeQsNoisyOffset", 23, -100, 200, 50);
     private final Tunable seeQsNoisyDivisor      = new Tunable("SeeQsNoisyDivisor", 4, 2, 6, 1);
     private final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 133, 50, 250, 25);
+    private final Tunable seeComplexityDivisor   = new Tunable("SeeComplexityDivisor", 30720, 15360, 61440, 2304);
     private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 114, 0, 250, 10);
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -34, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
@@ -141,7 +142,7 @@ public class EngineConfig {
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
-                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth
+                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, seeComplexityDivisor
         );
     }
 
@@ -313,6 +314,10 @@ public class EngineConfig {
 
     public int seeHistoryDivisor() {
         return seeHistoryDivisor.value;
+    }
+
+    public int seeComplexityDivisor() {
+        return seeComplexityDivisor.value;
     }
 
     public int qsFpMargin() {

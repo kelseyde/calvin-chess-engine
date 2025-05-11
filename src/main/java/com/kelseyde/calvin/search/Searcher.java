@@ -594,6 +594,15 @@ public class Searcher implements Search {
                     curr.failHighCount++;
                     break;
                 }
+
+                // Alpha raise reduction
+                // It is unlikely that multiple moves raise alpha, therefore, if we have already raised alpha, we can
+                // reduce the search depth for the remaining moves.
+                if (depth > config.alphaReductionMinDepth()
+                        && depth < config.alphaReductionMaxDepth()
+                        && !Score.isMate(score)) {
+                    depth--;
+                }
             }
         }
 

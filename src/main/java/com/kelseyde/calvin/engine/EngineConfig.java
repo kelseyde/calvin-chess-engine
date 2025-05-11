@@ -93,7 +93,7 @@ public class EngineConfig {
     private final Tunable alphaReductionMinDepth = new Tunable("AlphaReductionMinDepth", 2, 0, 6, 1);
     private final Tunable alphaReductionMaxDepth = new Tunable("AlphaReductionMaxDepth", 12, 8, 16, 1);
     private final Tunable alphaReductionBase     = new Tunable("AlphaReductionBase", 1, 0, 3, 1);
-    private final Tunable alphaReductionDivisor  = new Tunable("AlphaReductionDivisor", 6, 8, 16, 1);
+    private final Tunable alphaReductionDivisor  = new Tunable("AlphaReductionDivisor", 6, 4, 16, 1);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);

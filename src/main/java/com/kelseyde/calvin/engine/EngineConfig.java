@@ -69,7 +69,7 @@ public class EngineConfig {
     private final Tunable lmrFutileMargin        = new Tunable("LmrFutileMargin", 108, 0, 500, 25);
     private final Tunable lmrFutileScale         = new Tunable("LmrFutileScale", 82, 0, 100, 5);
     private final Tunable lmrFutileHistDivisor   = new Tunable("LmrFutileHistDivisor", 98, 1, 1000, 25);
-    private final Tunable lmrComplexityDivisor   = new Tunable("LmrComplexityDivisor", 6144, 1536, 8192, 512);
+    private final Tunable lmrComplexityDivisor   = new Tunable("LmrComplexityDivisor", 73728, 49152, 86016, 18432);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpBase                = new Tunable("LmpBase", 3, 0, 50, 10);
     private final Tunable lmpScale               = new Tunable("LmpScale", 38, 10, 80, 10);

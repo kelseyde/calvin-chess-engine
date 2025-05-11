@@ -610,15 +610,14 @@ public class Searcher implements Search {
             history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, ss);
         }
 
-        if (flag == HashFlag.UPPER
-                && ply > 0
-                && prev.move != null
-                && prev.captured == null
-                && !prev.move.isPromotion()) {
-            // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
-            // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
-            // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
-            history.updateQuietHistory(prev.move, prev.piece, prev.move, ss, !board.isWhite(), depth, ply - 1);
+        if (!rootNode && flag == HashFlag.UPPER && prev.move != null) {
+            // The current node failed low, which means that the parent node will fail high. The parent move will receive
+            // a history bonus in the parent node - but we give it one here too, which ensures the best move is updated
+            // also during PVS re-searches, hopefully leading to better move ordering.
+            if (prev.captured == null)
+                history.updateQuietHistory(prev.move, prev.piece, prev.move, ss, !board.isWhite(), depth, ply - 1);
+            else
+                history.updateCaptureHistory(prev.move, prev.piece, prev.captured, prev.move, !board.isWhite(), depth);
         }
 
         if (!inCheck

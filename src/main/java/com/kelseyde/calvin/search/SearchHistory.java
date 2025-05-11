@@ -86,7 +86,7 @@ public class SearchHistory {
         }
     }
 
-    private void updateCaptureHistory(Move captureMove, Piece piece, Piece captured, Move bestMove, boolean white, int depth) {
+    public void updateCaptureHistory(Move captureMove, Piece piece, Piece captured, Move bestMove, boolean white, int depth) {
         if (captureMove == null)
             return;
         boolean good = captureMove.equals(bestMove);

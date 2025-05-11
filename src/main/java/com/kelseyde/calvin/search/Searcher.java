@@ -245,9 +245,9 @@ public class Searcher implements Search {
             }
         }
 
+        // In non-PV nodes with an eligible TT hit, we fully prune the node.
+        // In PV nodes, rather than pruning we reduce search depth.
         if (ttPrune) {
-            // In non-PV nodes with an eligible TT hit, we fully prune the node.
-            // In PV nodes, rather than pruning we reduce search depth.
             if (pvNode)
                 depth--;
             else
@@ -392,6 +392,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
+        int alphaRaises = 0;
 
         int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
         curr.quiets = new Move[16];
@@ -580,6 +581,7 @@ public class Searcher implements Search {
                 bestMove = move;
                 alpha = score;
                 flag = HashFlag.EXACT;
+                alphaRaises++;
 
                 curr.bestMove = move;
                 if (rootNode) {
@@ -601,7 +603,7 @@ public class Searcher implements Search {
                 if (depth > config.alphaReductionMinDepth()
                         && depth < config.alphaReductionMaxDepth()
                         && !Score.isMate(score)) {
-                    depth--;
+                    depth -= config.alphaReductionBase() + depth / config.alphaReductionDivisor();
                 }
             }
         }

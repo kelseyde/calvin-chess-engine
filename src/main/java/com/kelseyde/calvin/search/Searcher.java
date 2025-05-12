@@ -417,6 +417,7 @@ public class Searcher implements Search {
             final boolean isQuiet = scoredMove.isQuiet();
             final boolean isCapture = captured != null;
             final boolean isMateScore = Score.isMate(bestScore);
+            final int failHighCount = !rootNode ? prev.failHighCount : 0;
 
             int extension = 0;
             int reduction = 0;
@@ -437,7 +438,7 @@ public class Searcher implements Search {
                 r += !improving ? config.lmrNotImproving() : 0;
                 r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
-                r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
+                r += !rootNode && failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();
 
                 reduction = Math.max(0, r / 1024);
@@ -449,7 +450,7 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
-            final int futilityMargin = futilityMargin(reducedDepth, historyScore, searchedMoves);
+            final int futilityMargin = futilityMargin(reducedDepth, historyScore, searchedMoves, failHighCount);
             if (!pvNode
                     && !rootNode
                     && isQuiet
@@ -748,6 +749,7 @@ public class Searcher implements Search {
             final Move prevMove = ss.get(ply - 1).move;
             final boolean recapture = prevMove != null && prevMove.to() == move.to();
 
+
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.
             if (!inCheck && capture && !promotion && !recapture && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
@@ -913,11 +915,12 @@ public class Searcher implements Search {
         history.clear();
     }
 
-    private int futilityMargin(int depth, int historyScore, int searchedMoves) {
+    private int futilityMargin(int depth, int historyScore, int searchedMoves, int failHighCount) {
         return config.fpMargin()
                 + depth * config.fpScale()
                 + (historyScore / config.fpHistDivisor())
-                - searchedMoves * config.fpMoveMultiplier();
+                - searchedMoves * config.fpMoveMultiplier()
+                - failHighCount * config.fpFailHighMultiplier();
     }
 
     private int lmrFutilityMargin(int depth, int historyScore) {

@@ -39,6 +39,7 @@ public class EngineConfig {
     private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 5);
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 98, 1, 1000, 25);
     private final Tunable fpMoveMultiplier       = new Tunable("FpMoveMultiplier", 4, 0, 10, 1);
+    private final Tunable fpFailHighMultiplier   = new Tunable("FpFailHighMultiplier", 20, 0, 50, 10);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
     private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -44, -250, -10, 25);
     private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -17, -250, -10, 25);
@@ -141,7 +142,7 @@ public class EngineConfig {
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
-                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth
+                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, fpFailHighMultiplier
         );
     }
 
@@ -281,6 +282,10 @@ public class EngineConfig {
 
     public int fpMoveMultiplier() {
         return fpMoveMultiplier.value;
+    }
+
+    public int fpFailHighMultiplier() {
+        return fpFailHighMultiplier.value;
     }
 
     public int seeMaxDepth() {

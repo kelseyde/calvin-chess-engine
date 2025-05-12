@@ -477,7 +477,6 @@ public class Searcher implements Search {
             if (!pvNode
                     && !rootNode
                     && isQuiet
-                    && !inCheck
                     && depth <= config.lmpDepth()
                     && searchedMoves >= lateMoveThreshold) {
                 movePicker.setSkipQuiets(true);

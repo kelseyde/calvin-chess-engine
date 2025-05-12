@@ -30,7 +30,7 @@ public class EngineConfig {
     private final Tunable aspWideningFactor      = new Tunable("AspWideningFactor", 135, 110, 200, 10);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
-    private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
+    private final Tunable nmpBase                = new Tunable("NmpBase", 4, 0, 6, 1);
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
     private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 191, 0, 400, 25);
     private final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);

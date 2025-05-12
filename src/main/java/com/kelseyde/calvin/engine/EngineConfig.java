@@ -36,7 +36,8 @@ public class EngineConfig {
     private final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
     private final Tunable fpDepth                = new Tunable("FpDepth", 8, 0, 8, 1);
     private final Tunable fpMargin               = new Tunable("FpMargin", 108, 0, 500, 25);
-    private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 5);
+    private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 25);
+    private final Tunable fpCutNode              = new Tunable("FpCutNode", 164, 0, 200, 25);
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 98, 1, 1000, 25);
     private final Tunable fpMoveMultiplier       = new Tunable("FpMoveMultiplier", 4, 0, 10, 1);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
@@ -141,7 +142,7 @@ public class EngineConfig {
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
-                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth
+                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, fpCutNode
         );
     }
 
@@ -273,6 +274,10 @@ public class EngineConfig {
 
     public int fpScale() {
         return fpScale.value;
+    }
+
+    public int fpCutNode() {
+        return fpCutNode.value;
     }
 
     public int fpHistDivisor() {

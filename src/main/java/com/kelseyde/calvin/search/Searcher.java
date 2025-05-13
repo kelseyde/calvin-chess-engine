@@ -443,8 +443,8 @@ public class Searcher implements Search {
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv)) {
-
+            boolean doLmr = depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
+            if (doLmr) {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
@@ -453,7 +453,6 @@ public class Searcher implements Search {
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();
-
                 reduction = Math.max(0, r / 1024);
             }
 
@@ -556,24 +555,29 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
-            int score;
+            int score = Score.MIN;
 
-            // Principal Variation Search
-            if (searchedMoves == 1) {
-                // Since we expect the first move to be the best, we search it with a full window.
-                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, !pvNode && !cutNode);
-            }
-            else {
-                // For all other moves, search with a null window.
+            // We have decided that the current move should be searched to a reduced depth, therefore apply the
+            // reduction and search with a null-window.
+            if (doLmr) {
                 curr.reduction = reduction;
-                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
                 curr.reduction = 0;
 
-                if (score > alpha && (score < beta || reduction > 0)) {
-                    // If the score beats alpha, we need to do a re-search with the full window and depth.
-                    score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
-                }
+                // If the score beat alpha, and we reduced, then we search again at full depth but still using
+                // a null-window.
+                if (score > alpha && reduction > 0)
+                    score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
             }
+            // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
+            // or another LMR condition not being met - then we search at full depth with a null-window.
+            else if (!pvNode || searchedMoves > 1)
+                score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+
+            // If we're in a PV node and searching the first move, or the score from reduced search beat alpha, then we
+            // search with full depth and alpha-beta window.
+            if (pvNode && (searchedMoves == 1 || score > alpha))
+                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
 
             unmakeMove(curr);
 

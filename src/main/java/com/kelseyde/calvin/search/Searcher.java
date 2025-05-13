@@ -262,11 +262,22 @@ public class Searcher implements Search {
                 && (pvNode || cutNode)
                 && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
                 && depth >= config.iirDepth()) {
-            --depth;
+            depth--;
         }
 
+        // Check for depth <= 0 again after potentially reducing depth in IIR.
         if (depth <= 0 && !inCheck)
             return quiescenceSearch(alpha, beta, ply);
+
+        // Check for a TT-cutoff again after potentially reducing depth in IIR.
+        if (!singularSearch
+                && !rootNode
+                && !pvNode
+                && ttHit
+                && isSufficientDepth(ttEntry, depth)
+                && isWithinBounds(ttEntry, alpha, beta)) {
+            return ttEntry.score();
+        }
 
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.

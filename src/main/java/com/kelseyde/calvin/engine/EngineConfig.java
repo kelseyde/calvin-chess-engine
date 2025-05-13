@@ -92,6 +92,9 @@ public class EngineConfig {
     private final Tunable hindsightExtLimit      = new Tunable("HindsightExtensionLimit", 3, 2, 5, 1);
     private final Tunable alphaReductionMinDepth = new Tunable("AlphaReductionMinDepth", 2, 0, 6, 1);
     private final Tunable alphaReductionMaxDepth = new Tunable("AlphaReductionMaxDepth", 12, 8, 16, 1);
+    private final Tunable dynamicPolicyMult      = new Tunable("DynamicPolicyMult", 10, 0, 20, 2);
+    private final Tunable dynamicPolicyMin       = new Tunable("DynamicPolicyMin", -100, -100, 0, 25);
+    private final Tunable dynamicPolicyMax       = new Tunable("DynamicPolicyMax", 200, 75, 200, 25);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
@@ -141,7 +144,8 @@ public class EngineConfig {
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
-                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth
+                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
+                dynamicPolicyMax
         );
     }
 
@@ -493,6 +497,18 @@ public class EngineConfig {
 
     public int alphaReductionMaxDepth() {
         return alphaReductionMaxDepth.value;
+    }
+
+    public int dynamicPolicyMult() {
+        return dynamicPolicyMult.value;
+    }
+
+    public int dynamicPolicyMin() {
+        return dynamicPolicyMin.value;
+    }
+
+    public int dynamicPolicyMax() {
+        return dynamicPolicyMax.value;
     }
 
     public int quietHistBonusMax() {

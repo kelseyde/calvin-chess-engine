@@ -555,6 +555,7 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
+            int newDepth = depth + extension - 1;
             int score = Score.MIN;
 
             // Principal Variation Search
@@ -563,22 +564,27 @@ public class Searcher implements Search {
             if (doLmr) {
                 // For moves eligible for late move reductions, we apply the reduction and search with a null window.
                 curr.reduction = reduction;
-                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
+                score = -search(newDepth - reduction, ply + 1, -alpha - 1, -alpha, true);
                 curr.reduction = 0;
 
                 // If searched at reduced depth and the score beat alpha, re-search at full depth, with a null window.
-                if (score > alpha && reduction > 0)
-                    score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                if (score > alpha && reduction > 0) {
+                    boolean doDeeperSearch = score > bestScore + config.lmrDeeperBase() + config.lmrDeeperScale() * newDepth;
+                    boolean doShallowerSearch = score < bestScore + newDepth;
+                    newDepth += (doDeeperSearch ? 1 : 0) - (doShallowerSearch ? 1 : 0);
+
+                    score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
+                }
             }
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
             // or another LMR condition not being met - then we search at full depth with a null-window.
             else if (!pvNode || searchedMoves > 1)
-                score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
 
             // If we're in a PV node and searching the first move, or the score from reduced search beat alpha, then we
             // search with full depth and alpha-beta window.
             if (pvNode && (searchedMoves == 1 || score > alpha))
-                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                score = -search(newDepth, ply + 1, -beta, -alpha, false);
 
             unmakeMove(curr);
 

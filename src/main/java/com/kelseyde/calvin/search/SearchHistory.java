@@ -109,6 +109,14 @@ public class SearchHistory {
         return correction / CorrectionHistoryTable.SCALE;
     }
 
+    public int squaredCorrectionTerms(Board board, SearchStack ss, int ply) {
+        int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
+        int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
+        int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
+        int counter = getContCorrHistEntry(ss, ply, board.isWhite());
+        return pawn * pawn + white * white + black * black + counter * counter;
+    }
+
     public void updateCorrectionHistory(Board board, SearchStack ss, int ply, int depth, int score, int staticEval) {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);

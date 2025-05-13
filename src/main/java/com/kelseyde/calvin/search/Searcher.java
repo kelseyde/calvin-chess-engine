@@ -213,6 +213,7 @@ public class Searcher implements Search {
         final SearchStackEntry prev = ss.get(ply - 1);
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
+        final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
         curr.inCheck = inCheck;
 
         history.getKillerTable().clear(ply + 1);
@@ -273,7 +274,13 @@ public class Searcher implements Search {
         int rawStaticEval   = Score.MIN;
         int uncorrectedEval = Score.MIN;
         int staticEval      = Score.MIN;
-        int correction;
+
+        // Correction History
+        // The static eval is corrected based on the historical difference between the static eval and the search score
+        // of similar positions. The complexity is the sum of each correction term squared - if the correction is large,
+        // then the position is likely complex, and we should be wary of reducing/pruning the search.
+        int correction = 0;
+        int complexity = 0;
 
         if (singularSearch) {
             // In singular search, since we are in the same node, we can re-use the static eval on the stack.
@@ -284,6 +291,7 @@ public class Searcher implements Search {
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedEval = rawStaticEval;
             correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
+            complexity = history.squaredCorrectionTerms(board, ss, ply);
             staticEval = rawStaticEval + correction;
 
             // If there is no entry in the TT yet, store the static eval for future re-use.
@@ -315,7 +323,8 @@ public class Searcher implements Search {
         // we reduce the parent node's reduction 'in hindsight' by extending search depth in the current node.
         if (!inCheck
                 && !rootNode
-                && prev.reduction >= config.hindsightExtLimit()
+                && priorReduction >= config.hindsightExtLimit()
+                && Score.isDefined(prev.staticEval)
                 && staticEval + prev.staticEval < 0) {
             depth++;
         }
@@ -427,28 +436,22 @@ public class Searcher implements Search {
 
             // Check Extensions
             // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
-            if (inCheck) {
+            if (inCheck)
                 extension = 1;
-            }
 
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && !scoredMove.isGoodNoisy()) {
+            if (depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv)) {
 
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
-                r -= isQuiet
-                        ? historyScore / config.lmrQuietHistoryDiv() * 1024
-                        : historyScore / config.lmrNoisyHistoryDiv() * 1024;
-
-                int futilityMargin = config.fpMargin()
-                        + (depth) * config.fpScale()
-                        + (historyScore / config.fpHistDivisor());
-                r += staticEval + futilityMargin <= alpha ? config.lmrFutile() : 0;
+                r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
+                r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
+                r -= complexity / config.lmrComplexityDivisor();
 
                 reduction = Math.max(0, r / 1024);
             }
@@ -603,6 +606,15 @@ public class Searcher implements Search {
                     flag = HashFlag.LOWER;
                     curr.failHighCount++;
                     break;
+                }
+
+                // Alpha raise reduction
+                // It is unlikely that multiple moves raise alpha, therefore, if we have already raised alpha, we can
+                // reduce the search depth for the remaining moves.
+                if (depth > config.alphaReductionMinDepth()
+                        && depth < config.alphaReductionMaxDepth()
+                        && !Score.isMate(score)) {
+                    depth--;
                 }
             }
         }
@@ -921,6 +933,12 @@ public class Searcher implements Search {
                 + depth * config.fpScale()
                 + (historyScore / config.fpHistDivisor())
                 - searchedMoves * config.fpMoveMultiplier();
+    }
+
+    private int lmrFutilityMargin(int depth, int historyScore) {
+        return config.lmrFutileMargin()
+                + depth * config.lmrFutileScale()
+                + (historyScore / config.lmrFutileHistDivisor());
     }
 
     private int lateMoveThreshold(int depth, boolean improving) {

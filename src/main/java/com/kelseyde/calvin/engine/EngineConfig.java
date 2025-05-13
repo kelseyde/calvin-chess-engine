@@ -88,6 +88,7 @@ public class EngineConfig {
     private final Tunable seReductionOffset      = new Tunable("SeReductionOffset", 1, 0, 3, 1);
     private final Tunable seReductionDivisor     = new Tunable("SeReductionDivisor", 2, 1, 4, 1);
     private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 20, 0, 32, 5);
+    private final Tunable seTripleExtMargin      = new Tunable("SeTripleExtMargin", 120, 75, 200, 10);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
     private final Tunable hindsightExtLimit      = new Tunable("HindsightExtensionLimit", 3, 2, 5, 1);
     private final Tunable alphaReductionMinDepth = new Tunable("AlphaReductionMinDepth", 2, 0, 6, 1);
@@ -145,7 +146,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax
+                dynamicPolicyMax, seTripleExtMargin
         );
     }
 
@@ -481,6 +482,10 @@ public class EngineConfig {
 
     public int seDoubleExtMargin() {
         return seDoubleExtMargin.value;
+    }
+
+    public int seTripleExtMargin() {
+        return seTripleExtMargin.value;
     }
 
     public int ttExtensionDepth() {

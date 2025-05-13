@@ -530,10 +530,11 @@ public class Searcher implements Search {
                 curr.excludedMove = null;
 
                 if (score < sBeta) {
+                    extension = 1;
                     if (!pvNode && score < sBeta - config.seDoubleExtMargin())
                         extension = 2;
-                    else
-                        extension = 1;
+                    if (!pvNode && board.isQuiet(ttMove) && score < sBeta - config.seTripleExtMargin())
+                        extension = 3;
                 }
                 else if (cutNode)
                     extension = -2;

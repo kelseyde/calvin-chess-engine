@@ -27,7 +27,8 @@ public class EngineConfig {
 
     private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
     private final Tunable aspDelta               = new Tunable("AspDelta", 17, 0, 250, 25);
-    private final Tunable aspWideningFactor      = new Tunable("AspWideningFactor", 135, 110, 200, 10);
+    private final Tunable aspFailLowFactor       = new Tunable("AspFailLowFactor", 135, 110, 200, 10);
+    private final Tunable aspFailHighFactor      = new Tunable("AspFailHighFactor", 135, 110, 200, 10);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
     private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
@@ -142,10 +143,10 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspFailLowFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax
+                dynamicPolicyMax, aspFailHighFactor
         );
     }
 
@@ -239,8 +240,12 @@ public class EngineConfig {
         return aspDelta.value;
     }
 
-    public int aspWideningFactor() {
-        return aspWideningFactor.value;
+    public int aspFailLowFactor() {
+        return aspFailLowFactor.value;
+    }
+
+    public int aspFailHighFactor() {
+        return aspFailHighFactor.value;
     }
 
     public int aspMaxReduction() {

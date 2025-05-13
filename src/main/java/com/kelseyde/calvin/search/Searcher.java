@@ -314,8 +314,8 @@ public class Searcher implements Search {
                 && prev.move != null
                 && prev.quiet
                 && Score.isDefined(prev.staticEval)) {
-            int value = config.quietOrderingMult() * -(staticEval + prev.staticEval);
-            int bonus = clamp(value, config.quietOrderingMin(), config.quietOrderingMax());
+            int value = config.dynamicPolicyMult() * -(staticEval + prev.staticEval);
+            int bonus = clamp(value, config.dynamicPolicyMin(), config.dynamicPolicyMax());
             history.getQuietHistoryTable().add(prev.move, prev.piece, !board.isWhite(), bonus);
         }
 

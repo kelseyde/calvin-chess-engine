@@ -443,7 +443,7 @@ public class Searcher implements Search {
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            boolean doLmr = depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
+            final boolean doLmr = depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
             if (doLmr) {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
@@ -557,15 +557,16 @@ public class Searcher implements Search {
 
             int score = Score.MIN;
 
-            // We have decided that the current move should be searched to a reduced depth, therefore apply the
-            // reduction and search with a null-window.
+            // Principal Variation Search
+            // We assume that the first move will be best move, and search all others with a null window and/or reduced depth.
+            // If any of those moves beat alpha, we re-search with a full window and depth.
             if (doLmr) {
+                // For moves eligible for late move reductions, we apply the reduction and search with a null window.
                 curr.reduction = reduction;
                 score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
                 curr.reduction = 0;
 
-                // If the score beat alpha, and we reduced, then we search again at full depth but still using
-                // a null-window.
+                // If searched at reduced depth and the score beat alpha, re-search at full depth, with a null window.
                 if (score > alpha && reduction > 0)
                     score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
             }

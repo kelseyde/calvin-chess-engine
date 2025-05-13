@@ -306,7 +306,8 @@ public class Searcher implements Search {
         }
         curr.staticEval = staticEval;
 
-        // Use the difference between the static eval in the current node and parent node to improve move ordering.
+        // Dynamic policy
+        // Use the difference between the static eval in the current node and parent node to update quiet history.
         if (!inCheck
                 && !singularSearch
                 && !rootNode

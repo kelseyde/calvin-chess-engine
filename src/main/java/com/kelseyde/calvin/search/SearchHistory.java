@@ -63,24 +63,28 @@ public class SearchHistory {
 
     }
 
-    private void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply) {
+    public void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply) {
         // For quiet moves we update both the standard quiet and continuation history tables
         if (quietMove == null)
             return;
         boolean good = quietMove.equals(bestMove);
         Piece piece = board.pieceAt(quietMove.from());
         quietHistoryTable.update(quietMove, piece, depth, white, good);
+        updateContHist(quietMove, piece, ss, white, good, depth, ply);
+    }
+
+    public void updateContHist(Move move, Piece piece, SearchStack ss, boolean white, boolean good, int depth, int ply) {
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.move != null) {
                 Move prevMove = prevEntry.move;
                 Piece prevPiece = prevEntry.piece;
-                contHistTable.update(prevMove, prevPiece, quietMove, piece, depth, white, good);
+                contHistTable.update(prevMove, prevPiece, move, piece, depth, white, good);
             }
         }
     }
 
-    private void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth) {
+    public void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth) {
         if (captureMove == null)
             return;
         boolean good = captureMove.equals(bestMove);

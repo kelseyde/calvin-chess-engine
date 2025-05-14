@@ -567,8 +567,11 @@ public class Searcher implements Search {
                 curr.reduction = 0;
 
                 // If searched at reduced depth and the score beat alpha, re-search at full depth, with a null window.
-                if (score > alpha && reduction > 0)
+                if (score > alpha && reduction > 0) {
                     score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                    if (isQuiet && (score <= alpha || score >= beta))
+                        history.updateContHist(move, piece, ss, board.isWhite(), score >= beta, depth, ply);
+                }
             }
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
             // or another LMR condition not being met - then we search at full depth with a null-window.

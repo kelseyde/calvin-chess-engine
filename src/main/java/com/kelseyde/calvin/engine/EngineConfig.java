@@ -70,8 +70,9 @@ public class EngineConfig {
     private final Tunable lmrFutileScale         = new Tunable("LmrFutileScale", 82, 0, 100, 5);
     private final Tunable lmrFutileHistDivisor   = new Tunable("LmrFutileHistDivisor", 98, 1, 1000, 25);
     private final Tunable lmrComplexityDivisor   = new Tunable("LmrComplexityDivisor", 6144, 1536, 8192, 512);
-    private final Tunable lmrDeeperBase          = new Tunable("LmrDeeperBase", 38, 20, 80, 8);
-    private final Tunable lmrDeeperScale         = new Tunable("LmrDeeperBase", 4, 3, 12, 1);
+    private final Tunable lmrDeeperBase          = new Tunable("LmrDeeperBase", 35, 15, 60, 10);
+    private final Tunable lmrDeeperScale         = new Tunable("LmrDeeperBase", 35, 15, 60, 10);
+    private final Tunable lmrShallowerMargin     = new Tunable("LmrShallowerMargin", 8, 0, 15, 4);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpBase                = new Tunable("LmpBase", 3, 0, 50, 10);
     private final Tunable lmpScale               = new Tunable("LmpScale", 38, 10, 80, 10);
@@ -147,7 +148,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, lmrDeeperBase, lmrDeeperScale
+                dynamicPolicyMax, lmrDeeperBase, lmrDeeperScale, lmrShallowerMargin
         );
     }
 
@@ -419,6 +420,10 @@ public class EngineConfig {
 
     public int lmrDeeperScale() {
         return lmrDeeperScale.value;
+    }
+
+    public int lmrShallowerMargin() {
+        return lmrShallowerMargin.value;
     }
 
     public int lmpDepth() {

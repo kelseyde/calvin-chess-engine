@@ -545,12 +545,10 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(scoredMove, piece, captured, curr);
 
-            if (isCapture && captureMoves < 16) {
+            if (isCapture && captureMoves < 16)
                 curr.captures[captureMoves++] = move;
-            }
-            else if (quietMoves < 16) {
+            else if (quietMoves < 16)
                 curr.quiets[quietMoves++] = move;
-            }
 
             final int nodesBefore = td.nodes;
             td.nodes++;
@@ -570,7 +568,7 @@ public class Searcher implements Search {
                 // If searched at reduced depth and the score beat alpha, re-search at full depth, with a null window.
                 if (score > alpha && reduction > 0) {
                     boolean doDeeperSearch = score > bestScore + config.lmrDeeperBase() + config.lmrDeeperScale() * newDepth;
-                    boolean doShallowerSearch = score < bestScore + newDepth;
+                    boolean doShallowerSearch = score < bestScore + config.lmrShallowerMargin();
                     newDepth += (doDeeperSearch ? 1 : 0) - (doShallowerSearch ? 1 : 0);
 
                     score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);

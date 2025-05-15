@@ -90,6 +90,7 @@ public class Searcher implements Search {
         int beta  = Score.MAX;
 
         int reduction = 0;
+        int maxReduction = config.aspMaxReduction();
         int window = config.aspDelta();
 
         while (!softLimitReached() && td.depth < Search.MAX_DEPTH) {
@@ -105,16 +106,20 @@ public class Searcher implements Search {
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrent != null) {
-                history.updateBestMoveInfo(bestMoveRoot, bestMoveCurrent, bestScoreRoot, bestScoreCurrent);
+                history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
+                history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
                 bestMoveRoot = bestMoveCurrent;
                 bestScoreRoot = bestScoreCurrent;
-                if (td.isMainThread())
+                if (td.isMainThread()) {
+                    // Write search info as UCI output. This is only done for the main thread.
                     UCI.writeSearchInfo(SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc));
+                }
             }
 
             // Check if search is cancelled or a checkmate is found
-            if (hardLimitReached() || Score.isMate(score))
+            if (hardLimitReached() || Score.isMate(score)) {
                 break;
+            }
 
             // Aspiration windows
             // Use the search score from the previous iteration to guess the score from the current iteration.
@@ -135,7 +140,7 @@ public class Searcher implements Search {
                     // If score >= beta, re-search with an expanded aspiration window
                     beta += window;
                     window = window * config.aspWideningFactor() / 100;
-                    reduction = Math.min(config.aspMaxReduction(), reduction + 1);
+                    reduction = Math.min(maxReduction, reduction + 1);
                     continue;
                 }
 
@@ -150,10 +155,13 @@ public class Searcher implements Search {
 
         }
 
+        // Clear move ordering cache and return the search result
+        history.getKillerTable().clear();
 
-        // If time expired before a best move was found in search, pick the first legal move.
-        if (bestMoveRoot == null)
+        if (bestMoveRoot == null) {
+            // If time expired before a best move was found in search, pick the first legal move.
             bestMoveRoot = rootMoves.get(0);
+        }
 
         return SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
 
@@ -978,5 +986,6 @@ public class Searcher implements Search {
     private int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
     }
+
 
 }

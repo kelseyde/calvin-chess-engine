@@ -318,8 +318,20 @@ public class Searcher implements Search {
                 && !rootNode
                 && priorReduction >= config.hindsightExtLimit()
                 && Score.isDefined(prev.staticEval)
-                && staticEval + prev.staticEval < 0) {
+                && staticEval + prev.staticEval < config.hindsightExtMargin()) {
             depth++;
+        }
+
+        // Hindsight reduction
+        // If we reduced search depth in the parent node, and now the static eval indicates the position is worsening,
+        // we increase the parent node's reduction 'in hindsight' by reducing even further in the current node.
+        if (!inCheck
+                && !rootNode
+                && depth >= 2
+                && priorReduction >= config.hindsightRedLimit()
+                && Score.isDefined(prev.staticEval)
+                && staticEval + prev.staticEval > config.hindsightRedMargin()) {
+            depth--;
         }
 
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.

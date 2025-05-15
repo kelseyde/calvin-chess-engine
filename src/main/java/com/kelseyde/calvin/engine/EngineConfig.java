@@ -90,6 +90,9 @@ public class EngineConfig {
     private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 20, 0, 32, 5);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
     private final Tunable hindsightExtLimit      = new Tunable("HindsightExtensionLimit", 3, 2, 5, 1);
+    private final Tunable hindsightExtMargin     = new Tunable("HindsightExtensionMargin", 0, 0, 50, 10);
+    private final Tunable hindsightRedLimit      = new Tunable("HindsightReductionLimit", 1, 0, 5, 1);
+    private final Tunable hindsightRedMargin     = new Tunable("HindsightReductionMargin", 96, 64, 128, 16);
     private final Tunable alphaReductionMinDepth = new Tunable("AlphaReductionMinDepth", 2, 0, 6, 1);
     private final Tunable alphaReductionMaxDepth = new Tunable("AlphaReductionMaxDepth", 12, 8, 16, 1);
     private final Tunable dynamicPolicyMult      = new Tunable("DynamicPolicyMult", 10, 0, 20, 2);
@@ -145,7 +148,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax
+                dynamicPolicyMax, hindsightExtMargin, hindsightRedLimit, hindsightRedMargin
         );
     }
 
@@ -489,6 +492,18 @@ public class EngineConfig {
 
     public int hindsightExtLimit() {
         return hindsightExtLimit.value;
+    }
+
+    public int hindsightExtMargin() {
+        return hindsightExtMargin.value;
+    }
+
+    public int hindsightRedLimit() {
+        return hindsightRedLimit.value;
+    }
+
+    public int hindsightRedMargin() {
+        return hindsightRedMargin.value;
     }
 
     public int alphaReductionMinDepth() {

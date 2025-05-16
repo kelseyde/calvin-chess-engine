@@ -89,6 +89,7 @@ public class Searcher implements Search {
         int alpha = Score.MIN;
         int beta  = Score.MAX;
 
+        td.depth = 2;
         int reduction = 0;
         int maxReduction = config.aspMaxReduction();
         int window = config.aspDelta();

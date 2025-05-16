@@ -797,7 +797,6 @@ public class Searcher implements Search {
                 bestScore = score;
             }
             if (score > alpha) {
-                flag = HashFlag.EXACT;
                 bestMove = move;
                 alpha = score;
                 if (score >= beta) {

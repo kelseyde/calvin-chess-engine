@@ -255,16 +255,6 @@ public class Searcher implements Search {
                 return ttEntry.score();
         }
 
-        // Internal Iterative Deepening
-        // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
-        // reduced depth expecting to record a move that we can use later for a full-depth search.
-        if (!rootNode
-                && (pvNode || cutNode)
-                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
-                && depth >= config.iirDepth()) {
-            --depth;
-        }
-
         if (depth <= 0 && !inCheck)
             return quiescenceSearch(alpha, beta, ply);
 
@@ -398,6 +388,16 @@ public class Searcher implements Search {
                 }
             }
 
+        }
+
+        // Internal Iterative Deepening
+        // If the position has not been searched yet, the search will be potentially expensive. So let's search with a
+        // reduced depth expecting to record a move that we can use later for a full-depth search.
+        if (!rootNode
+                && (pvNode || cutNode)
+                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
+                && depth >= config.iirDepth()) {
+            --depth;
         }
 
         // We have decided that the current node should not be pruned and is worth examining further.

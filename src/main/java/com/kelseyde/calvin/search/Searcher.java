@@ -239,8 +239,12 @@ public class Searcher implements Search {
                     && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
                     && (ttEntry.score() <= alpha || cutNode)) {
 
-                if (isWithinBounds(ttEntry, alpha, beta))
+                if (isWithinBounds(ttEntry, alpha, beta)) {
+                    if (ttMove != null && board.isQuiet(ttMove) && ttEntry.score() >= beta) {
+                        history.updateQuietHistory(board, ttMove, ttMove, ss, board.isWhite(), depth, ply);
+                    }
                     ttPrune = true;
+                }
                 else if (depth <= config.ttExtensionDepth())
                     depth++;
             }

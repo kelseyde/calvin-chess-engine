@@ -6,22 +6,24 @@ public abstract class AbstractHistoryTable {
     private final short bonusScale;
     private final short malusMax;
     private final short malusScale;
+    private final short moveCountMult;
     private final short scoreMax;
 
-    public AbstractHistoryTable(short bonusMax, short bonusScale, short malusMax, short malusScale, short scoreMax) {
+    public AbstractHistoryTable(short bonusMax, short bonusScale, short malusMax, short malusScale, short moveCountMult, short scoreMax) {
         this.bonusMax = bonusMax;
         this.bonusScale = bonusScale;
         this.malusMax = malusMax;
         this.malusScale = malusScale;
+        this.moveCountMult = moveCountMult;
         this.scoreMax = scoreMax;
     }
 
-    protected short bonus(int depth) {
-        return (short) Math.min(bonusScale * depth, bonusMax);
+    protected short bonus(int depth, int moveCount) {
+        return (short) (Math.min(bonusScale * depth, bonusMax) - moveCountMult * (moveCount - 1));
     }
 
-    protected short malus(int depth) {
-        return (short) -Math.min(malusScale * depth, malusMax);
+    protected short malus(int depth, int moveCount) {
+        return (short) (-Math.min(malusScale * depth, malusMax) - moveCountMult * (moveCount - 1));
     }
 
     protected short gravity(short current, short update) {

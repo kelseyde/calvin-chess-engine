@@ -40,7 +40,7 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            Board board, Move bestMove, Move[] quiets, Move[] captures, boolean white, int depth, int ply, SearchStack ss) {
+            Board board, Move bestMove, Move[] quiets, Move[] captures, boolean white, int depth, int ply, int moveCount, SearchStack ss) {
 
         // When the best move causes a beta cut-off, we want to update the various history tables to reward the best move
         // and punish the other moves that were searched. Doing so will hopefully improve move ordering in future searches.
@@ -51,46 +51,46 @@ public class SearchHistory {
 
             for (Move quiet : quiets) {
                 // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
-                updateQuietHistory(board, quiet, bestMove, ss, white, depth, ply);
+                updateQuietHistory(board, quiet, bestMove, ss, white, depth, ply, moveCount);
             }
         }
 
         for (Move capture : captures) {
             // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
             // best move was quiet or a capture, penalise all other captures.
-            updateCaptureHistory(board, capture, bestMove, white, depth);
+            updateCaptureHistory(board, capture, bestMove, white, depth, moveCount);
         }
 
     }
 
-    public void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply) {
+    public void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply, int moveCount) {
         // For quiet moves we update both the standard quiet and continuation history tables
         if (quietMove == null)
             return;
         boolean good = quietMove.equals(bestMove);
         Piece piece = board.pieceAt(quietMove.from());
-        quietHistoryTable.update(quietMove, piece, depth, white, good);
-        updateContHist(quietMove, piece, ss, white, good, depth, ply);
+        quietHistoryTable.update(quietMove, piece, depth, moveCount, white, good);
+        updateContHist(quietMove, piece, ss, white, good, depth, ply, moveCount);
     }
 
-    public void updateContHist(Move move, Piece piece, SearchStack ss, boolean white, boolean good, int depth, int ply) {
+    public void updateContHist(Move move, Piece piece, SearchStack ss, boolean white, boolean good, int depth, int ply, int moveCount) {
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.move != null) {
                 Move prevMove = prevEntry.move;
                 Piece prevPiece = prevEntry.piece;
-                contHistTable.update(prevMove, prevPiece, move, piece, depth, white, good);
+                contHistTable.update(prevMove, prevPiece, move, piece, depth, moveCount, white, good);
             }
         }
     }
 
-    public void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth) {
+    public void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth, int moveCount) {
         if (captureMove == null)
             return;
         boolean good = captureMove.equals(bestMove);
         Piece piece = board.pieceAt(captureMove.from());
         Piece captured = captureMove.isEnPassant() ? Piece.PAWN : board.pieceAt(captureMove.to());
-        captureHistoryTable.update(piece, captureMove.to(), captured, depth, white, good);
+        captureHistoryTable.update(piece, captureMove.to(), captured, depth, moveCount, white, good);
     }
 
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {

@@ -99,16 +99,19 @@ public class EngineConfig {
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistMalusScale    = new Tunable("QuietHistMalusScale", 200, 50, 400, 25);
+    private final Tunable quietHistMoveCountMult = new Tunable("QuietHistMoveCountMult", 16, 10, 20, 1);
     private final Tunable quietHistMaxScore      = new Tunable("QuietHistMaxScore", 8192, 1000, 12000, 100);
     private final Tunable captHistBonusMax       = new Tunable("CaptHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable captHistBonusScale     = new Tunable("CaptHistBonusScale", 200, 50, 400, 25);
     private final Tunable captHistMalusMax       = new Tunable("CaptHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable captHistMalusScale     = new Tunable("CaptHistMalusScale", 200, 50, 400, 25);
+    private final Tunable captHistMoveCountMult  = new Tunable("CaptHistMoveCountMult", 16, 10, 20, 1);
     private final Tunable captHistMaxScore       = new Tunable("CaptHistMaxScore", 8192, 1000, 12000, 100);
     private final Tunable contHistBonusMax       = new Tunable("ContHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable contHistBonusScale     = new Tunable("ContHistBonusScale", 200, 50, 400, 25);
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
+    private final Tunable contHistMoveCountMult  = new Tunable("ContHistMoveCountMult", 16, 10, 20, 1);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 78, 50, 100, 5);
@@ -145,7 +148,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax
+                dynamicPolicyMax, quietHistMoveCountMult, captHistMoveCountMult, contHistMoveCountMult
         );
     }
 
@@ -527,6 +530,10 @@ public class EngineConfig {
         return quietHistMalusScale.value;
     }
 
+    public int quietHistMoveCountMult() {
+        return quietHistMoveCountMult.value;
+    }
+
     public int quietHistMaxScore() {
         return quietHistMaxScore.value;
     }
@@ -547,6 +554,10 @@ public class EngineConfig {
         return captHistMalusScale.value;
     }
 
+    public int captHistMoveCountMult() {
+        return captHistMoveCountMult.value;
+    }
+
     public int captHistMaxScore() {
         return captHistMaxScore.value;
     }
@@ -565,6 +576,10 @@ public class EngineConfig {
 
     public int contHistMalusScale() {
         return contHistMalusScale.value;
+    }
+
+    public int contHistMoveCountMult() {
+        return contHistMoveCountMult.value;
     }
 
     public int contHistMaxScore() {

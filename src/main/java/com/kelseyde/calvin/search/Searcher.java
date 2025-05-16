@@ -407,7 +407,7 @@ public class Searcher implements Search {
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
 
-        int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
+        int moveCount = 0, quietMoves = 0, captureMoves = 0;
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
 
@@ -422,7 +422,7 @@ public class Searcher implements Search {
             final Move move = scoredMove.move();
             if (move.equals(excludedMove))
                 continue;
-            searchedMoves++;
+            moveCount++;
 
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
@@ -443,9 +443,9 @@ public class Searcher implements Search {
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            final boolean doLmr = depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
+            final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
             if (doLmr) {
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
+                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
@@ -462,7 +462,7 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
-            final int futilityMargin = futilityMargin(reducedDepth, historyScore, searchedMoves);
+            final int futilityMargin = futilityMargin(reducedDepth, historyScore, moveCount);
             if (!pvNode
                     && !rootNode
                     && isQuiet
@@ -492,7 +492,7 @@ public class Searcher implements Search {
                     && isQuiet
                     && !inCheck
                     && depth <= config.lmpDepth()
-                    && searchedMoves >= lateMoveThreshold) {
+                    && moveCount >= lateMoveThreshold) {
                 movePicker.setSkipQuiets(true);
                 continue;
             }
@@ -503,7 +503,7 @@ public class Searcher implements Search {
             if (!pvNode
                     && !rootNode
                     && depth <= config.seeMaxDepth()
-                    && searchedMoves > 1
+                    && moveCount > 1
                     && !isGoodNoisy
                     && !isMateScore
                     && !SEE.see(board, move, seeThreshold)) {
@@ -570,17 +570,17 @@ public class Searcher implements Search {
                 if (score > alpha && reduction > 0) {
                     score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
                     if (isQuiet && (score <= alpha || score >= beta))
-                        history.updateContHist(move, piece, ss, board.isWhite(), score >= beta, depth, ply);
+                        history.updateContHist(move, piece, ss, board.isWhite(), score >= beta, depth, ply, moveCount);
                 }
             }
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
             // or another LMR condition not being met - then we search at full depth with a null-window.
-            else if (!pvNode || searchedMoves > 1)
+            else if (!pvNode || moveCount > 1)
                 score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
 
             // If we're in a PV node and searching the first move, or the score from reduced search beat alpha, then we
             // search with full depth and alpha-beta window.
-            if (pvNode && (searchedMoves == 1 || score > alpha))
+            if (pvNode && (moveCount == 1 || score > alpha))
                 score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
 
             unmakeMove(curr);
@@ -628,7 +628,7 @@ public class Searcher implements Search {
             }
         }
 
-        if (searchedMoves == 0) {
+        if (moveCount == 0) {
             if (singularSearch)
                 return alpha;
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
@@ -638,7 +638,7 @@ public class Searcher implements Search {
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
             final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, ss);
+            history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, moveCount, ss);
         }
 
         if (flag == HashFlag.UPPER
@@ -649,7 +649,7 @@ public class Searcher implements Search {
             // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
             // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
             // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
-            history.getQuietHistoryTable().update(prev.move, prev.piece, depth, !board.isWhite(), true);
+            history.getQuietHistoryTable().update(prev.move, prev.piece, depth, moveCount, !board.isWhite(), true);
         }
 
         if (!inCheck

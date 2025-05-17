@@ -219,15 +219,17 @@ public class Searcher implements Search {
         history.getKillerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
 
-        // Transposition table
-        // Check if this node has already been searched before. If so, we can potentially re-use the result of the
-        // previous search. In any case we can re-use information from the previous search in the current search.
         HashEntry ttEntry = null;
         boolean ttHit = false;
         boolean ttPrune = false;
         Move ttMove = null;
         boolean ttPv = pvNode;
 
+        // Transposition table
+        // Check if this node has already been searched before. If it has, and the depth + alpha/beta bounds match the
+        // requirements of the current search, then we can directly return the score from the TT. If the depth and bounds
+        // do not match, we can still use information from the TT - such as the best move, score, and static eval -
+        // to improve the current search.
         if (!singularSearch) {
             ttEntry = tt.get(board.key(), ply);
             ttHit = ttEntry != null;
@@ -246,9 +248,9 @@ public class Searcher implements Search {
             }
         }
 
+        // In non-PV nodes with an eligible TT hit, we fully prune the node.
+        // In PV nodes, rather than pruning we reduce search depth.
         if (ttPrune) {
-            // In non-PV nodes with an eligible TT hit, we fully prune the node.
-            // In PV nodes, rather than pruning we reduce search depth.
             if (pvNode)
                 depth--;
             else
@@ -541,12 +543,10 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(scoredMove, piece, captured, curr);
 
-            if (isCapture && captureMoves < 16) {
+            if (isCapture && captureMoves < 16)
                 curr.captures[captureMoves++] = move;
-            }
-            else if (quietMoves < 16) {
+            else if (quietMoves < 16)
                 curr.quiets[quietMoves++] = move;
-            }
 
             final int nodesBefore = td.nodes;
             td.nodes++;
@@ -593,8 +593,9 @@ public class Searcher implements Search {
                 bestScore = score;
             }
 
+            // If the score is greater than alpha, then this is the best move we have examined so far.
+            // We therefore update alpha to the current score and update best move to the current move.
             if (score > alpha) {
-                // If the score is greater than alpha, then this is the best move we have examined so far.
                 bestMove = move;
                 alpha = score;
                 flag = HashFlag.EXACT;
@@ -605,9 +606,10 @@ public class Searcher implements Search {
                     bestScoreCurrent = score;
                 }
 
+                // If the score is greater than beta, then this position is 'too good' - our opponent won't let us get
+                // here assuming perfect play. The node therefore 'fails high' - there is no point searching further,
+                // and we can cut off here.
                 if (score >= beta) {
-                    // If the score is greater than beta, then this position is 'too good' - our opponent won't let us
-                    // get here assuming perfect play, and so there's no point searching further.
                     flag = HashFlag.LOWER;
                     curr.failHighCount++;
                     break;

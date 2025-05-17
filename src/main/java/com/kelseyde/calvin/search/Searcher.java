@@ -460,7 +460,7 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
-            final int futilityMargin = futilityMargin(reducedDepth, historyScore, searchedMoves);
+            final int futilityMargin = futilityMargin(reducedDepth, historyScore, searchedMoves, complexity);
             if (!pvNode
                     && !rootNode
                     && isQuiet
@@ -935,11 +935,20 @@ public class Searcher implements Search {
         history.clear();
     }
 
-    private int futilityMargin(int depth, int historyScore, int searchedMoves) {
+    private int futilityMargin(int depth, int historyScore, int searchedMoves, int complexity) {
         return config.fpMargin()
                 + depth * config.fpScale()
                 + (historyScore / config.fpHistDivisor())
-                - searchedMoves * config.fpMoveMultiplier();
+                - searchedMoves * config.fpMoveMultiplier()
+                + futilityComplexityMargin(complexity);
+    }
+
+    private int futilityComplexityMargin(int complexity) {
+        final int divisor = config.fpComplexityDivisor();
+        final int offset = config.fpComplexityOffset();
+        final int min = config.fpComplexityMin();
+        final int max = config.fpComplexityMax();
+        return clamp(complexity / divisor - offset, min, max);
     }
 
     private int lmrFutilityMargin(int depth, int historyScore) {

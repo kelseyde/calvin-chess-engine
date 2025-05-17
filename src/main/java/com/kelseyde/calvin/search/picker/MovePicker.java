@@ -8,7 +8,6 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.utils.notation.FEN;
 
 import java.util.List;
 
@@ -137,11 +136,6 @@ public class MovePicker {
                 || board.isNoisy(killer)
                 || !movegen.isLegal(board, killer))
             return pickKiller(nextStage);
-
-        List<Move> legalMoves = movegen.generateMoves(board);
-        if (!legalMoves.contains(killer)) {
-            System.out.printf("ERROR: %s, %s is not a legal move\n", FEN.fromBoard(board), Move.toUCI(killer));
-        }
 
         return scorer.score(board, killer, ply, stage);
     }

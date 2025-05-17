@@ -797,6 +797,12 @@ public class MoveGenerator {
                     int betweenSquare = white ? from + 8 : from - 8;
                     return !Bits.contains(occupied, betweenSquare);
 
+                } else {
+                    // Must be a single push
+                    if (to != from + (white ? 8 : -8))
+                        return false;
+
+                    return !Bits.contains(occupied, to);
                 }
             }
 
@@ -819,8 +825,6 @@ public class MoveGenerator {
             return Bits.contains(attacks, to);
 
         }
-
-        return true;
 
     }
 

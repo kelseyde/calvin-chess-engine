@@ -28,6 +28,16 @@ public class PseudoLegalTest {
 		Assertions.assertTrue(movegen.isPseudoLegal(board, move));
     }
 
+    @Test
+    public void testPseudoLegalDebug() {
+
+        Board board = Board.from("5bk1/R5p1/8/1p1p3p/1P3B1P/P1r3P1/6K1/8 b - - 1 1");
+
+        Move move = Move.fromUCI("d5d3");
+        Assertions.assertFalse(movegen.isPseudoLegal(board, move));
+
+    }
+
     // Disabled as it takes a long time - used for debugging
     @Test
     @Disabled

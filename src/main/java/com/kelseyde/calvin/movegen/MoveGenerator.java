@@ -381,9 +381,9 @@ public class MoveGenerator {
     }
 
     private void generateSlidingMoves(Board board, long sliders, boolean isOrthogonal, boolean isDiagonal) {
-        final long opponents = board.getPieces(!white);
+        final long friendlies = board.us();
+        final long opponents = board.them();
         final long occupied = board.getOccupied();
-        final long friendlies = board.getPieces(white);
 
         // Apply move filters
         final long filterMask = checkersCount > 0 ? captureMask | pushMask : switch (filter) {

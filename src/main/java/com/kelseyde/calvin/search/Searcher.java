@@ -49,6 +49,11 @@ public class Searcher implements Search {
     TimeControl tc;
     Board board;
 
+    long sum;
+    long count;
+    int min;
+    int max;
+
     public Searcher(EngineConfig config, TranspositionTable tt, ThreadData td) {
         this.config = config;
         this.tt = tt;
@@ -946,9 +951,8 @@ public class Searcher implements Search {
     private int futilityComplexityMargin(int complexity) {
         final int divisor = config.fpComplexityDivisor();
         final int offset = config.fpComplexityOffset();
-        final int min = config.fpComplexityMin();
         final int max = config.fpComplexityMax();
-        return clamp(complexity / divisor - offset, min, max);
+        return Math.min(complexity / divisor - offset, max);
     }
 
     private int lmrFutilityMargin(int depth, int historyScore) {

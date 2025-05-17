@@ -39,10 +39,9 @@ public class EngineConfig {
     private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 5);
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 98, 1, 1000, 25);
     private final Tunable fpMoveMultiplier       = new Tunable("FpMoveMultiplier", 4, 0, 10, 1);
-    private final Tunable fpComplexityDivisor    = new Tunable("FpComplexityDivisor", 18432, 12288, 24576, 1024);
-    private final Tunable fpComplexityOffset     = new Tunable("FpComplexityOffset", 44, 0, 100, 10);
-    private final Tunable fpComplexityMin        = new Tunable("FpComplexityMin", -80, -150, 0, 25);
-    private final Tunable fpComplexityMax        = new Tunable("FpComplexityMax", 80, 0, 150, 25);
+    private final Tunable fpComplexityDivisor    = new Tunable("FpComplexityDivisor", 36864, 12288, 55296, 1024);
+    private final Tunable fpComplexityOffset     = new Tunable("FpComplexityOffset", 27, 0, 100, 10);
+    private final Tunable fpComplexityMax        = new Tunable("FpComplexityMax", 27, 0, 150, 25);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
     private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -44, -250, -10, 25);
     private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -17, -250, -10, 25);
@@ -149,7 +148,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, fpComplexityDivisor, fpComplexityOffset, fpComplexityMin, fpComplexityMax
+                dynamicPolicyMax, fpComplexityDivisor, fpComplexityOffset, fpComplexityMax
         );
     }
 
@@ -297,10 +296,6 @@ public class EngineConfig {
 
     public int fpComplexityOffset() {
         return fpComplexityOffset.value;
-    }
-
-    public int fpComplexityMin() {
-        return fpComplexityMin.value;
     }
 
     public int fpComplexityMax() {

@@ -292,7 +292,7 @@ public class Searcher implements Search {
             // Re-use cached static eval if available. Don't compute static eval while in check.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
             uncorrectedEval = rawStaticEval;
-            correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
+            correction = history.evalCorrection(board, ss, ply);
             complexity = history.squaredCorrectionTerms(board, ss, ply);
             staticEval = rawStaticEval + correction;
 
@@ -723,12 +723,14 @@ public class Searcher implements Search {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
             rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
-            correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
+            correction = history.evalCorrection(board, ss, ply);
             staticEval = rawStaticEval + correction;
 
+            // Store just the static eval in the TT so it can be re-used in the future.
             if (!ttHit)
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
 
+            // If eligible, use the TT search score as a more accurate static evaluation.
             if (canUseTTScore(ttEntry, rawStaticEval))
                 staticEval = ttEntry.score();
 

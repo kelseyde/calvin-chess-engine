@@ -453,7 +453,7 @@ public class Searcher implements Search {
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();
-                reduction = Math.max(0, r / 1024);
+                reduction = clamp(r / 1024, 0, depth - 1);
             }
 
             int reducedDepth = depth - reduction;

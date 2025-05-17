@@ -302,7 +302,7 @@ public class Searcher implements Search {
 
             // If the TT score is within the bounds of the current window, we can use it as a more accurate static eval.
             if (canUseTTScore(ttEntry, rawStaticEval)) {
-                staticEval = ttEntry.score();
+                staticEval = ttEntry.score() + correction;
                 uncorrectedEval = staticEval;
             }
         }
@@ -730,7 +730,7 @@ public class Searcher implements Search {
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
 
             if (canUseTTScore(ttEntry, rawStaticEval))
-                staticEval = ttEntry.score();
+                staticEval = ttEntry.score() + correction;
 
             if (staticEval >= beta) {
                 if (!ttHit || ttEntry.flag() == HashFlag.NONE)
@@ -972,6 +972,5 @@ public class Searcher implements Search {
     private int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
     }
-
 
 }

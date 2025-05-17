@@ -361,25 +361,21 @@ public class Searcher implements Search {
 
             // Null Move Pruning
             // Skip nodes where giving the opponent an extra move (making a 'null move') still results in a fail-high.
-            if (curr.nullMoveAllowed
+            if (depth >= config.nmpDepth()
                 && ply >= td.nmpPly
-                && depth >= config.nmpDepth()
+                && prev.move != null
                 && staticEval >= beta
                 && (!ttHit || cutNode || ttEntry.score() >= beta)
-                && board.hasPiecesRemaining(board.isWhite())) {
+                && board.hasNonPawnMaterial()) {
 
                 int r = config.nmpBase()
                         + depth / config.nmpDivisor()
                         + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
 
-                ss.get(ply + 1).nullMoveAllowed = false;
                 board.makeNullMove();
-                td.nodes++;
-
                 final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
-
                 board.unmakeNullMove();
-                ss.get(ply + 1).nullMoveAllowed = true;
+                td.nodes++;
 
                 if (score >= beta) {
 

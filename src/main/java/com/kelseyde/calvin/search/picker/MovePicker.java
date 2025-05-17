@@ -137,7 +137,7 @@ public class MovePicker {
                 || !movegen.isLegal(board, killer))
             return pickKiller(nextStage);
 
-        return scorer.score(board, killer, ply, stage);
+        return scorer.score(board, killer, ply, stage, inCheck);
     }
 
     protected ScoredMove pickTTMove(Stage nextStage) {
@@ -157,7 +157,7 @@ public class MovePicker {
             goodNoisies = new ScoredMove[stagedMoves.size()];
             badNoisies = new ScoredMove[stagedMoves.size()];
             for (Move move : stagedMoves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(board, move, ply, stage, inCheck);
                 if (scoredMove.moveType() == MoveType.GOOD_NOISY) {
                     goodNoisies[goodIndex++] = scoredMove;
                 } else {
@@ -170,7 +170,7 @@ public class MovePicker {
             int quietIndex = 0;
             quiets = new ScoredMove[stagedMoves.size()];
             for (Move move : stagedMoves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(board, move, ply, stage, inCheck);
                 quiets[quietIndex++] = scoredMove;
             }
         }
@@ -179,7 +179,7 @@ public class MovePicker {
             goodNoisies = new ScoredMove[stagedMoves.size()];
             int goodIndex = 0;
             for (Move move : stagedMoves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(board, move, ply, stage, inCheck);
                 // In q-search, only consider good noisies
                 // unless we are in check, in which case consider all moves.
                 if (scoredMove.isGoodNoisy() || inCheck) {

@@ -35,7 +35,7 @@ public class MoveScorer {
         this.seeNoisyOffset = seeNoisyOffset;
     }
 
-    public ScoredMove score(Board board, Move move, int ply, Stage stage) {
+    public ScoredMove score(Board board, Move move, int ply, Stage stage, boolean inCheck) {
 
         final Piece piece = board.pieceAt(move.from());
         final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
@@ -48,12 +48,12 @@ public class MoveScorer {
         final boolean noisy = quietCheck || capture || promotion;
 
         return noisy ?
-                scoreNoisy(board, move, piece, captured, quietCheck, ply) :
+                scoreNoisy(board, move, piece, captured, quietCheck, ply, inCheck) :
                 scoreQuiet(board, move, piece, ply);
 
     }
 
-    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck, int ply) {
+    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck, int ply, boolean inCheck) {
 
         final boolean white = board.isWhite();
 
@@ -69,7 +69,7 @@ public class MoveScorer {
 
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
-            final MoveType type = MoveType.BAD_NOISY;
+            final MoveType type = inCheck ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;

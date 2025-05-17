@@ -48,12 +48,12 @@ public class MoveScorer {
         final boolean noisy = quietCheck || capture || promotion;
 
         return noisy ?
-                scoreNoisy(board, move, piece, captured, quietCheck, ply, inCheck) :
-                scoreQuiet(board, move, piece, ply);
+                scoreNoisy(board, move, piece, captured, quietCheck, ply) :
+                scoreQuiet(board, move, piece, ply, inCheck);
 
     }
 
-    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck, int ply, boolean inCheck) {
+    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean quietCheck, int ply) {
 
         final boolean white = board.isWhite();
 
@@ -69,7 +69,7 @@ public class MoveScorer {
 
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
-            final MoveType type = inCheck ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+            final MoveType type = MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;
@@ -89,14 +89,15 @@ public class MoveScorer {
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }
 
-    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
+    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply, boolean inCheck) {
 
         // Quiet moves are scored using the quiet history and continuation history heuristics.
         final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite());
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
 
-        return new ScoredMove(move, piece, null, score, score, MoveType.QUIET);
+        MoveType type = inCheck ? MoveType.BAD_NOISY : MoveType.QUIET;
+        return new ScoredMove(move, piece, null, score, score, type);
 
     }
 

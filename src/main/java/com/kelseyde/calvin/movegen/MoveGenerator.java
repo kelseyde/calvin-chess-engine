@@ -795,7 +795,11 @@ public class MoveGenerator {
 
                     // Can't double push if there's a piece in the way
                     int betweenSquare = white ? from + 8 : from - 8;
-                    return !Bits.contains(occupied, betweenSquare);
+                    if (Bits.contains(occupied, betweenSquare))
+                        return false;
+
+                    // Can't double push to an occupied square
+                    return !Bits.contains(occupied, to);
 
                 } else {
                     // Must be a single push

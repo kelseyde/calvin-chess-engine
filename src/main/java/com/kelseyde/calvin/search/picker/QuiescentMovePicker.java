@@ -70,4 +70,5 @@ public class QuiescentMovePicker extends AbstractMovePicker {
         this.filter = filter;
     }
 
+
 }

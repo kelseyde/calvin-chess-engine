@@ -959,7 +959,7 @@ public class Searcher implements Search {
                 config.seeQuietMargin() * depth :
                 config.seeNoisyMargin() * depth * depth;
         threshold -= historyScore / config.seeHistoryDivisor();
-        return threshold;
+        return Math.min(threshold, -1);
     }
 
     private boolean canUseTTScore(HashEntry ttEntry, int rawStaticEval) {

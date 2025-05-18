@@ -76,7 +76,7 @@ public class MoveScorer {
             return new ScoredMove(move, piece, captured, score, historyScore, type);
         }
 
-        score += SEE.value(captured);
+        score += SEE.value(captured) * 7;
 
         final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
         score += historyScore / 4;

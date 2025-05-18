@@ -58,7 +58,7 @@ public class QuiescentMovePicker extends AbstractMovePicker {
 
     @Override
     protected boolean isSpecial(Move move) {
-        return move.equals(ttMove)
+        return move.equals(ttMove);
     }
 
     @Override

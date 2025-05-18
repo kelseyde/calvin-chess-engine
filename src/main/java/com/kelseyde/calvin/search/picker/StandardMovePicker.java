@@ -67,11 +67,10 @@ public class StandardMovePicker extends AbstractMovePicker {
             badNoisies = new ScoredMove[moves.size()];
             for (Move move : moves) {
                 ScoredMove scoredMove = scorer.score(board, move, ply, stage);
-                if (scoredMove.moveType() == MoveType.GOOD_NOISY) {
+                if (scoredMove.isGoodNoisy())
                     goodNoisies[goodIndex++] = scoredMove;
-                } else {
+                else
                     badNoisies[badIndex++] = scoredMove;
-                }
             }
         }
         else if (stage == Stage.GEN_QUIET) {

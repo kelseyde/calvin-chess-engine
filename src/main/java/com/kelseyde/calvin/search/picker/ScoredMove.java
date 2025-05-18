@@ -2,32 +2,33 @@ package com.kelseyde.calvin.search.picker;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.search.picker.AbstractMovePicker.MoveType;
 
 public record ScoredMove(Move move,
                          Piece piece,
                          Piece captured,
                          int score,
                          int historyScore,
-                         AbstractMovePicker.MoveType moveType) {
+                         MoveType moveType) {
 
     public boolean isNoisy() {
-        return moveType == AbstractMovePicker.MoveType.GOOD_NOISY || moveType == AbstractMovePicker.MoveType.BAD_NOISY;
+        return moveType == MoveType.GOOD_NOISY || moveType == MoveType.BAD_NOISY;
     }
 
     public boolean isGoodNoisy() {
-        return moveType == AbstractMovePicker.MoveType.GOOD_NOISY;
+        return moveType == MoveType.GOOD_NOISY;
     }
 
     public boolean isKiller() {
-        return moveType == AbstractMovePicker.MoveType.KILLER;
+        return moveType == MoveType.KILLER;
     }
 
     public boolean isBadNoisy() {
-        return moveType == AbstractMovePicker.MoveType.BAD_NOISY;
+        return moveType == MoveType.BAD_NOISY;
     }
 
     public boolean isQuiet() {
-        return moveType == AbstractMovePicker.MoveType.QUIET;
+        return moveType == MoveType.QUIET;
     }
 
 }

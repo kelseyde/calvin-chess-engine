@@ -23,19 +23,14 @@ import java.util.List;
 public abstract class AbstractMovePicker {
 
     public enum Stage {
-        TT_MOVE,
-        GEN_NOISY,
-        GOOD_NOISY,
-        KILLER,
-        GEN_QUIET,
-        QUIET,
-        BAD_NOISY,
+        // Standard search stages
+        TT_MOVE, GEN_NOISY, GOOD_NOISY, KILLER, GEN_QUIET, QUIET, BAD_NOISY,
 
-        QSEARCH_GEN_NOISY,
-        QSEARCH_NOISY,
+        // Quiescence search stages
+        QSEARCH_GEN_NOISY, QSEARCH_NOISY,
 
-        GEN_EVASIONS,
-        EVASIONS,
+        // Evasion search stages
+        GEN_EVASIONS, EVASIONS,
 
         END
     }
@@ -51,19 +46,22 @@ public abstract class AbstractMovePicker {
     final MoveGenerator movegen;
     final MoveScorer scorer;
     final SearchHistory history;
-
     final Move ttMove;
     final Board board;
     final boolean inCheck;
     final int ply;
 
     Stage stage;
+    int moveIndex;
     boolean skipQuiets;
 
-    int moveIndex;
-
-    protected AbstractMovePicker(
-            MoveGenerator movegen, MoveScorer scorer, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+    protected AbstractMovePicker(MoveGenerator movegen,
+                                 MoveScorer scorer,
+                                 SearchHistory history,
+                                 Board board,
+                                 int ply,
+                                 Move ttMove,
+                                 boolean inCheck) {
         this.movegen = movegen;
         this.scorer = scorer;
         this.history = history;
@@ -86,15 +84,15 @@ public abstract class AbstractMovePicker {
     protected abstract void handleStagedMoves(List<Move> moves);
 
     /**
+     * Retrieve the moves that should be tried in the current stage.
+     */
+    protected abstract ScoredMove[] loadStagedMoves(Stage stage);
+
+    /**
      * Check if a move is 'special', in that it is tried in a dedicated stage and should therefore be skipped during
      * normal move generation. This is used to avoid trying the same move multiple times in different stages.
      */
     protected abstract boolean isSpecial(Move move);
-
-    /**
-     * Retrieve the moves that should be tried in the current stage.
-     */
-    protected abstract ScoredMove[] loadStagedMoves(Stage stage);
 
     /**
      * Select the next move from the move list.

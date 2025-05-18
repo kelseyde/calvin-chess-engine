@@ -8,10 +8,10 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.search.picker.AbstractMovePicker.MoveType;
+import com.kelseyde.calvin.search.picker.MovePicker.MoveType;
 import com.kelseyde.calvin.search.picker.ScoredMove;
 
-public class StandardMoveScorer extends AbstractMoveScorer {
+public class StandardMoveScorer extends MoveScorer {
 
     private final int seeNoisyDivisor;
     private final int seeNoisyOffset;

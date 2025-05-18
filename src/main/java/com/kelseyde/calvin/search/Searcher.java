@@ -407,7 +407,7 @@ public class Searcher implements Search {
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
 
-        final AbstractMovePicker movePicker = initMovePicker(SearchType.PVS, inCheck, ttMove, ply);
+        final MovePicker<?> movePicker = initMovePicker(SearchType.PVS, inCheck, ttMove, ply);
 
         while (true) {
 
@@ -747,7 +747,7 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
         int moveCount = 0;
 
-        final AbstractMovePicker movePicker = initMovePicker(SearchType.QUIESCENCE, inCheck, ttMove, ply);
+        final MovePicker<?> movePicker = initMovePicker(SearchType.QUIESCENCE, inCheck, ttMove, ply);
 
         while (true) {
 
@@ -974,12 +974,12 @@ public class Searcher implements Search {
         QUIESCENCE
     }
 
-    private AbstractMovePicker initMovePicker(SearchType type, boolean inCheck, Move ttMove, int ply) {
+    private MovePicker<?> initMovePicker(SearchType type, boolean inCheck, Move ttMove, int ply) {
         return inCheck
-                ? new EvasionMovePicker(config, movegen, history, ss, true, board, ttMove, ply)
+                ? new EvasionMovePicker(config, movegen, history, ss, board, ttMove, ply)
                 : switch (type) {
-                    case PVS -> new StandardMovePicker(config, movegen, history, ss, false, board, ttMove, ply);
-                    case QUIESCENCE -> new QuiescentMovePicker(config, movegen, history, ss, false, board, ttMove, ply);
+                    case PVS -> new StandardMovePicker(config, movegen, history, ss, board, ttMove, ply);
+                    case QUIESCENCE -> new QuiescentMovePicker(config, movegen, history, ss, board, ttMove, ply);
         };
     }
 

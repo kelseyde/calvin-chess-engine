@@ -23,7 +23,7 @@ import java.util.List;
  * Which stages we use and in what order depends on the type of search, with different heuristics being used for standard
  * PVS search, quiescence search, and search done when in check.
  */
-public abstract class AbstractMovePicker {
+public abstract class MovePicker<T extends MoveScorer> {
 
     public enum Stage {
         // Standard search stages
@@ -43,32 +43,29 @@ public abstract class AbstractMovePicker {
     }
 
     final MoveGenerator movegen;
-    final MoveScorer scorer;
+    final T scorer;
     final SearchHistory history;
     final Move ttMove;
     final Board board;
-    final boolean inCheck;
     final int ply;
 
     Stage stage;
     int moveIndex;
     boolean skipQuiets;
 
-    protected AbstractMovePicker(EngineConfig config,
-                                 MoveGenerator movegen,
-                                 SearchHistory history,
-                                 SearchStack ss,
-                                 boolean inCheck,
-                                 Board board,
-                                 Move ttMove,
-                                 int ply) {
-        this.scorer = initMoveScorer(config, ss);
+    protected MovePicker(EngineConfig config,
+                         MoveGenerator movegen,
+                         SearchHistory history,
+                         SearchStack ss,
+                         Board board,
+                         Move ttMove,
+                         int ply) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;
         this.ply = ply;
         this.ttMove = ttMove;
-        this.inCheck = inCheck;
+        this.scorer = initMoveScorer(config, ss);
     }
 
     /**
@@ -94,21 +91,18 @@ public abstract class AbstractMovePicker {
      */
     protected abstract boolean isSpecial(Move move);
 
-    protected abstract MoveScorer initMoveScorer(EngineConfig config, SearchStack ss);
+    protected abstract T initMoveScorer(EngineConfig config, SearchStack ss);
 
     /**
      * Select the next move from the move list.
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
-    protected ScoredMove pickMove(AbstractMovePicker.Stage nextStage) {
+    protected ScoredMove pickMove(MovePicker.Stage nextStage) {
 
         final ScoredMove[] moves = loadStagedMoves(stage);
 
         // If we're in check then all evasions have been tried in the noisy stage
-        if (stage == Stage.QUIET && (skipQuiets || inCheck))
-            return nextStage(nextStage);
-
-        if (moveIndex >= moves.length)
+        if (moveIndex >= moves.length || (stage == Stage.QUIET && skipQuiets))
             return nextStage(nextStage);
 
         ScoredMove move = selectionSort(moves);

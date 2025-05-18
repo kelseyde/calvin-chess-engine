@@ -7,21 +7,11 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.search.scorer.MoveScorer;
+import com.kelseyde.calvin.search.scorer.StandardMoveScorer;
 
 import java.util.List;
 
-/**
- * Selects the next move to try in a given position. Moves are selected in stages. First, the 'best' move from the
- * transposition table is tried before any moves are generated. Then, the noisy moves are generated and separated into
- * 'good' and 'bad' noisies. Finally, the quiet moves are generated.
- * </p>
- * Within each stage, the order in which moves are tried is determined by several heuristics in the {@link MoveScorer}.
- * </p>
- * The idea behind generating and selecting moves in stages is to save time. Since in most positions only a few moves -
- * or even only a single move - will be tried, the time spent generating all the other moves is essentially wasted.
- */
-public class StandardMovePicker extends AbstractMovePicker {
+public class StandardMovePicker extends MovePicker<StandardMoveScorer> {
 
     int killerIndex;
 
@@ -33,11 +23,10 @@ public class StandardMovePicker extends AbstractMovePicker {
                               MoveGenerator movegen,
                               SearchHistory history,
                               SearchStack ss,
-                              boolean inCheck,
                               Board board,
                               Move ttMove,
                               int ply) {
-        super(config, movegen, history, ss, inCheck, board, ttMove, ply);
+        super(config, movegen, history, ss, board, ttMove, ply);
         this.stage = Stage.TT_MOVE;
     }
 
@@ -71,7 +60,7 @@ public class StandardMovePicker extends AbstractMovePicker {
             goodNoisies = new ScoredMove[moves.size()];
             badNoisies = new ScoredMove[moves.size()];
             for (Move move : moves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(move);
                 if (scoredMove.isGoodNoisy())
                     goodNoisies[goodIndex++] = scoredMove;
                 else
@@ -82,10 +71,8 @@ public class StandardMovePicker extends AbstractMovePicker {
             // In quiet movegen everything is treated as a 'quiet' move
             int quietIndex = 0;
             quiets = new ScoredMove[moves.size()];
-            for (Move move : moves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
-                quiets[quietIndex++] = scoredMove;
-            }
+            for (Move move : moves)
+                quiets[quietIndex++] = scorer.score(move);
         }
     }
 
@@ -101,8 +88,8 @@ public class StandardMovePicker extends AbstractMovePicker {
     }
 
     @Override
-    protected MoveScorer initMoveScorer(EngineConfig config, SearchStack ss) {
-        return new MoveScorer(config, history, ss, config.seeNoisyDivisor(), config.seeNoisyOffset());
+    protected StandardMoveScorer initMoveScorer(EngineConfig config, SearchStack ss) {
+        return new StandardMoveScorer(config, movegen, history, ss, board, ply, config.seeNoisyDivisor(), config.seeNoisyOffset());
     }
 
     @Override
@@ -130,7 +117,7 @@ public class StandardMovePicker extends AbstractMovePicker {
                 || !movegen.isLegal(board, killer))
             return pickKiller(nextStage);
 
-        return scorer.score(board, killer, ply, stage);
+        return scorer.score(killer);
     }
 
 }

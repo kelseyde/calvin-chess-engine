@@ -359,6 +359,17 @@ public class Searcher implements Search {
                 if (score < alpha) {
                     return score;
                 }
+                // If we are unable to use the TT score as static eval, let's use the razor score instead.
+                if (!canUseTTScore(ttEntry, rawStaticEval)) {
+                    staticEval = score;
+
+                    // And then check RFP again.
+                    if (depth <= config.rfpDepth()
+                            && !Score.isMate(alpha)
+                            && staticEval - futilityMargin >= beta) {
+                        return beta + (staticEval - beta) / 3;
+                    }
+                }
             }
 
             // Null Move Pruning

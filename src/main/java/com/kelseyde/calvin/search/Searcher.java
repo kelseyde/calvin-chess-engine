@@ -8,7 +8,7 @@ import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
-import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.StandardMovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.picker.ScoredMove;
 import com.kelseyde.calvin.tables.tt.HashEntry;
@@ -409,7 +409,7 @@ public class Searcher implements Search {
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
 
-        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        final StandardMovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
         while (true) {
 
@@ -467,7 +467,7 @@ public class Searcher implements Search {
                     && !inCheck
                     && reducedDepth <= config.fpDepth()
                     && staticEval + futilityMargin <= alpha) {
-                movePicker.setSkipQuiets(true);
+                movePicker.skipQuiets(true);
                 continue;
             }
 
@@ -478,7 +478,7 @@ public class Searcher implements Search {
                     && isQuiet
                     && reducedDepth <= config.hpMaxDepth()
                     && historyScore < historyThreshold) {
-                movePicker.setSkipQuiets(true);
+                movePicker.skipQuiets(true);
                 continue;
             }
 
@@ -491,7 +491,7 @@ public class Searcher implements Search {
                     && !inCheck
                     && depth <= config.lmpDepth()
                     && searchedMoves >= lateMoveThreshold) {
-                movePicker.setSkipQuiets(true);
+                movePicker.skipQuiets(true);
                 continue;
             }
 
@@ -973,5 +973,9 @@ public class Searcher implements Search {
         return Math.max(min, Math.min(max, value));
     }
 
+    private enum SearchType {
+        PVS,
+        QUIESCENCE
+    }
 
 }

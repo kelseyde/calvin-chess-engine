@@ -8,7 +8,7 @@ import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
-import com.kelseyde.calvin.search.picker.MovePicker.Stage;
+import com.kelseyde.calvin.search.picker.AbstractMovePicker.Stage;
 
 /**
  * Assigns a score to a move to determine the order in which moves are tried during search. The score is based on several
@@ -42,7 +42,7 @@ public class MoveScorer {
 
         final boolean capture = captured != null;
         final boolean promotion = move.isPromotion();
-        final boolean quietCheck = stage == Stage.GEN_NOISY && !promotion && !capture;
+        final boolean quietCheck = stage == AbstractMovePicker.Stage.GEN_NOISY && !promotion && !capture;
 
         // Noisy moves are captures, promotions, and quiet checks (meaning checks that are not captures or promotions).
         final boolean noisy = quietCheck || capture || promotion;
@@ -62,14 +62,14 @@ public class MoveScorer {
         boolean promotion = move.promoPiece() != null;
         if (promotion) {
             // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
-            final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+            final AbstractMovePicker.MoveType type = move.promoPiece() == Piece.QUEEN ? AbstractMovePicker.MoveType.GOOD_NOISY : AbstractMovePicker.MoveType.BAD_NOISY;
             score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
             return new ScoredMove(move, piece, captured, score, 0, type);
         }
 
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
-            final MoveType type = MoveType.BAD_NOISY;
+            final AbstractMovePicker.MoveType type = AbstractMovePicker.MoveType.BAD_NOISY;
             final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;
@@ -84,7 +84,7 @@ public class MoveScorer {
         final int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
 
         // Separate good and bad noisies based on the material won or lost once all pieces are swapped off.
-        final MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        final AbstractMovePicker.MoveType type = SEE.see(board, move, threshold) ? AbstractMovePicker.MoveType.GOOD_NOISY : AbstractMovePicker.MoveType.BAD_NOISY;
 
         return new ScoredMove(move, piece, captured, score, historyScore, type);
     }
@@ -96,7 +96,7 @@ public class MoveScorer {
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
 
-        return new ScoredMove(move, piece, null, score, score, MoveType.QUIET);
+        return new ScoredMove(move, piece, null, score, score, AbstractMovePicker.MoveType.QUIET);
 
     }
 

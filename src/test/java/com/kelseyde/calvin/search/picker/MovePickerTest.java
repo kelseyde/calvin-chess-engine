@@ -25,7 +25,7 @@ public class MovePickerTest {
     @Disabled
     public void testMoveOrder() {
 
-        List<MoveType> expectedOrder = List.of(MoveType.TT_MOVE, MoveType.GOOD_NOISY, MoveType.KILLER, MoveType.QUIET, MoveType.BAD_NOISY);
+        List<AbstractMovePicker.MoveType> expectedOrder = List.of(AbstractMovePicker.MoveType.TT_MOVE, AbstractMovePicker.MoveType.GOOD_NOISY, AbstractMovePicker.MoveType.KILLER, AbstractMovePicker.MoveType.QUIET, AbstractMovePicker.MoveType.BAD_NOISY);
 
         SearchHistory history = new SearchHistory(new EngineConfig());
         List<String> fens = Bench.FENS;
@@ -41,7 +41,7 @@ public class MovePickerTest {
             history.getKillerTable().add(0, killer1);
             history.getKillerTable().add(0, killer2);
 
-            MovePicker picker = new MovePicker(TestUtils.CONFIG, moveGenerator, ss, history, board, 0, ttMove, false);
+            StandardMovePicker picker = new StandardMovePicker(TestUtils.CONFIG, moveGenerator, ss, history, board, 0, ttMove, false);
 
             int maxIndex = -1;
             List<Move> tried = new ArrayList<>();
@@ -50,7 +50,7 @@ public class MovePickerTest {
                 if (move == null) break;  // No more moves to pick
 
                 // Get the move type from the current move
-                MoveType currentMoveType = move.moveType();
+                AbstractMovePicker.MoveType currentMoveType = move.moveType();
 
                 // Ensure the move type is in the expected order
                 int currentIndex = expectedOrder.indexOf(currentMoveType);
@@ -71,7 +71,7 @@ public class MovePickerTest {
     @Test
     public void testDebugSingle() {
 
-        List<MoveType> expectedOrder = List.of(MoveType.TT_MOVE, MoveType.GOOD_NOISY, MoveType.KILLER, MoveType.QUIET, MoveType.BAD_NOISY);
+        List<AbstractMovePicker.MoveType> expectedOrder = List.of(AbstractMovePicker.MoveType.TT_MOVE, AbstractMovePicker.MoveType.GOOD_NOISY, AbstractMovePicker.MoveType.KILLER, AbstractMovePicker.MoveType.QUIET, AbstractMovePicker.MoveType.BAD_NOISY);
 
         SearchHistory history = new SearchHistory(new EngineConfig());
 
@@ -86,7 +86,7 @@ public class MovePickerTest {
         history.getKillerTable().add(0, killer2);
 
         SearchStack ss = new SearchStack();
-        MovePicker picker = new MovePicker(TestUtils.CONFIG, moveGenerator, ss, history, board, 0, ttMove, false);
+        StandardMovePicker picker = new StandardMovePicker(TestUtils.CONFIG, moveGenerator, ss, history, board, 0, ttMove, false);
         List<Move> legalMoves = moveGenerator.generateMoves(board);
 
         int maxIndex = -1;
@@ -96,7 +96,7 @@ public class MovePickerTest {
             if (move == null) break;  // No more moves to pick
 
             // Get the move type from the current move
-            MoveType currentMoveType = move.moveType();
+            AbstractMovePicker.MoveType currentMoveType = move.moveType();
 
             // Ensure the move type is in the expected order
             int currentIndex = expectedOrder.indexOf(currentMoveType);
@@ -132,7 +132,7 @@ public class MovePickerTest {
         String fen = "rnbqkbnr/1p2pppp/p2p4/1Bp5/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1";
         Board board = FEN.parse(fen).toBoard();
 
-        MovePicker picker = new MovePicker(TestUtils.CONFIG, moveGenerator, new SearchStack(), new SearchHistory(new EngineConfig()), board, 0, null, true);
+        StandardMovePicker picker = new StandardMovePicker(TestUtils.CONFIG, moveGenerator, new SearchStack(), new SearchHistory(new EngineConfig()), board, 0, null, true);
 
         List<ScoredMove> moves = new ArrayList<>();
         while (true) {

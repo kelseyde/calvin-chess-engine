@@ -9,6 +9,7 @@ public record ScoredMove(Move move,
                          Piece captured,
                          int score,
                          int historyScore,
+                         boolean givesCheck,
                          MoveType moveType) {
 
     public boolean isNoisy() {

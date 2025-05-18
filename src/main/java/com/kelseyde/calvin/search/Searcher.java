@@ -8,9 +8,7 @@ import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
-import com.kelseyde.calvin.search.picker.StandardMovePicker;
-import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
-import com.kelseyde.calvin.search.picker.ScoredMove;
+import com.kelseyde.calvin.search.picker.*;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -409,7 +407,7 @@ public class Searcher implements Search {
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
 
-        final StandardMovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        final AbstractMovePicker movePicker = initMovePicker(SearchType.PVS, inCheck, ttMove, ply);
 
         while (true) {
 
@@ -743,22 +741,20 @@ public class Searcher implements Search {
             filter = MoveFilter.CAPTURES_ONLY;
         }
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
-        movePicker.setFilter(filter);
-
-        int movesSearched = 0;
-
         Move bestMove = null;
         int bestScore = alpha;
-        final int futilityScore = bestScore + config.qsFpMargin();
+        int futilityScore = bestScore + config.qsFpMargin();
         int flag = HashFlag.UPPER;
+        int moveCount = 0;
+
+        final AbstractMovePicker movePicker = initMovePicker(SearchType.QUIESCENCE, inCheck, ttMove, ply);
 
         while (true) {
 
             final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null)
                 break;
-            movesSearched++;
+            moveCount++;
 
             final Move move = scoredMove.move();
             final Piece piece = scoredMove.piece();
@@ -806,7 +802,7 @@ public class Searcher implements Search {
             }
         }
 
-        if (movesSearched == 0 && inCheck) {
+        if (moveCount == 0 && inCheck) {
             return -Score.MATE + ply;
         }
 
@@ -976,6 +972,15 @@ public class Searcher implements Search {
     private enum SearchType {
         PVS,
         QUIESCENCE
+    }
+
+    private AbstractMovePicker initMovePicker(SearchType type, boolean inCheck, Move ttMove, int ply) {
+        return inCheck
+                ? new EvasionMovePicker(config, movegen, history, ss, true, board, ttMove, ply)
+                : switch (type) {
+                    case PVS -> new StandardMovePicker(config, movegen, history, ss, false, board, ttMove, ply);
+                    case QUIESCENCE -> new QuiescentMovePicker(config, movegen, history, ss, false, board, ttMove, ply);
+        };
     }
 
 }

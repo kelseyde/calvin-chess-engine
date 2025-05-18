@@ -7,7 +7,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.search.picker.AbstractMovePicker.Stage;
+import com.kelseyde.calvin.search.scorer.MoveScorer;
 
 import java.util.List;
 
@@ -17,11 +17,15 @@ public class QuiescentMovePicker extends AbstractMovePicker {
 
     private ScoredMove[] goodNoisies;
 
-    public QuiescentMovePicker(
-            EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
-        super(movegen,
-                new MoveScorer(config, history, ss, config.seeQsNoisyDivisor(), config.seeQsNoisyOffset()),
-                history, board, ply, ttMove, inCheck);
+    public QuiescentMovePicker(EngineConfig config,
+                               MoveGenerator movegen,
+                               SearchHistory history,
+                               SearchStack ss,
+                               boolean inCheck,
+                               Board board,
+                               Move ttMove,
+                               int ply) {
+        super(config, movegen, history, ss, inCheck, board, ttMove, ply);
         this.stage = Stage.TT_MOVE;
     }
 
@@ -59,6 +63,11 @@ public class QuiescentMovePicker extends AbstractMovePicker {
     @Override
     protected boolean isSpecial(Move move) {
         return move.equals(ttMove);
+    }
+
+    @Override
+    protected MoveScorer initMoveScorer(EngineConfig config, SearchStack ss) {
+        return new MoveScorer(config, history, ss, config.seeQsNoisyDivisor(), config.seeQsNoisyOffset());
     }
 
     @Override

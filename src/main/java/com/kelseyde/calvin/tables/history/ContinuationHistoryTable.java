@@ -5,6 +5,7 @@ import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 
 public class ContinuationHistoryTable extends AbstractHistoryTable {
 
@@ -23,6 +24,14 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
         short bonus = good ? bonus(depth) : malus(depth);
         short update = gravity(current, bonus);
         set(prevMove, prevPiece, currMove, currPiece, update, white);
+    }
+
+    public short get(SearchStackEntry prevEntry, Move currMove, Piece currPiece, boolean white) {
+        if (prevEntry == null || prevEntry.move == null || prevEntry.piece == null || currMove == null || currPiece == null) {
+            return 0;
+        }
+        int colourIndex = Colour.index(white);
+        return table[colourIndex][prevEntry.piece.index()][prevEntry.move.to()][currPiece.index()][currMove.to()];
     }
 
     public short get(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {

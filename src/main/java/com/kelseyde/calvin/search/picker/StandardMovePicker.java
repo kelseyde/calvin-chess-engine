@@ -7,6 +7,7 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.search.scorer.MoveScorer;
 
 import java.util.List;
 
@@ -28,11 +29,15 @@ public class StandardMovePicker extends AbstractMovePicker {
     ScoredMove[] badNoisies;
     ScoredMove[] quiets;
 
-    public StandardMovePicker(EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history,
-                              Board board, int ply, Move ttMove, boolean inCheck) {
-        super(movegen,
-                new MoveScorer(config, history, ss, config.seeNoisyDivisor(), config.seeNoisyOffset()),
-                history, board, ply, ttMove, inCheck);
+    public StandardMovePicker(EngineConfig config,
+                              MoveGenerator movegen,
+                              SearchHistory history,
+                              SearchStack ss,
+                              boolean inCheck,
+                              Board board,
+                              Move ttMove,
+                              int ply) {
+        super(config, movegen, history, ss, inCheck, board, ttMove, ply);
         this.stage = Stage.TT_MOVE;
     }
 
@@ -93,6 +98,11 @@ public class StandardMovePicker extends AbstractMovePicker {
                 return true;
         }
         return false;
+    }
+
+    @Override
+    protected MoveScorer initMoveScorer(EngineConfig config, SearchStack ss) {
+        return new MoveScorer(config, history, ss, config.seeNoisyDivisor(), config.seeNoisyOffset());
     }
 
     @Override

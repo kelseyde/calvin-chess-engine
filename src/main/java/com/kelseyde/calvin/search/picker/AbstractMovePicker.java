@@ -3,9 +3,12 @@ package com.kelseyde.calvin.search.picker;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
+import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.search.scorer.MoveScorer;
 
 import java.util.List;
 
@@ -51,15 +54,16 @@ public abstract class AbstractMovePicker {
     int moveIndex;
     boolean skipQuiets;
 
-    protected AbstractMovePicker(MoveGenerator movegen,
-                                 MoveScorer scorer,
+    protected AbstractMovePicker(EngineConfig config,
+                                 MoveGenerator movegen,
                                  SearchHistory history,
+                                 SearchStack ss,
+                                 boolean inCheck,
                                  Board board,
-                                 int ply,
                                  Move ttMove,
-                                 boolean inCheck) {
+                                 int ply) {
+        this.scorer = initMoveScorer(config, ss);
         this.movegen = movegen;
-        this.scorer = scorer;
         this.history = history;
         this.board = board;
         this.ply = ply;
@@ -89,6 +93,8 @@ public abstract class AbstractMovePicker {
      * normal move generation. This is used to avoid trying the same move multiple times in different stages.
      */
     protected abstract boolean isSpecial(Move move);
+
+    protected abstract MoveScorer initMoveScorer(EngineConfig config, SearchStack ss);
 
     /**
      * Select the next move from the move list.
@@ -170,7 +176,8 @@ public abstract class AbstractMovePicker {
         stage = nextStage;
         final Piece piece = board.pieceAt(ttMove.from());
         final Piece captured = board.captured(ttMove);
-        return new ScoredMove(ttMove, piece, captured, 0, 0, MoveType.TT_MOVE);
+        final boolean givesCheck = movegen.givesCheck(board, ttMove);
+        return new ScoredMove(ttMove, piece, captured, 0, 0, givesCheck, MoveType.TT_MOVE);
     }
 
     public void skipQuiets(boolean skipQuiets) {

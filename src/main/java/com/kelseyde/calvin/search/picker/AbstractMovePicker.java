@@ -36,11 +36,7 @@ public abstract class AbstractMovePicker {
     }
 
     public enum MoveType {
-        TT_MOVE,
-        GOOD_NOISY,
-        KILLER,
-        QUIET,
-        BAD_NOISY
+        TT_MOVE, GOOD_NOISY, KILLER, QUIET, BAD_NOISY
     }
 
     final MoveGenerator movegen;

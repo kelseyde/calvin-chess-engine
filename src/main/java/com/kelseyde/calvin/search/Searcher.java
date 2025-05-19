@@ -19,6 +19,9 @@ import com.kelseyde.calvin.uci.UCI;
 
 import java.util.List;
 
+import static com.kelseyde.calvin.search.Searcher.SearchLimit.HARD;
+import static com.kelseyde.calvin.search.Searcher.SearchLimit.SOFT;
+
 /**
  * Classical alpha-beta search with iterative deepening. This is the main search algorithm used by the engine.
  * </p>
@@ -68,7 +71,7 @@ public class Searcher implements Search {
     @Override
     public SearchResult search(TimeControl timeControl) {
 
-        final List<Move> rootMoves = movegen.generateMoves(board);
+        List<Move> rootMoves = movegen.generateMoves(board);
         tc = timeControl;
 
         if (rootMoves.isEmpty())
@@ -85,84 +88,79 @@ public class Searcher implements Search {
         Move bestMoveRoot = null;
         int bestScoreRoot = 0;
 
-        // The alpha-beta window is initialised to the maximum value, [Score.MIN, Score.MAX].
-        // After each iteration, the window is narrowed around the search score.
-        int alpha = Score.MIN;
-        int beta  = Score.MAX;
+        iterativeDeepening:
+        for (td.depth = 1; td.depth < Search.MAX_DEPTH; td.depth++) {
 
-        int reduction = 0;
-        int maxReduction = config.aspMaxReduction();
-        int window = config.aspDelta();
-
-        while (!softLimitReached() && td.depth < Search.MAX_DEPTH) {
-            // Reset variables for the current depth iteration
-            bestMoveCurrent = null;
-            bestScoreCurrent = 0;
-            td.seldepth = 0;
-
-            final int searchDepth = td.depth - reduction;
-
-            // Perform alpha-beta search for the current depth
-            final int score = search(searchDepth, 0, alpha, beta, false);
-
-            // Update the best move and evaluation if a better move is found
-            if (bestMoveCurrent != null) {
-                history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
-                history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
-                bestMoveRoot = bestMoveCurrent;
-                bestScoreRoot = bestScoreCurrent;
-                if (td.isMainThread()) {
-                    // Write search info as UCI output. This is only done for the main thread.
-                    UCI.writeSearchInfo(SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc));
-                }
-            }
-
-            // Check if search is cancelled or a checkmate is found
-            if (hardLimitReached() || Score.isMate(score)) {
+            if (shouldStop(SOFT))
                 break;
+
+            // The alpha-beta window is initialised to the maximum value, [Score.MIN, Score.MAX].
+            // After each iteration, the window is narrowed around the search score.
+            int alpha = Score.MIN;
+            int beta  = Score.MAX;
+
+            int window = config.aspDelta();
+            int reduction = 0;
+
+            // Center the aspiration window around the score from the previous search.
+            if (td.depth > config.aspMinDepth()) {
+                alpha = bestScoreRoot - window;
+                beta = bestScoreRoot + window;
             }
 
-            // Aspiration windows
-            // Use the search score from the previous iteration to guess the score from the current iteration.
-            // Based on this guess, we can narrow the alpha-beta window around the previous score, causing more cut-offs
-            // and thus speeding up the search. If the true score is outside the window, a costly re-search is required.
-            if (td.depth > config.aspMinDepth()) {
+            while (true) {
 
-                // Adjust the aspiration window in case the score fell outside the current window
+                if (shouldStop(SOFT))
+                    break iterativeDeepening;
+
+                resetRootInfo();
+
+                int depth = td.depth - reduction;
+                int score = search(depth, 0, alpha, beta, false);
+
+                if (bestMoveCurrent != null) {
+                    history.updateBestMoveAndScore(bestMoveRoot, bestMoveCurrent, bestScoreRoot, bestScoreCurrent);
+                    bestMoveRoot = bestMoveCurrent;
+                    bestScoreRoot = bestScoreCurrent;
+                    if (td.isMainThread())
+                        UCI.writeSearchInfo(SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc));
+                }
+
+                if (shouldStop(HARD) || Score.isMate(score))
+                    break iterativeDeepening;
+
+                // Aspiration windows
+                // Use the search score from the previous iteration to guess the score from the current iteration.
+                // Based on this guess, we can narrow the alpha-beta window around the previous score, causing more cut-offs
+                // and thus speeding up the search. If the true score is outside the window, a costly re-search is required.
+
                 if (score <= alpha) {
                     // If score <= alpha, re-search with an expanded aspiration window
                     beta = (alpha + beta) / 2;
                     alpha -= window;
                     window = window * config.aspWideningFactor() / 100;
                     reduction = 0;
-                    continue;
                 }
-                if (score >= beta) {
+                else if (score >= beta) {
                     // If score >= beta, re-search with an expanded aspiration window
                     beta += window;
                     window = window * config.aspWideningFactor() / 100;
-                    reduction = Math.min(maxReduction, reduction + 1);
-                    continue;
+                    reduction = Math.min(config.aspMaxReduction(), reduction + 1);
+                }
+                else {
+                    break;
                 }
 
-                // Center the aspiration window around the score from the current iteration, to be used next time.
-                window = config.aspDelta();
-                alpha = score - window;
-                beta = score + window;
             }
-
-            // Increment depth and reset retry counter for next iteration
-            td.depth++;
 
         }
 
         // Clear move ordering cache and return the search result
         history.getKillerTable().clear();
 
-        if (bestMoveRoot == null) {
-            // If time expired before a best move was found in search, pick the first legal move.
+        // If time expired before a best move was found in search, pick the first legal move.
+        if (bestMoveRoot == null)
             bestMoveRoot = rootMoves.get(0);
-        }
 
         return SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
 
@@ -875,6 +873,13 @@ public class Searcher implements Search {
         return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
+    private boolean shouldStop(SearchLimit limit) {
+        return switch (limit) {
+            case SOFT -> softLimitReached();
+            case HARD -> hardLimitReached();
+        };
+    }
+
     private boolean isDraw() {
         return Score.isEffectiveDraw(board);
     }
@@ -968,6 +973,12 @@ public class Searcher implements Search {
                 (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval));
     }
 
+    private void resetRootInfo() {
+        bestMoveCurrent = null;
+        bestScoreCurrent = 0;
+        td.seldepth = 0;
+    }
+
     private int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
     }
@@ -977,4 +988,7 @@ public class Searcher implements Search {
         QUIESCENCE
     }
 
+    public enum SearchLimit {
+        SOFT, HARD
+    }
 }

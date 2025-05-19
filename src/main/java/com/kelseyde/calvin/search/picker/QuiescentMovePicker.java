@@ -7,28 +7,34 @@ import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.search.picker.AbstractMovePicker.Stage;
 
 import java.util.List;
 
-public class QuiescentMovePicker extends AbstractMovePicker {
-
-    private MoveFilter filter;
+/**
+ * Implementation of {@link MovePicker} for quiescence search. Discards all bad noisies which don't pass a SEE threshold.
+ */
+public class QuiescentMovePicker extends MovePicker {
 
     private ScoredMove[] goodNoisies;
 
     public QuiescentMovePicker(
             EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
-        super(movegen,
-                new MoveScorer(config, history, ss, config.seeQsNoisyDivisor(), config.seeQsNoisyOffset()),
-                history, board, ply, ttMove, inCheck);
+        super(config, movegen, history, ss, board, ply, ttMove, inCheck);
         this.stage = Stage.TT_MOVE;
+    }
+
+    @Override
+    protected MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss) {
+        final int seeDivisor = config.seeQsNoisyDivisor();
+        final int seeOffset = config.seeQsNoisyOffset();
+        return new MoveScorer(config, history, ss, seeDivisor, seeOffset);
     }
 
     @Override
     public ScoredMove next() {
 
         ScoredMove nextMove = null;
+        MoveFilter filter = inCheck ? MoveFilter.ALL : MoveFilter.CAPTURES_ONLY;
         while (nextMove == null) {
             nextMove = switch (stage) {
                 case TT_MOVE -> pickTTMove(Stage.QSEARCH_GEN_NOISY);
@@ -65,10 +71,5 @@ public class QuiescentMovePicker extends AbstractMovePicker {
     protected ScoredMove[] loadStagedMoves(Stage stage) {
         return goodNoisies;
     }
-
-    public void setFilter(MoveFilter filter) {
-        this.filter = filter;
-    }
-
 
 }

@@ -25,7 +25,7 @@ public class MovePickerTest {
     @Disabled
     public void testMoveOrder() {
 
-        List<AbstractMovePicker.MoveType> expectedOrder = List.of(AbstractMovePicker.MoveType.TT_MOVE, AbstractMovePicker.MoveType.GOOD_NOISY, AbstractMovePicker.MoveType.KILLER, AbstractMovePicker.MoveType.QUIET, AbstractMovePicker.MoveType.BAD_NOISY);
+        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.QUIET, MovePicker.MoveType.BAD_NOISY);
 
         SearchHistory history = new SearchHistory(new EngineConfig());
         List<String> fens = Bench.FENS;
@@ -50,7 +50,7 @@ public class MovePickerTest {
                 if (move == null) break;  // No more moves to pick
 
                 // Get the move type from the current move
-                AbstractMovePicker.MoveType currentMoveType = move.moveType();
+                MovePicker.MoveType currentMoveType = move.moveType();
 
                 // Ensure the move type is in the expected order
                 int currentIndex = expectedOrder.indexOf(currentMoveType);
@@ -71,7 +71,7 @@ public class MovePickerTest {
     @Test
     public void testDebugSingle() {
 
-        List<AbstractMovePicker.MoveType> expectedOrder = List.of(AbstractMovePicker.MoveType.TT_MOVE, AbstractMovePicker.MoveType.GOOD_NOISY, AbstractMovePicker.MoveType.KILLER, AbstractMovePicker.MoveType.QUIET, AbstractMovePicker.MoveType.BAD_NOISY);
+        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.QUIET, MovePicker.MoveType.BAD_NOISY);
 
         SearchHistory history = new SearchHistory(new EngineConfig());
 
@@ -96,7 +96,7 @@ public class MovePickerTest {
             if (move == null) break;  // No more moves to pick
 
             // Get the move type from the current move
-            AbstractMovePicker.MoveType currentMoveType = move.moveType();
+            MovePicker.MoveType currentMoveType = move.moveType();
 
             // Ensure the move type is in the expected order
             int currentIndex = expectedOrder.indexOf(currentMoveType);

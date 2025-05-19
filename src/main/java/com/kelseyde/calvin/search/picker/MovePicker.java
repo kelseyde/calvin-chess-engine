@@ -3,9 +3,11 @@ package com.kelseyde.calvin.search.picker;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
+import com.kelseyde.calvin.search.SearchStack;
 
 import java.util.List;
 
@@ -20,32 +22,20 @@ import java.util.List;
  * Which stages we use and in what order depends on the type of search, with different heuristics being used for standard
  * PVS search, quiescence search, and search done when in check.
  */
-public abstract class AbstractMovePicker {
+public abstract class MovePicker {
 
     public enum Stage {
-        TT_MOVE,
-        GEN_NOISY,
-        GOOD_NOISY,
-        KILLER,
-        GEN_QUIET,
-        QUIET,
-        BAD_NOISY,
+        // PVS stages
+        TT_MOVE, GEN_NOISY, GOOD_NOISY, KILLER, GEN_QUIET, QUIET, BAD_NOISY,
 
-        QSEARCH_GEN_NOISY,
-        QSEARCH_NOISY,
-
-        GEN_EVASIONS,
-        EVASIONS,
+        // Q-search stages
+        QSEARCH_GEN_NOISY, QSEARCH_NOISY,
 
         END
     }
 
     public enum MoveType {
-        TT_MOVE,
-        GOOD_NOISY,
-        KILLER,
-        QUIET,
-        BAD_NOISY
+        TT_MOVE, GOOD_NOISY, KILLER, QUIET, BAD_NOISY
     }
 
     final MoveGenerator movegen;
@@ -62,15 +52,15 @@ public abstract class AbstractMovePicker {
 
     int moveIndex;
 
-    protected AbstractMovePicker(
-            MoveGenerator movegen, MoveScorer scorer, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+    protected MovePicker(
+            EngineConfig config, MoveGenerator movegen, SearchHistory history, SearchStack ss, Board board, int ply, Move ttMove, boolean inCheck) {
         this.movegen = movegen;
-        this.scorer = scorer;
         this.history = history;
         this.board = board;
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
+        this.scorer = initMoveScorer(config, history, ss);
     }
 
     /**
@@ -97,10 +87,15 @@ public abstract class AbstractMovePicker {
     protected abstract ScoredMove[] loadStagedMoves(Stage stage);
 
     /**
+     * Initialize the move scorer for this move picker. This is used to score moves during generation.
+     */
+    protected abstract MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss);
+
+    /**
      * Select the next move from the move list.
      * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
      */
-    protected ScoredMove pickMove(AbstractMovePicker.Stage nextStage) {
+    protected ScoredMove pickMove(MovePicker.Stage nextStage) {
 
         final ScoredMove[] moves = loadStagedMoves(stage);
 
@@ -108,6 +103,7 @@ public abstract class AbstractMovePicker {
         if (stage == Stage.QUIET && (skipQuiets || inCheck))
             return nextStage(nextStage);
 
+        // If we have no moves to try, move on to the next stage.
         if (moveIndex >= moves.length)
             return nextStage(nextStage);
 

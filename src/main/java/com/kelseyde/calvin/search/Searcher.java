@@ -239,14 +239,26 @@ public class Searcher implements Search {
 
             if (!rootNode
                     && ttHit
-                    && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
                     && (ttEntry.score() <= alpha || cutNode)) {
 
-                if (isWithinBounds(ttEntry, alpha, beta))
-                    ttPrune = true;
-                else if (depth <= config.ttExtensionDepth())
-                    depth++;
+                int targetDepth = depth + 2 * (pvNode ? 1 : 0);
+                if (ttEntry.depth() >= targetDepth) {
+                    if (isWithinBounds(ttEntry, alpha, beta))
+                        ttPrune = true;
+                    else if (depth <= config.ttExtensionDepth())
+                        depth++;
+                }
+                // Ethereal idea: An entry coming from one depth lower than we would accept for a
+                // cutoff will still be accepted if it appears that failing low will trigger a re-search.
+                else if (!pvNode
+                        && ttEntry.depth() >= targetDepth - 1
+                        && ttEntry.flag() == HashFlag.UPPER
+                        && (cutNode || ttEntry.score() <= alpha)
+                        && ttEntry.score() + config.ttResearchMargin() <= alpha) {
+                    return alpha;
+                }
             }
+
         }
 
         // In non-PV nodes with an eligible TT hit, we fully prune the node.
@@ -915,10 +927,6 @@ public class Searcher implements Search {
                 (Score.isDefined(entry.score()) &&
                         (entry.flag() == HashFlag.UPPER && entry.score() <= alpha ||
                                 entry.flag() == HashFlag.LOWER && entry.score() >= beta));
-    }
-
-    public boolean isSufficientDepth(HashEntry entry, int depth) {
-        return entry.depth() >= depth;
     }
 
     @Override

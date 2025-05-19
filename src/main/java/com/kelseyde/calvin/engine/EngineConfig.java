@@ -26,9 +26,10 @@ public class EngineConfig {
     public boolean searchCancelled = false;
 
     private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
-    private final Tunable aspDelta               = new Tunable("AspDelta", 17, 0, 250, 25);
+    private final Tunable aspDelta               = new Tunable("AspDelta", 12, 0, 250, 25);
     private final Tunable aspWideningFactor      = new Tunable("AspWideningFactor", 135, 110, 200, 10);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
+    private final Tunable aspAvgScoreDivisor     = new Tunable("AspAverageScoreDivisor", 16384, 8192, 24576, 2048);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
     private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
@@ -130,8 +131,8 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMinDepth, aspDelta, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
-                fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
+                aspMinDepth, aspDelta, aspMaxReduction, aspAvgScoreDivisor, nmpDepth, nmpEvalScale, nmpEvalMaxReduction,
+                fpDepth, fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpBase, lmpScale, iirDepth, nmpBase, nmpDivisor, dpMargin,
                 qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImprovingMargin, razorDepth, razorMargin,
                 hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
@@ -245,6 +246,10 @@ public class EngineConfig {
 
     public int aspMaxReduction() {
         return aspMaxReduction.value;
+    }
+
+    public int aspAvgScoreDivisor() {
+        return aspAvgScoreDivisor.value;
     }
 
     public int nmpDepth() {

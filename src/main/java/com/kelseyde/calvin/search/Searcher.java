@@ -146,7 +146,7 @@ public class Searcher implements Search {
                 }
 
                 // Center the aspiration window around the score from the current iteration, to be used next time.
-                window = config.aspDelta() + score * score / 16384;
+                window = config.aspDelta() + score * score / config.aspAvgScoreDivisor();
                 alpha = score - window;
                 beta = score + window;
             }

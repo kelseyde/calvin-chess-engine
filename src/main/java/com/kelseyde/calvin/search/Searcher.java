@@ -192,8 +192,12 @@ public class Searcher implements Search {
         final boolean inCheck = movegen.isCheck(board);
 
         // If depth is reached, drop into quiescence search
-        if (depth <= 0 && !inCheck) return quiescenceSearch(alpha, beta, ply);
-        if (depth < 0) depth = 0;
+        if (depth <= 0 && !inCheck)
+            return qsearch(alpha, beta, ply);
+
+        // Ensure depth is not negative
+        if (depth < 0)
+            depth = 0;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
         if (ply > 0 && isDraw()) return Score.DRAW;
@@ -239,23 +243,22 @@ public class Searcher implements Search {
 
             if (!rootNode
                     && ttHit
-                    && isSufficientDepth(ttEntry, depth + 2 * (pvNode ? 1 : 0))
+                    && ttEntry.depth() >= depth + (pvNode ? 2 : 0)
                     && (ttEntry.score() <= alpha || cutNode)) {
-
-                if (isWithinBounds(ttEntry, alpha, beta))
+                if (isWithinBounds(ttEntry, alpha, beta)) {
                     ttPrune = true;
+                    if (!pvNode) {
+                        // In non-PV nodes with an TT hit matching the depth and alpha/beta bounds of
+                        // the current search, we can cut off the search here and return the TT score.
+                        return ttEntry.score();
+                    } else {
+                        // In PV nodes, rather than cutting off we reduce search depth.
+                        depth--;
+                    }
+                }
                 else if (depth <= config.ttExtensionDepth())
                     depth++;
             }
-        }
-
-        // In non-PV nodes with an eligible TT hit, we fully prune the node.
-        // In PV nodes, rather than pruning we reduce search depth.
-        if (ttPrune) {
-            if (pvNode)
-                depth--;
-            else
-                return ttEntry.score();
         }
 
         // Internal Iterative Deepening
@@ -269,7 +272,7 @@ public class Searcher implements Search {
         }
 
         if (depth <= 0 && !inCheck)
-            return quiescenceSearch(alpha, beta, ply);
+            return qsearch(alpha, beta, ply);
 
         // Static Evaluation
         // Obtain a static evaluation of the current board state. In leaf nodes, this is the final score used in search.
@@ -356,7 +359,7 @@ public class Searcher implements Search {
             // Skip nodes where a quiescence search confirms that the position is bad and will likely result in a fail-low.
             if (depth <= config.razorDepth()
                 && staticEval + config.razorMargin() * depth < alpha) {
-                final int score = quiescenceSearch(alpha, alpha + 1, ply);
+                final int score = qsearch(alpha, alpha + 1, ply);
                 if (score < alpha) {
                     return score;
                 }
@@ -670,13 +673,14 @@ public class Searcher implements Search {
     }
 
     /**
+     * Quiescence Search.
      * Extend the search by searching captures until a 'quiet' position is reached, where there are no further captures
      * and therefore limited potential for winning tactics that drastically alter the evaluation. Used to mitigate the
      * worst of the 'horizon effect'.
      *
      * @see <a href="https://www.chessprogramming.org/Quiescence_Search">Chess Programming Wiki</a>
      */
-    int quiescenceSearch(int alpha, int beta, int ply) {
+    int qsearch(int alpha, int beta, int ply) {
 
         if (hardLimitReached()) {
             return alpha;
@@ -785,7 +789,7 @@ public class Searcher implements Search {
             makeMove(scoredMove, piece, captured, curr);
 
             td.nodes++;
-            final int score = -quiescenceSearch(-beta, -alpha, ply + 1);
+            final int score = -qsearch(-beta, -alpha, ply + 1);
 
             unmakeMove(curr);
 
@@ -911,14 +915,11 @@ public class Searcher implements Search {
     }
 
     public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
-        return entry.flag() == HashFlag.EXACT ||
-                (Score.isDefined(entry.score()) &&
-                        (entry.flag() == HashFlag.UPPER && entry.score() <= alpha ||
-                                entry.flag() == HashFlag.LOWER && entry.score() >= beta));
-    }
-
-    public boolean isSufficientDepth(HashEntry entry, int depth) {
-        return entry.depth() >= depth;
+        if (!Score.isDefined(entry.score()))
+            return false;
+        return entry.flag() == HashFlag.EXACT
+                || (entry.flag() == HashFlag.UPPER && entry.score() <= alpha)
+                || (entry.flag() == HashFlag.LOWER && entry.score() >= beta);
     }
 
     @Override

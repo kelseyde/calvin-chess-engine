@@ -11,6 +11,7 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.picker.ScoredMove;
+import com.kelseyde.calvin.search.picker.StandardMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -404,12 +405,11 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
-
-        int searchedMoves = 0, quietMoves = 0, captureMoves = 0;
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
+        int moveCount = 0, quietMoves = 0, captureMoves = 0;
 
-        final MovePicker movePicker = new MovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        MovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
         while (true) {
 
@@ -420,7 +420,7 @@ public class Searcher implements Search {
             final Move move = scoredMove.move();
             if (move.equals(excludedMove))
                 continue;
-            searchedMoves++;
+            moveCount++;
 
             final Piece piece = scoredMove.piece();
             final Piece captured = scoredMove.captured();
@@ -441,9 +441,9 @@ public class Searcher implements Search {
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            final boolean doLmr = depth >= config.lmrDepth() && searchedMoves >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
+            final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
             if (doLmr) {
-                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][searchedMoves] * 1024;
+                int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
@@ -460,14 +460,14 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
-            final int futilityMargin = futilityMargin(reducedDepth, historyScore, searchedMoves);
+            final int futilityMargin = futilityMargin(reducedDepth, historyScore, moveCount);
             if (!pvNode
                     && !rootNode
                     && isQuiet
                     && !inCheck
                     && reducedDepth <= config.fpDepth()
                     && staticEval + futilityMargin <= alpha) {
-                movePicker.setSkipQuiets(true);
+                movePicker.skipQuiets(true);
                 continue;
             }
 
@@ -478,7 +478,7 @@ public class Searcher implements Search {
                     && isQuiet
                     && reducedDepth <= config.hpMaxDepth()
                     && historyScore < historyThreshold) {
-                movePicker.setSkipQuiets(true);
+                movePicker.skipQuiets(true);
                 continue;
             }
 
@@ -490,8 +490,8 @@ public class Searcher implements Search {
                     && isQuiet
                     && !inCheck
                     && depth <= config.lmpDepth()
-                    && searchedMoves >= lateMoveThreshold) {
-                movePicker.setSkipQuiets(true);
+                    && moveCount >= lateMoveThreshold) {
+                movePicker.skipQuiets(true);
                 continue;
             }
 
@@ -501,7 +501,7 @@ public class Searcher implements Search {
             if (!pvNode
                     && !rootNode
                     && depth <= config.seeMaxDepth()
-                    && searchedMoves > 1
+                    && moveCount > 1
                     && !isGoodNoisy
                     && !isMateScore
                     && !SEE.see(board, move, seeThreshold)) {
@@ -571,12 +571,12 @@ public class Searcher implements Search {
             }
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
             // or another LMR condition not being met - then we search at full depth with a null-window.
-            else if (!pvNode || searchedMoves > 1)
+            else if (!pvNode || moveCount > 1)
                 score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
 
             // If we're in a PV node and searching the first move, or the score from reduced search beat alpha, then we
             // search with full depth and alpha-beta window.
-            if (pvNode && (searchedMoves == 1 || score > alpha))
+            if (pvNode && (moveCount == 1 || score > alpha))
                 score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
 
             unmakeMove(curr);
@@ -626,7 +626,7 @@ public class Searcher implements Search {
             }
         }
 
-        if (searchedMoves == 0) {
+        if (moveCount == 0) {
             if (singularSearch)
                 return alpha;
             // If there are no legal moves, and it's check, then it's checkmate. Otherwise, it's stalemate.
@@ -743,22 +743,20 @@ public class Searcher implements Search {
             filter = MoveFilter.CAPTURES_ONLY;
         }
 
-        final QuiescentMovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
-        movePicker.setFilter(filter);
-
-        int movesSearched = 0;
-
         Move bestMove = null;
         int bestScore = alpha;
         final int futilityScore = bestScore + config.qsFpMargin();
         int flag = HashFlag.UPPER;
+        int moveCount = 0;
+
+        MovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
         while (true) {
 
             final ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null)
                 break;
-            movesSearched++;
+            moveCount++;
 
             final Move move = scoredMove.move();
             final Piece piece = scoredMove.piece();
@@ -806,7 +804,7 @@ public class Searcher implements Search {
             }
         }
 
-        if (movesSearched == 0 && inCheck) {
+        if (moveCount == 0 && inCheck) {
             return -Score.MATE + ply;
         }
 
@@ -973,5 +971,9 @@ public class Searcher implements Search {
         return Math.max(min, Math.min(max, value));
     }
 
+    private enum SearchType {
+        PVS,
+        QUIESCENCE
+    }
 
 }

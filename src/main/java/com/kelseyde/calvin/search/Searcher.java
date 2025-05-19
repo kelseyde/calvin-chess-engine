@@ -336,7 +336,7 @@ public class Searcher implements Search {
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
-        final boolean improving = isImproving(ply, staticEval);
+        final boolean improving = isImproving(ply, staticEval, inCheck);
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
@@ -879,16 +879,15 @@ public class Searcher implements Search {
      * Compute whether our position is improving relative to previous static evaluations. If we are in check, we're not
      * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
      */
-    private boolean isImproving(int ply, int staticEval) {
-        if (!Score.isDefined(staticEval)) return false;
-        if (ply < 2) return false;
-        int lastEval = ss.get(ply - 2).staticEval;
-        if (!Score.isDefined(lastEval)) {
+    private boolean isImproving(int ply, int staticEval, boolean inCheck) {
+        if (inCheck || ply < 2) return false;
+        SearchStackEntry prev = ss.get(ply - 2);
+        int lastEval = prev.staticEval;
+        if (prev.inCheck) {
             if (ply < 4) return false;
-            lastEval = ss.get(ply - 4).staticEval;
-            if (Score.isDefined(lastEval)) {
-                return true;
-            }
+            prev = ss.get(ply - 4);
+            lastEval = prev.staticEval;
+            if (prev.inCheck) return true;
         }
         return lastEval < staticEval;
     }

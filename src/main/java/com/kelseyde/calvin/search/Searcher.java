@@ -229,6 +229,7 @@ public class Searcher implements Search {
         boolean ttPrune = false;
         Move ttMove = null;
         boolean ttPv = pvNode;
+        boolean ttCapture = false;
 
         // Transposition table
         // Check if this node has already been searched before. If it has, and the depth + alpha/beta bounds match the
@@ -240,6 +241,7 @@ public class Searcher implements Search {
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
             ttPv = ttPv || (ttHit && ttEntry.pv());
+            ttCapture = ttMove != null && board.isCapture(ttMove);
 
             if (!rootNode
                     && ttHit
@@ -454,6 +456,7 @@ public class Searcher implements Search {
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();
+                r += ttCapture && isQuiet ? config.lmrTtCapture() : 0;
                 reduction = Math.max(0, r / 1024);
             }
 

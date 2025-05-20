@@ -64,6 +64,7 @@ public class EngineConfig {
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 70, 0, 2048, 150);
     private final Tunable lmrFutile              = new Tunable("LmrFutile", 962, 0, 2048, 150);
     private final Tunable lmrFailHighCount       = new Tunable("LmrCutoffCount", 1035, 0, 2048, 150);
+    private final Tunable lmrTtCapture           = new Tunable("LmrTtCapture", 1024, 0, 2048, 150);
     private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 3258, 1536, 6144, 1000);
     private final Tunable lmrNoisyHistoryDiv     = new Tunable("LmrNoisyHistoryDiv", 3155, 1536, 6144, 1000);
     private final Tunable lmrFutileMargin        = new Tunable("LmrFutileMargin", 108, 0, 500, 25);
@@ -145,7 +146,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax
+                dynamicPolicyMax, lmrTtCapture
         );
     }
 
@@ -409,6 +410,10 @@ public class EngineConfig {
 
     public int lmrFutileHistDivisor() {
         return lmrFutileHistDivisor.value;
+    }
+
+    public int lmrTtCapture() {
+        return lmrTtCapture.value;
     }
 
     public int lmpDepth() {

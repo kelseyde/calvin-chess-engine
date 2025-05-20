@@ -461,6 +461,15 @@ public class Searcher implements Search {
 
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
 
+            // Reduction pruning
+            // Skip late moves that have a very high accumulative reduction, and so are unlikely to be good.
+            if (!pvNode
+                && !rootNode
+                && !inCheck
+                && reduction > 7 + depth / 3) {
+                continue;
+            }
+
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
             final int futilityMargin = futilityMargin(reducedDepth, historyScore, moveCount);

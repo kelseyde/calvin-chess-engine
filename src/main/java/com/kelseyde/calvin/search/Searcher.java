@@ -466,7 +466,7 @@ public class Searcher implements Search {
             if (!pvNode
                 && !rootNode
                 && !inCheck
-                && reduction > 7 + depth / 3) {
+                && reduction > 6 + depth / 4) {
                 continue;
             }
 

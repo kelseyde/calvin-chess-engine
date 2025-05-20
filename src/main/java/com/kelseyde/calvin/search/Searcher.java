@@ -455,7 +455,7 @@ public class Searcher implements Search {
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();
 
-                // Reduce more in quiet nodes close to root if the root score is stable across multiple iterations.
+                // Reduce more in quiet nodes close to the leaves if the root score is stable across multiple iterations.
                 if (!inCheck
                     && !pvNode
                     && isQuiet

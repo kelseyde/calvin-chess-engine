@@ -178,6 +178,7 @@ public class SearchHistory {
 
     public void reset() {
         bestMoveStability = 0;
+        bestScoreStability = 0;
         scoreStabilityTracker.reset();
     }
 

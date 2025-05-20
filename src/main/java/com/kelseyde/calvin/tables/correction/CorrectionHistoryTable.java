@@ -19,6 +19,7 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
  */
 public abstract class CorrectionHistoryTable {
 
+    public static final int SCALE = 2048;
     protected static final int LIMIT = 1024;
     protected static final int MAX_BONUS = LIMIT / 4;
 

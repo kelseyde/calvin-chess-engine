@@ -975,9 +975,4 @@ public class Searcher implements Search {
         return Math.max(min, Math.min(max, value));
     }
 
-    private enum SearchType {
-        PVS,
-        QUIESCENCE
-    }
-
 }

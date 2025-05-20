@@ -219,6 +219,7 @@ public class Searcher implements Search {
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
         final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
+        final int rootScoreStability = history.getAvgRootScoreDelta();
         curr.inCheck = inCheck;
 
         history.getKillerTable().clear(ply + 1);
@@ -454,15 +455,7 @@ public class Searcher implements Search {
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();
-
-                // Reduce more in quiet nodes close to the leaves if the root score is stable across multiple iterations.
-                if (!inCheck
-                    && !pvNode
-                    && isQuiet
-                    && ply <= 4
-                    && history.getAvgRootScoreDelta() < 1500) {
-                    r += 768 + 1024 / ply;
-                }
+                r += (!inCheck && !pvNode && isQuiet && rootScoreStability < 4000) ? (4000 - rootScoreStability) / 2 : 0;
 
                 reduction = Math.max(0, r / 1024);
             }

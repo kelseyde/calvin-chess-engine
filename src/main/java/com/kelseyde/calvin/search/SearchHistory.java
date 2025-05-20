@@ -110,7 +110,7 @@ public class SearchHistory {
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int counter = getContCorrHistEntry(ss, ply, board.isWhite());
         int correction = pawn + white + black + counter;
-        return correction / CorrectionHistoryTable.SCALE;
+        return correction / 2048;
     }
 
     public int squaredCorrectionTerms(Board board, SearchStack ss, int ply) {

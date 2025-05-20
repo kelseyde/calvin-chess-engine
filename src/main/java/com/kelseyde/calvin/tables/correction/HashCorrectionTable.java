@@ -16,9 +16,10 @@ public class HashCorrectionTable extends CorrectionHistoryTable {
     }
 
     public void update(long key, boolean white, int depth, int score, int staticEval) {
+        int bonus = bonus(score, staticEval, depth);
         int oldValue = get(key, white);
-        int correction = correction(oldValue, staticEval, score, depth);
-        put(key, white, correction);
+        int newValue = gravity(oldValue, bonus);
+        put(key, white, newValue);
     }
 
     public int get(long key, boolean white) {

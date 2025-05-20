@@ -17,10 +17,10 @@ public class PieceToCorrectionTable extends CorrectionHistoryTable {
     }
 
     public void update(Move prevMove, Piece prevPiece, boolean white, int staticEval, int score, int depth) {
+        int bonus = bonus(score, staticEval, depth);
         int oldValue = get(white, prevMove, prevPiece);
-        int correction = correction(oldValue, staticEval, score, depth);
-        put(white, prevMove, prevPiece, correction);
-
+        int newValue = gravity(oldValue, bonus);
+        put(white, prevMove, prevPiece, newValue);
     }
 
     public int get(boolean white, Move prevMove, Piece prevPiece) {

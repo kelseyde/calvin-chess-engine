@@ -28,6 +28,7 @@ public class SearchHistory {
     private final ScoreStabilityTracker scoreStabilityTracker;
 
     private int bestMoveStability = 0;
+    private int bestScoreStability = 0;
 
     public SearchHistory(EngineConfig config) {
         this.config = config;
@@ -38,7 +39,7 @@ public class SearchHistory {
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
-        this.scoreStabilityTracker = new ScoreStabilityTracker(config);
+        this.scoreStabilityTracker = new ScoreStabilityTracker();
     }
 
     public void updateHistory(
@@ -103,7 +104,8 @@ public class SearchHistory {
     }
 
     public void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
-        scoreStabilityTracker.updateBestScoreStability(scorePrevious, scoreCurrent);
+        bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
+        scoreStabilityTracker.updateAverageRootScoreDelta(scorePrevious, scoreCurrent);
     }
 
     public int evalCorrection(Board board, SearchStack ss, int ply) {
@@ -151,10 +153,10 @@ public class SearchHistory {
     }
 
     public int getBestScoreStability() {
-        return scoreStabilityTracker.getStableIterations();
+        return bestScoreStability;
     }
 
-    public int getStabilityMetric() {
+    public int getAvgRootScoreDelta() {
         return scoreStabilityTracker.getAvgRootScoreDelta();
     }
 

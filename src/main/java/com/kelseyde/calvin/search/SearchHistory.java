@@ -13,6 +13,7 @@ import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
 import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.score.ScoreStabilityTracker;
 
 public class SearchHistory {
 
@@ -24,9 +25,9 @@ public class SearchHistory {
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
     private final PieceToCorrectionTable countermoveCorrHistTable;
+    private final ScoreStabilityTracker scoreStabilityTracker;
 
     private int bestMoveStability = 0;
-    private int bestScoreStability = 0;
 
     public SearchHistory(EngineConfig config) {
         this.config = config;
@@ -37,6 +38,7 @@ public class SearchHistory {
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
+        this.scoreStabilityTracker = new ScoreStabilityTracker(config);
     }
 
     public void updateHistory(
@@ -101,7 +103,7 @@ public class SearchHistory {
     }
 
     public void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
-        bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
+        scoreStabilityTracker.updateBestScoreStability(scorePrevious, scoreCurrent);
     }
 
     public int evalCorrection(Board board, SearchStack ss, int ply) {
@@ -149,7 +151,11 @@ public class SearchHistory {
     }
 
     public int getBestScoreStability() {
-        return bestScoreStability;
+        return scoreStabilityTracker.getStableIterations();
+    }
+
+    public int getStabilityMetric() {
+        return scoreStabilityTracker.getAvgRootScoreDelta();
     }
 
     public KillerTable getKillerTable() {
@@ -170,7 +176,7 @@ public class SearchHistory {
 
     public void reset() {
         bestMoveStability = 0;
-        bestScoreStability = 0;
+        scoreStabilityTracker.reset();
     }
 
     public void clear() {

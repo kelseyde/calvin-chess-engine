@@ -459,9 +459,8 @@ public class Searcher implements Search {
                 if (!inCheck
                     && !pvNode
                     && isQuiet
-                    && depth < config.lmrDepth() + 3
                     && history.getAvgRootScoreDelta() < 1500) {
-                    r += 1024 / (depth - config.lmrDepth() + 1);
+                    r += 1024;
                 }
 
                 reduction = Math.max(0, r / 1024);

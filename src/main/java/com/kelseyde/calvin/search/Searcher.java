@@ -93,7 +93,7 @@ public class Searcher implements Search {
             int score = search(td.depth - reduction, 0, alpha, beta, false);
 
             // Update the best move and evaluation if a better move is found
-            history.updateBestMoveAndScore(td.bestMovePrevious(), td.bestMove(), td.bestScorePrevious(), td.bestScore());
+            history.updateBestMoveAndScore(td);
 
             // Report search progress as UCI output
             if (td.isMainThread())

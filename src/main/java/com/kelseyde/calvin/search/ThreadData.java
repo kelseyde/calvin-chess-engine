@@ -70,6 +70,10 @@ public class ThreadData {
     }
 
     public void resetIteration() {
+        bestMovePrevious = bestMove;
+        bestScorePrevious = bestScore;
+        bestMove = null;
+        bestScore = 0;
         seldepth = 0;
     }
 

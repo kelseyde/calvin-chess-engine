@@ -498,6 +498,15 @@ public class Searcher implements Search {
                 continue;
             }
 
+            // Bad Noisy Futility Pruning
+            int margin = staticEval + 122 * depth + 371 * moveCount / 128;
+            if (!inCheck && depth < 6 && scoredMove.isBadNoisy() && margin <= alpha) {
+                if (!Score.isMate(bestScore) && bestScore <= margin) {
+                    bestScore = margin;
+                }
+                break;
+            }
+
             // PVS SEE Pruning
             // Skip moves that lose material once all the pieces have been exchanged.
             final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);

@@ -94,8 +94,10 @@ public class SearchHistory {
     }
 
     public void updateBestMoveAndScore(Move bestMovePrevious, Move bestMoveCurrent, int scorePrevious, int scoreCurrent) {
-        updateBestMoveStability(bestMovePrevious, bestMoveCurrent);
-        updateBestScoreStability(scorePrevious, scoreCurrent);
+        if (bestMoveCurrent != null) {
+            updateBestMoveStability(bestMovePrevious, bestMoveCurrent);
+            updateBestScoreStability(scorePrevious, scoreCurrent);
+        }
     }
 
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {

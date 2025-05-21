@@ -6,7 +6,6 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
@@ -18,6 +17,9 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 
 import java.util.List;
+
+import static com.kelseyde.calvin.search.Searcher.SearchLimit.HARD;
+import static com.kelseyde.calvin.search.Searcher.SearchLimit.SOFT;
 
 /**
  * Classical alpha-beta search with iterative deepening. This is the main search algorithm used by the engine.
@@ -94,33 +96,25 @@ public class Searcher implements Search {
         int maxReduction = config.aspMaxReduction();
         int window = config.aspDelta();
 
-        while (!softLimitReached() && td.depth < Search.MAX_DEPTH) {
-            // Reset variables for the current depth iteration
-            bestMoveCurrent = null;
-            bestScoreCurrent = 0;
-            td.seldepth = 0;
+        while (!shouldStop(SOFT) && td.depth < Search.MAX_DEPTH) {
 
-            final int searchDepth = td.depth - reduction;
+            resetRootInfo();
 
             // Perform alpha-beta search for the current depth
-            final int score = search(searchDepth, 0, alpha, beta, false);
+            int score = search(td.depth - reduction, 0, alpha, beta, false);
 
             // Update the best move and evaluation if a better move is found
             if (bestMoveCurrent != null) {
-                history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
-                history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
+                history.updateBestMoveAndScore(bestMoveRoot, bestMoveCurrent, bestScoreRoot, bestScoreCurrent);
                 bestMoveRoot = bestMoveCurrent;
                 bestScoreRoot = bestScoreCurrent;
-                if (td.isMainThread()) {
-                    // Write search info as UCI output. This is only done for the main thread.
+                if (td.isMainThread())
                     UCI.writeSearchInfo(SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc));
-                }
             }
 
             // Check if search is cancelled or a checkmate is found
-            if (hardLimitReached() || Score.isMate(score)) {
+            if (shouldStop(HARD) || Score.isMate(score))
                 break;
-            }
 
             // Aspiration windows
             // Use the search score from the previous iteration to guess the score from the current iteration.
@@ -180,7 +174,7 @@ public class Searcher implements Search {
     public int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
 
         // If timeout is reached, exit immediately
-        if (hardLimitReached()) return alpha;
+        if (shouldStop(HARD)) return alpha;
 
         // A PV (principal variation) node is one that falls within the alpha-beta window.
         final boolean pvNode = beta - alpha > 1;
@@ -588,7 +582,7 @@ public class Searcher implements Search {
                 td.addNodes(move, td.nodes - nodesBefore);
             }
 
-            if (hardLimitReached()) {
+            if (shouldStop(HARD)) {
                 return alpha;
             }
 
@@ -664,9 +658,8 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        if (!hardLimitReached() && !singularSearch && !ttPrune) {
+        if (!shouldStop(HARD) && !singularSearch && !ttPrune)
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, ttPv);
-        }
 
         return bestScore;
 
@@ -682,9 +675,8 @@ public class Searcher implements Search {
      */
     int qsearch(int alpha, int beta, int ply) {
 
-        if (hardLimitReached()) {
+        if (shouldStop(HARD))
             return alpha;
-        }
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.
         if (ply > 0 && isDraw()) return Score.DRAW;
@@ -809,9 +801,8 @@ public class Searcher implements Search {
             bestScore = (bestScore + beta) / 2;
         }
 
-        if (!hardLimitReached()) {
+        if (!shouldStop(HARD))
             tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, ttPv);
-        }
 
         return bestScore;
 
@@ -848,6 +839,13 @@ public class Searcher implements Search {
         sse.move = null;
         sse.piece = null;
         sse.captured = null;
+    }
+
+    private boolean shouldStop(SearchLimit limit) {
+        return switch (limit) {
+            case SOFT -> softLimitReached();
+            case HARD -> hardLimitReached();
+        };
     }
 
     private boolean hardLimitReached() {
@@ -965,9 +963,14 @@ public class Searcher implements Search {
         return Math.max(min, Math.min(max, value));
     }
 
-    private enum SearchType {
-        PVS,
-        QUIESCENCE
+    private void resetRootInfo() {
+        bestMoveCurrent = null;
+        bestScoreCurrent = 0;
+        td.seldepth = 0;
+    }
+
+    enum SearchLimit {
+        SOFT, HARD
     }
 
 }

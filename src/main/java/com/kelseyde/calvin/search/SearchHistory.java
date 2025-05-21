@@ -93,6 +93,11 @@ public class SearchHistory {
         captureHistoryTable.update(piece, captureMove.to(), captured, depth, white, good);
     }
 
+    public void updateBestMoveAndScore(Move bestMovePrevious, Move bestMoveCurrent, int scorePrevious, int scoreCurrent) {
+        updateBestMoveStability(bestMovePrevious, bestMoveCurrent);
+        updateBestScoreStability(scorePrevious, scoreCurrent);
+    }
+
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {
         if (bestMovePrevious == null || bestMoveCurrent == null) {
             return;

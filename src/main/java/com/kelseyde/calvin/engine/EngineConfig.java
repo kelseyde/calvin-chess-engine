@@ -127,6 +127,7 @@ public class EngineConfig {
     private final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
     private final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
     private final int[] contHistPlies = { 1, 2 };
+    public final int[] avgTimeToDepths = { 0, 0, 0, 1, 2, 2, 3, 4, 7, 8, 10, 13, 21, 31, 52, 77, 121, 185, 274, 446, 609, 835, 1164, 1907, 2857, 4297 };
 
     public Set<Tunable> getTunables() {
         return Set.of(

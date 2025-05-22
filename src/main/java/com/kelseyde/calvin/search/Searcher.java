@@ -93,6 +93,7 @@ public class Searcher implements Search {
         int reduction = 0;
         int maxReduction = config.aspMaxReduction();
         int window = config.aspDelta();
+        td.depth = selectStartingDepth(tc.timeRemaining());
 
         while (!softLimitReached() && td.depth < Search.MAX_DEPTH) {
             // Reset variables for the current depth iteration
@@ -959,6 +960,20 @@ public class Searcher implements Search {
                 (ttEntry.flag() == HashFlag.EXACT ||
                 (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
                 (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval));
+    }
+
+    private int selectStartingDepth(long timeRemaining) {
+        if (timeRemaining <= 0)
+            return 1;
+
+        for (int depth = 1; depth < config.avgTimeToDepths.length; depth++) {
+            long avgTimeToDepth = config.avgTimeToDepths[depth];
+            if (timeRemaining / 4 < avgTimeToDepth) {
+                return depth;
+            }
+        }
+
+        return 1;
     }
 
     private int clamp(int value, int min, int max) {

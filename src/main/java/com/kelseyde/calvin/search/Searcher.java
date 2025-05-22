@@ -487,7 +487,7 @@ public class Searcher implements Search {
 
             // Late Move Pruning
             // Skip quiet moves ordered very late in the list.
-            final int lateMoveThreshold = lateMoveThreshold(depth, improving);
+            final int lateMoveThreshold = lateMoveThreshold(depth, improving || staticEval >= beta);
             if (!pvNode
                     && !rootNode
                     && isQuiet
@@ -940,9 +940,9 @@ public class Searcher implements Search {
                 + (historyScore / config.lmrFutileHistDivisor());
     }
 
-    private int lateMoveThreshold(int depth, boolean improving) {
-        final int base = improving ? config.lmpImpBase() : config.lmpBase();
-        final int scale = improving ? config.lmpImpScale() : config.lmpScale();
+    private int lateMoveThreshold(int depth, boolean optimistic) {
+        final int base = optimistic ? config.lmpImpBase() : config.lmpBase();
+        final int scale = optimistic ? config.lmpImpScale() : config.lmpScale();
         return (base + depth * scale) / 10;
     }
 

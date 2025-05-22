@@ -121,6 +121,9 @@ public record TimeControl(EngineConfig config, Instant start, Duration softTime,
         if (depth < config.nodeTmMinDepth()) {
             return 1.0;
         }
+        if (nodes == 0 || bestMoveNodes == 0) {
+            return 1.0;
+        }
         double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
         double nodeTmBase = (double) config.nodeTmBase() / 100;
         double nodeTmScale = (double) config.nodeTmScale() / 100;

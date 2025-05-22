@@ -8,6 +8,7 @@ import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
+import com.kelseyde.calvin.search.picker.MovePicker.MoveType;
 import com.kelseyde.calvin.search.picker.MovePicker.Stage;
 
 /**

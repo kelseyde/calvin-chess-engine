@@ -6,7 +6,6 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
-import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
@@ -498,9 +497,13 @@ public class Searcher implements Search {
                 continue;
             }
 
-            // Bad Noisy Futility Pruning
-            int margin = staticEval + 122 * depth + 371 * moveCount / 128;
-            if (!inCheck && depth < 6 && scoredMove.isBadNoisy() && margin <= alpha) {
+            // Bad Noisy Pruning
+            // Skip bad noisies when the static evaluation + some margin is still below alpha.
+            int margin = staticEval + config.bnpScale() * depth + config.bnpOffset() * moveCount / config.bnpDivisor();
+            if (!inCheck
+                    && depth < config.bnpDepth()
+                    && scoredMove.isBadNoisy()
+                    && margin <= alpha) {
                 if (!Score.isMate(bestScore) && bestScore <= margin) {
                     bestScore = margin;
                 }

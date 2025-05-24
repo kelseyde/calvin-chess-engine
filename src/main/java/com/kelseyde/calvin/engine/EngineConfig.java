@@ -149,7 +149,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, bnpDepth, bnpDepth, bnpScale, bnpDivisor
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor
         );
     }
 

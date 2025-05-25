@@ -491,7 +491,7 @@ public class Searcher implements Search {
                     && !rootNode
                     && isQuiet
                     && !inCheck
-                    && depth <= config.lmpDepth()
+                    && reducedDepth <= config.lmpDepth()
                     && moveCount >= lateMoveThreshold) {
                 movePicker.skipQuiets(true);
                 continue;

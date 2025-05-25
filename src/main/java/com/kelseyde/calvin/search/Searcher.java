@@ -465,7 +465,7 @@ public class Searcher implements Search {
 
             // Late Move Pruning
             // Skip quiet moves ordered very late in the list.
-            final int lateMoveThreshold = lateMoveThreshold(depth, improving);
+            final int lateMoveThreshold = lateMoveThreshold(depth, improving || staticEval >= beta);
             if (!pvNode
                     && !rootNode
                     && isQuiet
@@ -474,6 +474,19 @@ public class Searcher implements Search {
                     && moveCount >= lateMoveThreshold) {
                 movePicker.skipQuiets(true);
                 continue;
+            }
+
+            // Bad Noisy Pruning
+            // Skip bad noisies when the static evaluation + some margin is still below alpha.
+            int margin = staticEval + config.bnpScale() * depth + config.bnpOffset() * moveCount / config.bnpDivisor();
+            if (!inCheck
+                    && depth < config.bnpDepth()
+                    && scoredMove.isBadNoisy()
+                    && margin <= alpha) {
+                if (!Score.isMate(bestScore) && bestScore <= margin) {
+                    bestScore = margin;
+                }
+                break;
             }
 
             // PVS SEE Pruning
@@ -921,9 +934,9 @@ public class Searcher implements Search {
                 + (historyScore / config.lmrFutileHistDivisor());
     }
 
-    private int lateMoveThreshold(int depth, boolean improving) {
-        final int base = improving ? config.lmpImpBase() : config.lmpBase();
-        final int scale = improving ? config.lmpImpScale() : config.lmpScale();
+    private int lateMoveThreshold(int depth, boolean optimistic) {
+        final int base = optimistic ? config.lmpImpBase() : config.lmpBase();
+        final int scale = optimistic ? config.lmpImpScale() : config.lmpScale();
         return (base + depth * scale) / 10;
     }
 

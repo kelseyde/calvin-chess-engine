@@ -86,6 +86,7 @@ public class EngineConfig {
     private final Tunable bnpOffset              = new Tunable("BnpOffset", 371, 280, 480, 25);
     private final Tunable bnpScale               = new Tunable("BnpScale", 122, 50, 300, 25);
     private final Tunable bnpDivisor             = new Tunable("BnpDivisor", 128, 80, 200, 25);
+    private final Tunable bnpHistDivisor         = new Tunable("BnpHistDivisor", 98, 1, 1000, 25);
     private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
@@ -149,7 +150,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, bnpHistDivisor
         );
     }
 
@@ -477,6 +478,10 @@ public class EngineConfig {
 
     public int bnpDivisor() {
         return bnpDivisor.value;
+    }
+
+    public int bnpHistDivisor() {
+        return bnpHistDivisor.value;
     }
 
     public int seDepth() {

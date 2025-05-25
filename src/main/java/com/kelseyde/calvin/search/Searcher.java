@@ -499,13 +499,13 @@ public class Searcher implements Search {
 
             // Bad Noisy Pruning
             // Skip bad noisies when the static evaluation + some margin is still below alpha.
-            int margin = staticEval + config.bnpScale() * depth + config.bnpOffset() * moveCount / config.bnpDivisor();
+            int margin = badNoisyMargin(depth, historyScore, moveCount);
             if (!inCheck
                     && depth < config.bnpDepth()
                     && scoredMove.isBadNoisy()
-                    && margin <= alpha) {
-                if (!Score.isMate(bestScore) && bestScore <= margin) {
-                    bestScore = margin;
+                    && staticEval + margin <= alpha) {
+                if (!Score.isMate(bestScore) && bestScore <= staticEval + margin) {
+                    bestScore = staticEval + margin;
                 }
                 break;
             }
@@ -939,17 +939,23 @@ public class Searcher implements Search {
         history.clear();
     }
 
-    private int futilityMargin(int depth, int historyScore, int searchedMoves) {
+    private int futilityMargin(int depth, int historyScore, int moveCount) {
         return config.fpMargin()
                 + depth * config.fpScale()
                 + (historyScore / config.fpHistDivisor())
-                - searchedMoves * config.fpMoveMultiplier();
+                - moveCount * config.fpMoveMultiplier();
     }
 
     private int lmrFutilityMargin(int depth, int historyScore) {
         return config.lmrFutileMargin()
                 + depth * config.lmrFutileScale()
                 + (historyScore / config.lmrFutileHistDivisor());
+    }
+
+    private int badNoisyMargin(int depth, int historyScore, int moveCount) {
+        return config.bnpScale() * depth
+                + config.bnpOffset() * moveCount / config.bnpDivisor()
+                + (historyScore / config.bnpHistDivisor());
     }
 
     private int lateMoveThreshold(int depth, boolean optimistic) {

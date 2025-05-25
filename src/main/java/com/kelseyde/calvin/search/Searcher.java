@@ -139,9 +139,6 @@ public class Searcher implements Search {
 
         }
 
-        // Clear killer move cache for the current search
-        history.getKillerTable().clear();
-
         // If time expired before a best move was found in search, pick the first legal move.
         if (td.bestMove() == null)
             td.updateBestMove(rootMoves.get(0), td.bestScore());

@@ -449,7 +449,7 @@ public class Searcher implements Search {
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
-                r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
+                r -= (historyScore * 1024) / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv());
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();

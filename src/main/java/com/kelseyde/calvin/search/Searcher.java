@@ -92,8 +92,9 @@ public class Searcher implements Search {
             // Perform alpha-beta search for the current depth
             int score = search(td.depth - reduction, 0, alpha, beta, false);
 
-            // Update the best move and evaluation if a better move is found
+            // Update the best move and score if a better move is found
             history.updateBestMoveAndScore(td);
+            td.processIteration();
 
             // Report search progress as UCI output
             if (td.isMainThread())
@@ -137,6 +138,9 @@ public class Searcher implements Search {
             reduction = 0;
 
         }
+
+        // Clear killer move cache for the current search
+        history.getKillerTable().clear();
 
         // If time expired before a best move was found in search, pick the first legal move.
         if (td.bestMove() == null)
@@ -596,7 +600,7 @@ public class Searcher implements Search {
 
                 curr.bestMove = move;
                 if (rootNode)
-                    td.updateBestMove(bestMove, bestScore);
+                    td.updateBestMoveCurrent(bestMove, bestScore);
 
                 // If the score is greater than beta, then this position is 'too good' - our opponent won't let us get
                 // here assuming perfect play. The node therefore 'fails high' - there is no point searching further,

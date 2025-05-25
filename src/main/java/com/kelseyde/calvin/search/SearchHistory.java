@@ -95,8 +95,8 @@ public class SearchHistory {
 
     public void updateBestMoveAndScore(ThreadData td) {
         if (td.bestMove() != null) {
-            updateBestMoveStability(td.bestMovePrevious(), td.bestMove());
-            updateBestScoreStability(td.bestScorePrevious(), td.bestScore());
+            updateBestMoveStability(td.bestMove(), td.bestMoveCurrent());
+            updateBestScoreStability(td.bestScore(), td.bestScoreCurrent());
         }
     }
 

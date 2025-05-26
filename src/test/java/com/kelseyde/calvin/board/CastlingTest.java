@@ -13,7 +13,7 @@ public class CastlingTest {
     @Test
     public void testSimpleKingsideCastling() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -34,7 +34,7 @@ public class CastlingTest {
 
         UCI.Options.chess960 = true;
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -63,7 +63,7 @@ public class CastlingTest {
     @Test
     public void testSimpleQueensideCastling() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
@@ -109,7 +109,7 @@ public class CastlingTest {
     @Test
     public void cannotCastleIfAllPiecesInTheWay() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
 
         // white tries to kingside castle
         Assertions.assertThrows(IllegalMoveException.class, () -> board.makeMove(TestUtils.getLegalMove(board, "e1", "g1")));
@@ -136,7 +136,7 @@ public class CastlingTest {
     @Test
     public void cannotKingsideCastleIfSomePiecesInTheWay() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
 
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
@@ -149,7 +149,7 @@ public class CastlingTest {
     @Test
     public void cannotQueensideCastleIfSomePiecesInTheWay() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
 
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
@@ -162,7 +162,7 @@ public class CastlingTest {
     @Test
     public void cannotKingsideCastleIfKingNotOnStartingSquare() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -188,7 +188,7 @@ public class CastlingTest {
     @Test
     public void cannotQueensideCastleIfKingNotOnStartingSquare() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
@@ -217,7 +217,7 @@ public class CastlingTest {
     @Test
     public void cannotKingsideCastleIfKingHasMoved() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -248,7 +248,7 @@ public class CastlingTest {
     @Test
     public void cannotQueensideCastleIfKingHasMoved() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
@@ -282,7 +282,7 @@ public class CastlingTest {
     @Test
     public void cannotKingsideCastleIfRookHasMoved() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
@@ -313,7 +313,7 @@ public class CastlingTest {
     @Test
     public void cannotQueensideCastleIfRookHasMoved() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "d7", "d5"));
         board.makeMove(TestUtils.getLegalMove(board, "b1", "c3"));
@@ -348,7 +348,7 @@ public class CastlingTest {
     public void cannotCastleIfKingsideRookIsCaptured() {
 
         String fen = "r1b1k2r/1p3p2/8/3n4/1P6/2Q5/4P3/6KR b kq - 0 9";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         // black rook captures white rook
         board.makeMove(TestUtils.getLegalMove(board, "h8", "h1"));
@@ -399,7 +399,7 @@ public class CastlingTest {
         r = Castling.setRook(r, true, true, 7);
         Assertions.assertEquals(7, Castling.getRook(r, true, true));
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         int rights = board.getState().getRights();
         Assertions.assertTrue(Castling.kingsideAllowed(rights, true));
         Assertions.assertTrue(Castling.kingsideAllowed(rights, false));

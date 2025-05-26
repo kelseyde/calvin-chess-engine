@@ -63,30 +63,41 @@ public class SearchHistory {
 
     }
 
-    private void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply) {
+    public void updateQuietHistory(Board board, Move quietMove, Move bestMove, SearchStack ss, boolean white, int depth, int ply) {
         // For quiet moves we update both the standard quiet and continuation history tables
         if (quietMove == null)
             return;
         boolean good = quietMove.equals(bestMove);
         Piece piece = board.pieceAt(quietMove.from());
         quietHistoryTable.update(quietMove, piece, depth, white, good);
+        updateContHist(quietMove, piece, ss, white, good, depth, ply);
+    }
+
+    public void updateContHist(Move move, Piece piece, SearchStack ss, boolean white, boolean good, int depth, int ply) {
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
-            if (prevEntry != null && prevEntry.currentMove != null) {
-                Move prevMove = prevEntry.currentMove;
-                Piece prevPiece = prevEntry.currentPiece;
-                contHistTable.update(prevMove, prevPiece, quietMove, piece, depth, white, good);
+            if (prevEntry != null && prevEntry.move != null) {
+                Move prevMove = prevEntry.move;
+                Piece prevPiece = prevEntry.piece;
+                contHistTable.update(prevMove, prevPiece, move, piece, depth, white, good);
             }
         }
     }
 
-    private void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth) {
+    public void updateCaptureHistory(Board board, Move captureMove, Move bestMove, boolean white, int depth) {
         if (captureMove == null)
             return;
         boolean good = captureMove.equals(bestMove);
         Piece piece = board.pieceAt(captureMove.from());
         Piece captured = captureMove.isEnPassant() ? Piece.PAWN : board.pieceAt(captureMove.to());
         captureHistoryTable.update(piece, captureMove.to(), captured, depth, white, good);
+    }
+
+    public void updateBestMoveAndScore(ThreadData td) {
+        if (td.bestMove() != null) {
+            updateBestMoveStability(td.bestMove(), td.bestMoveCurrent());
+            updateBestScoreStability(td.bestScore(), td.bestScoreCurrent());
+        }
     }
 
     public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {
@@ -100,13 +111,21 @@ public class SearchHistory {
         bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
     }
 
-    public int correctEvaluation(Board board, SearchStack ss, int ply, int staticEval) {
+    public int evalCorrection(Board board, SearchStack ss, int ply) {
         int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int counter = getContCorrHistEntry(ss, ply, board.isWhite());
         int correction = pawn + white + black + counter;
-        return staticEval + correction / CorrectionHistoryTable.SCALE;
+        return correction / CorrectionHistoryTable.SCALE;
+    }
+
+    public int squaredCorrectionTerms(Board board, SearchStack ss, int ply) {
+        int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
+        int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
+        int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
+        int counter = getContCorrHistEntry(ss, ply, board.isWhite());
+        return pawn * pawn + white * white + black * black + counter * counter;
     }
 
     public void updateCorrectionHistory(Board board, SearchStack ss, int ply, int depth, int score, int staticEval) {
@@ -118,18 +137,18 @@ public class SearchHistory {
 
     private int getContCorrHistEntry(SearchStack ss, int ply, boolean white) {
         SearchStackEntry sse = ss.get(ply - 1);
-        if (sse == null || sse.currentMove == null) {
+        if (sse == null || sse.move == null) {
             return 0;
         }
-        return countermoveCorrHistTable.get(white, sse.currentMove, sse.currentPiece);
+        return countermoveCorrHistTable.get(white, sse.move, sse.piece);
     }
 
     private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
         SearchStackEntry sse = ss.get(ply - 1);
-        if (sse == null || sse.currentMove == null) {
+        if (sse == null || sse.move == null) {
             return;
         }
-        countermoveCorrHistTable.update(sse.currentMove, sse.currentPiece, white, staticEval, score, depth);
+        countermoveCorrHistTable.update(sse.move, sse.piece, white, staticEval, score, depth);
     }
 
     public int getBestMoveStability() {

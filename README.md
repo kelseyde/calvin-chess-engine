@@ -37,14 +37,15 @@ Calvin communicates via the [Universal Chess Interface](https://www.chessprogram
 3. Start Calvin from the command line:
 
    ```bash
-   java --add-modules jdk.incubator.vector -jar calvin-chess-engine-6.0.0.jar
+   java --add-modules jdk.incubator.vector -jar calvin-chess-engine-6.1.0.jar
 4. Type "help" or refer to [UCI](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html) documentation for further information on available commands.
 
 ## Strength 
 
 |                                   Version                                   | Release Date |  🎯 Elo  | CCRL Blitz | CCRL Rapid | CEGT Rapid |
 |:---------------------------------------------------------------------------:|:------------:|:--------:|:----------:|:----------:|:----------:|
-| [6.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/6.0.0) |  2025-03-02  | **3600** |    3572    |    3493    |    3424    |
+| [6.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/6.1.0) |  2025-05-10  | **3600** |    3614    |    3512    |    3475    |
+| [6.0.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/6.0.0) |  2025-03-02  | **3550** |    3572    |    3493    |    3424    |
 | [5.1.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.1.0) |  2025-01-16  | **3500** |    3501    |    3394    |    3344    |
 | [5.0.2](https://github.com/kelseyde/calvin-chess-engine/releases/tag/5.0.2) |  2024-11-16  | **3400** |    3403    |    3312    |    3225    |
 | [4.3.0](https://github.com/kelseyde/calvin-chess-engine/releases/tag/4.3.0) |  2024-10-05  | **3300** |    3332    |    3277    |     -      |
@@ -135,6 +136,6 @@ If you would like to contribute to Calvin, or just talk about chess/chess progra
 [release-badge]: https://img.shields.io/github/v/release/kelseyde/calvin-chess-engine?style=for-the-badge&color=FF5757
 [release-link]: https://github.com/kelseyde/calvin-chess-engine/releases/latest
 
-[lichess-badge]: https://img.shields.io/badge/Play-v6.0.0-FFDE59?logo=lichess&style=for-the-badge
+[lichess-badge]: https://img.shields.io/badge/Play-v6.1.0-FFDE59?logo=lichess&style=for-the-badge
 [lichess-link]: https://lichess.org/@/Calvin_Bot
 

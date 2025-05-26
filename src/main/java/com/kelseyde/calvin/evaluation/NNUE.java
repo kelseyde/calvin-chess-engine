@@ -27,20 +27,20 @@ import java.util.Arrays;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("calvin1024_4b.nnue")
+            .file("calvin1024_8b.nnue")
             .inputSize(768)
             .hiddenSize(1024)
             .activation(Activation.SCReLU)
             .horizontalMirror(true)
             .inputBuckets(new int[] {
-                    0, 0, 1, 1, 1, 1, 0, 0,
-                    2, 2, 2, 2, 2, 2, 2, 2,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
-                    3, 3, 3, 3, 3, 3, 3, 3,
+                    0, 1, 2, 3, 3, 2, 1, 0,
+                    4, 4, 5, 5, 5, 5, 4, 4,
+                    6, 6, 6, 6, 6, 6, 6, 6,
+                    6, 6, 6, 6, 6, 6, 6, 6,
+                    6, 6, 6, 6, 6, 6, 6, 6,
+                    7, 7, 7, 7, 7, 7, 7, 7,
+                    7, 7, 7, 7, 7, 7, 7, 7,
+                    7, 7, 7, 7, 7, 7, 7, 7,
             })
             .quantisations(new int[]{255, 64})
             .scale(400)
@@ -56,7 +56,9 @@ public class NNUE {
     public NNUE() {
         this.current = 0;
         this.accumulatorStack = new Accumulator[STACK_SIZE];
-        this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
+        for (int i = 0; i < STACK_SIZE; i++) {
+            this.accumulatorStack[i] = new Accumulator(NETWORK.hiddenSize());
+        }
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }
 
@@ -64,7 +66,9 @@ public class NNUE {
         this.board = board;
         this.current = 0;
         this.accumulatorStack = new Accumulator[STACK_SIZE];
-        this.accumulatorStack[current] = new Accumulator(NETWORK.hiddenSize());
+        for (int i = 0; i < STACK_SIZE; i++) {
+            this.accumulatorStack[i] = new Accumulator(NETWORK.hiddenSize());
+        }
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
         fullRefresh(board);
     }
@@ -118,6 +122,10 @@ public class NNUE {
 
         final short[] weights = NETWORK.inputWeights()[bucket];
 
+        int addIndex = 0, subIndex = 0;
+        Feature[] adds = new Feature[32];
+        Feature[] subs = new Feature[32];
+
         // Loop over each colour and piece type
         for (int colourIndex = 0; colourIndex < 2; colourIndex++) {
             final boolean white = colourIndex == 0;
@@ -131,25 +139,37 @@ public class NNUE {
                 long added = pieces & ~cachedPieces;
                 while (added != 0) {
                     final int square = Bits.next(added);
-                    Feature feature = new Feature(piece, square, white);
-                    acc.add(weights, feature, whitePerspective);
+                    adds[addIndex++] = new Feature(piece, square, white);
                     added = Bits.pop(added);
                 }
 
                 long removed = cachedPieces & ~pieces;
                 while (removed != 0) {
                     final int square = Bits.next(removed);
-                    Feature feature = new Feature(piece, square, white);
-                    acc.sub(weights, feature, whitePerspective);
+                    subs[subIndex++] = new Feature(piece, square, white);
                     removed = Bits.pop(removed);
                 }
 
             }
         }
 
+        // Fuse together updates to the accumulator for efficiency.
+        while (addIndex >= 4)
+            acc.addAddAddAdd(weights, adds[--addIndex], adds[--addIndex], adds[--addIndex], adds[--addIndex], whitePerspective);
+        while (addIndex > 0)
+            acc.add(weights, adds[--addIndex], whitePerspective);
+
+        while (subIndex >= 4)
+            acc.subSubSubSub(weights, subs[--subIndex], subs[--subIndex], subs[--subIndex], subs[--subIndex], whitePerspective);
+        while (subIndex > 0)
+            acc.sub(weights, subs[--subIndex], whitePerspective);
+
+
         // Finally, update the cache entry with the new board state and accumulated features.
         cacheEntry.bitboards = Arrays.copyOf(board.getBitboards(), Piece.COUNT + 2);
-        cacheEntry.features = Arrays.copyOf(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, NETWORK.hiddenSize());
+        if (cacheEntry.features == null)
+            cacheEntry.features = new short[NETWORK.hiddenSize()];
+        Accumulator.vectorCopy(whitePerspective ? acc.whiteFeatures : acc.blackFeatures, cacheEntry.features, NETWORK.hiddenSize());
 
     }
 
@@ -157,7 +177,10 @@ public class NNUE {
     public void makeMove(Board board, Move move) {
 
         // Efficiently update only the relevant features of the network after a move has been made.
-        final Accumulator acc = accumulatorStack[++current] = accumulatorStack[current - 1].copy();
+        final Accumulator prev = accumulatorStack[current];
+        final Accumulator curr = accumulatorStack[++current];
+        curr.copyFrom(prev);
+
         final boolean white = board.isWhite();
 
         final Piece piece = board.pieceAt(move.from());
@@ -175,19 +198,6 @@ public class NNUE {
         final short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
         final short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
 
-        // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
-        // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
-        final boolean mirrorChanged = mirrorChanged(board, move, piece);
-        final boolean bucketChanged = bucketChanged(board, move, piece, white);
-        if (mirrorChanged || bucketChanged) {
-            boolean mirror = shouldMirror(board.kingSquare(white));
-            if (mirrorChanged) {
-                mirror = !mirror;
-            }
-            final int bucket = white ? whiteKingBucket : blackKingBucket;
-            fullRefresh(board, acc, white, mirror, bucket);
-        }
-
         // Determine which features need to be updated based on the move type (standard, capture, or castle).
         final AccumulatorUpdate update = switch (moveType(board, move)) {
             case STANDARD -> handleStandardMove(board, move, white);
@@ -195,8 +205,23 @@ public class NNUE {
             case CAPTURE -> handleCapture(board, move, white);
         };
 
-        // Apply the update to the accumulator.
-        acc.apply(update, whiteWeights, blackWeights);
+        // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
+        // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
+        final boolean mirrorChanged = mirrorChanged(board, move, piece);
+        final boolean bucketChanged = bucketChanged(board, move, piece, white);
+        final boolean refreshRequired = mirrorChanged || bucketChanged;
+
+        if (refreshRequired) {
+            boolean mirror = shouldMirror(board.kingSquare(white));
+            if (mirrorChanged) {
+                mirror = !mirror;
+            }
+            final int bucket = white ? whiteKingBucket : blackKingBucket;
+            fullRefresh(board, curr, white, mirror, bucket);
+            curr.apply(curr, update, whiteWeights, blackWeights);
+        } else {
+            curr.apply(prev, update, whiteWeights, blackWeights);
+        }
 
     }
 
@@ -347,7 +372,9 @@ public class NNUE {
     public void clearHistory() {
         this.current = 0;
         this.accumulatorStack = new Accumulator[STACK_SIZE];
-        this.accumulatorStack[0] = new Accumulator(NETWORK.hiddenSize());
+        for (int i = 0; i < STACK_SIZE; i++) {
+            this.accumulatorStack[i] = new Accumulator(NETWORK.hiddenSize());
+        }
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
     }
 

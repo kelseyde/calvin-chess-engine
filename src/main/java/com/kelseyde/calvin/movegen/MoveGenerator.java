@@ -381,9 +381,9 @@ public class MoveGenerator {
     }
 
     private void generateSlidingMoves(Board board, long sliders, boolean isOrthogonal, boolean isDiagonal) {
-        final long opponents = board.getPieces(!white);
+        final long friendlies = board.us();
+        final long opponents = board.them();
         final long occupied = board.getOccupied();
-        final long friendlies = board.getPieces(white);
 
         // Apply move filters
         final long filterMask = checkersCount > 0 ? captureMask | pushMask : switch (filter) {
@@ -795,8 +795,18 @@ public class MoveGenerator {
 
                     // Can't double push if there's a piece in the way
                     int betweenSquare = white ? from + 8 : from - 8;
-                    return !Bits.contains(occupied, betweenSquare);
+                    if (Bits.contains(occupied, betweenSquare))
+                        return false;
 
+                    // Can't double push to an occupied square
+                    return !Bits.contains(occupied, to);
+
+                } else {
+                    // Must be a single push
+                    if (to != from + (white ? 8 : -8))
+                        return false;
+
+                    return !Bits.contains(occupied, to);
                 }
             }
 
@@ -820,8 +830,6 @@ public class MoveGenerator {
 
         }
 
-        return true;
-
     }
 
     public boolean isLegal(Board board, Move move) {
@@ -833,6 +841,53 @@ public class MoveGenerator {
         board.unmakeMove();
 
         return legal;
+    }
+
+    /**
+     * Checks if a move gives check, *before* the move is made on the board.
+     */
+    public boolean givesCheck(Board board, Move move) {
+
+        final Piece piece = board.pieceAt(move.from());
+        final long occ = board.getOccupied();
+        final long king = board.getKing(!board.isWhite());
+        final int kingSquare = Bits.next(king);
+
+        final long destinationAttacks = Attacks.attacks(move.to(), piece, board.isWhite(), occ);
+
+        if (Bits.contains(destinationAttacks, kingSquare))
+            return true;
+
+        long newOcc = occ ^ Bits.of(move.from()) | Bits.of(move.to());
+        if (move.isEnPassant())
+            newOcc ^= Bits.of(move.to() + (board.isWhite() ? -8 : 8));
+
+        final long newBishopAttacks = Attacks.bishopAttacks(kingSquare, newOcc);
+        final long newRookAttacks = Attacks.rookAttacks(kingSquare, newOcc);
+
+        final long bishops = board.getBishops(board.isWhite());
+        final long rooks = board.getRooks(board.isWhite());
+        final long queens = board.getQueens(board.isWhite());
+        final long diagonals = bishops | queens;
+        final long orthogonals = rooks | queens;
+
+        if (!Bits.empty(orthogonals & newRookAttacks)
+                || !Bits.empty(diagonals & newBishopAttacks))
+            return true;
+
+        if (move.isPromotion()) {
+            final long promoAttacks = Attacks.attacks(move.to(), move.promoPiece(), board.isWhite(), newOcc);
+            return Bits.contains(promoAttacks, kingSquare);
+        }
+
+        if (move.isCastling()) {
+            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            final int rookTo = Castling.rookTo(kingside, board.isWhite());
+            return Bits.contains(newRookAttacks, rookTo);
+        }
+
+        return false;
+
     }
 
     private List<Move> getPromotionMoves(int from, int to) {

@@ -16,7 +16,7 @@ public class DrawByStalemateTest {
     public void testSimpleQueenStalemate() {
 
         String fen = "k7/2K5/8/8/8/8/8/1Q6 w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         Assertions.assertFalse(Score.isEffectiveDraw(board));
 
@@ -30,7 +30,7 @@ public class DrawByStalemateTest {
     @Test
     public void testSimpleKingAndPawnStalemate() {
 
-        Board board = FEN.toBoard("4k3/4P3/3K4/8/8/8/8/8 w - - 0 1");
+        Board board = FEN.parse("4k3/4P3/3K4/8/8/8/8/8 w - - 0 1").toBoard();
         Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "d6", "e6"));
@@ -43,7 +43,7 @@ public class DrawByStalemateTest {
     @Test
     public void testSimpleKingAndBishopStalemate() {
 
-        Board board = FEN.toBoard("7k/8/6KP/5B2/8/8/8/8 w - - 0 1");
+        Board board = FEN.parse("7k/8/6KP/5B2/8/8/8/8 w - - 0 1").toBoard();
 
         board.makeMove(TestUtils.getLegalMove(board, "f5", "e6"));
 
@@ -55,7 +55,7 @@ public class DrawByStalemateTest {
     @Test
     public void testStalemateWithPinnedPawn() {
 
-        Board board = FEN.toBoard("7k/6p1/7P/4BBK1/8/8/1Q6/8 w - - 0 1");
+        Board board = FEN.parse("7k/6p1/7P/4BBK1/8/8/1Q6/8 w - - 0 1").toBoard();
         Assertions.assertFalse(Score.isEffectiveDraw(board));
 
         board.makeMove(TestUtils.getLegalMove(board, "b2", "a2"));

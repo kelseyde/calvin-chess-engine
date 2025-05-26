@@ -18,6 +18,9 @@ import com.kelseyde.calvin.uci.UCI;
 
 import java.util.List;
 
+import static com.kelseyde.calvin.search.Searcher.SearchLimit.HARD;
+import static com.kelseyde.calvin.search.Searcher.SearchLimit.SOFT;
+
 /**
  * Classical alpha-beta search with iterative deepening. This is the main search algorithm used by the engine.
  * </p>
@@ -25,13 +28,6 @@ import java.util.List;
  * pruning branches that are guaranteed to be worse than the best move found so far, or that are guaranteed to be 'too
  * good' and could only be reached by sup-optimal play by the opponent.
  * @see <a href="https://www.chessprogramming.org/Alpha-Beta">Chess Programming Wiki</a>
- * </p>
- * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
- * then 3 ply and so on, until the time limit is exhausted. In case the timeout is reached in the middle of an iteration,
- * the search can still fall back on the best move found in the previous iteration. By prioritising searching the best
- * move found in the previous iteration -- and by using a {@link TranspositionTable} -- the iterative approach is much
- * more efficient than it might sound.
- * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
  */
 public class Searcher implements Search {
 
@@ -42,9 +38,6 @@ public class Searcher implements Search {
     final SearchStack ss;
     final ThreadData td;
     final NNUE eval;
-
-    Move bestMoveCurrent;
-    int bestScoreCurrent;
 
     TimeControl tc;
     Board board;
@@ -60,9 +53,13 @@ public class Searcher implements Search {
     }
 
     /**
-     * Search the current position, increasing the depth each iteration, to find the best move within the given time limit.
-     * @param timeControl the maximum duration to search
-     * @return a {@link SearchResult} containing the best move, the eval, and other search info.
+     * Iterative Deepening Search.
+     * Iterative deepening is a search strategy that does a full search at a depth of 1 ply, then a full search at 2 ply,
+     * then 3 ply and so on, until the time limit is exhausted. In case the timeout is reached in the middle of an iteration,
+     * the search can still fall back on the best move found in the previous iteration. By prioritising searching the best
+     * move found in the previous iteration -- and by using a {@link TranspositionTable} -- the iterative approach is much
+     * more efficient than it might sound.
+     * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
      */
     @Override
     public SearchResult search(TimeControl timeControl) {
@@ -80,12 +77,7 @@ public class Searcher implements Search {
         td.reset();
         history.reset();
 
-        // The best root move and root score is updated as the search progresses.
-        Move bestMoveRoot = null;
-        int bestScoreRoot = 0;
-
-        // The alpha-beta window is initialised to the maximum value, [Score.MIN, Score.MAX].
-        // After each iteration, the window is narrowed around the search score.
+        // Initialise alpha-beta window to the maximum size.
         int alpha = Score.MIN;
         int beta  = Score.MAX;
 
@@ -93,33 +85,24 @@ public class Searcher implements Search {
         int maxReduction = config.aspMaxReduction();
         int window = config.aspDelta();
 
-        while (!softLimitReached() && td.depth < Search.MAX_DEPTH) {
-            // Reset variables for the current depth iteration
-            bestMoveCurrent = null;
-            bestScoreCurrent = 0;
-            td.seldepth = 0;
+        while (!shouldStop(SOFT) && td.depth < Search.MAX_DEPTH) {
 
-            final int searchDepth = td.depth - reduction;
+            td.resetIteration();
 
             // Perform alpha-beta search for the current depth
-            final int score = search(searchDepth, 0, alpha, beta, false);
+            int score = search(td.depth - reduction, 0, alpha, beta, false);
 
-            // Update the best move and evaluation if a better move is found
-            if (bestMoveCurrent != null) {
-                history.updateBestMoveStability(bestMoveRoot, bestMoveCurrent);
-                history.updateBestScoreStability(bestScoreRoot, bestScoreCurrent);
-                bestMoveRoot = bestMoveCurrent;
-                bestScoreRoot = bestScoreCurrent;
-                if (td.isMainThread()) {
-                    // Write search info as UCI output. This is only done for the main thread.
-                    UCI.writeSearchInfo(SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc));
-                }
-            }
+            // Update the best move and score if a better move is found
+            history.updateBestMoveAndScore(td);
+            td.processIteration();
+
+            // Report search progress as UCI output
+            if (td.isMainThread())
+                UCI.writeSearchInfo(SearchResult.of(td, tc));
 
             // Check if search is cancelled or a checkmate is found
-            if (hardLimitReached() || Score.isMate(score)) {
+            if (shouldStop(HARD) || Score.isMate(score))
                 break;
-            }
 
             // Aspiration windows
             // Use the search score from the previous iteration to guess the score from the current iteration.
@@ -152,18 +135,15 @@ public class Searcher implements Search {
 
             // Increment depth and reset retry counter for next iteration
             td.depth++;
+            reduction = 0;
 
         }
 
-        // Clear move ordering cache and return the search result
-        history.getKillerTable().clear();
+        // If time expired before a best move was found in search, pick the first legal move.
+        if (td.bestMove() == null)
+            td.updateBestMove(rootMoves.get(0), td.bestScore());
 
-        if (bestMoveRoot == null) {
-            // If time expired before a best move was found in search, pick the first legal move.
-            bestMoveRoot = rootMoves.get(0);
-        }
-
-        return SearchResult.of(bestMoveRoot, bestScoreRoot, td, tc);
+        return SearchResult.of(td, tc);
 
     }
 
@@ -179,7 +159,7 @@ public class Searcher implements Search {
     public int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
 
         // If timeout is reached, exit immediately
-        if (hardLimitReached()) return alpha;
+        if (shouldStop(HARD)) return alpha;
 
         // A PV (principal variation) node is one that falls within the alpha-beta window.
         final boolean pvNode = beta - alpha > 1;
@@ -600,7 +580,7 @@ public class Searcher implements Search {
                 td.addNodes(move, td.nodes - nodesBefore);
             }
 
-            if (hardLimitReached()) {
+            if (shouldStop(HARD)) {
                 return alpha;
             }
 
@@ -616,10 +596,8 @@ public class Searcher implements Search {
                 flag = HashFlag.EXACT;
 
                 curr.bestMove = move;
-                if (rootNode) {
-                    bestMoveCurrent = move;
-                    bestScoreCurrent = score;
-                }
+                if (rootNode)
+                    td.updateBestMoveCurrent(bestMove, bestScore);
 
                 // If the score is greater than beta, then this position is 'too good' - our opponent won't let us get
                 // here assuming perfect play. The node therefore 'fails high' - there is no point searching further,
@@ -676,9 +654,8 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        if (!hardLimitReached() && !singularSearch && !ttPrune) {
+        if (!shouldStop(HARD) && !singularSearch && !ttPrune)
             tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, ttPv);
-        }
 
         return bestScore;
 
@@ -694,9 +671,8 @@ public class Searcher implements Search {
      */
     int qsearch(int alpha, int beta, int ply) {
 
-        if (hardLimitReached()) {
+        if (shouldStop(HARD))
             return alpha;
-        }
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.
         if (ply > 0 && isDraw()) return Score.DRAW;
@@ -821,9 +797,8 @@ public class Searcher implements Search {
             bestScore = (bestScore + beta) / 2;
         }
 
-        if (!hardLimitReached()) {
+        if (!shouldStop(HARD))
             tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, ttPv);
-        }
 
         return bestScore;
 
@@ -862,6 +837,13 @@ public class Searcher implements Search {
         sse.captured = null;
     }
 
+    private boolean shouldStop(SearchLimit limit) {
+        return switch (limit) {
+            case SOFT -> softLimitReached();
+            case HARD -> hardLimitReached();
+        };
+    }
+
     private boolean hardLimitReached() {
         // Exit if hard limit for the current search is reached.
         if (config.pondering || tc == null)
@@ -876,7 +858,7 @@ public class Searcher implements Search {
             return false;
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
-        final int bestMoveNodes = td.getNodes(bestMoveCurrent);
+        final int bestMoveNodes = td.nodes(td.bestMove());
         return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
@@ -906,14 +888,15 @@ public class Searcher implements Search {
         if (td.isMainThread()) {
             UCI.write("info error no legal moves");
         }
-        return SearchResult.of(null, 0, td, tc);
+        return SearchResult.of(td, tc);
     }
 
     private SearchResult handleOneLegalMove(List<Move> rootMoves) {
         // If there is only one legal move, play it immediately
         final Move move = rootMoves.get(0);
         final int eval = this.eval.evaluate();
-        SearchResult result = SearchResult.of(move, eval, td, tc);
+        td.updateBestMove(move, eval);
+        SearchResult result = SearchResult.of(td, tc);
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;
@@ -977,9 +960,8 @@ public class Searcher implements Search {
         return Math.max(min, Math.min(max, value));
     }
 
-    private enum SearchType {
-        PVS,
-        QUIESCENCE
+    enum SearchLimit {
+        SOFT, HARD
     }
 
 }

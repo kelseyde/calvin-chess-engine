@@ -381,9 +381,9 @@ public class MoveGenerator {
     }
 
     private void generateSlidingMoves(Board board, long sliders, boolean isOrthogonal, boolean isDiagonal) {
-        final long opponents = board.getPieces(!white);
+        final long friendlies = board.us();
+        final long opponents = board.them();
         final long occupied = board.getOccupied();
-        final long friendlies = board.getPieces(white);
 
         // Apply move filters
         final long filterMask = checkersCount > 0 ? captureMask | pushMask : switch (filter) {
@@ -795,8 +795,18 @@ public class MoveGenerator {
 
                     // Can't double push if there's a piece in the way
                     int betweenSquare = white ? from + 8 : from - 8;
-                    return !Bits.contains(occupied, betweenSquare);
+                    if (Bits.contains(occupied, betweenSquare))
+                        return false;
 
+                    // Can't double push to an occupied square
+                    return !Bits.contains(occupied, to);
+
+                } else {
+                    // Must be a single push
+                    if (to != from + (white ? 8 : -8))
+                        return false;
+
+                    return !Bits.contains(occupied, to);
                 }
             }
 
@@ -819,8 +829,6 @@ public class MoveGenerator {
             return Bits.contains(attacks, to);
 
         }
-
-        return true;
 
     }
 

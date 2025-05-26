@@ -681,6 +681,13 @@ public class Searcher implements Search {
         if (shouldStop(HARD))
             return alpha;
 
+        // Cuckoo upcoming repetition detection
+        if (ply > 0 && alpha < 0 && board.hasUpcomingRepetition(ply)) {
+            alpha = Score.DRAW;
+            if (alpha >= beta)
+                return alpha;
+        }
+
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.
         if (ply > 0 && isDraw()) return Score.DRAW;
 

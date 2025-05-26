@@ -428,11 +428,11 @@ public class Searcher implements Search {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
-                r += !improving ? config.lmrNotImproving() : 0;
+                r += isQuiet && !improving ? config.lmrNotImproving() : 0;
+                r += isQuiet && staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
+                r -= isQuiet ? complexity / config.lmrComplexityDivisor() : 0;
                 r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
-                r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
-                r -= complexity / config.lmrComplexityDivisor();
                 reduction = Math.max(0, r / 1024);
             }
 

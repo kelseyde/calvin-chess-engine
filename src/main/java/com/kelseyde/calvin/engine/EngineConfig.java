@@ -69,6 +69,7 @@ public class EngineConfig {
     private final Tunable lmrFutileMargin        = new Tunable("LmrFutileMargin", 108, 0, 500, 25);
     private final Tunable lmrFutileScale         = new Tunable("LmrFutileScale", 82, 0, 100, 5);
     private final Tunable lmrFutileHistDivisor   = new Tunable("LmrFutileHistDivisor", 98, 1, 1000, 25);
+    private final Tunable lmrComplexityDivisor   = new Tunable("LmrComplexityDivisor", 6144, 1536, 8192, 512);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpBase                = new Tunable("LmpBase", 3, 0, 50, 10);
     private final Tunable lmpScale               = new Tunable("LmpScale", 38, 10, 80, 10);
@@ -81,6 +82,10 @@ public class EngineConfig {
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     private final Tunable hpMargin               = new Tunable("HpMargin", -2282, -4000, -100, 50);
     private final Tunable hpOffset               = new Tunable("HpOffset", -1050, -3000, 0, 50);
+    private final Tunable bnpDepth               = new Tunable("BnpDepth", 6, 0, 8, 1);
+    private final Tunable bnpOffset              = new Tunable("BnpOffset", 371, 280, 480, 25);
+    private final Tunable bnpScale               = new Tunable("BnpScale", 122, 50, 300, 25);
+    private final Tunable bnpDivisor             = new Tunable("BnpDivisor", 128, 80, 200, 25);
     private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
@@ -89,6 +94,11 @@ public class EngineConfig {
     private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 20, 0, 32, 5);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
     private final Tunable hindsightExtLimit      = new Tunable("HindsightExtensionLimit", 3, 2, 5, 1);
+    private final Tunable alphaReductionMinDepth = new Tunable("AlphaReductionMinDepth", 2, 0, 6, 1);
+    private final Tunable alphaReductionMaxDepth = new Tunable("AlphaReductionMaxDepth", 12, 8, 16, 1);
+    private final Tunable dynamicPolicyMult      = new Tunable("DynamicPolicyMult", 10, 0, 20, 2);
+    private final Tunable dynamicPolicyMin       = new Tunable("DynamicPolicyMin", -100, -100, 0, 25);
+    private final Tunable dynamicPolicyMax       = new Tunable("DynamicPolicyMax", 200, 75, 200, 25);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
@@ -137,7 +147,9 @@ public class EngineConfig {
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
-                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor
+                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
+                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor
         );
     }
 
@@ -387,6 +399,10 @@ public class EngineConfig {
         return lmrNoisyHistoryDiv.value;
     }
 
+    public int lmrComplexityDivisor() {
+        return lmrComplexityDivisor.value;
+    }
+
     public int lmrFutileMargin() {
         return lmrFutileMargin.value;
     }
@@ -447,6 +463,22 @@ public class EngineConfig {
         return hpOffset.value;
     }
 
+    public int bnpDepth() {
+        return bnpDepth.value;
+    }
+
+    public int bnpOffset() {
+        return bnpOffset.value;
+    }
+
+    public int bnpScale() {
+        return bnpScale.value;
+    }
+
+    public int bnpDivisor() {
+        return bnpDivisor.value;
+    }
+
     public int seDepth() {
         return seDepth.value;
     }
@@ -477,6 +509,26 @@ public class EngineConfig {
 
     public int hindsightExtLimit() {
         return hindsightExtLimit.value;
+    }
+
+    public int alphaReductionMinDepth() {
+        return alphaReductionMinDepth.value;
+    }
+
+    public int alphaReductionMaxDepth() {
+        return alphaReductionMaxDepth.value;
+    }
+
+    public int dynamicPolicyMult() {
+        return dynamicPolicyMult.value;
+    }
+
+    public int dynamicPolicyMin() {
+        return dynamicPolicyMin.value;
+    }
+
+    public int dynamicPolicyMax() {
+        return dynamicPolicyMax.value;
     }
 
     public int quietHistBonusMax() {

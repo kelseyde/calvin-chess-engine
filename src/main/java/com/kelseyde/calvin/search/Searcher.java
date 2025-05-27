@@ -628,7 +628,10 @@ public class Searcher implements Search {
 
         if (bestScore >= beta) {
             // Update the search history with the information from the current search, to improve future move ordering.
-            final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
+            final int historyDepth = depth
+                    + (staticEval <= alpha ? 1 : 0)
+                    + (bestScore > beta + 50 ? 1 : 0)
+                    * curr.failHighCount;
             history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, ss);
         }
 

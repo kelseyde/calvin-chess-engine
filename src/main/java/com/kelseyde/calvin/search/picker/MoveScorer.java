@@ -1,6 +1,7 @@
 package com.kelseyde.calvin.search.picker;
 
 import com.kelseyde.calvin.board.Board;
+import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
@@ -95,7 +96,8 @@ public class MoveScorer {
         // Quiet moves are scored using the quiet history and continuation history heuristics.
         final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite());
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
-        final int score = historyScore + contHistScore;
+        final int nonPawnHistScore = nonPawnHistoryScore(board, move, piece, board.isWhite());
+        final int score = historyScore + contHistScore + nonPawnHistScore;
 
         return new ScoredMove(move, piece, null, score, score, MoveType.QUIET);
 
@@ -115,6 +117,12 @@ public class MoveScorer {
         }
         return contHistScore;
 
+    }
+
+    private int nonPawnHistoryScore(Board board, Move move, Piece piece, boolean white) {
+        final int colourIndex = Colour.index(white);
+        final long nonPawnKey = board.nonPawnKeys()[colourIndex];
+        return history.getNonPawnHistoryTable().get(nonPawnKey, piece, move.to(), white);
     }
 
     public void setSeeNoisyDivisor(int seeNoisyDivisor) {

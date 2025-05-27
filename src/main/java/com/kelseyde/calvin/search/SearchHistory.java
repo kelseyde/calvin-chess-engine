@@ -9,10 +9,7 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
 import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.history.*;
 
 public class SearchHistory {
 
@@ -21,6 +18,7 @@ public class SearchHistory {
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
     private final CaptureHistoryTable captureHistoryTable;
+    private final NonPawnHistoryTable nonPawnHistoryTable;
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
     private final PieceToCorrectionTable countermoveCorrHistTable;
@@ -34,6 +32,7 @@ public class SearchHistory {
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
+        this.nonPawnHistoryTable = new NonPawnHistoryTable(config);
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
@@ -68,8 +67,10 @@ public class SearchHistory {
         if (quietMove == null)
             return;
         boolean good = quietMove.equals(bestMove);
+        int colourIndex = Colour.index(white);
         Piece piece = board.pieceAt(quietMove.from());
         quietHistoryTable.update(quietMove, piece, depth, white, good);
+        nonPawnHistoryTable.update(board.nonPawnKeys()[colourIndex], piece, quietMove.to(), depth, white, good);
         updateContHist(quietMove, piece, ss, white, good, depth, ply);
     }
 
@@ -173,6 +174,10 @@ public class SearchHistory {
 
     public CaptureHistoryTable getCaptureHistoryTable() {
         return captureHistoryTable;
+    }
+
+    public NonPawnHistoryTable getNonPawnHistoryTable() {
+        return nonPawnHistoryTable;
     }
 
     public void reset() {

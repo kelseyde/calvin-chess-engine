@@ -114,6 +114,12 @@ public class EngineConfig {
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable nonPawnHistBonusMax    = new Tunable("NonPawnHistBonusMax", 1200, 100, 2000, 100);
+    private final Tunable nonPawnHistBonusScale  = new Tunable("NonPawnHistBonusScale", 200, 50, 400, 25);
+    private final Tunable nonPawnHistMalusMax    = new Tunable("NonPawnHistMalusMax", 1200, 100, 2000, 100);
+    private final Tunable nonPawnHistMalusScale  = new Tunable("NonPawnHistMalusScale", 200, 50, 400, 25);
+    private final Tunable nonPawnHistMaxScore    = new Tunable("NonPawnHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable nonPawnHistTableSize   = new Tunable("NonPawnHistTableSize", 16384, 4096, 32768, 1024);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 78, 50, 100, 5);
     private final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
@@ -149,7 +155,8 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, nonPawnHistBonusMax, nonPawnHistBonusScale,
+                nonPawnHistMalusMax, nonPawnHistMalusScale, nonPawnHistMaxScore, nonPawnHistTableSize
         );
     }
 
@@ -589,6 +596,30 @@ public class EngineConfig {
 
     public int contHistMaxScore() {
         return contHistMaxScore.value;
+    }
+
+    public int nonPawnHistBonusMax() {
+        return nonPawnHistBonusMax.value;
+    }
+
+    public int nonPawnHistBonusScale() {
+        return nonPawnHistBonusScale.value;
+    }
+
+    public int nonPawnHistMalusMax() {
+        return nonPawnHistMalusMax.value;
+    }
+
+    public int nonPawnHistMalusScale() {
+        return nonPawnHistMalusScale.value;
+    }
+
+    public int nonPawnHistMaxScore() {
+        return nonPawnHistMaxScore.value;
+    }
+
+    public int nonPawnHistTableSize() {
+        return nonPawnHistTableSize.value;
     }
 
     public int timeFactor() {

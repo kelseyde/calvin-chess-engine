@@ -10,17 +10,9 @@ import com.kelseyde.calvin.board.Move;
  * - Key: 0-31 (zobrist key), 32-39 (depth), 40-55 (static eval), 56-57 (flag), 58 (pv), 59-63 (unused)
  * - Value: 0-15 (score), 16-31 (move)
  */
-public record HashEntry(Move move, int score, int staticEval, int flag, int depth, boolean pv) {
+public class HashEntry {
 
-    public static HashEntry of(long key, int value) {
-        final Move move      = Value.getMove(value);
-        final int score      = Value.getScore(value);
-        final int flag       = Key.getFlag(key);
-        final int depth      = Key.getDepth(key);
-        final int staticEval = Key.getStaticEval(key);
-        final boolean pv     = Key.isPv(key);
-        return new HashEntry(move, score, staticEval, flag, depth, pv);
-    }
+    private HashEntry() {}
 
     public static class Key {
 
@@ -29,6 +21,10 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         private static final long STATIC_EVAL_MASK    = 0x00ffff0000000000L;
         private static final long FLAG_MASK           = 0x0300000000000000L;
         private static final long PV_MASK             = 0x0400000000000000L;
+
+        public static boolean matches(long key1, long key2) {
+            return getZobristPart(key1) == getZobristPart(key2);
+        }
 
         public static long getZobristPart(long key) {
             return key & ZOBRIST_PART_MASK;
@@ -85,10 +81,4 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         }
     }
 
-    private static void assertRange(int value, int min, int max) {
-        if (value < min || value > max) {
-            throw new IllegalArgumentException("Value out of range: " + value);
-
-        }
-    }
 }

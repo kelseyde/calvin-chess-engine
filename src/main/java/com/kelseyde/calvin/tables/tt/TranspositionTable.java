@@ -2,6 +2,8 @@ package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.Score;
+import com.kelseyde.calvin.tables.tt.HashEntry.Key;
+import com.kelseyde.calvin.tables.tt.HashEntry.Value;
 
 import java.util.stream.IntStream;
 
@@ -25,28 +27,26 @@ public class TranspositionTable {
     private int[] values;
     private int size;
 
+    private long currentKey;
+    private int currentValue;
+
     public TranspositionTable(int tableSizeMb) {
         this.size = (tableSizeMb * 1024 * 1024) / ENTRY_SIZE_BYTES;
         this.keys = new long[size];
         this.values = new int[size];
     }
 
-    public HashEntry get(long key, int ply) {
+    public boolean probe(long key) {
         int index = index(key);
         for (int i = 0; i < BUCKET_SIZE; i++) {
             long storedKey = keys[index + i];
-            if (storedKey != 0 && HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
-                keys[index + i] = storedKey;
-                int storedValue = values[index + i];
-                int score = HashEntry.Value.getScore(storedValue);
-                if (Score.isMate(score)) {
-                    score = retrieveMateScore(score, ply);
-                    storedValue = HashEntry.Value.setScore(storedValue, score);
-                }
-                return HashEntry.of(storedKey, storedValue);
+            if (storedKey != 0 && Key.matches(storedKey, key)) {
+                currentKey = storedKey;
+                currentValue = values[index + i];
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score, boolean pv) {
@@ -79,19 +79,19 @@ public class TranspositionTable {
 
             int storedValue = values[i];
 
-            int storedFlag = HashEntry.Key.getFlag(storedKey);
+            int storedFlag = Key.getFlag(storedKey);
             if (storedFlag == HashFlag.NONE) {
                 replacedIndex = i;
                 break;
             }
 
-            int storedDepth = HashEntry.Key.getDepth(storedKey);
+            int storedDepth = Key.getDepth(storedKey);
             // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
             // If the depth is < the store depth, don't replace it and exit (although this should never happen).
-            if (HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
+            if (Key.getZobristPart(storedKey) == Key.getZobristPart(key)) {
                 if (depth >= storedDepth - 4) {
                     // If the stored entry has a recorded best move but the new entry does not, use the stored one.
-                    Move storedMove = HashEntry.Value.getMove(storedValue);
+                    Move storedMove = Value.getMove(storedValue);
                     if (move == null && storedMove != null) {
                         move = storedMove;
                     }
@@ -112,8 +112,8 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            keys[replacedIndex] = HashEntry.Key.of(key, depth, staticEval, flag, pv);
-            values[replacedIndex] = HashEntry.Value.of(score, move);
+            keys[replacedIndex] = Key.of(key, depth, staticEval, flag, pv);
+            values[replacedIndex] = Value.of(score, move);
         }
     }
 
@@ -132,6 +132,31 @@ public class TranspositionTable {
     public void clear() {
         this.keys = new long[size];
         this.values = new int[size];
+    }
+
+    public Move move() {
+        return Value.getMove(currentValue);
+    }
+
+    public int score(int ply) {
+        int score = Value.getScore(currentValue);
+        return Score.isMate(score) ? retrieveMateScore(score, ply) : score;
+    }
+
+    public int flag() {
+        return Key.getFlag(currentKey);
+    }
+
+    public int depth() {
+        return Key.getDepth(currentKey);
+    }
+
+    public int staticEval() {
+        return Key.getStaticEval(currentKey);
+    }
+
+    public boolean pv() {
+        return Key.isPv(currentKey);
     }
 
     /**

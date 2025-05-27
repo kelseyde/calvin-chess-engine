@@ -12,6 +12,8 @@ import com.kelseyde.calvin.board.Move;
  */
 public class HashEntry {
 
+    public static final int SIZE_BYTES = 12;
+
     private HashEntry() {}
 
     public static class Key {

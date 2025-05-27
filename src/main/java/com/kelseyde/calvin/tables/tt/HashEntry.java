@@ -88,6 +88,7 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
     private static void assertRange(int value, int min, int max) {
         if (value < min || value > max) {
             throw new IllegalArgumentException("Value out of range: " + value);
+
         }
     }
 }

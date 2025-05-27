@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 public class TranspositionTable {
 
     private static final int BUCKET_SIZE = 4;
-    private static final int ENTRY_SIZE_BYTES = 12;
+    private static final int ENTRY_SIZE_BYTES = 16;
 
     private long[] keys;
     private int[] values;

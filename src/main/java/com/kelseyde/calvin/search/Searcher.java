@@ -202,25 +202,25 @@ public class Searcher implements Search {
         history.getKillerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
 
-        boolean ttHit = false;
-        Move ttMove = null;
-        int ttDepth = 0;
-        int ttScore = Score.MIN;
-        int ttStaticEval = Score.MIN;
-        int ttFlag = HashFlag.NONE;
-        boolean ttPv = pvNode;
-        boolean ttPrune = false;
-
         // Transposition table
         // Check if this node has already been searched before. If it has, and the depth + alpha/beta bounds match the
         // requirements of the current search, then we can directly return the score from the TT. If the depth and bounds
         // do not match, we can still use information from the TT - such as the best move, score, and static eval -
         // to improve the current search.
+        Move ttMove     = null;
+        int ttDepth     = 0;
+        int ttScore     = Score.MIN;
+        int ttEval      = Score.MIN;
+        int ttFlag      = HashFlag.NONE;
+        boolean ttPv    = pvNode;
+        boolean ttPrune = false;
+        boolean ttHit   = false;
+
         if (!singularSearch) {
             ttHit = tt.probe(board.key());
             if (ttHit) {
                 ttScore = tt.score(ply);
-                ttStaticEval = tt.staticEval();
+                ttEval = tt.staticEval();
                 ttDepth = tt.depth();
                 ttMove = tt.move();
                 ttFlag = tt.flag();
@@ -280,7 +280,7 @@ public class Searcher implements Search {
         }
         else if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
-            rawStaticEval = ttHit ? ttStaticEval : eval.evaluate();
+            rawStaticEval = ttHit ? ttEval : eval.evaluate();
             uncorrectedEval = rawStaticEval;
             correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
             complexity = history.squaredCorrectionTerms(board, ss, ply);
@@ -694,17 +694,15 @@ public class Searcher implements Search {
         final boolean pvNode = beta - alpha > 1;
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        Move ttMove = null;
-        int ttDepth = 0;
-        int ttScore = Score.MIN;
-        int ttStaticEval = Score.MIN;
-        int ttFlag = HashFlag.NONE;
-        boolean ttPv = pvNode;
-        boolean ttHit = tt.probe(board.key());
+        Move ttMove    = null;
+        int ttScore    = Score.MIN;
+        int ttEval     = Score.MIN;
+        int ttFlag     = HashFlag.NONE;
+        boolean ttPv   = pvNode;
+        boolean ttHit  = tt.probe(board.key());
         if (ttHit) {
             ttScore = tt.score(ply);
-            ttStaticEval = tt.staticEval();
-            ttDepth = tt.depth();
+            ttEval = tt.staticEval();
             ttMove = tt.move();
             ttFlag = tt.flag();
             ttPv = pvNode || tt.pv();
@@ -727,7 +725,7 @@ public class Searcher implements Search {
         if (!inCheck) {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
-            rawStaticEval = ttHit ? ttStaticEval : eval.evaluate();
+            rawStaticEval = ttHit ? ttEval : eval.evaluate();
             correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
             staticEval = rawStaticEval + correction;
 

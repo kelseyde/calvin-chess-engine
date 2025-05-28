@@ -12,7 +12,7 @@ import com.kelseyde.calvin.board.Move;
  */
 public class HashEntry {
 
-    public static final int SIZE_BYTES = 12;
+    public static final int SIZE_BYTES = 16;
 
     private HashEntry() {}
 

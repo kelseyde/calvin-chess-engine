@@ -424,30 +424,30 @@ public class Searcher implements Search {
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
             final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
+            int lmrDepth = depth;
             if (doLmr) {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
+                r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
+                lmrDepth = Math.max(0, lmrDepth - r / 1024);
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
-                r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
                 r -= complexity / config.lmrComplexityDivisor();
                 reduction = Math.max(0, r / 1024);
             }
 
-            int reducedDepth = depth - reduction;
-
             // Move-loop pruning: We can save time by skipping individual moves that are unlikely to be good.
 
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
-            final int futilityMargin = futilityMargin(reducedDepth, historyScore, moveCount);
+            final int futilityMargin = futilityMargin(lmrDepth, historyScore, moveCount);
             if (!pvNode
                     && !rootNode
                     && isQuiet
                     && !inCheck
-                    && reducedDepth <= config.fpDepth()
+                    && lmrDepth <= config.fpDepth()
                     && staticEval + futilityMargin <= alpha) {
                 movePicker.skipQuiets(true);
                 continue;
@@ -458,7 +458,7 @@ public class Searcher implements Search {
             final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
             if (!rootNode
                     && isQuiet
-                    && reducedDepth <= config.hpMaxDepth()
+                    && lmrDepth <= config.hpMaxDepth()
                     && historyScore < historyThreshold) {
                 movePicker.skipQuiets(true);
                 continue;

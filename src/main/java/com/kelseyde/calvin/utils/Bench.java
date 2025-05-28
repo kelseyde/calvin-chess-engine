@@ -88,7 +88,6 @@ public class Bench {
             SearchResult result = search.search(tc);
             nodes += result.nodes();
             time += Duration.between(now, Instant.now()).toMillis();
-            System.gc();
         }
 
         long nps = (nodes / time) * 1000;

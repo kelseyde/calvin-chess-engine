@@ -95,8 +95,8 @@ public class UCI {
 
     public static void handleNewGame(UCICommand command) {
         ENGINE.gameOver();
-        ENGINE.newGame();
         System.gc();
+        ENGINE.newGame();
     }
 
     public static void handleIsReady(UCICommand command) {

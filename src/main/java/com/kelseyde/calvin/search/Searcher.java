@@ -11,7 +11,6 @@ import com.kelseyde.calvin.search.picker.MovePicker;
 import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
 import com.kelseyde.calvin.search.picker.ScoredMove;
 import com.kelseyde.calvin.search.picker.StandardMovePicker;
-import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
@@ -203,33 +202,41 @@ public class Searcher implements Search {
         history.getKillerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
 
-        HashEntry ttEntry = null;
-        boolean ttHit = false;
-        boolean ttPrune = false;
-        Move ttMove = null;
-        boolean ttPv = pvNode;
-
         // Transposition table
         // Check if this node has already been searched before. If it has, and the depth + alpha/beta bounds match the
         // requirements of the current search, then we can directly return the score from the TT. If the depth and bounds
         // do not match, we can still use information from the TT - such as the best move, score, and static eval -
         // to improve the current search.
+        Move ttMove     = null;
+        int ttDepth     = 0;
+        int ttScore     = Score.MIN;
+        int ttEval      = Score.MIN;
+        int ttFlag      = HashFlag.NONE;
+        boolean ttPv    = pvNode;
+        boolean ttPrune = false;
+        boolean ttHit   = false;
+
         if (!singularSearch) {
-            ttEntry = tt.get(board.key(), ply);
-            ttHit = ttEntry != null;
-            ttMove = ttHit ? ttEntry.move() : null;
-            ttPv = ttPv || (ttHit && ttEntry.pv());
+            ttHit = tt.probe(board.key());
+            if (ttHit) {
+                ttScore = tt.score(ply);
+                ttEval = tt.staticEval();
+                ttDepth = tt.depth();
+                ttMove = tt.move();
+                ttFlag = tt.flag();
+                ttPv = pvNode || tt.pv();
+            }
 
             if (!rootNode
                     && ttHit
-                    && ttEntry.depth() >= depth + (pvNode ? 2 : 0)
-                    && (ttEntry.score() <= alpha || cutNode)) {
-                if (isWithinBounds(ttEntry, alpha, beta)) {
+                    && ttDepth >= depth + (pvNode ? 2 : 0)
+                    && (ttScore <= alpha || cutNode)) {
+                if (isWithinBounds(ttFlag, ttScore, alpha, beta)) {
                     ttPrune = true;
                     if (!pvNode) {
                         // In non-PV nodes with an TT hit matching the depth and alpha/beta bounds of
                         // the current search, we can cut off the search here and return the TT score.
-                        return ttEntry.score();
+                        return ttScore;
                     } else {
                         // In PV nodes, rather than cutting off we reduce search depth.
                         depth--;
@@ -245,7 +252,7 @@ public class Searcher implements Search {
         // reduced depth expecting to record a move that we can use later for a full-depth search.
         if (!rootNode
                 && (pvNode || cutNode)
-                && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
+                && (!ttHit || ttMove == null || ttDepth < depth - config.iirDepth())
                 && depth >= config.iirDepth()) {
             --depth;
         }
@@ -273,7 +280,7 @@ public class Searcher implements Search {
         }
         else if (!inCheck) {
             // Re-use cached static eval if available. Don't compute static eval while in check.
-            rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
+            rawStaticEval = ttHit ? ttEval : eval.evaluate();
             uncorrectedEval = rawStaticEval;
             correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
             complexity = history.squaredCorrectionTerms(board, ss, ply);
@@ -284,8 +291,8 @@ public class Searcher implements Search {
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
 
             // If the TT score is within the bounds of the current window, we can use it as a more accurate static eval.
-            if (canUseTTScore(ttEntry, rawStaticEval)) {
-                staticEval = ttEntry.score();
+            if (ttHit && canUseTTScore(ttFlag, ttScore, rawStaticEval)) {
+                staticEval = ttScore;
                 uncorrectedEval = staticEval;
             }
         }
@@ -350,7 +357,7 @@ public class Searcher implements Search {
                 && ply >= td.nmpPly
                 && prev.move != null
                 && staticEval >= beta
-                && (!ttHit || cutNode || ttEntry.score() >= beta)
+                && (!ttHit || cutNode || ttScore >= beta)
                 && board.hasNonPawnMaterial()) {
 
                 int r = config.nmpBase()
@@ -509,12 +516,13 @@ public class Searcher implements Search {
             // the search depth.
             if (!rootNode
                     && !singularSearch
+                    && ttHit
                     && move.equals(ttMove)
                     && depth >= config.seDepth()
-                    && ttEntry.flag() != HashFlag.UPPER
-                    && ttEntry.depth() >= depth - config.seTtDepthMargin()) {
+                    && ttFlag != HashFlag.UPPER
+                    && ttDepth >= depth - config.seTtDepthMargin()) {
 
-                int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * config.seBetaMargin() / 16);
+                int sBeta = Math.max(-Score.MATE + 1, ttScore - depth * config.seBetaMargin() / 16);
                 int sDepth = (depth - config.seReductionOffset()) / config.seReductionDivisor();
 
                 curr.excludedMove = move;
@@ -529,7 +537,7 @@ public class Searcher implements Search {
                 }
                 else if (cutNode)
                     extension = -2;
-                else if (ttEntry.score() >= beta)
+                else if (ttScore >= beta)
                     extension = -1;
 
             }
@@ -686,13 +694,22 @@ public class Searcher implements Search {
         final boolean pvNode = beta - alpha > 1;
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        final HashEntry ttEntry = tt.get(board.key(), ply);
-        final boolean ttHit = ttEntry != null;
-        final Move ttMove = ttHit ? ttEntry.move() : null;
-        boolean ttPv = pvNode || (ttHit && ttEntry.pv());
+        Move ttMove    = null;
+        int ttScore    = Score.MIN;
+        int ttEval     = Score.MIN;
+        int ttFlag     = HashFlag.NONE;
+        boolean ttPv   = pvNode;
+        boolean ttHit  = tt.probe(board.key());
+        if (ttHit) {
+            ttScore = tt.score(ply);
+            ttEval = tt.staticEval();
+            ttMove = tt.move();
+            ttFlag = tt.flag();
+            ttPv = pvNode || tt.pv();
+        }
 
-        if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta)) {
-            return ttEntry.score();
+        if (!pvNode && ttHit && isWithinBounds(ttFlag, ttScore, alpha, beta)) {
+            return ttScore;
         }
 
         final boolean inCheck = movegen.isCheck(board);
@@ -708,18 +725,18 @@ public class Searcher implements Search {
         if (!inCheck) {
             // If we are not in check, then we have the option to 'stand pat', i.e. decline to continue the capture chain,
             // if the static evaluation of the position is good enough.
-            rawStaticEval = ttHit ? ttEntry.staticEval() : eval.evaluate();
+            rawStaticEval = ttHit ? ttEval : eval.evaluate();
             correction = ttMove != null ? 0 : history.evalCorrection(board, ss, ply);
             staticEval = rawStaticEval + correction;
 
             if (!ttHit)
                 tt.put(board.key(), HashFlag.NONE, 0, 0, null, rawStaticEval, 0, ttPv);
 
-            if (canUseTTScore(ttEntry, rawStaticEval))
-                staticEval = ttEntry.score();
+            if (canUseTTScore(ttFlag, ttScore, rawStaticEval))
+                staticEval = ttScore;
 
             if (staticEval >= beta) {
-                if (!ttHit || ttEntry.flag() == HashFlag.NONE)
+                if (!ttHit || ttFlag == HashFlag.NONE)
                     tt.put(board.key(), HashFlag.LOWER, 0, ply, null, rawStaticEval, staticEval, ttPv);
                 return staticEval;
             }
@@ -902,12 +919,12 @@ public class Searcher implements Search {
         return result;
     }
 
-    public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
-        if (!Score.isDefined(entry.score()))
+    public boolean isWithinBounds(int ttFlag, int ttScore, int alpha, int beta) {
+        if (!Score.isDefined(ttScore))
             return false;
-        return entry.flag() == HashFlag.EXACT
-                || (entry.flag() == HashFlag.UPPER && entry.score() <= alpha)
-                || (entry.flag() == HashFlag.LOWER && entry.score() >= beta);
+        return ttFlag == HashFlag.EXACT
+                || (ttFlag == HashFlag.UPPER && ttScore <= alpha)
+                || (ttFlag == HashFlag.LOWER && ttScore >= beta);
     }
 
     @Override
@@ -949,11 +966,10 @@ public class Searcher implements Search {
         return threshold;
     }
 
-    private boolean canUseTTScore(HashEntry ttEntry, int rawStaticEval) {
-        return ttEntry != null &&
-                (ttEntry.flag() == HashFlag.EXACT ||
-                (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
-                (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval));
+    private boolean canUseTTScore(int ttFlag, int ttScore, int rawStaticEval) {
+        return (ttFlag == HashFlag.EXACT ||
+                (ttFlag == HashFlag.LOWER && ttScore >= rawStaticEval) ||
+                (ttFlag == HashFlag.UPPER && ttScore <= rawStaticEval));
     }
 
     private int clamp(int value, int min, int max) {
@@ -963,5 +979,6 @@ public class Searcher implements Search {
     enum SearchLimit {
         SOFT, HARD
     }
+
 
 }

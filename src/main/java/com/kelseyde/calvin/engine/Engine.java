@@ -7,6 +7,7 @@ import com.kelseyde.calvin.search.ParallelSearcher;
 import com.kelseyde.calvin.search.Search;
 import com.kelseyde.calvin.search.SearchResult;
 import com.kelseyde.calvin.search.TimeControl;
+import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
@@ -134,9 +135,9 @@ public class Engine {
         TranspositionTable tt = searcher.getTranspositionTable();
         board.makeMove(bestMove);
         long key = board.key();
-        boolean ttHit = tt.probe(key);
+        HashEntry entry = tt.get(key, 0);
         board.unmakeMove();
-        return ttHit ? tt.move() : null;
+        return entry != null ? entry.move() : null;
     }
 
     public List<Move> extractPrincipalVariation() {
@@ -145,13 +146,12 @@ public class Engine {
         int moves = 0;
         while (moves < 24) {
             long key = board.key();
-            boolean ttHit = tt.probe(key);
-            Move ttMove = ttHit ? tt.move() : null;
-            if (ttMove == null) {
+            HashEntry entry = tt.get(key, 0);
+            if (entry == null || entry.move() == null) {
                 break;
             }
-            pv.add(ttMove);
-            board.makeMove(ttMove);
+            pv.add(entry.move());
+            board.makeMove(entry.move());
             moves++;
         }
         IntStream.range(0, moves).forEach(i -> board.unmakeMove());

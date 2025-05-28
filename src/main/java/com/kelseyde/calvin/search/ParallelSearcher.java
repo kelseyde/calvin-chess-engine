@@ -68,7 +68,9 @@ public class ParallelSearcher implements Search {
                     .map(searcher -> initThread(searcher, timeControl))
                     .toList();
 
-            return selectResult(threads).get();
+            SearchResult result = selectResult(threads).get();
+            tt.incrementAge();
+            return result;
         } catch (Exception e) {
             System.out.println("info error " + e);
             // In case of an error, return a random legal move to avoid crashing the engine

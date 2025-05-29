@@ -422,7 +422,7 @@ public class Searcher implements Search {
 
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
-            final boolean doLmr = depth >= config.lmrDepth() && moveCount >= config.lmrMinMoves() && (!scoredMove.isGoodNoisy() || !ttPv);
+            final boolean doLmr = depth >= config.lmrDepth() && moveCount > config.lmrMinMoves() && (!scoredMove.isGoodNoisy() || !ttPv);
             if (doLmr) {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;

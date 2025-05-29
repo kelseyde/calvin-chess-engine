@@ -57,8 +57,7 @@ public class EngineConfig {
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 314, 200, 400, 10);
     private final Tunable lmrCapBase             = new Tunable("LmrCapBase", 93, 50, 100, 5);
     private final Tunable lmrCapDivisor          = new Tunable("LmrCapDivisor", 305, 200, 400, 10);
-    private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
-    private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
+    private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 1, 0, 4, 1);
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 911, 0, 2048, 150);
     private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2085, 0, 3072, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 70, 0, 2048, 150);
@@ -136,20 +135,20 @@ public class EngineConfig {
         return Set.of(
                 aspMinDepth, aspDelta, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
-                lmrMinPvMoves, lmpDepth, lmpBase, lmpScale, iirDepth, nmpBase, nmpDivisor, dpMargin,
-                qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImprovingMargin, razorDepth, razorMargin,
-                hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
-                quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
-                captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
-                contHistBonusScale, contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase,
-                nodeTmScale, ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset,
-                seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
-                softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
-                seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
-                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
-                lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor
+                lmpDepth, lmpBase, lmpScale, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin, qsSeeThreshold,
+                fpMargin, fpScale, rfpMargin, rfpImprovingMargin, razorDepth, razorMargin, hpMaxDepth, hpMargin,
+                hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax, quietHistBonusScale,
+                quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax, captHistBonusScale,
+                captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax, contHistBonusScale,
+                contHistMalusMax, contHistMalusScale, contHistMaxScore, nodeTmMinDepth, nodeTmBase, nodeTmScale,
+                ttExtensionDepth, seeMaxDepth, seeQuietMargin, seeNoisyMargin, seeNoisyOffset, seeHistoryDivisor,
+                timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin, softTimeScaleMax,
+                uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor, seeQsNoisyDivisor,
+                seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin, seBetaMargin,
+                seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
+                lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale,
+                lmrFutileHistDivisor, lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth,
+                dynamicPolicyMult, dynamicPolicyMin, dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor
         );
     }
 
@@ -365,10 +364,6 @@ public class EngineConfig {
 
     public int lmrMinMoves() {
         return lmrMinMoves.value;
-    }
-
-    public int lmrMinPvMoves() {
-        return lmrMinPvMoves.value;
     }
 
     public int lmrPvNode() {

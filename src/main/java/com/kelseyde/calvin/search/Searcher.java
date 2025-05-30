@@ -729,7 +729,7 @@ public class Searcher implements Search {
         }
 
         Move bestMove = null;
-        int bestScore = alpha;
+        int bestScore = staticEval;
         final int futilityScore = bestScore + config.qsFpMargin();
         int flag = HashFlag.UPPER;
         int moveCount = 0;
@@ -759,8 +759,10 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip captures that don't win material when the static eval is far below alpha.
-            if (capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1))
+            if (!inCheck && capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1)) {
+                bestScore = Math.max(bestScore, futilityScore);
                 continue;
+            }
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.

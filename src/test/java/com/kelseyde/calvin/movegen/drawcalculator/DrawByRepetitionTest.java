@@ -12,7 +12,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testSimpleDrawByRepetition() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));
         board.makeMove(TestUtils.getLegalMove(board, "g8", "f6"));
 
@@ -40,7 +40,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testNotRepetitionIfCastlingRightsAreDifferent() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
@@ -76,7 +76,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testRepetitionDependingOnCastlingRights() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e5"));
 
@@ -120,7 +120,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testNotRepetitionIfEnPassantRightsAreDifferent() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
 
@@ -152,7 +152,7 @@ public class DrawByRepetitionTest {
     @Test
     public void testRepetitionDependingOnEnPassantRights() {
 
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
 

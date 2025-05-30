@@ -13,7 +13,7 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhiteCapture() {
 
         String fen = "7K/8/8/3qn3/4n3/2N5/8/k7 w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         // black knight captures white queen
         board.makeMove(TestUtils.getLegalMove(board, "c3", "d5"));
@@ -185,7 +185,7 @@ public class DrawByFiftyMoveRuleTest {
     public void testDrawByFiftyMovesSinceWhitePawnMove() {
 
         String fen = "7K/8/8/4p3/8/8/4P3/k7 w - - 0 1";
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
 
         // white pawn makes last possible pawn move
         board.makeMove(TestUtils.getLegalMove(board, "e2", "e4"));

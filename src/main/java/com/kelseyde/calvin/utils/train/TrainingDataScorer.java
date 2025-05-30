@@ -153,7 +153,7 @@ public class TrainingDataScorer {
             return "";
         }
 
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         if (MOVE_GENERATOR.isCheck(board, board.isWhite())) {
             // Filter out positions where the side to move is in check
             return "";

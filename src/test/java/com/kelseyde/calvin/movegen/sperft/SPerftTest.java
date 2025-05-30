@@ -24,7 +24,7 @@ public abstract class SPerftTest {
     protected abstract String getSubFolder();
 
     protected void sPerft(int depth) {
-        Board board = FEN.toBoard(getFen());
+        Board board = FEN.parse(getFen()).toBoard();
         Instant start = Instant.now();
         SEARCHER.clearHistory();
         SEARCHER.setPosition(board);

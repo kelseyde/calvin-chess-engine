@@ -5,33 +5,39 @@ import com.kelseyde.calvin.board.Piece;
 
 public class SearchStack {
 
-    private final SearchStackEntry[] stack = new SearchStackEntry[Search.MAX_DEPTH];
+    private static final int STACK_SIZE = Search.MAX_DEPTH + 8;
+
+    private final SearchStackEntry[] stack = new SearchStackEntry[STACK_SIZE];
 
     public SearchStack() {
-        for (int i = 0; i < Search.MAX_DEPTH; i++) {
+        for (int i = 0; i < STACK_SIZE; i++) {
             stack[i] = new SearchStackEntry();
         }
     }
 
     public SearchStackEntry get(int ply) {
-        return ply >= 0 && ply < Search.MAX_DEPTH ? stack[ply] : null;
+        return ply >= 0 && ply < STACK_SIZE ? stack[ply] : null;
     }
 
     public void clear() {
-        for (int i = 0; i < Search.MAX_DEPTH; i++) {
+        for (int i = 0; i < STACK_SIZE; i++) {
             stack[i] = new SearchStackEntry();
         }
     }
 
     public static class SearchStackEntry {
         public int staticEval;
-        public Move currentMove;
-        public Piece currentPiece;
+        public Move move;
+        public Piece piece;
+        public Piece captured;
         public Move bestMove;
         public Move excludedMove;
         public Move[] quiets;
         public Move[] captures;
-        public boolean nullMoveAllowed = true;
+        public int reduction;
+        public int failHighCount;
+        public boolean quiet;
+        public boolean inCheck;
     }
 
 }

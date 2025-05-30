@@ -8,6 +8,7 @@ import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
+import com.kelseyde.calvin.search.picker.MovePicker.MoveType;
 import com.kelseyde.calvin.search.picker.MovePicker.Stage;
 
 /**
@@ -106,9 +107,9 @@ public class MoveScorer {
         int contHistScore = 0;
         for (int contHistPly : config.contHistPlies()) {
             SearchStackEntry entry = ss.get(ply - contHistPly);
-            if (entry != null && entry.currentMove != null) {
-                Move prevMove = entry.currentMove;
-                Piece prevPiece = entry.currentPiece;
+            if (entry != null && entry.move != null) {
+                Move prevMove = entry.move;
+                Piece prevPiece = entry.piece;
                 contHistScore += history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
             }
         }

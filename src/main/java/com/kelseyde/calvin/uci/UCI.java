@@ -17,10 +17,7 @@ import com.kelseyde.calvin.utils.notation.FEN;
 import com.kelseyde.calvin.utils.train.TrainingDataScorer;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -80,7 +77,11 @@ public class UCI {
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
         write("option name UCI_Chess960 type check default false");
         write("option name Pretty type check default false");
-        ENGINE.getConfig().getTunables().forEach(t -> write(t.toUCI()));
+
+        ENGINE.getConfig().getTunables().stream()
+                .sorted(Comparator.comparing(tunable -> tunable.name))
+                .forEach(t -> write(t.toUCI()));
+
         write("uciok");
 
         // Typically 'uci' is only sent by tournament runners, not humans.
@@ -94,8 +95,8 @@ public class UCI {
 
     public static void handleNewGame(UCICommand command) {
         ENGINE.gameOver();
-        System.gc();
         ENGINE.newGame();
+        System.gc();
     }
 
     public static void handleIsReady(UCICommand command) {
@@ -180,7 +181,7 @@ public class UCI {
 
     public static void handleFen(UCICommand command) {
         if (ENGINE.getBoard() != null) {
-            write(FEN.toFEN(ENGINE.getBoard()));
+            write(FEN.fromBoard(ENGINE.getBoard()).toString());
         } else {
             write("info error no position specified, please use the 'position' command first");
         }
@@ -198,6 +199,7 @@ public class UCI {
 
     public static void handleParams(UCICommand command) {
         ENGINE.getConfig().getTunables().stream()
+                .sorted(Comparator.comparing(tunable -> tunable.name))
                 .map(Tunable::toSPSA)
                 .forEach(UCI::write);
     }
@@ -331,6 +333,14 @@ public class UCI {
 
     public static void writeError(String output, Exception e) {
         write("info error " + output + " " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+    }
+
+    public static void handleBarbeque(UCICommand command) {
+        if (String.join(" ", command.args()).equals("Dont miss the ShredderChess Annual Barbeque")) {
+            write("info string just tell me the date and time...");
+        } else {
+            handleUnknown(command);
+        }
     }
 
 }

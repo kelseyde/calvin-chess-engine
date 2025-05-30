@@ -395,6 +395,10 @@ public class Board {
         return pieces[square];
     }
 
+    public Piece captured(Move move) {
+        return move.isEnPassant() ? Piece.PAWN : pieceAt(move.to());
+    }
+
     public boolean isCapture(Move move) {
         return move.isEnPassant() || pieceAt(move.to()) != null;
     }
@@ -405,6 +409,22 @@ public class Board {
 
     public boolean isQuiet(Move move) {
         return !move.isPromotion() && !isCapture(move);
+    }
+
+    public long us() {
+        return bitboards[white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES];
+    }
+
+    public long them() {
+        return bitboards[white ? Piece.BLACK_PIECES : Piece.WHITE_PIECES];
+    }
+
+    public long our(Piece piece) {
+        return bitboards[piece.index] & us();
+    }
+
+    public long their(Piece piece) {
+        return bitboards[piece.index] & them();
     }
 
     public long getPawns(boolean white) {
@@ -590,19 +610,12 @@ public class Board {
         };
     }
 
-    public long getPieces(int pieceIndex, int colourIndex) {
-        return bitboards[pieceIndex] & bitboards[Piece.COUNT + colourIndex];
-    }
-
-
-    public boolean hasPiecesRemaining(boolean white) {
-        return white ?
-                (getKnights(true) != 0 || getBishops(true) != 0 || getRooks(true) != 0 || getQueens(true) != 0) :
-                (getKnights(false) != 0 || getBishops(false) != 0 || getRooks(false) != 0 || getQueens(false) != 0);
+    public boolean hasNonPawnMaterial() {
+        return (our(Piece.KING) | our(Piece.PAWN)) != us();
     }
 
     public static Board from(String fen) {
-        return FEN.toBoard(fen);
+        return FEN.parse(fen).toBoard();
     }
 
     private void checkMaxPly() {

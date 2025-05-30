@@ -27,7 +27,7 @@ import java.util.Arrays;
 public class NNUE {
 
     public static final Network NETWORK = Network.builder()
-            .file("calvin1024_8b_2s.nnue")
+            .file("calvin1024_10b.nnue")
             .inputSize(768)
             .hiddenSize(1024)
             .activation(Activation.SCReLU)
@@ -36,11 +36,11 @@ public class NNUE {
                     0, 1, 2, 3, 3, 2, 1, 0,
                     4, 4, 5, 5, 5, 5, 4, 4,
                     6, 6, 6, 6, 6, 6, 6, 6,
-                    6, 6, 6, 6, 6, 6, 6, 6,
-                    6, 6, 6, 6, 6, 6, 6, 6,
                     7, 7, 7, 7, 7, 7, 7, 7,
-                    7, 7, 7, 7, 7, 7, 7, 7,
-                    7, 7, 7, 7, 7, 7, 7, 7,
+                    8, 8, 8, 8, 8, 8, 8, 8,
+                    8, 8, 8, 8, 8, 8, 8, 8,
+                    9, 9, 9, 9, 9, 9, 9, 9,
+                    9, 9, 9, 9, 9, 9, 9, 9,
             })
             .quantisations(new int[]{255, 64})
             .scale(400)

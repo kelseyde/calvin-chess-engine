@@ -384,5 +384,4 @@ public class NNUE {
         CASTLE
     }
 
-
 }

@@ -82,18 +82,18 @@ public class Engine {
             int depth = command.perft();
             perft.perft(board, depth);
         } else {
-            SearchLimits tc = SearchLimits.init(config, board, start, command);
+            SearchLimits limits = SearchLimits.init(config, board, start, command);
             this.config.pondering = command.ponder();
             setSearchCancelled(false);
             stopThinking();
-            think = CompletableFuture.supplyAsync(() -> think(tc));
+            think = CompletableFuture.supplyAsync(() -> think(limits));
             think.thenAccept(UCI::writeMove);
         }
 
     }
 
-    public SearchResult think(SearchLimits tc) {
-        return searcher.search(tc);
+    public SearchResult think(SearchLimits limits) {
+        return searcher.search(limits);
     }
 
     public boolean isThinking() {

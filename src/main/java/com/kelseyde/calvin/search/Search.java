@@ -31,7 +31,7 @@ public interface Search {
      * @param timeControl How long to search for
      * @return a {@link SearchResult} containing the best move and the current eval.
      */
-    SearchResult search(TimeControl timeControl);
+    SearchResult search(SearchLimits timeControl);
 
     /**
      * @return the {@link TranspositionTable} used by the search algorithm.

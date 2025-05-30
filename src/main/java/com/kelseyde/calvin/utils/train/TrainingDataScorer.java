@@ -2,6 +2,7 @@ package com.kelseyde.calvin.utils.train;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
+import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.*;
@@ -39,7 +40,7 @@ public class TrainingDataScorer {
     private static final int TOTAL_POSITIONS_PER_FILE = 100000000;
     private static final Duration MAX_SEARCH_TIME = Duration.ofSeconds(30);
     private static final MoveGenerator MOVE_GENERATOR = new MoveGenerator();
-    private static final EngineConfig ENGINE_CONFIG = new EngineConfig();
+    private static final EngineConfig ENGINE_CONFIG = Engine.getInstance().getConfig();
 
     private List<Searcher> searchers;
 
@@ -159,7 +160,7 @@ public class TrainingDataScorer {
             return "";
         }
         searcher.setPosition(board);
-        TimeControl tc = new TimeControl(ENGINE_CONFIG, Instant.now(), MAX_SEARCH_TIME, MAX_SEARCH_TIME, command.softNodes(), command.hardNodes(), -1);
+        SearchLimits tc = new SearchLimits(ENGINE_CONFIG, Instant.now(), MAX_SEARCH_TIME, MAX_SEARCH_TIME, command.softNodes(), command.hardNodes(), -1);
         SearchResult searchResult;
         try {
              searchResult = searcher.search(tc);
@@ -196,7 +197,7 @@ public class TrainingDataScorer {
     private Searcher initSearcher(int i) {
         EngineConfig config = new EngineConfig();
         TranspositionTable transpositionTable = new TranspositionTable(TT_SIZE);
-        return new Searcher(config, transpositionTable, new ThreadData(i == 0));
+        return new Searcher(config, transpositionTable, new ThreadData(i));
     }
 
     private void logDatascoreInfo(ScoreDataCommand command) {

@@ -5,7 +5,6 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.notation.FEN;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -54,15 +53,11 @@ public class PseudoLegalTest {
 
     }
 
-    // Disabled as it takes a long time - used for debugging
-    @Test
-    @Disabled
     public void testBenchSuite() {
         Bench.FENS.stream()
                 .map(Board::from)
                 .forEach(board -> pseudoLegalPerft(board, 5));
     }
-
 
     public long pseudoLegalPerft(Board board, int depth) {
         List<Move> moves = movegen.generateMoves(board);

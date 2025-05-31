@@ -1,8 +1,5 @@
 package com.kelseyde.calvin.movegen.perft;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,9 +7,7 @@ import java.util.List;
 
 public class PerftSuiteTest {
 
-    @Test
-    @Disabled
-    public void testPerftSuite() throws IOException {
+    public static void testPerftSuite() throws IOException {
 
         List<String> lines = Files.readAllLines(Paths.get("src/test/resources/perft_suite.epd"));
         lines.forEach(line -> {
@@ -48,7 +43,7 @@ public class PerftSuiteTest {
 
     }
 
-    private void perftDepth(String fen, int depth, long expectedTotalMoves) {
+    private static void perftDepth(String fen, int depth, long expectedTotalMoves) {
         new PerftTest() {
             @Override
             protected String getFen() {
@@ -60,6 +55,10 @@ public class PerftSuiteTest {
                 return null;
             }
         }.perft(depth, expectedTotalMoves);
+    }
+
+    public static void main(String[] args) throws IOException {
+        testPerftSuite();
     }
 
 }

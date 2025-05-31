@@ -5,7 +5,7 @@ import com.kelseyde.calvin.board.Move;
 
 public class ThreadData {
 
-    public final boolean mainThread;
+    public final int threadIndex;
     public int nodes;
     public int[][] nodesPerMove;
     public int depth;
@@ -20,8 +20,8 @@ public class ThreadData {
     private Move bestMoveCurrent;
     private int bestScoreCurrent;
 
-    public ThreadData(boolean mainThread) {
-        this.mainThread = mainThread;
+    public ThreadData(int threadIndex) {
+        this.threadIndex = threadIndex;
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
         this.depth = 1;
@@ -88,7 +88,7 @@ public class ThreadData {
     }
 
     public boolean isMainThread() {
-        return mainThread;
+        return threadIndex == 0;
     }
 
     public void resetIteration() {

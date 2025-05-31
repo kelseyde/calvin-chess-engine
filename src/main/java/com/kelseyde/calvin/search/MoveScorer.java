@@ -1,15 +1,12 @@
-package com.kelseyde.calvin.search.picker;
+package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
-import com.kelseyde.calvin.search.SEE;
-import com.kelseyde.calvin.search.SearchHistory;
-import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.search.MovePicker.MoveType;
+import com.kelseyde.calvin.search.MovePicker.Stage;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
-import com.kelseyde.calvin.search.picker.MovePicker.MoveType;
-import com.kelseyde.calvin.search.picker.MovePicker.Stage;
 
 /**
  * Assigns a score to a move to determine the order in which moves are tried during search. The score is based on several

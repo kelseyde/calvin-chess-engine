@@ -5,8 +5,6 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SEE;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,11 +15,9 @@ public class SEETest {
 
     private static final MoveGenerator MOVEGEN = new MoveGenerator();
 
-    private int passed = 0;
+    private static int passed = 0;
 
-    @Test
-    @Disabled
-    public void testSeeSuite() throws IOException {
+    public static void testSeeSuite() throws IOException {
 
         int[] initialValues = SEE.SEE_PIECE_VALUES;
         SEE.SEE_PIECE_VALUES = new int[] {100, 300, 300, 500, 900, 0};
@@ -30,7 +26,7 @@ public class SEETest {
         List<String> lines = Files.readAllLines(path);
 
         passed = 0;
-        lines.forEach(this::runTest);
+        lines.forEach(SEETest::runTest);
         if (passed != lines.size()) {
             Assertions.fail("Passed " + passed + "/" + lines.size());
         }
@@ -39,21 +35,7 @@ public class SEETest {
 
     }
 
-    @Test
-    @Disabled
-    public void debugSingle() {
-
-        int[] initialValues = SEE.SEE_PIECE_VALUES;
-        SEE.SEE_PIECE_VALUES = new int[] {100, 300, 300, 500, 900, 0};
-
-        String line = "rn2k2r/1bq2ppp/p2bpn2/1p1p4/3N4/1BN1P3/PPP2PPP/R1BQR1K1 b kq - | d6h2 | 100 | P";
-        runTest(line);
-
-        SEE.SEE_PIECE_VALUES = initialValues;
-
-    }
-
-    private void runTest(String line) {
+    private static void runTest(String line) {
         String[] parts = line.split("\\|");
         String fen = parts[0].trim();
         Board board = Board.from(fen);
@@ -68,20 +50,24 @@ public class SEETest {
         }
     }
 
-    private Move legalMove(Board board, Move uciMove) {
+    private static Move legalMove(Board board, Move uciMove) {
         return MOVEGEN.generateMoves(board).stream()
                 .filter(move -> move.matches(uciMove))
                 .findAny()
                 .orElseThrow();
     }
 
-    private int findThreshold(Board board, Move move) {
+    private static int findThreshold(Board board, Move move) {
         for (int i = 5000; i > -5000; i-= 10) {
             if (SEE.see(board, move, i)) {
                 return i;
             }
         }
         return Integer.MIN_VALUE;
+    }
+
+    public static void main(String[] args) throws IOException {
+        testSeeSuite();
     }
 
 }

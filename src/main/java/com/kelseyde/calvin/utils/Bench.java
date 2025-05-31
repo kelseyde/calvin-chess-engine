@@ -3,8 +3,8 @@ package com.kelseyde.calvin.utils;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.engine.Engine;
 import com.kelseyde.calvin.search.Search;
+import com.kelseyde.calvin.search.SearchLimits;
 import com.kelseyde.calvin.search.SearchResult;
-import com.kelseyde.calvin.search.TimeControl;
 import com.kelseyde.calvin.uci.UCI;
 import com.kelseyde.calvin.uci.UCICommand.GoCommand;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -75,7 +75,7 @@ public class Bench {
         UCI.setOutputEnabled(false);
         GoCommand command = new GoCommand(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE,
                 Integer.MIN_VALUE, Integer.MIN_VALUE, BENCH_DEPTH, Integer.MIN_VALUE, false);
-        TimeControl tc = TimeControl.init(engine.getConfig(), Board.from(FEN.STARTPOS), Instant.now(), command);
+        SearchLimits tc = SearchLimits.init(engine.getConfig(), Board.from(FEN.STARTPOS), Instant.now(), command);
         Search search = engine.getSearcher();
         search.setThreadCount(1);
         long nodes = 0;

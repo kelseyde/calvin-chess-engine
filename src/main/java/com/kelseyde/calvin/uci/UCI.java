@@ -95,8 +95,8 @@ public class UCI {
 
     public static void handleNewGame(UCICommand command) {
         ENGINE.gameOver();
-        System.gc();
         ENGINE.newGame();
+        System.gc();
     }
 
     public static void handleIsReady(UCICommand command) {
@@ -333,6 +333,14 @@ public class UCI {
 
     public static void writeError(String output, Exception e) {
         write("info error " + output + " " + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+    }
+
+    public static void handleBarbeque(UCICommand command) {
+        if (String.join(" ", command.args()).equals("Dont miss the ShredderChess Annual Barbeque")) {
+            write("info string just tell me the date and time...");
+        } else {
+            handleUnknown(command);
+        }
     }
 
 }

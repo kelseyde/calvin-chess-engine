@@ -17,7 +17,7 @@ public class EngineConfig {
     public final int maxThreads = 12;
     public final int defaultThreads = 1;
 
-    public final int minHashSizeMb = 8;
+    public final int minHashSizeMb = 1;
     public final int maxHashSizeMb = 1024;
     public final int defaultHashSizeMb = 256;
 
@@ -82,6 +82,10 @@ public class EngineConfig {
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     private final Tunable hpMargin               = new Tunable("HpMargin", -2282, -4000, -100, 50);
     private final Tunable hpOffset               = new Tunable("HpOffset", -1050, -3000, 0, 50);
+    private final Tunable bnpDepth               = new Tunable("BnpDepth", 6, 0, 8, 1);
+    private final Tunable bnpOffset              = new Tunable("BnpOffset", 371, 280, 480, 25);
+    private final Tunable bnpScale               = new Tunable("BnpScale", 122, 50, 300, 25);
+    private final Tunable bnpDivisor             = new Tunable("BnpDivisor", 128, 80, 200, 25);
     private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
@@ -146,7 +150,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, seTripleExtMargin
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, seTripleExtMargin
         );
     }
 
@@ -458,6 +462,22 @@ public class EngineConfig {
 
     public int hpOffset() {
         return hpOffset.value;
+    }
+
+    public int bnpDepth() {
+        return bnpDepth.value;
+    }
+
+    public int bnpOffset() {
+        return bnpOffset.value;
+    }
+
+    public int bnpScale() {
+        return bnpScale.value;
+    }
+
+    public int bnpDivisor() {
+        return bnpDivisor.value;
     }
 
     public int seDepth() {

@@ -57,15 +57,15 @@ public class ParallelSearcher implements Search {
      * Searches for the best move within the given duration. Does so by starting a new thread for each searcher and
      * waiting for all threads to finish. The best result is then selected from the results of the individual searchers.
      *
-     * @param timeControl the maximum duration to search
+     * @param limits the time, depth, and node limits for the search
      * @return the best search result found
      */
     @Override
-    public SearchResult search(SearchLimits timeControl) {
+    public SearchResult search(SearchLimits limits) {
         try {
             setPosition(board);
             List<CompletableFuture<SearchResult>> threads = searchers.stream()
-                    .map(searcher -> initThread(searcher, timeControl))
+                    .map(searcher -> initThread(searcher, limits))
                     .toList();
 
             SearchResult result = selectResult(threads).get();

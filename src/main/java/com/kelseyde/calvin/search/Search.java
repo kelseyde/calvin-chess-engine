@@ -28,10 +28,10 @@ public interface Search {
 
     /**
      * Search the current position for the best move.
-     * @param timeControl How long to search for
+     * @param limits The time, depth and node limits for the search.
      * @return a {@link SearchResult} containing the best move and the current eval.
      */
-    SearchResult search(SearchLimits timeControl);
+    SearchResult search(SearchLimits limits);
 
     /**
      * @return the {@link TranspositionTable} used by the search algorithm.

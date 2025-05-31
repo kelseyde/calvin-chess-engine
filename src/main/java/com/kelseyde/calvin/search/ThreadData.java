@@ -11,6 +11,7 @@ public class ThreadData {
     public int depth;
     public int seldepth;
     public int nmpPly;
+    public boolean abort;
 
     // The best overall move and score found so far
     private Move bestMove;
@@ -107,6 +108,7 @@ public class ThreadData {
         this.bestScore = 0;
         this.bestMoveCurrent = null;
         this.bestScoreCurrent = 0;
+        this.abort = false;
     }
 
 }

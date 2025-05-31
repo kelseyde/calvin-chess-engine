@@ -119,7 +119,10 @@ public class ParallelSearcher implements Search {
     private CompletableFuture<SearchResult> initThread(Searcher searcher, SearchLimits tc) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return searcher.search(tc);
+                SearchResult result = searcher.search(tc);
+                if (searcher.isMainThread())
+                    searchers.forEach(Searcher::abort);
+                return result;
             } catch (Exception e) {
                 System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
                 // In case of an error, return a random legal move to avoid crashing the engine
@@ -155,7 +158,7 @@ public class ParallelSearcher implements Search {
      */
     private List<Searcher> initSearchers() {
         return IntStream.range(0, threadCount)
-                .mapToObj(i -> initSearcher(i))
+                .mapToObj(this::initSearcher)
                 .toList();
     }
 

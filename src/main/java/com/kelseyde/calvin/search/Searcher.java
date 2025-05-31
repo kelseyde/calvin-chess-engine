@@ -7,6 +7,10 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
+import com.kelseyde.calvin.search.picker.MovePicker;
+import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
+import com.kelseyde.calvin.search.picker.ScoredMove;
+import com.kelseyde.calvin.search.picker.StandardMovePicker;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -844,10 +848,11 @@ public class Searcher implements Search {
 
     private boolean hardLimitReached() {
         // Exit if hard limit for the current search is reached.
+        if (td.abort || config.searchCancelled)
+            return true;
         if (config.pondering || limits == null)
             return false;
-        if (config.searchCancelled) return true;
-        return limits.isHardLimitReached(td.depth, td.nodes);
+        return td.isMainThread() && limits.isHardLimitReached(td.depth, td.nodes);
     }
 
     private boolean softLimitReached() {
@@ -918,6 +923,14 @@ public class Searcher implements Search {
         tt.clear();
         eval.clearHistory();
         history.clear();
+    }
+
+    public boolean isMainThread() {
+        return td.isMainThread();
+    }
+
+    public void abort() {
+        td.abort = true;
     }
 
     private int futilityMargin(int depth, int historyScore, int searchedMoves) {

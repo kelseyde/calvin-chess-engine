@@ -64,11 +64,11 @@ public class ParallelSearcher implements Search {
     public SearchResult search(SearchLimits limits) {
         try {
             setPosition(board);
-            List<CompletableFuture<SearchResult>> threads = searchers.stream()
+            // Start all threads and collect results into a simple list
+            SearchResult result = searchers.stream()
                     .map(searcher -> initThread(searcher, limits))
-                    .toList();
-
-            SearchResult result = selectResult(threads).get();
+                    .map(CompletableFuture::join)
+                    .reduce(SearchResult.empty(), this::selectBestThread);
             tt.incrementAge();
             return result;
         } catch (Exception e) {
@@ -132,23 +132,15 @@ public class ParallelSearcher implements Search {
         });
     }
 
-    /**
-     * Combines the {@link SearchResult} results of the different threads and selects a final result to use.
-     * Simply selects the result from the thread which searched to the greatest depth.
-     *
-     * @return the best search result
-     */
-    private CompletableFuture<SearchResult> selectResult(List<CompletableFuture<SearchResult>> threads) {
-        CompletableFuture<SearchResult> collector = CompletableFuture.completedFuture(new SearchResult(0, null, 0, 0, 0, 0, 0));
-        for (CompletableFuture<SearchResult> thread : threads) {
-            collector = collector.thenCombine(thread, (thread1, thread2) -> {
-                SearchResult best = thread1.depth() > thread2.depth() ? thread1 : thread2;
-                int bestEval = best.eval();
-                Move bestMove = best.move();
-                return new SearchResult(bestEval, bestMove, best.depth(), best.seldepth(), best.time(), thread1.nodes() + thread2.nodes(), best.nps());
-            });
-        }
-        return collector;
+    private SearchResult selectBestThread(SearchResult thread1, SearchResult thread2) {
+        // Prefer the thread with the greater depth, and if equal, the one with the higher score.
+        SearchResult best = thread1.depth() == thread2.depth()
+                ? thread1.score() > thread2.score() ? thread1 : thread2
+                : thread1.depth() > thread2.depth() ? thread1 : thread2;
+        int bestScore = best.score();
+        Move bestMove = best.move();
+        int nodes = thread1.nodes() + thread2.nodes();
+        return new SearchResult(bestScore, bestMove, best.depth(), best.seldepth(), best.time(), nodes, best.nps());
     }
 
     /**

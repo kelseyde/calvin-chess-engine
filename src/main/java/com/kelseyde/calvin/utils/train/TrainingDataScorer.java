@@ -178,7 +178,7 @@ public class TrainingDataScorer {
             // Filter out positions where the best move is a capture
             return "";
         }
-        score = searchResult.eval();
+        score = searchResult.score();
         if (Score.isMate(score)) {
             // Filter out positions where there is forced mate
             return "";

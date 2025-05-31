@@ -291,7 +291,7 @@ public class UCI {
     public static void writeSearchInfo(SearchResult searchResult) {
         int depth = searchResult.depth();
         int seldepth = searchResult.seldepth();
-        int score = searchResult.eval();
+        int score = searchResult.score();
         long time = searchResult.time();
         int nodes = searchResult.nodes();
         long nps = searchResult.nps();

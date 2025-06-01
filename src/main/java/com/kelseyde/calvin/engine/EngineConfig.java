@@ -17,7 +17,7 @@ public class EngineConfig {
     public final int maxThreads = 12;
     public final int defaultThreads = 1;
 
-    public final int minHashSizeMb = 8;
+    public final int minHashSizeMb = 1;
     public final int maxHashSizeMb = 1024;
     public final int defaultHashSizeMb = 256;
 
@@ -70,9 +70,8 @@ public class EngineConfig {
     private final Tunable lmrFutileScale         = new Tunable("LmrFutileScale", 82, 0, 100, 5);
     private final Tunable lmrFutileHistDivisor   = new Tunable("LmrFutileHistDivisor", 98, 1, 1000, 25);
     private final Tunable lmrComplexityDivisor   = new Tunable("LmrComplexityDivisor", 6144, 1536, 8192, 512);
-    private final Tunable lmrDeeperBase          = new Tunable("LmrDeeperBase", 35, 15, 60, 10);
-    private final Tunable lmrDeeperScale         = new Tunable("LmrDeeperBase", 35, 15, 60, 10);
-    private final Tunable lmrShallowerMargin     = new Tunable("LmrShallowerMargin", 8, 0, 15, 4);
+    private final Tunable lmrDeeperBase          = new Tunable("LmrDeeperBase", 38, 20, 100, 10);
+    private final Tunable lmrDeeperScale         = new Tunable("LmrDeeperScale", 4, 3, 12, 1);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpBase                = new Tunable("LmpBase", 3, 0, 50, 10);
     private final Tunable lmpScale               = new Tunable("LmpScale", 38, 10, 80, 10);
@@ -85,6 +84,10 @@ public class EngineConfig {
     private final Tunable hpMaxDepth             = new Tunable("HpMaxDepth", 5, 0, 10, 1);
     private final Tunable hpMargin               = new Tunable("HpMargin", -2282, -4000, -100, 50);
     private final Tunable hpOffset               = new Tunable("HpOffset", -1050, -3000, 0, 50);
+    private final Tunable bnpDepth               = new Tunable("BnpDepth", 6, 0, 8, 1);
+    private final Tunable bnpOffset              = new Tunable("BnpOffset", 371, 280, 480, 25);
+    private final Tunable bnpScale               = new Tunable("BnpScale", 122, 50, 300, 25);
+    private final Tunable bnpDivisor             = new Tunable("BnpDivisor", 128, 80, 200, 25);
     private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
@@ -148,7 +151,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, lmrDeeperBase, lmrDeeperScale, lmrShallowerMargin
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, lmrDeeperBase, lmrDeeperScale
         );
     }
 
@@ -422,10 +425,6 @@ public class EngineConfig {
         return lmrDeeperScale.value;
     }
 
-    public int lmrShallowerMargin() {
-        return lmrShallowerMargin.value;
-    }
-
     public int lmpDepth() {
         return lmpDepth.value;
     }
@@ -472,6 +471,22 @@ public class EngineConfig {
 
     public int hpOffset() {
         return hpOffset.value;
+    }
+
+    public int bnpDepth() {
+        return bnpDepth.value;
+    }
+
+    public int bnpOffset() {
+        return bnpOffset.value;
+    }
+
+    public int bnpScale() {
+        return bnpScale.value;
+    }
+
+    public int bnpDivisor() {
+        return bnpDivisor.value;
     }
 
     public int seDepth() {

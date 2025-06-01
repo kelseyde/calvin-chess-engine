@@ -50,8 +50,9 @@ public class EngineConfig {
     private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 114, 0, 250, 10);
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -34, -300, 300, 100);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
-    private final Tunable rfpMargin              = new Tunable("RfpMargin", 63, 0, 150, 25);
-    private final Tunable rfpImprovingMargin     = new Tunable("RfpImprovingMargin", 69, 0, 150, 25);
+    private final Tunable rfpBase                = new Tunable("RfpBase", 25, 0, 75, 15);
+    private final Tunable rfpScale               = new Tunable("RfpScale", 63, 0, 150, 25);
+    private final Tunable rfpImprovingScale      = new Tunable("RfpImprovingScale", 69, 0, 150, 25);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 92, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 314, 200, 400, 10);
@@ -136,8 +137,8 @@ public class EngineConfig {
         return Set.of(
                 aspMinDepth, aspDelta, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
-                lmrMinPvMoves, lmpDepth, lmpBase, lmpScale, iirDepth, nmpBase, nmpDivisor, dpMargin,
-                qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImprovingMargin, razorDepth, razorMargin,
+                lmrMinPvMoves, lmpDepth, lmpBase, lmpScale, iirDepth, nmpBase, nmpDivisor, dpMargin, qsFpMargin,
+                qsSeeThreshold, fpMargin, fpScale, rfpBase, rfpScale, rfpImprovingScale, razorDepth, razorMargin,
                 hpMaxDepth, hpMargin, hpOffset, lmrPvNode, lmrCutNode, lmrNotImproving, lmrFutile, quietHistBonusMax,
                 quietHistBonusScale, quietHistMalusMax, quietHistMalusScale, quietHistMaxScore, captHistBonusMax,
                 captHistBonusScale, captHistMalusMax, captHistMalusScale, captHistMaxScore, contHistBonusMax,
@@ -335,12 +336,16 @@ public class EngineConfig {
         return rfpDepth.value;
     }
 
-    public int rfpMargin() {
-        return rfpMargin.value;
+    public int rfpBase() {
+        return rfpBase.value;
     }
 
-    public int rfpImprovingMargin() {
-        return rfpImprovingMargin.value;
+    public int rfpScale() {
+        return rfpScale.value;
+    }
+
+    public int rfpImprovingScale() {
+        return rfpImprovingScale.value;
     }
 
     public int lmrDepth() {

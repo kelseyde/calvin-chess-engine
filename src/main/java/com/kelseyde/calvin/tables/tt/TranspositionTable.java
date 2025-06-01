@@ -2,6 +2,8 @@ package com.kelseyde.calvin.tables.tt;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.search.Score;
+import com.kelseyde.calvin.tables.tt.HashEntry.Key;
+import com.kelseyde.calvin.tables.tt.HashEntry.Value;
 
 import java.util.stream.IntStream;
 
@@ -48,15 +50,15 @@ public class TranspositionTable {
         tries++;
         for (int i = 0; i < BUCKET_SIZE; i++) {
             long storedKey = keys[index + i];
-            if (storedKey != 0 && HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
+            if (storedKey != 0 && Key.matches(storedKey, key)) {
                 hits++;
-                storedKey = HashEntry.Key.setAge(storedKey, age);
+                storedKey = Key.setAge(storedKey, age);
                 keys[index + i] = storedKey;
                 long storedValue = values[index + i];
-                int score = HashEntry.Value.getScore(storedValue);
+                int score = Value.getScore(storedValue);
                 if (Score.isMate(score)) {
                     score = retrieveMateScore(score, ply);
-                    storedValue = HashEntry.Value.setScore(storedValue, score);
+                    storedValue = Value.setScore(storedValue, score);
                 }
                 return HashEntry.of(storedKey, storedValue);
             }
@@ -102,27 +104,24 @@ public class TranspositionTable {
             // Second, always prefer an exact score
             if (flag == HashFlag.EXACT) {
                 replacedIndex = i;
-                break;
             }
 
             long storedValue = values[i];
 
-            int storedFlag = HashEntry.Value.getFlag(storedValue);
+            int storedFlag = Value.getFlag(storedValue);
             if (storedFlag == HashFlag.NONE) {
                 replacedIndex = i;
                 break;
             }
 
-            int storedDepth = HashEntry.Value.getDepth(values[i]);
+            int storedDepth = Value.getDepth(values[i]);
             // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
             // If the depth is < the store depth, don't replace it and exit (although this should never happen).
-            if (HashEntry.Key.getZobristPart(storedKey) == HashEntry.Key.getZobristPart(key)) {
-                if (depth >= storedDepth - 4) {
+            if (Key.matches(storedKey, key)) {
+                if (depth >= storedDepth - 4 || flag == HashFlag.EXACT) {
                     // If the stored entry has a recorded best move but the new entry does not, use the stored one.
-                    Move storedMove = HashEntry.Value.getMove(storedValue);
-                    if (move == null && storedMove != null) {
-                        move = storedMove;
-                    }
+                    if (move == null)
+                        move = Value.getMove(storedValue);
                     replacedIndex = i;
                     break;
                 } else {
@@ -131,7 +130,7 @@ public class TranspositionTable {
             }
 
             // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (age > HashEntry.Key.getAge(storedKey)) {
+            if (age > Key.getAge(storedKey)) {
                 replacedByAge = true;
                 replacedIndex = i;
             }
@@ -146,8 +145,8 @@ public class TranspositionTable {
 
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
-            keys[replacedIndex] = HashEntry.Key.of(key, staticEval, age);
-            values[replacedIndex] = HashEntry.Value.of(score, move, flag, depth, pv);
+            keys[replacedIndex] = Key.of(key, staticEval, age);
+            values[replacedIndex] = Value.of(score, move, flag, depth, pv);
         }
     }
 

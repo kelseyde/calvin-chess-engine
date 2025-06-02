@@ -498,9 +498,11 @@ public class Searcher implements Search {
                     && depth <= config.seeMaxDepth()
                     && moveCount > 1
                     && !isGoodNoisy
-                    && !isMateScore
-                    && !SEE.see(board, move, seeThreshold)) {
-                continue;
+                    && !isMateScore) {
+                if (!SEE.see(board, move, seeThreshold))
+                    continue;
+                else
+                    reduction = Math.max(0, reduction - 1);
             }
 
             // Singular Extensions

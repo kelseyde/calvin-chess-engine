@@ -61,6 +61,7 @@ public class EngineConfig {
     private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 911, 0, 2048, 150);
     private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2085, 0, 3072, 150);
+    private final Tunable lmrInCheck             = new Tunable("LmrInCheck", 1024, 0, 3072, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 70, 0, 2048, 150);
     private final Tunable lmrFutile              = new Tunable("LmrFutile", 962, 0, 2048, 150);
     private final Tunable lmrFailHighCount       = new Tunable("LmrCutoffCount", 1035, 0, 2048, 150);
@@ -149,7 +150,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, lmrInCheck
         );
     }
 
@@ -377,6 +378,10 @@ public class EngineConfig {
 
     public int lmrCutNode() {
         return lmrCutNode.value;
+    }
+
+    public int lmrInCheck() {
+        return lmrInCheck.value;
     }
 
     public int lmrNotImproving() {

@@ -390,6 +390,7 @@ public class Searcher implements Search {
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
         int moveCount = 0, quietMoves = 0, captureMoves = 0;
+        int initialDepth = depth;
 
         MovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -654,8 +655,10 @@ public class Searcher implements Search {
         }
 
         // Store the best move and score in the transposition table for future reference.
-        if (!shouldStop(HARD) && !singularSearch && !ttPrune)
-            tt.put(board.key(), flag, depth, ply, bestMove, rawStaticEval, bestScore, ttPv);
+        if (!shouldStop(HARD) && !singularSearch && !ttPrune) {
+            int storedDepth = flag == HashFlag.LOWER ? Math.max(initialDepth, depth) : depth;
+            tt.put(board.key(), flag, storedDepth, ply, bestMove, rawStaticEval, bestScore, ttPv);
+        }
 
         return bestScore;
 

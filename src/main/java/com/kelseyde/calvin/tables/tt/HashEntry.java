@@ -83,6 +83,10 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
             return (value & PV_MASK) >>> 8 == 1;
         }
 
+        public static long setDepth(long value, int depth) {
+            return (value & ~DEPTH_MASK) | (long) depth;
+        }
+
         public static long of(int score, Move move, int flag, int depth, boolean pv) {
             depth = Math.min(depth, 255);
             long pvFlag = pv ? 1 : 0;

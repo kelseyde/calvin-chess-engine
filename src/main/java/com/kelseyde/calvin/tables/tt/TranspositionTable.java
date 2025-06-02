@@ -126,6 +126,8 @@ public class TranspositionTable {
                     replacedIndex = i;
                     break;
                 } else {
+                    if (storedDepth >= 5 && storedFlag != HashFlag.EXACT)
+                        values[i] = HashEntry.Value.setDepth(storedValue, storedDepth - 1);
                     return;
                 }
             }

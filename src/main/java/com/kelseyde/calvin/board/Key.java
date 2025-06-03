@@ -145,8 +145,6 @@ public class Key {
                 key ^= PIECE_SQUARE_HASH[sq][white][Piece.QUEEN.index()];
                 queens = Bits.pop(queens);
             }
-            int king = board.kingSquare(white == 0);
-            key ^= PIECE_SQUARE_HASH[king][white][Piece.KING.index()];
         }
 
         return key;

@@ -96,7 +96,8 @@ public class MoveScorer {
         final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite());
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
-        MoveType type = score >= config.goodQuietThreshold() ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET;
+        MoveType type = score >= config.goodQuietThreshold() && SEE.see(board, move, 0)
+                ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET;
         return new ScoredMove(move, piece, null, score, score, type);
 
     }

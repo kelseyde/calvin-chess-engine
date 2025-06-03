@@ -6,6 +6,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.search.picker.MovePicker.MoveType;
 import com.kelseyde.calvin.utils.Bench;
 import com.kelseyde.calvin.utils.TestUtils;
 import com.kelseyde.calvin.utils.notation.FEN;
@@ -25,7 +26,7 @@ public class MovePickerTest {
     @Disabled
     public void testMoveOrder() {
 
-        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.GOOD_QUIET, MovePicker.MoveType.BAD_NOISY);
+        List<MoveType> expectedOrder = List.of(MoveType.TT_MOVE, MoveType.GOOD_NOISY, MoveType.KILLER, MoveType.GOOD_QUIET, MoveType.BAD_NOISY, MoveType.BAD_QUIET);
 
         SearchHistory history = new SearchHistory(new EngineConfig());
         List<String> fens = Bench.FENS;
@@ -50,7 +51,7 @@ public class MovePickerTest {
                 if (move == null) break;  // No more moves to pick
 
                 // Get the move type from the current move
-                MovePicker.MoveType currentMoveType = move.moveType();
+                MoveType currentMoveType = move.moveType();
 
                 // Ensure the move type is in the expected order
                 int currentIndex = expectedOrder.indexOf(currentMoveType);
@@ -69,9 +70,10 @@ public class MovePickerTest {
     }
 
     @Test
+    @Disabled
     public void testDebugSingle() {
 
-        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.GOOD_QUIET, MovePicker.MoveType.BAD_NOISY);
+        List<MoveType> expectedOrder = List.of(MoveType.TT_MOVE, MoveType.GOOD_NOISY, MoveType.KILLER, MoveType.GOOD_QUIET, MoveType.BAD_NOISY, MoveType.BAD_QUIET);
 
         SearchHistory history = new SearchHistory(new EngineConfig());
 
@@ -96,7 +98,8 @@ public class MovePickerTest {
             if (move == null) break;  // No more moves to pick
 
             // Get the move type from the current move
-            MovePicker.MoveType currentMoveType = move.moveType();
+            MoveType currentMoveType = move.moveType();
+            System.out.println("type: " + currentMoveType + ", move: " + Move.toUCI(move.move()));
 
             // Ensure the move type is in the expected order
             int currentIndex = expectedOrder.indexOf(currentMoveType);

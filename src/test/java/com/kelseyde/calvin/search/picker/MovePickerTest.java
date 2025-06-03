@@ -25,7 +25,7 @@ public class MovePickerTest {
     @Disabled
     public void testMoveOrder() {
 
-        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.QUIET, MovePicker.MoveType.BAD_NOISY);
+        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.GOOD_QUIET, MovePicker.MoveType.BAD_NOISY);
 
         SearchHistory history = new SearchHistory(new EngineConfig());
         List<String> fens = Bench.FENS;
@@ -71,7 +71,7 @@ public class MovePickerTest {
     @Test
     public void testDebugSingle() {
 
-        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.QUIET, MovePicker.MoveType.BAD_NOISY);
+        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.GOOD_QUIET, MovePicker.MoveType.BAD_NOISY);
 
         SearchHistory history = new SearchHistory(new EngineConfig());
 

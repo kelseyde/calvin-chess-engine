@@ -40,7 +40,7 @@ public enum Piece {
     }
 
     public boolean isMajor() {
-        return this == ROOK || this == QUEEN || this == KING;
+        return this == ROOK || this == QUEEN;
     }
 
     public static short promoFlag(Piece piece) {

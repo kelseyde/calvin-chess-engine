@@ -54,7 +54,7 @@ public class TranspositionTable {
                 keys[index + i] = storedKey;
                 long storedValue = values[index + i];
                 int score = HashEntry.Value.getScore(storedValue);
-                if (Score.isMateScore(score)) {
+                if (Score.isMate(score)) {
                     score = retrieveMateScore(score, ply);
                     storedValue = HashEntry.Value.setScore(storedValue, score);
                 }
@@ -77,13 +77,13 @@ public class TranspositionTable {
      * <li>The entry with the lowest depth.</li>
      * </ol>
      */
-    public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score) {
+    public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score, boolean pv) {
 
         // Get the start index of the 4-item bucket.
         final int startIndex = index(key);
 
         // If the eval is checkmate, adjust the score to reflect the number of ply from the root position
-        if (Score.isMateScore(score)) score = calculateMateScore(score, ply);
+        if (Score.isMate(score)) score = calculateMateScore(score, ply);
 
         int replacedIndex = -1;
         int minDepth = Integer.MAX_VALUE;
@@ -147,7 +147,7 @@ public class TranspositionTable {
         // Store the new entry in the table at the chosen index.
         if (replacedIndex != -1) {
             keys[replacedIndex] = HashEntry.Key.of(key, staticEval, age);
-            values[replacedIndex] = HashEntry.Value.of(score, move, flag, depth);
+            values[replacedIndex] = HashEntry.Value.of(score, move, flag, depth, pv);
         }
     }
 

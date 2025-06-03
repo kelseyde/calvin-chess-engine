@@ -28,6 +28,32 @@ public class PseudoLegalTest {
 		Assertions.assertTrue(movegen.isPseudoLegal(board, move));
     }
 
+    @Test
+    public void testPawnDoublePushNotOnStartingRank() {
+
+        Board board = Board.from("5bk1/R5p1/8/1p1p3p/1P3B1P/P1r3P1/6K1/8 b - - 1 1");
+
+        Move move1 = Move.fromUCI("d5d3");
+        Assertions.assertFalse(movegen.isPseudoLegal(board, move1));
+
+        Move move2 = Move.fromUCI("d5d3", Move.PAWN_DOUBLE_MOVE_FLAG);
+        Assertions.assertFalse(movegen.isPseudoLegal(board, move2));
+
+    }
+
+    @Test
+    public void testPawnDoublePushToOccupiedSquare() {
+
+        Board board = Board.from("rnbqkbnr/pppp1ppp/8/8/4p3/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+        Move move1 = Move.fromUCI("e2e4", Move.PAWN_DOUBLE_MOVE_FLAG);
+        Assertions.assertFalse(movegen.isPseudoLegal(board, move1));
+
+        Move move2 = Move.fromUCI("e2e4");
+        Assertions.assertFalse(movegen.isPseudoLegal(board, move2));
+
+    }
+
     // Disabled as it takes a long time - used for debugging
     @Test
     @Disabled
@@ -46,7 +72,7 @@ public class PseudoLegalTest {
         long totalMoveCount = 0;
         for (Move move : moves) {
             if (!movegen.isPseudoLegal(board, move)) {
-                Assertions.fail(FEN.toFEN(board) + " " + Move.toUCI(move));
+                Assertions.fail(FEN.fromBoard(board) + " " + Move.toUCI(move));
             }
             board.makeMove(move);
             totalMoveCount += pseudoLegalPerft(board, depth - 1);

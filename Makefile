@@ -9,6 +9,6 @@ ifdef JAVA_HOME
 else
 	$(MAVEN_EXE) -f ./pom.xml package
 endif
-	cat header.sh ./target/calvin-chess-engine-5.2.0-SNAPSHOT.jar > $(EXE)
+	cat header.sh ./target/calvin-chess-engine-6.2.0-SNAPSHOT.jar > $(EXE)
 	chmod +x $(EXE)
-	cp ./target/calvin-chess-engine-5.2.0-SNAPSHOT.jar calvin-chess-engine.jar
+	cp ./target/calvin-chess-engine-6.2.0-SNAPSHOT.jar calvin-chess-engine.jar

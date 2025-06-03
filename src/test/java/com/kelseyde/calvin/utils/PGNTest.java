@@ -12,7 +12,7 @@ public class PGNTest {
     @Test
     public void testPGN() {
         // Lasker vs Thomas, 1912
-        Board board = Board.from(FEN.STARTPOS);
+        Board board = FEN.startpos().toBoard();
         board.makeMove(TestUtils.getLegalMove(board, "d2", "d4"));
         board.makeMove(TestUtils.getLegalMove(board, "e7", "e6"));
         board.makeMove(TestUtils.getLegalMove(board, "g1", "f3"));

@@ -9,10 +9,10 @@ public class HashCorrectionTable extends CorrectionHistoryTable {
 
     private static final int TABLE_SIZE = 16384;
 
-    int[][] entries;
+    short[][] entries;
 
     public HashCorrectionTable() {
-        this.entries = new int[2][TABLE_SIZE];
+        this.entries = new short[2][TABLE_SIZE];
     }
 
     public void update(long key, boolean white, int depth, int score, int staticEval) {
@@ -30,12 +30,12 @@ public class HashCorrectionTable extends CorrectionHistoryTable {
     private void put(long key, boolean white, int value) {
         int colourIndex = Colour.index(white);
         int hashIndex = hashIndex(key);
-        entries[colourIndex][hashIndex] = value;
+        entries[colourIndex][hashIndex] = (short) value;
     }
 
     @Override
     public void clear() {
-        this.entries = new int[2][TABLE_SIZE];
+        this.entries = new short[2][TABLE_SIZE];
     }
 
     private int hashIndex(long key) {

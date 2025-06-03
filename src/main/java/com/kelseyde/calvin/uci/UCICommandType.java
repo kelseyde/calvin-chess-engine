@@ -20,11 +20,13 @@ enum UCICommandType {
     PRETTY       ("pretty",      UCI::handlePretty),
     HASHFULL     ("hashfull",    UCI::handleHashfull),
     THREATS      ("threats",     UCI::handleThreats),
+    PARAMS       ("params",      UCI::handleParams),
     BENCH        ("bench",       UCI::handleBench),
     SCORE_DATA   ("scoredata",   UCI::handleScoreData),
     STOP         ("stop",        UCI::handleStop),
     QUIT         ("quit",        UCI::handleQuit),
-    UNKNOWN      ("unknown",     UCI::handleUnknown);
+    UNKNOWN      ("unknown",     UCI::handleUnknown),
+    BARBEQUE     ("dont",        UCI::handleBarbeque);
 
     final String name;
     final CommandConsumer consumer;

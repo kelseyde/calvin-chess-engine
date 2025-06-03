@@ -153,7 +153,7 @@ public class TrainingDataScorer {
             return "";
         }
 
-        Board board = FEN.toBoard(fen);
+        Board board = FEN.parse(fen).toBoard();
         if (MOVE_GENERATOR.isCheck(board, board.isWhite())) {
             // Filter out positions where the side to move is in check
             return "";
@@ -178,7 +178,7 @@ public class TrainingDataScorer {
             return "";
         }
         score = searchResult.eval();
-        if (Score.isMateScore(score)) {
+        if (Score.isMate(score)) {
             // Filter out positions where there is forced mate
             return "";
         }

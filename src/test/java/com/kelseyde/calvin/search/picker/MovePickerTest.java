@@ -69,52 +69,6 @@ public class MovePickerTest {
     }
 
     @Test
-    public void testDebugSingle() {
-
-        List<MovePicker.MoveType> expectedOrder = List.of(MovePicker.MoveType.TT_MOVE, MovePicker.MoveType.GOOD_NOISY, MovePicker.MoveType.KILLER, MovePicker.MoveType.GOOD_QUIET, MovePicker.MoveType.BAD_NOISY);
-
-        SearchHistory history = new SearchHistory(new EngineConfig());
-
-        String fen = "8/8/1p2k1p1/3p3p/1p1P1P1P/1P2PK2/8/8 w - - 3 54";
-        Board board = FEN.parse(fen).toBoard();
-
-        Move ttMove = Move.fromUCI("f3e2");
-        Move killer1 = Move.fromUCI("f4f5");
-        Move killer2 = Move.fromUCI("f3e2");
-
-        history.getKillerTable().add(0, killer1);
-        history.getKillerTable().add(0, killer2);
-
-        SearchStack ss = new SearchStack();
-        StandardMovePicker picker = new StandardMovePicker(TestUtils.CONFIG, moveGenerator, ss, history, board, 0, ttMove, false);
-        List<Move> legalMoves = moveGenerator.generateMoves(board);
-
-        int maxIndex = -1;
-        List<Move> tried = new ArrayList<>();
-        while (true) {
-            ScoredMove move = picker.next();
-            if (move == null) break;  // No more moves to pick
-
-            // Get the move type from the current move
-            MovePicker.MoveType currentMoveType = move.moveType();
-
-            // Ensure the move type is in the expected order
-            int currentIndex = expectedOrder.indexOf(currentMoveType);
-            Assertions.assertTrue(currentIndex >= 0, "Unknown move type encountered.");
-            Assertions.assertTrue(currentIndex >= maxIndex, "Move types are out of order.");
-
-            // Update the highest index seen
-            maxIndex = currentIndex;
-            tried.add(move.move());
-        }
-        if (tried.size() != legalMoves.size()) {
-            Assertions.fail("Tried moves do not match legal moves.");
-        }
-
-
-    }
-
-    @Test
     public void testMovegenFilters() {
 
         for (String fen : Bench.FENS) {

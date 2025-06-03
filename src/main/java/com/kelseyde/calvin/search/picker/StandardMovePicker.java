@@ -18,11 +18,11 @@ import java.util.List;
 public class StandardMovePicker extends MovePicker {
 
     int killerIndex;
+    int badIndex;
 
     ScoredMove[] goodNoisies;
-    ScoredMove[] badNoisies;
     ScoredMove[] goodQuiets;
-    ScoredMove[] badQuiets;
+    ScoredMove[] badNoisiesAndQuiets;
 
     public StandardMovePicker(EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history,
                               Board board, int ply, Move ttMove, boolean inCheck) {
@@ -43,14 +43,13 @@ public class StandardMovePicker extends MovePicker {
         ScoredMove nextMove = null;
         while (nextMove == null) {
             nextMove = switch (stage) {
-                case TT_MOVE ->     pickTTMove(Stage.GEN_NOISY);
-                case GEN_NOISY ->   generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
-                case GOOD_NOISY ->  pickMove(Stage.KILLER);
-                case KILLER ->      pickKiller(Stage.GEN_QUIET);
-                case GEN_QUIET ->   generate(MoveFilter.QUIET, Stage.GOOD_QUIET);
-                case GOOD_QUIET ->  pickMove(Stage.BAD_NOISY);
-                case BAD_NOISY ->   pickMove(Stage.BAD_QUIET);
-                case BAD_QUIET ->   pickMove(Stage.END);
+                case TT_MOVE ->               pickTTMove(Stage.GEN_NOISY);
+                case GEN_NOISY ->             generate(MoveFilter.NOISY, Stage.GOOD_NOISY);
+                case GOOD_NOISY ->            pickMove(Stage.KILLER);
+                case KILLER ->                pickKiller(Stage.GEN_QUIET);
+                case GEN_QUIET ->             generate(MoveFilter.QUIET, Stage.GOOD_QUIET);
+                case GOOD_QUIET ->            pickMove(Stage.BAD_NOISY_AND_QUIET);
+                case BAD_NOISY_AND_QUIET ->   pickMove(Stage.END);
                 default -> null;
             };
             if (stage == Stage.END) break;
@@ -63,28 +62,26 @@ public class StandardMovePicker extends MovePicker {
     protected void handleStagedMoves(List<Move> moves) {
         if (stage == Stage.GEN_NOISY) {
             int goodIndex = 0;
-            int badIndex = 0;
             goodNoisies = new ScoredMove[moves.size()];
-            badNoisies = new ScoredMove[moves.size()];
+            badNoisiesAndQuiets = new ScoredMove[218];
             for (Move move : moves) {
                 ScoredMove scoredMove = scorer.score(board, move, ply, stage);
                 if (scoredMove.isGoodNoisy())
                     goodNoisies[goodIndex++] = scoredMove;
                 else
-                    badNoisies[badIndex++] = scoredMove;
+                    badNoisiesAndQuiets[badIndex++] = scoredMove;
             }
         }
         else if (stage == Stage.GEN_QUIET) {
             int goodIndex = 0;
             int badIndex = 0;
             goodQuiets = new ScoredMove[moves.size()];
-            badQuiets = new ScoredMove[moves.size()];
             for (Move move : moves) {
                 ScoredMove scoredMove = scorer.score(board, move, ply, stage);
                 if (scoredMove.isGoodQuiet())
                     goodQuiets[goodIndex++] = scoredMove;
                 else
-                    badQuiets[badIndex++] = scoredMove;
+                    badNoisiesAndQuiets[badIndex++] = scoredMove;
             }
         }
     }
@@ -104,9 +101,8 @@ public class StandardMovePicker extends MovePicker {
     protected ScoredMove[] loadStagedMoves(Stage stage) {
         return switch (stage) {
             case GOOD_NOISY -> goodNoisies;
-            case BAD_NOISY -> badNoisies;
             case GOOD_QUIET -> goodQuiets;
-            case BAD_QUIET -> badQuiets;
+            case BAD_NOISY_AND_QUIET -> badNoisiesAndQuiets;
             default -> throw new IllegalArgumentException("Invalid stage: " + stage);
         };
     }

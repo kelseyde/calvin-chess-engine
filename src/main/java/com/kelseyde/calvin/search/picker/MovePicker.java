@@ -26,7 +26,7 @@ public abstract class MovePicker {
 
     public enum Stage {
         // PVS stages
-        TT_MOVE, GEN_NOISY, GOOD_NOISY, KILLER, GEN_QUIET, GOOD_QUIET, BAD_NOISY, BAD_QUIET,
+        TT_MOVE, GEN_NOISY, GOOD_NOISY, KILLER, GEN_QUIET, GOOD_QUIET, BAD_NOISY_AND_QUIET,
 
         // Q-search stages
         QSEARCH_GEN_NOISY, QSEARCH_NOISY,
@@ -100,7 +100,7 @@ public abstract class MovePicker {
         final ScoredMove[] moves = loadStagedMoves(stage);
 
         // If we're in check then all evasions have been tried in the noisy stage
-        if ((stage == Stage.GOOD_QUIET || stage == Stage.BAD_QUIET) && (skipQuiets || inCheck))
+        if (stage == Stage.GOOD_QUIET && (skipQuiets || inCheck))
             return nextStage(nextStage);
 
         // If we have no moves to try, move on to the next stage.
@@ -113,6 +113,10 @@ public abstract class MovePicker {
             return nextStage(nextStage);
 
         moveIndex++;
+
+        if (move.isQuiet() && skipQuiets)
+            return pickMove(nextStage);
+
         return move;
 
     }

@@ -100,7 +100,7 @@ public abstract class MovePicker {
         final ScoredMove[] moves = loadStagedMoves(stage);
 
         // If we're in check then all evasions have been tried in the noisy stage
-        if (stage == Stage.GOOD_QUIET && (skipQuiets || inCheck))
+        if ((stage == Stage.GOOD_QUIET || stage == Stage.BAD_QUIET) && (skipQuiets || inCheck))
             return nextStage(nextStage);
 
         // If we have no moves to try, move on to the next stage.

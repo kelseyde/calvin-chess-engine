@@ -27,7 +27,7 @@ public class StandardMovePicker extends MovePicker {
     public StandardMovePicker(EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history,
                               Board board, int ply, Move ttMove, boolean inCheck) {
         super(config, movegen, history, ss, board, ply, ttMove, inCheck);
-        this.stage = Stage.TT_MOVE;
+        this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
     @Override

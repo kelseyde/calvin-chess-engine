@@ -74,7 +74,6 @@ public class StandardMovePicker extends MovePicker {
         }
         else if (stage == Stage.GEN_QUIET) {
             int goodIndex = 0;
-            int badIndex = 0;
             goodQuiets = new ScoredMove[moves.size()];
             for (Move move : moves) {
                 ScoredMove scoredMove = scorer.score(board, move, ply, stage);

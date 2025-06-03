@@ -28,6 +28,10 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
         private static final long AGE_MASK            = 0x0000ffff00000000L;
         private static final long ZOBRIST_PART_MASK   = 0x00000000ffffffffL;
 
+        public static boolean matches(long key1, long key2) {
+            return getZobristPart(key1) == getZobristPart(key2);
+        }
+
         public static long getZobristPart(long key) {
             return key & ZOBRIST_PART_MASK;
         }
@@ -81,6 +85,10 @@ public record HashEntry(Move move, int score, int staticEval, int flag, int dept
 
         public static boolean isPv(long value) {
             return (value & PV_MASK) >>> 8 == 1;
+        }
+
+        public static long setDepth(long value, int depth) {
+            return (value & ~DEPTH_MASK) | (long) depth;
         }
 
         public static long of(int score, Move move, int flag, int depth, boolean pv) {

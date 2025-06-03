@@ -68,7 +68,7 @@ public class StandardMovePicker extends MovePicker {
             badNoisies = new ScoredMove[moves.size()];
             for (Move move : moves) {
                 ScoredMove scoredMove = scorer.score(board, move, ply, stage);
-                if (scoredMove.isGoodNoisy())
+                if (scoredMove.isGoodNoisy() || inCheck)
                     goodNoisies[goodIndex++] = scoredMove;
                 else
                     badNoisies[badIndex++] = scoredMove;

@@ -7,9 +7,9 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.search.picker.MovePicker.MoveType;
 import com.kelseyde.calvin.search.picker.MovePicker.Stage;
+import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 
 /**
  * Assigns a score to a move to determine the order in which moves are tried during search. The score is based on several

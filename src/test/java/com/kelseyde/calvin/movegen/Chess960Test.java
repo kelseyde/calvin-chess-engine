@@ -5,26 +5,16 @@ import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.search.Searcher;
 import com.kelseyde.calvin.uci.UCI;
-import com.kelseyde.calvin.utils.TestUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 public class Chess960Test {
 
-    private static final List<String> FENS = List.of(
-//            "nrkqrbbn/pppppppp/8/8/8/8/PPPPPPPP/NRKQRBBN w EBeb - 0 1"
-//            "rkrnqnbb/pppppppp/8/8/8/8/PPPPPPPP/RKRNQNBB w CAca - 0 1"
-//            "qrkbbnrn/pppppppp/8/8/8/8/PPPPPPPP/QRKBBNRN w GBgb - 0 1"
-//            "qnnbrkbr/pppppppp/8/8/8/8/PPPPPPPP/QNNBRKBR w KQkq - 0 1",
-//            "bbqnrknr/pppppppp/8/8/8/8/PPPPPPPP/BBQNRKNR w KQkq - 0 1",
-            "bbqnrknr/pppppppp/8/8/8/8/PPPPPPPP/BBQNRKNR w KQkq - 0 1"
-//            "nrbnkbqr/pppppppp/8/8/8/8/PPPPPPPP/NRBNKBQR w KQkq - 0 1"
-    );
-
-    private static final Searcher SEARCHER = TestUtils.SEARCHER;
     private static final MoveGenerator MOVEGEN = new MoveGenerator();
 
     @BeforeEach
@@ -35,20 +25,6 @@ public class Chess960Test {
     @AfterEach
     public void afterEach() {
         UCI.Options.chess960 = false;
-    }
-
-    @Test
-    @Disabled
-    public void testFens() {
-
-        for (String fen : FENS) {
-
-            SEARCHER.clearHistory();
-            SEARCHER.setPosition(Board.from(fen));
-            SEARCHER.search(20, 0, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, false);
-
-        }
-
     }
 
     @Test

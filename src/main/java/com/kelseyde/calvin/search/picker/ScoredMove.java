@@ -35,4 +35,8 @@ public record ScoredMove(Move move,
         return moveType == MoveType.GOOD_QUIET;
     }
 
+    public boolean isBadQuiet() {
+        return moveType == MoveType.BAD_QUIET;
+    }
+
 }

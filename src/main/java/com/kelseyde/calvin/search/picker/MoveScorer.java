@@ -117,12 +117,4 @@ public class MoveScorer {
 
     }
 
-    public void setSeeNoisyDivisor(int seeNoisyDivisor) {
-        this.seeNoisyDivisor = seeNoisyDivisor;
-    }
-
-    public void setSeeNoisyOffset(int seeNoisyOffset) {
-        this.seeNoisyOffset = seeNoisyOffset;
-    }
-
 }

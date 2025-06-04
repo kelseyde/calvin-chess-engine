@@ -49,17 +49,15 @@ public class SearchHistory {
         if (!bestMoveCapture) {
             killerTable.add(ply, bestMove);
 
-            for (Move quiet : quiets) {
-                // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
+            // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
+            for (Move quiet : quiets)
                 updateQuietHistory(board, quiet, bestMove, ss, white, depth, ply);
-            }
         }
 
-        for (Move capture : captures) {
-            // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
-            // best move was quiet or a capture, penalise all other captures.
+        // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
+        // best move was quiet or a capture, penalise all other captures.
+        for (Move capture : captures)
             updateCaptureHistory(board, capture, bestMove, white, depth);
-        }
 
     }
 

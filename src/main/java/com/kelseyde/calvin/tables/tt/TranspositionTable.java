@@ -82,14 +82,14 @@ public class TranspositionTable {
         if (Score.isMate(score)) score = calculateMateScore(score, ply);
 
         int replacedIndex = -1;
-        int minDepth = Integer.MAX_VALUE;
+        int currentQuality = Integer.MAX_VALUE;
         boolean replacedByAge = false;
 
-        // Iterate over the four items in the bucket
-        for (int i = startIndex; i < startIndex + 4; i++) {
-            long storedKey = keys[i];
+        for (int i = startIndex; i < startIndex + BUCKET_SIZE; i++) {
 
-            // First, always prefer an empty slot if it is available.
+            final long storedKey = keys[i];
+
+            // First, always replace an empty entry.
             if (storedKey == 0) {
                 replacedIndex = i;
                 break;
@@ -101,8 +101,9 @@ public class TranspositionTable {
                 break;
             }
 
-            long storedValue = values[i];
+            final long storedValue = values[i];
 
+            // Third, always replace an entry with no flag (thus only containing a static eval).
             int storedFlag = Value.getFlag(storedValue);
             if (storedFlag == HashFlag.NONE) {
                 replacedIndex = i;
@@ -110,12 +111,11 @@ public class TranspositionTable {
             }
 
             int storedDepth = Value.getDepth(values[i]);
-            // Then, if the stored entry matches the zobrist key and the depth is >= the stored depth, replace it.
-            // If the depth is < the store depth, don't replace it and exit (although this should never happen).
+
             if (Key.matches(storedKey, key)) {
                 if (depth >= storedDepth - 4) {
                     // If the stored entry has a recorded best move but the new entry does not, use the stored one.
-                    Move storedMove = Value.getMove(storedValue);
+                    final Move storedMove = Value.getMove(storedValue);
                     if (move == null && storedMove != null) {
                         move = storedMove;
                     }
@@ -128,15 +128,12 @@ public class TranspositionTable {
                 }
             }
 
-            // Next, prefer to replace entries from earlier on in the game, since they are now less likely to be relevant.
-            if (age > Key.getAge(storedKey)) {
-                replacedByAge = true;
-                replacedIndex = i;
-            }
+            final int storedAge = Key.getAge(storedKey);
 
-            // Finally, just replace the entry with the shallowest search depth.
-            if (!replacedByAge && storedDepth < minDepth) {
-                minDepth = storedDepth;
+            int quality = quality(storedAge, storedDepth);
+            if (quality < currentQuality) {
+                // If the stored entry is of higher quality than the current best, replace it.
+                currentQuality = quality;
                 replacedIndex = i;
             }
 
@@ -162,7 +159,7 @@ public class TranspositionTable {
     /**
      * Increments the age counter for the transposition table.
      */
-    public void incrementAge() {
+    public void birthday() {
         this.age++;
     }
 
@@ -192,6 +189,18 @@ public class TranspositionTable {
         // Modulo the result with the number of entries in the table, and align it with a multiple of 4,
         // ensuring the entries are always divided into 4-sized buckets.
         return (int) (index % (size - (BUCKET_SIZE - 1))) & -BUCKET_SIZE;
+    }
+
+    /**
+     * Calculate a quality score for a TT entry based on its age and search depth.
+     * Younger TT entries are prioritised over older ones, and entries for deeper searches are preferred over shallower ones.
+     */
+    private int quality(int storedAge, int depth) {
+        int ageDiff = age - storedAge;
+        if (ageDiff < 0) {
+            ageDiff += 32;
+        }
+        return depth - 2 * ageDiff;
     }
 
     // On insertion, adjust the mate score to reflect the number of ply from the root position

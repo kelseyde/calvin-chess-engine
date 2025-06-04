@@ -38,7 +38,7 @@ public class Pretty {
     public static void printEngineInfo() {
         UCI.write("");
         UCI.write(Pretty.BANNER);
-        UCI.write(Pretty.RED + "Engine" + Pretty.RESET + ": Calvin 6.1.0");
+        UCI.write(Pretty.RED + "Engine" + Pretty.RESET + ": Calvin 6.1.1");
         UCI.write(Pretty.RED + "Author" + Pretty.RESET + ": Dan Kelsey");
         UCI.write(Pretty.RED + "Source" + Pretty.RESET + ": https://github.com/kelseyde/calvin-chess-engine");
         UCI.write("");

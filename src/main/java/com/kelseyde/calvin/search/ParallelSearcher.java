@@ -9,6 +9,8 @@ import com.kelseyde.calvin.tables.tt.TranspositionTable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -37,6 +39,8 @@ public class ParallelSearcher implements Search {
     private int hashSize;
     private Board board;
 
+    private ExecutorService threadPool;
+
     /**
      * Constructs a ParallelSearcher with the given {@link EngineConfig} config and {@link Supplier} suppliers.
      * The suppliers are used to create the necessary components for each search thread.
@@ -51,6 +55,7 @@ public class ParallelSearcher implements Search {
         this.hashSize = config.defaultHashSizeMb;
         this.threadCount = config.defaultThreads;
         this.searchers = initSearchers();
+        initThreadPool(threadCount);
     }
 
     /**
@@ -113,6 +118,7 @@ public class ParallelSearcher implements Search {
     @Override
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
+        initThreadPool(threadCount);
         this.searchers = initSearchers();
     }
 
@@ -129,7 +135,14 @@ public class ParallelSearcher implements Search {
                 Move move = movegen.generateMoves(board).stream().findAny().orElse(null);
                 return SearchResult.of(move);
             }
-        });
+        }, threadPool);
+    }
+
+    private void initThreadPool(int threadCount) {
+        if (threadPool != null && !threadPool.isShutdown()) {
+            threadPool.shutdownNow();
+        }
+        threadPool = Executors.newFixedThreadPool(threadCount);
     }
 
     /**

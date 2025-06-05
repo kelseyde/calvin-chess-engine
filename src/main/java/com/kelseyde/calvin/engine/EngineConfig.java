@@ -101,6 +101,7 @@ public class EngineConfig {
     private final Tunable dynamicPolicyMult      = new Tunable("DynamicPolicyMult", 10, 0, 20, 2);
     private final Tunable dynamicPolicyMin       = new Tunable("DynamicPolicyMin", -100, -100, 0, 25);
     private final Tunable dynamicPolicyMax       = new Tunable("DynamicPolicyMax", 200, 75, 200, 25);
+    private final Tunable goodQuietThreshold     = new Tunable("GoodQuietThreshold", 0, -2048, 2048, 256);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
@@ -151,7 +152,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, lmrDeeperBase, lmrDeeperScale
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale
         );
     }
 
@@ -539,6 +540,10 @@ public class EngineConfig {
 
     public int dynamicPolicyMax() {
         return dynamicPolicyMax.value;
+    }
+
+    public int goodQuietThreshold() {
+        return goodQuietThreshold.value;
     }
 
     public int quietHistBonusMax() {

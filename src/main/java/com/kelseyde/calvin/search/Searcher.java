@@ -39,7 +39,7 @@ public class Searcher implements Search {
     final ThreadData td;
     final NNUE eval;
 
-    TimeControl tc;
+    SearchLimits limits;
     Board board;
 
     public Searcher(EngineConfig config, TranspositionTable tt, ThreadData td) {
@@ -62,10 +62,10 @@ public class Searcher implements Search {
      * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
      */
     @Override
-    public SearchResult search(TimeControl timeControl) {
+    public SearchResult search(SearchLimits limits) {
 
         final List<Move> rootMoves = movegen.generateMoves(board);
-        tc = timeControl;
+        this.limits = limits;
 
         if (rootMoves.isEmpty())
             return handleNoLegalMoves();
@@ -98,7 +98,7 @@ public class Searcher implements Search {
 
             // Report search progress as UCI output
             if (td.isMainThread())
-                UCI.writeSearchInfo(SearchResult.of(td, tc));
+                UCI.writeSearchInfo(SearchResult.of(td, limits));
 
             // Check if search is cancelled or a checkmate is found
             if (shouldStop(HARD) || Score.isMate(score))
@@ -143,7 +143,7 @@ public class Searcher implements Search {
         if (td.bestMove() == null)
             td.updateBestMove(rootMoves.get(0), td.bestScore());
 
-        return SearchResult.of(td, tc);
+        return SearchResult.of(td, limits);
 
     }
 
@@ -853,20 +853,21 @@ public class Searcher implements Search {
 
     private boolean hardLimitReached() {
         // Exit if hard limit for the current search is reached.
-        if (config.pondering || tc == null)
+        if (td.abort || config.searchCancelled)
+            return true;
+        if (config.pondering || limits == null)
             return false;
-        if (config.searchCancelled) return true;
-        return tc.isHardLimitReached(td.depth, td.nodes);
+        return td.isMainThread() && limits.isHardLimitReached(td.depth, td.nodes);
     }
 
     private boolean softLimitReached() {
         // Exit if soft limit for the current search is reached.
-        if (config.pondering || tc == null)
+        if (config.pondering || limits == null)
             return false;
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
         final int bestMoveNodes = td.nodes(td.bestMove());
-        return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        return limits.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
     private boolean isDraw() {
@@ -895,7 +896,7 @@ public class Searcher implements Search {
         if (td.isMainThread()) {
             UCI.write("info error no legal moves");
         }
-        return SearchResult.of(td, tc);
+        return SearchResult.of(td, limits);
     }
 
     private SearchResult handleOneLegalMove(List<Move> rootMoves) {
@@ -903,7 +904,7 @@ public class Searcher implements Search {
         final Move move = rootMoves.get(0);
         final int eval = this.eval.evaluate();
         td.updateBestMove(move, eval);
-        SearchResult result = SearchResult.of(td, tc);
+        SearchResult result = SearchResult.of(td, limits);
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;
@@ -927,6 +928,14 @@ public class Searcher implements Search {
         tt.clear();
         eval.clearHistory();
         history.clear();
+    }
+
+    public boolean isMainThread() {
+        return td.isMainThread();
+    }
+
+    public void abort() {
+        td.abort = true;
     }
 
     private int futilityMargin(int depth, int historyScore, int searchedMoves) {
@@ -970,5 +979,6 @@ public class Searcher implements Search {
     enum SearchLimit {
         SOFT, HARD
     }
+
 
 }

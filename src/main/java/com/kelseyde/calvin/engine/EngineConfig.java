@@ -13,13 +13,23 @@ public class EngineConfig {
         postInitialise();
     }
 
-    public final int minThreads = 1;
-    public final int maxThreads = 12;
-    public final int defaultThreads = 1;
+    public ThreadConfig threadConfig = ThreadConfig.builder()
+            .minThreads(1)
+            .maxThreads(512)
+            .defaultThreads(1)
+            .build();
 
-    public final int minHashSizeMb = 1;
-    public final int maxHashSizeMb = 1024;
-    public final int defaultHashSizeMb = 256;
+    public HashConfig hashConfig = HashConfig.builder()
+            .minSizeMb(1)
+            .maxSizeMb(1024)
+            .defaultSizeMb(256)
+            .build();
+
+    public MultiPvConfig multiPvConfig = MultiPvConfig.builder()
+            .minPvs(1)
+            .maxPvs(16)
+            .defaultPvs(1)
+            .build();
 
     public boolean ponderEnabled = false;
     public boolean pondering = false;

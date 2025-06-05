@@ -52,7 +52,7 @@ public class Engine {
         this.board = FEN.startpos().toBoard();
         this.movegen = new MoveGenerator();
         this.perft = new Perft();
-        this.searcher = new ParallelSearcher(config, movegen, new TranspositionTable(config.defaultHashSizeMb));
+        this.searcher = new ParallelSearcher(config, movegen, new TranspositionTable(config.hashConfig.defaultSizeMb));
         this.searcher.setPosition(board);
     }
 

@@ -48,8 +48,8 @@ public class ParallelSearcher implements Search {
         this.tt = tt;
         this.config = config;
         this.movegen = movegen;
-        this.hashSize = config.defaultHashSizeMb;
-        this.threadCount = config.defaultThreads;
+        this.hashSize = config.hashConfig.defaultSizeMb;
+        this.threadCount = config.threadConfig.defaultThreads;
         this.searchers = initSearchers();
     }
 

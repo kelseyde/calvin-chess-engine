@@ -71,9 +71,11 @@ public class UCI {
         write("id author Dan Kelsey");
         EngineConfig config = ENGINE.getConfig();
         write(String.format("option name Hash type spin default %s min %s max %s",
-                config.defaultHashSizeMb, config.minHashSizeMb, config.maxHashSizeMb));
+                config.hashConfig.defaultSizeMb, config.hashConfig.minSizeMb, config.hashConfig.maxSizeMb));
         write(String.format("option name Threads type spin default %s min %s max %s",
-                config.defaultThreads, config.minThreads, config.maxThreads));
+                config.threadConfig.defaultThreads, config.threadConfig.minThreads, config.threadConfig.maxThreads));
+        write(String.format("option name MultiPV type spin default %s min %s max %s",
+                config.multiPvConfig.defaultPvs, config.multiPvConfig.minPvs, config.multiPvConfig.maxPvs));
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
         write("option name UCI_Chess960 type check default false");
         write("option name Pretty type check default false");
@@ -229,8 +231,8 @@ public class UCI {
 
     private static void setHashSize(UCICommand command) {
         int hashSizeMb = command.getInt("value", -1, true);
-        int minHashSizeMb = ENGINE.getConfig().minHashSizeMb;
-        int maxHashSizeMb = ENGINE.getConfig().maxHashSizeMb;
+        int minHashSizeMb = ENGINE.getConfig().hashConfig.minSizeMb;
+        int maxHashSizeMb = ENGINE.getConfig().hashConfig.maxSizeMb;
         if (hashSizeMb >= minHashSizeMb && hashSizeMb <= maxHashSizeMb) {
             ENGINE.setHashSize(hashSizeMb);
             write("info string Hash " + hashSizeMb);
@@ -241,8 +243,8 @@ public class UCI {
 
     private static void setThreads(UCICommand command) {
         int threadCount = command.getInt("value", -1, true);
-        int minThreadCount = ENGINE.getConfig().minThreads;
-        int maxThreadCount = ENGINE.getConfig().maxThreads;
+        int minThreadCount = ENGINE.getConfig().threadConfig.minThreads;
+        int maxThreadCount = ENGINE.getConfig().threadConfig.maxThreads;
         if (threadCount >= minThreadCount && threadCount <= maxThreadCount) {
             ENGINE.setThreadCount(threadCount);
             write("info string Threads " + threadCount);

@@ -74,8 +74,6 @@ public class UCI {
                 config.hashConfig.defaultSizeMb, config.hashConfig.minSizeMb, config.hashConfig.maxSizeMb));
         write(String.format("option name Threads type spin default %s min %s max %s",
                 config.threadConfig.defaultThreads, config.threadConfig.minThreads, config.threadConfig.maxThreads));
-        write(String.format("option name MultiPV type spin default %s min %s max %s",
-                config.multiPvConfig.defaultPvs, config.multiPvConfig.minPvs, config.multiPvConfig.maxPvs));
         write(String.format("option name Ponder type check default %s", config.ponderEnabled));
         write("option name UCI_Chess960 type check default false");
         write("option name Pretty type check default false");

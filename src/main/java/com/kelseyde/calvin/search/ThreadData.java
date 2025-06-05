@@ -6,7 +6,6 @@ import com.kelseyde.calvin.board.Move;
 public class ThreadData {
 
     public final int threadIndex;
-    public int multiPv;
     public int nodes;
     public int[][] nodesPerMove;
     public int depth;
@@ -24,7 +23,6 @@ public class ThreadData {
 
     public ThreadData(int threadIndex) {
         this.threadIndex = threadIndex;
-        this.multiPv = 1;
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
         this.depth = 1;

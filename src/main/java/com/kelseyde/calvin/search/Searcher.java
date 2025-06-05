@@ -73,8 +73,6 @@ public class Searcher implements Search {
         if (rootMoves.size() == 1)
             return handleOneLegalMove(rootMoves);
 
-        int variations = Math.min(td.multiPv, rootMoves.size());
-
         ss.clear();
         td.reset();
         history.reset();

@@ -25,12 +25,6 @@ public class EngineConfig {
             .defaultSizeMb(256)
             .build();
 
-    public MultiPvConfig multiPvConfig = MultiPvConfig.builder()
-            .minPvs(1)
-            .maxPvs(16)
-            .defaultPvs(1)
-            .build();
-
     public boolean ponderEnabled = false;
     public boolean pondering = false;
     public boolean searchCancelled = false;

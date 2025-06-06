@@ -179,13 +179,16 @@ public class Searcher implements Search {
             depth = 0;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
-        if (ply > 0 && isDraw()) return Score.DRAW;
+        if (ply > 0 && isDraw())
+            return Score.DRAW;
 
         // Update the selective search depth
-        if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
+        if (ply + 1 > td.seldepth)
+            td.seldepth = ply + 1;
 
         // If the maximum depth is reached, return the static evaluation of the position
-        if (ply >= MAX_DEPTH) return inCheck ? 0 : eval.evaluate();
+        if (ply >= MAX_DEPTH)
+            return inCheck ? 0 : eval.evaluate();
 
         // Mate Distance Pruning
         // Exit early if we have already found a forced mate at an earlier ply
@@ -247,7 +250,7 @@ public class Searcher implements Search {
                 && (pvNode || cutNode)
                 && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
                 && depth >= config.iirDepth()) {
-            --depth;
+            depth--;
         }
 
         if (depth <= 0 && !inCheck)
@@ -339,9 +342,8 @@ public class Searcher implements Search {
             if (depth <= config.razorDepth()
                 && staticEval + config.razorMargin() * depth < alpha) {
                 final int score = qsearch(alpha, alpha + 1, ply);
-                if (score < alpha) {
+                if (score < alpha)
                     return score;
-                }
             }
 
             // Null Move Pruning
@@ -560,6 +562,7 @@ public class Searcher implements Search {
 
                 // If searched at reduced depth and the score beat alpha, re-search at full depth, with a null window.
                 if (score > alpha && reduction > 0) {
+                    // Adjust the depth of the re-search based on the results of the reduced search.
                     boolean doDeeperSearch = score > bestScore + config.lmrDeeperBase() + config.lmrDeeperScale() * newDepth;
                     boolean doShallowerSearch = score < bestScore + newDepth;
                     newDepth += (doDeeperSearch ? 1 : 0) - (doShallowerSearch ? 1 : 0);
@@ -680,13 +683,16 @@ public class Searcher implements Search {
             return alpha;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.
-        if (ply > 0 && isDraw()) return Score.DRAW;
+        if (ply > 0 && isDraw())
+            return Score.DRAW;
 
         // If the maximum depth is reached, return the static evaluation of the position.
-        if (ply >= MAX_DEPTH) return movegen.isCheck(board) ? 0 : eval.evaluate();
+        if (ply >= MAX_DEPTH)
+            return movegen.isCheck(board) ? 0 : eval.evaluate();
 
         // Update the selective search depth
-        if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
+        if (ply + 1 > td.seldepth)
+            td.seldepth = ply + 1;
 
         final boolean pvNode = beta - alpha > 1;
 
@@ -696,9 +702,8 @@ public class Searcher implements Search {
         final Move ttMove = ttHit ? ttEntry.move() : null;
         boolean ttPv = pvNode || (ttHit && ttEntry.pv());
 
-        if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta)) {
+        if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta))
             return ttEntry.score();
-        }
 
         final boolean inCheck = movegen.isCheck(board);
 
@@ -796,13 +801,11 @@ public class Searcher implements Search {
             }
         }
 
-        if (moveCount == 0 && inCheck) {
+        if (moveCount == 0 && inCheck)
             return -Score.MATE + ply;
-        }
 
-        if (bestScore >= beta && !Score.isMate(bestScore) && !Score.isMate(beta)) {
+        if (bestScore >= beta && !Score.isMate(bestScore) && !Score.isMate(beta))
             bestScore = (bestScore + beta) / 2;
-        }
 
         if (!shouldStop(HARD))
             tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, ttPv);
@@ -885,17 +888,15 @@ public class Searcher implements Search {
         if (!Score.isDefined(lastEval)) {
             if (ply < 4) return false;
             lastEval = ss.get(ply - 4).staticEval;
-            if (Score.isDefined(lastEval)) {
+            if (Score.isDefined(lastEval))
                 return true;
-            }
         }
         return lastEval < staticEval;
     }
 
     private SearchResult handleNoLegalMoves() {
-        if (td.isMainThread()) {
+        if (td.isMainThread())
             UCI.write("info error no legal moves");
-        }
         return SearchResult.of(td, limits);
     }
 

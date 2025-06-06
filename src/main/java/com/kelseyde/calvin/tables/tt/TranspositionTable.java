@@ -162,7 +162,7 @@ public class TranspositionTable {
     /**
      * Increments the age counter for the transposition table.
      */
-    public void incrementAge() {
+    public void birthday() {
         this.age++;
     }
 

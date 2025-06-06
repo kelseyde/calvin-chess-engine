@@ -69,7 +69,7 @@ public class ParallelSearcher implements Search {
                     .toList();
 
             SearchResult result = selectResult(threads).get();
-            tt.incrementAge();
+            tt.birthday();
             return result;
         } catch (Exception e) {
             System.out.println("info error " + e);

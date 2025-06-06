@@ -159,7 +159,8 @@ public class Searcher implements Search {
     public int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
 
         // If timeout is reached, exit immediately
-        if (shouldStop(HARD)) return alpha;
+        if (shouldStop(HARD))
+            return alpha;
 
         // A PV (principal variation) node is one that falls within the alpha-beta window.
         final boolean pvNode = beta - alpha > 1;
@@ -425,7 +426,7 @@ public class Searcher implements Search {
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
+            final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!isGoodNoisy || !ttPv);
             if (doLmr) {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;

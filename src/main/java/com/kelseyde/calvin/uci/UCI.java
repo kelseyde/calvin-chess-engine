@@ -46,6 +46,8 @@ public class UCI {
 
         // Allow the engine to be benched from the command line at startup.
         if (args.length == 1 && args[0].equals("bench")) {
+            // We run bench twice because JIT stuff drastically slows down the first run.
+            // Therefore, we discard the initial results and take the NPS of the second run.
             Bench.run(ENGINE, false, false);
             Bench.run(ENGINE, true, true);
         }

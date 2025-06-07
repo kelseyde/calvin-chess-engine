@@ -46,7 +46,12 @@ public class UCI {
 
         // Allow the engine to be benched from the command line at startup.
         if (args.length == 1 && args[0].equals("bench")) {
-            Bench.run(ENGINE, true);
+            // Let me unpack this insanity:
+            // We run bench three times because JIT stuff drastically slows down the first couple of runs.
+            // Therefore, we discard the initial results and take the NPS of the third run.
+            Bench.run(ENGINE, false, false);
+            Bench.run(ENGINE, false, false);
+            Bench.run(ENGINE, true, true);
         }
 
         try (Scanner in = new Scanner(System.in)) {
@@ -90,7 +95,7 @@ public class UCI {
     }
 
     public static void handleBench(UCICommand command) {
-        Bench.run(ENGINE, false);
+        Bench.run(ENGINE, false, true);
     }
 
     public static void handleNewGame(UCICommand command) {
@@ -342,5 +347,6 @@ public class UCI {
             handleUnknown(command);
         }
     }
+
 
 }

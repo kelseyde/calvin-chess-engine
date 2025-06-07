@@ -780,6 +780,11 @@ public class Searcher implements Search {
             if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
                 continue;
 
+            // Evasion Pruning
+            // In check, stop searching quiet moves after finding at least one non-losing move.
+            if (inCheck && moveCount > 1 && scoredMove.isQuiet() && !Score.isMate(bestScore))
+                break;
+
             makeMove(scoredMove, piece, captured, curr);
 
             td.nodes++;

@@ -43,6 +43,8 @@ public class EngineConfig {
     private final Tunable fpScale                = new Tunable("FpScale", 82, 0, 100, 5);
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 98, 1, 1000, 25);
     private final Tunable fpMoveMultiplier       = new Tunable("FpMoveMultiplier", 4, 0, 10, 1);
+    private final Tunable fpPvDistanceMultiplier = new Tunable("FpPvDistanceMultiplier", 2, 0, 10, 1);
+    private final Tunable fpPvDistanceMax        = new Tunable("FpPvDistanceMax", 50, 0, 100, 15);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
     private final Tunable seeQuietMargin         = new Tunable("SeeQuietMargin", -44, -250, -10, 25);
     private final Tunable seeNoisyMargin         = new Tunable("SeeNoisyMargin", -17, -250, -10, 25);
@@ -156,7 +158,8 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
+                fpPvDistanceMultiplier, fpPvDistanceMax
         );
     }
 
@@ -268,6 +271,14 @@ public class EngineConfig {
 
     public int fpMoveMultiplier() {
         return fpMoveMultiplier.value;
+    }
+
+    public int fpPvDistanceMultiplier() {
+        return fpPvDistanceMultiplier.value;
+    }
+
+    public int fpPvDistanceMax() {
+        return fpPvDistanceMax.value;
     }
 
     public int seeMaxDepth() {

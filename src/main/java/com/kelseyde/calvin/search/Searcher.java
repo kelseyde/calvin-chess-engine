@@ -204,6 +204,9 @@ public class Searcher implements Search {
         final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
         curr.inCheck = inCheck;
 
+        int pvDistance = pvNode ? 0 : prev.pvDistance + 1;
+        curr.pvDistance = pvDistance;
+
         history.getKillerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
 
@@ -445,7 +448,7 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
-            final int futilityMargin = futilityMargin(reducedDepth, historyScore, moveCount);
+            final int futilityMargin = futilityMargin(reducedDepth, historyScore, moveCount, pvDistance);
             if (!pvNode
                     && !rootNode
                     && isQuiet
@@ -709,7 +712,9 @@ public class Searcher implements Search {
         final boolean inCheck = movegen.isCheck(board);
 
         SearchStackEntry curr = ss.get(ply);
+        SearchStackEntry prev = ss.get(ply - 1);
         curr.inCheck = inCheck;
+        curr.pvDistance = pvNode ? 0 : prev.pvDistance + 1;;
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Score.MIN;
@@ -942,11 +947,12 @@ public class Searcher implements Search {
         td.abort = true;
     }
 
-    private int futilityMargin(int depth, int historyScore, int searchedMoves) {
+    private int futilityMargin(int depth, int historyScore, int searchedMoves, int pvDistance) {
         return config.fpMargin()
                 + depth * config.fpScale()
                 + (historyScore / config.fpHistDivisor())
-                - searchedMoves * config.fpMoveMultiplier();
+                - searchedMoves * config.fpMoveMultiplier()
+                - Math.min(pvDistance * config.fpPvDistanceMultiplier(), config.fpPvDistanceMax());
     }
 
     private int lmrFutilityMargin(int depth, int historyScore) {

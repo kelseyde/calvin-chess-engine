@@ -56,6 +56,8 @@ public class EngineConfig {
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 63, 0, 150, 25);
     private final Tunable rfpImprovingMargin     = new Tunable("RfpImprovingMargin", 69, 0, 150, 25);
+    private final Tunable rfpPvDistanceMult      = new Tunable("RfpPvDistanceMult", 4, 0, 16, 4);
+    private final Tunable rfpPvDistanceMax       = new Tunable("RfpPvDistanceMax", 64, 0, 128, 16);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 92, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 314, 200, 400, 10);
@@ -64,8 +66,6 @@ public class EngineConfig {
     private final Tunable lmrMinMoves            = new Tunable("LmrMinMoves", 3, 2, 5, 1);
     private final Tunable lmrMinPvMoves          = new Tunable("LmrMinPvMoves", 4, 2, 5, 1);
     private final Tunable lmrPvNode              = new Tunable("LmrPvNode", 911, 0, 2048, 150);
-    private final Tunable lmrPvDistanceMult      = new Tunable("LmrPvDistanceMult", 64, 0, 256, 64);
-    private final Tunable lmrPvDistanceMax       = new Tunable("LmrPvDistanceMax", 1024, 0, 2048, 256);
     private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2085, 0, 3072, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 70, 0, 2048, 150);
     private final Tunable lmrFutile              = new Tunable("LmrFutile", 962, 0, 2048, 150);
@@ -159,7 +159,7 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax
+                rfpPvDistanceMult, rfpPvDistanceMax
         );
     }
 
@@ -325,6 +325,14 @@ public class EngineConfig {
         return rfpImprovingMargin.value;
     }
 
+    public int rfpPvDistanceMult() {
+        return rfpPvDistanceMult.value;
+    }
+
+    public int rfpPvDistanceMax() {
+        return rfpPvDistanceMax.value;
+    }
+
     public int lmrDepth() {
         return lmrDepth.value;
     }
@@ -355,14 +363,6 @@ public class EngineConfig {
 
     public int lmrPvNode() {
         return lmrPvNode.value;
-    }
-
-    public int lmrPvDistanceMult() {
-        return lmrPvDistanceMult.value;
-    }
-
-    public int lmrPvDistanceMax() {
-        return lmrPvDistanceMax.value;
     }
 
     public int lmrCutNode() {

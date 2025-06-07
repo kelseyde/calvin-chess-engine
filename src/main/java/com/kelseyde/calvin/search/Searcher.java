@@ -325,6 +325,9 @@ public class Searcher implements Search {
         // should be more cautious in our alpha pruning - where the eval is too low.
         final boolean improving = isImproving(ply, staticEval);
 
+        // How many plies away from the nearest parent PV-node are we?
+        int distanceFromPv = pvNode ? 0 : distanceFromPv(ply);
+
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
         if (!pvNode && !inCheck && !singularSearch) {
@@ -332,7 +335,8 @@ public class Searcher implements Search {
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             final int futilityMargin = depth * config.rfpMargin()
-                    - (improving ? config.rfpImprovingMargin() : 0);
+                    - (improving ? config.rfpImprovingMargin() : 0)
+                    - Math.min(distanceFromPv * config.rfpPvDistanceMult(), config.rfpPvDistanceMax());
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
@@ -385,9 +389,6 @@ public class Searcher implements Search {
 
         }
 
-        // How many plies away from the nearest parent PV-node are we?
-        int distanceFromPv = pvNode ? 0 : distanceFromPv(ply);
-
         // We have decided that the current node should not be pruned and is worth examining further.
         // Now we begin iterating through the legal moves in the position and searching deeper in the tree.
 
@@ -436,7 +437,6 @@ public class Searcher implements Search {
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
-                r += Math.min(distanceFromPv * config.lmrPvDistanceMult(), config.lmrPvDistanceMax());
                 r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;

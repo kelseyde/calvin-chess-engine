@@ -888,16 +888,13 @@ public class Searcher implements Search {
      * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
      */
     private boolean isImproving(int ply, int staticEval) {
-        if (!Score.isDefined(staticEval)) return false;
-        if (ply < 2) return false;
-        int lastEval = ss.get(ply - 2).staticEval;
-        if (!Score.isDefined(lastEval)) {
-            if (ply < 4) return false;
-            lastEval = ss.get(ply - 4).staticEval;
-            if (Score.isDefined(lastEval))
-                return true;
-        }
-        return lastEval < staticEval;
+        if (!Score.isDefined(staticEval))
+            return false;
+        if (ply > 1 && Score.isDefined(ss.get(ply - 2).staticEval))
+            return staticEval > ss.get(ply - 2).staticEval;
+        if (ply > 3 && Score.isDefined(ss.get(ply - 4).staticEval))
+            return staticEval > ss.get(ply - 4).staticEval;
+        return true;
     }
 
     private SearchResult handleNoLegalMoves() {

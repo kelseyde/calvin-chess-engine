@@ -13,13 +13,17 @@ public class EngineConfig {
         postInitialise();
     }
 
-    public final int minThreads = 1;
-    public final int maxThreads = 12;
-    public final int defaultThreads = 1;
+    public ThreadConfig threadConfig = ThreadConfig.builder()
+            .minThreads(1)
+            .maxThreads(512)
+            .defaultThreads(1)
+            .build();
 
-    public final int minHashSizeMb = 1;
-    public final int maxHashSizeMb = 1024;
-    public final int defaultHashSizeMb = 256;
+    public HashConfig hashConfig = HashConfig.builder()
+            .minSizeMb(1)
+            .maxSizeMb(1024)
+            .defaultSizeMb(16)
+            .build();
 
     public boolean ponderEnabled = false;
     public boolean pondering = false;
@@ -70,6 +74,8 @@ public class EngineConfig {
     private final Tunable lmrFutileScale         = new Tunable("LmrFutileScale", 82, 0, 100, 5);
     private final Tunable lmrFutileHistDivisor   = new Tunable("LmrFutileHistDivisor", 98, 1, 1000, 25);
     private final Tunable lmrComplexityDivisor   = new Tunable("LmrComplexityDivisor", 6144, 1536, 8192, 512);
+    private final Tunable lmrDeeperBase          = new Tunable("LmrDeeperBase", 38, 20, 100, 10);
+    private final Tunable lmrDeeperScale         = new Tunable("LmrDeeperScale", 4, 3, 12, 1);
     private final Tunable lmpDepth               = new Tunable("LmpDepth", 8, 0, 16, 1);
     private final Tunable lmpBase                = new Tunable("LmpBase", 3, 0, 50, 10);
     private final Tunable lmpScale               = new Tunable("LmpScale", 38, 10, 80, 10);
@@ -99,6 +105,7 @@ public class EngineConfig {
     private final Tunable dynamicPolicyMult      = new Tunable("DynamicPolicyMult", 10, 0, 20, 2);
     private final Tunable dynamicPolicyMin       = new Tunable("DynamicPolicyMin", -100, -100, 0, 25);
     private final Tunable dynamicPolicyMax       = new Tunable("DynamicPolicyMax", 200, 75, 200, 25);
+    private final Tunable goodQuietThreshold     = new Tunable("GoodQuietThreshold", 0, -2048, 2048, 256);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 200, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1200, 100, 2000, 100);
@@ -149,7 +156,7 @@ public class EngineConfig {
                 seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
-                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor
+                dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale
         );
     }
 
@@ -205,34 +212,6 @@ public class EngineConfig {
                 }
             }
         }
-    }
-
-    public static class Tunable {
-        public final String name;
-        public int value;
-        public final int min;
-        public final int max;
-        public final int step;
-
-        public Tunable(String name, int value, int min, int max, int step) {
-            this.name = name;
-            this.value = value;
-            this.min = min;
-            this.max = max;
-            this.step = step;
-        }
-
-        public String toUCI() {
-            return String.format("option name %s type spin default %d min %d max %d", name, value, min, max);
-        }
-
-        public String toSPSA() {
-            final float spsaStep = (float) Math.max(0.5, Math.round((float) (max - min) / 20));
-            final float learningRate = 0.002f;
-
-            return String.format("%s, int, %s, %s, %s, %s, %s", name, value, min, max, spsaStep, learningRate);
-        }
-
     }
 
     public int aspMinDepth() {
@@ -415,6 +394,14 @@ public class EngineConfig {
         return lmrFutileHistDivisor.value;
     }
 
+    public int lmrDeeperBase() {
+        return lmrDeeperBase.value;
+    }
+
+    public int lmrDeeperScale() {
+        return lmrDeeperScale.value;
+    }
+
     public int lmpDepth() {
         return lmpDepth.value;
     }
@@ -529,6 +516,10 @@ public class EngineConfig {
 
     public int dynamicPolicyMax() {
         return dynamicPolicyMax.value;
+    }
+
+    public int goodQuietThreshold() {
+        return goodQuietThreshold.value;
     }
 
     public int quietHistBonusMax() {

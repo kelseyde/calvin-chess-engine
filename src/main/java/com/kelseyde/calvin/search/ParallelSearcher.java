@@ -48,8 +48,8 @@ public class ParallelSearcher implements Search {
         this.tt = tt;
         this.config = config;
         this.movegen = movegen;
-        this.hashSize = config.defaultHashSizeMb;
-        this.threadCount = config.defaultThreads;
+        this.hashSize = config.hashConfig.defaultSizeMb;
+        this.threadCount = config.threadConfig.defaultThreads;
         this.searchers = initSearchers();
     }
 
@@ -57,19 +57,19 @@ public class ParallelSearcher implements Search {
      * Searches for the best move within the given duration. Does so by starting a new thread for each searcher and
      * waiting for all threads to finish. The best result is then selected from the results of the individual searchers.
      *
-     * @param timeControl the maximum duration to search
+     * @param limits the time, depth, and node limits for the search
      * @return the best search result found
      */
     @Override
-    public SearchResult search(TimeControl timeControl) {
+    public SearchResult search(SearchLimits limits) {
         try {
             setPosition(board);
             List<CompletableFuture<SearchResult>> threads = searchers.stream()
-                    .map(searcher -> initThread(searcher, timeControl))
+                    .map(searcher -> initThread(searcher, limits))
                     .toList();
 
             SearchResult result = selectResult(threads).get();
-            tt.incrementAge();
+            tt.birthday();
             return result;
         } catch (Exception e) {
             System.out.println("info error " + e);
@@ -116,10 +116,13 @@ public class ParallelSearcher implements Search {
         this.searchers = initSearchers();
     }
 
-    private CompletableFuture<SearchResult> initThread(Searcher searcher, TimeControl tc) {
+    private CompletableFuture<SearchResult> initThread(Searcher searcher, SearchLimits tc) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return searcher.search(tc);
+                SearchResult result = searcher.search(tc);
+                if (searcher.isMainThread())
+                    searchers.forEach(Searcher::abort);
+                return result;
             } catch (Exception e) {
                 System.out.printf("info error %s, %s %s%n", e.getMessage(), e.getCause(), Arrays.toString(e.getStackTrace()));
                 // In case of an error, return a random legal move to avoid crashing the engine
@@ -155,7 +158,7 @@ public class ParallelSearcher implements Search {
      */
     private List<Searcher> initSearchers() {
         return IntStream.range(0, threadCount)
-                .mapToObj(i -> initSearcher(i == 0))
+                .mapToObj(this::initSearcher)
                 .toList();
     }
 
@@ -164,8 +167,8 @@ public class ParallelSearcher implements Search {
      *
      * @return the initialized searcher
      */
-    private Searcher initSearcher(boolean mainThread) {
-        ThreadData td = new ThreadData(mainThread);
+    private Searcher initSearcher(int threadIndex) {
+        ThreadData td = new ThreadData(threadIndex);
         return new Searcher(config, tt, td);
     }
 

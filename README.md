@@ -37,7 +37,7 @@ Calvin communicates via the [Universal Chess Interface](https://www.chessprogram
 3. Start Calvin from the command line:
 
    ```bash
-   java --add-modules jdk.incubator.vector -jar calvin-chess-engine-6.1.0.jar
+   java --add-modules jdk.incubator.vector -jar calvin-chess-engine-6.1.1.jar
 4. Type "help" or refer to [UCI](https://www.wbec-ridderkerk.nl/html/UCIProtocol.html) documentation for further information on available commands.
 
 ## Strength 

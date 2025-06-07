@@ -22,7 +22,7 @@ public class TranspositionTableTest {
     @BeforeEach
     public void beforeEach() {
         board = FEN.startpos().toBoard();
-        table = new TranspositionTable(TestUtils.CONFIG.defaultHashSizeMb);
+        table = new TranspositionTable(TestUtils.CONFIG.hashConfig.defaultSizeMb);
     }
 
     @Test

@@ -33,17 +33,30 @@ public record UCICommand(UCICommandType type, String[] args) {
     }
 
     public List<String> getStrings(String label, boolean panic) {
+        int endIndex = args.length;
+        return getStrings(label, endIndex, panic);
+    }
+
+    public List<String> getStrings(String label, String endLabelExclusive, boolean panic) {
+        int endIndex = Arrays.asList(args).indexOf(endLabelExclusive);
+        if (endIndex == -1) {
+            endIndex = args.length;
+        }
+        return getStrings(label, endIndex, panic);
+    }
+
+    private List<String> getStrings(String label, int endIndex, boolean panic) {
         int labelIndex = Arrays.asList(args).indexOf(label);
         if (labelIndex == -1) {
             if (panic) throw new IllegalArgumentException("missing required label " + label);
             return new ArrayList<>();
         }
         int valueIndex = labelIndex + 1;
-        if (valueIndex >= args.length) {
+        if (valueIndex >= args.length || valueIndex >= endIndex) {
             if (panic) throw new IllegalArgumentException("missing value for label " + label);
             return new ArrayList<>();
         }
-        return Arrays.asList(args).subList(valueIndex, args.length);
+        return Arrays.asList(args).subList(valueIndex, Math.min(endIndex, args.length));
     }
 
     public int getInt(String label, int defaultValue, boolean panic) {
@@ -105,7 +118,7 @@ public record UCICommand(UCICommandType type, String[] args) {
             if (command.contains("startpos")) {
                 fen = FEN.STARTPOS;
             } else if (command.contains("fen")) {
-                fen = String.join(" ", command.getStrings("fen", true));
+                fen = String.join(" ", command.getStrings("fen", "moves", true));
             } else {
                 UCI.write("info error invalid position command; expecting 'startpos' or 'fen'.");
                 fen = FEN.STARTPOS;

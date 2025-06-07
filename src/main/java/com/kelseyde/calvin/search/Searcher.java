@@ -39,7 +39,7 @@ public class Searcher implements Search {
     final ThreadData td;
     final NNUE eval;
 
-    TimeControl tc;
+    SearchLimits limits;
     Board board;
 
     public Searcher(EngineConfig config, TranspositionTable tt, ThreadData td) {
@@ -62,10 +62,10 @@ public class Searcher implements Search {
      * @see <a href="https://www.chessprogramming.org/Iterative_Deepening">Chess Programming Wiki</a>
      */
     @Override
-    public SearchResult search(TimeControl timeControl) {
+    public SearchResult search(SearchLimits limits) {
 
         final List<Move> rootMoves = movegen.generateMoves(board);
-        tc = timeControl;
+        this.limits = limits;
 
         if (rootMoves.isEmpty())
             return handleNoLegalMoves();
@@ -98,7 +98,7 @@ public class Searcher implements Search {
 
             // Report search progress as UCI output
             if (td.isMainThread())
-                UCI.writeSearchInfo(SearchResult.of(td, tc));
+                UCI.writeSearchInfo(SearchResult.of(td, limits));
 
             // Check if search is cancelled or a checkmate is found
             if (shouldStop(HARD) || Score.isMate(score))
@@ -143,7 +143,7 @@ public class Searcher implements Search {
         if (td.bestMove() == null)
             td.updateBestMove(rootMoves.get(0), td.bestScore());
 
-        return SearchResult.of(td, tc);
+        return SearchResult.of(td, limits);
 
     }
 
@@ -159,7 +159,8 @@ public class Searcher implements Search {
     public int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
 
         // If timeout is reached, exit immediately
-        if (shouldStop(HARD)) return alpha;
+        if (shouldStop(HARD))
+            return alpha;
 
         // A PV (principal variation) node is one that falls within the alpha-beta window.
         final boolean pvNode = beta - alpha > 1;
@@ -179,13 +180,16 @@ public class Searcher implements Search {
             depth = 0;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
-        if (ply > 0 && isDraw()) return Score.DRAW;
+        if (ply > 0 && isDraw())
+            return Score.DRAW;
 
         // Update the selective search depth
-        if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
+        if (ply + 1 > td.seldepth)
+            td.seldepth = ply + 1;
 
         // If the maximum depth is reached, return the static evaluation of the position
-        if (ply >= MAX_DEPTH) return inCheck ? 0 : eval.evaluate();
+        if (ply >= MAX_DEPTH)
+            return inCheck ? 0 : eval.evaluate();
 
         // Mate Distance Pruning
         // Exit early if we have already found a forced mate at an earlier ply
@@ -247,7 +251,7 @@ public class Searcher implements Search {
                 && (pvNode || cutNode)
                 && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
                 && depth >= config.iirDepth()) {
-            --depth;
+            depth--;
         }
 
         if (depth <= 0 && !inCheck)
@@ -339,9 +343,8 @@ public class Searcher implements Search {
             if (depth <= config.razorDepth()
                 && staticEval + config.razorMargin() * depth < alpha) {
                 final int score = qsearch(alpha, alpha + 1, ply);
-                if (score < alpha) {
+                if (score < alpha)
                     return score;
-                }
             }
 
             // Null Move Pruning
@@ -423,7 +426,7 @@ public class Searcher implements Search {
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!scoredMove.isGoodNoisy() || !ttPv);
+            final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!isGoodNoisy || !ttPv);
             if (doLmr) {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
@@ -546,6 +549,7 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
+            int newDepth = depth + extension - 1;
             int score = Score.MIN;
 
             // Principal Variation Search
@@ -554,12 +558,17 @@ public class Searcher implements Search {
             if (doLmr) {
                 // For moves eligible for late move reductions, we apply the reduction and search with a null window.
                 curr.reduction = reduction;
-                score = -search(depth - 1 - reduction + extension, ply + 1, -alpha - 1, -alpha, true);
+                score = -search(newDepth - reduction, ply + 1, -alpha - 1, -alpha, true);
                 curr.reduction = 0;
 
                 // If searched at reduced depth and the score beat alpha, re-search at full depth, with a null window.
                 if (score > alpha && reduction > 0) {
-                    score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                    // Adjust the depth of the re-search based on the results of the reduced search.
+                    boolean doDeeperSearch = score > bestScore + config.lmrDeeperBase() + config.lmrDeeperScale() * newDepth;
+                    boolean doShallowerSearch = score < bestScore + newDepth;
+                    newDepth += (doDeeperSearch ? 1 : 0) - (doShallowerSearch ? 1 : 0);
+
+                    score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
                     if (isQuiet && (score <= alpha || score >= beta))
                         history.updateContHist(move, piece, ss, board.isWhite(), score >= beta, depth, ply);
                 }
@@ -567,12 +576,12 @@ public class Searcher implements Search {
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
             // or another LMR condition not being met - then we search at full depth with a null-window.
             else if (!pvNode || moveCount > 1)
-                score = -search(depth - 1 + extension, ply + 1, -alpha - 1, -alpha, !cutNode);
+                score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
 
             // If we're in a PV node and searching the first move, or the score from reduced search beat alpha, then we
             // search with full depth and alpha-beta window.
             if (pvNode && (moveCount == 1 || score > alpha))
-                score = -search(depth - 1 + extension, ply + 1, -beta, -alpha, false);
+                score = -search(newDepth, ply + 1, -beta, -alpha, false);
 
             unmakeMove(curr);
 
@@ -675,13 +684,16 @@ public class Searcher implements Search {
             return alpha;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.
-        if (ply > 0 && isDraw()) return Score.DRAW;
+        if (ply > 0 && isDraw())
+            return Score.DRAW;
 
         // If the maximum depth is reached, return the static evaluation of the position.
-        if (ply >= MAX_DEPTH) return movegen.isCheck(board) ? 0 : eval.evaluate();
+        if (ply >= MAX_DEPTH)
+            return movegen.isCheck(board) ? 0 : eval.evaluate();
 
         // Update the selective search depth
-        if (ply + 1 > td.seldepth) td.seldepth = ply + 1;
+        if (ply + 1 > td.seldepth)
+            td.seldepth = ply + 1;
 
         final boolean pvNode = beta - alpha > 1;
 
@@ -691,9 +703,8 @@ public class Searcher implements Search {
         final Move ttMove = ttHit ? ttEntry.move() : null;
         boolean ttPv = pvNode || (ttHit && ttEntry.pv());
 
-        if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta)) {
+        if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta))
             return ttEntry.score();
-        }
 
         final boolean inCheck = movegen.isCheck(board);
 
@@ -729,7 +740,7 @@ public class Searcher implements Search {
         }
 
         Move bestMove = null;
-        int bestScore = alpha;
+        int bestScore = staticEval;
         final int futilityScore = bestScore + config.qsFpMargin();
         int flag = HashFlag.UPPER;
         int moveCount = 0;
@@ -759,8 +770,10 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip captures that don't win material when the static eval is far below alpha.
-            if (capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1))
+            if (!inCheck && capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1)) {
+                bestScore = Math.max(bestScore, futilityScore);
                 continue;
+            }
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.
@@ -794,13 +807,11 @@ public class Searcher implements Search {
             }
         }
 
-        if (moveCount == 0 && inCheck) {
+        if (moveCount == 0 && inCheck)
             return -Score.MATE + ply;
-        }
 
-        if (bestScore >= beta && !Score.isMate(bestScore) && !Score.isMate(beta)) {
+        if (bestScore >= beta && !Score.isMate(bestScore) && !Score.isMate(beta))
             bestScore = (bestScore + beta) / 2;
-        }
 
         if (!shouldStop(HARD))
             tt.put(board.key(), flag, 0, ply, bestMove, rawStaticEval, bestScore, ttPv);
@@ -851,20 +862,21 @@ public class Searcher implements Search {
 
     private boolean hardLimitReached() {
         // Exit if hard limit for the current search is reached.
-        if (config.pondering || tc == null)
+        if (td.abort || config.searchCancelled)
+            return true;
+        if (config.pondering || limits == null)
             return false;
-        if (config.searchCancelled) return true;
-        return tc.isHardLimitReached(td.depth, td.nodes);
+        return td.isMainThread() && limits.isHardLimitReached(td.depth, td.nodes);
     }
 
     private boolean softLimitReached() {
         // Exit if soft limit for the current search is reached.
-        if (config.pondering || tc == null)
+        if (config.pondering || limits == null)
             return false;
         final int bestMoveStability = history.getBestMoveStability();
         final int scoreStability = history.getBestScoreStability();
         final int bestMoveNodes = td.nodes(td.bestMove());
-        return tc.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        return limits.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
     private boolean isDraw() {
@@ -882,18 +894,16 @@ public class Searcher implements Search {
         if (!Score.isDefined(lastEval)) {
             if (ply < 4) return false;
             lastEval = ss.get(ply - 4).staticEval;
-            if (Score.isDefined(lastEval)) {
+            if (Score.isDefined(lastEval))
                 return true;
-            }
         }
         return lastEval < staticEval;
     }
 
     private SearchResult handleNoLegalMoves() {
-        if (td.isMainThread()) {
+        if (td.isMainThread())
             UCI.write("info error no legal moves");
-        }
-        return SearchResult.of(td, tc);
+        return SearchResult.of(td, limits);
     }
 
     private SearchResult handleOneLegalMove(List<Move> rootMoves) {
@@ -901,7 +911,7 @@ public class Searcher implements Search {
         final Move move = rootMoves.get(0);
         final int eval = this.eval.evaluate();
         td.updateBestMove(move, eval);
-        SearchResult result = SearchResult.of(td, tc);
+        SearchResult result = SearchResult.of(td, limits);
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;
@@ -925,6 +935,14 @@ public class Searcher implements Search {
         tt.clear();
         eval.clearHistory();
         history.clear();
+    }
+
+    public boolean isMainThread() {
+        return td.isMainThread();
+    }
+
+    public void abort() {
+        td.abort = true;
     }
 
     private int futilityMargin(int depth, int historyScore, int searchedMoves) {

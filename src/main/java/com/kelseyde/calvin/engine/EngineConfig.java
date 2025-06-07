@@ -22,7 +22,7 @@ public class EngineConfig {
     public HashConfig hashConfig = HashConfig.builder()
             .minSizeMb(1)
             .maxSizeMb(1024)
-            .defaultSizeMb(256)
+            .defaultSizeMb(16)
             .build();
 
     public boolean ponderEnabled = false;

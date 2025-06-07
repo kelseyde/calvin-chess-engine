@@ -46,7 +46,8 @@ public class UCI {
 
         // Allow the engine to be benched from the command line at startup.
         if (args.length == 1 && args[0].equals("bench")) {
-            Bench.run(ENGINE, true);
+            Bench.run(ENGINE, false, false);
+            Bench.run(ENGINE, true, true);
         }
 
         try (Scanner in = new Scanner(System.in)) {
@@ -90,7 +91,7 @@ public class UCI {
     }
 
     public static void handleBench(UCICommand command) {
-        Bench.run(ENGINE, false);
+        Bench.run(ENGINE, false, true);
     }
 
     public static void handleNewGame(UCICommand command) {

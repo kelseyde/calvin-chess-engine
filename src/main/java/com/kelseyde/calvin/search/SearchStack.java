@@ -26,6 +26,7 @@ public class SearchStack {
     }
 
     public static class SearchStackEntry {
+        public boolean pvNode;
         public int staticEval;
         public Move move;
         public Piece piece;

@@ -322,7 +322,11 @@ public class Searcher implements Search {
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
-        final boolean improving = isImproving(ply, staticEval);
+        final boolean improving = !rootNode && isImproving(ply, staticEval);
+
+        // The inverse of improving, our opponent is worsening if the static eval of their last turn was lesser
+        // than the static eval of their turn prior to that.
+        final boolean opponentWorsening = !rootNode && isWorsening(ply, prev.staticEval);
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
@@ -331,7 +335,8 @@ public class Searcher implements Search {
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             final int futilityMargin = depth * config.rfpMargin()
-                    - (improving ? config.rfpImprovingMargin() : 0);
+                    - (improving ? config.rfpImprovingMargin() : 0)
+                    - (opponentWorsening ? config.rfpWorseningMargin() : 0);
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
@@ -895,6 +900,16 @@ public class Searcher implements Search {
         if (ply > 3 && Score.isDefined(ss.get(ply - 4).staticEval))
             return staticEval > ss.get(ply - 4).staticEval;
         return true;
+    }
+
+    private boolean isWorsening(int ply, int prevStaticEval) {
+        if (!Score.isDefined(prevStaticEval))
+            return false;
+        if (ply > 2 && Score.isDefined(ss.get(ply - 3).staticEval))
+            return prevStaticEval < ss.get(ply - 3).staticEval;
+        if (ply > 4 && Score.isDefined(ss.get(ply - 5).staticEval))
+            return prevStaticEval < ss.get(ply - 5).staticEval;
+        return false;
     }
 
     private SearchResult handleNoLegalMoves() {

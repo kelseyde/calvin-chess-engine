@@ -252,7 +252,7 @@ public class Searcher implements Search {
         if (!rootNode
                 && (pvNode || cutNode)
                 && (!ttHit || ttMove == null || ttEntry.depth() < depth - config.iirDepth())
-                && depth >= config.iirDepth()) {
+                && depth >= config.iirDepth() - (!parentPvNode ? 1 : 0)) {
             depth--;
         }
 

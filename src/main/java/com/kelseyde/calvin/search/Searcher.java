@@ -202,7 +202,7 @@ public class Searcher implements Search {
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
         final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
-        curr.pvNode = pvNode;
+        curr.pvDistance = pvNode ? 0 : prev.pvDistance + 1;
         curr.inCheck = inCheck;
 
         history.getKillerTable().clear(ply + 1);
@@ -385,9 +385,6 @@ public class Searcher implements Search {
 
         }
 
-        // How many plies away from the nearest parent PV-node are we?
-        int distanceFromPv = pvNode ? 0 : distanceFromPv(ply);
-
         // We have decided that the current node should not be pruned and is worth examining further.
         // Now we begin iterating through the legal moves in the position and searching deeper in the tree.
 
@@ -436,7 +433,7 @@ public class Searcher implements Search {
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
-                r += Math.min(distanceFromPv * config.lmrPvDistanceMult(), config.lmrPvDistanceMax());
+                r += Math.min(curr.pvDistance * config.lmrPvDistanceMult(), config.lmrPvDistanceMax());
                 r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
@@ -714,8 +711,9 @@ public class Searcher implements Search {
         final boolean inCheck = movegen.isCheck(board);
 
         SearchStackEntry curr = ss.get(ply);
+        SearchStackEntry prev = ss.get(ply - 1);
         curr.inCheck = inCheck;
-        curr.pvNode = pvNode;
+        curr.pvDistance = pvNode ? 0 : prev.pvDistance + 1;
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Score.MIN;
@@ -901,16 +899,6 @@ public class Searcher implements Search {
         if (ply > 3 && Score.isDefined(ss.get(ply - 4).staticEval))
             return staticEval > ss.get(ply - 4).staticEval;
         return true;
-    }
-
-    private int distanceFromPv(int ply) {
-        int distance = 1;
-        for (; distance < ply; distance++) {
-            if (ss.get(ply - distance).pvNode) {
-                break;
-            }
-        }
-        return distance;
     }
 
     private SearchResult handleNoLegalMoves() {

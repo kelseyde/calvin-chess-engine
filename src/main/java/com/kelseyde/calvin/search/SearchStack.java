@@ -26,7 +26,6 @@ public class SearchStack {
     }
 
     public static class SearchStackEntry {
-        public boolean pvNode;
         public int staticEval;
         public Move move;
         public Piece piece;
@@ -37,6 +36,7 @@ public class SearchStack {
         public Move[] captures;
         public int reduction;
         public int failHighCount;
+        public int pvDistance;
         public boolean quiet;
         public boolean inCheck;
     }

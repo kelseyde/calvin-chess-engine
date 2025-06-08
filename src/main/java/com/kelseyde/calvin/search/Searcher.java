@@ -199,11 +199,12 @@ public class Searcher implements Search {
 
         final SearchStackEntry curr = ss.get(ply);
         final SearchStackEntry prev = ss.get(ply - 1);
+        curr.inCheck = inCheck;
+        curr.pvDistance = pvNode ? 0 : prev.pvDistance + 1;
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
         final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
-        curr.pvDistance = pvNode ? 0 : prev.pvDistance + 1;
-        curr.inCheck = inCheck;
+        final boolean parentPvNode = curr.pvDistance == 1;
 
         history.getKillerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
@@ -332,7 +333,8 @@ public class Searcher implements Search {
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             final int futilityMargin = depth * config.rfpMargin()
-                    - (improving ? config.rfpImprovingMargin() : 0);
+                    - (improving ? config.rfpImprovingMargin() : 0)
+                    + (parentPvNode ? config.rfpParentPvMargin() : 0);
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
@@ -987,6 +989,5 @@ public class Searcher implements Search {
     enum SearchLimit {
         SOFT, HARD
     }
-
 
 }

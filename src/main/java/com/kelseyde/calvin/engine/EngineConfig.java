@@ -56,6 +56,7 @@ public class EngineConfig {
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 63, 0, 150, 25);
     private final Tunable rfpImprovingMargin     = new Tunable("RfpImprovingMargin", 69, 0, 150, 25);
+    private final Tunable rfpParentPvMargin      = new Tunable("RfpParentPvMargin", 20, 0, 75, 20);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 92, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 314, 200, 400, 10);
@@ -159,7 +160,7 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin
         );
     }
 
@@ -323,6 +324,10 @@ public class EngineConfig {
 
     public int rfpImprovingMargin() {
         return rfpImprovingMargin.value;
+    }
+
+    public int rfpParentPvMargin() {
+        return rfpParentPvMargin.value;
     }
 
     public int lmrDepth() {

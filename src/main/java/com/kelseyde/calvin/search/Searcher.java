@@ -361,7 +361,8 @@ public class Searcher implements Search {
 
                 int r = config.nmpBase()
                         + depth / config.nmpDivisor()
-                        + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
+                        + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction())
+                        - (parentPvNode ? 1 : 0);
 
                 board.makeNullMove();
                 final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);

@@ -220,30 +220,28 @@ public class Searcher implements Search {
         // requirements of the current search, then we can directly return the score from the TT. If the depth and bounds
         // do not match, we can still use information from the TT - such as the best move, score, and static eval -
         // to improve the current search.
-        if (!singularSearch) {
-            ttEntry = tt.get(board.key(), ply);
-            ttHit = ttEntry != null;
-            ttMove = ttHit ? ttEntry.move() : null;
-            ttPv = ttPv || (ttHit && ttEntry.pv());
+        ttEntry = tt.get(board.key(), ply);
+        ttHit = ttEntry != null;
+        ttMove = ttHit ? ttEntry.move() : null;
+        ttPv = ttPv || (ttHit && ttEntry.pv());
 
-            if (!rootNode
-                    && ttHit
-                    && ttEntry.depth() >= depth + (pvNode ? 2 : 0)
-                    && (ttEntry.score() <= alpha || cutNode)) {
-                if (isWithinBounds(ttEntry, alpha, beta)) {
-                    ttPrune = true;
-                    if (!pvNode) {
-                        // In non-PV nodes with an TT hit matching the depth and alpha/beta bounds of
-                        // the current search, we can cut off the search here and return the TT score.
-                        return ttEntry.score();
-                    } else {
-                        // In PV nodes, rather than cutting off we reduce search depth.
-                        depth--;
-                    }
+        if (!rootNode
+                && ttHit
+                && ttEntry.depth() >= depth + (pvNode ? 2 : 0)
+                && (ttEntry.score() <= alpha || cutNode)) {
+            if (isWithinBounds(ttEntry, alpha, beta) && !singularSearch) {
+                ttPrune = true;
+                if (!pvNode) {
+                    // In non-PV nodes with an TT hit matching the depth and alpha/beta bounds of
+                    // the current search, we can cut off the search here and return the TT score.
+                    return ttEntry.score();
+                } else {
+                    // In PV nodes, rather than cutting off we reduce search depth.
+                    depth--;
                 }
-                else if (depth <= config.ttExtensionDepth())
-                    depth++;
             }
+            else if (depth <= config.ttExtensionDepth())
+                depth++;
         }
 
         // Internal Iterative Deepening

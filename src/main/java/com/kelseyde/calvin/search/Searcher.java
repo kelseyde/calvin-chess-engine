@@ -226,10 +226,11 @@ public class Searcher implements Search {
         ttPv = ttPv || (ttHit && ttEntry.pv());
 
         if (!rootNode
+                && !singularSearch
                 && ttHit
                 && ttEntry.depth() >= depth + (pvNode ? 2 : 0)
                 && (ttEntry.score() <= alpha || cutNode)) {
-            if (isWithinBounds(ttEntry, alpha, beta) && !singularSearch) {
+            if (isWithinBounds(ttEntry, alpha, beta)) {
                 ttPrune = true;
                 if (!pvNode) {
                     // In non-PV nodes with an TT hit matching the depth and alpha/beta bounds of

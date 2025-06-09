@@ -431,7 +431,6 @@ public class Searcher implements Search {
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
             final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!isGoodNoisy || !ttPv);
             if (doLmr) {
-
                 // The base reduction is determined by a formula that takes into account the search depth, the position
                 // of the move in the move list, and whether the move is a capture.
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
@@ -462,6 +461,8 @@ public class Searcher implements Search {
 
                 // Reduce less in positions that are complex, where the search score diverges significantly from static eval.
                 r -= complexity / config.lmrComplexityDivisor();
+
+                // Ensure the reduction is positive to avoid inadvertently extending the search depth.
                 reduction = Math.max(0, r / 1024);
             }
 

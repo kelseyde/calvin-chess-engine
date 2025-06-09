@@ -431,14 +431,36 @@ public class Searcher implements Search {
             final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
             final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!isGoodNoisy || !ttPv);
             if (doLmr) {
+
+                // The base reduction is determined by a formula that takes into account the search depth, the position
+                // of the move in the move list, and whether the move is a capture.
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
+
+                // Reduce less if the current node is a PV node.
                 r -= ttPv ? config.lmrPvNode() : 0;
+
+                // Reduce more if the current node is an expected cut-node.
                 r += cutNode ? config.lmrCutNode() : 0;
+
+                // Reduce more if not improving, since this indicates the position is less likely to be good.
                 r += !improving ? config.lmrNotImproving() : 0;
+
+                // Increase reduction based on the distance of the current node to the nearest parent PV node.
                 r += Math.min(curr.pvDistance * config.lmrPvDistanceMult(), config.lmrPvDistanceMax());
+
+                // Reduce more if we already have a TT move that raised alpha, since that move is likely to be best.
+                r += ttHit && ttMove != null && ttEntry.flag() != HashFlag.UPPER ? config.lmrTtMove() : 0;
+
+                // Increase/decrease the reduction based on the history score of the current move.
                 r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
+
+                // Reduce more if the static eval + some margin is below alpha, indicating the position is likely futile.
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;
+
+                // Reduce more if the previous ply has already yielded fail-highs above a certain threshold.
                 r += !rootNode && prev.failHighCount > 2 ? config.lmrFailHighCount() : 0;
+
+                // Reduce less in positions that are complex, where the search score diverges significantly from static eval.
                 r -= complexity / config.lmrComplexityDivisor();
                 reduction = Math.max(0, r / 1024);
             }

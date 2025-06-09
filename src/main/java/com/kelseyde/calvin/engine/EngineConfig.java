@@ -69,6 +69,7 @@ public class EngineConfig {
     private final Tunable lmrPvDistanceMax       = new Tunable("LmrPvDistanceMax", 1024, 0, 2048, 256);
     private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2085, 0, 3072, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 70, 0, 2048, 150);
+    private final Tunable lmrTtMove              = new Tunable("LmrTtMove", 1024, 0, 2048, 150);
     private final Tunable lmrFutile              = new Tunable("LmrFutile", 962, 0, 2048, 150);
     private final Tunable lmrFailHighCount       = new Tunable("LmrCutoffCount", 1035, 0, 2048, 150);
     private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 3258, 1536, 6144, 1000);
@@ -160,7 +161,7 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, lmrTtMove
         );
     }
 
@@ -376,6 +377,10 @@ public class EngineConfig {
 
     public int lmrNotImproving() {
         return lmrNotImproving.value;
+    }
+
+    public int lmrTtMove() {
+        return lmrTtMove.value;
     }
 
     public int lmrFutile() {

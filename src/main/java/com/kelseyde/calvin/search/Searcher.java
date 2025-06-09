@@ -20,6 +20,7 @@ import java.util.List;
 
 import static com.kelseyde.calvin.search.Searcher.SearchLimit.HARD;
 import static com.kelseyde.calvin.search.Searcher.SearchLimit.SOFT;
+import static com.kelseyde.calvin.tables.tt.HashFlag.*;
 
 /**
  * Classical alpha-beta search with iterative deepening. This is the main search algorithm used by the engine.
@@ -213,6 +214,8 @@ public class Searcher implements Search {
         boolean ttHit = false;
         boolean ttPrune = false;
         Move ttMove = null;
+        int ttScore = Score.MIN;
+        int ttFlag = HashFlag.NONE;
         boolean ttPv = pvNode;
 
         // Transposition table
@@ -225,13 +228,20 @@ public class Searcher implements Search {
             ttHit = ttEntry != null;
             ttMove = ttHit ? ttEntry.move() : null;
             ttPv = ttPv || (ttHit && ttEntry.pv());
+            ttScore = ttHit ? ttEntry.score() : Score.MIN;
+            ttFlag = ttHit ? ttEntry.flag() : HashFlag.NONE;
 
             if (!rootNode
                     && ttHit
                     && ttEntry.depth() >= depth + (pvNode ? 2 : 0)
-                    && (ttEntry.score() <= alpha || cutNode)) {
-                if (isWithinBounds(ttEntry, alpha, beta)) {
-                    ttPrune = true;
+                    && (ttScore <= alpha || cutNode)) {
+                ttPrune = Score.isDefined(ttScore) && switch (ttFlag) {
+                    case EXACT -> true;
+                    case UPPER -> ttScore <= alpha && (!cutNode || depth > 5);
+                    case LOWER -> ttScore >= beta && (cutNode || depth > 5);
+                    default -> false;
+                };
+                if (ttPrune) {
                     if (!pvNode) {
                         // In non-PV nodes with an TT hit matching the depth and alpha/beta bounds of
                         // the current search, we can cut off the search here and return the TT score.
@@ -392,7 +402,7 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = Score.MIN;
-        int flag = HashFlag.UPPER;
+        int flag = UPPER;
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
         int moveCount = 0, quietMoves = 0, captureMoves = 0;
@@ -518,7 +528,7 @@ public class Searcher implements Search {
                     && !singularSearch
                     && move.equals(ttMove)
                     && depth >= config.seDepth()
-                    && ttEntry.flag() != HashFlag.UPPER
+                    && ttEntry.flag() != UPPER
                     && ttEntry.depth() >= depth - config.seTtDepthMargin()) {
 
                 int sBeta = Math.max(-Score.MATE + 1, ttEntry.score() - depth * config.seBetaMargin() / 16);
@@ -606,7 +616,7 @@ public class Searcher implements Search {
             if (score > alpha) {
                 bestMove = move;
                 alpha = score;
-                flag = HashFlag.EXACT;
+                flag = EXACT;
 
                 curr.bestMove = move;
                 if (rootNode)
@@ -616,7 +626,7 @@ public class Searcher implements Search {
                 // here assuming perfect play. The node therefore 'fails high' - there is no point searching further,
                 // and we can cut off here.
                 if (score >= beta) {
-                    flag = HashFlag.LOWER;
+                    flag = LOWER;
                     curr.failHighCount++;
                     break;
                 }
@@ -645,7 +655,7 @@ public class Searcher implements Search {
             history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply, ss);
         }
 
-        if (flag == HashFlag.UPPER
+        if (flag == UPPER
                 && ply > 0
                 && prev.move != null
                 && prev.captured == null
@@ -660,8 +670,8 @@ public class Searcher implements Search {
             && !singularSearch
             && Score.isDefined(bestScore)
             && (bestMove == null || board.isQuiet(bestMove))
-            && !(flag == HashFlag.LOWER && uncorrectedEval >= bestScore)
-            && !(flag == HashFlag.UPPER && uncorrectedEval <= bestScore)) {
+            && !(flag == LOWER && uncorrectedEval >= bestScore)
+            && !(flag == UPPER && uncorrectedEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
             history.updateCorrectionHistory(board, ss, ply, depth, bestScore, staticEval);
         }
@@ -737,7 +747,7 @@ public class Searcher implements Search {
 
             if (staticEval >= beta) {
                 if (!ttHit || ttEntry.flag() == HashFlag.NONE)
-                    tt.put(board.key(), HashFlag.LOWER, 0, ply, null, rawStaticEval, staticEval, ttPv);
+                    tt.put(board.key(), LOWER, 0, ply, null, rawStaticEval, staticEval, ttPv);
                 return staticEval;
             }
             if (staticEval > alpha) {
@@ -748,7 +758,7 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = staticEval;
         final int futilityScore = bestScore + config.qsFpMargin();
-        int flag = HashFlag.UPPER;
+        int flag = UPPER;
         int moveCount = 0;
 
         MovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
@@ -802,11 +812,11 @@ public class Searcher implements Search {
                 bestScore = score;
             }
             if (score > alpha) {
-                flag = HashFlag.EXACT;
+                flag = EXACT;
                 bestMove = move;
                 alpha = score;
                 if (score >= beta) {
-                    flag = HashFlag.LOWER;
+                    flag = LOWER;
                     break;
                 }
 
@@ -923,9 +933,9 @@ public class Searcher implements Search {
     public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
         if (!Score.isDefined(entry.score()))
             return false;
-        return entry.flag() == HashFlag.EXACT
-                || (entry.flag() == HashFlag.UPPER && entry.score() <= alpha)
-                || (entry.flag() == HashFlag.LOWER && entry.score() >= beta);
+        return entry.flag() == EXACT
+                || (entry.flag() == UPPER && entry.score() <= alpha)
+                || (entry.flag() == LOWER && entry.score() >= beta);
     }
 
     @Override
@@ -977,9 +987,9 @@ public class Searcher implements Search {
 
     private boolean canUseTTScore(HashEntry ttEntry, int rawStaticEval) {
         return ttEntry != null &&
-                (ttEntry.flag() == HashFlag.EXACT ||
-                (ttEntry.flag() == HashFlag.LOWER && ttEntry.score() >= rawStaticEval) ||
-                (ttEntry.flag() == HashFlag.UPPER && ttEntry.score() <= rawStaticEval));
+                (ttEntry.flag() == EXACT ||
+                (ttEntry.flag() == LOWER && ttEntry.score() >= rawStaticEval) ||
+                (ttEntry.flag() == UPPER && ttEntry.score() <= rawStaticEval));
     }
 
     private int clamp(int value, int min, int max) {

@@ -545,7 +545,7 @@ public class Searcher implements Search {
             // Every x iterations, extend the search depth for the PV move in the root node.
             if (rootNode
                 && !inCheck
-                && depth % 8 == 0
+                && depth % 2 == 0
                 && moveCount == 1) {
                 extension = 1;
             }

@@ -77,11 +77,20 @@ public class StandardMovePicker extends MovePicker {
         else if (stage == Stage.GEN_QUIET) {
             int goodIndex = 0;
             int badIndex = 0;
+            int totalHistoryScore = 0;
+            int count = 0;
             goodQuiets = new ScoredMove[moves.size()];
             badQuiets = new ScoredMove[moves.size()];
             for (Move move : moves) {
+                totalHistoryScore += scorer.quietHistoryScore(board, move, ply);
+                count++;
+            }
+            int averageHistoryScore = count > 0 ? totalHistoryScore / count : 0;
+            for (Move move : moves) {
                 ScoredMove scoredMove = scorer.score(board, move, ply, stage);
-                if (scoredMove.isGoodQuiet())
+                scoredMove.moveType = scoredMove.historyScore() >= averageHistoryScore
+                        ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET;
+                if (scoredMove.historyScore() >= averageHistoryScore)
                     goodQuiets[goodIndex++] = scoredMove;
                 else
                     badQuiets[badIndex++] = scoredMove;

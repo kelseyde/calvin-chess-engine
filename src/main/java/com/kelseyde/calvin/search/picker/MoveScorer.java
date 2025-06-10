@@ -101,6 +101,14 @@ public class MoveScorer {
 
     }
 
+    public int quietHistoryScore(Board board, Move move, int ply) {
+        Piece piece = board.pieceAt(move.from());
+        boolean white = board.isWhite();
+        // Quiet history is based on the history score indexed by the current move.
+        return history.getQuietHistoryTable().get(move, piece, white)
+                + continuationHistoryScore(move, piece, white, ply);
+    }
+
     private int continuationHistoryScore(Move move, Piece piece, boolean white, int ply) {
 
         // Continuation history is based on the history score indexed by the current move and the move played x plies ago.

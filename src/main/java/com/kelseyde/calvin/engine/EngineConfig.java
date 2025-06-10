@@ -53,6 +53,7 @@ public class EngineConfig {
     private final Tunable seeHistoryDivisor      = new Tunable("SeeHistoryDivisor", 133, 50, 250, 25);
     private final Tunable qsFpMargin             = new Tunable("QsFpMargin", 114, 0, 250, 10);
     private final Tunable qsSeeThreshold         = new Tunable("QsSeeThreshold", -34, -300, 300, 100);
+    private final Tunable improvingBetaMargin    = new Tunable("ImprovingBetaMargin", 100, 0, 200, 25);
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 63, 0, 150, 25);
     private final Tunable rfpImprovingMargin     = new Tunable("RfpImprovingMargin", 69, 0, 150, 25);
@@ -160,7 +161,7 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, improvingBetaMargin
         );
     }
 
@@ -312,6 +313,10 @@ public class EngineConfig {
 
     public int qsSeeThreshold() {
         return qsSeeThreshold.value;
+    }
+
+    public int improvingBetaMargin() {
+        return improvingBetaMargin.value;
     }
 
     public int rfpDepth() {

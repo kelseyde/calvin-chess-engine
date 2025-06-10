@@ -324,7 +324,7 @@ public class Searcher implements Search {
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
-        final boolean improving = isImproving(ply, staticEval);
+        final boolean improving = isImproving(ply, staticEval) || staticEval >= beta + config.improvingBetaMargin();
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.

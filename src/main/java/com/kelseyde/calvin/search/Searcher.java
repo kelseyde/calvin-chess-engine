@@ -541,6 +541,15 @@ public class Searcher implements Search {
 
             }
 
+            // Root PV Extensions
+            // Every x iterations, extend the search depth for the PV move in the root node.
+            if (rootNode
+                && !inCheck
+                && depth % 8 == 0
+                && moveCount == 1) {
+                extension = 1;
+            }
+
             // We have decided that the current move should not be pruned and is worth searching further.
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(scoredMove, piece, captured, curr);

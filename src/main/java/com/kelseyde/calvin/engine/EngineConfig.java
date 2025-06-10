@@ -95,7 +95,7 @@ public class EngineConfig {
     private final Tunable bnpOffset              = new Tunable("BnpOffset", 371, 280, 480, 25);
     private final Tunable bnpScale               = new Tunable("BnpScale", 122, 50, 300, 25);
     private final Tunable bnpDivisor             = new Tunable("BnpDivisor", 128, 80, 200, 25);
-    private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
+    private final Tunable seDepth                = new Tunable("SeDepth", 7, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
     private final Tunable seReductionOffset      = new Tunable("SeReductionOffset", 1, 0, 3, 1);

@@ -289,18 +289,16 @@ public class NNUE {
     }
 
     private int scaleEvaluation(Board board, int eval) {
+        final int phase = materialPhase(board);
 
         // Scale down the evaluation when there's not much material left on the board - this creates an incentive
         // to keep pieces on the board when we have winning chances, and trade them off when we're under pressure.
-        final int materialPhase = materialPhase(board);
-        eval = eval * (22400 + materialPhase) / 32768;
+        final int maxPhase = 4400;
+        final int scaledEval = eval * (22400 + phase) / (22400 + maxPhase);
 
         // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
         // of when no progress is being made in the position.
-        eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
-
-        return eval;
-
+        return scaledEval * (200 - board.getState().getHalfMoveClock()) / 200;
     }
 
     private int materialPhase(Board board) {
@@ -308,7 +306,7 @@ public class NNUE {
         final int bishops = Bits.count(board.getBishops());
         final int rooks = Bits.count(board.getRooks());
         final int queens = Bits.count(board.getQueens());
-        return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
+        return 450 * knights + 450 * bishops + 650 * rooks + 1250 * queens;
     }
 
     private boolean mirrorChanged(Board board, Move move, Piece piece) {

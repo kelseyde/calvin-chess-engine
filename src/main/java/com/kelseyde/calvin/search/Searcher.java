@@ -114,14 +114,14 @@ public class Searcher implements Search {
                 if (score <= alpha) {
                     // If score <= alpha, re-search with an expanded aspiration window
                     beta = (alpha + beta) / 2;
-                    alpha = (alpha - window) + (score - window) / 2;
+                    alpha = ((alpha + score) / 2) - window;
                     window = window * config.aspWideningFactor() / 100;
                     reduction = 0;
                     continue;
                 }
                 if (score >= beta) {
                     // If score >= beta, re-search with an expanded aspiration window
-                    beta = (beta + window) + (score + window) / 2;
+                    beta = ((beta + score) / 2) + window;
                     window = window * config.aspWideningFactor() / 100;
                     reduction = Math.min(maxReduction, reduction + 1);
                     continue;

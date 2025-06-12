@@ -395,7 +395,7 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
-        int moveCount = 0, quietMoves = 0, captureMoves = 0;
+        int moveCount = 0, quietCount = 0, captureCount = 0;
 
         MovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -479,7 +479,7 @@ public class Searcher implements Search {
                     && isQuiet
                     && !inCheck
                     && depth <= config.lmpDepth()
-                    && moveCount >= lateMoveThreshold) {
+                    && quietCount >= lateMoveThreshold) {
                 movePicker.skipQuiets(true);
                 continue;
             }
@@ -545,10 +545,10 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(scoredMove, piece, captured, curr);
 
-            if (isCapture && captureMoves < 16)
-                curr.captures[captureMoves++] = move;
-            else if (quietMoves < 16)
-                curr.quiets[quietMoves++] = move;
+            if (isCapture && captureCount < 16)
+                curr.captures[captureCount++] = move;
+            else if (quietCount < 16)
+                curr.quiets[quietCount++] = move;
 
             final int nodesBefore = td.nodes;
             td.nodes++;

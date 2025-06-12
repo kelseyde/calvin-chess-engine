@@ -765,31 +765,36 @@ public class Searcher implements Search {
             final Piece captured = scoredMove.captured();
             final boolean capture = captured != null;
             final boolean promotion = move.isPromotion();
+            final boolean givesCheck = movegen.givesCheck(board, move);
 
             final Move prevMove = ss.get(ply - 1).move;
             final boolean recapture = prevMove != null && prevMove.to() == move.to();
 
-            // Delta Pruning
-            // Skip captures where the value of the captured piece plus a margin is still below alpha.
-            if (!inCheck && capture && !promotion && !recapture && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
-                continue;
+            if (!inCheck) {
+                // Delta Pruning
+                // Skip captures where the value of the captured piece plus a margin is still below alpha.
+                if (!givesCheck && capture && !promotion && !recapture && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
+                    continue;
 
-            // Futility Pruning
-            // Skip captures that don't win material when the static eval is far below alpha.
-            if (!inCheck && capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1)) {
-                bestScore = Math.max(bestScore, futilityScore);
-                continue;
+                // Futility Pruning
+                // Skip captures that don't win material when the static eval is far below alpha.
+                if (!givesCheck && capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1)) {
+                    bestScore = Math.max(bestScore, futilityScore);
+                    continue;
+                }
+
+                // SEE Pruning
+                // Skip moves which lose material once all the pieces are swapped off.
+                if (!givesCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
+                    continue;
+
+            } else {
+                // Evasion Pruning
+                // In check, stop searching quiet moves after finding at least one non-losing move.
+                if (moveCount > 1 && scoredMove.isQuiet() && !Score.isMate(bestScore))
+                    break;
+
             }
-
-            // SEE Pruning
-            // Skip moves which lose material once all the pieces are swapped off.
-            if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
-                continue;
-
-            // Evasion Pruning
-            // In check, stop searching quiet moves after finding at least one non-losing move.
-            if (inCheck && moveCount > 1 && scoredMove.isQuiet() && !Score.isMate(bestScore))
-                break;
 
             makeMove(scoredMove, piece, captured, curr);
 

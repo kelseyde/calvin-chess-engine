@@ -40,13 +40,13 @@ public class SearchHistory {
     }
 
     public void updateHistory(
-            Board board, Move bestMove, Move[] quiets, Move[] captures, boolean white, int depth, int ply, SearchStack ss) {
+            Board board, Move bestMove, Move ttMove, Move[] quiets, Move[] captures, boolean white, int depth, int ply, SearchStack ss) {
 
         // When the best move causes a beta cut-off, we want to update the various history tables to reward the best move
         // and punish the other moves that were searched. Doing so will hopefully improve move ordering in future searches.
 
         boolean bestMoveCapture = board.isCapture(bestMove);
-        if (!bestMoveCapture) {
+        if (!bestMoveCapture && (depth > 3 || !bestMove.equals(ttMove))) {
             killerTable.add(ply, bestMove);
 
             for (Move quiet : quiets) {

@@ -35,7 +35,7 @@ public abstract class AbstractHistoryTable {
         short scale = malus.scale;
         short moveMult = malus.moveMult;
         short max = malus.max;
-        return (short) Math.min(base + depth * scale - (moveCount - 1) * moveMult, max);
+        return (short) -Math.min(base + depth * scale - (moveCount - 1) * moveMult, max);
     }
 
     protected short gravity(short current, short update) {

@@ -651,7 +651,7 @@ public class Searcher implements Search {
                 // If the best move was quiet, record it in the killer table and give it a bonus in the quiet history table.
                 history.killerTable().add(ply, bestMove);
 
-                if (depth > 3 || quietCount > (ttMove != null && board.isQuiet(ttMove) ? 2 : 1))
+                if (depth > 3 || quietCount > 0)
                     history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, true);
 
                 // Penalise all the other quiets which failed to cause a beta cut-off.

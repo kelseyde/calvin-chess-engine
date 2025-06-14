@@ -590,16 +590,6 @@ public class Searcher implements Search {
                 return alpha;
             }
 
-            if (score <= alpha || score >= beta) {
-                // Only give a history bonus to moves that cause a cut-off, and a penalty
-                // to moves that fail to raise alpha. Ignore moves that raise alpha but
-                // do not cause a cut-off.
-                if (isCapture && captureMoves < 16)
-                    curr.captures[captureMoves++] = move;
-                else if (quietMoves < 16)
-                    curr.quiets[quietMoves++] = move;
-            }
-
             if (score > bestScore) {
                 bestScore = score;
             }
@@ -633,6 +623,14 @@ public class Searcher implements Search {
                     depth--;
                 }
             }
+
+            // Register the current move, to update its history score later.
+            if (!move.equals(bestMove)) {
+                if (isCapture && captureMoves < 16)
+                    curr.captures[captureMoves++] = move;
+                else if (quietMoves < 16)
+                    curr.quiets[quietMoves++] = move;
+            }
         }
 
         if (moveCount == 0) {
@@ -649,16 +647,19 @@ public class Searcher implements Search {
 
             if (!board.isCapture(bestMove)) {
                 history.killerTable().add(ply, bestMove);
+                history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, true);
 
                 // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
                 for (Move quiet : curr.quiets)
-                    history.updateQuietHistories(board, quiet, bestMove, board.isWhite(), historyDepth, ply);
+                    history.updateQuietHistories(board, quiet, board.isWhite(), historyDepth, ply, false);
+            } else {
+                history.updateCaptureHistory(board, bestMove, board.isWhite(), historyDepth, true);
             }
 
             // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
             // best move was quiet or a capture, penalise all other captures.
             for (Move capture : curr.captures)
-                history.updateCaptureHistory(board, capture, bestMove, board.isWhite(), historyDepth);
+                history.updateCaptureHistory(board, capture, board.isWhite(), historyDepth, false);
         }
 
         if (flag == HashFlag.UPPER

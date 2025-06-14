@@ -46,11 +46,10 @@ public class SearchHistory {
         return (short) -Math.min(scale * depth, max);
     }
 
-    public void updateQuietHistories(Board board, Move quiet, Move bestMove, boolean white, int depth, int ply) {
+    public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, boolean good) {
         // For quiet moves we update both the standard quiet and continuation history tables
         if (quiet == null)
             return;
-        boolean good = quiet.equals(bestMove);
         Piece piece = board.pieceAt(quiet.from());
         updateQuietHistory(quiet, piece, white, depth, good);
         updateContHistory(quiet, piece, white, depth, ply, good);
@@ -77,16 +76,15 @@ public class SearchHistory {
         }
     }
 
-    public void updateCaptureHistory(Board board, Move move, Move bestMove, boolean white, int depth) {
-        if (move == null)
+    public void updateCaptureHistory(Board board, Move capture, boolean white, int depth, boolean good) {
+        if (capture == null)
             return;
-        boolean good = move.equals(bestMove);
-        Piece piece = board.pieceAt(move.from());
-        Piece captured = board.captured(move);
+        Piece piece = board.pieceAt(capture.from());
+        Piece captured = board.captured(capture);
         short scale = good ? (short) config.captHistBonusScale() : (short) config.captHistMalusScale();
         short max = good ? (short) config.captHistBonusMax() : (short) config.captHistMalusMax();
         short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
-        captureHistoryTable.add(piece, move.to(), captured, white, bonus);
+        captureHistoryTable.add(piece, capture.to(), captured, white, bonus);
     }
 
     public int evalCorrection(Board board, int ply) {

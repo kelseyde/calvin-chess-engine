@@ -93,7 +93,7 @@ public class StandardMovePicker extends MovePicker {
     protected boolean isSpecial(Move move) {
         if (move.equals(ttMove))
             return true;
-        for (Move killer : history.getKillerTable().getKillers(ply)) {
+        for (Move killer : history.killerTable().getKillers(ply)) {
             if (move.equals(killer) && !board.isNoisy(killer))
                 return true;
         }
@@ -113,7 +113,7 @@ public class StandardMovePicker extends MovePicker {
 
     protected ScoredMove pickKiller(Stage nextStage) {
 
-        Move[] killers = history.getKillerTable().getKillers(ply);
+        Move[] killers = history.killerTable().getKillers(ply);
         if (killerIndex >= killers.length)
             return nextStage(nextStage);
 

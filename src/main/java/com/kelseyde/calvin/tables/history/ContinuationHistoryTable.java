@@ -11,17 +11,12 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
     short[][][][][] table = new short[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
 
     public ContinuationHistoryTable(EngineConfig config) {
-        super((short) config.contHistBonusMax(),
-                (short) config.contHistBonusScale(),
-                (short) config.contHistMalusMax(),
-                (short) config.contHistMalusScale(),
-                (short) config.contHistMaxScore());
+        super((short) config.contHistMaxScore());
     }
 
-    public void update(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, int depth, boolean white, boolean good) {
+    public void add(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white, int bonus) {
         short current = get(prevMove, prevPiece, currMove, currPiece, white);
-        short bonus = good ? bonus(depth) : malus(depth);
-        short update = gravity(current, bonus);
+        short update = gravity(current, (short) bonus);
         set(prevMove, prevPiece, currMove, currPiece, update, white);
     }
 

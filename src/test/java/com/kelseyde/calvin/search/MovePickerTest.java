@@ -35,7 +35,8 @@ public class MovePickerTest {
         String fen = "rnbqkbnr/1p2pppp/p2p4/1Bp5/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 0 1";
         Board board = FEN.parse(fen).toBoard();
 
-        StandardMovePicker picker = new StandardMovePicker(TestUtils.CONFIG, TestUtils.MOVEGEN, new SearchStack(), new SearchHistory(TestUtils.CONFIG), board, 0, null, true);
+        SearchStack ss = new SearchStack();
+        StandardMovePicker picker = new StandardMovePicker(TestUtils.CONFIG, TestUtils.MOVEGEN, ss, new SearchHistory(TestUtils.CONFIG, ss), board, 0, null, true);
 
         List<ScoredMove> moves = new ArrayList<>();
         while (true) {

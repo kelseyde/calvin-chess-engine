@@ -53,7 +53,7 @@ public class SearchHistory {
         boolean good = quiet.equals(bestMove);
         Piece piece = board.pieceAt(quiet.from());
         updateQuietHistory(quiet, piece, white, depth, good);
-        updateContHistory(quiet, piece, white, good, depth, ply);
+        updateContHistory(quiet, piece, white, depth, ply, good);
     }
 
     public void updateQuietHistory(Move move, Piece piece, boolean white, int depth, boolean good) {
@@ -63,7 +63,7 @@ public class SearchHistory {
         quietHistoryTable.add(move, piece, white, bonus);
     }
 
-    public void updateContHistory(Move move, Piece piece, boolean white, boolean good, int depth, int ply) {
+    public void updateContHistory(Move move, Piece piece, boolean white, int depth, int ply, boolean good) {
         short scale = good ? (short) config.contHistBonusScale() : (short) config.contHistMalusScale();
         short max = good ? (short) config.contHistBonusMax() : (short) config.contHistMalusMax();
         short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);

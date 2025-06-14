@@ -567,7 +567,7 @@ public class Searcher implements Search {
 
                     score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
                     if (isQuiet && (score <= alpha || score >= beta))
-                        history.updateContHistory(move, piece, board.isWhite(), score >= beta, depth, ply);
+                        history.updateContHistory(move, piece, board.isWhite(), depth, ply, score >= beta);
                 }
             }
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,

@@ -645,7 +645,6 @@ public class Searcher implements Search {
         if (bestScore >= beta) {
             // When the best move causes a beta cut-off, we want to update the various history tables to reward the best move
             // and punish the other moves that were searched. Doing so will hopefully improve move ordering in future searches.
-
             final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
 
             if (!board.isCapture(bestMove)) {

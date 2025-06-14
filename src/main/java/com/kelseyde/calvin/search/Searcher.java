@@ -85,7 +85,7 @@ public class Searcher implements Search {
         int maxReduction = config.aspMaxReduction();
         int window = config.aspDelta();
 
-        while (!shouldStop(SOFT) && td.depth < Search.MAX_DEPTH) {
+        while (td.depth < Search.MAX_DEPTH) {
 
             td.resetIteration();
 
@@ -136,6 +136,9 @@ public class Searcher implements Search {
             // Increment depth and reset retry counter for next iteration
             td.depth++;
             reduction = 0;
+
+            if (shouldStop(SOFT))
+                break;
 
         }
 

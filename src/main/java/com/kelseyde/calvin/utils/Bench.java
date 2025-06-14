@@ -99,7 +99,6 @@ public class Bench {
 
         if (exit)
             UCI.handleQuit(null);
-
     }
 
 }

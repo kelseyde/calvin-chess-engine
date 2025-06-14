@@ -2,6 +2,7 @@ package com.kelseyde.calvin.tables.history;
 
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
+import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 
@@ -24,6 +25,15 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
         short current = table[colourIndex][pieceIndex][to][capturedIndex];
         short bonus = good ? bonus(depth) : malus(depth);
         short update = gravity(current, bonus);
+        table[colourIndex][pieceIndex][to][capturedIndex] = update;
+    }
+
+    public void add(Piece piece, int to, Piece captured, boolean white, int bonus) {
+        int colourIndex = Colour.index(white);
+        int pieceIndex = piece.index();
+        int capturedIndex = captured.index();
+        short current = table[colourIndex][pieceIndex][to][capturedIndex];
+        short update = gravity(current, (short) bonus);
         table[colourIndex][pieceIndex][to][capturedIndex] = update;
     }
 

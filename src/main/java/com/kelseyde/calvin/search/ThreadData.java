@@ -21,6 +21,10 @@ public class ThreadData {
     private Move bestMoveCurrent;
     private int bestScoreCurrent;
 
+    // Stability counters for the best move and score
+    private int bestMoveStability = 0;
+    private int bestScoreStability = 0;
+
     public ThreadData(int threadIndex) {
         this.threadIndex = threadIndex;
         this.nodes = 0;
@@ -32,6 +36,8 @@ public class ThreadData {
         this.bestScore = 0;
         this.bestMoveCurrent = null;
         this.bestScoreCurrent = 0;
+        this.bestMoveStability = 0;
+        this.bestScoreStability = 0;
     }
 
     /**
@@ -57,8 +63,10 @@ public class ThreadData {
     /**
      * If a best move was found during the current iteration, update the overall best move and score.
      */
-    public void processIteration() {
+    public void updateBestMove() {
         if (bestMoveCurrent != null) {
+            updateBestMoveStability(bestMove, bestMoveCurrent);
+            updateBestScoreStability(bestScore, bestScoreCurrent);
             updateBestMove(bestMoveCurrent, bestScoreCurrent);
         }
     }
@@ -83,6 +91,14 @@ public class ThreadData {
         return bestScoreCurrent;
     }
 
+    public int bestMoveStability() {
+        return bestMoveStability;
+    }
+
+    public int bestScoreStability() {
+        return bestScoreStability;
+    }
+
     public int nodes(Move move) {
         if (move == null) return 0;
         return nodesPerMove[move.from()][move.to()];
@@ -98,6 +114,24 @@ public class ThreadData {
         seldepth = 0;
     }
 
+    public void updateBestMoveAndScore(ThreadData td) {
+        if (td.bestMove() != null) {
+            updateBestMoveStability(td.bestMove(), td.bestMoveCurrent());
+            updateBestScoreStability(td.bestScore(), td.bestScoreCurrent());
+        }
+    }
+
+    public void updateBestMoveStability(Move bestMovePrevious, Move bestMoveCurrent) {
+        if (bestMovePrevious == null || bestMoveCurrent == null) {
+            return;
+        }
+        bestMoveStability = bestMovePrevious.equals(bestMoveCurrent) ? bestMoveStability + 1 : 0;
+    }
+
+    public void updateBestScoreStability(int scorePrevious, int scoreCurrent) {
+        bestScoreStability = scoreCurrent >= scorePrevious - 10 && scoreCurrent <= scorePrevious + 10 ? bestScoreStability + 1 : 0;
+    }
+
     public void reset() {
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
@@ -108,6 +142,8 @@ public class ThreadData {
         this.bestScore = 0;
         this.bestMoveCurrent = null;
         this.bestScoreCurrent = 0;
+        this.bestMoveStability = 0;
+        this.bestScoreStability = 0;
         this.abort = false;
     }
 

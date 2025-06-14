@@ -25,6 +25,12 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
         set(prevMove, prevPiece, currMove, currPiece, update, white);
     }
 
+    public void add(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white, int bonus) {
+        short current = get(prevMove, prevPiece, currMove, currPiece, white);
+        short update = gravity(current, (short) bonus);
+        set(prevMove, prevPiece, currMove, currPiece, update, white);
+    }
+
     public short get(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {
         if (prevMove == null || prevPiece == null || currMove == null || currPiece == null) {
             return 0;

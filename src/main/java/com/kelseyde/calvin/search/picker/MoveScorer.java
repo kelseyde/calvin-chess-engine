@@ -71,7 +71,7 @@ public class MoveScorer {
         if (quietCheck) {
             // Quiet checks are treated as 'bad noisies' and scored using quiet history heuristics
             final MoveType type = MoveType.BAD_NOISY;
-            final int historyScore = history.getQuietHistoryTable().get(move, piece, white);
+            final int historyScore = history.quietHistory().get(move, piece, white);
             final int contHistScore = continuationHistoryScore(move, piece, white, ply);
             score = historyScore + contHistScore;
             return new ScoredMove(move, piece, captured, score, historyScore, type);
@@ -79,7 +79,7 @@ public class MoveScorer {
 
         score += SEE.value(captured);
 
-        final int historyScore = history.getCaptureHistoryTable().get(piece, move.to(), captured, board.isWhite());
+        final int historyScore = history.captureHistory().get(piece, move.to(), captured, board.isWhite());
         score += historyScore / 4;
 
         final int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
@@ -93,7 +93,7 @@ public class MoveScorer {
     private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
 
         // Quiet moves are scored using the quiet history and continuation history heuristics.
-        final int historyScore = history.getQuietHistoryTable().get(move, piece, board.isWhite());
+        final int historyScore = history.quietHistory().get(move, piece, board.isWhite());
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         final int score = historyScore + contHistScore;
         MoveType type = score >= config.goodQuietThreshold() ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET;
@@ -110,7 +110,7 @@ public class MoveScorer {
             if (entry != null && entry.move != null) {
                 Move prevMove = entry.move;
                 Piece prevPiece = entry.piece;
-                contHistScore += history.getContHistTable().get(prevMove, prevPiece, move, piece, white);
+                contHistScore += history.continuationHistory().get(prevMove, prevPiece, move, piece, white);
             }
         }
         return contHistScore;

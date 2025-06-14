@@ -2,25 +2,21 @@ package com.kelseyde.calvin.tables.history;
 
 public abstract class AbstractHistoryTable {
 
-    public record HistoryBonus(short base, short scale, short moveMult, short max) {
+    public record HistoryConfig(short base, short scale, short moveMult, short max) {
 
-        public HistoryBonus(int base, int scale, int moveMult, int max) {
+        public HistoryConfig(int base, int scale, int moveMult, int max) {
             this((short) base, (short) scale, (short) moveMult, (short) max);
-        }
-
-        public short bonus(int depth, int moveCount) {
-            return (short) Math.min(base + depth * scale - (moveCount - 1) * moveMult, max);
         }
 
     }
 
     private final short scoreMax;
 
-    public final HistoryBonus bonus;
-    public final HistoryBonus malus;
+    public final HistoryConfig bonus;
+    public final HistoryConfig malus;
 
-    public AbstractHistoryTable(HistoryBonus bonus,
-                                HistoryBonus malus,
+    public AbstractHistoryTable(HistoryConfig bonus,
+                                HistoryConfig malus,
                                 short scoreMax) {
         this.bonus = bonus;
         this.malus = malus;
@@ -28,11 +24,18 @@ public abstract class AbstractHistoryTable {
     }
 
     public short bonus(int depth, int moveCount) {
-        return bonus.bonus(depth, moveCount);
+        short base = bonus.base;
+        short scale = bonus.scale;
+        short max = bonus.max;
+        return (short) Math.min((base + depth * scale) * moveCount, max);
     }
 
     public short malus(int depth, int moveCount) {
-        return (short) -malus.bonus(depth, moveCount);
+        short base = malus.base;
+        short scale = malus.scale;
+        short moveMult = malus.moveMult;
+        short max = malus.max;
+        return (short) Math.min(base + depth * scale - (moveCount - 1) * moveMult, max);
     }
 
     protected short gravity(short current, short update) {

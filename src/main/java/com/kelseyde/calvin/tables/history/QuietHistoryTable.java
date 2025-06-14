@@ -11,12 +11,12 @@ public class QuietHistoryTable extends AbstractHistoryTable {
     short[][][] table = new short[2][Piece.COUNT][Square.COUNT];
 
     public QuietHistoryTable(EngineConfig config) {
-        super(new HistoryBonus(
+        super(new HistoryConfig(
                         config.quietHistBonusBase(),
                         config.quietHistBonusScale(),
                         config.quietHistBonusMoveMult(),
                         config.quietHistBonusMax()),
-              new HistoryBonus(
+              new HistoryConfig(
                         config.quietHistMalusBase(),
                         config.quietHistMalusScale(),
                         config.quietHistMalusMoveMult(),

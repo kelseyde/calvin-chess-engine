@@ -11,12 +11,12 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
     short[][][][][] table = new short[2][Piece.COUNT][Square.COUNT][Piece.COUNT][Square.COUNT];
 
     public ContinuationHistoryTable(EngineConfig config) {
-        super(new HistoryBonus(
+        super(new HistoryConfig(
                         config.contHistBonusBase(),
                         config.contHistBonusScale(),
                         config.contHistBonusMoveMult(),
                         config.contHistBonusMax()),
-              new HistoryBonus(
+              new HistoryConfig(
                         config.contHistMalusBase(),
                         config.contHistMalusScale(),
                         config.contHistMalusMoveMult(),

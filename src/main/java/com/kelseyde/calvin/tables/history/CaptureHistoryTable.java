@@ -2,7 +2,6 @@ package com.kelseyde.calvin.tables.history;
 
 import com.kelseyde.calvin.board.Bits.Square;
 import com.kelseyde.calvin.board.Colour;
-import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 
@@ -11,12 +10,12 @@ public class CaptureHistoryTable extends AbstractHistoryTable {
     short[][][][] table = new short[2][Piece.COUNT][Square.COUNT][Piece.COUNT];
 
     public CaptureHistoryTable(EngineConfig config) {
-        super(new HistoryBonus(
+        super(new HistoryConfig(
                     config.captHistBonusBase(),
                     config.captHistBonusScale(),
                     config.captHistBonusMoveMult(),
                     config.captHistBonusMax()),
-              new HistoryBonus(
+              new HistoryConfig(
                     config.captHistMalusBase(),
                     config.captHistMalusScale(),
                     config.captHistMalusMoveMult(),

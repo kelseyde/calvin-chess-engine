@@ -545,11 +545,6 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(scoredMove, piece, captured, curr);
 
-            if (isCapture && captureMoves < 16)
-                curr.captures[captureMoves++] = move;
-            else if (quietMoves < 16)
-                curr.quiets[quietMoves++] = move;
-
             final int nodesBefore = td.nodes;
             td.nodes++;
 
@@ -595,6 +590,16 @@ public class Searcher implements Search {
 
             if (shouldStop(HARD)) {
                 return alpha;
+            }
+
+            if (score <= alpha || score >= beta) {
+                // Only give a history bonus to moves that cause a cut-off, and a penalty
+                // to moves that fail to raise alpha. Ignore moves that raise alpha but
+                // do not cause a cut-off.
+                if (isCapture && captureMoves < 16)
+                    curr.captures[captureMoves++] = move;
+                else if (quietMoves < 16)
+                    curr.quiets[quietMoves++] = move;
             }
 
             if (score > bestScore) {

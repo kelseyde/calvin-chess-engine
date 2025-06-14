@@ -47,9 +47,9 @@ public class SearchHistory {
     }
 
     public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, boolean good) {
-        // For quiet moves we update both the standard quiet and continuation history tables
-        if (quiet == null)
+        if (quiet == null) {
             return;
+        }
         Piece piece = board.pieceAt(quiet.from());
         updateQuietHistory(quiet, piece, white, depth, good);
         updateContHistory(quiet, piece, white, depth, ply, good);
@@ -77,8 +77,9 @@ public class SearchHistory {
     }
 
     public void updateCaptureHistory(Board board, Move capture, boolean white, int depth, boolean good) {
-        if (capture == null)
+        if (capture == null) {
             return;
+        }
         Piece piece = board.pieceAt(capture.from());
         Piece captured = board.captured(capture);
         short scale = good ? (short) config.captHistBonusScale() : (short) config.captHistMalusScale();
@@ -113,15 +114,17 @@ public class SearchHistory {
 
     private int getContCorrHistEntry(int ply, boolean white) {
         SearchStackEntry sse = ss.get(ply - 1);
-        if (sse == null || sse.move == null)
+        if (sse == null || sse.move == null) {
             return 0;
+        }
         return countermoveCorrHistTable.get(white, sse.move, sse.piece);
     }
 
     private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
         SearchStackEntry sse = ss.get(ply - 1);
-        if (sse == null || sse.move == null)
+        if (sse == null || sse.move == null) {
             return;
+        }
         countermoveCorrHistTable.update(sse.move, sse.piece, white, staticEval, score, depth);
     }
 

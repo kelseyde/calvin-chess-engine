@@ -11,7 +11,17 @@ public class QuietHistoryTable extends AbstractHistoryTable {
     short[][][] table = new short[2][Piece.COUNT][Square.COUNT];
 
     public QuietHistoryTable(EngineConfig config) {
-        super((short) config.quietHistMaxScore());
+        super(new HistoryBonus(
+                        config.quietHistBonusBase(),
+                        config.quietHistBonusScale(),
+                        config.quietHistBonusMoveMult(),
+                        config.quietHistBonusMax()),
+              new HistoryBonus(
+                        config.quietHistMalusBase(),
+                        config.quietHistMalusScale(),
+                        config.quietHistMalusMoveMult(),
+                        config.quietHistMalusMax()),
+                (short) config.quietHistMaxScore());
     }
 
     public void add(Move move, Piece piece, boolean white, int bonus) {

@@ -393,7 +393,7 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
-        int moveCount = 0, quietMoves = 0, captureMoves = 0;
+        int moveCount = 0, quietCount = 0, captureCount = 0;
 
         MovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -626,10 +626,10 @@ public class Searcher implements Search {
 
             // Register the current move, to update its history score later.
             if (!move.equals(bestMove)) {
-                if (isCapture && captureMoves < 16)
-                    curr.captures[captureMoves++] = move;
-                else if (quietMoves < 16)
-                    curr.quiets[quietMoves++] = move;
+                if (isCapture && captureCount < 16)
+                    curr.captures[captureCount++] = move;
+                else if (quietCount < 16)
+                    curr.quiets[quietCount++] = move;
             }
         }
 
@@ -650,7 +650,9 @@ public class Searcher implements Search {
             if (!board.isCapture(bestMove)) {
                 // If the best move was quiet, record it in the killer table and give it a bonus in the quiet history table.
                 history.killerTable().add(ply, bestMove);
-                history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, true);
+
+                if (depth > 3 || quietCount > (ttMove != null && board.isQuiet(ttMove) ? 2 : 1))
+                    history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, true);
 
                 // Penalise all the other quiets which failed to cause a beta cut-off.
                 for (Move quiet : curr.quiets)

@@ -567,7 +567,7 @@ public class Searcher implements Search {
 
                     score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
                     if (isQuiet && (score <= alpha || score >= beta))
-                        history.updateContHist(move, piece, board.isWhite(), score >= beta, depth, ply);
+                        history.updateContHistory(move, piece, board.isWhite(), score >= beta, depth, ply);
                 }
             }
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
@@ -643,9 +643,23 @@ public class Searcher implements Search {
         }
 
         if (bestScore >= beta) {
-            // Update the search history with the information from the current search, to improve future move ordering.
+            // When the best move causes a beta cut-off, we want to update the various history tables to reward the best move
+            // and punish the other moves that were searched. Doing so will hopefully improve move ordering in future searches.
+
             final int historyDepth = depth + (staticEval <= alpha ? 1 : 0) + (bestScore > beta + 50 ? 1 : 0);
-            history.updateHistory(board, bestMove, curr.quiets, curr.captures, board.isWhite(), historyDepth, ply);
+
+            if (!board.isCapture(bestMove)) {
+                history.killerTable().add(ply, bestMove);
+
+                // If the best move was quiet, give it a boost in the quiet history table, and penalise all other quiets.
+                for (Move quiet : curr.quiets)
+                    history.updateQuietHistories(board, quiet, bestMove, board.isWhite(), historyDepth, ply);
+            }
+
+            // If the best move was a capture, give it a boost in the capture history table. Regardless of whether the
+            // best move was quiet or a capture, penalise all other captures.
+            for (Move capture : curr.captures)
+                history.updateCaptureHistory(board, capture, bestMove, board.isWhite(), historyDepth);
         }
 
         if (flag == HashFlag.UPPER
@@ -656,7 +670,7 @@ public class Searcher implements Search {
             // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
             // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
             // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
-            history.quietHistory().update(prev.move, prev.piece, depth, !board.isWhite(), true);
+            history.updateQuietHistory(prev.move, prev.piece, !board.isWhite(), depth, true);
         }
 
         if (!inCheck

@@ -11,7 +11,6 @@ public abstract class AbstractHistoryTable {
     }
 
     private final short scoreMax;
-
     public final HistoryConfig bonus;
     public final HistoryConfig malus;
 

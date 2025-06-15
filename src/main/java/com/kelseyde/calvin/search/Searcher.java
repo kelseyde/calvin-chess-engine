@@ -566,8 +566,11 @@ public class Searcher implements Search {
                     newDepth += (doDeeperSearch ? 1 : 0) - (doShallowerSearch ? 1 : 0);
 
                     score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
-                    if (isQuiet && (score <= alpha || score >= beta))
-                        history.updateContHistory(move, piece, board.isWhite(), depth, ply, score >= beta);
+                    if (isQuiet && (score <= alpha || score >= beta)) {
+                        short bonus = score >= beta ? history.quietHistory().bonus(depth, moveCount)
+                                                    : history.quietHistory().malus(depth, moveCount);
+                        history.updateContHistory(move, piece, board.isWhite(), depth, ply, bonus);
+                    }
                 }
             }
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
@@ -647,22 +650,31 @@ public class Searcher implements Search {
                     + (staticEval <= alpha ? 1 : 0)
                     + (bestScore > beta + config.betaHistBonusMargin() ? 1 : 0);
 
+            short quietBonus = history.quietHistory().bonus(historyDepth, moveCount);
+            short quietMalus = history.quietHistory().malus(historyDepth, moveCount);
+
+            short captBonus = history.captureHistory().bonus(historyDepth, moveCount);
+            short captMalus = history.captureHistory().malus(historyDepth, moveCount);
+
+            short contBonus = history.continuationHistory().bonus(historyDepth, moveCount);
+            short contMalus = history.continuationHistory().malus(historyDepth, moveCount);
+
             if (!board.isCapture(bestMove)) {
                 // If the best move was quiet, record it in the killer table and give it a bonus in the quiet history table.
                 history.killerTable().add(ply, bestMove);
-                history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, true);
+                history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, quietBonus, contBonus);
 
                 // Penalise all the other quiets which failed to cause a beta cut-off.
                 for (Move quiet : curr.quiets)
-                    history.updateQuietHistories(board, quiet, board.isWhite(), historyDepth, ply, false);
+                    history.updateQuietHistories(board, quiet, board.isWhite(), historyDepth, ply, quietMalus, contMalus);
             } else {
                 // If the best move was a capture, give it a bonus in the capture history table.
-                history.updateCaptureHistory(board, bestMove, board.isWhite(), historyDepth, true);
+                history.updateCaptureHistory(board, bestMove, board.isWhite(), historyDepth, captBonus);
             }
 
             // Regardless of whether the best move was quiet or a capture, penalise all other captures.
             for (Move capture : curr.captures)
-                history.updateCaptureHistory(board, capture, board.isWhite(), historyDepth, false);
+                history.updateCaptureHistory(board, capture, board.isWhite(), historyDepth, captMalus);
         }
 
         if (flag == HashFlag.UPPER
@@ -673,7 +685,8 @@ public class Searcher implements Search {
             // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
             // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
             // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
-            history.updateQuietHistory(prev.move, prev.piece, !board.isWhite(), depth, true);
+            short bonus = history.quietHistory().bonus(depth, moveCount);
+            history.updateQuietHistory(prev.move, prev.piece, !board.isWhite(), depth, bonus);
         }
 
         if (!inCheck

@@ -28,7 +28,7 @@ public abstract class AbstractHistoryTable {
         short scale = bonus.scale;
         short moveMult = bonus.moveMult;
         short max = bonus.max;
-        return (short) Math.min(base + depth * scale - (moveCount - 1) * moveMult, max);
+        return (short) Math.min(base + depth * scale + (moveCount - 1) * moveMult, max);
     }
 
     public short malus(int depth, int moveCount) {

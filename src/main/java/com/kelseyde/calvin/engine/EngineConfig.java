@@ -135,8 +135,13 @@ public class EngineConfig {
     private final Tunable nodeTmMinDepth         = new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
     private final Tunable nodeTmBase             = new Tunable("NodeTmBase", 166, 100, 200, 10);
     private final Tunable nodeTmScale            = new Tunable("NodeTmScale", 149, 100, 200, 10);
+    private final Tunable fallingScoreBase       = new Tunable("FallingScoreBase", 800, 700, 900, 10);
+    private final Tunable fallingScoreMultiplier = new Tunable("FallingScoreMultiplier", 20, 10, 50, 5);
+    private final Tunable fallingScoreMin        = new Tunable("FallingScoreMin", 750, 600, 900, 50);
+    private final Tunable fallingScoreMax        = new Tunable("FallingScoreMax", 1500, 1300, 1700, 100);
     private final Tunable bmStabilityMinDepth    = new Tunable("BmStabilityMinDepth", 0, 0, 10, 1);
     private final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
+    private final Tunable fallingScoreMinDepth   = new Tunable("FallingScoreMinDepth", 0, 0, 10, 1);
 
     private int[][][] lmrReductions;
     private final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
@@ -161,7 +166,8 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, fallingScoreMinDepth,
+                fallingScoreBase, fallingScoreMultiplier, fallingScoreMin, fallingScoreMax
         );
     }
 
@@ -643,6 +649,22 @@ public class EngineConfig {
         return nodeTmScale.value;
     }
 
+    public int fallingScoreBase() {
+        return fallingScoreBase.value;
+    }
+
+    public int fallingScoreMultiplier() {
+        return fallingScoreMultiplier.value;
+    }
+
+    public int fallingScoreMin() {
+        return fallingScoreMin.value;
+    }
+
+    public int fallingScoreMax() {
+        return fallingScoreMax.value;
+    }
+
     public int bmStabilityMinDepth() {
         return bmStabilityMinDepth.value;
     }
@@ -661,6 +683,10 @@ public class EngineConfig {
 
     public int[] scoreStabilityFactor() {
         return scoreStabilityFactor;
+    }
+
+    public int fallingScoreMinDepth() {
+        return fallingScoreMinDepth.value;
     }
 
     public int[] contHistPlies() {

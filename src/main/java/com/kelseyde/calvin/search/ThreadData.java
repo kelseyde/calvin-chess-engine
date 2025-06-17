@@ -17,6 +17,9 @@ public class ThreadData {
     private Move bestMove;
     private int bestScore;
 
+    // The best score from the previous iteration
+    private int previousBestScore;
+
     // The best move and score from the current iteration
     private Move bestMoveCurrent;
     private int bestScoreCurrent;
@@ -35,6 +38,7 @@ public class ThreadData {
         this.bestMove = null;
         this.bestScore = 0;
         this.bestMoveCurrent = null;
+        this.previousBestScore = 0;
         this.bestScoreCurrent = 0;
         this.bestMoveStability = 0;
         this.bestScoreStability = 0;
@@ -55,6 +59,7 @@ public class ThreadData {
      */
     public void updateBestMove(Move move, int score) {
         if (move != null) {
+            previousBestScore = bestScore;
             bestMove = move;
             bestScore = score;
         }
@@ -81,6 +86,10 @@ public class ThreadData {
 
     public int bestScore() {
         return bestScore;
+    }
+
+    public int previousBestScore() {
+        return previousBestScore;
     }
 
     public Move bestMoveCurrent() {
@@ -140,6 +149,7 @@ public class ThreadData {
         this.nmpPly = 0;
         this.bestMove = null;
         this.bestScore = 0;
+        this.previousBestScore = 0;
         this.bestMoveCurrent = null;
         this.bestScoreCurrent = 0;
         this.bestMoveStability = 0;

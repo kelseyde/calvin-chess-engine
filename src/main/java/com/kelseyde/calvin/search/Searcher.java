@@ -899,10 +899,13 @@ public class Searcher implements Search {
         // Exit if soft limit for the current search is reached.
         if (config.pondering || limits == null)
             return false;
+        final int bestScore = td.bestScore();
+        final int previousBestScore = td.previousBestScore();
         final int bestMoveStability = td.bestMoveStability();
         final int scoreStability = td.bestScoreStability();
         final int bestMoveNodes = td.nodes(td.bestMove());
-        return limits.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        return limits.isSoftLimitReached(
+                td.depth, td.nodes, bestMoveNodes, bestMoveStability, bestScore, previousBestScore, scoreStability);
     }
 
     private boolean isDraw() {

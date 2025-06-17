@@ -319,6 +319,16 @@ public class Searcher implements Search {
             depth++;
         }
 
+        if (!pvNode
+                && !singularSearch
+                && ttHit
+                && ttEntry.depth() >= depth
+                && board.getState().getHalfMoveClock() < 90
+                && Score.isDefined(ttEntry.score())
+                && (ttEntry.flag() != HashFlag.UPPER && ttEntry.score() >= beta)) {
+            return ttEntry.score();
+        }
+
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.

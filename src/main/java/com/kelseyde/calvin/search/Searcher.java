@@ -83,6 +83,7 @@ public class Searcher implements Search {
         int reduction = 0;
         int maxReduction = config.aspMaxReduction();
         int window = config.aspDelta();
+        int windowExpansions = 0;
 
         while (!shouldStop(SOFT) && td.depth < Search.MAX_DEPTH) {
 
@@ -114,6 +115,7 @@ public class Searcher implements Search {
                     beta = (alpha + beta) / 2;
                     alpha -= window;
                     window = window * config.aspWideningFactor() / 100;
+                    windowExpansions++;
                     reduction = 0;
                     continue;
                 }
@@ -121,12 +123,14 @@ public class Searcher implements Search {
                     // If score >= beta, re-search with an expanded aspiration window
                     beta += window;
                     window = window * config.aspWideningFactor() / 100;
+                    windowExpansions++;
                     reduction = Math.min(maxReduction, reduction + 1);
                     continue;
                 }
 
                 // Center the aspiration window around the score from the current iteration, to be used next time.
-                window = config.aspDelta();
+                windowExpansions /= 2;
+                window = config.aspDelta() + 6 * (windowExpansions >= 4 ? 1 : 0);
                 alpha = score - window;
                 beta = score + window;
             }

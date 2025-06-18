@@ -12,15 +12,15 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
 
     public ContinuationHistoryTable(EngineConfig config) {
         super(new HistoryConfig(
-                        config.contHistBonusBase(),
-                        config.contHistBonusScale(),
-                        config.contHistBonusMoveMult(),
-                        config.contHistBonusMax()),
+                    config.contHistBonusBase(),
+                    config.contHistBonusScale(),
+                    config.contHistBonusMoveMult(),
+                    config.contHistBonusMax()),
               new HistoryConfig(
-                        config.contHistMalusBase(),
-                        config.contHistMalusScale(),
-                        config.contHistMalusMoveMult(),
-                        config.contHistMalusMax()),
+                    config.contHistMalusBase(),
+                    config.contHistMalusScale(),
+                    config.contHistMalusMoveMult(),
+                    config.contHistMalusMax()),
                 (short) config.contHistMaxScore());
     }
 

@@ -24,19 +24,11 @@ public abstract class AbstractHistoryTable {
     }
 
     public short bonus(int depth, int moveCount) {
-        short base = bonus.base;
-        short scale = bonus.scale;
-        short moveMult = bonus.moveMult;
-        short max = bonus.max;
-        return (short) Math.min(base + depth * scale + (moveCount - 1) * moveMult, max);
+        return (short) Math.min(bonus.base + depth * bonus.scale + (moveCount - 1) * bonus.moveMult, bonus.max);
     }
 
     public short malus(int depth, int moveCount) {
-        short base = malus.base;
-        short scale = malus.scale;
-        short moveMult = malus.moveMult;
-        short max = malus.max;
-        return (short) -Math.min(base + depth * scale - (moveCount - 1) * moveMult, max);
+        return (short) -Math.min(malus.base + depth * malus.scale - (moveCount - 1) * malus.moveMult, malus.max);
     }
 
     protected short gravity(short current, short update) {

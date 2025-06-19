@@ -728,7 +728,7 @@ public class Searcher implements Search {
         boolean ttPv = pvNode || (ttHit && ttEntry.pv());
 
         if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta))
-            return ttEntry.score();
+            return ttEntry.score() >= beta ? (ttEntry.score() * 3 + beta) / 4 : ttEntry.score();
 
         final boolean inCheck = movegen.isCheck(board);
 

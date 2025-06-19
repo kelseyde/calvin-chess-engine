@@ -233,7 +233,7 @@ public class Searcher implements Search {
                     if (!pvNode) {
                         // In non-PV nodes with an TT hit matching the depth and alpha/beta bounds of
                         // the current search, we can cut off the search here and return the TT score.
-                        return ttEntry.score();
+                        return ttEntry.score() >= beta ? (ttEntry.score() * 3 + beta) / 4 : ttEntry.score();
                     } else {
                         // In PV nodes, rather than cutting off we reduce search depth.
                         depth--;

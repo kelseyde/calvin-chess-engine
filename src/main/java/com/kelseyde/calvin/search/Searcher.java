@@ -479,7 +479,7 @@ public class Searcher implements Search {
                     && depth <= config.lmpDepth()
                     && moveCount >= lateMoveThreshold) {
                 movePicker.skipQuiets(true);
-                continue;
+                break;
             }
 
             // Bad Noisy Pruning

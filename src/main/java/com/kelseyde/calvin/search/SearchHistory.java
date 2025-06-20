@@ -38,34 +38,20 @@ public class SearchHistory {
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
     }
 
-    private short bonus(int depth, short scale, short max) {
-        return (short) Math.min(scale * depth, max);
-    }
-
-    private short malus(int depth, short scale, short max) {
-        return (short) -Math.min(scale * depth, max);
-    }
-
-    public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, boolean good) {
+    public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, short quietBonus, short contBonus) {
         if (quiet == null) {
             return;
         }
         Piece piece = board.pieceAt(quiet.from());
-        updateQuietHistory(quiet, piece, white, depth, good);
-        updateContHistory(quiet, piece, white, depth, ply, good);
+        updateQuietHistory(quiet, piece, white, depth, quietBonus);
+        updateContHistory(quiet, piece, white, depth, ply, contBonus);
     }
 
-    public void updateQuietHistory(Move move, Piece piece, boolean white, int depth, boolean good) {
-        short scale = good ? (short) config.quietHistBonusScale() : (short) config.quietHistMalusScale();
-        short max = good ? (short) config.quietHistBonusMax() : (short) config.quietHistMalusMax();
-        short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
+    public void updateQuietHistory(Move move, Piece piece, boolean white, int depth, short bonus) {
         quietHistoryTable.add(move, piece, white, bonus);
     }
 
-    public void updateContHistory(Move move, Piece piece, boolean white, int depth, int ply, boolean good) {
-        short scale = good ? (short) config.contHistBonusScale() : (short) config.contHistMalusScale();
-        short max = good ? (short) config.contHistBonusMax() : (short) config.contHistMalusMax();
-        short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
+    public void updateContHistory(Move move, Piece piece, boolean white, int depth, int ply, short bonus) {
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.move != null) {
@@ -76,15 +62,12 @@ public class SearchHistory {
         }
     }
 
-    public void updateCaptureHistory(Board board, Move capture, boolean white, int depth, boolean good) {
+    public void updateCaptureHistory(Board board, Move capture, boolean white, int depth, short bonus) {
         if (capture == null) {
             return;
         }
         Piece piece = board.pieceAt(capture.from());
         Piece captured = board.captured(capture);
-        short scale = good ? (short) config.captHistBonusScale() : (short) config.captHistMalusScale();
-        short max = good ? (short) config.captHistBonusMax() : (short) config.captHistMalusMax();
-        short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
         captureHistoryTable.add(piece, capture.to(), captured, white, bonus);
     }
 

@@ -41,6 +41,7 @@ public class EngineConfig {
     private final Tunable fpDepth                = new Tunable("FpDepth", 8, 0, 8, 1);
     private final Tunable fpMargin               = new Tunable("FpMargin", 108, 0, 500, 25);
     private final Tunable fpScale                = new Tunable("FpScale", 81, 0, 100, 5);
+    private final Tunable fpImprovingScale       = new Tunable("FpImprovingScale", 81, 0, 100, 5);
     private final Tunable fpHistDivisor          = new Tunable("FpHistDivisor", 99, 1, 1000, 25);
     private final Tunable fpMoveMultiplier       = new Tunable("FpMoveMultiplier", 4, 0, 10, 1);
     private final Tunable seeMaxDepth            = new Tunable("SeeMaxDepth", 10, 6, 12, 1);
@@ -161,7 +162,7 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, fpImprovingScale
         );
     }
 
@@ -265,6 +266,10 @@ public class EngineConfig {
 
     public int fpScale() {
         return fpScale.value;
+    }
+
+    public int fpImprovingScale() {
+        return fpImprovingScale.value;
     }
 
     public int fpHistDivisor() {

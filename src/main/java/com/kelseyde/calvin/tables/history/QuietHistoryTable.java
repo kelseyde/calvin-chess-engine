@@ -11,19 +11,7 @@ public class QuietHistoryTable extends AbstractHistoryTable {
     short[][][] table = new short[2][Piece.COUNT][Square.COUNT];
 
     public QuietHistoryTable(EngineConfig config) {
-        super((short) config.quietHistBonusMax(),
-                (short) config.quietHistBonusScale(),
-                (short) config.quietHistMalusMax(),
-                (short) config.quietHistMalusScale(),
-                (short) config.quietHistMaxScore());
-    }
-
-    public void update(Move move, Piece piece, int depth, boolean white, boolean good) {
-        int colourIndex = Colour.index(white);
-        short current = table[colourIndex][piece.index()][move.to()];
-        short bonus = good ? bonus(depth) : malus(depth);
-        short update = gravity(current, bonus);
-        table[colourIndex][piece.index()][move.to()] = update;
+        super((short) config.quietHistMaxScore());
     }
 
     public void add(Move move, Piece piece, boolean white, int bonus) {

@@ -56,6 +56,7 @@ public class EngineConfig {
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 58, 0, 150, 25);
     private final Tunable rfpImprovingMargin     = new Tunable("RfpImprovingMargin", 65, 0, 150, 25);
+    private final Tunable rfpWorseningMargin     = new Tunable("RfpWorseningMargin", 15, 0, 100, 15);
     private final Tunable rfpParentPvMargin      = new Tunable("RfpParentPvMargin", 22, 0, 75, 20);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 92, 50, 100, 5);
@@ -161,7 +162,7 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin
         );
     }
 
@@ -329,6 +330,10 @@ public class EngineConfig {
 
     public int rfpParentPvMargin() {
         return rfpParentPvMargin.value;
+    }
+
+    public int rfpWorseningMargin() {
+        return rfpWorseningMargin.value;
     }
 
     public int lmrDepth() {

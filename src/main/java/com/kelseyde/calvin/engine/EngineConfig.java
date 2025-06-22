@@ -126,6 +126,13 @@ public class EngineConfig {
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable pawnHistBonusMax       = new Tunable("PawnHistBonusMax", 1200, 100, 2000, 100);
+    private final Tunable pawnHistBonusScale     = new Tunable("PawnHistBonusScale", 200, 50, 400, 25);
+    private final Tunable pawnHistMalusMax       = new Tunable("PawnHistMalusMax", 1200, 100, 2000, 100);
+    private final Tunable pawnHistMalusScale     = new Tunable("PawnHistMalusScale", 200, 50, 400, 25);
+    private final Tunable pawnHistMaxScore       = new Tunable("PawnHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable pawnHistTableSize      = new Tunable("PawnHistTableSize", 16384, 8192, 24576, 1024);
+    private final Tunable pawnHistFill           = new Tunable("PawnHistFill", 0, -2048, 2048, 128);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 80, 50, 100, 5);
     private final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
@@ -162,7 +169,9 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin,
+                pawnHistBonusMax, pawnHistBonusScale, pawnHistMalusMax, pawnHistMalusScale, pawnHistMaxScore,
+                pawnHistTableSize, pawnHistFill
         );
     }
 
@@ -606,6 +615,34 @@ public class EngineConfig {
 
     public int contHistMaxScore() {
         return contHistMaxScore.value;
+    }
+
+    public int pawnHistBonusMax() {
+        return pawnHistBonusMax.value;
+    }
+
+    public int pawnHistBonusScale() {
+        return pawnHistBonusScale.value;
+    }
+
+    public int pawnHistMalusMax() {
+        return pawnHistMalusMax.value;
+    }
+
+    public int pawnHistMalusScale() {
+        return pawnHistMalusScale.value;
+    }
+
+    public int pawnHistMaxScore() {
+        return pawnHistMaxScore.value;
+    }
+
+    public int pawnHistTableSize() {
+        return pawnHistTableSize.value;
+    }
+
+    public int pawnHistFill() {
+        return pawnHistFill.value;
     }
 
     public int timeFactor() {

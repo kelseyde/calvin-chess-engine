@@ -95,7 +95,8 @@ public class MoveScorer {
         // Quiet moves are scored using the quiet history and continuation history heuristics.
         final int historyScore = history.quietHistory().get(move, piece, board.isWhite());
         final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
-        final int score = historyScore + contHistScore;
+        final int pawnHistScore = history.pawnHistory().get(board.pawnKey(), piece, move.to(), board.isWhite());
+        final int score = historyScore + contHistScore + pawnHistScore;
         MoveType type = score >= config.goodQuietThreshold() ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET;
         return new ScoredMove(move, piece, null, score, score, type);
 

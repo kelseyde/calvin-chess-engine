@@ -9,10 +9,7 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
 import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
-import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
-import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
-import com.kelseyde.calvin.tables.history.KillerTable;
-import com.kelseyde.calvin.tables.history.QuietHistoryTable;
+import com.kelseyde.calvin.tables.history.*;
 
 public class SearchHistory {
 
@@ -22,6 +19,7 @@ public class SearchHistory {
     private final QuietHistoryTable quietHistoryTable;
     private final ContinuationHistoryTable contHistTable;
     private final CaptureHistoryTable captureHistoryTable;
+    private final PawnHistoryTable pawnHistoryTable;
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
     private final PieceToCorrectionTable countermoveCorrHistTable;
@@ -33,6 +31,7 @@ public class SearchHistory {
         this.quietHistoryTable = new QuietHistoryTable(config);
         this.contHistTable = new ContinuationHistoryTable(config);
         this.captureHistoryTable = new CaptureHistoryTable(config);
+        this.pawnHistoryTable = new PawnHistoryTable(config);
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
         this.countermoveCorrHistTable = new PieceToCorrectionTable();
@@ -52,6 +51,7 @@ public class SearchHistory {
         }
         Piece piece = board.pieceAt(quiet.from());
         updateQuietHistory(quiet, piece, white, depth, good);
+        updatePawnHistory(board, quiet, piece, white, depth, ply, good);
         updateContHistory(quiet, piece, white, depth, ply, good);
     }
 
@@ -74,6 +74,13 @@ public class SearchHistory {
                 contHistTable.add(prevMove, prevPiece, move, piece, white, bonus);
             }
         }
+    }
+
+    public void updatePawnHistory(Board board, Move move, Piece piece, boolean white, int depth, int ply, boolean good) {
+        short scale = good ? (short) config.pawnHistBonusScale() : (short) config.pawnHistMalusScale();
+        short max = good ? (short) config.pawnHistBonusMax() : (short) config.pawnHistMalusMax();
+        short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
+        pawnHistoryTable.add(board.pawnKey(), piece, move.to(), white, bonus);
     }
 
     public void updateCaptureHistory(Board board, Move capture, boolean white, int depth, boolean good) {
@@ -144,11 +151,16 @@ public class SearchHistory {
         return captureHistoryTable;
     }
 
+    public PawnHistoryTable pawnHistory() {
+        return pawnHistoryTable;
+    }
+
     public void clear() {
         killerTable.clear();
         quietHistoryTable.clear();
         contHistTable.clear();
         captureHistoryTable.clear();
+        pawnHistoryTable.clear();
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();

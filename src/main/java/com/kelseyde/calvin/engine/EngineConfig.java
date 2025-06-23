@@ -70,6 +70,7 @@ public class EngineConfig {
     private final Tunable lmrPvDistanceMax       = new Tunable("LmrPvDistanceMax", 992, 0, 2048, 256);
     private final Tunable lmrCutNode             = new Tunable("LmrCutNode", 2067, 0, 3072, 150);
     private final Tunable lmrNotImproving        = new Tunable("LmrNotImproving", 132, 0, 2048, 150);
+    private final Tunable lmrOppWorsening        = new Tunable("LmrOpponentWorsening", 1024, 0, 2048, 150);
     private final Tunable lmrFutile              = new Tunable("LmrFutile", 949, 0, 2048, 150);
     private final Tunable lmrFailHighCount       = new Tunable("LmrCutoffCount", 1057, 0, 2048, 150);
     private final Tunable lmrQuietHistoryDiv     = new Tunable("LmrQuietHistoryDiv", 3283, 1536, 6144, 1000);
@@ -162,7 +163,8 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin,
+                lmrOppWorsening
         );
     }
 
@@ -382,6 +384,10 @@ public class EngineConfig {
 
     public int lmrNotImproving() {
         return lmrNotImproving.value;
+    }
+
+    public int lmrOpponentWorsening() {
+        return lmrOppWorsening.value;
     }
 
     public int lmrFutile() {

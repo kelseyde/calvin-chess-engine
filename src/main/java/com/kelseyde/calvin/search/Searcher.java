@@ -441,6 +441,7 @@ public class Searcher implements Search {
                 r -= ttPv ? config.lmrPvNode() : 0;
                 r += cutNode ? config.lmrCutNode() : 0;
                 r += !improving ? config.lmrNotImproving() : 0;
+                r += opponentWorsening ? config.lmrOpponentWorsening() : 0;
                 r += Math.min(curr.pvDistance * config.lmrPvDistanceMult(), config.lmrPvDistanceMax());
                 r -= historyScore / (isQuiet ? config.lmrQuietHistoryDiv() : config.lmrNoisyHistoryDiv()) * 1024;
                 r += staticEval + lmrFutilityMargin(depth, historyScore) <= alpha ? config.lmrFutile() : 0;

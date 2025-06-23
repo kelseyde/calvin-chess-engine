@@ -34,6 +34,7 @@ public class SearchStack {
         public Move excludedMove;
         public Move[] quiets;
         public Move[] captures;
+        public int extension;
         public int reduction;
         public int failHighCount;
         public int pvDistance;

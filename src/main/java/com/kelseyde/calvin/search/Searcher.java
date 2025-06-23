@@ -205,6 +205,7 @@ public class Searcher implements Search {
         curr.pvDistance = pvNode ? 0 : prev.pvDistance + 1;
         final Move excludedMove = curr.excludedMove;
         final boolean singularSearch = excludedMove != null;
+        final int priorExtension = rootNode ? 0 : prev.extension;
         final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
         final boolean parentPvNode = curr.pvDistance == 1;
 
@@ -429,7 +430,7 @@ public class Searcher implements Search {
 
             // Check Extensions
             // If we are in check then the position is likely noisy/tactical, so we extend the search depth.
-            if (inCheck)
+            if (inCheck && priorExtension == 0)
                 extension = 1;
 
             // Late Move Reductions
@@ -554,6 +555,7 @@ public class Searcher implements Search {
             final int nodesBefore = td.nodes;
             td.nodes++;
 
+            curr.extension = extension;
             int newDepth = depth + extension - 1;
             int score = Score.MIN;
 

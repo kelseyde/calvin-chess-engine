@@ -64,8 +64,12 @@ public class MoveScorer {
         if (promotion) {
             // Queen promos are treated as 'good noisies', under promotions as 'bad noisies'
             final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+            final int historyScore = captured == null
+                    ? history.quietHistory().get(move, piece, white)
+                    : history.captureHistory().get(piece, move.to(), captured, white);
+            score += historyScore;
             score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
-            return new ScoredMove(move, piece, captured, score, 0, type);
+            return new ScoredMove(move, piece, captured, score, historyScore, type);
         }
 
         if (quietCheck) {

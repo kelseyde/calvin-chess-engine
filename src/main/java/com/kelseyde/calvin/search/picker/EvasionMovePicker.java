@@ -11,10 +11,8 @@ import com.kelseyde.calvin.search.SearchStack;
 import java.util.List;
 
 /**
- * TODO javadoc
- * Implementation of {@link MovePicker} for standard PVS search. Splits noisy moves into separate 'good' and 'bad' stages,
- * based on whether they pass a SEE threshold, with the bad noisies pushed to the end after quiets. Also handles killer
- * moves in a separate stage between good noisies and quiets.
+ * Implementation of {@link MovePicker} for evasions - positions where the player is in check. Splits the moves into
+ * noisies and quiets, trying all noisies first before generating the quiets.
  */
 public class EvasionMovePicker extends MovePicker {
 

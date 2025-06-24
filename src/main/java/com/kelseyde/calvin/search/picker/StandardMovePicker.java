@@ -24,9 +24,14 @@ public class StandardMovePicker extends MovePicker {
     ScoredMove[] goodQuiets;
     ScoredMove[] badQuiets;
 
-    public StandardMovePicker(EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history,
-                              Board board, int ply, Move ttMove, boolean inCheck) {
-        super(config, movegen, history, ss, board, ply, ttMove, inCheck);
+    public StandardMovePicker(EngineConfig config,
+                              MoveGenerator movegen,
+                              SearchHistory history,
+                              SearchStack ss,
+                              Board board,
+                              Move ttMove,
+                              int ply) {
+        super(config, movegen, history, ss, board, ttMove, ply, false);
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 

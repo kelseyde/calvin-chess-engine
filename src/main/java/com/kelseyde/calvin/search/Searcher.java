@@ -7,10 +7,7 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.evaluation.NNUE;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
-import com.kelseyde.calvin.search.picker.MovePicker;
-import com.kelseyde.calvin.search.picker.QuiescentMovePicker;
-import com.kelseyde.calvin.search.picker.ScoredMove;
-import com.kelseyde.calvin.search.picker.StandardMovePicker;
+import com.kelseyde.calvin.search.picker.*;
 import com.kelseyde.calvin.tables.tt.HashEntry;
 import com.kelseyde.calvin.tables.tt.HashFlag;
 import com.kelseyde.calvin.tables.tt.TranspositionTable;
@@ -403,7 +400,9 @@ public class Searcher implements Search {
         curr.captures = new Move[16];
         int moveCount = 0, quietMoves = 0, captureMoves = 0;
 
-        MovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        MovePicker movePicker = inCheck
+                ? new EvasionMovePicker(config, movegen, history, ss, board, ttMove, ply)
+                : new StandardMovePicker(config, movegen, history, ss, board, ttMove, ply);
 
         while (true) {
 
@@ -779,7 +778,7 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
         int moveCount = 0;
 
-        MovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        MovePicker movePicker = new QuiescentMovePicker(config, movegen, history, ss, board, ttMove, ply, inCheck);
 
         while (true) {
 

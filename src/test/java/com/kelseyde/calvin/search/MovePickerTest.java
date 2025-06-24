@@ -36,7 +36,7 @@ public class MovePickerTest {
         Board board = FEN.parse(fen).toBoard();
 
         SearchStack ss = new SearchStack();
-        StandardMovePicker picker = new StandardMovePicker(TestUtils.CONFIG, TestUtils.MOVEGEN, ss, new SearchHistory(TestUtils.CONFIG, ss), board, 0, null, true);
+        StandardMovePicker picker = new StandardMovePicker(TestUtils.CONFIG, TestUtils.MOVEGEN, new SearchHistory(TestUtils.CONFIG, ss), ss, board, null, 0);
 
         List<ScoredMove> moves = new ArrayList<>();
         while (true) {

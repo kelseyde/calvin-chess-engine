@@ -31,6 +31,9 @@ public abstract class MovePicker {
         // Q-search stages
         QSEARCH_GEN_NOISY, QSEARCH_NOISY,
 
+        // Evasion stages
+        EVASION_GEN_NOISY, EVASION_NOISY, EVASION_GEN_QUIET, EVASION_QUIET,
+
         END
     }
 
@@ -52,8 +55,14 @@ public abstract class MovePicker {
 
     int moveIndex;
 
-    protected MovePicker(
-            EngineConfig config, MoveGenerator movegen, SearchHistory history, SearchStack ss, Board board, int ply, Move ttMove, boolean inCheck) {
+    protected MovePicker(EngineConfig config,
+                         MoveGenerator movegen,
+                         SearchHistory history,
+                         SearchStack ss,
+                         Board board,
+                         Move ttMove,
+                         int ply,
+                         boolean inCheck) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;

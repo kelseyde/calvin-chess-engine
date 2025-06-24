@@ -18,6 +18,8 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
  */
 public class MoveScorer {
 
+    private static final int PROMO_OFFSET = 100_000;
+
     private final EngineConfig config;
     private final SearchHistory history;
     private final SearchStack ss;
@@ -67,6 +69,7 @@ public class MoveScorer {
             final int historyScore = captured == null
                     ? history.quietHistory().get(move, piece, white)
                     : history.captureHistory().get(piece, move.to(), captured, white);
+            score += type == MoveType.GOOD_NOISY ? PROMO_OFFSET : 0;
             score += historyScore;
             score += SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
             return new ScoredMove(move, piece, captured, score, historyScore, type);

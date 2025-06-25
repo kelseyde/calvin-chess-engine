@@ -5,6 +5,8 @@ import com.kelseyde.calvin.board.Colour;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.search.SearchStack;
+import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 
 public class ContinuationHistoryTable extends AbstractHistoryTable {
 
@@ -18,6 +20,16 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
         short current = get(prevMove, prevPiece, currMove, currPiece, white);
         short update = gravity(current, (short) bonus);
         set(prevMove, prevPiece, currMove, currPiece, update, white);
+    }
+
+    public int get(Move move, Piece piece, boolean white, int ply, int[] conthistPlies, SearchStack ss) {
+        int score = 0;
+        for (int contHistPly : conthistPlies) {
+            SearchStackEntry entry = ss.get(ply - contHistPly);
+            if (entry != null)
+                score += get(entry.move, entry.piece, move, piece, white);
+        }
+        return score;
     }
 
     public short get(Move prevMove, Piece prevPiece, Move currMove, Piece currPiece, boolean white) {

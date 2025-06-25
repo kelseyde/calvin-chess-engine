@@ -84,27 +84,14 @@ public class MoveScorer {
     // that are generated during the noisy stage, which are considered 'bad noisies' regardless of score.
     private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
 
-        int historyScore = history.quietHistory().get(move, piece, board.isWhite());
-        int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
+        boolean white = board.isWhite();
+        int historyScore = history.quietHistory().get(move, piece, white);
+        int contHistScore = history.continuationHistory().get(move, piece, white, ply, config.contHistPlies(), ss);
         int score = historyScore + contHistScore;
         MoveType type = stage == Stage.GEN_NOISY
                 ? MoveType.BAD_NOISY
                 : (score >= config.goodQuietThreshold() ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET);
         return new ScoredMove(move, piece, null, score, score, type);
-
-    }
-
-    // Continuation history is based on the history score indexed by the current move and the move played x plies ago.
-    // Here we aggregate the conthist score for this move for all the configured conthist plies.
-    private int continuationHistoryScore(Move move, Piece piece, boolean white, int ply) {
-
-        int contHistScore = 0;
-        for (int contHistPly : config.contHistPlies()) {
-            SearchStackEntry entry = ss.get(ply - contHistPly);
-            if (entry != null)
-                contHistScore += history.continuationHistory().get(entry.move, entry.piece, move, piece, white);
-        }
-        return contHistScore;
 
     }
 

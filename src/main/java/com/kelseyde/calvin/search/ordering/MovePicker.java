@@ -69,25 +69,38 @@ public abstract class MovePicker {
         this.scorer = initMoveScorer(config, history, ss);
     }
 
-    // Select the next {@link ScoredMove} to try. The implementation should take into account the current stage in
-    // determining which move to try next.
+    /**
+     * Select the next {@link ScoredMove} to try. The implementation should take into account the current stage in
+     * determining which move to try next.
+     */
     public abstract ScoredMove next();
 
-    // Handle newly-generated moves, potentially distributing them to different lists to be tried in different
-    // stages during search. The implementation is left up to the move picker subclass.
+    /**
+     * Handle newly-generated moves, potentially distributing them to different lists to be tried in different
+     * stages during search. The implementation is left up to the move picker subclass.
+     */
     protected abstract void handleStagedMoves(List<Move> moves);
 
-    // Check if a move is 'special', in that it is tried in a dedicated stage and should therefore be skipped during
-    // normal move generation. This is used to avoid trying the same move multiple times in different stages.
+    /**
+     * Check if a move is 'special', in that it is tried in a dedicated stage and should therefore be skipped during
+     * normal move generation. This is used to avoid trying the same move multiple times in different stages.
+     */
     protected abstract boolean isSpecial(Move move);
 
-    // Retrieve the moves that should be tried in the current stage.
+    /**
+     * Retrieve the moves that should be tried in the current stage.
+     */
     protected abstract ScoredMove[] loadStagedMoves(Stage stage);
 
-    // Initialize the move scorer for this move picker. This is used to score moves during generation.
+    /**
+     * Initialize the move scorer for this move picker. This is used to score moves during generation.
+     */
     protected abstract MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss);
 
-    // Select the next move from the move list. Moves to the next stage once all moves have been tried.
+    /**
+     * Select the next move from the move list.
+     * @param nextStage the next stage to move on to, if we have tried all moves in the current stage.
+     */
     protected ScoredMove pickMove(MovePicker.Stage nextStage) {
 
         final ScoredMove[] moves = loadStagedMoves(stage);
@@ -121,9 +134,11 @@ public abstract class MovePicker {
         return nextStage(nextStage);
     }
 
-    // Select the next move to try from a given list of moves. We use an incremental selection sort algorithm to only
-    // move the best move to the front of the list each time. This is faster than doing a full sort, since we typically
-    // only try a few moves in each node.
+    /**
+     * Select the next move to try from a given list of moves. We use an incremental selection sort algorithm to only
+     * move the best move to the front of the list each time. This is faster than doing a full sort, since we typically
+     * only try a few moves in each node.
+     */
     protected ScoredMove selectionSort(ScoredMove[] moves) {
         if (moveIndex >= moves.length)
             return null;

@@ -1,8 +1,8 @@
-package com.kelseyde.calvin.search.picker;
+package com.kelseyde.calvin.search.ordering;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
-import com.kelseyde.calvin.search.picker.MovePicker.MoveType;
+import com.kelseyde.calvin.search.ordering.MovePicker.MoveType;
 
 public record ScoredMove(Move move,
                          Piece piece,

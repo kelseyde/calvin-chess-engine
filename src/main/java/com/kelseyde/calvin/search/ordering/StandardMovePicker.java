@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.picker;
+package com.kelseyde.calvin.search.ordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;

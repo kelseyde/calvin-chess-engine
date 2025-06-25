@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.picker;
+package com.kelseyde.calvin.search.ordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
@@ -7,8 +7,8 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
-import com.kelseyde.calvin.search.picker.MovePicker.MoveType;
-import com.kelseyde.calvin.search.picker.MovePicker.Stage;
+import com.kelseyde.calvin.search.ordering.MovePicker.MoveType;
+import com.kelseyde.calvin.search.ordering.MovePicker.Stage;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 
 /**

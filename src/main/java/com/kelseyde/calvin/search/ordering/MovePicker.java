@@ -1,4 +1,4 @@
-package com.kelseyde.calvin.search.picker;
+package com.kelseyde.calvin.search.ordering;
 
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
@@ -52,8 +52,14 @@ public abstract class MovePicker {
 
     int moveIndex;
 
-    protected MovePicker(
-            EngineConfig config, MoveGenerator movegen, SearchHistory history, SearchStack ss, Board board, int ply, Move ttMove, boolean inCheck) {
+    protected MovePicker(EngineConfig config,
+                         MoveGenerator movegen,
+                         SearchHistory history,
+                         SearchStack ss,
+                         Board board,
+                         int ply,
+                         Move ttMove,
+                         boolean inCheck) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;

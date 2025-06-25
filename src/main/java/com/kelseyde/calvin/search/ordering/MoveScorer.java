@@ -37,11 +37,8 @@ public class MoveScorer {
         this.seeNoisyOffset = seeNoisyOffset;
     }
 
-    /**
-     * Assign a {@link Move} a score and {@link MoveType}. The scoring heuristics used depend on the type of move, with
-     * different heuristics for quiets, captures and promotions.
-     * @return the {@link ScoredMove} containing the move, its score, and type.
-     */
+    // Assign a move a score and type. The scoring heuristics used depend on the type of move, with different
+    // heuristics for quiets, captures and promotions.
     public ScoredMove score(Board board, Move move, int ply, Stage stage) {
 
         this.stage = stage;
@@ -59,10 +56,8 @@ public class MoveScorer {
 
     }
 
-    /**
-     * Promotions are considered noisy moves. They are scored based on the value of the promotion piece. Queen
-     * promotions are considered 'good noisies', while under-promotions are considered 'bad noisies'.
-     */
+    // Promotions are considered noisy moves. They are scored based on the value of the promotion piece. Queen
+    // promotions are considered 'good noisies', while under-promotions are considered 'bad noisies'.
     private ScoredMove scorePromotion(Move move, Piece piece, Piece captured) {
 
         int score = SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
@@ -71,11 +66,9 @@ public class MoveScorer {
 
     }
 
-    /**
-     * Captures are scored based on the value of the captured piece (MVV, Most Valuable Victim), and their score in the
-     * capture history table. They are separated into 'good' and 'bad' noisies based on whether they pass a SEE threshold
-     * that is determined by their MVV + capthist score.
-     */
+    // Captures are scored based on the value of the captured piece (MVV, Most Valuable Victim), and their score in the
+    // capture history table. They are separated into 'good' and 'bad' noisies based on whether they pass a SEE threshold
+    // that is determined by their MVV + capthist score.
     private ScoredMove scoreCapture(Board board, Move move, Piece piece, Piece captured) {
 
         int historyScore = history.captureHistory().get(piece, move.to(), captured, board.isWhite());
@@ -86,11 +79,9 @@ public class MoveScorer {
 
     }
 
-    /**
-     * Quiets are scored based on their score in the quiet and continuation history tables. They are separated into 'good'
-     * and 'bad' quiets based on whether their history score exceeds a configurable threshold - except for quiet checks
-     * that are generated during the noisy stage, which are considered 'bad noisies' regardless of score.
-     */
+    // Quiets are scored based on their score in the quiet and continuation history tables. They are separated into 'good'
+    // and 'bad' quiets based on whether their history score exceeds a configurable threshold - except for quiet checks
+    // that are generated during the noisy stage, which are considered 'bad noisies' regardless of score.
     private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
 
         int historyScore = history.quietHistory().get(move, piece, board.isWhite());
@@ -103,10 +94,8 @@ public class MoveScorer {
 
     }
 
-    /**
-     * Continuation history is based on the history score indexed by the current move and the move played x plies ago.
-     * Here we aggregate the conthist score for this move for all the configured conthist plies.
-     */
+    // Continuation history is based on the history score indexed by the current move and the move played x plies ago.
+    // Here we aggregate the conthist score for this move for all the configured conthist plies.
     private int continuationHistoryScore(Move move, Piece piece, boolean white, int ply) {
 
         int contHistScore = 0;

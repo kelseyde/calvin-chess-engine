@@ -20,7 +20,6 @@ import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 public class MoveScorer {
 
     private final EngineConfig config;
-    private final MoveGenerator movegen;
     private final SearchHistory history;
     private final SearchStack ss;
     private final int seeNoisyDivisor;
@@ -28,14 +27,12 @@ public class MoveScorer {
     private final boolean inCheck;
 
     public MoveScorer(EngineConfig config,
-                      MoveGenerator movegen,
                       SearchHistory history,
                       SearchStack ss,
                       int seeNoisyDivisor,
                       int seeNoisyOffset,
                       boolean inCheck) {
         this.config = config;
-        this.movegen = movegen;
         this.history = history;
         this.ss = ss;
         this.seeNoisyDivisor = seeNoisyDivisor;
@@ -45,58 +42,58 @@ public class MoveScorer {
 
     public ScoredMove score(Board board, Move move, int ply, Stage stage) {
 
-        final Piece piece = board.pieceAt(move.from());
-        final Piece captured = board.captured(move);
-        final boolean capture = captured != null;
-        final boolean promotion = move.isPromotion();
-        final boolean givesCheck = movegen.givesCheck(board, move);
+        Piece piece = board.pieceAt(move.from());
+        Piece captured = board.captured(move);
+        boolean capture = captured != null;
+        boolean promotion = move.isPromotion();
+        boolean quietCheck = !inCheck && stage == Stage.GEN_NOISY && !promotion && !capture;
 
         if (inCheck)
-            return scoreEvasion(board, move, piece, captured, givesCheck, ply);
+            return scoreEvasion(board, move, piece, captured, ply);
         else if (promotion)
-            return scorePromotion(board, move, piece, captured, givesCheck);
+            return scorePromotion(board, move, piece, captured);
         else if (capture)
-            return scoreNoisy(board, move, piece, captured, givesCheck);
+            return scoreNoisy(board, move, piece, captured);
         else
-            return scoreQuiet(board, move, piece, givesCheck, ply);
+            return scoreQuiet(board, move, piece, ply);
 
     }
 
-    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured, boolean givesCheck) {
+    private ScoredMove scoreNoisy(Board board, Move move, Piece piece, Piece captured) {
 
         int historyScore = history.captureHistory().get(piece, move.to(), captured, board.isWhite());
         int score = SEE.value(captured) + historyScore / 4;
         int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
         MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-        return new ScoredMove(move, piece, captured, score, historyScore, givesCheck, type);
+        return new ScoredMove(move, piece, captured, score, historyScore, type);
 
     }
 
-    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, boolean givesCheck, int ply) {
+    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
 
-        final int historyScore = history.quietHistory().get(move, piece, board.isWhite());
-        final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
-        final int score = historyScore + contHistScore;
+        int historyScore = history.quietHistory().get(move, piece, board.isWhite());
+        int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
+        int score = historyScore + contHistScore;
         MoveType type = score >= config.goodQuietThreshold() ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET;
-        return new ScoredMove(move, piece, null, score, score, givesCheck, type);
+        return new ScoredMove(move, piece, null, score, score, type);
 
     }
 
-    private ScoredMove scorePromotion(Board board, Move move, Piece piece, Piece captured, boolean givesCheck) {
+    private ScoredMove scorePromotion(Board board, Move move, Piece piece, Piece captured) {
 
         final MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
         int score = SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
-        return new ScoredMove(move, piece, captured, score, 0, givesCheck, type);
+        return new ScoredMove(move, piece, captured, score, 0, type);
 
     }
 
-    private ScoredMove scoreEvasion(Board board, Move move, Piece piece, Piece captured, boolean givesCheck, int ply) {
+    private ScoredMove scoreEvasion(Board board, Move move, Piece piece, Piece captured, int ply) {
 
-        final MoveType type = MoveType.BAD_NOISY;
-        final int historyScore = history.quietHistory().get(move, piece, board.isWhite());
-        final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
+        MoveType type = MoveType.BAD_NOISY;
+        int historyScore = history.quietHistory().get(move, piece, board.isWhite());
+        int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
         int score = historyScore + contHistScore;
-        return new ScoredMove(move, piece, captured, score, historyScore, givesCheck, type);
+        return new ScoredMove(move, piece, captured, score, historyScore, type);
 
     }
 

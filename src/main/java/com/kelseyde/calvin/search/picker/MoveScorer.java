@@ -50,6 +50,8 @@ public class MoveScorer {
 
         if (inCheck)
             return scoreEvasion(board, move, piece, captured, ply);
+        else if (quietCheck)
+            return scoreQuietCheck(board, move, piece, ply);
         else if (promotion)
             return scorePromotion(board, move, piece, captured);
         else if (capture)
@@ -95,6 +97,14 @@ public class MoveScorer {
         int score = historyScore + contHistScore;
         return new ScoredMove(move, piece, captured, score, historyScore, type);
 
+    }
+
+    private ScoredMove scoreQuietCheck(Board board, Move move, Piece piece, int ply) {
+        final MoveType type = MoveType.BAD_NOISY;
+        final int historyScore = history.quietHistory().get(move, piece, board.isWhite());
+        final int contHistScore = continuationHistoryScore(move, piece, board.isWhite(), ply);
+        int score = historyScore + contHistScore;
+        return new ScoredMove(move, piece, null, score, historyScore, type);
     }
 
     private int continuationHistoryScore(Move move, Piece piece, boolean white, int ply) {

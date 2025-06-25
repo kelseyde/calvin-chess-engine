@@ -31,10 +31,10 @@ public class StandardMovePicker extends MovePicker {
     }
 
     @Override
-    protected MoveScorer initMoveScorer(EngineConfig config, MoveGenerator movegen, SearchHistory history, SearchStack ss, boolean inCheck) {
+    protected MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss, boolean inCheck) {
         final int seeDivisor = config.seeNoisyDivisor();
         final int seeOffset = config.seeNoisyOffset();
-        return new MoveScorer(config, movegen, history, ss, seeDivisor, seeOffset, inCheck);
+        return new MoveScorer(config, history, ss, seeDivisor, seeOffset, inCheck);
     }
 
     @Override

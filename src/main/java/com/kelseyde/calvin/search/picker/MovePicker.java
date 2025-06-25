@@ -60,7 +60,7 @@ public abstract class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
-        this.scorer = initMoveScorer(config, movegen, history, ss, inCheck);
+        this.scorer = initMoveScorer(config, history, ss, inCheck);
     }
 
     /**
@@ -89,7 +89,7 @@ public abstract class MovePicker {
     /**
      * Initialize the move scorer for this move picker. This is used to score moves during generation.
      */
-    protected abstract MoveScorer initMoveScorer(EngineConfig config, MoveGenerator movegen, SearchHistory history, SearchStack ss, boolean inCheck);
+    protected abstract MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss, boolean inCheck);
 
     /**
      * Select the next move from the move list.
@@ -172,8 +172,7 @@ public abstract class MovePicker {
         stage = nextStage;
         final Piece piece = board.pieceAt(ttMove.from());
         final Piece captured = board.captured(ttMove);
-        final boolean givesCheck = movegen.givesCheck(board, ttMove);
-        return new ScoredMove(ttMove, piece, captured, 0, 0, givesCheck, MoveType.TT_MOVE);
+        return new ScoredMove(ttMove, piece, captured, 0, 0, MoveType.TT_MOVE);
     }
 
     public void skipQuiets(boolean skipQuiets) {

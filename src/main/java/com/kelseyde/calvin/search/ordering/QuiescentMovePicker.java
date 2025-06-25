@@ -17,8 +17,14 @@ public class QuiescentMovePicker extends MovePicker {
 
     private ScoredMove[] goodNoisies;
 
-    public QuiescentMovePicker(
-            EngineConfig config, MoveGenerator movegen, SearchStack ss, SearchHistory history, Board board, int ply, Move ttMove, boolean inCheck) {
+    public QuiescentMovePicker(EngineConfig config,
+                               MoveGenerator movegen,
+                               SearchStack ss,
+                               SearchHistory history,
+                               Board board,
+                               int ply,
+                               Move ttMove,
+                               boolean inCheck) {
         super(config, movegen, history, ss, board, ply, ttMove, inCheck);
         this.stage = Stage.TT_MOVE;
     }

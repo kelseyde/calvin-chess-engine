@@ -109,6 +109,9 @@ public class EngineConfig {
     private final Tunable dynamicPolicyMult      = new Tunable("DynamicPolicyMult", 10, 0, 20, 2);
     private final Tunable dynamicPolicyMin       = new Tunable("DynamicPolicyMin", -99, -100, 0, 25);
     private final Tunable dynamicPolicyMax       = new Tunable("DynamicPolicyMax", 198, 75, 200, 25);
+    private final Tunable capturePolicyMult      = new Tunable("CapturePolicyMult", 10, 0, 20, 2);
+    private final Tunable capturePolicyMin       = new Tunable("CapturePolicyMin", -99, -100, 0, 25);
+    private final Tunable capturePolicyMax       = new Tunable("CapturePolicyMax", 198, 75, 200, 25);
     private final Tunable betaHistBonusMargin    = new Tunable("BetaHistoryBonusMargin", 50, 0, 100, 10);
     private final Tunable goodQuietThreshold     = new Tunable("GoodQuietThreshold", -69, -2048, 2048, 256);
     private final Tunable quietHistBonusMax      = new Tunable("QuietHistBonusMax", 1200, 100, 2000, 100);
@@ -162,7 +165,8 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin,
+                capturePolicyMin, capturePolicyMax, capturePolicyMult
         );
     }
 
@@ -538,6 +542,18 @@ public class EngineConfig {
 
     public int dynamicPolicyMax() {
         return dynamicPolicyMax.value;
+    }
+
+    public int capturePolicyMult() {
+        return capturePolicyMult.value;
+    }
+
+    public int capturePolicyMin() {
+        return capturePolicyMin.value;
+    }
+
+    public int capturePolicyMax() {
+        return capturePolicyMax.value;
     }
 
     public int betaHistBonusMargin() {

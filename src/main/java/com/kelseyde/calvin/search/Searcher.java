@@ -295,11 +295,12 @@ public class Searcher implements Search {
             if (canUseTTScore(ttEntry, rawStaticEval)) {
                 staticEval = ttEntry.score();
                 uncorrectedEval = staticEval;
+                curr.ttCorrectedEval = staticEval;
             }
         }
         curr.staticEval = staticEval;
 
-        // Dynamic policy
+        // Dynamic policy (quiets)
         // Use the difference between the static eval in the current node and parent node to update quiet history.
         if (!inCheck
                 && !singularSearch
@@ -310,6 +311,20 @@ public class Searcher implements Search {
             int value = config.dynamicPolicyMult() * -(staticEval + prev.staticEval);
             int bonus = clamp(value, config.dynamicPolicyMin(), config.dynamicPolicyMax());
             history.quietHistory().add(prev.move, prev.piece, !board.isWhite(), bonus);
+        }
+
+        // Dynamic policy (captures)
+        // (Idea from PlentyChess): The same as above but for captures, and limited only to when both the current and
+        // previous node use the TT score as a more accurate static eval.
+        if (!rootNode
+            && !singularSearch
+            && !prev.inCheck
+            && prev.captured != null
+            && Score.isDefined(curr.ttCorrectedEval)
+            && Score.isDefined(prev.ttCorrectedEval)) {
+            int value = config.capturePolicyMult() * -(curr.ttCorrectedEval + prev.ttCorrectedEval);
+            int bonus = clamp(value, config.capturePolicyMin(), config.capturePolicyMax());
+            history.captureHistory().add(prev.piece, prev.move.to(), prev.captured, !board.isWhite(), bonus);
         }
 
         // Hindsight extension

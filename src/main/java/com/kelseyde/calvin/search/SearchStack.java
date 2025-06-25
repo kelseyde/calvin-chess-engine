@@ -27,6 +27,7 @@ public class SearchStack {
 
     public static class SearchStackEntry {
         public int staticEval;
+        public int ttCorrectedEval = Score.MIN;
         public Move move;
         public Piece piece;
         public Piece captured;

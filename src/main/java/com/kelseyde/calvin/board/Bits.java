@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class Bits {
 
-    public static int next(final long board) {
+    public static int next(long board) {
         return Long.numberOfTrailingZeros(board);
     }
 

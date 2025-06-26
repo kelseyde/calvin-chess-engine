@@ -25,7 +25,7 @@ public class Score {
      * This is used during {@link Search} to quickly check for a draw; it will lead to some errors in edge cases, but the
      * gamble is that the boost in search speed is worth the potential cost.
      */
-    public static boolean isEffectiveDraw(Board board) {
+    public static boolean isDraw(Board board) {
         return isDoubleRepetition(board) || isFiftyMoveRule(board) || isInsufficientMaterial(board);
     }
 
@@ -35,7 +35,7 @@ public class Score {
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
         for (int i = board.getPly() - 2; i >= 0; i-= 2) {
-            final BoardState state = states[i];
+            BoardState state = states[i];
 
             if (state.getKey() == zobrist)
                 repetitionCount += 1;
@@ -55,7 +55,7 @@ public class Score {
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
         for (int i = board.getPly() - 2; i >= 0; i-= 2) {
-            final BoardState state = states[i];
+            BoardState state = states[i];
 
             if (state.key == zobrist)
                 return true;

@@ -24,11 +24,11 @@ public class Crelu {
 
     public static int forward(short[] us, short[] them) {
 
-        final int qa = NETWORK.quantisations()[0];
-        final int qb = NETWORK.quantisations()[1];
-        final int qab = qa * qb;
-        final int scale = NETWORK.scale();
-        final short[] weights = NETWORK.outputWeights();
+        int qa = NETWORK.quantisations()[0];
+        int qb = NETWORK.quantisations()[1];
+        int qab = qa * qb;
+        int scale = NETWORK.scale();
+        short[] weights = NETWORK.outputWeights();
 
         int eval = NETWORK.outputBias();
 

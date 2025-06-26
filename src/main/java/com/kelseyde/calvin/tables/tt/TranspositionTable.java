@@ -76,7 +76,7 @@ public class TranspositionTable {
     public void put(long key, int flag, int depth, int ply, Move move, int staticEval, int score, boolean pv) {
 
         // Get the start index of the 4-item bucket.
-        final int startIndex = index(key);
+        int startIndex = index(key);
 
         // If the eval is checkmate, adjust the score to reflect the number of ply from the root position
         if (Score.isMate(score)) score = calculateMateScore(score, ply);

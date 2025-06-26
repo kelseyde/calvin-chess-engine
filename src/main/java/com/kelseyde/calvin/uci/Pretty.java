@@ -62,18 +62,18 @@ public class Pretty {
     }
 
     private static String formatDepth(int depth) {
-        final int depthLength = 3;
+        int depthLength = 3;
         return BLUE + " ".repeat(depthLength - String.valueOf(depth).length()) + depth + RESET;
     }
 
     private static String formatSeldepth(int seldepth) {
-        final int depthLength = 3;
+        int depthLength = 3;
         return GRAY + " ".repeat(depthLength - String.valueOf(seldepth).length()) + seldepth + RESET;
     }
 
     private static String formatScore(int score) {
 
-        final int scoreLength = 7;
+        int scoreLength = 7;
 
         String colour = "";
         if (score > 0) {
@@ -102,14 +102,14 @@ public class Pretty {
     }
 
     private static String formatTime(long time) {
-        final int timeLength = 10;
+        int timeLength = 10;
         String formatted = String.format(Locale.ROOT, "%sms", time);
         int buffer = Math.max(0, timeLength - formatted.length());
         return GRAY + " ".repeat(buffer) + formatted + RESET;
     }
 
     private static String formatNodes(int nodes) {
-        final int nodesLength = 12;
+        int nodesLength = 12;
         int knodes = nodes / 1000;
         String formatted = String.format(Locale.ROOT, "%dkn", knodes);
         int buffer = Math.max(0, nodesLength - formatted.length());
@@ -117,14 +117,14 @@ public class Pretty {
     }
 
     private static String formatNps(long nps) {
-        final int npsLength = 8;
+        int npsLength = 8;
         long knps = nps / 1000;
         int buffer = Math.max(0, npsLength - String.valueOf(knps).length());
         return GRAY + " ".repeat(buffer) + knps + "kn/s" + RESET;
     }
 
     private static String formatHashfull(float hashfull) {
-        final int hashfullLength = 5;
+        int hashfullLength = 5;
         String formatted = String.format(Locale.ROOT, "%.1f", hashfull / 10);
         int buffer = Math.max(0, hashfullLength - formatted.length());
         return GRAY + " ".repeat(buffer) + formatted + "%" + RESET;

@@ -163,10 +163,10 @@ public class Key {
     }
 
     private static long castling(int rights) {
-        final int whiteShort = 0x04;
-        final int whiteLong = 0x08;
-        final int blackShort = 0x01;
-        final int blackLong = 0x02;
+        int whiteShort = 0x04;
+        int whiteLong = 0x08;
+        int blackShort = 0x01;
+        int blackLong = 0x02;
 
         int flags = 0;
         if (Castling.kingsideAllowed(rights, true)) {

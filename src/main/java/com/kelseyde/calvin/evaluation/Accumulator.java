@@ -29,18 +29,6 @@ public class Accumulator {
         this.mirrored = new boolean[2];
     }
 
-    public Accumulator(short[] whiteFeatures, short[] blackFeatures, boolean[] mirrored) {
-        this.whiteFeatures = whiteFeatures;
-        this.blackFeatures = blackFeatures;
-        this.mirrored = mirrored;
-    }
-
-    public void reset(boolean whitePerspective) {
-        // Reset the features of the accumulator to the initial bias values.
-        short[] features = whitePerspective ? whiteFeatures : blackFeatures;
-        System.arraycopy(BIASES, 0, features, 0, NNUE.NETWORK.hiddenSize());
-    }
-
     public void add(short[] weights, Feature feature, boolean whitePerspective) {
         // Add a single feature to the accumulator.
         boolean mirror = mirrored[Colour.index(whitePerspective)];

@@ -72,7 +72,6 @@ public class Board {
 
         white = !white;
         Move move = moves[--ply];
-
         int from = move.from();
         int to = move.to();
         Piece piece = pieceAt(to);

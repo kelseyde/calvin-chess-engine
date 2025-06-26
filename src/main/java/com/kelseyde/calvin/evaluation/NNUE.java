@@ -73,28 +73,26 @@ public class NNUE {
         fullRefresh(board);
     }
 
+    // Evaluates the current position. Gets the 'us-perspective' and 'them-perspective' feature sets, based on
+    // the side to move. Then, passes the features through the network to get the evaluation. Finally, scales
+    // the evaluation based on the material and proximity to 50-move rule draw.
     public int evaluate() {
 
         boolean white = board.isWhite();
         Accumulator acc = accumulatorStack[current];
 
-        // Get the 'us-perspective' and 'them-perspective' feature sets, based on the side to move.
         short[] us = white ? acc.whiteFeatures : acc.blackFeatures;
         short[] them = white ? acc.blackFeatures : acc.whiteFeatures;
 
-        // Pass the features through the network to get the evaluation.
         int eval = NETWORK.activation().forward(us, them);
-
-        // Scale the evaluation based on the material and proximity to 50-move rule draw.
         eval = scaleEvaluation(board, eval);
-
         return eval;
 
     }
 
+    // Fully refreshes the accumulator for both perspectives based on the current board state.
     private void fullRefresh(Board board) {
 
-        // Fully refresh the accumulator from both perspectives with the features of all pieces on the board.
         Accumulator acc = accumulatorStack[current];
         boolean whiteMirror = shouldMirror(board.kingSquare(true));
         boolean blackMirror = shouldMirror(board.kingSquare(false));
@@ -105,9 +103,11 @@ public class NNUE {
 
     }
 
+    // Fully refreshes the accumulator for one perspective, using the features of all pieces on the board.
+    // Uses the cached features for the current bucket if available; otherwise initializes the accumulator
+    // with the initial bias values and updates it from scratch.
     private void fullRefresh(Board board, Accumulator acc, boolean whitePerspective, boolean mirror, int bucket) {
 
-        // Fully refresh the accumulator for one perspective with the features of all pieces on the board.
         acc.mirrored[Colour.index(whitePerspective)] = mirror;
 
         BucketCacheEntry cacheEntry = bucketCache.get(whitePerspective, mirror, bucket);
@@ -174,9 +174,12 @@ public class NNUE {
     }
 
 
+    // Efficiently update the accumulator after a move has been made, based on the type of move (standard, capture,
+    // or castle). Only updates the features of the pieces that have changed, rather than recalculating the entire
+    // board state. If the move causes the king to cross into a new bucket - or cross the horizontal axis - then
+    // a full refresh of the accumulator is required.
     public void makeMove(Board board, Move move) {
 
-        // Efficiently update only the relevant features of the network after a move has been made.
         Accumulator prev = accumulatorStack[current];
         Accumulator curr = accumulatorStack[++current];
         curr.copyFrom(prev);
@@ -225,9 +228,9 @@ public class NNUE {
 
     }
 
+    // For standard moves we simply need to remove the piece from the 'from' square and add it to the 'to' square.
     private AccumulatorUpdate handleStandardMove(Board board, Move move, boolean white) {
 
-        // For standard moves we simply need to remove the piece from the 'from' square and add it to the 'to' square.
         Piece piece = board.pieceAt(move.from());
         Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
 
@@ -238,9 +241,9 @@ public class NNUE {
 
     }
 
+    // For castling moves we need to move both the king and the rook, with some special handling for Chess960.
     private AccumulatorUpdate handleCastleMove(Move move, boolean white) {
 
-        // For castling moves we need to move both the king and the rook, with some special handling for Chess960.
         AccumulatorUpdate update = new AccumulatorUpdate();
         boolean kingside = Castling.isKingside(move.from(), move.to());
 
@@ -259,9 +262,9 @@ public class NNUE {
 
     }
 
+    // For captures, we need to remove the captured piece as well as updating the capturing piece.
     private AccumulatorUpdate handleCapture(Board board, Move move, boolean white) {
 
-        // For captures, we need to remove the captured piece as well as updating the capturing piece.
         Piece piece = board.pieceAt(move.from());
         Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
         Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
@@ -278,40 +281,51 @@ public class NNUE {
 
     }
 
+    // 'Unmake' the last move by decrementing the current accumulator index, resetting the head to the accumulator
+    // from before the move was played.
     public void unmakeMove() {
+
         current--;
+
     }
 
+    // Set the position of the board and clear the history. This is used to reset the evaluation when a new
+    // position command is received from UCI.
     public void setPosition(Board board) {
+
         clearHistory();
         this.board = board;
         fullRefresh(board);
+
     }
 
+    // Scale the evaluation based on the material left on the board and the proximity to the 50-move rule draw.
+    // Scaling by material creates an incentive to keep pieces on the board when we have winning chances, and
+    // trade them off when we're under pressure. Scaling by the 50-move rule draw gives the engine an understanding
+    // of when no progress is being made in the position.
     private int scaleEvaluation(Board board, int eval) {
 
-        // Scale down the evaluation when there's not much material left on the board - this creates an incentive
-        // to keep pieces on the board when we have winning chances, and trade them off when we're under pressure.
-        int materialPhase = materialPhase(board);
-        eval = eval * (22400 + materialPhase) / 32768;
-
-        // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
-        // of when no progress is being made in the position.
+        eval = eval * (22400 + materialPhase(board)) / 32768;
         eval = eval * (200 - board.getState().getHalfMoveClock()) / 200;
-
         return eval;
 
     }
 
+    // Calculate the current material phase, which is a weighted sum of the pieces on the board.
     private int materialPhase(Board board) {
+
         int knights = Bits.count(board.getKnights());
         int bishops = Bits.count(board.getBishops());
         int rooks = Bits.count(board.getRooks());
         int queens = Bits.count(board.getQueens());
         return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
+
     }
 
+    // Check if the horizontal mirror has changed based on the move made. If the king has crossed the central
+    // axis, then we need to fully refresh the accumulator.
     private boolean mirrorChanged(Board board, Move move, Piece piece) {
+
         if (!NETWORK.horizontalMirror() || piece != Piece.KING) {
             return false;
         }
@@ -322,9 +336,13 @@ public class NNUE {
             currKingSquare = Castling.kingTo(kingside, board.isWhite());
         }
         return shouldMirror(prevKingSquare) != shouldMirror(currKingSquare);
+
     }
 
+    // Check if the king has moved to a different input bucket based on the move made. If it has, we need to
+    // fully refresh the accumulator with the weights from the new bucket.
     private boolean bucketChanged(Board board, Move move, Piece piece, boolean white) {
+
         if (piece != Piece.KING) {
             return false;
         }
@@ -335,13 +353,21 @@ public class NNUE {
             currKingSquare = Castling.kingTo(kingside, board.isWhite());
         }
         return kingBucket(prevKingSquare, white) != kingBucket(currKingSquare, white);
+
     }
 
+    // Check if the king is on the horizontally mirrored side of the board. If it is, then all features should
+    // be flipped across the central axis.
     private boolean shouldMirror(int kingSquare) {
+
         return NETWORK.horizontalMirror() && File.of(kingSquare) > 3;
+
     }
 
+    // Calculate the new king bucket based on the move made. If the piece moved is not the king, the bucket for the
+    // original king square is returned. This also takes into account castling, where special rules apply for Chess960.
     private int calculateNewKingBucket(int kingSquare, Move move, Piece piece, boolean white) {
+
         if (move == null) return kingBucket(kingSquare, white);
         if (piece != Piece.KING) return kingBucket(kingSquare, white);
         int to = move.to();
@@ -350,16 +376,20 @@ public class NNUE {
             to = UCI.Options.chess960 ? Castling.kingTo(kingside, board.isWhite()) : move.to();
         }
         return kingBucket(to, white);
+
     }
 
+    // Get the input bucket for the current king square.
     private int kingBucket(int kingSquare, boolean white) {
-        if (!white) {
-            kingSquare = Square.flipRank(kingSquare);
-        }
+
+        kingSquare = white ? kingSquare : Square.flipFile(kingSquare);
         return NETWORK.inputBuckets()[kingSquare];
+
     }
 
+    // Determine the type of move being made based on whether it is a castling, capture, or standard move.
     private MoveType moveType(Board board, Move move) {
+
         if (move.isCastling()) {
             return MoveType.CASTLE;
         } else if (move.isEnPassant() || board.pieceAt(move.to()) != null) {
@@ -367,15 +397,19 @@ public class NNUE {
         } else {
             return MoveType.STANDARD;
         }
+
     }
 
+    // Clear the history of the accumulator stack and reset the current index to 0.
     public void clearHistory() {
+
         this.current = 0;
         this.accumulatorStack = new Accumulator[STACK_SIZE];
         for (int i = 0; i < STACK_SIZE; i++) {
             this.accumulatorStack[i] = new Accumulator(NETWORK.hiddenSize());
         }
         this.bucketCache = new InputBucketCache(NETWORK.inputBucketCount());
+
     }
 
     private enum MoveType {

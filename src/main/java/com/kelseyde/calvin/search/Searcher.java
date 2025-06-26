@@ -643,6 +643,12 @@ public class Searcher implements Search {
             }
         }
 
+        if (!pvNode
+                && bestScore >= beta
+                && !Score.isMate(bestScore)
+                && !Score.isMate(alpha))
+            bestScore = (bestScore * depth + beta) / (depth + 1);
+
         if (moveCount == 0) {
             if (singularSearch)
                 return alpha;

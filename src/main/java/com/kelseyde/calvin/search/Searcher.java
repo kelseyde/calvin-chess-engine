@@ -340,7 +340,8 @@ public class Searcher implements Search {
             final int futilityMargin = depth * config.rfpMargin()
                     - (improving ? config.rfpImprovingMargin() : 0)
                     - (opponentWorsening ? config.rfpWorseningMargin() : 0)
-                    + (parentPvNode ? config.rfpParentPvMargin() : 0);
+                    + (parentPvNode ? config.rfpParentPvMargin() : 0)
+                    + Math.abs(correction) / 2;
             if (depth <= config.rfpDepth()
                     && !Score.isMate(alpha)
                     && staticEval - futilityMargin >= beta) {

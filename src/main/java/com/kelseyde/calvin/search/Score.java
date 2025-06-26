@@ -25,7 +25,7 @@ public class Score {
      * This is used during {@link Search} to quickly check for a draw; it will lead to some errors in edge cases, but the
      * gamble is that the boost in search speed is worth the potential cost.
      */
-    public static boolean isEffectiveDraw(Board board) {
+    public static boolean isDraw(Board board) {
         return isDoubleRepetition(board) || isFiftyMoveRule(board) || isInsufficientMaterial(board);
     }
 

@@ -390,13 +390,12 @@ public class NNUE {
     // Determine the type of move being made based on whether it is a castling, capture, or standard move.
     private MoveType moveType(Board board, Move move) {
 
-        if (move.isCastling()) {
+        if (move.isCastling())
             return MoveType.CASTLE;
-        } else if (move.isEnPassant() || board.pieceAt(move.to()) != null) {
+        else if (board.isCapture(move))
             return MoveType.CAPTURE;
-        } else {
+        else
             return MoveType.STANDARD;
-        }
 
     }
 

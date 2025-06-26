@@ -18,6 +18,7 @@ import com.kelseyde.calvin.uci.UCI;
 
 import java.util.List;
 
+import static com.kelseyde.calvin.search.Score.isDraw;
 import static com.kelseyde.calvin.search.Searcher.SearchLimit.HARD;
 import static com.kelseyde.calvin.search.Searcher.SearchLimit.SOFT;
 
@@ -158,7 +159,7 @@ public class Searcher implements Search {
      * @param beta                The upper bound for search scores ('our opponent can do at most this well').
      * @param cutNode             Whether this node is an expected cut-node (i.e. a fail-high node).
      */
-    public int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
+    int search(int depth, int ply, int alpha, int beta, boolean cutNode) {
 
         // If timeout is reached, exit immediately
         if (shouldStop(HARD))
@@ -182,7 +183,7 @@ public class Searcher implements Search {
             depth = 0;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero
-        if (ply > 0 && isDraw())
+        if (ply > 0 && isDraw(board))
             return Score.DRAW;
 
         // Update the selective search depth
@@ -718,7 +719,7 @@ public class Searcher implements Search {
             return alpha;
 
         // If the game is drawn by repetition, insufficient material or fifty move rule, return zero.
-        if (ply > 0 && isDraw())
+        if (ply > 0 && isDraw(board))
             return Score.DRAW;
 
         // If the maximum depth is reached, return the static evaluation of the position.
@@ -872,58 +873,71 @@ public class Searcher implements Search {
         // do nothing as this implementation is single-threaded
     }
 
+    // Make the move on the board, and efficiently update the evaluation network and search stack entry.
     private void makeMove(ScoredMove move, Piece piece, Piece captured, SearchStackEntry sse) {
+
         eval.makeMove(board, move.move());
         board.makeMove(move.move());
         sse.move = move.move();
         sse.quiet = move.isQuiet();
         sse.piece = piece;
         sse.captured = captured;
+
     }
 
+    // Unmake the move on the board, and reset the evaluation network and search stack entry.
     private void unmakeMove(SearchStackEntry sse) {
+
         eval.unmakeMove();
         board.unmakeMove();
         sse.move = null;
         sse.piece = null;
         sse.captured = null;
+
     }
 
+    // Check whether the search has exceeded its limits and should be aborted. This includes the soft and
+    // hard limits for time, depth, and nodes -- or whether a global abort signal has been received from UCI.
     private boolean shouldStop(SearchLimit limit) {
+
         return switch (limit) {
             case SOFT -> softLimitReached();
             case HARD -> hardLimitReached();
         };
+
     }
 
+    // Exit if hard limit for the current search is reached. This includes the time, node, and depth limits
+    // -- or whether a global abort signal has been received from UCI.
     private boolean hardLimitReached() {
-        // Exit if hard limit for the current search is reached.
+
         if (td.abort || config.searchCancelled)
             return true;
         if (config.pondering || limits == null)
             return false;
         return td.isMainThread() && limits.isHardLimitReached(td.depth, td.nodes);
+
     }
 
+    // Exit if soft limit for the current search is reached. This includes the time, node, and depth limits
+    // -- or whether a global abort signal has been received from UCI.
     private boolean softLimitReached() {
-        // Exit if soft limit for the current search is reached.
+
         if (config.pondering || limits == null)
             return false;
         int bestMoveStability = td.bestMoveStability();
         int scoreStability = td.bestScoreStability();
         int bestMoveNodes = td.nodes(td.bestMove());
         return limits.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+
     }
 
-    private boolean isDraw() {
-        return Score.isEffectiveDraw(board);
-    }
 
-    /**
-     * Compute whether our position is improving relative to previous static evaluations. If we are in check, we're not
-     * improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago, return true.
-     */
+    // Compute whether our position is improving relative to previous static evaluations. If we are in check,
+    // we're not improving. If we were in check 2 plies ago, check 4 plies ago. If we were in check 4 plies ago,
+    // return true.
     private boolean isImproving(int ply, int staticEval) {
+
         if (!Score.isDefined(staticEval))
             return false;
         if (ply > 1 && Score.isDefined(ss.get(ply - 2).staticEval))
@@ -931,16 +945,23 @@ public class Searcher implements Search {
         if (ply > 3 && Score.isDefined(ss.get(ply - 4).staticEval))
             return staticEval > ss.get(ply - 4).staticEval;
         return true;
+
     }
 
+    // Handle the case where there are no legal moves in the root node. This indicates an invalid position was
+    // passed via UCI. In this case, we return a null search result with an error message.
     private SearchResult handleNoLegalMoves() {
+
         if (td.isMainThread())
             UCI.write("info error no legal moves");
         return SearchResult.of(td, limits);
+
     }
 
+    // Handle the case where there is only one legal move in the root node. In this case, we play the move immediately
+    // and return the search result with the best move and evaluation.
     private SearchResult handleOneLegalMove(List<Move> rootMoves) {
-        // If there is only one legal move, play it immediately
+
         Move move = rootMoves.get(0);
         int eval = this.eval.evaluate();
         td.updateBestMove(move, eval);
@@ -948,14 +969,18 @@ public class Searcher implements Search {
         if (td.isMainThread())
             UCI.writeSearchInfo(result);
         return result;
+
     }
 
-    public boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
+    // Check whether the transposition table entry is within the bounds of the current alpha and beta values.
+    private boolean isWithinBounds(HashEntry entry, int alpha, int beta) {
+
         if (!Score.isDefined(entry.score()))
             return false;
         return entry.flag() == HashFlag.EXACT
                 || (entry.flag() == HashFlag.UPPER && entry.score() <= alpha)
                 || (entry.flag() == HashFlag.LOWER && entry.score() >= beta);
+
     }
 
     @Override
@@ -1019,6 +1044,5 @@ public class Searcher implements Search {
     enum SearchLimit {
         SOFT, HARD
     }
-
 
 }

@@ -45,10 +45,12 @@ public record SearchLimits(EngineConfig config,
     // The hard limit is the final limit that the engine will respect during search. Exceeding this limit
     // will likely result in the game being adjudicated as a forfeit by the match runner or GUI.
     public boolean isHardLimitReached(int depth, int nodes) {
+
         return nodes % 4096 == 0
             && (isHardNodeLimitReached(nodes)
                 || isMaxDepthReached(depth)
                 || isHardTimeLimitReached());
+
     }
 
     // The soft limit is a limit that the engine will check at the start of each iterative deepening loop. If the limit
@@ -59,9 +61,11 @@ public record SearchLimits(EngineConfig config,
                                       int bestMoveNodes,
                                       int bestMoveStability,
                                       int scoreStability) {
+
         return isMaxDepthReached(depth)
             || isSoftNodeLimitReached(nodes)
             || isSoftTimeLimitReached(depth, nodes, bestMoveNodes, bestMoveStability, scoreStability);
+
     }
 
     private boolean isHardNodeLimitReached(int nodes) {
@@ -77,9 +81,11 @@ public record SearchLimits(EngineConfig config,
     }
 
     private boolean isHardTimeLimitReached() {
+
         Duration expired = Duration.between(start, Instant.now());
         Duration overhead = Duration.ofMillis(config.uciOverhead());
         return expired.compareTo(hardTime.minus(overhead)) > 0;
+
     }
 
     private boolean isSoftTimeLimitReached(int depth,
@@ -87,9 +93,11 @@ public record SearchLimits(EngineConfig config,
                                            int bestMoveNodes,
                                            int bestMoveStability,
                                            int evalStability) {
+
         Duration expired = Duration.between(start, Instant.now());
         Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
         return expired.compareTo(adjustedSoftLimit) > 0;
+
     }
 
     private Duration adjustSoftLimit(Duration softLimit,
@@ -123,10 +131,12 @@ public record SearchLimits(EngineConfig config,
     private double bestMoveStabilityFactor(EngineConfig config,
                                            int depth,
                                            int bestMoveStability) {
+
         if (depth < config.bmStabilityMinDepth())
             return 1.0;
         bestMoveStability = Math.min(bestMoveStability, config.bmStabilityFactor().length - 1);
         return config.bmStabilityFactor()[bestMoveStability] / 100.0;
+
     }
 
     // Scale the soft limit based on the stability of the search score. If the evaluation has remained stable for
@@ -134,10 +144,12 @@ public record SearchLimits(EngineConfig config,
     private double scoreStabilityFactor(EngineConfig config,
                                         int depth,
                                         int scoreStability) {
+
         if (depth < config.scoreStabilityMinDepth())
             return 1.0;
         scoreStability = Math.min(scoreStability, config.scoreStabilityFactor().length - 1);
         return config.scoreStabilityFactor()[scoreStability] / 100.0;
+
     }
 
     // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
@@ -147,15 +159,18 @@ public record SearchLimits(EngineConfig config,
                                 int depth,
                                 int bestMoveNodes,
                                 int nodes) {
+
         if (depth < config.nodeTmMinDepth())
             return 1.0;
         double bestMoveNodeFraction = (double) bestMoveNodes / nodes;
         double nodeTmBase = (double) config.nodeTmBase() / 100;
         double nodeTmScale = (double) config.nodeTmScale() / 100;
         return (nodeTmBase - bestMoveNodeFraction) * nodeTmScale;
+
     }
     
     private static double baseTime(EngineConfig config, Board board, GoCommand command) {
+
         double time;
         double inc;
         if (command.isTimeAndInc()) {
@@ -175,6 +190,7 @@ public record SearchLimits(EngineConfig config,
         double timeFactor = config.timeFactor() / 100.0;
         double incrementFactor = config.incrementFactor() / 100.0;
         return time * timeFactor + inc * incrementFactor;
+
     }
 
     private static SearchLimits moveTimeLimit(EngineConfig config, Instant start, GoCommand command) {

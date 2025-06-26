@@ -36,10 +36,9 @@ public class Board {
         this.ply         = 0;
     }
 
-    /**
-     * Updates the internal board representation with the {@link Move} just made. Toggles the piece bitboards to move the
-     * piece + remove the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
-     */
+    // Updates the internal board representation with the move just made. Toggles the piece bitboards to
+    // move the piece and remove the captured piece, plus special rules for pawn double-moves, castling,
+    // promotion and en passant.
     public boolean makeMove(Move move) {
 
         int from = move.from();
@@ -64,10 +63,9 @@ public class Board {
 
     }
 
-    /**
-     * Reverts the internal board representation to the state before the last move. Toggles the piece bitboards to move the
-     * piece + reinstate the captured piece, plus special rules for pawn double-moves, castling, promotion and en passant.
-     */
+    // Reverts the internal board representation to the state before the last move. Toggles the piece bitboards
+    // to move the piece and reinstate the captured piece, plus special rules for pawn double-moves, castling,
+    // promotion and en passant.
     public void unmakeMove() {
 
         white = !white;
@@ -86,21 +84,24 @@ public class Board {
     }
 
     private void makePawnDoubleMove(int from, int to) {
-        // Handle moving pawn
+
         updateBitboards(from, to, Piece.PAWN, white);
         updateMailbox(from, to, Piece.PAWN);
         updateKeys(from, to, Piece.PAWN, white);
+
     }
 
     private void makeCastleMove(int from, int to) {
-        if (UCI.Options.chess960) {
+
+        if (UCI.Options.chess960)
             makeChess960CastleMove(from, to);
-        } else {
+        else
             makeStandardCastleMove(from, to);
-        }
+
     }
 
     private void makeStandardCastleMove(int from, int to) {
+
         boolean kingside = Castling.isKingside(from, to);
 
         // Handle moving king
@@ -115,9 +116,11 @@ public class Board {
 
         updateKeys(from, to, Piece.KING, white);
         updateKeys(rookFrom, rookTo, Piece.ROOK, white);
+
     }
 
     private void makeChess960CastleMove(int from, int to) {
+
         boolean kingside = Castling.isKingside(from, to);
 
         // Unset king
@@ -142,9 +145,11 @@ public class Board {
 
         updateKeys(from, kingTo, Piece.KING, white);
         updateKeys(to, rookTo, Piece.ROOK, white);
+
     }
 
     private void makeEnPassantMove(int from, int to) {
+
         // Handle capturing pawn
         updateBitboards(from, to, Piece.PAWN, white);
         updateMailbox(from, to, Piece.PAWN);
@@ -154,9 +159,11 @@ public class Board {
         updateBitboard(pawnSquare, Piece.PAWN, !white);
         updateMailbox(pawnSquare, null);
         updateKeys(pawnSquare, Piece.PAWN, !white);
+
     }
 
     private void makePromotionMove(int from, int to, Piece promoted, Piece captured) {
+
         // Remove promoting pawn
         updateBitboard(from, Piece.PAWN, white);
         updateKeys(from, Piece.PAWN, white);
@@ -169,9 +176,11 @@ public class Board {
             updateBitboard(to, captured, !white);
             updateKeys(to, captured, !white);
         }
+
     }
 
     private void makeStandardMove(int from, int to, Piece piece, Piece captured) {
+
         // Handle moving piece
         updateBitboards(from, to, piece, white);
         updateKeys(from, to, piece, white);
@@ -181,9 +190,11 @@ public class Board {
             updateBitboard(to, captured, !white);
             updateKeys(to, captured, !white);
         }
+
     }
 
     private void updateState(int from, int to, Piece piece, Piece captured, Move move) {
+
         state.moved = piece;
         state.captured = captured;
         boolean resetClock = captured != null || Piece.PAWN.equals(piece);
@@ -198,17 +209,20 @@ public class Board {
         state.enPassantFile = enPassantFile;
 
         state.key ^= Key.sideToMove();
+
     }
 
     private void unmakeCastlingMove(int from, int to) {
-        if (UCI.Options.chess960) {
+
+        if (UCI.Options.chess960)
             unmakeChess960CastleMove(from, to);
-        } else {
+        else
             unmakeStandardCastleMove(from, to);
-        }
+
     }
 
     private void unmakeStandardCastleMove(int from, int to) {
+
         // Put back king
         updateBitboards(to, from, Piece.KING, white);
         updateMailbox(to, from, Piece.KING);
@@ -218,9 +232,11 @@ public class Board {
         int rookTo = Castling.rookTo(kingside, white);
         updateBitboards(rookTo, rookFrom, Piece.ROOK, white);
         updateMailbox(rookTo, rookFrom, Piece.ROOK);
+
     }
 
     private void unmakeChess960CastleMove(int from, int to) {
+
         boolean kingside = Castling.isKingside(from, to);
         int kingTo = Castling.kingTo(kingside, white);
         // Unset king
@@ -236,9 +252,11 @@ public class Board {
         // Set rook
         updateBitboard(to, Piece.ROOK, white);
         updateMailbox(to, Piece.ROOK);
+
     }
 
     private void unmakePromotionMove(int from, int to, Piece promotionPiece) {
+
         // Remove promoted piece
         updateBitboard(to, promotionPiece, white);
         // Put back promoting pawn
@@ -250,9 +268,11 @@ public class Board {
         }
         // If no piece was captured, this correctly nullifies the promo square
         updateMailbox(to, state.getCaptured());
+
     }
 
     private void unmakeEnPassantMove(int from, int to) {
+
         // Put back capturing pawn
         updateBitboards(to, from, Piece.PAWN, white);
         updateMailbox(to, from, Piece.PAWN);
@@ -260,9 +280,11 @@ public class Board {
         int captureSquare = white ? to - 8 : to + 8;
         updateBitboard(captureSquare, Piece.PAWN, !white);
         updateMailbox(captureSquare, Piece.PAWN);
+
     }
 
     private void unmakeStandardMove(int from, int to, Piece piece) {
+
         // Put back moving piece
         updateBitboards(to, from, piece, white);
         updateMailbox(to, from, piece);
@@ -271,12 +293,11 @@ public class Board {
             updateBitboard(to, state.getCaptured(), !white);
             updateMailbox(to, state.getCaptured());
         }
+
     }
 
-    /**
-     * Make a 'null' move, meaning the side to move passes their turn and gives the opponent a double-move. Used exclusively
-     * during null-move pruning during search.
-     */
+    // Make a 'null' move, meaning the side to move passes their turn and gives the opponent a double-move.
+    // Used exclusively for null-move pruning during search.
     public void makeNullMove() {
         white = !white;
         long key = state.key ^ Key.nullMove(state.enPassantFile);
@@ -286,9 +307,7 @@ public class Board {
         state = newState;
     }
 
-    /**
-     * Unmake the 'null' move used during null-move pruning to try and prove a beta cut-off.
-     */
+    // Unmake the 'null' move used during null-move pruning to try and prove a beta cut-off.
     public void unmakeNullMove() {
         white = !white;
         state = states[--ply];

@@ -24,8 +24,9 @@ public class QuiescentMovePicker extends MovePicker {
                                Board board,
                                int ply,
                                Move ttMove,
+                               long threats,
                                boolean inCheck) {
-        super(config, movegen, history, ss, board, ply, ttMove, inCheck);
+        super(config, movegen, history, ss, board, ply, ttMove, threats, inCheck);
         this.stage = Stage.TT_MOVE;
     }
 
@@ -60,7 +61,7 @@ public class QuiescentMovePicker extends MovePicker {
         goodNoisies = new ScoredMove[moves.size()];
         int goodIndex = 0;
         for (Move move : moves) {
-            ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+            ScoredMove scoredMove = scorer.score(board, move, ply, threats, stage);
             // In q-search, only consider good noisies
             // unless we are in check, in which case consider all moves.
             if (scoredMove.isGoodNoisy() || inCheck)

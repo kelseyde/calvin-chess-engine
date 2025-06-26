@@ -31,8 +31,9 @@ public class StandardMovePicker extends MovePicker {
                               Board board,
                               int ply,
                               Move ttMove,
+                              long threats,
                               boolean inCheck) {
-        super(config, movegen, history, ss, board, ply, ttMove, inCheck);
+        super(config, movegen, history, ss, board, ply, ttMove, threats, inCheck);
         this.stage = ttMove != null ? Stage.TT_MOVE : Stage.GEN_NOISY;
     }
 
@@ -73,7 +74,7 @@ public class StandardMovePicker extends MovePicker {
             goodNoisies = new ScoredMove[moves.size()];
             badNoisies = new ScoredMove[moves.size()];
             for (Move move : moves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(board, move, ply, threats, stage);
                 if (scoredMove.isGoodNoisy())
                     goodNoisies[goodIndex++] = scoredMove;
                 else
@@ -86,7 +87,7 @@ public class StandardMovePicker extends MovePicker {
             goodQuiets = new ScoredMove[moves.size()];
             badQuiets = new ScoredMove[moves.size()];
             for (Move move : moves) {
-                ScoredMove scoredMove = scorer.score(board, move, ply, stage);
+                ScoredMove scoredMove = scorer.score(board, move, ply, threats, stage);
                 if (scoredMove.isGoodQuiet())
                     goodQuiets[goodIndex++] = scoredMove;
                 else
@@ -132,7 +133,7 @@ public class StandardMovePicker extends MovePicker {
                 || !movegen.isLegal(board, killer))
             return pickKiller(nextStage);
 
-        return scorer.score(board, killer, ply, stage);
+        return scorer.score(board, killer, ply, threats, stage);
     }
 
 }

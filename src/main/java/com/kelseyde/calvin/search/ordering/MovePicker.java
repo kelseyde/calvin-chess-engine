@@ -45,6 +45,7 @@ public abstract class MovePicker {
     final Move ttMove;
     final Board board;
     final boolean inCheck;
+    final long threats;
     final int ply;
 
     Stage stage;
@@ -59,6 +60,7 @@ public abstract class MovePicker {
                          Board board,
                          int ply,
                          Move ttMove,
+                         long threats,
                          boolean inCheck) {
         this.movegen = movegen;
         this.history = history;
@@ -66,6 +68,7 @@ public abstract class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
+        this.threats = threats;
         this.scorer = initMoveScorer(config, history, ss);
     }
 

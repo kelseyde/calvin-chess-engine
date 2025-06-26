@@ -39,7 +39,7 @@ public class MoveScorer {
 
     // Assign a move a score and type. The scoring heuristics used depend on the type of move, with different
     // heuristics for quiets, captures and promotions.
-    public ScoredMove score(Board board, Move move, int ply, Stage stage) {
+    public ScoredMove score(Board board, Move move, int ply, long threats, Stage stage) {
 
         this.stage = stage;
         Piece piece = board.pieceAt(move.from());
@@ -52,7 +52,7 @@ public class MoveScorer {
         else if (capture)
             return scoreCapture(board, move, piece, captured);
         else
-            return scoreQuiet(board, move, piece, ply);
+            return scoreQuiet(board, move, piece, threats, ply);
 
     }
 
@@ -82,10 +82,10 @@ public class MoveScorer {
     // Quiets are scored based on their score in the quiet and continuation history tables. They are separated into 'good'
     // and 'bad' quiets based on whether their history score exceeds a configurable threshold - except for quiet checks
     // that are generated during the noisy stage, which are considered 'bad noisies' regardless of score.
-    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
+    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, long threats, int ply) {
 
         boolean white = board.isWhite();
-        int historyScore = history.quietHistory().get(move, piece, white);
+        int historyScore = history.quietHistory().get(move, piece, threats, white);
         int contHistScore = history.continuationHistory().get(move, piece, white, ply, config.contHistPlies(), ss);
         int score = historyScore + contHistScore;
         MoveType type = stage == Stage.GEN_NOISY

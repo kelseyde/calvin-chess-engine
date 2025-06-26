@@ -37,6 +37,7 @@ public class SearchStack {
         public int reduction;
         public int failHighCount;
         public int pvDistance;
+        public long threats;
         public boolean quiet;
         public boolean inCheck;
     }

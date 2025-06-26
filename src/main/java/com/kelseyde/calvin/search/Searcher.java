@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -173,7 +174,8 @@ public class Searcher implements Search {
         boolean rootNode = ply == 0;
 
         // Determine if we are currently in check.
-        boolean inCheck = movegen.isCheck(board);
+        long threats = movegen.calculateThreats(board, !board.isWhite());
+        boolean inCheck = Bits.contains(threats, board.kingSquare(board.isWhite()));
 
         // If depth is reached, drop into quiescence search
         if (depth <= 0 && !inCheck)
@@ -205,6 +207,7 @@ public class Searcher implements Search {
         SearchStackEntry prev = ss.get(ply - 1);
         curr.inCheck = inCheck;
         curr.pvDistance = pvNode ? 0 : prev.pvDistance + 1;
+        curr.threats = threats;
         Move excludedMove = curr.excludedMove;
         boolean singularSearch = excludedMove != null;
         int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
@@ -311,7 +314,7 @@ public class Searcher implements Search {
                 && Score.isDefined(prev.staticEval)) {
             int value = config.dynamicPolicyMult() * -(staticEval + prev.staticEval);
             int bonus = clamp(value, config.dynamicPolicyMin(), config.dynamicPolicyMax());
-            history.quietHistory().add(prev.move, prev.piece, !board.isWhite(), bonus);
+            history.quietHistory().add(prev.move, prev.piece, !board.isWhite(), prev.threats, bonus);
         }
 
         // Hindsight extension
@@ -405,7 +408,7 @@ public class Searcher implements Search {
         curr.captures = new Move[16];
         int moveCount = 0, quietMoves = 0, captureMoves = 0;
 
-        MovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        MovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, threats, inCheck);
 
         while (true) {
 
@@ -662,11 +665,11 @@ public class Searcher implements Search {
             if (!board.isCapture(bestMove)) {
                 // If the best move was quiet, record it in the killer table and give it a bonus in the quiet history table.
                 history.killerTable().add(ply, bestMove);
-                history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, true);
+                history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, threats, true);
 
                 // Penalise all the other quiets which failed to cause a beta cut-off.
                 for (Move quiet : curr.quiets)
-                    history.updateQuietHistories(board, quiet, board.isWhite(), historyDepth, ply, false);
+                    history.updateQuietHistories(board, quiet, board.isWhite(), historyDepth, ply, threats, false);
             } else {
                 // If the best move was a capture, give it a bonus in the capture history table.
                 history.updateCaptureHistory(board, bestMove, board.isWhite(), historyDepth, true);
@@ -685,7 +688,7 @@ public class Searcher implements Search {
             // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
             // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
             // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
-            history.updateQuietHistory(prev.move, prev.piece, !board.isWhite(), depth, true);
+            history.updateQuietHistory(prev.move, prev.piece, !board.isWhite(), depth, prev.threats, true);
         }
 
         if (!inCheck
@@ -742,7 +745,8 @@ public class Searcher implements Search {
         if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta))
             return ttEntry.score();
 
-        boolean inCheck = movegen.isCheck(board);
+        long threats = movegen.calculateThreats(board, !board.isWhite());
+        boolean inCheck = Bits.contains(threats, board.kingSquare(board.isWhite()));
 
         SearchStackEntry curr = ss.get(ply);
         SearchStackEntry prev = ss.get(ply - 1);
@@ -783,7 +787,7 @@ public class Searcher implements Search {
         int flag = HashFlag.UPPER;
         int moveCount = 0;
 
-        MovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
+        MovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, threats, inCheck);
 
         while (true) {
 

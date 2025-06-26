@@ -40,22 +40,22 @@ public class SearchHistory {
 
     // Update the quiet history tables for a given move, including the standard quiet history table and the
     // continuation history table.
-    public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, boolean good) {
+    public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, long threats, boolean good) {
 
         if (quiet == null)
             return;
         Piece piece = board.pieceAt(quiet.from());
-        updateQuietHistory(quiet, piece, white, depth, good);
+        updateQuietHistory(quiet, piece, white, depth, threats, good);
         updateContHistory(quiet, piece, white, depth, ply, good);
 
     }
 
     // Update the quiet history table for a specific move and piece, applying either a bonus or a malus.
-    public void updateQuietHistory(Move move, Piece piece, boolean white, int depth, boolean good) {
+    public void updateQuietHistory(Move move, Piece piece, boolean white, int depth, long threats, boolean good) {
         short scale = good ? (short) config.quietHistBonusScale() : (short) config.quietHistMalusScale();
         short max = good ? (short) config.quietHistBonusMax() : (short) config.quietHistMalusMax();
         short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
-        quietHistoryTable.add(move, piece, white, bonus);
+        quietHistoryTable.add(move, piece, white, threats, bonus);
     }
 
     // Update the continuation history table for a specific move and piece, applying either a bonus or a malus.

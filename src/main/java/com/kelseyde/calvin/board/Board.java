@@ -42,11 +42,11 @@ public class Board {
      */
     public boolean makeMove(Move move) {
 
-        final int from = move.from();
-        final int to = move.to();
-        final Piece piece = pieces[from];
+        int from = move.from();
+        int to = move.to();
+        Piece piece = pieces[from];
         if (piece == null) return false;
-        final Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
+        Piece captured = move.isEnPassant() ? Piece.PAWN : pieces[to];
         states[ply] = state.copy();
 
         if (move.isPawnDoubleMove())  makePawnDoubleMove(from, to);
@@ -71,11 +71,11 @@ public class Board {
     public void unmakeMove() {
 
         white = !white;
-        final Move move = moves[--ply];
+        Move move = moves[--ply];
 
-        final int from = move.from();
-        final int to = move.to();
-        final Piece piece = pieceAt(to);
+        int from = move.from();
+        int to = move.to();
+        Piece piece = pieceAt(to);
 
         if (move.isCastling())        unmakeCastlingMove(from, to);
         else if (move.isPromotion())  unmakePromotionMove(from, to, move.promoPiece());
@@ -102,15 +102,15 @@ public class Board {
     }
 
     private void makeStandardCastleMove(int from, int to) {
-        final boolean kingside = Castling.isKingside(from, to);
+        boolean kingside = Castling.isKingside(from, to);
 
         // Handle moving king
         updateBitboards(from, to, Piece.KING, white);
         updateMailbox(from, to, Piece.KING);
 
         // Handle moving rook
-        final int rookFrom = Castling.rookFrom(kingside, white);
-        final int rookTo = Castling.rookTo(kingside, white);
+        int rookFrom = Castling.rookFrom(kingside, white);
+        int rookTo = Castling.rookTo(kingside, white);
         updateBitboards(rookFrom, rookTo, Piece.ROOK, white);
         updateMailbox(rookFrom, rookTo, Piece.ROOK);
 
@@ -119,7 +119,7 @@ public class Board {
     }
 
     private void makeChess960CastleMove(int from, int to) {
-        final boolean kingside = Castling.isKingside(from, to);
+        boolean kingside = Castling.isKingside(from, to);
 
         // Unset king
         updateBitboard(from, Piece.KING, white);
@@ -127,11 +127,11 @@ public class Board {
 
         // Unset rook
         // (in Chess960 the 'to' square of a castling move is the rook square)
-        final int rookTo = Castling.rookTo(kingside, white);
+        int rookTo = Castling.rookTo(kingside, white);
         updateBitboard(to, Piece.ROOK, white);
         updateMailbox(to, null);
 
-        final int kingTo = Castling.kingTo(kingside, white);
+        int kingTo = Castling.kingTo(kingside, white);
 
         // Set king
         updateBitboard(kingTo, Piece.KING, white);
@@ -151,7 +151,7 @@ public class Board {
         updateMailbox(from, to, Piece.PAWN);
         updateKeys(from, to, Piece.PAWN, white);
         // Handle captured pawn
-        final int pawnSquare = white ? to - 8 : to + 8;
+        int pawnSquare = white ? to - 8 : to + 8;
         updateBitboard(pawnSquare, Piece.PAWN, !white);
         updateMailbox(pawnSquare, null);
         updateKeys(pawnSquare, Piece.PAWN, !white);
@@ -187,14 +187,14 @@ public class Board {
     private void updateState(int from, int to, Piece piece, Piece captured, Move move) {
         state.moved = piece;
         state.captured = captured;
-        final boolean resetClock = captured != null || Piece.PAWN.equals(piece);
+        boolean resetClock = captured != null || Piece.PAWN.equals(piece);
         state.halfMoveClock = resetClock ? 0 : ++state.halfMoveClock;
 
-        final int castleRights = updateCastleRights(from, to, piece);
+        int castleRights = updateCastleRights(from, to, piece);
         state.key ^= Key.rights(state.rights, castleRights);
         state.rights = castleRights;
 
-        final int enPassantFile = move.isPawnDoubleMove() ? File.of(to) : -1;
+        int enPassantFile = move.isPawnDoubleMove() ? File.of(to) : -1;
         state.key ^= Key.enPassant(state.enPassantFile, enPassantFile);
         state.enPassantFile = enPassantFile;
 
@@ -214,21 +214,21 @@ public class Board {
         updateBitboards(to, from, Piece.KING, white);
         updateMailbox(to, from, Piece.KING);
         // Put back rook
-        final boolean kingside = Castling.isKingside(from, to);
-        final int rookFrom = Castling.rookFrom(kingside, white);
-        final int rookTo = Castling.rookTo(kingside, white);
+        boolean kingside = Castling.isKingside(from, to);
+        int rookFrom = Castling.rookFrom(kingside, white);
+        int rookTo = Castling.rookTo(kingside, white);
         updateBitboards(rookTo, rookFrom, Piece.ROOK, white);
         updateMailbox(rookTo, rookFrom, Piece.ROOK);
     }
 
     private void unmakeChess960CastleMove(int from, int to) {
-        final boolean kingside = Castling.isKingside(from, to);
-        final int kingTo = Castling.kingTo(kingside, white);
+        boolean kingside = Castling.isKingside(from, to);
+        int kingTo = Castling.kingTo(kingside, white);
         // Unset king
         updateBitboard(kingTo, Piece.KING, white);
         updateMailbox(kingTo, null);
         // Unset rook
-        final int rookTo = Castling.rookTo(kingside, white);
+        int rookTo = Castling.rookTo(kingside, white);
         updateBitboard(rookTo, Piece.ROOK, white);
         updateMailbox(rookTo, null);
         // Set king
@@ -258,7 +258,7 @@ public class Board {
         updateBitboards(to, from, Piece.PAWN, white);
         updateMailbox(to, from, Piece.PAWN);
         // Add back captured pawn
-        final int captureSquare = white ? to - 8 : to + 8;
+        int captureSquare = white ? to - 8 : to + 8;
         updateBitboard(captureSquare, Piece.PAWN, !white);
         updateMailbox(captureSquare, Piece.PAWN);
     }
@@ -280,9 +280,9 @@ public class Board {
      */
     public void makeNullMove() {
         white = !white;
-        final long key = state.key ^ Key.nullMove(state.enPassantFile);
-        final long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
-        final BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.getRights(), 0);
+        long key = state.key ^ Key.nullMove(state.enPassantFile);
+        long[] nonPawnKeys = new long[] {state.nonPawnKeys[0], state.nonPawnKeys[1]};
+        BoardState newState = new BoardState(key, state.pawnKey, nonPawnKeys, null, null, -1, state.getRights(), 0);
         states[ply++] = state;
         state = newState;
     }
@@ -296,40 +296,40 @@ public class Board {
     }
 
     public void updateBitboards(int from, int to, Piece piece, boolean white) {
-        final long toggleMask = Bits.of(from) | Bits.of(to);
+        long toggleMask = Bits.of(from) | Bits.of(to);
         toggle(toggleMask, piece, white);
     }
 
     public void updateBitboard(int square, Piece piece, boolean white) {
-        final long toggleMask = Bits.of(square);
+        long toggleMask = Bits.of(square);
         toggle(toggleMask, piece, white);
     }
 
     private void toggle(long mask, Piece type, boolean white) {
-        final int pieceIndex = type.index();
+        int pieceIndex = type.index();
         bitboards[pieceIndex] ^= mask;
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         bitboards[colourIndex] ^= mask;
     }
 
     private void updateKeys(int from, int to, Piece piece, boolean white) {
-        final long hash = Key.piece(from, to, piece, white);
+        long hash = Key.piece(from, to, piece, white);
         state.key ^= hash;
         if (piece == Piece.PAWN) {
             state.pawnKey ^= hash;
         } else {
-            final int colourIndex = Colour.index(white);
+            int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] ^= hash;
         }
     }
 
     private void updateKeys(int square, Piece piece, boolean white) {
-        final long hash = Key.piece(square, piece, white);
+        long hash = Key.piece(square, piece, white);
         state.key ^= hash;
         if (piece == Piece.PAWN) {
             state.pawnKey ^= hash;
         } else {
-            final int colourIndex = Colour.index(white);
+            int colourIndex = Colour.index(white);
             state.nonPawnKeys[colourIndex] ^= hash;
         }
     }
@@ -344,17 +344,17 @@ public class Board {
     }
 
     public void removeKing(boolean white) {
-        final int pieceIndex = Piece.KING.index;
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
-        final long toggleMask = bitboards[pieceIndex] & bitboards[colourIndex];
+        int pieceIndex = Piece.KING.index;
+        int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        long toggleMask = bitboards[pieceIndex] & bitboards[colourIndex];
         bitboards[pieceIndex] ^= toggleMask;
         bitboards[colourIndex] ^= toggleMask;
     }
 
     public void addKing(int kingSquare, boolean white) {
-        final long toggleMask = Bits.of(kingSquare);
-        final int pieceIndex = Piece.KING.index;
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        long toggleMask = Bits.of(kingSquare);
+        int pieceIndex = Piece.KING.index;
+        int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         bitboards[pieceIndex] |= toggleMask;
         bitboards[colourIndex] |= toggleMask;
     }
@@ -428,32 +428,29 @@ public class Board {
     }
 
     public long getPawns(boolean white) {
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         return bitboards[Piece.PAWN.index] & bitboards[colourIndex];
     }
 
     public long getKnights(boolean white) {
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         return bitboards[Piece.KNIGHT.index] & bitboards[colourIndex];
     }
 
     public long getBishops(boolean white) {
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         return bitboards[Piece.BISHOP.index] & bitboards[colourIndex];
     }
 
-    public long getRooks(boolean white) {
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+    public long getRooks(boolean white) {int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         return bitboards[Piece.ROOK.index] & bitboards[colourIndex];
     }
 
-    public long getQueens(boolean white) {
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+    public long getQueens(boolean white) {int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         return bitboards[Piece.QUEEN.index] & bitboards[colourIndex];
     }
 
-    public long getKing(boolean white) {
-        final int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+    public long getKing(boolean white) {int colourIndex = white ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         return bitboards[Piece.KING.index] & bitboards[colourIndex];
     }
 
@@ -594,8 +591,8 @@ public class Board {
     }
 
     public int kingSquare(boolean white) {
-        final long kings = getKing(white);
-        final long pieces = getPieces(white);
+        long kings = getKing(white);
+        long pieces = getPieces(white);
         return Bits.next(kings & pieces);
     }
 
@@ -632,7 +629,7 @@ public class Board {
     }
 
     public Board copy() {
-        final Board newBoard = new Board();
+        Board newBoard = new Board();
         newBoard.setPawns(this.getPawns());
         newBoard.setKnights(this.getKnights());
         newBoard.setBishops(this.getBishops());

@@ -28,8 +28,8 @@ public class SEE {
     public static boolean see(Board board, Move move, int threshold) {
 
         boolean white = board.isWhite();
-        final int from = move.from();
-        final int to = move.to();
+        int from = move.from();
+        int to = move.to();
 
         int score = -threshold;
         Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);

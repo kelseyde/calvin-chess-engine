@@ -38,8 +38,8 @@ public class StandardMovePicker extends MovePicker {
 
     @Override
     protected MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss) {
-        final int seeDivisor = config.seeNoisyDivisor();
-        final int seeOffset = config.seeNoisyOffset();
+        int seeDivisor = config.seeNoisyDivisor();
+        int seeOffset = config.seeNoisyOffset();
         return new MoveScorer(config, history, ss, seeDivisor, seeOffset);
     }
 

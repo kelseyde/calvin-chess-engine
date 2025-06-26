@@ -13,12 +13,12 @@ import com.kelseyde.calvin.board.Move;
 public record HashEntry(Move move, int score, int staticEval, int flag, int depth, boolean pv) {
 
     public static HashEntry of(long key, long value) {
-        final Move move       = Value.getMove(value);
-        final int flag        = Value.getFlag(value);
-        final int depth       = Value.getDepth(value);
-        final int score       = Value.getScore(value);
-        final int staticEval  = Key.getStaticEval(key);
-        final boolean pv      = Value.isPv(value);
+        Move move       = Value.getMove(value);
+        int flag        = Value.getFlag(value);
+        int depth       = Value.getDepth(value);
+        int score       = Value.getScore(value);
+        int staticEval  = Key.getStaticEval(key);
+        boolean pv      = Value.isPv(value);
         return new HashEntry(move, score, staticEval, flag, depth, pv);
     }
 

@@ -37,7 +37,7 @@ enum UCICommandType {
     }
 
     public static UCICommandType parse(String command) {
-        final String label = command.trim().toLowerCase().split(" ")[0];
+        String label = command.trim().toLowerCase().split(" ")[0];
         return Arrays.stream(UCICommandType.values())
                 .filter(type -> type.name.equals(label))
                 .findFirst()

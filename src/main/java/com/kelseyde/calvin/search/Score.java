@@ -35,7 +35,7 @@ public class Score {
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
         for (int i = board.getPly() - 2; i >= 0; i-= 2) {
-            final BoardState state = states[i];
+            BoardState state = states[i];
 
             if (state.getKey() == zobrist)
                 repetitionCount += 1;
@@ -55,7 +55,7 @@ public class Score {
         long zobrist = board.getState().getKey();
         BoardState[] states = board.getStates();
         for (int i = board.getPly() - 2; i >= 0; i-= 2) {
-            final BoardState state = states[i];
+            BoardState state = states[i];
 
             if (state.key == zobrist)
                 return true;

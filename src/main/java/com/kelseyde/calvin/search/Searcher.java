@@ -64,7 +64,7 @@ public class Searcher implements Search {
     @Override
     public SearchResult search(SearchLimits limits) {
 
-        final List<Move> rootMoves = movegen.generateMoves(board);
+        List<Move> rootMoves = movegen.generateMoves(board);
         this.limits = limits;
 
         if (rootMoves.isEmpty())
@@ -165,13 +165,13 @@ public class Searcher implements Search {
             return alpha;
 
         // A PV (principal variation) node is one that falls within the alpha-beta window.
-        final boolean pvNode = beta - alpha > 1;
+        boolean pvNode = beta - alpha > 1;
 
         // The root node is the first node in the search tree, and is thus also always a PV node.
-        final boolean rootNode = ply == 0;
+        boolean rootNode = ply == 0;
 
         // Determine if we are currently in check.
-        final boolean inCheck = movegen.isCheck(board);
+        boolean inCheck = movegen.isCheck(board);
 
         // If depth is reached, drop into quiescence search
         if (depth <= 0 && !inCheck)
@@ -199,14 +199,14 @@ public class Searcher implements Search {
         beta = Math.min(beta, Score.MATE - ply);
         if (alpha >= beta) return alpha;
 
-        final SearchStackEntry curr = ss.get(ply);
-        final SearchStackEntry prev = ss.get(ply - 1);
+        SearchStackEntry curr = ss.get(ply);
+        SearchStackEntry prev = ss.get(ply - 1);
         curr.inCheck = inCheck;
         curr.pvDistance = pvNode ? 0 : prev.pvDistance + 1;
-        final Move excludedMove = curr.excludedMove;
-        final boolean singularSearch = excludedMove != null;
-        final int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
-        final boolean parentPvNode = curr.pvDistance == 1;
+        Move excludedMove = curr.excludedMove;
+        boolean singularSearch = excludedMove != null;
+        int priorReduction = rootNode || singularSearch ? 0 : prev.reduction;
+        boolean parentPvNode = curr.pvDistance == 1;
 
         history.killerTable().clear(ply + 1);
         ss.get(ply + 2).failHighCount = 0;
@@ -326,10 +326,10 @@ public class Searcher implements Search {
         // We are 'improving' if the static eval of the current position is greater than it was on our previous turn.
         // If our position is improving we can be more aggressive in our beta pruning - where the eval is too high - but
         // should be more cautious in our alpha pruning - where the eval is too low.
-        final boolean improving = !rootNode && isImproving(ply, staticEval);
+        boolean improving = !rootNode && isImproving(ply, staticEval);
 
         // The inverse of improving, our opponent is worsening if their previous move made the static eval worse for them.
-        final boolean opponentWorsening = !rootNode && !inCheck && staticEval + prev.staticEval > 1;
+        boolean opponentWorsening = !rootNode && !inCheck && staticEval + prev.staticEval > 1;
 
         // Pre-move-loop pruning: If the static eval indicates a fail-high or fail-low, there are several heuristics we
         // can employ to prune the node and its entire subtree, without searching any moves.
@@ -337,7 +337,7 @@ public class Searcher implements Search {
 
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
-            final int futilityMargin = depth * config.rfpMargin()
+            int futilityMargin = depth * config.rfpMargin()
                     - (improving ? config.rfpImprovingMargin() : 0)
                     - (opponentWorsening ? config.rfpWorseningMargin() : 0)
                     + (parentPvNode ? config.rfpParentPvMargin() : 0);
@@ -351,7 +351,7 @@ public class Searcher implements Search {
             // Skip nodes where a quiescence search confirms that the position is bad and will likely result in a fail-low.
             if (depth <= config.razorDepth()
                 && staticEval + config.razorMargin() * depth < alpha) {
-                final int score = qsearch(alpha, alpha + 1, ply);
+                int score = qsearch(alpha, alpha + 1, ply);
                 if (score < alpha)
                     return score;
             }
@@ -370,7 +370,7 @@ public class Searcher implements Search {
                         + Math.min((staticEval - beta) / config.nmpEvalScale(), config.nmpEvalMaxReduction());
 
                 board.makeNullMove();
-                final int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
+                int score = -search(depth - r, ply + 1, -beta, -beta + 1, !cutNode);
                 board.unmakeNullMove();
                 td.nodes++;
 
@@ -407,22 +407,22 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final ScoredMove scoredMove = movePicker.next();
+            ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null)
                 break;
 
-            final Move move = scoredMove.move();
+            Move move = scoredMove.move();
             if (move.equals(excludedMove))
                 continue;
             moveCount++;
 
-            final Piece piece = scoredMove.piece();
-            final Piece captured = scoredMove.captured();
-            final int historyScore = scoredMove.historyScore();
-            final boolean isGoodNoisy = scoredMove.isGoodNoisy();
-            final boolean isQuiet = scoredMove.isQuiet();
-            final boolean isCapture = captured != null;
-            final boolean isMateScore = Score.isMate(bestScore);
+            Piece piece = scoredMove.piece();
+            Piece captured = scoredMove.captured();
+            int historyScore = scoredMove.historyScore();
+            boolean isGoodNoisy = scoredMove.isGoodNoisy();
+            boolean isQuiet = scoredMove.isQuiet();
+            boolean isCapture = captured != null;
+            boolean isMateScore = Score.isMate(bestScore);
 
             int extension = 0;
             int reduction = 0;
@@ -434,8 +434,8 @@ public class Searcher implements Search {
 
             // Late Move Reductions
             // Moves ordered late in the list are less likely to be good, so we reduce the search depth.
-            final int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
-            final boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!isGoodNoisy || !ttPv);
+            int lmrMinMoves = (pvNode ? config.lmrMinPvMoves() : config.lmrMinMoves()) + (rootNode ? 1 : 0);
+            boolean doLmr = depth >= config.lmrDepth() && moveCount >= lmrMinMoves && (!isGoodNoisy || !ttPv);
             if (doLmr) {
                 int r = config.lmrReductions()[isCapture ? 1 : 0][depth][moveCount] * 1024;
                 r -= ttPv ? config.lmrPvNode() : 0;
@@ -455,7 +455,7 @@ public class Searcher implements Search {
 
             // Futility Pruning
             // Skip quiet moves when the static evaluation + some margin is still below alpha.
-            final int futilityMargin = futilityMargin(reducedDepth, historyScore, moveCount);
+            int futilityMargin = futilityMargin(reducedDepth, historyScore, moveCount);
             if (!pvNode
                     && !rootNode
                     && isQuiet
@@ -468,7 +468,7 @@ public class Searcher implements Search {
 
             // History pruning
             // Skip quiet moves that have a bad history score.
-            final int historyThreshold = config.hpMargin() * depth + config.hpOffset();
+            int historyThreshold = config.hpMargin() * depth + config.hpOffset();
             if (!rootNode
                     && isQuiet
                     && reducedDepth <= config.hpMaxDepth()
@@ -479,7 +479,7 @@ public class Searcher implements Search {
 
             // Late Move Pruning
             // Skip quiet moves ordered very late in the list.
-            final int lateMoveThreshold = lateMoveThreshold(depth, improving || staticEval >= beta);
+            int lateMoveThreshold = lateMoveThreshold(depth, improving || staticEval >= beta);
             if (!pvNode
                     && !rootNode
                     && isQuiet
@@ -505,7 +505,7 @@ public class Searcher implements Search {
 
             // PVS SEE Pruning
             // Skip moves that lose material once all the pieces have been exchanged.
-            final int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
+            int seeThreshold = seeThreshold(depth, historyScore, isQuiet);
             if (!pvNode
                     && !rootNode
                     && depth <= config.seeMaxDepth()
@@ -553,7 +553,7 @@ public class Searcher implements Search {
             // Therefore, let's make the move on the board and search the resulting position.
             makeMove(scoredMove, piece, captured, curr);
 
-            final int nodesBefore = td.nodes;
+            int nodesBefore = td.nodes;
             td.nodes++;
 
             int newDepth = depth + extension - 1;
@@ -729,18 +729,18 @@ public class Searcher implements Search {
         if (ply + 1 > td.seldepth)
             td.seldepth = ply + 1;
 
-        final boolean pvNode = beta - alpha > 1;
+        boolean pvNode = beta - alpha > 1;
 
         // Exit the quiescence search early if we already have an accurate score stored in the hash table.
-        final HashEntry ttEntry = tt.get(board.key(), ply);
-        final boolean ttHit = ttEntry != null;
-        final Move ttMove = ttHit ? ttEntry.move() : null;
+        HashEntry ttEntry = tt.get(board.key(), ply);
+        boolean ttHit = ttEntry != null;
+        Move ttMove = ttHit ? ttEntry.move() : null;
         boolean ttPv = pvNode || (ttHit && ttEntry.pv());
 
         if (!pvNode && ttHit && isWithinBounds(ttEntry, alpha, beta))
             return ttEntry.score();
 
-        final boolean inCheck = movegen.isCheck(board);
+        boolean inCheck = movegen.isCheck(board);
 
         SearchStackEntry curr = ss.get(ply);
         SearchStackEntry prev = ss.get(ply - 1);
@@ -777,7 +777,7 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = staticEval;
-        final int futilityScore = bestScore + config.qsFpMargin();
+        int futilityScore = bestScore + config.qsFpMargin();
         int flag = HashFlag.UPPER;
         int moveCount = 0;
 
@@ -785,19 +785,19 @@ public class Searcher implements Search {
 
         while (true) {
 
-            final ScoredMove scoredMove = movePicker.next();
+            ScoredMove scoredMove = movePicker.next();
             if (scoredMove == null)
                 break;
             moveCount++;
 
-            final Move move = scoredMove.move();
-            final Piece piece = scoredMove.piece();
-            final Piece captured = scoredMove.captured();
-            final boolean capture = captured != null;
-            final boolean promotion = move.isPromotion();
+            Move move = scoredMove.move();
+            Piece piece = scoredMove.piece();
+            Piece captured = scoredMove.captured();
+            boolean capture = captured != null;
+            boolean promotion = move.isPromotion();
 
-            final Move prevMove = ss.get(ply - 1).move;
-            final boolean recapture = prevMove != null && prevMove.to() == move.to();
+            Move prevMove = ss.get(ply - 1).move;
+            boolean recapture = prevMove != null && prevMove.to() == move.to();
 
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.
@@ -824,7 +824,7 @@ public class Searcher implements Search {
             makeMove(scoredMove, piece, captured, curr);
 
             td.nodes++;
-            final int score = -qsearch(-beta, -alpha, ply + 1);
+            int score = -qsearch(-beta, -alpha, ply + 1);
 
             unmakeMove(curr);
 
@@ -909,9 +909,9 @@ public class Searcher implements Search {
         // Exit if soft limit for the current search is reached.
         if (config.pondering || limits == null)
             return false;
-        final int bestMoveStability = td.bestMoveStability();
-        final int scoreStability = td.bestScoreStability();
-        final int bestMoveNodes = td.nodes(td.bestMove());
+        int bestMoveStability = td.bestMoveStability();
+        int scoreStability = td.bestScoreStability();
+        int bestMoveNodes = td.nodes(td.bestMove());
         return limits.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
     }
 
@@ -941,8 +941,8 @@ public class Searcher implements Search {
 
     private SearchResult handleOneLegalMove(List<Move> rootMoves) {
         // If there is only one legal move, play it immediately
-        final Move move = rootMoves.get(0);
-        final int eval = this.eval.evaluate();
+        Move move = rootMoves.get(0);
+        int eval = this.eval.evaluate();
         td.updateBestMove(move, eval);
         SearchResult result = SearchResult.of(td, limits);
         if (td.isMainThread())
@@ -992,8 +992,8 @@ public class Searcher implements Search {
     }
 
     private int lateMoveThreshold(int depth, boolean optimistic) {
-        final int base = optimistic ? config.lmpImpBase() : config.lmpBase();
-        final int scale = optimistic ? config.lmpImpScale() : config.lmpScale();
+        int base = optimistic ? config.lmpImpBase() : config.lmpBase();
+        int scale = optimistic ? config.lmpImpScale() : config.lmpScale();
         return (base + depth * scale) / 10;
     }
 

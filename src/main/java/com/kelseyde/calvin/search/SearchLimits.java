@@ -77,8 +77,8 @@ public record SearchLimits(EngineConfig config,
     }
 
     private boolean isHardTimeLimitReached() {
-        final Duration expired = Duration.between(start, Instant.now());
-        final Duration overhead = Duration.ofMillis(config.uciOverhead());
+        Duration expired = Duration.between(start, Instant.now());
+        Duration overhead = Duration.ofMillis(config.uciOverhead());
         return expired.compareTo(hardTime.minus(overhead)) > 0;
     }
 
@@ -87,8 +87,8 @@ public record SearchLimits(EngineConfig config,
                                            int bestMoveNodes,
                                            int bestMoveStability,
                                            int evalStability) {
-        final Duration expired = Duration.between(start, Instant.now());
-        final Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
+        Duration expired = Duration.between(start, Instant.now());
+        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
         return expired.compareTo(adjustedSoftLimit) > 0;
     }
 

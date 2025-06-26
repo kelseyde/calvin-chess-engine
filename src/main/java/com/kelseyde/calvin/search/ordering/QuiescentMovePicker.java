@@ -31,8 +31,8 @@ public class QuiescentMovePicker extends MovePicker {
 
     @Override
     protected MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss) {
-        final int seeDivisor = config.seeQsNoisyDivisor();
-        final int seeOffset = config.seeQsNoisyOffset();
+        int seeDivisor = config.seeQsNoisyDivisor();
+        int seeOffset = config.seeQsNoisyOffset();
         return new MoveScorer(config, history, ss, seeDivisor, seeOffset);
     }
 

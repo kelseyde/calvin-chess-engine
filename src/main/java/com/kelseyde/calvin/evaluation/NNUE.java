@@ -75,12 +75,12 @@ public class NNUE {
 
     public int evaluate() {
 
-        final boolean white = board.isWhite();
-        final Accumulator acc = accumulatorStack[current];
+        boolean white = board.isWhite();
+        Accumulator acc = accumulatorStack[current];
 
         // Get the 'us-perspective' and 'them-perspective' feature sets, based on the side to move.
-        final short[] us = white ? acc.whiteFeatures : acc.blackFeatures;
-        final short[] them = white ? acc.blackFeatures : acc.whiteFeatures;
+        short[] us = white ? acc.whiteFeatures : acc.blackFeatures;
+        short[] them = white ? acc.blackFeatures : acc.whiteFeatures;
 
         // Pass the features through the network to get the evaluation.
         int eval = NETWORK.activation().forward(us, them);
@@ -95,9 +95,9 @@ public class NNUE {
     private void fullRefresh(Board board) {
 
         // Fully refresh the accumulator from both perspectives with the features of all pieces on the board.
-        final Accumulator acc = accumulatorStack[current];
-        final boolean whiteMirror = shouldMirror(board.kingSquare(true));
-        final boolean blackMirror = shouldMirror(board.kingSquare(false));
+        Accumulator acc = accumulatorStack[current];
+        boolean whiteMirror = shouldMirror(board.kingSquare(true));
+        boolean blackMirror = shouldMirror(board.kingSquare(false));
         int whiteKingBucket = kingBucket(board.kingSquare(true), true);
         int blackKingBucket = kingBucket(board.kingSquare(false), false);
         fullRefresh(board, acc, true, whiteMirror, whiteKingBucket);
@@ -120,7 +120,7 @@ public class NNUE {
         }
         acc.copyFrom(cachedFeatures, whitePerspective);
 
-        final short[] weights = NETWORK.inputWeights()[bucket];
+        short[] weights = NETWORK.inputWeights()[bucket];
 
         int addIndex = 0, subIndex = 0;
         Feature[] adds = new Feature[32];
@@ -128,24 +128,24 @@ public class NNUE {
 
         // Loop over each colour and piece type
         for (int colourIndex = 0; colourIndex < 2; colourIndex++) {
-            final boolean white = colourIndex == 0;
+            boolean white = colourIndex == 0;
             for (int pieceIndex = 0; pieceIndex < Piece.COUNT; pieceIndex++) {
 
-                final Piece piece = Piece.values()[pieceIndex];
-                final long pieces = board.getPieces(piece, white);
-                final long cachedPieces = cacheEntry.bitboards[pieceIndex] & cacheEntry.bitboards[Piece.COUNT + colourIndex];
+                Piece piece = Piece.values()[pieceIndex];
+                long pieces = board.getPieces(piece, white);
+                long cachedPieces = cacheEntry.bitboards[pieceIndex] & cacheEntry.bitboards[Piece.COUNT + colourIndex];
 
                 // Calculate which pieces need to be added and removed from the accumulator.
                 long added = pieces & ~cachedPieces;
                 while (added != 0) {
-                    final int square = Bits.next(added);
+                    int square = Bits.next(added);
                     adds[addIndex++] = new Feature(piece, square, white);
                     added = Bits.pop(added);
                 }
 
                 long removed = cachedPieces & ~pieces;
                 while (removed != 0) {
-                    final int square = Bits.next(removed);
+                    int square = Bits.next(removed);
                     subs[subIndex++] = new Feature(piece, square, white);
                     removed = Bits.pop(removed);
                 }
@@ -177,29 +177,29 @@ public class NNUE {
     public void makeMove(Board board, Move move) {
 
         // Efficiently update only the relevant features of the network after a move has been made.
-        final Accumulator prev = accumulatorStack[current];
-        final Accumulator curr = accumulatorStack[++current];
+        Accumulator prev = accumulatorStack[current];
+        Accumulator curr = accumulatorStack[++current];
         curr.copyFrom(prev);
 
-        final boolean white = board.isWhite();
+        boolean white = board.isWhite();
 
-        final Piece piece = board.pieceAt(move.from());
-        final int whiteKingSquare = board.kingSquare(true);
-        final int blackKingSquare = board.kingSquare(false);
+        Piece piece = board.pieceAt(move.from());
+        int whiteKingSquare = board.kingSquare(true);
+        int blackKingSquare = board.kingSquare(false);
 
-        final int whiteKingBucket = board.isWhite() ?
+        int whiteKingBucket = board.isWhite() ?
                 calculateNewKingBucket(whiteKingSquare, move, piece, true) :
                 kingBucket(whiteKingSquare, true);
 
-        final int blackKingBucket = board.isWhite() ?
+        int blackKingBucket = board.isWhite() ?
                 kingBucket(blackKingSquare, false) :
                 calculateNewKingBucket(blackKingSquare, move, piece, false);
 
-        final short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
-        final short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
+        short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
+        short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
 
         // Determine which features need to be updated based on the move type (standard, capture, or castle).
-        final AccumulatorUpdate update = switch (moveType(board, move)) {
+        AccumulatorUpdate update = switch (moveType(board, move)) {
             case STANDARD -> handleStandardMove(board, move, white);
             case CASTLE -> handleCastleMove(move, white);
             case CAPTURE -> handleCapture(board, move, white);
@@ -207,16 +207,16 @@ public class NNUE {
 
         // We must do a full accumulator refresh if either a) the network is horizontally mirrored, and the king has just
         // crossed the central axis, or b) the network has input buckets, and the king has just moved to a different bucket.
-        final boolean mirrorChanged = mirrorChanged(board, move, piece);
-        final boolean bucketChanged = bucketChanged(board, move, piece, white);
-        final boolean refreshRequired = mirrorChanged || bucketChanged;
+        boolean mirrorChanged = mirrorChanged(board, move, piece);
+        boolean bucketChanged = bucketChanged(board, move, piece, white);
+        boolean refreshRequired = mirrorChanged || bucketChanged;
 
         if (refreshRequired) {
             boolean mirror = shouldMirror(board.kingSquare(white));
             if (mirrorChanged) {
                 mirror = !mirror;
             }
-            final int bucket = white ? whiteKingBucket : blackKingBucket;
+            int bucket = white ? whiteKingBucket : blackKingBucket;
             fullRefresh(board, curr, white, mirror, bucket);
             curr.apply(curr, update, whiteWeights, blackWeights);
         } else {
@@ -228,8 +228,8 @@ public class NNUE {
     private AccumulatorUpdate handleStandardMove(Board board, Move move, boolean white) {
 
         // For standard moves we simply need to remove the piece from the 'from' square and add it to the 'to' square.
-        final Piece piece = board.pieceAt(move.from());
-        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
+        Piece piece = board.pieceAt(move.from());
+        Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
 
         AccumulatorUpdate update = new AccumulatorUpdate();
         update.pushAdd(new Feature(newPiece, move.to(), white));
@@ -242,13 +242,13 @@ public class NNUE {
 
         // For castling moves we need to move both the king and the rook, with some special handling for Chess960.
         AccumulatorUpdate update = new AccumulatorUpdate();
-        final boolean kingside = Castling.isKingside(move.from(), move.to());
+        boolean kingside = Castling.isKingside(move.from(), move.to());
 
         // In Chess960, castling is encoded as 'king captures rook'.
-        final int kingFrom = move.from();
-        final int kingTo = UCI.Options.chess960 ? Castling.kingTo(kingside, white) : move.to();
-        final int rookFrom = UCI.Options.chess960 ? move.to() : Castling.rookFrom(kingside, white);
-        final int rookTo = Castling.rookTo(kingside, white);
+        int kingFrom = move.from();
+        int kingTo = UCI.Options.chess960 ? Castling.kingTo(kingside, white) : move.to();
+        int rookFrom = UCI.Options.chess960 ? move.to() : Castling.rookFrom(kingside, white);
+        int rookTo = Castling.rookTo(kingside, white);
 
         update.pushSub(new Feature(Piece.KING, kingFrom, white));
         update.pushSub(new Feature(Piece.ROOK, rookFrom, white));
@@ -262,9 +262,9 @@ public class NNUE {
     private AccumulatorUpdate handleCapture(Board board, Move move, boolean white) {
 
         // For captures, we need to remove the captured piece as well as updating the capturing piece.
-        final Piece piece = board.pieceAt(move.from());
-        final Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
-        final Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
+        Piece piece = board.pieceAt(move.from());
+        Piece newPiece = move.isPromotion() ? move.promoPiece() : piece;
+        Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(move.to());
 
         AccumulatorUpdate update = new AccumulatorUpdate();
         int captureSquare = move.to();
@@ -292,7 +292,7 @@ public class NNUE {
 
         // Scale down the evaluation when there's not much material left on the board - this creates an incentive
         // to keep pieces on the board when we have winning chances, and trade them off when we're under pressure.
-        final int materialPhase = materialPhase(board);
+        int materialPhase = materialPhase(board);
         eval = eval * (22400 + materialPhase) / 32768;
 
         // Scale down the evaluation as we approach the 50-move rule draw - this gives the engine an understanding
@@ -304,10 +304,10 @@ public class NNUE {
     }
 
     private int materialPhase(Board board) {
-        final int knights = Bits.count(board.getKnights());
-        final int bishops = Bits.count(board.getBishops());
-        final int rooks = Bits.count(board.getRooks());
-        final int queens = Bits.count(board.getQueens());
+        int knights = Bits.count(board.getKnights());
+        int bishops = Bits.count(board.getBishops());
+        int rooks = Bits.count(board.getRooks());
+        int queens = Bits.count(board.getQueens());
         return 3 * knights + 3 * bishops + 5 * rooks + 10 * queens;
     }
 
@@ -318,7 +318,7 @@ public class NNUE {
         int prevKingSquare = move.from();
         int currKingSquare = move.to();
         if (move.isCastling() && UCI.Options.chess960) {
-            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            boolean kingside = Castling.isKingside(move.from(), move.to());
             currKingSquare = Castling.kingTo(kingside, board.isWhite());
         }
         return shouldMirror(prevKingSquare) != shouldMirror(currKingSquare);
@@ -331,7 +331,7 @@ public class NNUE {
         int prevKingSquare = move.from();
         int currKingSquare = move.to();
         if (move.isCastling() && UCI.Options.chess960) {
-            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            boolean kingside = Castling.isKingside(move.from(), move.to());
             currKingSquare = Castling.kingTo(kingside, board.isWhite());
         }
         return kingBucket(prevKingSquare, white) != kingBucket(currKingSquare, white);
@@ -346,7 +346,7 @@ public class NNUE {
         if (piece != Piece.KING) return kingBucket(kingSquare, white);
         int to = move.to();
         if (move.isCastling()) {
-            final boolean kingside = Castling.isKingside(move.from(), move.to());
+            boolean kingside = Castling.isKingside(move.from(), move.to());
             to = UCI.Options.chess960 ? Castling.kingTo(kingside, board.isWhite()) : move.to();
         }
         return kingBucket(to, white);

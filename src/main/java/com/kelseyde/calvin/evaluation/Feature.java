@@ -12,11 +12,11 @@ import com.kelseyde.calvin.board.Piece;
 public record Feature(Piece piece, int square, boolean white) {
 
     public int index(boolean whitePerspective, boolean mirror) {
-        final int squareIndex = squareIndex(whitePerspective, mirror);
-        final int pieceIndex = piece.index();
-        final int pieceOffset = pieceIndex * Square.COUNT;
-        final boolean ourPiece = white == whitePerspective;
-        final int colourOffset = ourPiece ? 0 : (Square.COUNT * Piece.COUNT);
+        int squareIndex = squareIndex(whitePerspective, mirror);
+        int pieceIndex = piece.index();
+        int pieceOffset = pieceIndex * Square.COUNT;
+        boolean ourPiece = white == whitePerspective;
+        int colourOffset = ourPiece ? 0 : (Square.COUNT * Piece.COUNT);
         return colourOffset + pieceOffset + squareIndex;
     }
 

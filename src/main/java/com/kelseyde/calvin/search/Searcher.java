@@ -19,6 +19,7 @@ import com.kelseyde.calvin.uci.UCI;
 import java.util.List;
 
 import static com.kelseyde.calvin.search.Score.isDraw;
+import static com.kelseyde.calvin.search.Score.isMate;
 import static com.kelseyde.calvin.search.Searcher.SearchLimit.HARD;
 import static com.kelseyde.calvin.search.Searcher.SearchLimit.SOFT;
 
@@ -101,7 +102,7 @@ public class Searcher implements Search {
                 UCI.writeSearchInfo(SearchResult.of(td, limits));
 
             // Check if search is cancelled or a checkmate is found
-            if (shouldStop(HARD) || Score.isMate(score))
+            if (shouldStop(HARD) || isMate(score))
                 break;
 
             // Aspiration windows
@@ -343,7 +344,7 @@ public class Searcher implements Search {
                     - (opponentWorsening ? config.rfpWorseningMargin() : 0)
                     + (parentPvNode ? config.rfpParentPvMargin() : 0);
             if (depth <= config.rfpDepth()
-                    && !Score.isMate(alpha)
+                    && !isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
                 return beta + (staticEval - beta) / 3;
             }
@@ -379,7 +380,7 @@ public class Searcher implements Search {
 
                     // At low depths, we can directly return the result of the null move search.
                     if (td.nmpPly > 0 || depth <= 14)
-                        return Score.isMate(score) ? beta : score;
+                        return isMate(score) ? beta : score;
 
                     // At high depths, let's do a normal search to verify the null move result.
                     td.nmpPly = (3 * (depth - r) / 4) + ply;
@@ -423,7 +424,7 @@ public class Searcher implements Search {
             boolean isGoodNoisy = scoredMove.isGoodNoisy();
             boolean isQuiet = scoredMove.isQuiet();
             boolean isCapture = captured != null;
-            boolean isMateScore = Score.isMate(bestScore);
+            boolean isMateScore = isMate(bestScore);
 
             int extension = 0;
             int reduction = 0;
@@ -498,7 +499,7 @@ public class Searcher implements Search {
                     && depth < config.bnpDepth()
                     && scoredMove.isBadNoisy()
                     && margin <= alpha) {
-                if (!Score.isMate(bestScore) && bestScore <= margin) {
+                if (!isMate(bestScore) && bestScore <= margin) {
                     bestScore = margin;
                 }
                 break;
@@ -630,7 +631,7 @@ public class Searcher implements Search {
                 // reduce the search depth for the remaining moves.
                 if (depth > config.alphaReductionMinDepth()
                         && depth < config.alphaReductionMaxDepth()
-                        && !Score.isMate(score)) {
+                        && !isMate(score)) {
                     depth--;
                 }
             }
@@ -819,7 +820,7 @@ public class Searcher implements Search {
 
             // Evasion Pruning
             // In check, stop searching quiet moves after finding at least one non-losing move.
-            if (inCheck && moveCount > 1 && scoredMove.isQuiet() && !Score.isMate(bestScore))
+            if (inCheck && moveCount > 1 && scoredMove.isQuiet() && !isMate(bestScore))
                 break;
 
             makeMove(scoredMove, piece, captured, curr);
@@ -847,7 +848,7 @@ public class Searcher implements Search {
         if (moveCount == 0 && inCheck)
             return -Score.MATE + ply;
 
-        if (bestScore >= beta && !Score.isMate(bestScore) && !Score.isMate(beta))
+        if (bestScore >= beta && !isMate(bestScore) && !isMate(beta))
             bestScore = (bestScore + beta) / 2;
 
         if (!shouldStop(HARD))

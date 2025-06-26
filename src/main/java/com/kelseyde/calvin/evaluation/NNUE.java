@@ -382,7 +382,7 @@ public class NNUE {
     // Get the input bucket for the current king square.
     private int kingBucket(int kingSquare, boolean white) {
 
-        kingSquare = white ? kingSquare : Square.flipFile(kingSquare);
+        kingSquare = white ? kingSquare : Square.flipRank(kingSquare);
         return NETWORK.inputBuckets()[kingSquare];
 
     }

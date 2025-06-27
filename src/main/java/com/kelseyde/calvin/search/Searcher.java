@@ -929,7 +929,8 @@ public class Searcher implements Search {
         int bestMoveStability = td.bestMoveStability();
         int scoreStability = td.bestScoreStability();
         int bestMoveNodes = td.nodes(td.bestMove());
-        return limits.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        int rootCorrplexity = history.evalCorrection(board, 0);
+        return limits.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability, rootCorrplexity);
 
     }
 

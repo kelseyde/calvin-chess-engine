@@ -60,11 +60,12 @@ public record SearchLimits(EngineConfig config,
                                       int nodes,
                                       int bestMoveNodes,
                                       int bestMoveStability,
-                                      int scoreStability) {
+                                      int scoreStability,
+                                      int rootCorrplexity) {
 
         return isMaxDepthReached(depth)
             || isSoftNodeLimitReached(nodes)
-            || isSoftTimeLimitReached(depth, nodes, bestMoveNodes, bestMoveStability, scoreStability);
+            || isSoftTimeLimitReached(depth, nodes, bestMoveNodes, bestMoveStability, scoreStability, rootCorrplexity);
 
     }
 
@@ -92,10 +93,11 @@ public record SearchLimits(EngineConfig config,
                                            int nodes,
                                            int bestMoveNodes,
                                            int bestMoveStability,
-                                           int evalStability) {
+                                           int scoreStability,
+                                           int rootCorrplexity) {
 
         Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
+        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, scoreStability, rootCorrplexity, depth);
         return expired.compareTo(adjustedSoftLimit) > 0;
 
     }
@@ -105,6 +107,7 @@ public record SearchLimits(EngineConfig config,
                                      int bestMoveNodes,
                                      int bestMoveStability,
                                      int scoreStability,
+                                     int rootCorrplexity,
                                      int depth) {
 
         int overhead = config.uciOverhead();
@@ -114,6 +117,7 @@ public record SearchLimits(EngineConfig config,
         double scale = 1.0
                 * bestMoveStabilityFactor(config, depth, bestMoveStability)
                 * scoreStabilityFactor(config, depth, scoreStability)
+                * rootCorrplexityFactor(config, depth, rootCorrplexity)
                 * nodeTmFactor(config, depth, bestMoveNodes, nodes);
 
         // Clamp the scale factor to the configured min/max values
@@ -149,6 +153,17 @@ public record SearchLimits(EngineConfig config,
             return 1.0;
         scoreStability = Math.min(scoreStability, config.scoreStabilityFactor().length - 1);
         return config.scoreStabilityFactor()[scoreStability] / 100.0;
+
+    }
+
+    // Scale the soft limit based on the corrplexity of the root position. If the position is complex, we can assume
+    // that the best move is less likely to be correct, and therefore we should spend more time searching.
+    private double rootCorrplexityFactor(EngineConfig config, int depth, int corrplexity) {
+
+        if (depth < config.rootCorrplexityMinDepth())
+            return 1.0;
+        corrplexity = Math.min(Math.abs(corrplexity) / config.rootCorrplexityDivisor(), config.rootCorrplexityFactor().length - 1);
+        return config.rootCorrplexityFactor()[corrplexity] / 100.0;
 
     }
 

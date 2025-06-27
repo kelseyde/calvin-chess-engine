@@ -185,18 +185,13 @@ public class NNUE {
         curr.copyFrom(prev);
 
         boolean white = board.isWhite();
-
         Piece piece = board.pieceAt(move.from());
-        int whiteKingSquare = board.kingSquare(true);
-        int blackKingSquare = board.kingSquare(false);
 
-        int whiteKingBucket = board.isWhite() ?
-                calculateNewKingBucket(whiteKingSquare, move, piece, true) :
-                kingBucket(whiteKingSquare, true);
+        int whiteKingSquare = kingSquare(board, move, piece, true);
+        int blackKingSquare = kingSquare(board, move, piece, false);
 
-        int blackKingBucket = board.isWhite() ?
-                kingBucket(blackKingSquare, false) :
-                calculateNewKingBucket(blackKingSquare, move, piece, false);
+        int whiteKingBucket = kingBucket(whiteKingSquare, true);
+        int blackKingBucket = kingBucket(blackKingSquare, false);
 
         short[] whiteWeights = NETWORK.inputWeights()[whiteKingBucket];
         short[] blackWeights = NETWORK.inputWeights()[blackKingBucket];
@@ -364,19 +359,19 @@ public class NNUE {
 
     }
 
-    // Calculate the new king bucket based on the move made. If the piece moved is not the king, the bucket for the
-    // original king square is returned. This also takes into account castling, where special rules apply for Chess960.
-    private int calculateNewKingBucket(int kingSquare, Move move, Piece piece, boolean white) {
-
-        if (move == null) return kingBucket(kingSquare, white);
-        if (piece != Piece.KING) return kingBucket(kingSquare, white);
-        int to = move.to();
+    // Get the king square after a given move is played. If the king square to retrieve is for the opposite side,
+    // or if the move played is not a king move, we simply return the current position of the king. If the move
+    // is a castling move, we return the castling destination square, which is handled d differently in Chess960.
+    private int kingSquare(Board board, Move move, Piece piece, boolean white) {
+        if (white != board.isWhite() || piece != Piece.KING) {
+            return board.kingSquare(white);
+        }
         if (move.isCastling()) {
             boolean kingside = Castling.isKingside(move.from(), move.to());
-            to = UCI.Options.chess960 ? Castling.kingTo(kingside, board.isWhite()) : move.to();
+            return UCI.Options.chess960 ? Castling.kingTo(kingside, white) : move.to();
+        } else {
+            return move.to();
         }
-        return kingBucket(to, white);
-
     }
 
     // Get the input bucket for the current king square.

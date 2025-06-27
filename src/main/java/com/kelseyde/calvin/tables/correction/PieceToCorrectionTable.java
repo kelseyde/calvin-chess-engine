@@ -16,9 +16,9 @@ public class PieceToCorrectionTable extends CorrectionHistoryTable {
         this.entries = new short[2][Piece.COUNT][Square.COUNT];
     }
 
-    public void update(Move prevMove, Piece prevPiece, boolean white, int staticEval, int score, int depth) {
+    public void update(Move prevMove, Piece prevPiece, boolean white, int staticEval, int score, int depth, boolean pv) {
         int oldValue = get(white, prevMove, prevPiece);
-        int correction = correction(oldValue, staticEval, score, depth);
+        int correction = correction(oldValue, staticEval, score, depth, pv);
         put(white, prevMove, prevPiece, correction);
 
     }

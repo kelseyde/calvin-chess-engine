@@ -25,13 +25,13 @@ public abstract class CorrectionHistoryTable {
     /**
      * Compute the new correction based on a weighted sum of old value and the new delta of the score and static eval.
      */
-    public int correction(int oldValue, int staticEval, int score, int depth) {
+    int correction(int oldValue, int staticEval, int score, int depth, boolean pv) {
 
         // Compute the new correction value, and retrieve the old value
         int newValue = (score - staticEval) * SCALE;
 
         // Weight the new value based on the search depth, and the old value based on the remaining weight
-        int newWeight = Math.min(depth + 1, 16);
+        int newWeight = Math.min(depth + 1 + (pv ? 2 : 0), 16);
         int oldWeight = SCALE - newWeight;
 
         // Compute the weighted sum of the old and new values, and clamp the result.

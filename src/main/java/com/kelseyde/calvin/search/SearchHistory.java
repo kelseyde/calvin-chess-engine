@@ -116,12 +116,12 @@ public class SearchHistory {
 
     // Update the static evaluation correction history tables for a given position, including the corrhist tables for
     // pawn, non-pawn, and countermove corrections.
-    public void updateCorrectionHistory(Board board, int ply, int depth, int score, int staticEval) {
+    public void updateCorrectionHistory(Board board, int ply, int depth, boolean pv, int score, int staticEval) {
 
-        pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
-        nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
-        nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
-        updateContCorrHistEntry(ss, ply, board.isWhite(), depth, score, staticEval);
+        pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, pv, score, staticEval);
+        nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, pv, score, staticEval);
+        nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, pv, score, staticEval);
+        updateContCorrHistEntry(ss, ply, board.isWhite(), depth, pv, score, staticEval);
 
     }
 
@@ -136,12 +136,12 @@ public class SearchHistory {
     }
 
     // Update the countermove correction history entry for a given ply and colour.
-    private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
+    private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, boolean pv, int score, int staticEval) {
 
         SearchStackEntry sse = ss.get(ply - 1);
         if (sse == null || sse.move == null)
             return;
-        countermoveCorrHistTable.update(sse.move, sse.piece, white, staticEval, score, depth);
+        countermoveCorrHistTable.update(sse.move, sse.piece, white, staticEval, score, depth, pv);
 
     }
 

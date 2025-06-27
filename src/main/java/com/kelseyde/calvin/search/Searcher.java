@@ -695,7 +695,7 @@ public class Searcher implements Search {
             && !(flag == HashFlag.LOWER && uncorrectedEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.
-            history.updateCorrectionHistory(board, ply, depth, bestScore, staticEval);
+            history.updateCorrectionHistory(board, ply, depth, pvNode, bestScore, staticEval);
         }
 
         // Store the best move and score in the transposition table for future reference.

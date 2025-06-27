@@ -15,9 +15,9 @@ public class HashCorrectionTable extends CorrectionHistoryTable {
         this.entries = new short[2][TABLE_SIZE];
     }
 
-    public void update(long key, boolean white, int depth, int score, int staticEval) {
+    public void update(long key, boolean white, int depth, boolean pv, int score, int staticEval) {
         int oldValue = get(key, white);
-        int correction = correction(oldValue, staticEval, score, depth);
+        int correction = correction(oldValue, staticEval, score, depth, pv);
         put(key, white, correction);
     }
 

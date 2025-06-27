@@ -66,7 +66,7 @@ public abstract class MovePicker {
         this.ply = ply;
         this.ttMove = ttMove;
         this.inCheck = inCheck;
-        this.scorer = initMoveScorer(config, history, ss);
+        this.scorer = initMoveScorer(config, history, ss, inCheck);
     }
 
     /**
@@ -95,7 +95,7 @@ public abstract class MovePicker {
     /**
      * Initialize the move scorer for this move picker. This is used to score moves during generation.
      */
-    protected abstract MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss);
+    protected abstract MoveScorer initMoveScorer(EngineConfig config, SearchHistory history, SearchStack ss, boolean inCheck);
 
     /**
      * Select the next move from the move list.

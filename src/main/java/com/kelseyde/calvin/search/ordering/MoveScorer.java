@@ -23,18 +23,21 @@ public class MoveScorer {
     private final SearchStack ss;
     private final int seeNoisyDivisor;
     private final int seeNoisyOffset;
+    private final boolean inCheck;
     private Stage stage;
 
     public MoveScorer(EngineConfig config,
                       SearchHistory history,
                       SearchStack ss,
                       int seeNoisyDivisor,
-                      int seeNoisyOffset) {
+                      int seeNoisyOffset,
+                      boolean inCheck) {
         this.config = config;
         this.history = history;
         this.ss = ss;
         this.seeNoisyDivisor = seeNoisyDivisor;
         this.seeNoisyOffset = seeNoisyOffset;
+        this.inCheck = inCheck;
     }
 
     // Assign a move a score and type. The scoring heuristics used depend on the type of move, with different
@@ -88,7 +91,7 @@ public class MoveScorer {
         int historyScore = history.quietHistory().get(move, piece, white);
         int contHistScore = history.continuationHistory().get(move, piece, white, ply, config.contHistPlies(), ss);
         int score = historyScore + contHistScore;
-        MoveType type = stage == Stage.GEN_NOISY
+        MoveType type = stage == Stage.GEN_NOISY && inCheck
                 ? MoveType.BAD_NOISY
                 : (score >= config.goodQuietThreshold() ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET);
         return new ScoredMove(move, piece, null, score, score, type);

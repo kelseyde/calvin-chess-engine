@@ -751,7 +751,7 @@ public class Searcher implements Search {
 
         // Re-use cached static eval if available. Don't compute static eval while in check.
         int rawStaticEval = Score.MIN;
-        int staticEval    = Score.MIN;
+        int staticEval = Score.MIN;
         int correction;
 
         if (!inCheck) {
@@ -781,7 +781,8 @@ public class Searcher implements Search {
         int bestScore = staticEval;
         int futilityScore = bestScore + config.qsFpMargin();
         int flag = HashFlag.UPPER;
-        int moveCount = 0;
+        int moveCount = 0, captureCount = 0;
+        curr.captures = new Move[16];
 
         MovePicker movePicker = new QuiescentMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
 
@@ -841,8 +842,17 @@ public class Searcher implements Search {
                     flag = HashFlag.LOWER;
                     break;
                 }
-
             }
+            if (!move.equals(bestMove)) {
+                if (capture && captureCount < 16)
+                    curr.captures[captureCount++] = move;
+            }
+        }
+
+        if (bestScore >= beta && board.isCapture(bestMove)) {
+            history.updateCaptureHistory(board, bestMove, board.isWhite(), 1, true);
+            for (Move capture : curr.captures)
+                history.updateCaptureHistory(board, capture, board.isWhite(), 1, false);
         }
 
         if (moveCount == 0 && inCheck)

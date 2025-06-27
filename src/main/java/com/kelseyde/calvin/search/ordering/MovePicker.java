@@ -31,7 +31,11 @@ public abstract class MovePicker {
         // Q-search stages
         QSEARCH_GEN_NOISY, QSEARCH_NOISY,
 
-        END
+        END;
+
+        public boolean isQuiet() {
+            return this == GOOD_QUIET || this == BAD_QUIET;
+        }
     }
 
     public enum MoveType {
@@ -106,7 +110,7 @@ public abstract class MovePicker {
         final ScoredMove[] moves = loadStagedMoves(stage);
 
         // If we're in check then all evasions have been tried in the noisy stage
-        if ((stage == Stage.GOOD_QUIET || stage == Stage.BAD_QUIET) && (skipQuiets || inCheck))
+        if (stage.isQuiet() && skipQuiets)
             return nextStage(nextStage);
 
         // If we have no moves to try, move on to the next stage.

@@ -30,8 +30,11 @@ public class EngineConfig {
     public boolean searchCancelled = false;
 
     private final Tunable aspMinDepth            = new Tunable("AspMinDepth", 4, 0, 8, 1);
-    private final Tunable aspDelta               = new Tunable("AspDelta", 13, 0, 250, 25);
-    private final Tunable aspWideningFactor      = new Tunable("AspWideningFactor", 135, 110, 200, 10);
+    private final Tunable aspDeltaBase           = new Tunable("AspDeltaBase", 13, 0, 20, 5);
+    private final Tunable aspDeltaScale          = new Tunable("AspDeltaScale", 6, 0, 25, 5);
+    private final Tunable aspDeltaMinExpansions  = new Tunable("AspDeltaMinExpansions", 4, 0, 8, 1);
+    private final Tunable aspAlphaWideningFactor = new Tunable("AspAlphaWideningFactor", 135, 110, 200, 10);
+    private final Tunable aspBetaWideningFactor  = new Tunable("AspBetaWideningFactor", 135, 110, 200, 10);
     private final Tunable aspMaxReduction        = new Tunable("AspMaxReduction", 0, 0, 5, 1);
     private final Tunable nmpDepth               = new Tunable("NmpDepth", 0, 0, 6, 1);
     private final Tunable nmpBase                = new Tunable("NmpBase", 3, 0, 6, 1);
@@ -56,8 +59,11 @@ public class EngineConfig {
     private final Tunable rfpDepth               = new Tunable("RfpDepth", 9, 0, 12, 1);
     private final Tunable rfpMargin              = new Tunable("RfpMargin", 58, 0, 150, 25);
     private final Tunable rfpImprovingMargin     = new Tunable("RfpImprovingMargin", 65, 0, 150, 25);
+    private final Tunable rfpNotImprovingMargin  = new Tunable("RfpNotImprovingMargin", 0, -50, 0, 10);
     private final Tunable rfpWorseningMargin     = new Tunable("RfpWorseningMargin", 15, 0, 100, 15);
+    private final Tunable rfpNotWorseningMargin  = new Tunable("RfpNotWorseningMargin", 0, -50, 0, 10);
     private final Tunable rfpParentPvMargin      = new Tunable("RfpParentPvMargin", 22, 0, 75, 20);
+    private final Tunable rfpNotParentPvMargin   = new Tunable("RfpNotParentPvMargin", 0, -50, 0, 10);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 92, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 311, 200, 400, 10);
@@ -96,6 +102,9 @@ public class EngineConfig {
     private final Tunable bnpOffset              = new Tunable("BnpOffset", 372, 280, 480, 25);
     private final Tunable bnpScale               = new Tunable("BnpScale", 124, 50, 300, 25);
     private final Tunable bnpDivisor             = new Tunable("BnpDivisor", 125, 80, 200, 25);
+    private final Tunable corrPawnWeight         = new Tunable("CorrPawnWeight", 100, 0, 200, 20);
+    private final Tunable corrNonPawnWeight      = new Tunable("CorrNonPawnWeight", 100, 0, 200, 20);
+    private final Tunable corrCounterWeight      = new Tunable("CorrCounterWeight", 100, 0, 200, 20);
     private final Tunable seDepth                = new Tunable("SeDepth", 8, 0, 10, 1);
     private final Tunable seTtDepthMargin        = new Tunable("SeTtDepthMargin", 3, 2, 6, 1);
     private final Tunable seBetaMargin           = new Tunable("SeBetaMargin", 32, 12, 40, 4);
@@ -104,6 +113,7 @@ public class EngineConfig {
     private final Tunable seDoubleExtMargin      = new Tunable("SeDoubleExtMargin", 19, 0, 32, 5);
     private final Tunable ttExtensionDepth       = new Tunable("TtExtDepth", 6, 0, 12, 1);
     private final Tunable hindsightExtLimit      = new Tunable("HindsightExtensionLimit", 3, 2, 5, 1);
+    private final Tunable hindsightEvalDiff      = new Tunable("HindsightEvalDiff", 0, -100, 100, 20);
     private final Tunable alphaReductionMinDepth = new Tunable("AlphaReductionMinDepth", 2, 0, 6, 1);
     private final Tunable alphaReductionMaxDepth = new Tunable("AlphaReductionMaxDepth", 12, 8, 16, 1);
     private final Tunable dynamicPolicyMult      = new Tunable("DynamicPolicyMult", 10, 0, 20, 2);
@@ -126,6 +136,11 @@ public class EngineConfig {
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable seeValuePawn           = new Tunable("SeeValuePawn", 100, 0, 200, 10);
+    private final Tunable seeValueKnight         = new Tunable("SeeValueKnight", 320, 0, 500, 10);
+    private final Tunable seeValueBishop         = new Tunable("SeeValueBishop", 330, 0, 500, 10);
+    private final Tunable seeValueRook           = new Tunable("SeeValueRook", 500, 0, 1000, 10);
+    private final Tunable seeValueQueen          = new Tunable("SeeValueQueen", 900, 0, 1500, 10);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 80, 50, 100, 5);
     private final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
@@ -139,6 +154,7 @@ public class EngineConfig {
     private final Tunable bmStabilityMinDepth    = new Tunable("BmStabilityMinDepth", 0, 0, 10, 1);
     private final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
 
+    private int[] seeValues;
     private int[][][] lmrReductions;
     private final int[] bmStabilityFactor = { 250, 120, 90, 80, 75 };
     private final int[] scoreStabilityFactor = { 125, 115, 100, 94, 88 };
@@ -146,7 +162,7 @@ public class EngineConfig {
 
     public Set<Tunable> getTunables() {
         return Set.of(
-                aspMinDepth, aspDelta, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
+                aspMinDepth, aspDeltaBase, aspMaxReduction, nmpDepth, nmpEvalScale, nmpEvalMaxReduction, fpDepth,
                 fpHistDivisor, rfpDepth, lmrDepth, lmrBase, lmrDivisor, lmrCapBase, lmrCapDivisor, lmrMinMoves,
                 lmrMinPvMoves, lmpDepth, lmpBase, lmpScale, iirDepth, nmpBase, nmpDivisor, dpMargin,
                 qsFpMargin, qsSeeThreshold, fpMargin, fpScale, rfpMargin, rfpImprovingMargin, razorDepth, razorMargin,
@@ -158,11 +174,14 @@ public class EngineConfig {
                 seeHistoryDivisor, timeFactor, incrementFactor, softTimeFactor, hardTimeFactor, softTimeScaleMin,
                 softTimeScaleMax, uciOverhead, bmStabilityMinDepth, scoreStabilityMinDepth, seeNoisyDivisor,
                 seeQsNoisyDivisor, seeQsNoisyOffset, lmrQuietHistoryDiv, lmrNoisyHistoryDiv, seDepth, seTtDepthMargin,
-                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspWideningFactor, fpMoveMultiplier,
+                seBetaMargin, seReductionOffset, seReductionDivisor, seDoubleExtMargin, aspAlphaWideningFactor, fpMoveMultiplier,
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin, aspDeltaScale,
+                aspDeltaMinExpansions, seeValuePawn, seeValueKnight, seeValueBishop, seeValueRook, seeValueQueen,
+                corrPawnWeight, corrNonPawnWeight, corrCounterWeight, hindsightEvalDiff, rfpNotImprovingMargin,
+                rfpNotWorseningMargin, rfpNotParentPvMargin
         );
     }
 
@@ -192,12 +211,16 @@ public class EngineConfig {
                 || name.equals("LmrCapBase") || name.equals("LmrCapDivisor")) {
             calculateLmrTable();
         }
+        if (name.contains("SeeValue")) {
+            updateSeeValues();
+        }
 
         UCI.write("info string " + name + " " + value);
     }
 
     public void postInitialise() {
         calculateLmrTable();
+        updateSeeValues();
     }
 
     private void calculateLmrTable() {
@@ -220,16 +243,34 @@ public class EngineConfig {
         }
     }
 
+    private void updateSeeValues() {
+        seeValues = new int[] {
+                seeValuePawn.value, seeValueKnight.value, seeValueBishop.value, seeValueRook.value, seeValueQueen.value, 0
+        };
+    }
+
     public int aspMinDepth() {
         return aspMinDepth.value;
     }
 
-    public int aspDelta() {
-        return aspDelta.value;
+    public int aspDeltaBase() {
+        return aspDeltaBase.value;
     }
 
-    public int aspWideningFactor() {
-        return aspWideningFactor.value;
+    public int aspDeltaScale() {
+        return aspDeltaScale.value;
+    }
+
+    public int aspDeltaMinExpansions() {
+        return aspDeltaMinExpansions.value;
+    }
+
+    public int aspAlphaWideningFactor() {
+        return aspAlphaWideningFactor.value;
+    }
+
+    public int aspBetaWideningFactor() {
+        return aspBetaWideningFactor.value;
     }
 
     public int aspMaxReduction() {
@@ -328,12 +369,24 @@ public class EngineConfig {
         return rfpImprovingMargin.value;
     }
 
+    public int rfpNotImprovingMargin() {
+        return rfpNotImprovingMargin.value;
+    }
+
     public int rfpParentPvMargin() {
         return rfpParentPvMargin.value;
     }
 
+    public int rfpNotParentPvMargin() {
+        return rfpNotParentPvMargin.value;
+    }
+
     public int rfpWorseningMargin() {
         return rfpWorseningMargin.value;
+    }
+
+    public int rfpNotWorseningMargin() {
+        return rfpNotWorseningMargin.value;
     }
 
     public int lmrDepth() {
@@ -472,6 +525,18 @@ public class EngineConfig {
         return hpOffset.value;
     }
 
+    public int corrPawnWeight() {
+        return corrPawnWeight.value;
+    }
+
+    public int corrNonPawnWeight() {
+        return corrNonPawnWeight.value;
+    }
+
+    public int corrCounterWeight() {
+        return corrCounterWeight.value;
+    }
+
     public int bnpDepth() {
         return bnpDepth.value;
     }
@@ -518,6 +583,10 @@ public class EngineConfig {
 
     public int hindsightExtLimit() {
         return hindsightExtLimit.value;
+    }
+
+    public int hindsightEvalDiff() {
+        return hindsightEvalDiff.value;
     }
 
     public int alphaReductionMinDepth() {
@@ -654,6 +723,14 @@ public class EngineConfig {
 
     public int scoreStabilityMinDepth() {
         return scoreStabilityMinDepth.value;
+    }
+
+    public int[] seeValues() {
+        return seeValues;
+    }
+
+    public void setSeeValues(int[] seeValues) {
+        this.seeValues = seeValues;
     }
 
     public int[][][] lmrReductions() {

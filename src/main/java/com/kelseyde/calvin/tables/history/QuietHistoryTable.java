@@ -8,26 +8,28 @@ import com.kelseyde.calvin.engine.EngineConfig;
 
 public class QuietHistoryTable extends AbstractHistoryTable {
 
-    short[][][] table = new short[2][Piece.COUNT][Square.COUNT];
+    short[][][][] table = new short[2][Piece.COUNT][Square.COUNT][2];
 
     public QuietHistoryTable(EngineConfig config) {
         super((short) config.quietHistMaxScore());
     }
 
-    public void add(Move move, Piece piece, boolean white, int bonus) {
+    public void add(Move move, Piece piece, boolean white, boolean positiveSee, int bonus) {
         int colourIndex = Colour.index(white);
-        short current = table[colourIndex][piece.index()][move.to()];
+        int seeIndex = positiveSee ? 0 : 1;
+        short current = table[colourIndex][piece.index()][move.to()][seeIndex];
         short update = gravity(current, (short) bonus);
-        table[colourIndex][piece.index()][move.to()] = update;
+        table[colourIndex][piece.index()][move.to()][seeIndex] = update;
     }
 
-    public short get(Move move, Piece piece, boolean white) {
+    public short get(Move move, Piece piece, boolean white, boolean positiveSee) {
         int colourIndex = Colour.index(white);
-        return table[colourIndex][piece.index()][move.to()];
+        int seeIndex = positiveSee ? 0 : 1;
+        return table[colourIndex][piece.index()][move.to()][seeIndex];
     }
 
     public void clear() {
-        table = new short[2][Piece.COUNT][Square.COUNT];
+        table = new short[2][Piece.COUNT][Square.COUNT][2];
     }
 
 }

@@ -13,6 +13,7 @@ public record ScoredMove(Move move,
                          Piece captured,
                          int score,
                          int historyScore,
+                         boolean seePositive,
                          MoveType moveType) {
 
     public boolean isGoodNoisy() {

@@ -62,7 +62,7 @@ public class MoveScorer {
 
         int score = SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
         MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-        return new ScoredMove(move, piece, captured, score, 0, type);
+        return new ScoredMove(move, piece, captured, score, 0, false, type);
 
     }
 
@@ -75,7 +75,7 @@ public class MoveScorer {
         int score = SEE.value(captured) + historyScore / 4;
         int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
         MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
-        return new ScoredMove(move, piece, captured, score, historyScore, type);
+        return new ScoredMove(move, piece, captured, score, historyScore, false, type);
 
     }
 
@@ -85,13 +85,14 @@ public class MoveScorer {
     private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
 
         boolean white = board.isWhite();
-        int historyScore = history.quietHistory().get(move, piece, white);
+        boolean seePositive = SEE.see(board, move, 0);
+        int historyScore = history.quietHistory().get(move, piece, seePositive, white);
         int contHistScore = history.continuationHistory().get(move, piece, white, ply, config.contHistPlies(), ss);
         int score = historyScore + contHistScore;
         MoveType type = stage == Stage.GEN_NOISY
                 ? MoveType.BAD_NOISY
                 : (score >= config.goodQuietThreshold() ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET);
-        return new ScoredMove(move, piece, null, score, score, type);
+        return new ScoredMove(move, piece, null, score, score, seePositive, type);
 
     }
 

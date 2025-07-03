@@ -2,6 +2,7 @@ package com.kelseyde.calvin.search;
 
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.search.ordering.ScoredMove;
 
 public class SearchStack {
 
@@ -27,13 +28,13 @@ public class SearchStack {
 
     public static class SearchStackEntry {
         public int staticEval;
-        public Move move;
+        public ScoredMove move;
         public Piece piece;
         public Piece captured;
-        public Move bestMove;
+        public ScoredMove bestMove;
         public Move excludedMove;
-        public Move[] quiets;
-        public Move[] captures;
+        public ScoredMove[] quiets;
+        public ScoredMove[] captures;
         public int reduction;
         public int failHighCount;
         public int pvDistance;

@@ -311,7 +311,7 @@ public class Searcher implements Search {
                 && Score.isDefined(prev.staticEval)) {
             int value = config.dynamicPolicyMult() * -(staticEval + prev.staticEval);
             int bonus = clamp(value, config.dynamicPolicyMin(), config.dynamicPolicyMax());
-            history.quietHistory().add(prev.move, prev.piece, !board.isWhite(), bonus);
+            history.quietHistory().add(prev.move.move(), prev.piece, !board.isWhite(), prev.move.seePositive(), bonus);
         }
 
         // Hindsight extension
@@ -401,8 +401,8 @@ public class Searcher implements Search {
         Move bestMove = null;
         int bestScore = Score.MIN;
         int flag = HashFlag.UPPER;
-        curr.quiets = new Move[16];
-        curr.captures = new Move[16];
+        curr.quiets = new ScoredMove[16];
+        curr.captures = new ScoredMove[16];
         int moveCount = 0, quietMoves = 0, captureMoves = 0;
 
         MovePicker movePicker = new StandardMovePicker(config, movegen, ss, history, board, ply, ttMove, inCheck);
@@ -579,7 +579,7 @@ public class Searcher implements Search {
 
                     score = -search(newDepth, ply + 1, -alpha - 1, -alpha, !cutNode);
                     if (isQuiet && (score <= alpha || score >= beta))
-                        history.updateContHistory(move, piece, board.isWhite(), depth, ply, score >= beta);
+                        history.updateContHistory(scoredMove, piece, board.isWhite(), depth, ply, score >= beta);
                 }
             }
             // If we're skipping late move reductions - either due to being in a PV node, or searching the first move,
@@ -613,7 +613,7 @@ public class Searcher implements Search {
                 alpha = score;
                 flag = HashFlag.EXACT;
 
-                curr.bestMove = move;
+                curr.bestMove = scoredMove;
                 if (rootNode)
                     td.updateBestMoveCurrent(bestMove, bestScore);
 
@@ -639,9 +639,9 @@ public class Searcher implements Search {
             // Register the current move, to update its history score later.
             if (!move.equals(bestMove)) {
                 if (isCapture && captureMoves < 16)
-                    curr.captures[captureMoves++] = move;
+                    curr.captures[captureMoves++] = scoredMove;
                 else if (quietMoves < 16)
-                    curr.quiets[quietMoves++] = move;
+                    curr.quiets[quietMoves++] = scoredMove;
             }
         }
 
@@ -662,18 +662,18 @@ public class Searcher implements Search {
             if (!board.isCapture(bestMove)) {
                 // If the best move was quiet, record it in the killer table and give it a bonus in the quiet history table.
                 history.killerTable().add(ply, bestMove);
-                history.updateQuietHistories(board, bestMove, board.isWhite(), historyDepth, ply, true);
+                history.updateQuietHistories(board, curr.bestMove, board.isWhite(), historyDepth, ply, true);
 
                 // Penalise all the other quiets which failed to cause a beta cut-off.
-                for (Move quiet : curr.quiets)
+                for (ScoredMove quiet : curr.quiets)
                     history.updateQuietHistories(board, quiet, board.isWhite(), historyDepth, ply, false);
             } else {
                 // If the best move was a capture, give it a bonus in the capture history table.
-                history.updateCaptureHistory(board, bestMove, board.isWhite(), historyDepth, true);
+                history.updateCaptureHistory(board, curr.bestMove, board.isWhite(), historyDepth, true);
             }
 
             // Regardless of whether the best move was quiet or a capture, penalise all other captures.
-            for (Move capture : curr.captures)
+            for (ScoredMove capture : curr.captures)
                 history.updateCaptureHistory(board, capture, board.isWhite(), historyDepth, false);
         }
 
@@ -681,7 +681,7 @@ public class Searcher implements Search {
                 && ply > 0
                 && prev.move != null
                 && prev.captured == null
-                && !prev.move.isPromotion()) {
+                && !prev.move.move().isPromotion()) {
             // The current node failed low, which means that the parent node will fail high. If the parent move is quiet
             // it will receive a quiet history bonus in the parent node - but we give it one here too, which ensures the
             // best move is updated also during PVS re-searches, hopefully leading to better move ordering.
@@ -798,8 +798,8 @@ public class Searcher implements Search {
             boolean capture = captured != null;
             boolean promotion = move.isPromotion();
 
-            Move prevMove = ss.get(ply - 1).move;
-            boolean recapture = prevMove != null && prevMove.to() == move.to();
+            ScoredMove prevMove = ss.get(ply - 1).move;
+            boolean recapture = prevMove != null && prevMove.move().to() == move.to();
 
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.
@@ -879,7 +879,7 @@ public class Searcher implements Search {
 
         eval.makeMove(board, move.move());
         board.makeMove(move.move());
-        sse.move = move.move();
+        sse.move = move;
         sse.quiet = move.isQuiet();
         sse.piece = piece;
         sse.captured = captured;

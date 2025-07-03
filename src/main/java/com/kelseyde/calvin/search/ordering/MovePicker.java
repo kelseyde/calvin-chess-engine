@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
+import com.kelseyde.calvin.search.SEE;
 import com.kelseyde.calvin.search.SearchHistory;
 import com.kelseyde.calvin.search.SearchStack;
 
@@ -178,7 +179,8 @@ public abstract class MovePicker {
         stage = nextStage;
         final Piece piece = board.pieceAt(ttMove.from());
         final Piece captured = board.captured(ttMove);
-        return new ScoredMove(ttMove, piece, captured, 0, 0, MoveType.TT_MOVE);
+        final boolean seePositive = SEE.see(board, ttMove, 0);
+        return new ScoredMove(ttMove, piece, captured, 0, 0, seePositive, MoveType.TT_MOVE);
     }
 
     public void skipQuiets(boolean skipQuiets) {

@@ -6,6 +6,7 @@ import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
+import com.kelseyde.calvin.search.ordering.ScoredMove;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
 import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
@@ -40,26 +41,26 @@ public class SearchHistory {
 
     // Update the quiet history tables for a given move, including the standard quiet history table and the
     // continuation history table.
-    public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, boolean good) {
+    public void updateQuietHistories(Board board, ScoredMove quiet, boolean white, int depth, int ply, boolean good) {
 
         if (quiet == null)
             return;
-        Piece piece = board.pieceAt(quiet.from());
+        Piece piece = board.pieceAt(quiet.move().from());
         updateQuietHistory(quiet, piece, white, depth, good);
         updateContHistory(quiet, piece, white, depth, ply, good);
 
     }
 
     // Update the quiet history table for a specific move and piece, applying either a bonus or a malus.
-    public void updateQuietHistory(Move move, Piece piece, boolean white, int depth, boolean good) {
+    public void updateQuietHistory(ScoredMove move, Piece piece, boolean white, int depth, boolean good) {
         short scale = good ? (short) config.quietHistBonusScale() : (short) config.quietHistMalusScale();
         short max = good ? (short) config.quietHistBonusMax() : (short) config.quietHistMalusMax();
         short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
-        quietHistoryTable.add(move, piece, white, bonus);
+        quietHistoryTable.add(move.move(), piece, white, move.seePositive(), bonus);
     }
 
     // Update the continuation history table for a specific move and piece, applying either a bonus or a malus.
-    public void updateContHistory(Move move, Piece piece, boolean white, int depth, int ply, boolean good) {
+    public void updateContHistory(ScoredMove move, Piece piece, boolean white, int depth, int ply, boolean good) {
 
         short scale = good ? (short) config.contHistBonusScale() : (short) config.contHistMalusScale();
         short max = good ? (short) config.contHistBonusMax() : (short) config.contHistMalusMax();
@@ -67,25 +68,25 @@ public class SearchHistory {
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.move != null) {
-                Move prevMove = prevEntry.move;
+                Move prevMove = prevEntry.move.move();
                 Piece prevPiece = prevEntry.piece;
-                contHistTable.add(prevMove, prevPiece, move, piece, white, bonus);
+                contHistTable.add(prevMove, prevPiece, move.move(), piece, white, bonus);
             }
         }
 
     }
 
     // Update the capture history table for a specific move and piece, applying either a bonus or a malus.
-    public void updateCaptureHistory(Board board, Move capture, boolean white, int depth, boolean good) {
+    public void updateCaptureHistory(Board board, ScoredMove capture, boolean white, int depth, boolean good) {
 
         if (capture == null)
             return;
-        Piece piece = board.pieceAt(capture.from());
-        Piece captured = board.captured(capture);
+        Piece piece = board.pieceAt(capture.move().from());
+        Piece captured = board.captured(capture.move());
         short scale = good ? (short) config.captHistBonusScale() : (short) config.captHistMalusScale();
         short max = good ? (short) config.captHistBonusMax() : (short) config.captHistMalusMax();
         short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
-        captureHistoryTable.add(piece, capture.to(), captured, white, bonus);
+        captureHistoryTable.add(piece, capture.move().to(), captured, white, bonus);
 
     }
 
@@ -131,7 +132,7 @@ public class SearchHistory {
         SearchStackEntry sse = ss.get(ply - 1);
         if (sse == null || sse.move == null)
             return 0;
-        return countermoveCorrHistTable.get(white, sse.move, sse.piece);
+        return countermoveCorrHistTable.get(white, sse.move.move(), sse.piece);
 
     }
 
@@ -141,7 +142,7 @@ public class SearchHistory {
         SearchStackEntry sse = ss.get(ply - 1);
         if (sse == null || sse.move == null)
             return;
-        countermoveCorrHistTable.update(sse.move, sse.piece, white, staticEval, score, depth);
+        countermoveCorrHistTable.update(sse.move.move(), sse.piece, white, staticEval, score, depth);
 
     }
 

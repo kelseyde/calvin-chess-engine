@@ -26,8 +26,8 @@ public class ContinuationHistoryTable extends AbstractHistoryTable {
         int score = 0;
         for (int contHistPly : conthistPlies) {
             SearchStackEntry entry = ss.get(ply - contHistPly);
-            if (entry != null)
-                score += get(entry.move, entry.piece, move, piece, white);
+            if (entry != null && entry.move != null)
+                score += get(entry.move.move(), entry.piece, move, piece, white);
         }
         return score;
     }

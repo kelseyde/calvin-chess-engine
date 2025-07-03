@@ -126,6 +126,14 @@ public class EngineConfig {
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1200, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 200, 50, 400, 25);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8192, 1000, 12000, 100);
+    private final Tunable threatsQueenFrom       = new Tunable("ThreatsQueenFrom", 12228, 0, 16384, 1024);
+    private final Tunable threatsQueenTo         = new Tunable("ThreatsQueenTo", 11264, 0, 16384, 1024);
+    private final Tunable threatsRookFrom        = new Tunable("ThreatsRookFrom", 10240, 0, 16384, 1024);
+    private final Tunable threatsRookTo          = new Tunable("ThreatsRookTo", 9216, 0, 16384, 1024);
+    private final Tunable threatsBishopFrom      = new Tunable("ThreatsBishopFrom", 8192, 0, 16384, 1024);
+    private final Tunable threatsBishopTo        = new Tunable("ThreatsBishopTo", 7168, 0, 16384, 1024);
+    private final Tunable threatsKnightFrom      = new Tunable("ThreatsKnightFrom", 8192, 0, 16384, 1024);
+    private final Tunable threatsKnightTo        = new Tunable("ThreatsKnightTo", 7168, 0, 16384, 1024);
     private final Tunable timeFactor             = new Tunable("TimeFactor", 5, 3, 10, 1);
     private final Tunable incrementFactor        = new Tunable("IncrementFactor", 80, 50, 100, 5);
     private final Tunable softTimeFactor         = new Tunable("SoftTimeFactor", 66, 50, 70, 10);
@@ -162,7 +170,9 @@ public class EngineConfig {
                 lmpImpBase, lmpImpScale, lmrFailHighCount, hindsightExtLimit, lmrFutileMargin, lmrFutileScale, lmrFutileHistDivisor,
                 lmrComplexityDivisor, alphaReductionMinDepth, alphaReductionMaxDepth, dynamicPolicyMult, dynamicPolicyMin,
                 dynamicPolicyMax, bnpDepth, bnpOffset, bnpScale, bnpDivisor, goodQuietThreshold, lmrDeeperBase, lmrDeeperScale,
-                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin
+                lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin,
+                threatsQueenFrom, threatsQueenTo, threatsRookFrom, threatsRookTo, threatsBishopFrom, threatsBishopTo,
+                threatsKnightFrom, threatsKnightTo
         );
     }
 
@@ -606,6 +616,38 @@ public class EngineConfig {
 
     public int contHistMaxScore() {
         return contHistMaxScore.value;
+    }
+
+    public int threatsQueenFrom() {
+        return threatsQueenFrom.value;
+    }
+
+    public int threatsQueenTo() {
+        return threatsQueenTo.value;
+    }
+
+    public int threatsRookFrom() {
+        return threatsRookFrom.value;
+    }
+
+    public int threatsRookTo() {
+        return threatsRookTo.value;
+    }
+
+    public int threatsBishopFrom() {
+        return threatsBishopFrom.value;
+    }
+
+    public int threatsBishopTo() {
+        return threatsBishopTo.value;
+    }
+
+    public int threatsKnightFrom() {
+        return threatsKnightFrom.value;
+    }
+
+    public int threatsKnightTo() {
+        return threatsKnightTo.value;
     }
 
     public int timeFactor() {

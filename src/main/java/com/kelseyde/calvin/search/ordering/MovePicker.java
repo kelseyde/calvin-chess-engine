@@ -1,9 +1,11 @@
 package com.kelseyde.calvin.search.ordering;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
 import com.kelseyde.calvin.engine.EngineConfig;
+import com.kelseyde.calvin.movegen.Attacks;
 import com.kelseyde.calvin.movegen.MoveGenerator;
 import com.kelseyde.calvin.movegen.MoveGenerator.MoveFilter;
 import com.kelseyde.calvin.search.SearchHistory;
@@ -47,6 +49,11 @@ public abstract class MovePicker {
     final boolean inCheck;
     final int ply;
 
+    long pawnThreats;
+    long knightThreats;
+    long bishopThreats;
+    long rookThreats;
+
     Stage stage;
     boolean skipQuiets;
 
@@ -59,7 +66,8 @@ public abstract class MovePicker {
                          Board board,
                          int ply,
                          Move ttMove,
-                         boolean inCheck) {
+                         boolean inCheck,
+                         boolean generateThreats) {
         this.movegen = movegen;
         this.history = history;
         this.board = board;
@@ -67,6 +75,9 @@ public abstract class MovePicker {
         this.ttMove = ttMove;
         this.inCheck = inCheck;
         this.scorer = initMoveScorer(config, history, ss);
+        if (generateThreats) {
+            generateThreats();
+        }
     }
 
     /**
@@ -179,6 +190,35 @@ public abstract class MovePicker {
         final Piece piece = board.pieceAt(ttMove.from());
         final Piece captured = board.captured(ttMove);
         return new ScoredMove(ttMove, piece, captured, 0, 0, MoveType.TT_MOVE);
+    }
+
+    protected void generateThreats() {
+
+        long occ = board.getOccupied();
+        long pawns = board.getPawns(!board.isWhite());
+        pawnThreats = Attacks.pawnAttacks(pawns, !board.isWhite());
+
+        long knights = board.getKnights(!board.isWhite());
+        while (knights != 0) {
+            int square = Bits.next(knights);
+            knightThreats |= Attacks.knightAttacks(square);
+            knights = Bits.pop(knights);
+        }
+
+        long bishops = board.getBishops(!board.isWhite());
+        while (bishops != 0) {
+            int square = Bits.next(bishops);
+            bishopThreats |= Attacks.bishopAttacks(square, occ);
+            bishops = Bits.pop(bishops);
+        }
+
+        long rooks = board.getRooks(!board.isWhite());
+        while (rooks != 0) {
+            int square = Bits.next(rooks);
+            rookThreats |= Attacks.rookAttacks(square, occ);
+            rooks = Bits.pop(rooks);
+        }
+
     }
 
     public void skipQuiets(boolean skipQuiets) {

@@ -1,5 +1,6 @@
 package com.kelseyde.calvin.search.ordering;
 
+import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
@@ -39,7 +40,14 @@ public class MoveScorer {
 
     // Assign a move a score and type. The scoring heuristics used depend on the type of move, with different
     // heuristics for quiets, captures and promotions.
-    public ScoredMove score(Board board, Move move, int ply, Stage stage) {
+    public ScoredMove score(Board board,
+                            Move move,
+                            int ply,
+                            Stage stage,
+                            long pawnThreats,
+                            long knightThreats,
+                            long bishopThreats,
+                            long rookThreats) {
 
         this.stage = stage;
         Piece piece = board.pieceAt(move.from());
@@ -52,7 +60,7 @@ public class MoveScorer {
         else if (capture)
             return scoreCapture(board, move, piece, captured);
         else
-            return scoreQuiet(board, move, piece, ply);
+            return scoreQuiet(board, move, piece, ply, pawnThreats, knightThreats, bishopThreats, rookThreats);
 
     }
 
@@ -82,17 +90,38 @@ public class MoveScorer {
     // Quiets are scored based on their score in the quiet and continuation history tables. They are separated into 'good'
     // and 'bad' quiets based on whether their history score exceeds a configurable threshold - except for quiet checks
     // that are generated during the noisy stage, which are considered 'bad noisies' regardless of score.
-    private ScoredMove scoreQuiet(Board board, Move move, Piece piece, int ply) {
+    private ScoredMove scoreQuiet(Board board,
+                                  Move move,
+                                  Piece piece,
+                                  int ply,
+                                  long pawnThreats,
+                                  long knightThreats,
+                                  long bishopThreats,
+                                  long rookThreats) {
 
         boolean white = board.isWhite();
         int historyScore = history.quietHistory().get(move, piece, white);
         int contHistScore = history.continuationHistory().get(move, piece, white, ply, config.contHistPlies(), ss);
         int score = historyScore + contHistScore;
+
+        score += switch (piece) {
+            case QUEEN ->  threatScore(move, pawnThreats | knightThreats | bishopThreats | rookThreats, config.threatsQueenFrom(), config.threatsQueenTo());
+            case ROOK ->   threatScore(move, pawnThreats | knightThreats | bishopThreats, config.threatsRookFrom(), config.threatsRookTo());
+            case BISHOP -> threatScore(move, pawnThreats, config.threatsBishopFrom(), config.threatsBishopTo());
+            case KNIGHT -> threatScore(move, pawnThreats, config.threatsKnightFrom(), config.threatsKnightTo());
+            default -> 0;
+        };
+
         MoveType type = stage == Stage.GEN_NOISY
                 ? MoveType.BAD_NOISY
                 : (score >= config.goodQuietThreshold() ? MoveType.GOOD_QUIET : MoveType.BAD_QUIET);
         return new ScoredMove(move, piece, null, score, score, type);
 
+    }
+
+    private int threatScore(Move move, long threats, int fromScore, int toScore) {
+        return (!Bits.contains(threats, move.from()) ? fromScore : 0)
+                + (!Bits.contains(threats, move.to()) ? toScore : 0);
     }
 
 }

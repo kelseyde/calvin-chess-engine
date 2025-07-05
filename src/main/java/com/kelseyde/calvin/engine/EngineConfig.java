@@ -64,6 +64,7 @@ public class EngineConfig {
     private final Tunable rfpNotWorseningMargin  = new Tunable("RfpNotWorseningMargin", -1, -50, 0, 10);
     private final Tunable rfpParentPvMargin      = new Tunable("RfpParentPvMargin", 16, 0, 75, 20);
     private final Tunable rfpNotParentPvMargin   = new Tunable("RfpNotParentPvMargin", -4, -50, 0, 10);
+    private final Tunable rfpTTPvMargin          = new Tunable("RfpTTPvMargin", 30, 0, 80, 10);
     private final Tunable lmrDepth               = new Tunable("LmrDepth", 2, 0, 8, 1);
     private final Tunable lmrBase                = new Tunable("LmrBase", 92, 50, 100, 5);
     private final Tunable lmrDivisor             = new Tunable("LmrDivisor", 309, 200, 400, 10);
@@ -181,7 +182,7 @@ public class EngineConfig {
                 lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin, aspDeltaScale,
                 aspDeltaMinExpansions, seeValuePawn, seeValueKnight, seeValueBishop, seeValueRook, seeValueQueen,
                 corrPawnWeight, corrNonPawnWeight, corrCounterWeight, hindsightEvalDiff, rfpNotImprovingMargin,
-                rfpNotWorseningMargin, rfpNotParentPvMargin
+                rfpNotWorseningMargin, rfpNotParentPvMargin, rfpTTPvMargin
         );
     }
 
@@ -387,6 +388,10 @@ public class EngineConfig {
 
     public int rfpNotWorseningMargin() {
         return rfpNotWorseningMargin.value;
+    }
+
+    public int rfpTTPvMargin() {
+        return rfpTTPvMargin.value;
     }
 
     public int lmrDepth() {

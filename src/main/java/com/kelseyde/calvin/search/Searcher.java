@@ -345,6 +345,7 @@ public class Searcher implements Search {
                     - (opponentWorsening ? config.rfpWorseningMargin() : config.rfpNotWorseningMargin())
                     + (parentPvNode      ? config.rfpParentPvMargin()  : config.rfpNotParentPvMargin());
             if (depth <= config.rfpDepth()
+                    && (!ttPv || (ttHit && ttEntry.score() >= beta + config.rfpTTPvMargin()))
                     && !isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
                 return beta + (staticEval - beta) / 3;

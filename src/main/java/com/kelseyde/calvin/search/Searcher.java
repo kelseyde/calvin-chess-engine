@@ -495,7 +495,10 @@ public class Searcher implements Search {
 
             // Bad Noisy Pruning
             // Skip bad noisies when the static evaluation + some margin is still below alpha.
-            int margin = staticEval + config.bnpScale() * depth + config.bnpOffset() * moveCount / config.bnpDivisor();
+            int margin = staticEval
+                    + config.bnpScale() * depth
+                    + config.bnpOffset() * moveCount / config.bnpDivisor()
+                    + (captured != null ? SEE.value(config, captured) / config.bnpPieceDivisor() : 0);
             if (!inCheck
                     && depth < config.bnpDepth()
                     && scoredMove.isBadNoisy()

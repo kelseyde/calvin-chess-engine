@@ -102,6 +102,7 @@ public class EngineConfig {
     private final Tunable bnpOffset              = new Tunable("BnpOffset", 383, 280, 480, 25);
     private final Tunable bnpScale               = new Tunable("BnpScale", 113, 50, 300, 25);
     private final Tunable bnpDivisor             = new Tunable("BnpDivisor", 133, 80, 200, 25);
+    private final Tunable bnpPieceDivisor        = new Tunable("BnpPieceDivisor", 12, 6, 20, 2);
     private final Tunable corrPawnWeight         = new Tunable("CorrPawnWeight", 99, 0, 200, 20);
     private final Tunable corrNonPawnWeight      = new Tunable("CorrNonPawnWeight", 100, 0, 200, 20);
     private final Tunable corrCounterWeight      = new Tunable("CorrCounterWeight", 96, 0, 200, 20);
@@ -181,7 +182,7 @@ public class EngineConfig {
                 lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin, aspDeltaScale,
                 aspDeltaMinExpansions, seeValuePawn, seeValueKnight, seeValueBishop, seeValueRook, seeValueQueen,
                 corrPawnWeight, corrNonPawnWeight, corrCounterWeight, hindsightEvalDiff, rfpNotImprovingMargin,
-                rfpNotWorseningMargin, rfpNotParentPvMargin
+                rfpNotWorseningMargin, rfpNotParentPvMargin, bnpPieceDivisor
         );
     }
 
@@ -551,6 +552,10 @@ public class EngineConfig {
 
     public int bnpDivisor() {
         return bnpDivisor.value;
+    }
+
+    public int bnpPieceDivisor() {
+        return bnpPieceDivisor.value;
     }
 
     public int seDepth() {

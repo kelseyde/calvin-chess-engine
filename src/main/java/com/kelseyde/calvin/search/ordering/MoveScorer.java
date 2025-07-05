@@ -60,7 +60,7 @@ public class MoveScorer {
     // promotions are considered 'good noisies', while under-promotions are considered 'bad noisies'.
     private ScoredMove scorePromotion(Move move, Piece piece, Piece captured) {
 
-        int score = SEE.value(move.promoPiece()) - SEE.value(Piece.PAWN);
+        int score = SEE.value(config, move.promoPiece()) - SEE.value(config, Piece.PAWN);
         MoveType type = move.promoPiece() == Piece.QUEEN ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
         return new ScoredMove(move, piece, captured, score, 0, type);
 
@@ -72,9 +72,9 @@ public class MoveScorer {
     private ScoredMove scoreCapture(Board board, Move move, Piece piece, Piece captured) {
 
         int historyScore = history.captureHistory().get(piece, move.to(), captured, board.isWhite());
-        int score = SEE.value(captured) + historyScore / 4;
+        int score = SEE.value(config, captured) + historyScore / 4;
         int threshold = -score / seeNoisyDivisor + seeNoisyOffset;
-        MoveType type = SEE.see(board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
+        MoveType type = SEE.see(config, board, move, threshold) ? MoveType.GOOD_NOISY : MoveType.BAD_NOISY;
         return new ScoredMove(move, piece, captured, score, historyScore, type);
 
     }

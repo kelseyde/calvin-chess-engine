@@ -84,7 +84,7 @@ public class Searcher implements Search {
 
         int reduction = 0;
         int maxReduction = config.aspMaxReduction();
-        int window = config.aspDelta();
+        int window = config.aspDeltaBase();
         int windowExpansions = 0;
 
         while (!shouldStop(SOFT) && td.depth < Search.MAX_DEPTH) {
@@ -116,7 +116,7 @@ public class Searcher implements Search {
                     // If score <= alpha, re-search with an expanded aspiration window
                     beta = (alpha + beta) / 2;
                     alpha -= window;
-                    window = window * config.aspWideningFactor() / 100;
+                    window = window * config.aspAlphaWideningFactor() / 100;
                     windowExpansions++;
                     reduction = 0;
                     continue;
@@ -124,7 +124,7 @@ public class Searcher implements Search {
                 if (score >= beta) {
                     // If score >= beta, re-search with an expanded aspiration window
                     beta += window;
-                    window = window * config.aspWideningFactor() / 100;
+                    window = window * config.aspBetaWideningFactor() / 100;
                     windowExpansions++;
                     reduction = Math.min(maxReduction, reduction + 1);
                     continue;
@@ -132,7 +132,8 @@ public class Searcher implements Search {
 
                 // Center the aspiration window around the score from the current iteration, to be used next time.
                 windowExpansions /= 2;
-                window = config.aspDelta() + 6 * (windowExpansions >= 4 ? 1 : 0);
+                boolean tooManyExpansions = windowExpansions >= config.aspDeltaMinExpansions();
+                window = config.aspDeltaBase() + config.aspDeltaScale() * (tooManyExpansions ? 1 : 0);
                 alpha = score - window;
                 beta = score + window;
             }
@@ -321,7 +322,7 @@ public class Searcher implements Search {
                 && !rootNode
                 && priorReduction >= config.hindsightExtLimit()
                 && Score.isDefined(prev.staticEval)
-                && staticEval + prev.staticEval < 0) {
+                && staticEval + prev.staticEval < config.hindsightEvalDiff()) {
             depth++;
         }
 
@@ -340,9 +341,9 @@ public class Searcher implements Search {
             // Reverse Futility Pruning
             // Skip nodes where the static eval is far above beta and will thus likely result in a fail-high.
             int futilityMargin = depth * config.rfpMargin()
-                    - (improving ? config.rfpImprovingMargin() : 0)
-                    - (opponentWorsening ? config.rfpWorseningMargin() : 0)
-                    + (parentPvNode ? config.rfpParentPvMargin() : 0);
+                    - (improving         ? config.rfpImprovingMargin() : config.rfpNotImprovingMargin())
+                    - (opponentWorsening ? config.rfpWorseningMargin() : config.rfpNotWorseningMargin())
+                    + (parentPvNode      ? config.rfpParentPvMargin()  : config.rfpNotParentPvMargin());
             if (depth <= config.rfpDepth()
                     && !isMate(alpha)
                     && staticEval - futilityMargin >= beta) {
@@ -514,7 +515,7 @@ public class Searcher implements Search {
                     && moveCount > 1
                     && !isGoodNoisy
                     && !isMateScore
-                    && !SEE.see(board, move, seeThreshold)) {
+                    && !SEE.see(config, board, move, seeThreshold)) {
                 continue;
             }
 
@@ -803,19 +804,19 @@ public class Searcher implements Search {
 
             // Delta Pruning
             // Skip captures where the value of the captured piece plus a margin is still below alpha.
-            if (!inCheck && capture && !promotion && !recapture && staticEval + SEE.value(captured) + config.dpMargin() < alpha)
+            if (!inCheck && capture && !promotion && !recapture && staticEval + SEE.value(config, captured) + config.dpMargin() < alpha)
                 continue;
 
             // Futility Pruning
             // Skip captures that don't win material when the static eval is far below alpha.
-            if (!inCheck && capture && !recapture && futilityScore <= alpha && !SEE.see(board, move, 1)) {
+            if (!inCheck && capture && !recapture && futilityScore <= alpha && !SEE.see(config, board, move, 1)) {
                 bestScore = Math.max(bestScore, futilityScore);
                 continue;
             }
 
             // SEE Pruning
             // Skip moves which lose material once all the pieces are swapped off.
-            if (!inCheck && !recapture && !SEE.see(board, move, config.qsSeeThreshold()))
+            if (!inCheck && !recapture && !SEE.see(config, board, move, config.qsSeeThreshold()))
                 continue;
 
             // Evasion Pruning

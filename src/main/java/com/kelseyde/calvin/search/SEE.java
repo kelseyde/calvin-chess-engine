@@ -4,6 +4,7 @@ import com.kelseyde.calvin.board.Bits;
 import com.kelseyde.calvin.board.Board;
 import com.kelseyde.calvin.board.Move;
 import com.kelseyde.calvin.board.Piece;
+import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.movegen.Attacks;
 
 /**
@@ -19,13 +20,11 @@ import com.kelseyde.calvin.movegen.Attacks;
  */
 public class SEE {
 
-    public static int[] SEE_PIECE_VALUES = { 100, 320, 330, 500, 900, 0 };
-
-    public static int value(Piece piece) {
-        return SEE_PIECE_VALUES[piece.index()];
+    public static int value(EngineConfig config, Piece piece) {
+        return config.seeValues()[piece.ordinal()];
     }
 
-    public static boolean see(Board board, Move move, int threshold) {
+    public static boolean see(EngineConfig config, Board board, Move move, int threshold) {
 
         boolean white = board.isWhite();
         int from = move.from();
@@ -33,16 +32,16 @@ public class SEE {
 
         int score = -threshold;
         Piece captured = move.isEnPassant() ? Piece.PAWN : board.pieceAt(to);
-        score += captured != null ? SEE_PIECE_VALUES[captured.index()] : 0;
+        score += captured != null ? value(config, captured) : 0;
 
         if (move.promoPiece() != null) {
-            score += value(move.promoPiece()) - value(Piece.PAWN);
+            score += value(config, move.promoPiece()) - value(config, Piece.PAWN);
         }
 
         if (score < 0) return false;
 
         Piece nextVictim = move.promoPiece() != null ? move.promoPiece() : board.pieceAt(from);
-        score -= value(nextVictim);
+        score -= value(config, nextVictim);
 
         if (score >= 0) return true;
 
@@ -81,7 +80,7 @@ public class SEE {
             }
 
             attackers &= occ;
-            score = -score - 1 - value(nextVictim);
+            score = -score - 1 - value(config, nextVictim);
             white = !white;
 
             if (score >= 0) {

@@ -97,6 +97,12 @@ public class SearchHistory {
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int counter = getContCorrHistEntry(ply, board.isWhite());
+
+        pawn        = pawn * config.corrPawnWeight() / 100;
+        white       = white * config.corrNonPawnWeight() / 100;
+        black       = black * config.corrNonPawnWeight() / 100;
+        counter     = counter * config.corrCounterWeight() / 100;
+
         int correction = pawn + white + black + counter;
         return correction / CorrectionHistoryTable.SCALE;
 
@@ -110,6 +116,12 @@ public class SearchHistory {
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
         int counter = getContCorrHistEntry(ply, board.isWhite());
+
+        pawn        = pawn * config.corrPawnWeight() / 100;
+        white       = white * config.corrNonPawnWeight() / 100;
+        black       = black * config.corrNonPawnWeight() / 100;
+        counter     = counter * config.corrCounterWeight() / 100;
+
         return pawn * pawn + white * white + black * black + counter * counter;
 
     }

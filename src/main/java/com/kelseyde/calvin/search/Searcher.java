@@ -401,6 +401,7 @@ public class Searcher implements Search {
 
         Move bestMove = null;
         int bestScore = Score.MIN;
+        boolean bestMoveWasNoisy = false;
         int flag = HashFlag.UPPER;
         curr.quiets = new Move[16];
         curr.captures = new Move[16];
@@ -613,6 +614,7 @@ public class Searcher implements Search {
                 bestMove = move;
                 alpha = score;
                 flag = HashFlag.EXACT;
+                bestMoveWasNoisy = bestMoveWasNoisy || captured != null;
 
                 curr.bestMove = move;
                 if (rootNode)
@@ -692,7 +694,7 @@ public class Searcher implements Search {
         if (!inCheck
             && !singularSearch
             && Score.isDefined(bestScore)
-            && (bestMove == null || board.isQuiet(bestMove))
+            && (bestMove == null || !bestMoveWasNoisy)
             && !(flag == HashFlag.LOWER && uncorrectedEval >= bestScore)
             && !(flag == HashFlag.UPPER && uncorrectedEval <= bestScore)) {
             // Update the correction history table with the current search score, to improve future static evaluations.

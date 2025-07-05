@@ -185,6 +185,10 @@ public abstract class MovePicker {
         this.skipQuiets = skipQuiets;
     }
 
+    public boolean isSkipQuiets() {
+        return skipQuiets;
+    }
+
     protected ScoredMove nextStage(Stage nextStage) {
         moveIndex = 0;
         stage = nextStage;

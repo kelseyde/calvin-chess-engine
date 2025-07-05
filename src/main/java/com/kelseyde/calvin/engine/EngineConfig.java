@@ -125,6 +125,7 @@ public class EngineConfig {
     private final Tunable quietHistBonusScale    = new Tunable("QuietHistBonusScale", 207, 50, 400, 25);
     private final Tunable quietHistMalusMax      = new Tunable("QuietHistMalusMax", 1255, 100, 2000, 100);
     private final Tunable quietHistMalusScale    = new Tunable("QuietHistMalusScale", 200, 50, 400, 25);
+    private final Tunable quietHistSkipQuiets    = new Tunable("QuietHistSkipQuiets", 200, 0, 600, 200);
     private final Tunable quietHistMaxScore      = new Tunable("QuietHistMaxScore", 8033, 1000, 12000, 100);
     private final Tunable captHistBonusMax       = new Tunable("CaptHistBonusMax", 1250, 100, 2000, 100);
     private final Tunable captHistBonusScale     = new Tunable("CaptHistBonusScale", 192, 50, 400, 25);
@@ -135,6 +136,7 @@ public class EngineConfig {
     private final Tunable contHistBonusScale     = new Tunable("ContHistBonusScale", 204, 50, 400, 25);
     private final Tunable contHistMalusMax       = new Tunable("ContHistMalusMax", 1067, 100, 2000, 100);
     private final Tunable contHistMalusScale     = new Tunable("ContHistMalusScale", 205, 50, 400, 25);
+    private final Tunable contHistSkipQuiets     = new Tunable("ContHistSkipQuiets", 200, 0, 600, 200);
     private final Tunable contHistMaxScore       = new Tunable("ContHistMaxScore", 8003, 1000, 12000, 100);
     private final Tunable seeValuePawn           = new Tunable("SeeValuePawn", 102, 0, 200, 10);
     private final Tunable seeValueKnight         = new Tunable("SeeValueKnight", 320, 0, 500, 10);
@@ -181,7 +183,7 @@ public class EngineConfig {
                 lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin, aspDeltaScale,
                 aspDeltaMinExpansions, seeValuePawn, seeValueKnight, seeValueBishop, seeValueRook, seeValueQueen,
                 corrPawnWeight, corrNonPawnWeight, corrCounterWeight, hindsightEvalDiff, rfpNotImprovingMargin,
-                rfpNotWorseningMargin, rfpNotParentPvMargin
+                rfpNotWorseningMargin, rfpNotParentPvMargin, quietHistSkipQuiets, contHistSkipQuiets
         );
     }
 
@@ -633,6 +635,10 @@ public class EngineConfig {
         return quietHistMalusScale.value;
     }
 
+    public int quietHistSkipQuiets() {
+        return quietHistSkipQuiets.value;
+    }
+
     public int quietHistMaxScore() {
         return quietHistMaxScore.value;
     }
@@ -671,6 +677,10 @@ public class EngineConfig {
 
     public int contHistMalusScale() {
         return contHistMalusScale.value;
+    }
+
+    public int contHistSkipQuiets() {
+        return contHistSkipQuiets.value;
     }
 
     public int contHistMaxScore() {

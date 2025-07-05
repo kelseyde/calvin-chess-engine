@@ -40,30 +40,40 @@ public class SearchHistory {
 
     // Update the quiet history tables for a given move, including the standard quiet history table and the
     // continuation history table.
-    public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, boolean good) {
+    public void updateQuietHistories(Board board, Move quiet, boolean white, int depth, int ply, boolean skipQuiets, boolean good) {
 
         if (quiet == null)
             return;
         Piece piece = board.pieceAt(quiet.from());
-        updateQuietHistory(quiet, piece, white, depth, good);
-        updateContHistory(quiet, piece, white, depth, ply, good);
+        updateQuietHistory(quiet, piece, white, depth, skipQuiets, good);
+        updateContHistory(quiet, piece, white, depth, ply, skipQuiets, good);
 
     }
 
     // Update the quiet history table for a specific move and piece, applying either a bonus or a malus.
-    public void updateQuietHistory(Move move, Piece piece, boolean white, int depth, boolean good) {
+    public void updateQuietHistory(Move move, Piece piece, boolean white, int depth, boolean skipQuiets, boolean good) {
+
         short scale = good ? (short) config.quietHistBonusScale() : (short) config.quietHistMalusScale();
         short max = good ? (short) config.quietHistBonusMax() : (short) config.quietHistMalusMax();
-        short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
+        short skipQuietsBonus = skipQuiets ? (short) config.quietHistSkipQuiets() : 0;
+        short bonus = (short) (good
+                ? bonus(depth, scale, max)
+                : malus(depth, scale, max) + skipQuietsBonus);
+
         quietHistoryTable.add(move, piece, white, bonus);
+
     }
 
     // Update the continuation history table for a specific move and piece, applying either a bonus or a malus.
-    public void updateContHistory(Move move, Piece piece, boolean white, int depth, int ply, boolean good) {
+    public void updateContHistory(Move move, Piece piece, boolean white, int depth, int ply, boolean skipQuiets, boolean good) {
 
         short scale = good ? (short) config.contHistBonusScale() : (short) config.contHistMalusScale();
         short max = good ? (short) config.contHistBonusMax() : (short) config.contHistMalusMax();
-        short bonus = good ? bonus(depth, scale, max) : malus(depth, scale, max);
+        short skipQuietsBonus = skipQuiets ? (short) config.contHistSkipQuiets() : 0;
+        short bonus = (short) (good
+                ? bonus(depth, scale, max)
+                : malus(depth, scale, max) + skipQuietsBonus);
+
         for (int prevPly : config.contHistPlies()) {
             SearchStackEntry prevEntry = ss.get(ply - prevPly);
             if (prevEntry != null && prevEntry.move != null) {

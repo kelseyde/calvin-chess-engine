@@ -392,6 +392,12 @@ public class Searcher implements Search {
                         return score;
 
                 }
+                else if (priorReduction >= 1
+                        && !Score.isMate(score)
+                        && score < beta - config.nmpExtensionBetaMargin()) {
+                    // Clover idea
+                    depth++;
+                }
             }
 
         }

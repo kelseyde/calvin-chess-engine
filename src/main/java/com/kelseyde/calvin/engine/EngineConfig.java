@@ -41,6 +41,7 @@ public class EngineConfig {
     private final Tunable nmpDivisor             = new Tunable("NmpDivisor", 2, 1, 4, 1);
     private final Tunable nmpEvalScale           = new Tunable("NmpEvalScale", 204, 0, 400, 25);
     private final Tunable nmpEvalMaxReduction    = new Tunable("NmpEvalMaxReduction", 4, 2, 5, 1);
+    private final Tunable nmpExtensionBetaMargin = new Tunable("NmpExtensionBetaMargin", 100, 0, 200, 25);
     private final Tunable fpDepth                = new Tunable("FpDepth", 8, 0, 8, 1);
     private final Tunable fpMargin               = new Tunable("FpMargin", 96, 0, 500, 25);
     private final Tunable fpScale                = new Tunable("FpScale", 76, 0, 100, 5);
@@ -181,7 +182,7 @@ public class EngineConfig {
                 lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin, aspDeltaScale,
                 aspDeltaMinExpansions, seeValuePawn, seeValueKnight, seeValueBishop, seeValueRook, seeValueQueen,
                 corrPawnWeight, corrNonPawnWeight, corrCounterWeight, hindsightEvalDiff, rfpNotImprovingMargin,
-                rfpNotWorseningMargin, rfpNotParentPvMargin
+                rfpNotWorseningMargin, rfpNotParentPvMargin, nmpExtensionBetaMargin
         );
     }
 
@@ -295,6 +296,10 @@ public class EngineConfig {
 
     public int nmpEvalMaxReduction() {
         return nmpEvalMaxReduction.value;
+    }
+
+    public int nmpExtensionBetaMargin() {
+        return nmpExtensionBetaMargin.value;
     }
 
     public int fpDepth() {

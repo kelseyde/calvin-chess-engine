@@ -151,6 +151,11 @@ public class EngineConfig {
     private final Tunable nodeTmMinDepth         = new Tunable("NodeTmMinDepth", 5, 0, 10, 1);
     private final Tunable nodeTmBase             = new Tunable("NodeTmBase", 170, 100, 200, 10);
     private final Tunable nodeTmScale            = new Tunable("NodeTmScale", 151, 100, 200, 10);
+    private final Tunable complexityTmMinDepth   = new Tunable("ComplexityTmMinDepth", 4, 0, 10, 1);
+    private final Tunable complexityTmDiffBase   = new Tunable("ComplexityTmDiffBase", 80, 50, 100, 10);
+    private final Tunable complexityTmScaleBase  = new Tunable("ComplexityTmScaleBase", 70, 50, 100, 10);
+    private final Tunable complexityTmScaleMax   = new Tunable("ComplexityTmScaleMax", 200, 100, 300, 10);
+    private final Tunable complexityTmScaleDiv   = new Tunable("ComplexityTmScaleDivisor", 400, 300, 500, 10);
     private final Tunable bmStabilityMinDepth    = new Tunable("BmStabilityMinDepth", 0, 0, 10, 1);
     private final Tunable scoreStabilityMinDepth = new Tunable("ScoreStabilityMinDepth", 0, 0, 10, 1);
 
@@ -181,7 +186,8 @@ public class EngineConfig {
                 lmrPvDistanceMult, lmrPvDistanceMax, rfpParentPvMargin, betaHistBonusMargin, rfpWorseningMargin, aspDeltaScale,
                 aspDeltaMinExpansions, seeValuePawn, seeValueKnight, seeValueBishop, seeValueRook, seeValueQueen,
                 corrPawnWeight, corrNonPawnWeight, corrCounterWeight, hindsightEvalDiff, rfpNotImprovingMargin,
-                rfpNotWorseningMargin, rfpNotParentPvMargin
+                rfpNotWorseningMargin, rfpNotParentPvMargin, complexityTmMinDepth, complexityTmDiffBase,
+                complexityTmScaleBase, complexityTmScaleMax, complexityTmScaleDiv
         );
     }
 
@@ -715,6 +721,26 @@ public class EngineConfig {
 
     public int nodeTmScale() {
         return nodeTmScale.value;
+    }
+
+    public int complexityTmMinDepth() {
+        return complexityTmMinDepth.value;
+    }
+
+    public int complexityTmDiffBase() {
+        return complexityTmDiffBase.value;
+    }
+
+    public int complexityTmScaleBase() {
+        return complexityTmScaleBase.value;
+    }
+
+    public int complexityTmScaleMax() {
+        return complexityTmScaleMax.value;
+    }
+
+    public int complexityTmScaleDiv() {
+        return complexityTmScaleDiv.value;
     }
 
     public int bmStabilityMinDepth() {

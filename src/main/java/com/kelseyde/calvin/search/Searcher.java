@@ -86,6 +86,7 @@ public class Searcher implements Search {
         int maxReduction = config.aspMaxReduction();
         int window = config.aspDeltaBase();
         int windowExpansions = 0;
+        td.rootEval = eval.evaluate();
 
         while (!shouldStop(SOFT) && td.depth < Search.MAX_DEPTH) {
 
@@ -930,7 +931,8 @@ public class Searcher implements Search {
         int bestMoveStability = td.bestMoveStability();
         int scoreStability = td.bestScoreStability();
         int bestMoveNodes = td.nodes(td.bestMove());
-        return limits.isSoftLimitReached(td.depth, td.nodes, bestMoveNodes, bestMoveStability, scoreStability);
+        return limits.isSoftLimitReached(
+                td.depth, td.nodes, td.bestScore, td.rootEval, bestMoveNodes, bestMoveStability, scoreStability);
 
     }
 

@@ -8,14 +8,15 @@ public class ThreadData {
     public final int threadIndex;
     public int nodes;
     public int[][] nodesPerMove;
+    public int rootEval;
     public int depth;
     public int seldepth;
     public int nmpPly;
     public boolean abort;
 
     // The best overall move and score found so far
-    private Move bestMove;
-    private int bestScore;
+    public Move bestMove;
+    public int bestScore;
 
     // The best move and score from the current iteration
     private Move bestMoveCurrent;
@@ -29,6 +30,7 @@ public class ThreadData {
         this.threadIndex = threadIndex;
         this.nodes = 0;
         this.nodesPerMove = new int[Square.COUNT][Square.COUNT];
+        this.rootEval = 0;
         this.depth = 1;
         this.seldepth = 0;
         this.nmpPly = 0;

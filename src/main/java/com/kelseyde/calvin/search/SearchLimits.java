@@ -58,13 +58,15 @@ public record SearchLimits(EngineConfig config,
     // The idea is to not waste time on a new search iteration if it is unlikely to finish before the hard limit is reached.
     public boolean isSoftLimitReached(int depth,
                                       int nodes,
+                                      int score,
+                                      int staticEval,
                                       int bestMoveNodes,
                                       int bestMoveStability,
                                       int scoreStability) {
 
         return isMaxDepthReached(depth)
             || isSoftNodeLimitReached(nodes)
-            || isSoftTimeLimitReached(depth, nodes, bestMoveNodes, bestMoveStability, scoreStability);
+            || isSoftTimeLimitReached(depth, nodes, score, staticEval, bestMoveNodes, bestMoveStability, scoreStability);
 
     }
 
@@ -90,18 +92,23 @@ public record SearchLimits(EngineConfig config,
 
     private boolean isSoftTimeLimitReached(int depth,
                                            int nodes,
+                                           int score,
+                                           int staticEval,
                                            int bestMoveNodes,
                                            int bestMoveStability,
                                            int evalStability) {
 
         Duration expired = Duration.between(start, Instant.now());
-        Duration adjustedSoftLimit = adjustSoftLimit(softTime, nodes, bestMoveNodes, bestMoveStability, evalStability, depth);
+        Duration adjustedSoftLimit =
+                adjustSoftLimit(softTime, nodes, score, staticEval, bestMoveNodes, bestMoveStability, evalStability, depth);
         return expired.compareTo(adjustedSoftLimit) > 0;
 
     }
 
     private Duration adjustSoftLimit(Duration softLimit,
                                      int nodes,
+                                     int score,
+                                     int staticEval,
                                      int bestMoveNodes,
                                      int bestMoveStability,
                                      int scoreStability,
@@ -114,7 +121,8 @@ public record SearchLimits(EngineConfig config,
         double scale = 1.0
                 * bestMoveStabilityFactor(config, depth, bestMoveStability)
                 * scoreStabilityFactor(config, depth, scoreStability)
-                * nodeTmFactor(config, depth, bestMoveNodes, nodes);
+                * nodeTmFactor(config, depth, bestMoveNodes, nodes)
+                * complexityFactor(config, depth, score, staticEval);
 
         // Clamp the scale factor to the configured min/max values
         scale = clampScale(scale);
@@ -150,6 +158,23 @@ public record SearchLimits(EngineConfig config,
         scoreStability = Math.min(scoreStability, config.scoreStabilityFactor().length - 1);
         return config.scoreStabilityFactor()[scoreStability] / 100.0;
 
+    }
+
+    private double complexityFactor(EngineConfig config,
+                                    int depth,
+                                    int score,
+                                    int staticEval) {
+        if (depth < config.complexityTmMinDepth() || Score.isMate(score))
+            return 1.0;
+
+        double diffBase = config.complexityTmDiffBase() / 100.0;
+        double complexity = diffBase * Math.log(depth) * Math.abs(staticEval - score);
+
+        double scaleBase = config.complexityTmScaleBase() / 100.0;
+        int scaleMax = config.complexityTmScaleMax();
+        int scaleDivisor = config.complexityTmScaleDiv();
+
+        return scaleBase + clamp(complexity, 0, scaleMax) / scaleDivisor;
     }
 
     // Scale the soft limit based on the fraction of total nodes spent searching the best move. If a greater portion
@@ -210,6 +235,10 @@ public record SearchLimits(EngineConfig config,
         double scaleMin = config.softTimeScaleMin() / 100.0;
         double scaleMax = config.softTimeScaleMax() / 100.0;
         return Math.min(Math.max(scale, scaleMin), scaleMax);
+    }
+
+    private double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
 
 }

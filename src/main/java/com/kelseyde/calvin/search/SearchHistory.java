@@ -8,7 +8,6 @@ import com.kelseyde.calvin.engine.EngineConfig;
 import com.kelseyde.calvin.search.SearchStack.SearchStackEntry;
 import com.kelseyde.calvin.tables.correction.CorrectionHistoryTable;
 import com.kelseyde.calvin.tables.correction.HashCorrectionTable;
-import com.kelseyde.calvin.tables.correction.PieceToCorrectionTable;
 import com.kelseyde.calvin.tables.history.CaptureHistoryTable;
 import com.kelseyde.calvin.tables.history.ContinuationHistoryTable;
 import com.kelseyde.calvin.tables.history.KillerTable;
@@ -24,7 +23,7 @@ public class SearchHistory {
     private final CaptureHistoryTable captureHistoryTable;
     private final HashCorrectionTable pawnCorrHistTable;
     private final HashCorrectionTable[] nonPawnCorrHistTables;
-    private final PieceToCorrectionTable countermoveCorrHistTable;
+    private final HashCorrectionTable lastMoveCorrHistTable;
 
     public SearchHistory(EngineConfig config, SearchStack ss) {
         this.config = config;
@@ -35,7 +34,7 @@ public class SearchHistory {
         this.captureHistoryTable = new CaptureHistoryTable(config);
         this.pawnCorrHistTable = new HashCorrectionTable();
         this.nonPawnCorrHistTables = new HashCorrectionTable[] { new HashCorrectionTable(), new HashCorrectionTable() };
-        this.countermoveCorrHistTable = new PieceToCorrectionTable();
+        this.lastMoveCorrHistTable = new HashCorrectionTable();
     }
 
     // Update the quiet history tables for a given move, including the standard quiet history table and the
@@ -96,7 +95,7 @@ public class SearchHistory {
         int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
-        int counter = getContCorrHistEntry(ply, board.isWhite());
+        int counter = getLastMoveCorrHistEntry(ply, board.isWhite());
 
         pawn        = pawn * config.corrPawnWeight() / 100;
         white       = white * config.corrNonPawnWeight() / 100;
@@ -115,7 +114,7 @@ public class SearchHistory {
         int pawn    = pawnCorrHistTable.get(board.pawnKey(), board.isWhite());
         int white   = nonPawnCorrHistTables[Colour.WHITE].get(board.nonPawnKeys()[Colour.WHITE], board.isWhite());
         int black   = nonPawnCorrHistTables[Colour.BLACK].get(board.nonPawnKeys()[Colour.BLACK], board.isWhite());
-        int counter = getContCorrHistEntry(ply, board.isWhite());
+        int counter = getLastMoveCorrHistEntry(ply, board.isWhite());
 
         pawn        = pawn * config.corrPawnWeight() / 100;
         white       = white * config.corrNonPawnWeight() / 100;
@@ -133,27 +132,29 @@ public class SearchHistory {
         pawnCorrHistTable.update(board.pawnKey(), board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.WHITE].update(board.nonPawnKeys()[Colour.WHITE], board.isWhite(), depth, score, staticEval);
         nonPawnCorrHistTables[Colour.BLACK].update(board.nonPawnKeys()[Colour.BLACK], board.isWhite(), depth, score, staticEval);
-        updateContCorrHistEntry(ss, ply, board.isWhite(), depth, score, staticEval);
+        updateLastMoveCorrHistEntry(ss, ply, board.isWhite(), depth, score, staticEval);
 
     }
 
     // Retrieve the countermove correction history entry for a given ply and colour.
-    private int getContCorrHistEntry(int ply, boolean white) {
+    private int getLastMoveCorrHistEntry(int ply, boolean white) {
 
         SearchStackEntry sse = ss.get(ply - 1);
         if (sse == null || sse.move == null)
             return 0;
-        return countermoveCorrHistTable.get(white, sse.move, sse.piece);
+        Move lastMove = sse.move;
+        return lastMoveCorrHistTable.get(lastMove.encoded(), white);
 
     }
 
     // Update the countermove correction history entry for a given ply and colour.
-    private void updateContCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
+    private void updateLastMoveCorrHistEntry(SearchStack ss, int ply, boolean white, int depth, int score, int staticEval) {
 
         SearchStackEntry sse = ss.get(ply - 1);
         if (sse == null || sse.move == null)
             return;
-        countermoveCorrHistTable.update(sse.move, sse.piece, white, staticEval, score, depth);
+        Move lastMove = sse.move;
+        lastMoveCorrHistTable.update(lastMove.encoded(), white, depth, score, staticEval);
 
     }
 
@@ -193,7 +194,7 @@ public class SearchHistory {
         pawnCorrHistTable.clear();
         nonPawnCorrHistTables[Colour.WHITE].clear();
         nonPawnCorrHistTables[Colour.BLACK].clear();
-        countermoveCorrHistTable.clear();
+        lastMoveCorrHistTable.clear();
 
     }
 

@@ -82,6 +82,10 @@ public record Move(short value) {
         return squareMatch && promotionMatch;
     }
 
+    public long encoded() {
+         return value & 0b0000_1111_1111_1111;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
